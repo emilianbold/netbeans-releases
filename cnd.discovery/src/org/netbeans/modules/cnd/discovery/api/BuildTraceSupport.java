@@ -41,21 +41,27 @@
  */
 package org.netbeans.modules.cnd.discovery.api;
 
+import org.netbeans.modules.cnd.discovery.buildsupport.ToolsWrapperUtility;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 
@@ -64,9 +70,143 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
  * @author Alexander Simon
  */
 public final class BuildTraceSupport {
+
     public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
     public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
+    public static final String CND_TOOL_WRAPPER = "__CND_TOOL_WRAPPER__"; //NOI18N
+    public static final String CND_C_WRAPPER = "__CND_C_WRAPPER__"; //NOI18N
+    public static final String CND_CPP_WRAPPER = "__CND_CPP_WRAPPER__"; //NOI18N
+
     private static final String SEPARATOR = ":"; //NOI18N
+
+    // Prefer wrapper instead of preload
+    private static final boolean USE_WRAPPER = Boolean.getBoolean("cnd.discovery.use.wrapper"); // NOI18N
+    
+    public static enum BuildTraceKind {
+        Preload,
+        Wrapper
+    }
+
+    public static final class BuildTrace {
+
+        private final BuildTraceKind kind;
+        private final ExecutionEnvironment execEnv;
+        private final MakeConfiguration conf;
+        private final Project project;
+
+        private BuildTrace(BuildTraceKind kind, ExecutionEnvironment execEnv, MakeConfiguration conf, Project project) {
+            this.kind = kind;
+            this.execEnv = execEnv;
+            this.conf = conf;
+            this.project = project;
+        }
+
+        public void modifyEnv(Env env) {
+            if (kind == BuildTraceKind.Wrapper) {
+                CompilerSet wrapper = getToolsWrapper();
+                if (wrapper != null) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    PlatformInfo pi = conf.getPlatformInfo();
+                    String defaultPath = pi.getPathAsString();
+                    String cmdDir = CompilerSetUtils.getCommandFolder(compilerSet);
+                    if (cmdDir != null && 0 < cmdDir.length()) {
+                        // Also add msys to path. Thet's where sh, mkdir, ... are.
+                        defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
+                    }
+                    defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
+                    env.putenv(pi.getPathName(), defaultPath);
+                    env.putenv(CND_TOOL_WRAPPER, wrapper.getDirectory());
+                    Tool tool = wrapper.getTool(PredefinedToolKind.CCompiler);
+                    if (tool != null) {
+                        env.putenv(CND_C_WRAPPER, tool.getPath());
+                    }
+                    tool = wrapper.getTool(PredefinedToolKind.CCCompiler);
+                    if (tool != null) {
+                        env.putenv(CND_CPP_WRAPPER, tool.getPath());
+                    }
+                }
+            }
+        }
+
+        public void modifyEnv(Map<String, String> env) {
+            if (kind == BuildTraceKind.Wrapper) {
+                CompilerSet wrapper = getToolsWrapper();
+                if (wrapper != null) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    PlatformInfo pi = conf.getPlatformInfo();
+                    String defaultPath = pi.getPathAsString();
+                    String cmdDir = CompilerSetUtils.getCommandFolder(compilerSet);
+                    if (cmdDir != null && 0 < cmdDir.length()) {
+                        // Also add msys to path. Thet's where sh, mkdir, ... are.
+                        defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
+                    }
+                    defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
+                    env.put(pi.getPathName(), defaultPath);
+                    env.put(CND_TOOL_WRAPPER, wrapper.getDirectory());
+                    Tool tool = wrapper.getTool(PredefinedToolKind.CCompiler);
+                    if (tool != null) {
+                        env.put(CND_C_WRAPPER, tool.getPath());
+                    }
+                    tool = wrapper.getTool(PredefinedToolKind.CCCompiler);
+                    if (tool != null) {
+                        env.put(CND_CPP_WRAPPER, tool.getPath());
+                    }
+                }
+            }
+        }
+
+        public void modifyPreloadEnv(Env env) throws IOException, CancellationException {
+            if (BuildTraceHelper.isMac(execEnv)) {
+                String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
+                String merge = env.getenv(ldPreliad);
+                String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                if (what.indexOf(':') > 0) {
+                    what = what.substring(0, what.indexOf(':'));
+                }
+                String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                if (where.indexOf(':') > 0) {
+                    where = where.substring(0, where.indexOf(':'));
+                }
+                String lib = where + '/' + what;
+                if (merge != null && !merge.isEmpty()) {
+                    merge = lib + ":" + merge; // NOI18N
+                } else {
+                    merge = lib;
+                }
+                env.putenv(ldPreliad, merge);
+            } else {
+                String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
+                String merge = env.getenv(ldPreliad);
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv) + ":" + merge; // NOI18N
+                } else {
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                }
+                env.putenv(ldPreliad, merge);
+
+                String ldPath = BuildTraceHelper.getLDPathEnvName(execEnv);
+                merge = env.getenv(ldPath);
+                if (merge == null || merge.isEmpty()) {
+                    merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get(ldPath);
+                }
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":" + merge; // NOI18N
+                } else {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                }
+                env.putenv(ldPath, merge);
+            }
+        }
+
+        public BuildTraceKind getKind() {
+            return kind;
+        }
+
+        public CompilerSet getToolsWrapper() {
+            ToolsWrapperUtility util = new ToolsWrapperUtility(execEnv, conf, project);
+            return util.getToolsWrapper();
+        }
+    }
 
     private BuildTraceSupport() {
     }
@@ -88,31 +228,38 @@ public final class BuildTraceSupport {
         return res;
     }
 
-    public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
+    public static BuildTrace supportedPlatforms(ExecutionEnvironment execEnv, MakeConfiguration conf, Project project) {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
-
-            switch(osFamily) {
-                case MACOSX:
-                    return cpuFamily == HostInfo.CpuFamily.X86;
-                case LINUX:
-                    return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
-                case SUNOS:
-                    return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
+            if (!USE_WRAPPER){
+                switch (osFamily) {
+                    //case MACOSX:
+                    //    if (cpuFamily == HostInfo.CpuFamily.X86) {
+                    //        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                    //    }
+                    case LINUX:
+                        if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
+                            return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                        }
+                    case SUNOS:
+                        if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
+                            return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                        }
+                }
             }
+            return new BuildTrace(BuildTraceKind.Wrapper, execEnv, conf, project);
         } catch (IOException ex) {
         } catch (CancellationException ex) {
         }
-        return false;
+        return null;
     }
 
     public static Set<String> getCompilerNames(Project project, PredefinedToolKind kind) {
         Set<String> res = new HashSet<>();
-        switch(kind) {
-            case CCompiler:
-            {
+        switch (kind) {
+            case CCompiler: {
                 res.add("cc"); //NOI18N
                 res.add("gcc"); //NOI18N
                 res.add("xgcc"); //NOI18N
@@ -121,8 +268,7 @@ public final class BuildTraceSupport {
                 addTool(project, kind, res);
                 break;
             }
-            case CCCompiler:
-            {
+            case CCCompiler: {
                 res.add("CC"); //NOI18N
                 res.add("g++"); //NOI18N
                 res.add("c++"); //NOI18N
@@ -132,8 +278,7 @@ public final class BuildTraceSupport {
                 addTool(project, kind, res);
                 break;
             }
-            case FortranCompiler:
-            {
+            case FortranCompiler: {
                 res.add("ffortran"); //NOI18N
                 res.add("f77"); //NOI18N
                 res.add("f90"); //NOI18N
@@ -177,7 +322,7 @@ public final class BuildTraceSupport {
     }
 
     private static String addIfNeeded(String name, String res) {
-        for(String s : res.split(SEPARATOR)) {
+        for (String s : res.split(SEPARATOR)) {
             if (s.equals(name)) {
                 return res;
             }
@@ -212,7 +357,7 @@ public final class BuildTraceSupport {
                         String name = tool.getName();
                         if (name != null && !name.isEmpty()) {
                             if (name.endsWith(".exe")) { //NOI18N
-                                name = name.substring(0,name.length()-4);
+                                name = name.substring(0, name.length() - 4);
                             }
                             res.add(name);
                         }
@@ -224,7 +369,7 @@ public final class BuildTraceSupport {
                                     name = CndPathUtilities.getBaseName(canonicalPath);
                                     if (name != null && !name.isEmpty()) {
                                         if (name.endsWith(".exe")) { //NOI18N
-                                            name = name.substring(0,name.length()-4);
+                                            name = name.substring(0, name.length() - 4);
                                         }
                                         res.add(name);
                                     }
@@ -235,6 +380,15 @@ public final class BuildTraceSupport {
                     }
                 }
             }
+        }
+    }
+
+    private static final class BuildTraceHelper extends HelperLibraryUtility {
+
+        private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
+
+        private BuildTraceHelper() {
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.${soext}"); // NOI18N
         }
     }
 }

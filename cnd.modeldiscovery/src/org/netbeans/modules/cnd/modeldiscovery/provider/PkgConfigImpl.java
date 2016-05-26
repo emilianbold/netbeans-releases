@@ -120,7 +120,7 @@ public class PkgConfigImpl implements PkgConfig {
         }
         ExitStatus status = ProcessUtils.execute(env, pkg_config, new String[]{"--variable", "pc_path", "pkg-config"}); // NOI18N
         if (status.isOK()) {
-            addPaths(res, status.output);
+            addPaths(res, status.getOutputString());
         }
         res.add(folder);
         Collections.addAll(res, foders);

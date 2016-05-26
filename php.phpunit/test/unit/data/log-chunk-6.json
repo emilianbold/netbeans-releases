@@ -1,0 +1,26 @@
+    "line": 79
+        }
+    ],
+    "message": "hola hoj",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus2"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus2",
+    "status": "pass",
+    "time": 0.012737989425659,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus3"
+}{
+    "event": "te

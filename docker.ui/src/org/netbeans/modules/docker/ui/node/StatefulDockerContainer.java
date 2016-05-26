@@ -53,7 +53,6 @@ import org.netbeans.modules.docker.api.DockerEvent;
 import org.netbeans.modules.docker.api.DockerException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -82,17 +81,25 @@ public class StatefulDockerContainer implements Refreshable, Closeable {
         }
     };
 
-    private final DockerEvent.Listener weak;
-
     private final DockerContainer container;
 
     private DockerContainerDetail detail;
-
+    
+    private boolean attached;
+    
     public StatefulDockerContainer(DockerContainer container) {
         this.container = container;
         this.detail = new DockerContainerDetail(container.getName(), container.getStatus(), false, false);
-        this.weak = WeakListeners.create(DockerEvent.Listener.class, listener, container.getInstance());
-        container.getInstance().addContainerListener(weak);
+        attach();
+    }
+    
+    public final void attach() {
+        synchronized (this) {
+            if (!attached) {
+                container.getInstance().addContainerListener(listener);
+                attached = true;
+            }
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -129,8 +136,13 @@ public class StatefulDockerContainer implements Refreshable, Closeable {
     }
 
     @Override
-    public void close() {
-        container.getInstance().removeContainerListener(weak);
+    public final void close() {
+        synchronized (this) {
+            if (attached) {
+                container.getInstance().removeContainerListener(listener);
+                attached = false;
+            }
+        }
     }
 
     @Override

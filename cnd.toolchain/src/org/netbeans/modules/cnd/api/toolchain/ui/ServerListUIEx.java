@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 

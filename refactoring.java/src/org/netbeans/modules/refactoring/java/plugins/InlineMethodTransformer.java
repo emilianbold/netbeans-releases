@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.source.util.*;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -151,7 +152,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 if (stats != null) {
                     newStatementList.addAll(stats);
                 }
-                newStatementList.add(statementTree);
+                Tree tree = original2TranslatedForBlock.get(statementTree);
+                if(tree == null || tree.getKind() != EMPTY_STATEMENT ||
+                        ((JCTree)tree).pos >= 0) {
+                    newStatementList.add(statementTree);
+                }
             }
             BlockTree newBlock = make.Block(newStatementList, node.isStatic());
             if(!original2TranslatedForBlock.isEmpty()) {
@@ -338,7 +343,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
             }
 
-            lastStatement = translateLastStatement(genUtils, parent, grandparent, newStatementList, lastStatement, node, methodInvocationPath, method);
+            Map<Tree, Tree> translateMap = translateQueue.size() > 0 ? translateQueue.getLast() : original2Translated;
+            lastStatement = translateLastStatement(genUtils, parent, grandparent, newStatementList, lastStatement, node, methodInvocationPath, method, translateMap);
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
                 if (!newStatementList.isEmpty()) {
@@ -378,7 +384,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     }
                 }
                 Map<Tree, List<StatementTree>> addedStatementsForBlock = newStatsQueue.getLast();
-                Map<Tree, Tree> translateMap = translateQueue.getLast();
                 List<StatementTree> stats = addedStatementsForBlock.get(statementTree);
                 if(stats == null) {
                     addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
@@ -389,7 +394,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 for (Comment comment : comments) {
                     make.addComment(lastStatement, Comment.create(comment.style(), comment.getText()), false);
                 }
-                translateMap.put(methodInvocation, lastStatement);
+                translateMap.put(methodInvocation, lastStatement == null? make.EmptyStatement(): lastStatement);
             }
         }
         return value;
@@ -714,7 +719,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     @NbBundle.Messages(
             "WRN_InlineChangeReturn=Unsafe -- the return expression is not used in {0}.")
-    private Tree translateLastStatement(GeneratorUtilities genUtils, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node, TreePath location, Element method) {
+    private Tree translateLastStatement(GeneratorUtilities genUtils, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node, TreePath location, Element method, Map<Tree, Tree> translateMap) {
         Tree result = lastStatement;
         TreeDuplicator duplicator = new TreeDuplicator(make, genUtils);
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
@@ -776,6 +781,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             switch (grandparent.getKind()) {
                 case FOR_LOOP: {
                     ForLoopTree forLoopTree = (ForLoopTree) grandparent;
+                    if(translateMap.containsKey(grandparent)) {
+                        Tree newTree = translateMap.get(grandparent);
+                        if(newTree.getKind() == FOR_LOOP) {
+                            forLoopTree = (ForLoopTree) newTree;
+                        }
+                    }
+                    
                     StatementTree statement = forLoopTree.getStatement();
                     if (statement == parent) {
                         addResultToStatementList(result, newStatementList);
@@ -875,9 +887,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 break;
             }
         }
-        result = duplicator.duplicate(result);
-        genUtils.copyComments(lastStatement, result, true);
-        genUtils.copyComments(lastStatement, result, false);
+        if(result != null) {
+            result = duplicator.duplicate(result);
+            genUtils.copyComments(lastStatement, result, true);
+            genUtils.copyComments(lastStatement, result, false);
+        }
         return result;
     }
 

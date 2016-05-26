@@ -55,7 +55,6 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.impl.Accessor;
-import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.LineLocation;
@@ -192,8 +191,7 @@ public class JPDATruffleAccessor extends Object {
     static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         Node node = evt.getNode();
-        Visualizer visualizer = getVisualizer(node);
-        return new FrameInfo(evt.getFrame(), visualizer, node, evt.getStack());
+        return new FrameInfo(evt.getFrame(), node, evt.getStack());
     }
     
     static void setStep(/*SuspendedEvent*/Object suspendedEvent, int stepCmd) {
@@ -259,24 +257,6 @@ public class JPDATruffleAccessor extends Object {
             return null;
         } catch (StackOverflowError soe) {
             throw new IllegalStateException(node.toString(), soe);
-        }
-    }
-    
-    private static Visualizer getVisualizer(Node node) {
-        TruffleLanguage tl = getLanguage(node);
-        if (tl == null) {
-            return null;
-        }
-        try {
-            Method getVisualizerMethod = TruffleLanguage.class.getDeclaredMethod("getVisualizer");
-            getVisualizerMethod.setAccessible(true);
-            return (Visualizer) getVisualizerMethod.invoke(tl);
-        } catch (InvocationTargetException itex) {
-            itex.getTargetException().printStackTrace();
-            return null;
-        } catch (IllegalAccessException | IllegalArgumentException |
-                 NoSuchMethodException | SecurityException ex) {
-            throw new RuntimeException(ex);
         }
     }
     
@@ -354,14 +334,9 @@ public class JPDATruffleAccessor extends Object {
             Node node = frameInstance.getCallNode();
             //System.err.println("Frame instance "+frameInstance+" node = "+node);
             //Node node = frame.materialize().getFrameDescriptor().
-            Visualizer visualizer = (node != null) ? getVisualizer(node.getRootNode()) : null;
             String name;
-            if (visualizer != null) {
-                name = visualizer.displayIdentifier(slot);
-            } else {
-                name = slot.getIdentifier().toString();
-            }
-            TruffleObject to = new TruffleObject(visualizer, name, obj);
+            name = slot.getIdentifier().toString();
+            TruffleObject to = new TruffleObject(name, obj);
             //return context.getVisualizer().displayValue(context, obj);
             //System.err.println("TruffleObject: "+to);
             //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
@@ -401,23 +376,12 @@ public class JPDATruffleAccessor extends Object {
         Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
-            Visualizer visualizer = getVisualizer(fi.getCallNode());
-            //TruffleFrame tf = new TruffleFrame();
-            if (visualizer != null) {
-                frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
-                frameInfos.append('\n');
-                frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
-                frameInfos.append('\n');
-                frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
-                frameInfos.append('\n');
-            } else {
-                frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
-                frameInfos.append('\n');
-                frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
-                frameInfos.append('\n');
-                frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
-                frameInfos.append('\n');
-            }
+            frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
+            frameInfos.append('\n');
+            frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
+            frameInfos.append('\n');
+            frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
+            frameInfos.append('\n');
             if (fi.getCallNode() == null) {
                 /* frames with null call nodes are filtered out by JPDATruffleDebugManager.FrameInfo
                 System.err.println("Frame with null call node: "+fi);
@@ -558,18 +522,17 @@ public class JPDATruffleAccessor extends Object {
         if (node == null) {
             node = evt.getNode();
         }
-        Visualizer visualizer = getVisualizer(node);
         Object value;
         try {
             value = evt.eval(expression, fi);
         } catch (IOException ioex) {
-            return new TruffleObject(visualizer, ioex.getLocalizedMessage(), ioex);
+            return new TruffleObject(ioex.getLocalizedMessage(), ioex);
         }
         //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
-        TruffleObject to = new TruffleObject(visualizer, expression, value);
+        TruffleObject to = new TruffleObject(expression, value);
         return to;
     }
     
@@ -591,13 +554,8 @@ public class JPDATruffleAccessor extends Object {
         FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
         String[] slotNames = new String[slots.length];
         String[] slotTypes = new String[slots.length];
-        Visualizer visualizer = getVisualizer(fi.getCallNode());
         for (int i = 0; i < frameSlots.length; i++) {
-            if (visualizer != null) {
-                slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
-            } else {
-                slotNames[i] = frameSlots[i].getIdentifier().toString();
-            }
+            slotNames[i] = frameSlots[i].getIdentifier().toString();
             slotTypes[i] = frameSlots[i].getKind().toString();
         }
         slots[0] = fi;

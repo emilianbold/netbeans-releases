@@ -455,7 +455,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             }
             ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path); // NOI18N
             if (res.isOK()) {
-                path = res.output;
+                path = res.getOutputString();
             } else {
                 return false;
             }

@@ -703,6 +703,14 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/groupUse_03");
     }
 
+    public void testGroupUse_04() throws Exception {
+        performTest("parser/groupUse_04");
+    }
+
+    public void testIssue258959() throws Exception {
+        performTest("parser/issue258959");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

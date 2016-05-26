@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -59,9 +59,9 @@ made subject to such option by the copyright holder.
                 deployment manager
                 -->
                 <file name="Descriptor" url="nbdep.xml"/>
-                
-                <!-- 
-                An instance of the class implementing the DeploymentFactory 
+
+                <!--
+                An instance of the class implementing the DeploymentFactory
                 interface, it will be used as the main entry point for the
                 plugin
                 -->
@@ -70,9 +70,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
-                
+
                 <!--
-                An instance of the factory for creating the nodes that will 
+                An instance of the factory for creating the nodes that will
                 appear in the Server Registry, namely the Manager (Instance)
                 node and the Target node
                 -->

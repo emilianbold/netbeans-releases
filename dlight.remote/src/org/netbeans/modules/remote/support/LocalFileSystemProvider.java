@@ -66,8 +66,8 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;import org.netbeans.modules.remote.api.RemoteFile;
+;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.netbeans.modules.remote.spi.FileSystemProvider.WarmupMode;
@@ -337,7 +337,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public boolean isMine(File file) {
-        return file.getClass() != FileObjectBasedFile.class;
+        return !RemoteFile.class.isAssignableFrom(file.getClass());
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.csl;
 
@@ -1244,6 +1244,38 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 
     public void testGroupUseFunc_05() throws Exception {
         checkDeclaration(getTestPath(), "echo MyFa^bc();", "    B\\C\\fabc AS ^MyFabc");
+    }
+
+    public void testGroupUseMixed_01() throws Exception {
+        checkDeclaration(getTestPath(), "    My^A,", "class ^MyA {}");
+    }
+
+    public void testGroupUseMixed_02() throws Exception {
+        checkDeclaration(getTestPath(), "new M^yA();", "class ^MyA {}");
+    }
+
+    public void testGroupUseMixed_03() throws Exception {
+        checkDeclaration(getTestPath(), "    const CONST^ANT,", "const ^CONSTANT = \"CONSTANT\";");
+    }
+
+    public void testGroupUseMixed_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo CON^STANT; // CONSTANT", "const ^CONSTANT = \"CONSTANT\";");
+    }
+
+    public void testGroupUseMixed_05() throws Exception {
+        checkDeclaration(getTestPath(), "    function te^st,", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_06() throws Exception {
+        checkDeclaration(getTestPath(), "    function te^st AS mytest", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_07() throws Exception {
+        checkDeclaration(getTestPath(), "t^est(); // test", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_08() throws Exception {
+        checkDeclaration(getTestPath(), "my^test(); // test", "    function test AS ^mytest");
     }
 
     public void testUniformVariableSyntax_01() throws Exception {

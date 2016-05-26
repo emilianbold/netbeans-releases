@@ -113,7 +113,7 @@ public final class TermOptions {
         selectionBackgroundDefault = getDefaultSelectionBackground();
         historySizeDefault = 5000;
         tabSizeDefault = 8;
-        selectByWordDelimitersDefault = "!$^*();<>\\[]{}|";    //NOI18N
+        selectByWordDelimitersDefault = "! $^*();<>\\[]{}|";    //NOI18N
         clickToTypeDefault = true;
         scrollOnInputDefault = true;
         scrollOnOutputDefault = true;

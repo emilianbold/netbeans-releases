@@ -140,7 +140,7 @@ final class CaretItem implements Comparable {
      * Get position of the caret itself.
      *
      * @return non-null position of the caret placement. The position may be
-     * virtual so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     * virtual so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     Position getDotPosition() {
@@ -154,7 +154,7 @@ final class CaretItem implements Comparable {
      * how the selection was created).
      *
      * @return non-null position of the caret placement. The position may be
-     * virtual so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     * virtual so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     Position getMarkPosition() {

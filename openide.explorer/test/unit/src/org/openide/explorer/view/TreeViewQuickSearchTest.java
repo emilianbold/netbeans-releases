@@ -84,6 +84,11 @@ public class TreeViewQuickSearchTest extends NbTestCase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        f = null;
+    }
+    
+    @Override
     protected void tearDown() throws Exception {
         while (f != null && f.isShowing()) {
             f.setVisible(false);
@@ -104,25 +109,33 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         
         root.getChildren().add(children);
         
-        final Panel p = new Panel();
-        p.getExplorerManager().setRootContext(root);
-        
-        final BeanTreeView btv = new BeanTreeView();
-        p.add(BorderLayout.CENTER, btv);
-        
-        f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.getContentPane().add(BorderLayout.CENTER, p);
-        f.pack();
-        f.setVisible(true);
-        
-        final JTree tree = btv.tree;
         final Exception[]problem = new Exception[1];
         final Integer[] phase = new Integer[1];
         phase[0] = 0;
         class AWTTst implements Runnable {
+            
+            private Panel p;        
+            private BeanTreeView btv;
+            private JTree tree;
+
+            private void initFrame() {
+                if (f == null) {
+                    p = new Panel();
+                    p.getExplorerManager().setRootContext(root);
+                    btv = new BeanTreeView();
+                    p.add(BorderLayout.CENTER, btv);
+                    tree = btv.tree;
+                    f = new JFrame();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.pack();
+                    f.setVisible(true);
+                }
+            }
+            
             @Override
             public void run() {
+                initFrame();
                 try {
                     if (phase[0] == 0) {
                         btv.tree.requestFocus();
@@ -193,27 +206,34 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         
         root.getChildren().add(children);
         
-        final Panel p = new Panel();
-        p.getExplorerManager().setRootContext(root);
-        
-        final BeanTreeView btv = new BeanTreeView();
-        p.add(BorderLayout.CENTER, btv);
-
-        
-        f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.getContentPane().add(BorderLayout.CENTER, p);
-        f.pack();
-        f.setVisible(true);
-
-
+        final BeanTreeView[] btvPtr = new BeanTreeView[] { null };
         final Exception[] problem = new Exception[1];
         final Integer[] phase = new Integer[1];
         phase[0] = 0;
         class AWTTst implements Runnable {
 
+            private Panel p;
+            private BeanTreeView btv;
+
+            private void initFrame() {
+                if (f == null) {
+                    p = new Panel();
+                    p.getExplorerManager().setRootContext(root);
+                    btv = new BeanTreeView();
+                    btvPtr[0] = btv;
+                    p.add(BorderLayout.CENTER, btv);
+                    f = new JFrame();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.pack();
+                    f.setVisible(true);
+                    
+                }
+            }
+            
             @Override
             public void run() {
+                initFrame();
                 if (phase[0] == 0) {
                     btv.tree.requestFocus();
                     try {
@@ -242,14 +262,14 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         }
         Thread.sleep(1000);
         phase[0] = 1;
-        btv.setQuickSearchAllowed(true);
+        btvPtr[0].setQuickSearchAllowed(true);
         SwingUtilities.invokeAndWait(awt);
         if (problem[0] != null) {
             throw problem[0];
         }
         
         Thread.sleep(1000);
-        btv.setQuickSearchAllowed(false);
+        btvPtr[0].setQuickSearchAllowed(false);
         SwingUtilities.invokeAndWait(awt);
     }
 
@@ -280,26 +300,33 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         };
         mainRoot.getChildren().add(mainChildren);
 
-        final Panel p = new Panel();
-        p.getExplorerManager().setRootContext(mainRoot);
-
-        final BeanTreeView btv = new BeanTreeView();
-        p.add(BorderLayout.CENTER, btv);
-
-        f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.getContentPane().add(BorderLayout.CENTER, p);
-        f.pack();
-        f.setVisible(true);
-
-        final JTree tree = btv.tree;
         final Exception[] problem = new Exception[1];
         final Integer[] phase = new Integer[1];
         phase[0] = 0;
         class AWTTst implements Runnable {
 
+            private Panel p;
+            private BeanTreeView btv;
+            private JTree tree;
+
+            private void initFrame() {
+                if (f == null) {
+                    p = new Panel();
+                    p.getExplorerManager().setRootContext(mainRoot);
+                    btv = new BeanTreeView();
+                    p.add(BorderLayout.CENTER, btv);
+                    tree = btv.tree;
+                    f = new JFrame();
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.pack();
+                    f.setVisible(true);
+                }
+            }
+
             @Override
             public void run() {
+                initFrame();
                 try {
                     if (phase[0] == 0) {
                         btv.tree.requestFocus();

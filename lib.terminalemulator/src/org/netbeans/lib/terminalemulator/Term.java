@@ -2055,7 +2055,8 @@ public class Term extends JComponent implements Accessible {
 
                     } else if (e.getClickCount() == 3) {
                         BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
-                        sel.select_line(new Coord(bcoord, firsta));
+                        BExtent line = buf.find_line(bcoord);
+                        sel.select_line(line.toExtent(firsta));
                         repaint(false);
 
                     }

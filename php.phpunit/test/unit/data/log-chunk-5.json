@@ -1,0 +1,22 @@
+s4",
+    "status": "pass",
+    "time": 0.012901067733765,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus",
+    "status": "error",
+    "time": 0.013724803924561,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/Calculator2Test.php",
+        

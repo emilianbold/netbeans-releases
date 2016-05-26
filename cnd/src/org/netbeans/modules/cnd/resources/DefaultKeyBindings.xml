@@ -25,7 +25,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -43,11 +43,11 @@ Contributor(s):
 
   <!-- IMPORTANT:  To handle Apple-specific keybindings, there is another copy of
      this file, with minor diffs, in ide/applemenu.  Any changes made here should
-     be made there too -->                            
+     be made there too -->
 <bindings>
     <bind actionName="comment" key="DS-T"/>
-    <bind actionName="uncomment" key="DS-D"/>  
-    <!-- 
+    <bind actionName="uncomment" key="DS-D"/>
+    <!--
         the next line is to prevent user from confusing.
         otherwise goto-super-implementation which is disabled for
         C/C++ will have Ctrl-B shortcut in Navigate menu

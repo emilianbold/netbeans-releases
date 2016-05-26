@@ -149,7 +149,11 @@ public class InlineRefactoringUI implements RefactoringUI {
                         }
                         break;
                 }
-                Element element = selectedElement.resolveElement(info);
+                TreePath path = selectedElement.resolve(info);
+                if(info.getTreeUtilities().isSynthetic(path)) {
+                    return null;
+                }
+                Element element = info.getTrees().getElement(path);
                 if(element == null) {
                     return null;
                 }

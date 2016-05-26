@@ -83,7 +83,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     //allow max 10 requests to run in parallel & have one RP for all taglib parsings
     private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("background jsp parsing", 10); // NOI18N;
 
-    private FileObject jspFile;
+    private final FileObject jspFile;
     
     // request processing stuff
     private boolean documentDirty;

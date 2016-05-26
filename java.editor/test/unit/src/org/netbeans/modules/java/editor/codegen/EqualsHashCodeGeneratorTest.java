@@ -43,6 +43,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -130,13 +131,17 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                 assertEquals("generate equals", true, generator.generateEquals);
             }
         }
-        Task t = new Task();
+        final Task t = new Task();
         
         js.runUserActionTask(t, false);
         t.post();
         
         
-        t.generator.invoke();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                t.generator.invoke();
+            }
+        });
         
         //String text = c.getDocument().getText(0, c.getDocument().getLength());
         String text = GeneratorUtilsTest.readFromFile(java);

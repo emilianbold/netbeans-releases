@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeThread;
 public class OtoolNativeThreadImpl extends OtoolNativeThread{
     private String id;
     private String name;
-    private boolean current;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
 
     
@@ -84,11 +83,6 @@ public class OtoolNativeThreadImpl extends OtoolNativeThread{
     }
 
 
-
-     @Override
-    public boolean isCurrent() {
-        return current;
-    }
     
 
     

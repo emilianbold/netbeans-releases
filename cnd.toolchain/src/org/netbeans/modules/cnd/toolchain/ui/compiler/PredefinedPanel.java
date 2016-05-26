@@ -54,7 +54,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinition;
@@ -291,11 +291,11 @@ public class PredefinedPanel extends javax.swing.JPanel {
         @Override
         public String addAction() {
             final String chooser_key = "IncludesPanel"; // NOI18N
-            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+            String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"), // NOI18N
+            JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"), // NOI18N
                                                       JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
@@ -303,7 +303,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             }
             final File selectedFile = fileChooser.getSelectedFile();
             String itemPath = selectedFile.getPath();
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
+            RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
             if (defs != null) {
                 defs.setUserAdded(true, getListDataSize());
             }

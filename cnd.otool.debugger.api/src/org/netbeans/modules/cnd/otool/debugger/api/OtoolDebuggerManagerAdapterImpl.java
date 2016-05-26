@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.cnd.otool.debugger.api;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.modules.cnd.otool.debugger.api.breakpoint.OtoolLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
@@ -62,8 +64,8 @@ public class OtoolDebuggerManagerAdapterImpl extends DebuggerManagerAdapter {
 
     @Override
     public void breakpointAdded(Breakpoint breakpoint) {
-        if (breakpoint instanceof OtoolNativeBreakpoint) {
-            OtoolNativeBreakpoint nativeBreakpoint = (OtoolNativeBreakpoint) breakpoint;
+        if (breakpoint instanceof OtoolLineBreakpoint) {
+            OtoolLineBreakpoint nativeBreakpoint = (OtoolLineBreakpoint) breakpoint;
             if (currentDebugger != null) {
                 currentDebugger.toggleLineBreakpoint(nativeBreakpoint.getUrl(), nativeBreakpoint.getLine());
             }
@@ -71,11 +73,16 @@ public class OtoolDebuggerManagerAdapterImpl extends DebuggerManagerAdapter {
     }
 
     @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt); //To change body of generated methods, choose Tools | Templates.
+    }    
+    
+    @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
-        if (breakpoint instanceof OtoolNativeBreakpoint) {
-            OtoolNativeBreakpoint nativeBreakpoint = (OtoolNativeBreakpoint) breakpoint;
+        if (breakpoint instanceof OtoolLineBreakpoint) {
+            OtoolLineBreakpoint nativeBreakpoint = (OtoolLineBreakpoint) breakpoint;
             if (currentDebugger != null) {
-                currentDebugger.toggleLineBreakpoint(nativeBreakpoint.getUrl(), nativeBreakpoint.getLine());
+                currentDebugger.deleteBreakpoint(nativeBreakpoint);
             }
         }
     }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -62,9 +63,6 @@ import org.openide.util.NbBundle;
 class WildflyStopRunnable implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(WildflyStopRunnable.class.getName());
-
-    private static final String JBOSS_CLI_SH = "/bin/jboss-cli.sh"; // NOI18N
-    private static final String JBOSS_CLI_BAT = "/bin/jboss-cli.bat"; // NOI18N
 
     private static final int TIMEOUT = 300000;
 
@@ -93,20 +91,32 @@ class WildflyStopRunnable implements Runnable {
         }
 
         String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        int elapsed = 0;
+        long start = System.nanoTime();
         try {
-         dm.getClient().shutdownServer();
-        } catch (java.io.IOException ioe) {
+            dm.getClient().shutdownServer(TIMEOUT);
+            elapsed = (int) ((System.nanoTime() - start) / 1000000);
+        } catch (IOException ioe) {
             LOGGER.log(Level.INFO, null, ioe);
             startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                     NbBundle.getMessage(WildflyStopRunnable.class, "MSG_STOP_SERVER_FAILED_PD", serverName)));//NOI18N
 
             return;
+        } catch (InterruptedException ex) {
+            startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                    NbBundle.getMessage(WildflyStopRunnable.class, "MSG_StopServerInterrupted", serverName)));//NOI18N
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+            return;
+        } catch (TimeoutException ex) {
+            elapsed = TIMEOUT;
         }
         startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                 NbBundle.getMessage(WildflyStopRunnable.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));
         LOGGER.log(Level.FINER, "Entering the loop"); // NOI18N
 
-        int elapsed = 0;
+
+        // wait for stop to finish
         while (elapsed < TIMEOUT) {
             if (startServer.isRunning()) {
                 startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
@@ -115,7 +125,13 @@ class WildflyStopRunnable implements Runnable {
                 try {
                     elapsed += 500;
                     Thread.sleep(500);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                    startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                            NbBundle.getMessage(WildflyStopRunnable.class, "MSG_StopServerInterrupted", serverName)));//NOI18N
+                    LOGGER.log(Level.INFO, null, e);
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             } else {
                 LOGGER.log(Level.FINER, "JBoss has been stopped, going to stop the Log Writer thread");
                 WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, false);
@@ -149,10 +165,16 @@ class WildflyStopRunnable implements Runnable {
                 return;
             }
         }
+
+        // try to kill the server
         if (!killer.killServers()) {
             startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                     NbBundle.getMessage(WildflyStopRunnable.class, "MSG_StopServerTimeout")));
             LOGGER.log(Level.FINER, "TIMEOUT expired"); // NOI18N
+        } else {
+            startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
+                    NbBundle.getMessage(WildflyStopRunnable.class, "MSG_SERVER_KILLED", serverName)));//NOI18N
+            LOGGER.log(Level.FINER, "KILLED message fired"); // NOI18N
         }
     }
 }

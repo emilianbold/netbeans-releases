@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.projectsui;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -54,6 +55,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
@@ -64,14 +66,16 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 @DebuggerServiceRegistration(path = "netbeans-JPDASession/PinWatchHeadActions", types = Action.class)
 public class PinWatchExpandAction extends AbstractAction {
 
+    private final Icon toExpandIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
+    private final Icon toCollapsIcon = UIManager.getIcon ("Tree.expandedIcon");    // NOI18N
     private Reference<JPDADebugger> debuggerRef;
     private String expression;
     private Reference<ObjectVariable> varRef;
+    private boolean expanded;
 
     public PinWatchExpandAction() {
-        Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-        putValue(Action.SMALL_ICON, expIcon);
-        putValue(Action.LARGE_ICON_KEY, expIcon);
+        putValue(Action.SMALL_ICON, toExpandIcon);
+        putValue(Action.LARGE_ICON_KEY, toExpandIcon);
     }
 
     @Override
@@ -79,7 +83,9 @@ public class PinWatchExpandAction extends AbstractAction {
         switch (key) {
             case "debugger":
                 synchronized (this) {
-                    debuggerRef = new WeakReference<>((JPDADebugger) value);
+                    if (debuggerRef == null || debuggerRef.get() != value) {
+                        debuggerRef = new WeakReference<>((JPDADebugger) value);
+                    }
                 }
                 break;
             case "expression":
@@ -89,7 +95,10 @@ public class PinWatchExpandAction extends AbstractAction {
                 break;
             case "variable":
                 synchronized (this) {
-                    varRef = new WeakReference<>((ObjectVariable) value);
+                    if (varRef == null || varRef.get() != value) {
+                        varRef = new WeakReference<>((ObjectVariable) value);
+                        expanded = false;
+                    }
                 }
                 break;
             case "disposeState":
@@ -108,6 +117,7 @@ public class PinWatchExpandAction extends AbstractAction {
         JPDADebugger debugger = null;
         String exp;
         ObjectVariable var = null;
+        boolean expand;
         synchronized (this) {
             if (debuggerRef != null) {
                 debugger = debuggerRef.get();
@@ -116,9 +126,19 @@ public class PinWatchExpandAction extends AbstractAction {
             if (varRef != null) {
                 var = varRef.get();
             }
+            expanded = !expanded;
+            expand = expanded;
         }
         if (debugger != null && exp != null && var != null) {
-            displayExpanded(debugger, expression, var);
+            if (expand) {
+                displayExpanded(debugger, expression, var);
+                putValue(Action.SMALL_ICON, toCollapsIcon);
+                putValue(Action.LARGE_ICON_KEY, toCollapsIcon);
+            } else {
+                collapse();
+                putValue(Action.SMALL_ICON, toExpandIcon);
+                putValue(Action.LARGE_ICON_KEY, toExpandIcon);
+            }
         }
     }
 
@@ -127,9 +147,33 @@ public class PinWatchExpandAction extends AbstractAction {
         JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
         EditorUI eui = Utilities.getEditorUI(currentEditor);
         if (eui != null) {
-            toolTipView.setToolTipSupport(eui.getToolTipSupport());
-            eui.getToolTipSupport().setToolTipVisible(true, false);
-            eui.getToolTipSupport().setToolTip(toolTipView);
+            final ToolTipSupport toolTipSupport = eui.getToolTipSupport();
+            toolTipView.setToolTipSupport(toolTipSupport);
+            toolTipSupport.setToolTipVisible(true, false);
+            toolTipSupport.setToolTip(toolTipView);
+            toolTipSupport.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {
+                        if (!toolTipSupport.isToolTipVisible()) {
+                            synchronized (PinWatchExpandAction.this) {
+                                expanded = false;
+                            }
+                            putValue(Action.SMALL_ICON, toExpandIcon);
+                            putValue(Action.LARGE_ICON_KEY, toExpandIcon);
+                            toolTipSupport.removePropertyChangeListener(this);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    private void collapse() {
+        JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        EditorUI eui = Utilities.getEditorUI(currentEditor);
+        if (eui != null) {
+            eui.getToolTipSupport().setToolTipVisible(false, false);
         }
     }
 

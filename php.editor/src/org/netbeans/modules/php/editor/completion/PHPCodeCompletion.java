@@ -373,6 +373,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 break;
             case GROUP_USE_KEYWORD:
                 autoCompleteGroupUse(UseType.TYPE, completionResult, request);
+                List<String> keywords = Arrays.asList("const", "function"); // NOI18N
+                for (String keyword : keywords) {
+                    if (startsWith(keyword, request.prefix)) {
+                        completionResult.add(new PHPCompletionItem.KeywordItem(keyword, request));
+                    }
+                }
                 break;
             case GROUP_USE_CONST_KEYWORD:
                 autoCompleteGroupUse(UseType.CONST, completionResult, request);

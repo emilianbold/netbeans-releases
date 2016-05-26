@@ -42,11 +42,15 @@
 
 package org.netbeans.modules.php.phpunit.util;
 
+import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.openide.util.NbBundle;
 
 public final class PhpUnitUtils {
+
+    public static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
 
     private PhpUnitUtils() {
     }

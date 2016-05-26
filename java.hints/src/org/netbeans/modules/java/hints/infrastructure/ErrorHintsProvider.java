@@ -165,17 +165,22 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 continue;
             }
             OverrideErrorMessage rcm = (OverrideErrorMessage) r;
-            String msg = rcm.createMessage(info, d, pos, path, ruleData);
+            Data rd = data.get(rcm.getClass());
+            if (rd == null) {
+                rd = ruleData;
+            }
+            String msg = rcm.createMessage(info, d, pos, path, rd);
             if (msg != null) {
                 if (msg.isEmpty()) {
                     // ignore the error
                     return null;
                 }
                 desc = msg;
-                if (ruleData.getData() != null) {
-                    data.put(rcm.getClass(), ruleData);
-                }
                 break;
+            }
+            if (rd.getData() != null) {
+                data.put(rcm.getClass(), rd);
+                ruleData = new Data();
             }
         }
         if (messageRuleCount < allRules.size()) {

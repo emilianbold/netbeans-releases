@@ -52,6 +52,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * MyNamespace as MyAlias;
  * MyProject\Sub\Level as MyAlias;
  * \MyProject\Sub\Level as MyAlias;
+ * myfnc, // part of group use
+ * function myfnc, // part of group use
  * </pre>
  */
 public class SingleUseStatementPart extends UseStatementPart {
@@ -60,15 +62,27 @@ public class SingleUseStatementPart extends UseStatementPart {
     private final NamespaceName name;
     @NullAllowed
     private final Identifier alias;
+    @NullAllowed
+    private final UseStatement.Type type;
 
 
     public SingleUseStatementPart(int start, int end, @NonNull NamespaceName name, @NullAllowed Identifier alias) {
+        this(start, end, null, name, alias);
+    }
+
+    public SingleUseStatementPart(int start, int end, UseStatement.Type type, @NonNull NamespaceName name, @NullAllowed Identifier alias) {
         super(start, end);
         if (name == null) {
             throw new IllegalArgumentException();
         }
         this.name = name;
         this.alias = alias;
+        this.type = type;
+    }
+
+    @CheckForNull
+    public UseStatement.Type getType() {
+        return type;
     }
 
     /**
@@ -96,7 +110,9 @@ public class SingleUseStatementPart extends UseStatementPart {
 
     @Override
     public String toString() {
-        return getName() + (getAlias() == null ? "" : " as " + getAlias()); //NOI18N
+        return (type != null ? type + " " : "") // NOI18N
+                + getName()
+                + (getAlias() == null ? "" : " as " + getAlias()); // NOI18N
     }
 
 }

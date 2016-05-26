@@ -61,12 +61,12 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -326,7 +326,7 @@ public class MakefileConfiguration implements Cloneable {
     private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
         String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
         String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
-        final JFileChooser chooser = RemoteFileUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
+        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
                 JFileChooser.DIRECTORIES_ONLY, null, seed, true);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         chooser.setControlButtonsAreShown(false);
@@ -500,7 +500,7 @@ public class MakefileConfiguration implements Cloneable {
                 syncFactory.getPathMap(execEnv) : null;
         final CountDownLatch latch = new CountDownLatch(1);
         final List<FileFilter> filters = Collections.synchronizedList(new ArrayList<FileFilter>());
-        final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
+        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(execEnv,
                 "", "", JFileChooser.FILES_ONLY, null,  //NOI18N
                 new ElfChooserInitializer(execEnv, pathMap, seed, filters, latch),
                 true);

@@ -63,11 +63,12 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
@@ -437,8 +438,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         String seed;
         if (executableTextField.getText().length() > 0) {
             seed = executableTextField.getText();
-        } else if (RemoteFileUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment()) != null) {
-            seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment());
+        } else if (RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment()) != null) {
+            seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment());
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
@@ -450,7 +451,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         } else {
             filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter()};
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                 conf.getDevelopmentHost().getExecutionEnvironment(),
                 getString("CHOOSER_TITLE_TXT"),
                 getString("CHOOSER_BUTTON_TXT"),
@@ -466,7 +467,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         final File selectedFile = fileChooser.getSelectedFile();
 
         String path = CndPathUtilities.normalizeSlashes(selectedFile.getPath());
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -63,7 +63,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -243,8 +243,8 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     public static MakeArtifact[] showDialog(ArtifactType artifactType, Project master, FSPath baseDir, Component parent ) {
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
         final String chooser_key = "MakeArtifactChooser";//NOI18N
-        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
-        JFileChooser chooser = RemoteFileUtil.createProjectChooser(env,
+        String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
+        JFileChooser chooser = RemoteFileChooserUtil.createProjectChooser(env,
                 getString("ADD_PROJECT_DIALOG_TITLE"), getString("ADD_PROJECT_DIALOG_AD"), getString("ADD_BUTTON_TXT"), seed); // NOI18N
         MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser, baseDir );
         chooser.setAccessory( accessory );
@@ -254,7 +254,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         if (option != JFileChooser.APPROVE_OPTION) {
             return null;
         }
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, chooser.getCurrentDirectory().getAbsolutePath(), env);
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, chooser.getCurrentDirectory().getAbsolutePath(), env);
         MyDefaultListModel model = (MyDefaultListModel) accessory.listArtifacts.getModel();
         Project selectedProject = model.getProject();
 

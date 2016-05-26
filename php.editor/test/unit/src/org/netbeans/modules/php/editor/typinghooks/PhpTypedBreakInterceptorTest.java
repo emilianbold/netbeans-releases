@@ -80,8 +80,74 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
         insertBreak("class Foo {^", "class Foo {\n    ^\n}");
     }
 
-    public void testInsertBreakAfterFunction() throws Exception {
+    public void testInsertBreakAfterFunction_01() throws Exception {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
+    }
+
+    public void testInsertBreakAfterFunction_02() throws Exception {
+        // #259148 there is the "use" before the "function"
+        insertBreak(
+                "namespace Foo;\n"
+                + "\n"
+                + "class C {\n"
+                + "    const CONSTANT = \"CONSTANT\";\n"
+                + "}\n"
+                + "\n"
+                + "namespace Bar;\n"
+                + "\n"
+                + "use Foo\\C;\n"
+                + "\n"
+                + "function test() {^\n"
+                + "test();",
+                "namespace Foo;\n"
+                + "\n"
+                + "class C {\n"
+                + "    const CONSTANT = \"CONSTANT\";\n"
+                + "}\n"
+                + "\n"
+                + "namespace Bar;\n"
+                + "\n"
+                + "use Foo\\C;\n"
+                + "\n"
+                + "function test() {\n"
+                + "    ^\n"
+                + "}\n"
+                + "test();"
+        );
+    }
+
+    public void testInsertBreakAfterFunction_03() throws Exception {
+        // #259148 there is the "use" before the "function"
+        insertBreak(
+                "namespace Foo;\n"
+                + "\n"
+                + "class C {\n"
+                + "    const CONSTANT = \"CONSTANT\";\n"
+                + "}\n"
+                + "\n"
+                + "namespace Bar;\n"
+                + "\n"
+                + "use Foo\\C;\n"
+                + "\n"
+                + "class D {\n"
+                + "    public function test() {^\n"
+                + "}",
+                "namespace Foo;\n"
+                + "\n"
+                + "class C {\n"
+                + "    const CONSTANT = \"CONSTANT\";\n"
+                + "}\n"
+                + "\n"
+                + "namespace Bar;\n"
+                + "\n"
+                + "use Foo\\C;\n"
+                + "\n"
+                + "class D {\n"
+                + "    public function test() {\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
     }
 
     public void testInsertBreakAfterIf() throws Exception {
@@ -575,6 +641,112 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
         String original = "<?php\n\"$foo\"^";
         String expected = "<?php\n\"$foo\"\n        ^";
         insertBreak(original, expected);
+    }
+
+    // #259148
+    public void testInsertBreakAfterGroupUse_01() throws Exception {
+        insertBreak(
+                "use Foo\\{^",
+                "use Foo\\{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_02() throws Exception {
+        insertBreak(
+                "use Foo\\ {^",
+                "use Foo\\ {\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_03() throws Exception {
+        insertBreak(
+                "use Foo\\ // comment \n"
+                + "{^",
+                "use Foo\\ // comment \n"
+                + "{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_04() throws Exception {
+        insertBreak(
+                "use Foo\\ /* comment */{^",
+                "use Foo\\ /* comment */{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_05() throws Exception {
+        insertBreak(
+                "use function Foo\\{^",
+                "use function Foo\\{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_06() throws Exception {
+        insertBreak(
+                "use const Foo\\{^",
+                "use const Foo\\{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_07() throws Exception {
+        // there is a "use function" before a "use" keyword
+        insertBreak(
+                "use function Foo\\Bar;\n"
+                + "use Baz\\{^",
+                "use function Foo\\Bar;\n"
+                + "use Baz\\{\n"
+                + "    ^\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterGroupUse_08() throws Exception {
+        insertBreak(
+                "use Foo\\{^ // comment",
+                "use Foo\\{\n"
+                + "    ^// comment\n"
+                + "};"
+        );
+    }
+
+    public void testInsertBreakAfterUseTrait() throws Exception {
+        insertBreak(
+                "class C {\n"
+                + "    use MyTrait {^\n"
+                + "}",
+                "class C {\n"
+                + "    use MyTrait {\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
+    }
+
+    public void testInsertBreakAfterClosureWithUse() throws Exception {
+        insertBreak(
+                "function test() {\n"
+                + "    $test = 'test';\n"
+                + "    $closure = function() use ($test){^\n"
+                + "}",
+                "function test() {\n"
+                + "    $test = 'test';\n"
+                + "    $closure = function() use ($test){\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
     }
 
 }

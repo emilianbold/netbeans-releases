@@ -62,6 +62,13 @@ public class JavaCompletionTaskElementCreatingTest extends CompletionTestBase {
         performTest("OverrideAbstractList", 118, "", "OverrideAbstractList.pass");
     }
     
+    /**
+     * Checks that cc: offers just one size() for override, but offers size() for both implement AND override.
+     */
+    public void testOverrideAbstractListAbstract() throws Exception {
+        performTest("OverrideAbstractListAbstract", 126, "", "OverrideAbstractListAbstract.pass");
+    }
+    
     /** CC should not offer overriding private method from superclass */
     public void testOverridePrivateMethod() throws Exception {
         performTest("OverridePrivateMethod", 89, "cl", "OverridePrivateMethod.pass");

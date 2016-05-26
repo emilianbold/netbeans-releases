@@ -69,21 +69,11 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame";  // NOI18N
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
+    public static final String PROP_LOCALS  = "currentLocals";//NOI18N
     private IOPack ioPack;
+
   
-    
-    public static class BreakpointList extends ArrayList<OtoolNativeBreakpoint> {
 
-        public OtoolNativeBreakpoint getBptByLocation(String url, int lineNumber) {
-
-            for (OtoolNativeBreakpoint bpt : this) {
-                if (bpt.getUrl().equals(url) && bpt.getLine() == lineNumber) {
-                    return bpt;
-                }
-            }
-            return null;
-        }
-    }
 
     private OtoolNativeDebugger() {
         this.pcs = new PropertyChangeSupport (this);
@@ -97,6 +87,9 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
        this.ndi = ctx.lookupFirst(null, getInstanceClass(this));
        
     }
+    
+    abstract public boolean isConnected();
+    
     protected void setIOPack(IOPack ioPack) {
         this.ioPack = ioPack;
     }
@@ -333,9 +326,11 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
     
     abstract public List<? extends OtoolNativeFrame> getCallStack();
 
-    abstract  public List<OtoolNativeThread> getThreads();
+    abstract  public List<? extends OtoolNativeThread> getThreads();
     
-    abstract public List<OtoolNativeBreakpoint> getBreakpoints();
+    abstract public List<? extends OtoolNativeBreakpoint> getBreakpoints();
+    
+    abstract public void deleteBreakpoint(final OtoolNativeBreakpoint bpt);
     
     abstract public void stepOut();
     
@@ -449,6 +444,17 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
         public void setState(int state) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public boolean isConnected() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void deleteBreakpoint(OtoolNativeBreakpoint bpt) {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
+        }
+
 
     }
     

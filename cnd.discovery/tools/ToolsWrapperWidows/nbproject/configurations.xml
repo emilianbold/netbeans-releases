@@ -24,17 +24,20 @@
   <confs>
     <conf name="Unix_64" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+        </ccTool>
         <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper</output>
           <stripSymbols>true</stripSymbols>
         </linkerTool>
       </compileType>
@@ -59,6 +62,7 @@
           </preprocessorList>
         </cTool>
         <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper</output>
           <stripSymbols>true</stripSymbols>
           <commandLine>-static-libgcc</commandLine>
         </linkerTool>

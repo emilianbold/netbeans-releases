@@ -168,7 +168,7 @@ public class IfToSwitchSupport {
     protected Object convert(Object o, TypeMirror m) {
         if (o instanceof EnumConst) {
             TypeMirror elM = ((EnumConst)o).constEl.asType();
-            if (ci.getTypes().isSameType(m, elM)) {
+            if (ci.getTypes().isSubtype(elM, m)) {
                 return o;
             } else {
                 return m;
@@ -315,6 +315,7 @@ public class IfToSwitchSupport {
         if (!start(split, body)) {
             return false;
         }
+        controlVarNotNull |= controlTypeMirror.getKind().isPrimitive() || NPECheck.isSafeToDereference(ci, variable);
         literal2Statement.add(new BranchDescription(literals, TreePathHandle.create(body, ctx.getInfo())));
         TreePath ifPath = body.getParentPath();
         Tree e = ((IfTree) ifPath.getLeaf()).getElseStatement();
@@ -348,7 +349,12 @@ public class IfToSwitchSupport {
         }
         if (e != null) {
             // the default statement
-            literal2Statement.add(new BranchDescription(null, TreePathHandle.create(new TreePath(ifPath, e), ci)));
+            TreePath defPath = new TreePath(ifPath, e);
+            literal2Statement.add(new BranchDescription(null, TreePathHandle.create(defPath, ci)));
+            if (!controlVarNotNull && nullBranch == null) {
+                // the default branch may also trigger for null value - issue #259071
+                nullBranch = defPath;
+            }
         }
         return true;
     }

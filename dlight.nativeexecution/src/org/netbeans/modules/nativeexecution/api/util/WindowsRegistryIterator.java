@@ -219,7 +219,7 @@ public final class WindowsRegistryIterator implements Iterator<String[]> {
             ProcessBuilder pb = new ProcessBuilder("cmd", "/C", reg_exe + " query " + fullKey + suffix.toString()); // NOI18N
             ProcessUtils.ExitStatus result = ProcessUtils.execute(pb);
             if (result.isOK()) {
-                return result.output.split("\n"); // NOI18N
+                return result.getOutputString().split("\n"); // NOI18N
             }
         }
         return null;

@@ -111,7 +111,8 @@ public class OverridableMethodCallInConstructor {
         if (!info.getTypes().isSubtype(classEl.asType(), classElement.asType())) {
             return null;
         }
-        if (classElement.getModifiers().contains(Modifier.FINAL)) {
+        // classEl exts classElemenet - either classElement == classEl, or classElement cannot be final anyway
+        if (classEl.getModifiers().contains(Modifier.FINAL)) {
             return null;
         }
 

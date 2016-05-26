@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs.ui;
 
-import org.netbeans.modules.remote.spi.ConnectionNotifierImplementation;
+import org.netbeans.modules.remote.ui.spi.ConnectionNotifierImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.openide.util.lookup.ServiceProvider;

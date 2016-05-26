@@ -199,7 +199,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                     String configureArguments = configureScript.getArguments(ee, cs, ""); // NOI18N
                     configureArgumentsTextField.setText(configureArguments);
                     String commandLine = configureScript.getCommandLine(configureArguments, path);
-                    commandTextArea.setText(PreBuildSupport.expandMacros(commandLine, cs));
+                    commandTextArea.setText(PreBuildSupport.expandMacros(commandLine, cs, null));
                 } else {
                     runConfigureCheckBox.setSelected(false);
                     configureRunFolderTextField.setText(path);
@@ -764,7 +764,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                         String commandLine = configureScript.getCommandLine(
                                 newConfigureArgumentsTextField == null ? configureArgumentsTextField.getText() : newConfigureArgumentsTextField,
                                 newConfigureRunFolderTextField == null ? configureRunFolderTextField.getText() : newConfigureRunFolderTextField);
-                        newCommandText = PreBuildSupport.expandMacros(commandLine, cs);
+                        newCommandText = PreBuildSupport.expandMacros(commandLine, cs, null);
                     }
                 } else if (customCommandRadioButton.isSelected()) {
                     if (customCommandTextField.getText().trim().isEmpty()) {
@@ -779,7 +779,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                         return;//false;
                     }
-                    newCommandText = PreBuildSupport.expandMacros(customCommandTextField.getText().trim(), cs);
+                    newCommandText = PreBuildSupport.expandMacros(customCommandTextField.getText().trim(), cs, null);
                 }
             }
             if (startCount < generation.get()) {

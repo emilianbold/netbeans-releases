@@ -1,4 +1,5 @@
-for(int $i = 0; $i < $array.length; $i++) {
+<! minSourceVersion=5 !>
+    for(int $i = 0; $i < $array.length; $i++) {
     $T $var = $array[$i];
     $stmts$;
 } :: !referencedIn($i, $stmts$) =>

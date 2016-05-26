@@ -335,7 +335,7 @@ public  class ExecutorCND extends Executor {
     public String readlsof(long pid) {
         ExitStatus status = ProcessUtils.execute(exEnv, "lsof", "-p", "" + pid, "-Fn"); //NOI18N
         if (status.isOK()) {
-            return status.output.split("\n")[2].substring(1); //NOI18N
+            return status.getOutputString().split("\n")[2].substring(1); //NOI18N
         }
         return ""; //NOI18N
     }
@@ -348,7 +348,7 @@ public  class ExecutorCND extends Executor {
     @Override
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N
-        return status.output.contains(" 64"); //NOI18N
+        return status.getOutputString().contains(" 64"); //NOI18N
     }
 	      
     @Override

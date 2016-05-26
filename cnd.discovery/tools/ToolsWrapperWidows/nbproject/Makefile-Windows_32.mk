@@ -56,11 +56,11 @@ LDLIBSOPTIONS=-Wl,-rpath,'.'
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows.exe: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows ${OBJECTFILES} ${LDLIBSOPTIONS} -static-libgcc -s
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper ${OBJECTFILES} ${LDLIBSOPTIONS} -static-libgcc -s
 
 ${OBJECTDIR}/src/args.o: src/args.c 
 	${MKDIR} -p ${OBJECTDIR}/src

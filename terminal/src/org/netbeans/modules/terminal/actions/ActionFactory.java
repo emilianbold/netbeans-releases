@@ -64,6 +64,7 @@ public class ActionFactory {
     public static final String SET_TITLE_ACTION_ID = "org.netbeans.modules.terminal.actions.SetTitleAction"; //NOI18N
     public static final String PIN_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.PinTabAction"; //NOI18N
     public static final String SWITCH_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.SwitchTabAction"; //NOI18N
+    public static final String NEW_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.NewTabAction"; //NOI18N
 
     public static Action forID(String id) {
 	return Actions.forID(CATEGORY, id);

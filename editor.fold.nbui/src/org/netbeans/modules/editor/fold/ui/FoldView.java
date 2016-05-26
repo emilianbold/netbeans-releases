@@ -79,6 +79,7 @@ import org.netbeans.modules.editor.lib2.view.ViewUtils;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.editor.fold.ui.Bundle.*;
+import org.netbeans.modules.editor.lib2.caret.CaretFoldExpander;
 
 
 /**
@@ -88,6 +89,10 @@ import static org.netbeans.modules.editor.fold.ui.Bundle.*;
  */
 
 final class FoldView extends EditorView {
+    
+    static {
+        CaretFoldExpander.register(new CaretFoldExpanderImpl());
+    }
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsView.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldView.class.getName());

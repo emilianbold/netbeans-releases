@@ -76,7 +76,7 @@ public final class Stat {
             sb.append(' ').append('"').append(filename).append('"'); // NOI18N
             ExitStatus res = ShellSession.execute(exEnv, sb.toString()); // NOI18N
             if (res.isOK()) {
-                String[] data = res.output.split("\n"); // NOI18N
+                String[] data = res.getOutputString().split("\n"); // NOI18N
                 if (data.length > 1) {
                     return new Stat(Long.parseLong(data[0].split(": ")[1].trim()), //NOI18N
                             Long.parseLong(data[1].split(": ")[1].trim())); //NOI18N

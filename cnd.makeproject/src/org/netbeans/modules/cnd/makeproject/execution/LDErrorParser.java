@@ -51,7 +51,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;

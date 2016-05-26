@@ -88,15 +88,15 @@ public class TreeViewExpandAllTest extends NbTestCase {
 
     public void doTestExpandAll() throws InterruptedException, InvocationTargetException {
 
-        final BeanTreeView beanTreeView = new BeanTreeView();
-        final ExplorerWindow testWindow = new ExplorerWindow();
-        testWindow.getContentPane().add(beanTreeView);
-        // Node which has 7 levels 0-6
-        testWindow.getExplorerManager().setRootContext(new LevelNode(6));
-
         EventQueue.invokeAndWait(new Runnable() {
 
             public void run() {
+                final BeanTreeView beanTreeView = new BeanTreeView();
+                final ExplorerWindow testWindow = new ExplorerWindow();
+                testWindow.getContentPane().add(beanTreeView);
+                // Node which has 7 levels 0-6
+                testWindow.getExplorerManager().setRootContext(new LevelNode(6));
+
                 testWindow.pack();
                 testWindow.setVisible(true);
                 beanTreeView.expandAll();

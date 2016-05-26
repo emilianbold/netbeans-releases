@@ -45,7 +45,10 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -87,6 +90,16 @@ public class InitializerCanBeStatic {
         }
         Tree l = parentPath.getLeaf();
         if (!(l instanceof ClassTree)) {
+            return null;
+        }
+        Element el = ctx.getInfo().getTrees().getElement(parentPath);
+        if (el == null || !el.getKind().isClass()) {
+            return null;
+        }
+        TypeElement tel = (TypeElement)el;
+        // do not suggest for anonymous classes, local classes or members which are not static.
+        if (tel.getNestingKind() != NestingKind.TOP_LEVEL && 
+            (tel.getNestingKind() != NestingKind.MEMBER || !tel.getModifiers().contains(Modifier.STATIC))) {
             return null;
         }
         InstanceRefFinder finder = new InstanceRefFinder(ctx.getInfo(), path);

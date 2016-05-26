@@ -62,8 +62,8 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
-import org.netbeans.spi.editor.highlighting.ShiftHighlightsSequence;
 import org.openide.util.WeakListeners;
+import org.netbeans.spi.editor.highlighting.SplitOffsetHighlightsSequence;
 
 /**
  * Used by EditorCaret to color a single character under the block caret(s) with inverse colors in
@@ -255,7 +255,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         docText = text;
     }
     
-    private final class HS implements ShiftHighlightsSequence {
+    private final class HS implements SplitOffsetHighlightsSequence {
         
         private final List<CaretInfo> sortedCarets;
         
@@ -337,12 +337,12 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         }
 
         @Override
-        public int getStartShift() {
+        public int getStartSplitOffset() {
             return 0;
         }
 
         @Override
-        public int getEndShift() {
+        public int getEndSplitOffset() {
             return caretOffsetEndShift;
         }
         

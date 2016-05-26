@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -74,21 +75,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
@@ -100,7 +98,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -122,6 +119,8 @@ public class AssignResultToVariable extends AbstractHint {
         try {
             int offset = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
             boolean verifyOffset = true;
+            boolean error = false;
+            
             if (treePath.getLeaf().getKind() == Kind.BLOCK) {
                 StatementTree found = findStatementForgiving(info, (BlockTree) treePath.getLeaf(), offset);
 
@@ -130,12 +129,18 @@ public class AssignResultToVariable extends AbstractHint {
 
                 ExpressionStatementTree est = (ExpressionStatementTree) found;
                 Kind innerKind = est.getExpression().getKind();
-
-                if (innerKind != Kind.METHOD_INVOCATION && innerKind != Kind.NEW_CLASS) {
+                if (innerKind == Kind.ERRONEOUS) {
+                    ErroneousTree err = (ErroneousTree)est.getExpression();
+                    if (err.getErrorTrees().isEmpty()) {
+                        return null;
+                    }
+                    treePath = new TreePath(new TreePath(treePath, found), err.getErrorTrees().get(0));
+                    error = true;
+                } else if (innerKind == Kind.METHOD_INVOCATION || innerKind == Kind.NEW_CLASS) {
+                    treePath = new TreePath(new TreePath(treePath, found), est.getExpression());
+                } else {
                     return null;
                 }
-
-                treePath = new TreePath(new TreePath(treePath, found), est.getExpression());
                 verifyOffset = false;
             }
             
@@ -149,7 +154,7 @@ public class AssignResultToVariable extends AbstractHint {
                 exprTree = ((MethodInvocationTree)tree).getMethodSelect();
             } else if (kind == Kind.NEW_CLASS) {
                 exprTree = tree;
-            }
+            } 
 
             long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), exprTree);
             long end   = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), exprTree);
@@ -171,7 +176,7 @@ public class AssignResultToVariable extends AbstractHint {
             
             Element elem = info.getTrees().getElement(treePath);
             
-            if (elem == null || (elem.getKind() != ElementKind.METHOD && elem.getKind() != ElementKind.CONSTRUCTOR)) {
+            if (!error && (elem == null || (elem.getKind() != ElementKind.METHOD && elem.getKind() != ElementKind.CONSTRUCTOR))) {
                 return null;
             }
             
@@ -363,16 +368,18 @@ public class AssignResultToVariable extends AbstractHint {
                         }
                         
                         TypeMirror type = copy.getTrees().getTypeMirror(tp);
-                        Element el = copy.getTrees().getElement(tp);
-                        
-                        if (el == null || type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
-                            return ;
+                        if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
+                            return;
                         }
-
                         Tree t = tp.getLeaf();
                         boolean isAnonymous = false; //handle anonymous classes #138223
                         ExpressionTree identifier = null;
                         if (t instanceof NewClassTree) {
+                            Element el = copy.getTrees().getElement(tp);
+
+                            if (el == null) {
+                                return ;
+                            }
                             NewClassTree nct = ((NewClassTree)t);
                             isAnonymous = nct.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(Modifier.ABSTRACT);
                             identifier = nct.getIdentifier();
@@ -391,6 +398,7 @@ public class AssignResultToVariable extends AbstractHint {
                         copy.tag(varType, VAR_TYPE_TAG);
                         
                         copy.rewrite(tp.getParentPath().getLeaf(), var);
+
                     }
                 });
 

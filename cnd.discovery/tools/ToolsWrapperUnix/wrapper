@@ -1,0 +1,32 @@
+#!/bin/sh
+#set -x
+tool_name=`basename "$0"`
+tool_folder=`dirname "$0"`
+tool_folder=`cd "$tool_folder" && pwd`
+case "$tool_name" in
+    "cc" | "xgcc" | "clang" | "icc" | "gcc"*)
+        real_tool=`cat "${tool_folder}/compiler.properties" | grep C= | awk -F= '{ print $2 }'`
+        ;;
+    "CC" | "c++" | "clang++" | "icpc" | "cl" | "g++"*)
+        real_tool=`cat "${tool_folder}/compiler.properties" | grep CPP= | awk -F= '{ print $2 }'`
+        ;;
+esac
+if [ -n "$real_tool" ]; then
+    if [ -n "${__CND_BUILD_LOG__}" ]; then
+        __CND_TEMP_FILE__=`mktemp`
+        echo "called: ${real_tool}" > ${__CND_TEMP_FILE__}
+        echo "\t`pwd`" >> ${__CND_TEMP_FILE__}
+        echo "\t${real_tool}" >> ${__CND_TEMP_FILE__}
+        for opt in "$@"; do
+            echo "\t${opt}" >> ${__CND_TEMP_FILE__}
+        done
+        echo >> ${__CND_TEMP_FILE__}
+        cat ${__CND_TEMP_FILE__} >> ${__CND_BUILD_LOG__}
+        rm ${__CND_TEMP_FILE__}
+    fi
+    PATH=`dirname "${real_tool}"`:${PATH}
+    export PATH
+    exec "${real_tool}" "$@"
+fi
+echo "Set path to $tool_name in $tool_folder/compiler.properties"
+exit -1

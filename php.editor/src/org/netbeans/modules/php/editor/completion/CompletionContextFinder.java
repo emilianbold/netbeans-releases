@@ -290,6 +290,18 @@ final class CompletionContextFinder {
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.TYPE_NAME;
         } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
+            // #262143 - check previous token for 'const' or 'function'
+            while (tokenSequence.movePrevious()) {
+                tokenId = tokenSequence.token().id();
+                if (tokenId == PHPTokenId.WHITESPACE) {
+                    continue;
+                } else if (tokenId == PHPTokenId.PHP_CONST) {
+                    return CompletionContext.GROUP_USE_CONST_KEYWORD;
+                } else if (tokenId == PHPTokenId.PHP_FUNCTION) {
+                    return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
+                }
+                break;
+            }
             return CompletionContext.GROUP_USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.GROUP_USE_CONST_KEYWORD;
@@ -478,7 +490,7 @@ final class CompletionContextFinder {
                     break;
                 }
             } else if (tokenID == GROUP_USE_STATEMENT_TOKENS) {
-                if (!consumeClassesInGroupUse(tokenSequence)) {
+                if (!consumeClassesConstFunctionInGroupUse(tokenSequence)) {
                     accept = false;
                     break;
                 }
@@ -527,9 +539,22 @@ final class CompletionContextFinder {
         return hadNSSeparator;
     }
 
-    private static boolean consumeClassesInGroupUse(TokenSequence tokenSequence) {
+    private static boolean consumeComment(TokenSequence tokenSequence) {
+        while (tokenSequence.token().id() == PHPTokenId.PHP_COMMENT_START
+                || tokenSequence.token().id() == PHPTokenId.PHP_COMMENT_END
+                || tokenSequence.token().id() == PHPTokenId.PHP_COMMENT) {
+            if (!tokenSequence.movePrevious()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean consumeClassesConstFunctionInGroupUse(TokenSequence tokenSequence) {
         if (tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN
+                && tokenSequence.token().id() != PHPTokenId.PHP_CONST
+                && tokenSequence.token().id() != PHPTokenId.PHP_FUNCTION
                 && tokenSequence.token().id() != PHPTokenId.WHITESPACE
                 && !consumeNameSpace(tokenSequence)) {
             return false;
@@ -551,8 +576,11 @@ final class CompletionContextFinder {
 
         } while (tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN
                 || tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
+                || tokenSequence.token().id() == PHPTokenId.PHP_CONST
+                || tokenSequence.token().id() == PHPTokenId.PHP_FUNCTION
                 || tokenSequence.token().id() == PHPTokenId.WHITESPACE
-                || consumeNameSpace(tokenSequence));
+                || consumeNameSpace(tokenSequence)
+                || consumeComment(tokenSequence));
 
         return hasCurlyOpen;
     }

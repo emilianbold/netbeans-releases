@@ -4,58 +4,28 @@
  */
 package org.netbeans.modules.cnd.otool.debugger.api;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.debugger.Breakpoint;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Nikolay Koldunov
  */
-public class OtoolNativeBreakpoint extends Breakpoint implements java.io.Serializable {
+abstract public class OtoolNativeBreakpoint extends Breakpoint implements java.io.Serializable {
     
-    private final int number;
     private volatile boolean enabled = true;
-    private final String url;
-    private final int lineNumber;
-   
-    
- 
-    
-    public OtoolNativeBreakpoint(int number, String url, int lineNumber) {
-        this.url = url;
-        this.number = number;
-        this.lineNumber = lineNumber;
-    }
-    
-    
-    
-    public int getNumber() {
-        return number;
-    }
-    
-    public String getUrl() {
-        return url;
-    }
-    
-    public String getPath() {
-        try {
-            return new URL (url).getPath();
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return url;
-    }
-    
-    public int getLine() {
-        return lineNumber;
-    }
-    
-    public String getIdentity() {   //FIXME maybe we should use Object type for identity column
-        return ""+number;
-    }
 
+    private final AtomicInteger id = new AtomicInteger();
+    private OtoolNativeDebugger debugger;
+    private Context context;
+    private boolean isEnabled;
+    
+
+    protected OtoolNativeBreakpoint () {
+      
+    }
+    
+    
     @Override
     public void disable() {
         enabled = false;
@@ -70,4 +40,60 @@ public class OtoolNativeBreakpoint extends Breakpoint implements java.io.Seriali
     public boolean isEnabled() {
         return enabled;
     }
+    
+    
+   public final void unbind() {
+//	assert isMidlevel();
+
+	// We don't null the context ... we become a ghost
+//	for (OtoolNativeBreakpoint c : g) {
+//	    c.setDebugger(null);
+//	    c.setHandler(null);
+//	    c.update();
+//	}
+	this.setDebugger(null);
+	//this.update();
+    }
+
+    public void bindTo(OtoolNativeDebugger debugger) {
+	//assert isSubBreakpoint() || isMidlevel();
+
+//	assert getDebugger() == null || getDebugger() == debugger :
+//	       "NativeBreakpoint.bindTo(): already have a debugger"; // NOI18N
+	final String executable = debugger.getNDI().getTarget();
+	final String hostname = debugger.getExecEnv().getHost();
+	setContext(new Context(executable, hostname));
+	setDebugger(debugger);
+
+//	// OLD getParent().setEnabled(getParent().recalculateIsEnabled());
+//	updateAndParent();
+    }
+    public final void setContext(Context newContext) {
+	context = newContext;
+
+//	if (isMidlevel()) {
+//	    for (NativeBreakpoint c : getChildren())
+//		c.context.set(newContext);
+//	}
+    }   
+    
+    private void setDebugger(OtoolNativeDebugger debugger) {
+	// See comments in cleanup()
+	//assert !isToplevel() : "Cannot setDebugger() on toplevel bpt";
+	this.debugger = debugger;
+    }    
+    
+    public final void setId(int newId) {
+	id.set(newId);
+    }
+    
+    public final int getId() {
+        return id.get();
+    }
+    
+    public final void setEnabled (boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+        
 }

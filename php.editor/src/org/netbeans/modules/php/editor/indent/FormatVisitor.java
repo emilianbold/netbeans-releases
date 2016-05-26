@@ -602,13 +602,13 @@ public class FormatVisitor extends DefaultVisitor {
                     break;
                 case PHP_IMPLEMENTS:
                     if (node.getInterfaes().size() > 0) {
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                         ts.movePrevious();
                         addListOfNodes(node.getInterfaes(), FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST);
                     }
                     break;
                 case PHP_EXTENDS:
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                     addFormatToken(formatTokens);
                     break;
                 default:
@@ -659,13 +659,13 @@ public class FormatVisitor extends DefaultVisitor {
                         break;
                     case PHP_IMPLEMENTS:
                         if (node.getInterfaces().size() > 0) {
-                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                             ts.movePrevious();
                             addListOfNodes(node.getInterfaces(), FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST);
                         }
                         break;
                     case PHP_EXTENDS:
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                         addFormatToken(formatTokens);
                         break;
                     default:

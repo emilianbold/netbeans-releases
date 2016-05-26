@@ -66,7 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -474,7 +474,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             seed = getExecutablePath();
         }
         // Show the file chooser
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(fileSystem,
                 getString("SelectWorkingDir"),
                 getString("SelectLabel"),
                 JFileChooser.DIRECTORIES_ONLY,
@@ -542,8 +542,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         String seed = getExecutablePath();
         final String chooser_key = "makeproject.run.executable"; //NOI18N
-        if (seed.length() == 0 && RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment) != null) {
-            String s = RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
+        if (seed.length() == 0 && RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, executionEnvironment) != null) {
+            String s = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
             if (s != null) {
                 seed = s;
             }
@@ -586,7 +586,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             }
         }
         // Show the file chooser
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(fileSystem,
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
                 JFileChooser.FILES_ONLY,
@@ -599,13 +599,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             return;
         }
         final File selectedFile = fileChooser.getSelectedFile();
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), executionEnvironment);
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), executionEnvironment);
         executableTextField.setText(selectedFile.getPath());
     }//GEN-LAST:event_executableBrowseButtonActionPerformed
 
     private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed
         String path = this.projectLocationField.getText();
-        JFileChooser chooser = RemoteFileUtil.createFileChooser(fileSystem,
+        JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(fileSystem,
                 getString("RunDialogPanel.Title_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
@@ -1045,8 +1045,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      );
         if (TRACE_REMOTE_CREATION) {
             logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
-            logger.log(Level.INFO, execute.error);
-            logger.log(Level.INFO, execute.output);
+            logger.log(Level.INFO, execute.getErrorString());
+            logger.log(Level.INFO, execute.getOutputString());
         }
         if (!execute.isOK()) {
             // probably java does not found an
@@ -1071,8 +1071,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      );
                 if (TRACE_REMOTE_CREATION) {
                     logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
-                    logger.log(Level.INFO, execute.error);
-                    logger.log(Level.INFO, execute.output);
+                    logger.log(Level.INFO, execute.getErrorString());
+                    logger.log(Level.INFO, execute.getOutputString());
                 }
             }
         }

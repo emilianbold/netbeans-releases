@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,11 +61,11 @@ public class BasicListener extends CVSAdapter {
     private final StringBuffer taggedLine = new StringBuffer();
     private PrintStream stdout;
     private PrintStream stderr;
-    
+
     public BasicListener() {
         this(System.out, System.err);
     }
-    
+
     public BasicListener(PrintStream stdout, PrintStream stderr) {
         this.stdout = stdout;
         this.stderr = stderr;

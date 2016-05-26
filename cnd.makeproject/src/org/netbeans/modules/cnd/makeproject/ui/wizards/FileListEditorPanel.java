@@ -49,9 +49,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -249,7 +249,7 @@ public class FileListEditorPanel extends javax.swing.JPanel {
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env,
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Multi.Title"), // NOI18N
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Multi.Select"), // NOI18N
                 JFileChooser.FILES_ONLY, filters, path, false);
@@ -300,7 +300,7 @@ public class FileListEditorPanel extends javax.swing.JPanel {
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env,
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Title"), // NOI18N
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Select"), // NOI18N
                 JFileChooser.FILES_ONLY, filters, path, false);
@@ -357,7 +357,7 @@ public class FileListEditorPanel extends javax.swing.JPanel {
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env,
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Folder.Title"), // NOI18N
                 NbBundle.getMessage(FileListEditorPanel.class, "SelectBinaryPanelVisual.Browse.Folder.Select"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY, null, path, true);

@@ -327,7 +327,14 @@ public final class WLStartServer extends StartServer {
         }
 
         configureProxy(dm.getInstanceProperties(), ret, javaOptsBuilder);
-        ret.put(JAVA_OPTIONS_VARIABLE, javaOptsBuilder.toString());
+        if (javaOptsBuilder.length() > 0) {
+            ret.put(JAVA_OPTIONS_VARIABLE, javaOptsBuilder.toString());
+        }
+        String memoryOptions = dm.getInstanceProperties().getProperty(
+                WLPluginProperties.MEM_OPTS);
+        if (memoryOptions != null && memoryOptions.trim().length() > 0) {
+            ret.put(MEMORY_OPTIONS_VARIABLE, memoryOptions.trim());
+        }
         return ret;
     }
 

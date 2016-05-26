@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -61,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -73,8 +73,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
@@ -373,8 +371,8 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         final String chooser_key = "AddCompilerSet"; //NOI18N
         if (tfBaseDirectory.getText().trim().length() > 0) {
             seed = tfBaseDirectory.getText().trim();
-        } else if (RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment()) != null) {
-            seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment());
+        } else if (RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment()) != null) {
+            seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment());
         } else {
             seed = ToolsUtils.getDefaultDirectory(csm.getExecutionEnvironment());
         }
@@ -386,7 +384,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             return;
         }
         String dirPath = fileChooser.getSelectedFile().getPath();
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, dirPath, csm.getExecutionEnvironment());
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, dirPath, csm.getExecutionEnvironment());
         tfBaseDirectory.setText(dirPath);
         //updateDataBaseDir();
     }

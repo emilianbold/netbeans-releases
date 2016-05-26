@@ -54,7 +54,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
@@ -303,7 +303,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             final String chooser_key = "AddLibrary"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+            String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -311,7 +311,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"),
+            JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"),
                                        JFileChooser.FILES_ONLY, filters, seed, true);
             fileChooser.setMultiSelectionEnabled(true);
             fileChooser.setFileFilter(lastSelectedFilter);
@@ -325,7 +325,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 return;
             }            
             File selectedFolder = files[0].getParentFile();
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
+            RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
             for(File libFile: files) {
                 String libName = libFile.getName();
                 if (libName.startsWith("lib")) // NOI18N
@@ -353,7 +353,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             final String chooser_key = "AddLibraryFile"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+            String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -361,7 +361,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
             fileChooser.setMultiSelectionEnabled(true);
             fileChooser.setFileFilter(lastSelectedFilter);
             PathPanel pathPanel = new PathPanel();
@@ -376,7 +376,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 return;
             }                        
             File selectedFolder = files[0].getParentFile();
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);            
+            RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);            
             for(File libFile: files) {
                 // FIXUP: why are baseDir UNIX path when remote?
                 String path = ProjectSupport.toProperPath(baseDir.getFileObject(), libFile.getPath(), project);

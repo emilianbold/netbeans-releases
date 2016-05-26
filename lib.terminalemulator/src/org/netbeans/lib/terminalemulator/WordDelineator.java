@@ -77,9 +77,7 @@ public class WordDelineator {
      * everything else.
      */
     protected int charClass(char c) {
-        if (Character.isWhitespace(c)) {
-            return 1;
-        } else if (delimiters.indexOf(c) >= 0) {
+        if (delimiters.indexOf(c) >= 0) {
             return 2;
         } else {
             return 0;
@@ -91,31 +89,49 @@ public class WordDelineator {
     }
 
     /**
-     * Return index of char at the beginning of the word.
+     * Return index of a char at the beginning of the word.
+     * @param buf text we search at (typically a line)
+     * @param start where to start search from
+     * @param useLineBound should the line bound be treated (if reached) as a word start
+     * @return idx of the left bound or -1 if a bound reached with useLineBound flag
      */
-    protected int findLeft(StringBuffer buf, int start) {
+    protected int findLeft(StringBuffer buf, int start, boolean useLineBound) {
         int cclass = charClass(buf.charAt(start));
 
         // go left until a character of differing class is found
         int lx = start;
-        while (lx > 0 && charClass(buf.charAt(lx - 1)) == cclass) {
+        boolean success = false;
+        while (lx > 0) {
+            success = charClass(buf.charAt(lx - 1)) != cclass;
+            if (success) {
+                break;
+            }
             lx--;
         }
-        return lx;
+        return (!success && useLineBound) ? -1 : lx;
     }
 
     /**
      * Return index of char past the word.
+     * @param buf text we search at (typically a line)
+     * @param start where to start search from
+     * @param useLineBound should the line bound be treated (if reached) as a word start
+     * @return idx of the right bound or -1 if a bound reached with useLineBound flag
      */
-    protected int findRight(StringBuffer buf, int start) {
+    protected int findRight(StringBuffer buf, int start, boolean useLineBound) {
         int cclass = charClass(buf.charAt(start));
 
         // go right until a character of a differing class is found.
         int rx = start;
-        while (rx < buf.length() && charClass(buf.charAt(rx)) == cclass) {
+        boolean success = false;
+        while (rx < buf.length()) {
+            success = charClass(buf.charAt(rx)) != cclass;
+            if (success) {
+                break;
+            }
             rx++;
         }
         rx--;
-        return rx;
+        return (!success && useLineBound) ? -1 : rx;
     }
 }

@@ -268,6 +268,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new InitializeAllConstructorItem(info, isDefault, fields, superConstructor, parent, substitutionOffset);
     }
 
+    public static JavaCompletionItem createLambdaItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon) {
+        return new LambdaCompletionItem(info, elem, type, substitutionOffset, addSemicolon);
+    }
+
     private static CompletionItem createExcludeItem(CharSequence name) {
         if (name == null) {
             ExcludeFromCompletionItem item = ExcludeFromCompletionItem.CONFIGURE_ITEM != null ? ExcludeFromCompletionItem.CONFIGURE_ITEM.get() : null;
@@ -2450,7 +2454,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
             } else if (isAbstract) {
-                sb.append(getIndent(c));                        
+                sb.append(getIndent(c, true, true));                        
                 sb.append("{\n}"); //NOI18N
             }
             return sb;
@@ -2618,7 +2622,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(';');
             }
             if (isAbstract) {
-                sb.append(getIndent(c));                        
+                sb.append(getIndent(c, true, true));                        
                 sb.append("{\n}"); //NOI18N
             }
             return sb;
@@ -4009,6 +4013,208 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return false;
         }
     }
+    
+    static class LambdaCompletionItem extends JavaCompletionItem {
+
+        private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(224, 160, 65);
+        private static ImageIcon icon;
+
+        private ElementHandle<ExecutableElement> handle;
+        private ArrayList<ParamDesc> params;
+        private boolean addSemicolon;
+        private String typeName;
+        private String sortText;
+        private String leftText;
+        private String rightText;
+        
+        public LambdaCompletionItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon) {
+            super(substitutionOffset);
+            ExecutableElement desc = info.getElementUtilities().getDescriptorElement(elem);
+            this.handle = ElementHandle.create(desc);
+            ExecutableType descType = (ExecutableType)info.getTypes().asMemberOf(type, desc);            
+            this.params = new ArrayList<>();
+            Iterator<? extends VariableElement> it = desc.getParameters().iterator();            
+            Iterator<? extends TypeMirror> tIt = descType.getParameterTypes().iterator();
+            while(it.hasNext() && tIt.hasNext()) {
+                TypeMirror tm = tIt.next();
+                if (tm == null) {
+                    break;
+                }
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, desc.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+            }
+            TypeMirror retType = descType.getReturnType();
+            this.addSemicolon = addSemicolon && retType.getKind() == TypeKind.VOID;
+            this.typeName = Utilities.getTypeName(info, retType, false).toString();
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 50 - SMART_TYPE;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('(');
+                int cnt = 0;
+                for(Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc param = it.next();
+                    sortParams.append(param.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(',');
+                    }
+                    cnt++;
+                }
+                sortParams.append(')');
+                sortText = "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            }
+            return sortText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(LFCustoms.getTextFgColorHTML());
+                lText.append('(');
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' ');
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(paramDesc.name);
+                    lText.append(COLOR_END);
+                    if (it.hasNext()) {
+                        lText.append(", "); //NOI18N
+                    }
+                }
+                lText.append(") -> {...}"); //NOI18N
+                return lText.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            if (rightText == null) {
+                rightText = escape(typeName);
+            }
+            return rightText;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            if (icon == null) {
+                icon = ImageUtilities.loadImageIcon(METHOD_PUBLIC, false);
+            }
+            return icon;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return ""; //NOI18N
+        }        
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("()"); //NOI18N
+            boolean spaceAroundLambdaArrow = CodeStyle.getDefault(c.getDocument()).spaceAroundLambdaArrow();
+            sb.append(spaceAroundLambdaArrow ? " ->" : "->"); //NOI18N
+            sb.append(getIndent(c, spaceAroundLambdaArrow, false));                        
+            sb.append("{\n"); //NOI18N
+            sb.append(getIndent(c));
+            sb.append(addSemicolon ? "};" : "}"); //NOI18N
+            return sb;
+        }
+
+        @Override
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+            BaseDocument doc = (BaseDocument) c.getDocument();
+            boolean inPlace = offset == c.getCaretPosition();
+            Position startPos;
+            Position endPos;
+            try {
+                startPos = doc.createPosition(inPlace ? offset : offset + text.length(), Bias.Backward);
+                endPos = doc.createPosition(offset + length);
+            } catch (BadLocationException ex) {
+                return null; // Invalid offset -> do nothing
+            }
+            CharSequence cs = super.substituteText(c, startPos.getOffset(), inPlace ? length : length - text.length(), null, toAdd);
+            StringBuilder sb = new StringBuilder();
+            if (toAdd != null) {
+                CharSequence postfix = getInsertPostfix(c);
+                if (postfix != null) {
+                    int postfixLen = postfix.length();
+                    int toAddLen = toAdd.length();
+                    if (toAddLen >= postfixLen) {
+                        String toAddText = toAdd.toString();
+                        try {
+                            final int off = startPos.getOffset() + toAddText.indexOf('{') + 1;
+                            ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                    copy.toPhase(Phase.RESOLVED);
+                                    final ExecutableElement method = handle.resolve(copy);
+                                    final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(off);
+                                    TreePath path = copy.getTreeUtilities().pathFor(embeddedOffset);
+                                    while (method != null && path.getLeaf() != path.getCompilationUnit()) {
+                                        Tree tree = path.getLeaf();
+                                        if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                                            MethodTree mth = GeneratorUtilities.get(copy).createAbstractMethodImplementation((TypeElement)method.getEnclosingElement(), method);
+                                            copy.rewrite(((LambdaExpressionTree)tree).getBody(), mth.getBody());
+                                            break;
+                                        }
+                                        path = path.getParentPath();
+                                    }
+                                }
+                            });
+                            GeneratorUtils.guardedCommit(c, mr);
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                        }
+                        if (!params.isEmpty()) {
+                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                ParamDesc paramDesc = it.next();
+                                sb.append("${"); //NOI18N
+                                sb.append(paramDesc.name);
+                                sb.append("}"); //NOI18N
+                                if (it.hasNext()) {
+                                    sb.append(", "); //NOI18N
+                                }
+                            }
+                            c.select(startPos.getOffset() + toAddText.indexOf('(') + 1, endPos.getOffset());
+                            sb.append(c.getSelectedText());
+                        }
+                    }
+                }
+            }
+            if (sb.length() == 0) {
+                return cs;
+            }
+            return sb;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append('('); //NOI18N
+            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                ParamDesc paramDesc = it.next();
+                sb.append(paramDesc.typeName);
+                sb.append(' ');
+                sb.append(paramDesc.name);
+                if (it.hasNext()) {
+                    sb.append(", "); //NOI18N
+                }
+            }
+            sb.append(") -> {...}"); //NOI18N
+            return sb.toString();
+        }
+    }
 
     @NbBundle.Messages({"exclude_Lbl=Exclude \"{0}\" from completion", "configure_Excludes_Lbl=Configure excludes"}) // NOI18N
     private static class ExcludeFromCompletionItem implements CompletionItem {
@@ -4212,15 +4418,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return null;
     }
     
-    private static CharSequence getIndent(JTextComponent c) {
+    private static CharSequence getIndent(JTextComponent c, boolean insertSpace, boolean isClass) {
         StringBuilder sb = new StringBuilder();
         try {
             Document doc = c.getDocument();
             CodeStyle cs = CodeStyle.getDefault(doc);
             int indent = IndentUtils.lineIndent(c.getDocument(), IndentUtils.lineStartOffset(c.getDocument(), c.getCaretPosition()));
-            switch (cs.getClassDeclBracePlacement()) {
+            switch (isClass? cs.getClassDeclBracePlacement() : cs.getOtherBracePlacement()) {
                 case SAME_LINE:
-                    indent = 1;
+                    indent = insertSpace ? 1 : 0;
                     break;
                 case NEW_LINE:
                     sb.append('\n'); //NOI18N
@@ -4246,7 +4452,30 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(' '); //NOI18N
                 col++;
             }
-       } catch (BadLocationException ble) {
+        } catch (BadLocationException ble) {
+        }
+        return sb;
+    }
+    
+    private static CharSequence getIndent(JTextComponent c) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Document doc = c.getDocument();
+            CodeStyle cs = CodeStyle.getDefault(doc);
+            int indent = IndentUtils.lineIndent(c.getDocument(), IndentUtils.lineStartOffset(c.getDocument(), c.getCaretPosition()));
+            int tabSize = cs.getTabSize();
+            int col = 0;
+            if (!cs.expandTabToSpaces()) {
+                while (col + tabSize <= indent) {
+                    sb.append('\t'); //NOI18N
+                    col += tabSize;
+                }
+            }
+            while (col < indent) {
+                sb.append(' '); //NOI18N
+                col++;
+            }
+        } catch (BadLocationException ex) {
         }
         return sb;
     }

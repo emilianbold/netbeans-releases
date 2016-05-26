@@ -1,0 +1,16 @@
+{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testPlus",
+    "status": "pass",
+    "time": 0.017359018325806,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testPlus2"
+}

@@ -165,7 +165,7 @@ public final class ModelRunConfig extends BeanRunConfig {
                                     // the -cp/-classpath parameter is already in exec.args
                                     // lets assume that the following accords to
                                     // -cp/-classpath %classpath mainClass 
-                                    // .1) the classpath tag
+                                    // 1.) the classpath tag
                                     Xpp3Dom dom = it.next();                                    
                                     if (dom != null && "classpath".equals(dom.getName())) { // NOI18N
                                         Xpp3Dom[] deps = dom.getChildren("dependency"); // NOI18N
@@ -188,7 +188,8 @@ public final class ModelRunConfig extends BeanRunConfig {
                                         }
                                     }
                                     // 2.) the main class
-                                    it.next();
+                                    // doesn't necessaryli have to be after "-cp %classpath", so do not skip.
+                                    // it.next(); 
                                 }
                             }
                             if (val != null && !val.isEmpty()) {
