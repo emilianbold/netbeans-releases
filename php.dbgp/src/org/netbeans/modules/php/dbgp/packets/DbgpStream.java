@@ -45,6 +45,7 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -64,7 +65,7 @@ public class DbgpStream extends DbgpMessage {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            return super.toString().toLowerCase(Locale.US);
         }
 
     }
