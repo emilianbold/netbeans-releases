@@ -243,8 +243,7 @@ is the proper place.
         or to color extra virtual characters beyond a newline character.
                 </p>
             </description>
-            <class name="ShiftHighlightsSequence" package="org.netbeans.spi.editor.highlighting"/>
-            <issue number="XXX"/>
+            <issue number="257889"/>
         </change>
         <change id="releasable-highlights-container">
             <summary>ReleasableHighlightsContainer added</summary>
