@@ -133,20 +133,14 @@ public final class SimpleConverter implements PathConverter {
             return;
         }
 
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    cygpath.getAbsolutePath(), "-u", "c:"); // NOI18N
-            Process p = pb.start();
-            if (p.waitFor() == 0) {
-                String output = ProcessUtils.readProcessOutputLine(p);
-                if (output.length() > 1) {
-                    cygwinPrefix = output.substring(0, output.length() - 1);
-                }
+        ProcessBuilder pb = new ProcessBuilder(
+                cygpath.getAbsolutePath(), "-u", "c:"); // NOI18N
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(pb);
+        if (res.isOK()) {
+            String output = res.getOutputString();
+            if (output.length() > 1) {
+                cygwinPrefix = output.substring(0, output.length() - 1);
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getInstance().log(Level.FINE, "Exception when initializing Cygwin prefix", ex); //NOI18N
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 }

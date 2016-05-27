@@ -113,7 +113,7 @@ public final class PtyAllocator {
                     pb.environment().put("Path", path); // NOI18N
                 }
 
-                Process pty = pb.start();
+                Process pty = pb.start(); // no ProcessUtils, streams are attached below
                 streams = new ChannelStreams(null, pty.getInputStream(), pty.getErrorStream(), pty.getOutputStream());
             } else {
                 // Here I have faced with a problem that when

@@ -144,15 +144,11 @@ public final class ExternalTerminalProvider {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                         npb.setExecutable(hostInfo.getShell()).setArguments("-c", command); // NOI18N
 
-                        Process pr = npb.call();
-                        int result = pr.waitFor();
-                        if (result == 0) {
+                        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+                        if (res.isOK()) {
                             hash.put(key, p);
                             return t;
                         }
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        return null;
                     } catch (IOException ex) {
                         // may continue...
                     } catch (CancellationException ex) {
