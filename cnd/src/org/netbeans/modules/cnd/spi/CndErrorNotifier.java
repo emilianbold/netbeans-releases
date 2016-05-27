@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.api;
+package org.netbeans.modules.cnd.spi;
 
-import java.awt.Component;
-import java.util.List;
-import org.openide.windows.IOContainer;
+import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author igromov
+ * Implement this to notify about the errors
+ * @author masha
  */
-public interface TabContentProvider extends IOContainer.Provider {
-
+public abstract class  CndErrorNotifier {
+    private static final CndErrorNotifier DEFAULT = new CndErrorNotifierDefault();
+    
+    
+    public static CndErrorNotifier getDefault() {
+        Collection<? extends CndErrorNotifier> notifiers = Lookup.getDefault().lookupAll(CndErrorNotifier.class);
+        if (notifiers.isEmpty()) {
+            return DEFAULT;
+        }
+       return notifiers.iterator().next();
+    }
+    
     /**
-     * @return all active tab components.
+     * 
+     * @param title
+     * @param msg
      */
-    List<? extends Component> getAllTabs();
+    abstract public void notifyError(String msg);
+    
+    abstract public boolean notifyAndIgnore(String title, String msg);
+    
+    
+    private static class CndErrorNotifierDefault extends CndErrorNotifier {
+        
+
+
+        @Override
+        public void notifyError(String msg) {
+            System.err.println(msg);//NOI18N
+        }
+
+        @Override
+        public boolean notifyAndIgnore(String title, String msg) {
+           notifyError(msg);
+           return true;
+        }
+        
+    }
+    
 }

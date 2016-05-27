@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -132,6 +133,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
             }
 
             Process process = new ProcessBuilder(privp, user, sb.toString(), getPID()).start();
+            ProcessUtils.ignoreProcessOutputAndError(process);
 
             w = new PrintWriter(process.getOutputStream());
             w.println(passwd);
