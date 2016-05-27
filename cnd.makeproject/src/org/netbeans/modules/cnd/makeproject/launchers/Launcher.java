@@ -62,6 +62,7 @@ public final class Launcher {
     private final Map<String, String> env = new HashMap<>();
     private String symbolFiles;
     private boolean hide = false;
+    private boolean runInOwnTab = true;
     //can not be set after the creation
     private final Launcher common;
 
@@ -150,6 +151,14 @@ public final class Launcher {
         this.hide = isHide;
     }
 
+    public boolean runInOwnTab() {
+        return runInOwnTab;
+    }
+
+    /*package*/ void setRunInOwnTab(boolean runInOwnTab) {
+        this.runInOwnTab = runInOwnTab;
+    }
+
     public String getDisplayedName() {
         return (name == null ? command : name);
     }
@@ -181,6 +190,12 @@ public final class Launcher {
             return false;
         }
         if (!Objects.equals(this.runDir, other.runDir)) {
+            return false;
+        }
+        if (!Objects.equals(this.hide, other.hide)) {
+            return false;
+        }
+        if (!Objects.equals(this.runInOwnTab, other.runInOwnTab)) {
             return false;
         }
         if (!Objects.equals(this.env, other.env)) {

@@ -111,6 +111,7 @@ public final class NativeProcessExecutionService {
 
             InputStream is = null;
             BufferedReader br = null;
+            Future<Boolean> errorProcessingDone = null;
 
             try {
                 if (outProcessor != null) {
@@ -122,6 +123,23 @@ public final class NativeProcessExecutionService {
                 }
 
                 process = npb.call();
+
+                errorProcessingDone = NativeTaskExecutorService.submit(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        InputStream is = process.getErrorStream();
+                        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            if (errProcessor != null) {
+                                errProcessor.processLine(line);
+                            } else {
+                                ProcessUtils.logError(Level.FINE, log, process);
+                            }
+                        }
+                        return true;
+                    }
+                }, "reading process err"); //NOI18N
 
                 is = process.getInputStream();
 
@@ -141,6 +159,7 @@ public final class NativeProcessExecutionService {
                         Thread.interrupted();
                     }
                 }
+                errorProcessingDone.get(); // just to wait until error processing is done
             } catch (Throwable th) {
                 log.log(Level.FINE, descr, th.getMessage());
             } finally {
@@ -164,17 +183,6 @@ public final class NativeProcessExecutionService {
                     }
 
                     process.destroy();
-                }
-            }
-
-            if (result != 0) {
-                if (errProcessor != null) {
-                    for (String line : ProcessUtils.readProcessError(process)) {
-                        errProcessor.processLine(line);
-                    }
-                    errProcessor.close();
-                } else {
-                    ProcessUtils.logError(Level.FINE, log, process);
                 }
             }
 

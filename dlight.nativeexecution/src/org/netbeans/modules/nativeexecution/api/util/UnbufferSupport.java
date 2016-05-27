@@ -143,15 +143,7 @@ public class UnbufferSupport {
                             remotePath = hinfo.getTempDir() + "/" + unbufferPath; // NOI18N
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                             npb.setExecutable("/bin/mkdir").setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
-
-                            try {
-                                npb.call().waitFor();
-                            } catch (InterruptedException ex) {
-                                Thread.currentThread().interrupt();
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-
+                            ProcessUtils.execute(npb);
                             try {
                                 String remoteLib_32 = remotePath + "/" + unbufferLib; // NOI18N
                                 String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
