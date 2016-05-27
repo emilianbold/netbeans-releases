@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.Locale;
+
 /**
  * @author ads
  *
@@ -76,7 +78,7 @@ public enum Status {
 
     @Override
     public String toString() {
-        return super.toString().toLowerCase();
+        return super.toString().toLowerCase(Locale.US);
     }
 
     public static Status forString(String str) {
