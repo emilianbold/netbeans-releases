@@ -547,7 +547,6 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
         cbBuildWithDeps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.AccessibleContext.accessibleDescription")); // NOI18N
 
         epProperties.setContentType("text/x-properties"); // NOI18N
-        epProperties.setMargin(new java.awt.Insets(0, 6, 0, 6));
         jScrollPane5.setViewportView(epProperties);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
