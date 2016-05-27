@@ -404,7 +404,7 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     }
     
     public void testIssue237421_01() throws Exception {
-        checkCompletion("testfiles/completion/general/issue237421.js", "var foo = this.g^ ;", false);
+        checkCompletion("testfiles/completion/general/issue237421.js", "var foo = this.^g ;", false);
     }
     
     public void testIssue237421_02() throws Exception {
