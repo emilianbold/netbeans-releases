@@ -134,7 +134,7 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
 
     //~ Inner classes
 
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=150)
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 150)
     public static class SiteAngularJsSeed extends OnlineSites {
 
         private static final String SITE_ROOT_FOLDER = "app"; // NOI18N
@@ -144,9 +144,11 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
         private static final String SELENIUM_TESTING_PROVIDER = "Protractor"; // NOI18N
 
 
-        @NbBundle.Messages({"SiteAngularJsSeed.name=AngularJS Seed",
-                "SiteAngularJsSeed.description=Site template for AngularJS projects.\n\n"
-                        + "Once created, run \"npm install\" to install dependencies."})
+        @NbBundle.Messages({
+            "SiteAngularJsSeed.name=AngularJS Seed",
+            "SiteAngularJsSeed.description=Site template for AngularJS projects.\n\n"
+                    + "Once created, run \"npm install\" to install dependencies.",
+        })
         public SiteAngularJsSeed() {
             super("ANGULAR", Bundle.SiteAngularJsSeed_name(), Bundle.SiteAngularJsSeed_description(), // NOI18N
                     "https://github.com/angular/angular-seed/archive/master.zip", // NOI18N
@@ -170,67 +172,86 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
     }
 
     @NbBundle.Messages("SiteInitializr.description=Site template from initializr.com.")
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=200)
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 200)
     public static class BootstrapSiteInitializr extends OnlineSites {
 
         @NbBundle.Messages("BootstrapSiteInitializr.name=Initializr: Bootstrap")
         public BootstrapSiteInitializr() {
             super("BOOTSTRAP", Bundle.BootstrapSiteInitializr_name(), // NOI18N
                     Bundle.SiteInitializr_description(),
-                    "http://www.initializr.com/builder?boot-hero&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts", // NOI18N
+                    "http://www.initializr.com/builder?boot-hero&jquerymin&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-bootstrap-latest.zip")); // NOI18N
         }
 
     }
 
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=210)
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 210)
     public static class ClassicSiteInitializr extends OnlineSites {
 
         @NbBundle.Messages("ClassicSiteInitializr.name=Initializr: Classic")
         public ClassicSiteInitializr() {
             super("INIT.CLASSIC", Bundle.ClassicSiteInitializr_name(), // NOI18N
                 Bundle.SiteInitializr_description(),
-                "http://www.initializr.com/builder?h5bp-content&modernizr&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-htaccess&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries", // NOI18N
+                "http://www.initializr.com/builder?h5bp-content&modernizr&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-htaccess&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries&simplehtmltag", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-classic-latest.zip")); // NOI18N
         }
 
     }
 
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=220)
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 220)
     public static class ResponsiveSiteInitializr extends OnlineSites {
 
         @NbBundle.Messages("ResponsiveSiteInitializr.name=Initializr: Responsive")
         public ResponsiveSiteInitializr() {
             super("INIT.RESP", Bundle.ResponsiveSiteInitializr_name(), // NOI18N
                     Bundle.SiteInitializr_description(),
-                    "http://www.initializr.com/builder?izr-responsive&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript", // NOI18N
+                    "http://www.initializr.com/builder?izr-responsive&jquerymin&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-responsive-latest.zip")); // NOI18N
         }
 
     }
 
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=300)
-    public static class SiteHtml5BoilerplateV4 extends OnlineSites {
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 300)
+    public static class SiteHtml5Boilerplate extends OnlineSites {
 
-        @NbBundle.Messages({"SiteHtml5BoilerplateV4.name=HTML5 Boilerplate v4.2.0",
-                "SiteHtml5BoilerplateV4.description=Site template from html5boilerplate.com. Version: 4.2.0"})
-        public SiteHtml5BoilerplateV4() {
-            super("INIT.BOILER4", Bundle.SiteHtml5BoilerplateV4_name(), Bundle.SiteHtml5BoilerplateV4_description(), // NOI18N
-                    "https://github.com/h5bp/html5-boilerplate/archive/v4.2.0.zip", // NOI18N
-                    new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-420.zip")); // NOI18N
+        @NbBundle.Messages({
+            "SiteHtml5Boilerplate.name=HTML5 Boilerplate 5.3.0",
+            "SiteHtml5Boilerplate.description=Site template from html5boilerplate.com.",
+        })
+        public SiteHtml5Boilerplate() {
+            super("INIT.BOILER", Bundle.SiteHtml5Boilerplate_name(), Bundle.SiteHtml5Boilerplate_description(), // NOI18N
+                    "https://github.com/h5bp/html5-boilerplate/releases/download/5.3.0/html5-boilerplate_v5.3.0.zip", // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-530.zip")); // NOI18N
         }
 
     }
 
-    @ServiceProvider(service=SiteTemplateImplementation.class, position=400)
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 400)
     public static class SiteTwitterBootstrap extends OnlineSites {
 
-        @NbBundle.Messages({"SiteTwitterBootstrap.name=Twitter Bootstrap 2.3.2",
-                "SiteTwitterBootstrap.description=Site template from getbootstrap.com/2.3.2"})
+        @NbBundle.Messages({
+            "SiteTwitterBootstrap.name=Twitter Bootstrap 3.3.6",
+            "SiteTwitterBootstrap.description=Site template from getbootstrap.com.",
+        })
         public SiteTwitterBootstrap() {
             super("TWITTER", Bundle.SiteTwitterBootstrap_name(), Bundle.SiteTwitterBootstrap_description(), // NOI18N
-                    "http://getbootstrap.com/2.3.2/assets/bootstrap.zip", // NOI18N
-                    new File(SiteHelper.getJsLibsDirectory(), "twitter-bootstrap.zip")); // NOI18N
+                    "https://github.com/twbs/bootstrap/releases/download/v3.3.6/bootstrap-3.3.6-dist.zip", // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "twitter-bootstrap-336.zip")); // NOI18N
+        }
+
+    }
+
+    @ServiceProvider(service = SiteTemplateImplementation.class, position = 500)
+    public static class SiteMobileBoilerplate extends OnlineSites {
+
+        @NbBundle.Messages({
+            "SiteMobileBoilerplate.name=Mobile Boilerplate 4.1.2",
+            "SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile.",
+        })
+        public SiteMobileBoilerplate() {
+            super("INIT.BOILER.MOBILE", Bundle.SiteMobileBoilerplate_name(), Bundle.SiteMobileBoilerplate_description(), // NOI18N
+                    "https://github.com/h5bp/mobile-boilerplate/zipball/v4.1.2", // NOI18N
+                    new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-412.zip")); // NOI18N
         }
 
     }
