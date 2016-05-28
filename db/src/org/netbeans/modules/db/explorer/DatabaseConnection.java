@@ -389,7 +389,7 @@ public final class DatabaseConnection implements DBConnection {
             // Send a command to the server, if it fails we know the connection is invalid.
             try {
                 return getJDBCConnection().isValid(10 * 1000);
-            } catch (AbstractMethodError err) {
+            } catch (Throwable err) {
                 // In case JDBC driver does not implement method 
                 getJDBCConnection().getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
             }
