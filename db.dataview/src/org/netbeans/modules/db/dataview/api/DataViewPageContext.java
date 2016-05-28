@@ -57,7 +57,7 @@ public final class DataViewPageContext {
      *
      * @since 1.20
      */
-    public static final int DEFAULT_PAGE_SIZE = 20;
+    public static final int DEFAULT_PAGE_SIZE = 100;
     private static final String PROP_STORED_PAGE_SIZE =
             "storedPageSize"; //NOI18N
     private static int defaultPageSize = -1;

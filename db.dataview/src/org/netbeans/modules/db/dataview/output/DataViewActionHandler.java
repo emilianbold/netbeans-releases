@@ -111,7 +111,6 @@ class DataViewActionHandler {
             org.netbeans.modules.db.dataview.api.DataViewPageContext
                     .setStoredPageSize(pageSize);
             dataPage.first();
-            dataPage.setTotalRows(-1); // force total row refresh
             execHelper.executeQueryOffEDT();
         }
     }
@@ -133,13 +132,6 @@ class DataViewActionHandler {
     void nextActionPerformed() {
         if (rejectModifications()) {
             dataPage.next();
-            execHelper.executeQueryOffEDT();
-        }
-    }
-
-    void lastActionPerformed() {
-        if (rejectModifications()) {
-            dataPage.last();
             execHelper.executeQueryOffEDT();
         }
     }
@@ -188,7 +180,6 @@ class DataViewActionHandler {
     }
 
     void refreshActionPerformed() {
-        dataPage.setTotalRows(-1); // force total row refresh
         execHelper.executeQueryOffEDT();
     }
 
