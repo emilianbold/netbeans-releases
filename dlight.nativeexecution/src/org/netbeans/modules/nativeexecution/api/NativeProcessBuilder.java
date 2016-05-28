@@ -120,6 +120,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return this;
     }
 
+    public boolean redirectErrorStream() {
+        return info.isRedirectError();
+    }
+
     /**
      * Specif
      * @param executable
