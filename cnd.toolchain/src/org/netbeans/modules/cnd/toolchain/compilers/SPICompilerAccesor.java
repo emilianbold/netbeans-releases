@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinitions;
+import org.netbeans.modules.cnd.toolchain.support.CompilerDefinition;
 
 /**
  *
@@ -88,8 +89,8 @@ public class SPICompilerAccesor {
     
     private List<Integer> merge(List<String> old, List<String> newList) {
         List<Integer> user = new ArrayList<Integer>();
-        if (old instanceof CCCCompiler.CompilerDefinition) {
-            CCCCompiler.CompilerDefinition def = (CCCCompiler.CompilerDefinition) old;
+        if (old instanceof CompilerDefinition) {
+            CompilerDefinition def = (CompilerDefinition) old;
             for (int i = 0; i < def.size(); i++) {
                 if (def.isUserAdded(i)) {
                     int j = newList.indexOf(def.get(i));
@@ -105,8 +106,8 @@ public class SPICompilerAccesor {
     }
     
     private void setUserAdded(List<Integer> user, List<String> newList) {
-        if (newList instanceof CCCCompiler.CompilerDefinition) {
-            CCCCompiler.CompilerDefinition def = (CCCCompiler.CompilerDefinition) newList;
+        if (newList instanceof CompilerDefinition) {
+            CompilerDefinition def = (CompilerDefinition) newList;
             for(int i = 0; i < def.size(); i++) {
                 def.setUserAdded(false, i);
             }

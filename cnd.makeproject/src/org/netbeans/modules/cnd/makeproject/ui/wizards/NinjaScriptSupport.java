@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFileProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.ui.FileAndFileObjectFilter;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;

@@ -50,14 +50,14 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteLogger;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil.PrefixedLogger;
+import org.netbeans.modules.cnd.spi.remote.setup.support.RemoteSyncNotifier;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -357,7 +357,7 @@ import org.openide.util.RequestProcessor;
             long fsSkew = Long.parseLong(line.substring(8));
             fsSkew /=  1000;
             if (Math.abs(fsSkew) > SKEW_THRESHOLD) {
-                FsSkewNotifier.getInstance().notify(execEnv, fsSkew);
+                RemoteSyncNotifier.getInstance().notify(execEnv, fsSkew);
             }
             return skew + fsSkew;
         } catch (NumberFormatException nfe) {

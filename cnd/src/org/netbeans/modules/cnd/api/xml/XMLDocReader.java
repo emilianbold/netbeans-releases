@@ -49,9 +49,8 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.modules.cnd.spi.CndErrorNotifier;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 //import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 //import org.openide.NotifyDescriptor;
@@ -170,7 +169,7 @@ abstract public class XMLDocReader extends XMLDecoder {
                         new Object[] {what,
                                       "" + actualVersion, // NOI18N
                                       "" + expectedVersion}); // NOI18N
-                    CndErrorNotifier.getDefault().notifyError(errmsg);
+                    CndNotifier.getDefault().notifyError(errmsg);
 //                    if (CndUtils.isStandalone()) {
 //                        System.err.println(errmsg);
 //                    } else {

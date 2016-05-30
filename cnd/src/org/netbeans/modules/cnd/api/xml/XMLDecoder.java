@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.api.xml;
 import java.util.HashMap;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.spi.CndErrorNotifier;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndUtils;
 //import org.openide.DialogDisplayer;
 //import org.openide.NotifyDescriptor;
@@ -181,7 +181,7 @@ public abstract class XMLDecoder {
         if (version > maxVersion) {
             String title = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore_title"); //NOI18N
             String message = NbBundle.getMessage(XMLDecoder.class, "MSG_version_ignore"); //NOI18N
-            boolean ignore = CndErrorNotifier.getDefault().notifyAndIgnore(title, message);
+            boolean ignore = CndNotifier.getDefault().notifyAndIgnore(title, message);
             if (ignore) {
                 return;
             }

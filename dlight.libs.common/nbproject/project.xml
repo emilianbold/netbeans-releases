@@ -83,16 +83,17 @@
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.remote.projectui</friend>
+                <friend>org.netbeans.modules.cnd.remote.ui</friend>
                 <friend>org.netbeans.modules.cnd.utils</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.remote.ui</friend>
-                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <package>org.netbeans.modules.dlight.libs.common</package>
             </friend-packages>
