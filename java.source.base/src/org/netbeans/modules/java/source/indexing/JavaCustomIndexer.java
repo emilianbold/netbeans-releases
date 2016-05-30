@@ -66,6 +66,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -1258,7 +1259,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             if (root == null) {
                 return vote;
             }
-            if (APTUtils.get(root).verifyAttributes(ctx.getRoot(), false)) {
+            if (Optional.ofNullable(APTUtils.get(root))
+                    .map((apt) -> apt.verifyAttributes(ctx.getRoot(), false))
+                    .orElse(Boolean.FALSE)) {
                 vote = false;
             }
             if (ensureSourcePath(root)) {
