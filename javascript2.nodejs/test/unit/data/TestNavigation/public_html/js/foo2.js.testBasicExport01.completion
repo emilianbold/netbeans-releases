@@ -2,5 +2,5 @@ Code completion result for source line:
 + circle.|area(4));
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     area(r)                         [PUBLIC]   circle.js
+METHOD     area(r): Number                 [PUBLIC]   circle.js
 METHOD     circumference(r): Number        [PUBLIC]   circle.js

@@ -46,9 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.debug.spi.SourceElementsQuery;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -74,7 +74,7 @@ public class SourceElementsQueryImpl implements SourceElementsQuery {
                 void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result r = resultIterator.getParserResult();
                     ParserResult pr = (ParserResult) r;
-                    Model model = Model.getModel(pr);
+                    Model model = Model.getModel(pr, false);
                     if (model == null) {    // no model, no translation
                         return ;
                     }
@@ -101,7 +101,7 @@ public class SourceElementsQueryImpl implements SourceElementsQuery {
                 void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result r = resultIterator.getParserResult();
                     ParserResult pr = (ParserResult) r;
-                    Model model = Model.getModel(pr);
+                    Model model = Model.getModel(pr, false);
                     JsObject declarationObject = model.getDeclarationObject(offset);
                     Identifier declarationName = declarationObject.getDeclarationName();
                     int doffset = declarationName.getOffsetRange().getStart();

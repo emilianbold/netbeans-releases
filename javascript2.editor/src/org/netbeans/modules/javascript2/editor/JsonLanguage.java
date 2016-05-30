@@ -39,15 +39,17 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.navigation.JsonOccurrencesFinder;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -121,26 +123,27 @@ public class JsonLanguage extends DefaultLanguageConfig {
 //        return new JsSemanticAnalyzer();
 //    }
 
+// todo: tzezula - disable for now
+//    @Override
+//    public DeclarationFinder getDeclarationFinder() {
+//        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+//    }
+
     @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+    public boolean hasOccurrencesFinder() {
+        return true;
     }
 
-//    @Override
-//    public boolean hasOccurrencesFinder() {
-//        return true;
-//    }
-//
-//    @Override
-//    public OccurrencesFinder getOccurrencesFinder() {
-//        return new OccurrencesFinderImpl();
-//    }
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new JsonOccurrencesFinder();
+    }
 
-//    @Override
-//    public CodeCompletionHandler getCompletionHandler() {
-//        return new JsCodeCompletion();
-//    }
-//
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsonCodeCompletion();
+    }
+
 //    @Override
 //    public EmbeddingIndexerFactory getIndexerFactory() {
 //        return new JsIndexer.Factory();
@@ -156,10 +159,8 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return true;
     }
 
-//    @Override
-//    public InstantRenamer getInstantRenamer() {
-//        return new JsInstantRenamer();
-//    }
-
-
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsonInstantRenamer();
+    }
 }
