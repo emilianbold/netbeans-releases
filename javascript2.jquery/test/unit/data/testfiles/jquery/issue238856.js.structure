@@ -1,5 +1,5 @@
-GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}:
-trimester_array:VARIABLE:[PRIVATE]:ESCAPED{trimester_array}:
+GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}<font color="#999999">ESCAPED{ : }Number</font>:
+trimester_array:VARIABLE:[PRIVATE]:ESCAPED{trimester_array}<font color="#999999">ESCAPED{ : }Array</font>:
 margin:CLASS:[PRIVATE]:ESCAPED{margin}:
   bottom:FIELD:[PUBLIC]:ESCAPED{bottom}<font color="#999999">ESCAPED{ : }Number</font>:
   innerBottom:FIELD:[PUBLIC]:ESCAPED{innerBottom}<font color="#999999">ESCAPED{ : }Number</font>:
@@ -20,10 +20,10 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
     destroy:METHOD:[PUBLIC]:ESCAPED{destroy}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     options:CLASS:[PUBLIC]:ESCAPED{options}:
       editable:FIELD:[PUBLIC]:ESCAPED{editable}<font color="#999999">ESCAPED{ : }Boolean</font>:
-      trimester:FIELD:[PUBLIC]:ESCAPED{trimester}:
+      trimester:FIELD:[PUBLIC]:ESCAPED{trimester}<font color="#999999">ESCAPED{ : }Number</font>:
       unit:FIELD:[PUBLIC]:ESCAPED{unit}:
       url:FIELD:[PUBLIC]:ESCAPED{url}:
-      week:FIELD:[PUBLIC]:ESCAPED{week}:
+      week:FIELD:[PUBLIC]:ESCAPED{week}<font color="#999999">ESCAPED{ : }Number</font>:
     prv:CLASS:[PUBLIC]:ESCAPED{prv}:
       _calculateScale:METHOD:[PUBLIC]:ESCAPED{_calculateScale}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
       _checkColumn:METHOD:[PUBLIC]:ESCAPED{_checkColumn}ESCAPED{(}ESCAPED{pos}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:
@@ -48,21 +48,21 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
         height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
         width:FIELD:[PUBLIC]:ESCAPED{width}:
-      columnW:FIELD:[PUBLIC]:ESCAPED{columnW}:
+      columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }Number</font>:
       context:CLASS:[PUBLIC]:ESCAPED{context}:
-        fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }String</font>:
+        fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }StringESCAPED{|}color</font>:
         font:FIELD:[PUBLIC]:ESCAPED{font}<font color="#999999">ESCAPED{ : }String</font>:
         lineHeight:FIELD:[PUBLIC]:ESCAPED{lineHeight}<font color="#999999">ESCAPED{ : }Number</font>:
         lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }Number</font>:
-        strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }String</font>:
+        strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }StringESCAPED{|}color</font>:
         textAlign:FIELD:[PUBLIC]:ESCAPED{textAlign}<font color="#999999">ESCAPED{ : }String</font>:
         textBaseline:FIELD:[PUBLIC]:ESCAPED{textBaseline}<font color="#999999">ESCAPED{ : }String</font>:
       ctx:CLASS:[PUBLIC]:ESCAPED{ctx}:
-        fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }String</font>:
+        fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }StringESCAPED{|}color</font>:
         font:FIELD:[PUBLIC]:ESCAPED{font}<font color="#999999">ESCAPED{ : }String</font>:
         lineHeight:FIELD:[PUBLIC]:ESCAPED{lineHeight}<font color="#999999">ESCAPED{ : }Number</font>:
-        lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }Number</font>:
-        strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }color</font>:
+        lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}String</font>:
+        strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }StringESCAPED{|}color</font>:
         textAlign:FIELD:[PUBLIC]:ESCAPED{textAlign}<font color="#999999">ESCAPED{ : }String</font>:
         textBaseline:FIELD:[PUBLIC]:ESCAPED{textBaseline}<font color="#999999">ESCAPED{ : }String</font>:
       drawBubble:METHOD:[PUBLIC]:ESCAPED{drawBubble}ESCAPED{(}ESCAPED{x}ESCAPED{, }ESCAPED{y}ESCAPED{, }ESCAPED{w}ESCAPED{, }ESCAPED{h}ESCAPED{, }ESCAPED{radius}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
@@ -73,14 +73,14 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       json:CLASS:[PUBLIC]:ESCAPED{json}:
       layer:CLASS:[PUBLIC]:ESCAPED{layer}:
         height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
-        width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }document@call;getElementById.json.width</font>:
-      layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}:
-      maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
-      minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:
+        width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }.document@call;getElementById.json.width</font>:
+      layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}<font color="#999999">ESCAPED{ : }.G_vmlCanvasManager@call;initElement.idESCAPED{|}.document@call;createElement.idESCAPED{|}StringESCAPED{|}c.id</font>:
+      maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}int</font>:
+      minValue:FIELD:[PUBLIC]:ESCAPED{minValue}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}int</font>:
       options:CLASS:[PUBLIC]:ESCAPED{options}:
-        trimester:FIELD:[PUBLIC]:ESCAPED{trimester}<font color="#999999">ESCAPED{ : }trimester</font>:
-      roundRect:METHOD:[PUBLIC]:ESCAPED{roundRect}ESCAPED{(}<font color="#999999">ESCAPED{CanvasRenderingContext2D}ESCAPED{ }</font>ESCAPED{ctx}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{x}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{y}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{width}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{height}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{radius}ESCAPED{, }<font color="#999999">ESCAPED{Boolean}ESCAPED{ }</font>ESCAPED{fill}ESCAPED{, }<font color="#999999">ESCAPED{Boolean}ESCAPED{ }</font>ESCAPED{stroke}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-      scale:FIELD:[PUBLIC]:ESCAPED{scale}:
-      weeks:FIELD:[PUBLIC]:ESCAPED{weeks}:
+        trimester:FIELD:[PUBLIC]:ESCAPED{trimester}:
+      roundRect:METHOD:[PUBLIC]:ESCAPED{roundRect}ESCAPED{(}ESCAPED{ctx}ESCAPED{, }ESCAPED{x}ESCAPED{, }ESCAPED{y}ESCAPED{, }ESCAPED{width}ESCAPED{, }ESCAPED{height}ESCAPED{, }ESCAPED{radius}ESCAPED{, }ESCAPED{fill}ESCAPED{, }ESCAPED{stroke}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+      scale:FIELD:[PUBLIC]:ESCAPED{scale}<font color="#999999">ESCAPED{ : }Number</font>:
+      weeks:FIELD:[PUBLIC]:ESCAPED{weeks}<font color="#999999">ESCAPED{ : }Number</font>:
       widget:FIELD:[PUBLIC]:ESCAPED{widget}:
     update:METHOD:[PUBLIC]:ESCAPED{update}ESCAPED{(}ESCAPED{url}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

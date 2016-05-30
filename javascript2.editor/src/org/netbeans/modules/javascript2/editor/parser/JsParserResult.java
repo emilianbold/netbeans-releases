@@ -37,130 +37,34 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import jdk.nashorn.internal.ir.FunctionNode;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.oracle.js.parser.ir.FunctionNode;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.lib.api.FilterableError;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsParserResult extends ParserResult {
-
-    private static final Logger LOGGER = Logger.getLogger(JsParserResult.class.getName());
+public class JsParserResult extends BaseParserResult {
 
     private final FunctionNode root;
-    private final boolean embedded;
-    private List<? extends FilterableError> errors;
-    private Model model;
-    private JsDocumentationHolder docHolder;
 
     public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
-        super(snapshot);
+        super(snapshot, root != null, createAdditionalLookup(root));
         this.root = root;
-        this.errors = Collections.<FilterableError>emptyList();
-        this.model = null;
-        this.docHolder = null;
-
-        this.embedded = isEmbedded(snapshot);
-    }
-
-    public static boolean isEmbedded(@NonNull Snapshot snapshot) {
-        List<String> mimeTypes = Arrays.asList(
-                JsTokenId.JAVASCRIPT_MIME_TYPE,
-                JsTokenId.GULP_MIME_TYPE,
-                JsTokenId.GRUNT_MIME_TYPE,
-                JsTokenId.KARMACONF_MIME_TYPE,
-                JsTokenId.JSON_MIME_TYPE,
-                JsTokenId.PACKAGE_JSON_MIME_TYPE,
-                JsTokenId.BOWER_JSON_MIME_TYPE,
-                JsTokenId.BOWERRC_JSON_MIME_TYPE,
-                JsTokenId.JSHINTRC_JSON_MIME_TYPE
-        );
-
-        return !mimeTypes.contains(snapshot.getMimePath().getPath());
-    }
-
-    public List<? extends FilterableError> getErrors(boolean includeFiltered) {
-        if (includeFiltered) {
-            return Collections.unmodifiableList(errors);
-        } else {
-            //remove filtered issues
-            List<FilterableError> result = new ArrayList<FilterableError>();
-            for(FilterableError e : errors) {
-                if(!e.isFiltered()) {
-                    result.add(e);
-                }
-            }
-            return result;
-        }
-    }
-    
-    @Override
-    public List<? extends FilterableError> getDiagnostics() {
-        return getErrors(false);
-    }
-
-    @Override
-    protected void invalidate() {
-
     }
 
     public FunctionNode getRoot() {
         return root;
     }
 
-    public void setErrors(List<? extends FilterableError> errors) {
-        this.errors = errors;
+    @NonNull
+    private static Lookup createAdditionalLookup(FunctionNode root) {
+        return root == null ?
+                Lookup.EMPTY :
+                Lookups.fixed(root);
     }
-
-    public Model getModel() {
-        return getModel(false);
-    }
-    
-    public Model getModel(boolean forceCreate) {
-        synchronized (this) {
-            if (model == null || forceCreate) {
-                model = ModelFactory.getModel(this);
-
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    model.writeModel(new Model.Printer() {
-                        @Override
-                        public void println(String str) {
-                            LOGGER.log(Level.FINEST, str);
-                        }
-                    });
-                }
-            }
-            return model;
-        }
-    }
-
-    public JsDocumentationHolder getDocumentationHolder() {
-        synchronized (this) {
-            if (docHolder == null) {
-                docHolder = JsDocumentationSupport.getDocumentationHolder(this);
-            }
-            return docHolder;
-        }
-    }
-
-    public boolean isEmbedded() {
-        return embedded;
-    }
-
 }

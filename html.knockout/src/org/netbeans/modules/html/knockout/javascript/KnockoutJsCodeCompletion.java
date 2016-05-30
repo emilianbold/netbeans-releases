@@ -61,7 +61,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import static org.netbeans.modules.html.knockout.javascript.KnockoutContext.COMPONENT_CONF_EMPTY;
 import static org.netbeans.modules.html.knockout.javascript.KnockoutContext.COMPONENT_CONF_PARAMS;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
