@@ -46,10 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.cnd.spi.CndCookieProvider;
 import org.openide.util.WeakSet;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -59,8 +57,8 @@ import org.openide.util.lookup.ServiceProvider;
 public final class NativeFileItemSetProvider extends CndCookieProvider {
 
     @Override
-    public void addLookup(DataObject dao, InstanceContent ic) {
-        ic.add(new NativeFileItemSetImpl());
+    public void addLookup(InstanceContentOwner icOwner) {
+        icOwner.getInstanceContent().add(new NativeFileItemSetImpl());
     }
 
     private static final class NativeFileItemSetImpl implements NativeFileItemSet {

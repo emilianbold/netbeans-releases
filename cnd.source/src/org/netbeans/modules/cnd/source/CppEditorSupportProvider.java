@@ -43,12 +43,10 @@
 package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.CndCookieProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
 
 /**
@@ -59,9 +57,9 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
     static final CppSaveAsFactory saveAsStaticFactory = new CppSaveAsFactory();
 
     @Override
-    public void addLookup(DataObject dao, InstanceContent ic) {
-        SourceDataObject sdao = (SourceDataObject) dao;
-        ic.add(sdao, staticFactory);
+    public void addLookup(InstanceContentOwner icOwner) {
+        SourceDataObject sdao = (SourceDataObject) icOwner;
+        icOwner.getInstanceContent().add(sdao, staticFactory);
     }
 
     private static class CppEditorSupportFactory implements Convertor<SourceDataObject, CppEditorSupport> {

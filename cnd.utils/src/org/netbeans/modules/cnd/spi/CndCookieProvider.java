@@ -39,10 +39,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.spi.source;
+package org.netbeans.modules.cnd.spi;
 
 import java.util.Collection;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -56,8 +55,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author Alexey Vladykin
  */
 public abstract class CndCookieProvider {
+    public interface InstanceContentOwner {
+        InstanceContent getInstanceContent();
+    }
 
-    public abstract void addLookup(DataObject dao, InstanceContent ic);
+    public abstract void addLookup(InstanceContentOwner icOwner);
 
     private static CndCookieProvider DEFAULT;
 
@@ -77,9 +79,9 @@ public abstract class CndCookieProvider {
         }
 
         @Override
-        public void addLookup(DataObject dao, InstanceContent ic) {
+        public void addLookup(InstanceContentOwner icOwner) {
             for (CndCookieProvider provider : providers) {
-                provider.addLookup(dao, ic);
+                provider.addLookup(icOwner);
             }
         }
     }

@@ -18,7 +18,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.48.6</specification-version>
+                        <specification-version>1.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

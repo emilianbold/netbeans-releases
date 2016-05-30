@@ -42,11 +42,9 @@
 package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.execution.CompileExecSupport;
-import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.CndCookieProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -60,10 +58,10 @@ public final class CndCompileSupportProvider extends CndCookieProvider {
     static final CndCompileSupportFactory staticFactory = new CndCompileSupportFactory();
 
     @Override
-    public void addLookup(DataObject dao, InstanceContent ic) {
-        MultiDataObject mdao = (MultiDataObject) dao;
-        if (MIMENames.isCppOrCOrFortran(dao.getPrimaryFile().getMIMEType())){
-            ic.add(mdao, staticFactory);
+    public void addLookup(InstanceContentOwner icOwner) {
+        MultiDataObject mdao = (MultiDataObject) icOwner;
+        if (MIMENames.isCppOrCOrFortran(mdao.getPrimaryFile().getMIMEType())){
+            icOwner.getInstanceContent().add(mdao, staticFactory);
         }
     }
 
