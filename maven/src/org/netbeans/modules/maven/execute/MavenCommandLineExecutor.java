@@ -682,6 +682,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             
         }
+        if (clonedConfig.getProperties().containsKey(ModelRunConfig.EXEC_MERGED)) {
+            printGray(ioput, "\nDefault '" + clonedConfig.getActionName() + "' action exec.args merged with maven-exec-plugin arguments declared in pom.xml.");
+        }
+        
     }
     
     boolean isMaven2() {

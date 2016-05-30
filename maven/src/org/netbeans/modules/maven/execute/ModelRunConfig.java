@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -70,6 +71,11 @@ public final class ModelRunConfig extends BeanRunConfig {
     private final NetbeansActionMapping model;
     private final boolean fallback;
     
+    public static final String EXEC_MERGED = "exec.args.merged";
+    private static final String CP_PLACEHOLDER = "___CP___";
+    private static final String EXEC_ARGS = "exec.args"; // NOI18N
+    private static final String DEFAULT_EXEC_ARGS_CLASSPATH = "-classpath %classpath ${packageClassName}"; // NOI18N
+    
     public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup, boolean fallback) {
         model = mod;
         this.fallback = fallback;
@@ -82,10 +88,15 @@ public final class ModelRunConfig extends BeanRunConfig {
             String key = entry.getKey();
             String value = entry.getValue();
             if(EXEC_ARGS.equals(key)) {                                
-                if(value != null && value.contains(DEFAULT_EXEC_ARGS_CLASSPATH)) {
+                if(value != null && value.trim().equals(DEFAULT_EXEC_ARGS_CLASSPATH)) {
                     String execArgsByPom = getExecArgsByPom(model, proj);
                     if(execArgsByPom != null) {
-                        value = execArgsByPom + " " + value;
+                        if(execArgsByPom.contains(CP_PLACEHOLDER)) {
+                            value = execArgsByPom.replace(CP_PLACEHOLDER, DEFAULT_EXEC_ARGS_CLASSPATH);                            
+                        } else {
+                            value = execArgsByPom; 
+                        }  
+                        setProperty(EXEC_MERGED, "true");
                     }
                 }        
             }
@@ -114,9 +125,6 @@ public final class ModelRunConfig extends BeanRunConfig {
         return fallback;
     }        
 
-    private static final String EXEC_ARGS = "exec.args"; // NOI18N
-    private static final String DEFAULT_EXEC_ARGS_CLASSPATH = "-classpath %classpath"; // NOI18N
-    
     static String getExecArgsByPom(NetbeansActionMapping model, Project proj) {
         if(Boolean.getBoolean("maven.doNotMergePomExecArgs")) { // NOI18N
             return null;
@@ -171,7 +179,9 @@ public final class ModelRunConfig extends BeanRunConfig {
                                         Xpp3Dom[] deps = dom.getChildren("dependency"); // NOI18N
                                         if (deps == null || deps.length == 0) {
                                             // the classpath argument results to '-classpath %classpath'
-                                            // and that is already part of exec.args -> do nothing
+                                            // and that is already part of exec.args -> set them in the right 
+                                            // position as given by pom
+                                            val = CP_PLACEHOLDER;
                                         } else {
                                             for (Xpp3Dom dep : deps) {
                                                 if(dep != null) {
