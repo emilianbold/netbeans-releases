@@ -2183,6 +2183,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"action: \" + ac^tion);", true);
     }
     
+    public void testArrayLiteralInBlockScope01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/arrayLiteral01.js", "matches = _union(matc^hes, match);", true);
+    }
+    
+    public void testArrayLiteralInBlockScope01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/arrayLiteral01.js", "matc^hes = _union(matches, match);", true);
+    }
+    
+    public void testArrayLiteralInBlockScope01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/arrayLiteral01.js", "matches = _union(matches, ma^tch);", true);
+    }
+    
     public void testStrangeMethodNames_01() throws Exception {
         checkOccurrences("testfiles/markoccurences/strangeMethodName.js", "dependencies[\"jqu^ery1.6+\"]();", true);
     }

@@ -1714,7 +1714,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited, parserResult);
                 isDeclaredInParent = true;
-                JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
+                JsObject declarationScope = ((VarNode)lastVisited).isLet() ? modelBuilder.getCurrentDeclarationScope() : modelBuilder.getCurrentDeclarationFunction();
                 parent = declarationScope;
                 if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;

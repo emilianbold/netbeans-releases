@@ -610,4 +610,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testBlockScope05() throws Exception {
         checkSemantic("testfiles/markoccurences/blockscope/scope05.js");
     }
+    
+    public void testArrayLiteralInBlockScope01() throws Exception {
+        checkSemantic("testfiles/markoccurences/blockscope/arrayLiteral01.js");
+    }
 }
