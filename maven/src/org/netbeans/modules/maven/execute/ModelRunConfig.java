@@ -73,6 +73,8 @@ public final class ModelRunConfig extends BeanRunConfig {
     
     public static final String EXEC_MERGED = "exec.args.merged";
     private static final String CP_PLACEHOLDER = "___CP___";
+    private static final String EXEC_ARGS = "exec.args"; // NOI18N
+    private static final String DEFAULT_EXEC_ARGS_CLASSPATH = "-classpath %classpath ${packageClassName}"; // NOI18N
     
     public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup, boolean fallback) {
         model = mod;
@@ -123,9 +125,6 @@ public final class ModelRunConfig extends BeanRunConfig {
         return fallback;
     }        
 
-    private static final String EXEC_ARGS = "exec.args"; // NOI18N
-    private static final String DEFAULT_EXEC_ARGS_CLASSPATH = "-classpath %classpath ${packageClassName}"; // NOI18N
-    
     static String getExecArgsByPom(NetbeansActionMapping model, Project proj) {
         if(Boolean.getBoolean("maven.doNotMergePomExecArgs")) { // NOI18N
             return null;
