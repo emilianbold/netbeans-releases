@@ -71,6 +71,7 @@ public final class ModelRunConfig extends BeanRunConfig {
     private final NetbeansActionMapping model;
     private final boolean fallback;
     
+    public static final String EXEC_MERGED = "exec.args.merged";
     private static final String CP_PLACEHOLDER = "___CP___";
     
     public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup, boolean fallback) {
@@ -93,6 +94,7 @@ public final class ModelRunConfig extends BeanRunConfig {
                         } else {
                             value = execArgsByPom; 
                         }  
+                        setProperty(EXEC_MERGED, "true");
                     }
                 }        
             }
