@@ -168,7 +168,7 @@ public class IfToSwitchSupport {
     protected Object convert(Object o, TypeMirror m) {
         if (o instanceof EnumConst) {
             TypeMirror elM = ((EnumConst)o).constEl.asType();
-            if (ci.getTypes().isSameType(m, elM)) {
+            if (ci.getTypes().isSubtype(elM, m)) {
                 return o;
             } else {
                 return m;
@@ -351,7 +351,6 @@ public class IfToSwitchSupport {
             // the default statement
             TreePath defPath = new TreePath(ifPath, e);
             literal2Statement.add(new BranchDescription(null, TreePathHandle.create(defPath, ci)));
-            
             if (!controlVarNotNull && nullBranch == null) {
                 // the default branch may also trigger for null value - issue #259071
                 nullBranch = defPath;

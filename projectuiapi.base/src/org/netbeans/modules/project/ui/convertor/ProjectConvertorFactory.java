@@ -46,6 +46,8 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -170,7 +172,9 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
         private final FileObject projectDirectory;
         private final ProjectState projectState;
         private final ProjectConvertor.Result result;
-        private final DynamicLookup projectLkp;
+        private final ThreadLocal<DynamicLookup> underConstruction;
+        //@GuardedBy("this")
+        private DynamicLookup projectLkp;
 
         @SuppressWarnings("LeakingThisInConstructor")
         ConvertorProject(
@@ -183,20 +187,7 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
             this.projectDirectory = projectDirectory;
             this.projectState = projectState;
             this.result = result;
-            final Lookup convertorLkp = this.result.getLookup();
-            if (convertorLkp == null) {
-                throw new IllegalStateException(String.format(
-                    "Convertor: %s returned null lookup.",  //NOI18N
-                    this.result));
-            }
-            this.projectLkp = new DynamicLookup();
-            final Lookup preLkp = Lookups.fixed(new OpenHook(), this);
-            final Queue<Object> postServices = new ArrayDeque<>();
-            for (ProjectConvertorServiceFactory f : services.allInstances()) {
-                postServices.addAll(f.createServices(this, result));
-            }
-            final Lookup postLkp = Lookups.fixed(postServices.toArray());
-            this.projectLkp.setBaseLookups(preLkp, convertorLkp, postLkp);
+            this.underConstruction = new ThreadLocal<>();
         }
 
         @Override
@@ -207,8 +198,44 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
 
         @Override
         @NonNull
-        public Lookup getLookup() {
-            return projectLkp;
+        public DynamicLookup getLookup() {
+            DynamicLookup dynLkp = underConstruction.get();
+            if (dynLkp != null) {
+                return dynLkp;
+            }
+            synchronized (this) {
+                dynLkp = projectLkp;
+            }
+            if (dynLkp != null) {
+                return  dynLkp;
+            }
+            dynLkp = new DynamicLookup(Lookups.singleton(this));
+            try {
+                underConstruction.set(dynLkp);
+                final Lookup preLkp = Lookups.fixed(new OpenHook(), this);
+                final Lookup convertorLkp = this.result.getLookup();
+                if (convertorLkp == null) {
+                    throw new IllegalStateException(String.format(
+                        "Convertor: %s returned null lookup.",  //NOI18N
+                        this.result));
+                }
+                final Queue<Object> postServices = new ArrayDeque<>();
+                for (ProjectConvertorServiceFactory f : services.allInstances()) {
+                    postServices.addAll(f.createServices(this, result));
+                }
+                final Lookup postLkp = Lookups.fixed(postServices.toArray());
+                dynLkp.setBaseLookups(preLkp, convertorLkp, postLkp);
+                synchronized (this) {
+                    if (projectLkp == null) {
+                        projectLkp = dynLkp;
+                    } else {
+                        dynLkp = projectLkp;
+                    }
+                }
+                return dynLkp;
+            } finally {
+                underConstruction.remove();
+            }
         }
 
         @Override
@@ -248,8 +275,9 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
                             //to remove it.
                             //Also remove ProjectInfo as it's overriden by project's own
                             //no need for it anymore
-                            final Lookup[] baseLkps = projectLkp.getBaseLookups();
-                            projectLkp.setBaseLookups(
+                            final DynamicLookup dynLkp = getLookup();
+                            final Lookup[] baseLkps = dynLkp.getBaseLookups();
+                            dynLkp.setBaseLookups(
                                 baseLkps[1],
                                 prj.getLookup());
                             return prj;
@@ -297,6 +325,10 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
 
         DynamicLookup() {
             super();
+        }
+
+        DynamicLookup(Lookup... lkps) {
+            super(lkps);
         }
 
         void setBaseLookups(@NonNull final Lookup... lkps) {

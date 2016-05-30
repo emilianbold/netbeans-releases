@@ -47,6 +47,9 @@ import org.openide.util.RequestProcessor;
 
 /** A helper which can return current page size for given data view.
  *
+ * If values are changed here - preferences property or default page size,
+ * update QueryAction in DB Explorer also.
+ * 
  * @author Jiri Rechtacek
  * @since 1.4
  */
@@ -57,7 +60,7 @@ public final class DataViewPageContext {
      *
      * @since 1.20
      */
-    public static final int DEFAULT_PAGE_SIZE = 20;
+    public static final int DEFAULT_PAGE_SIZE = 100;
     private static final String PROP_STORED_PAGE_SIZE =
             "storedPageSize"; //NOI18N
     private static int defaultPageSize = -1;
@@ -86,6 +89,7 @@ public final class DataViewPageContext {
                     PROP_STORED_PAGE_SIZE, DEFAULT_PAGE_SIZE);
             if (defaultPageSize < 0) {
                 defaultPageSize = DEFAULT_PAGE_SIZE;
+                setStoredPageSize(defaultPageSize);
             }
         }
         return defaultPageSize;

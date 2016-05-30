@@ -47,6 +47,7 @@
                 <friend>org.netbeans.modules.javascript2.prototypejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.javascript2.sdoc</friend>
+                <friend>org.netbeans.modules.javascript2.source.query</friend>
                 <package>org.netbeans.modules.javascript2.types.api</package>
                 <package>org.netbeans.modules.javascript2.types.spi</package>
             </friend-packages>

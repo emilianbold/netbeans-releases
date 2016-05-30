@@ -109,7 +109,7 @@ class SQLExecutionHelper {
          * possible to wait for the result in the main thread and cancel the
          * running statement from the main thread.
          *
-         * If no statement is run - Thread.isInterrupted is checked at critical
+         * If no statement is run - Thread.interrupted is checked at critical
          * points and allows us to do an early exit.
          *
          * See #159929.
@@ -119,9 +119,11 @@ class SQLExecutionHelper {
             private boolean finished = false;
             private Connection conn = null;
             private Statement stmt = null;
+            private Thread loaderThread = null;
 
             @Override
             public void run() {
+                loaderThread = Thread.currentThread();
                 try {
                     DatabaseConnection dc = dataView.getDatabaseConnection();
                     conn = DBConnectionFactory.getInstance().getConnection(dc);
@@ -135,12 +137,13 @@ class SQLExecutionHelper {
                     updateScrollableSupport(conn, dc, sql);
 
                     if (Thread.interrupted()) {
-                        return;
+                        throw new InterruptedException();
                     }
-                    stmt = prepareSQLStatement(conn, sql, true);
+                    
+                    stmt = prepareSQLStatement(conn, sql);
 
                     if (Thread.interrupted()) {
-                        return;
+                        throw new InterruptedException();
                     }
                     
                     boolean isResultSet = executeSQLStatementForExtraction(stmt, sql);
@@ -151,7 +154,7 @@ class SQLExecutionHelper {
                     }
                     
                     if (Thread.interrupted()) {
-                        return;
+                        throw new InterruptedException();
                     }
 
                     ResultSet rs;
@@ -164,7 +167,7 @@ class SQLExecutionHelper {
                             DataViewDBTable dvTable = new DataViewDBTable(tables);
                             DataViewPageContext pageContext = dataView.addPageContext(dvTable);
 
-                            loadDataFrom(pageContext, rs, useScrollableCursors);
+                            loadDataFrom(pageContext, rs);
 
                             DataViewUtils.closeResources(rs);
 
@@ -184,12 +187,6 @@ class SQLExecutionHelper {
                             break;
                         }
                     }
-
-                    // If total count was not retrieved using scrollable cursors,
-                    // compute it now.
-                    if (!useScrollableCursors && dataView.getPageContexts().size() > 0) {
-                        getTotalCount(isSelect, sql, stmt, dataView.getPageContext(0));
-                    }
                 } catch (final SQLException sqlEx) {
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
@@ -208,6 +205,7 @@ class SQLExecutionHelper {
                 } catch (RuntimeException e) {
                   LOGGER.log(Level.WARNING, null, e);
                 } finally {
+                    loaderThread = null;
                     DataViewUtils.closeResources(stmt);
                     synchronized (Loader.this) {
                         finished = true;
@@ -224,6 +222,14 @@ class SQLExecutionHelper {
                     } catch (SQLException sqlEx) {
                         LOGGER.log(Level.FINE, null, sqlEx);
                         // Ok! The DBMS might not support Statement-Canceling
+                    }
+                }
+                if(loaderThread != null) {
+                    try {
+                        loaderThread.interrupt();
+                    } catch (NullPointerException ex) {
+                        // Ignore - the call was finished between checking 
+                        // loaderThread an calling interrupt on it.
                     }
                 }
                 return true;
@@ -341,7 +347,6 @@ class SQLExecutionHelper {
             dataView.resetEditable();
         }
 
-        final int finalDone = done;
         final Exception finalCaught = caughtException;
 
         // refresh when required
@@ -355,11 +360,6 @@ class SQLExecutionHelper {
                                 new NotifyDescriptor.Message(
                                         finalCaught.getLocalizedMessage()));
                     }
-                    if (pageContext.getTotalRows() < 0) {
-                        pageContext.setTotalRows(0);
-                        pageContext.first();
-                    }
-                    pageContext.incrementRowSize(finalDone);
                     return pageContext.refreshRequiredOnInsert();
                 }
             });
@@ -445,7 +445,6 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                pageContext.decrementRowSize(rows.size());
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -588,7 +587,6 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                pageContext.setTotalRows(0);
                 pageContext.first();
                 SQLExecutionHelper.this.executeQuery();
             }
@@ -625,16 +623,8 @@ class SQLExecutionHelper {
                 if (Thread.interrupted()) {
                     return;
                 }
-                boolean getTotal = false;
 
-                for (DataViewPageContext pageContext : dataView.getPageContexts()) {
-                    if (pageContext.getTotalRows() == -1) {
-                        getTotal = true;
-                        break;
-                    }
-                }
-
-                stmt = prepareSQLStatement(conn, sql, getTotal);
+                stmt = prepareSQLStatement(conn, sql);
 
                 // Execute the query and retrieve all resultsets
                 try {
@@ -656,7 +646,7 @@ class SQLExecutionHelper {
                             res++;
                             DataViewPageContext pageContext = dataView.getPageContext(res);
                             rs = stmt.getResultSet();
-                            loadDataFrom(pageContext, rs, getTotal && useScrollableCursors);
+                            loadDataFrom(pageContext, rs);
                             DataViewUtils.closeResources(rs);
                         } else {
                             synchronized (dataView) {
@@ -673,12 +663,7 @@ class SQLExecutionHelper {
                             break;
                         }
                     }
-
-                    // Get total count using the old-fashioned method.
-                    if (!useScrollableCursors && getTotal && dataView.getPageContexts().size() > 0) {
-                        getTotalCount(isSelectStatement(sql), sql, stmt, dataView.getPageContext(0));
-                    }
-                } catch (SQLException sqlEx) {
+                } catch (SQLException | InterruptedException sqlEx) {
                     LOGGER.log(Level.INFO, "Failed to retrieve resultset", sqlEx);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
                     String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
@@ -722,7 +707,7 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    private void loadDataFrom(final DataViewPageContext pageContext, ResultSet rs, boolean getTotal) throws SQLException {
+    private void loadDataFrom(final DataViewPageContext pageContext, ResultSet rs) throws SQLException, InterruptedException {
         if (rs == null) {
             return;
         }
@@ -739,6 +724,7 @@ class SQLExecutionHelper {
 
         final List<Object[]> rows = new ArrayList<>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
+        int curRowPos = 0;
         try {
             long start = System.currentTimeMillis();
             boolean hasNext = false;
@@ -749,6 +735,7 @@ class SQLExecutionHelper {
                     || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE)) {
                 try {
                     hasNext = rs.absolute(startFrom);
+                    curRowPos = rs.getRow();
                     needSlowSkip = false;
                 } catch (SQLException ex) {
                     LOGGER.log(Level.FINE, "Absolute positioning failed", ex); // NOI18N
@@ -758,21 +745,21 @@ class SQLExecutionHelper {
             if (needSlowSkip) {
                 // Skip till current position
                 hasNext = rs.next();
-                int curRowPos = 1;
+                curRowPos++;
                 while (hasNext && curRowPos < startFrom) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return;
+                    if (Thread.interrupted()) {
+                        throw new InterruptedException();
                     }
                     hasNext = rs.next();
                     curRowPos++;
                 }
             }
-
+            
             // Get next page
             int rowCnt = 0;
             while (((pageSize <= 0) || (pageSize > rowCnt)) && (hasNext)) {
-                if (Thread.currentThread().isInterrupted()) {
-                    return;
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
                 }
 
                 Object[] row = new Object[colCnt];
@@ -784,29 +771,11 @@ class SQLExecutionHelper {
                 rowCnt++;
                 try {
                     hasNext = rs.next();
+                    curRowPos++;
                 } catch (SQLException x) {
                     LOGGER.log(Level.INFO, "Failed to forward to next record, cause: " + x.getLocalizedMessage(), x);
                     hasNext = false;
                 }
-            }
-
-            if (getTotal) {
-                Integer result = null;
-                assert useScrollableCursors : "Scrollable cursors need" //NOI18N
-                        + " to be enabled to get total counts here";    //NOI18N
-                if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
-                        || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
-                    try {
-                        rs.last();
-                        result = rs.getRow();
-                    } catch (SQLException ex) {
-                        LOGGER.log(Level.INFO,
-                                "Failed to jump to end of SQL Statement ''{0}'' - cause: {1}",
-                                new Object[]{dataView.getSQLString(), ex});
-                    }
-                }
-
-                pageContext.setTotalRows(result);
             }
             
             long end = System.currentTimeMillis();
@@ -826,7 +795,7 @@ class SQLExecutionHelper {
         }
     }
 
-    private Statement prepareSQLStatement(Connection conn, String sql, boolean needTotal) throws SQLException {
+    private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt;
         if (sql.startsWith("{")) { // NOI18N
             stmt = useScrollableCursors
@@ -843,26 +812,24 @@ class SQLExecutionHelper {
             // hint to only query a certain number of rows -> potentially
             // improve performance for low page numbers
             // only usable for "non-total" resultsets
-            if (!needTotal) {
-                try {
-                    Integer maxRows = 0;
-                    for (DataViewPageContext pageContext : dataView.getPageContexts()) {
-                        int currentRows = pageContext.getCurrentPos();
-                        int pageSize = pageContext.getPageSize();
-                        if (pageSize <= 0) {
-                            maxRows = 0;
-                            break;
-                        } else {
-                            maxRows = Math.max(maxRows, currentRows + pageSize);
-                        }
+            try {
+                Integer maxRows = 0;
+                for (DataViewPageContext pageContext : dataView.getPageContexts()) {
+                    int currentRows = pageContext.getCurrentPos();
+                    int pageSize = pageContext.getPageSize();
+                    if (pageSize <= 0) {
+                        maxRows = 0;
+                        break;
+                    } else {
+                        maxRows = Math.max(maxRows, currentRows + pageSize);
                     }
-                    stmt.setMaxRows(maxRows);
-                } catch (SQLException exc) {
-                    LOGGER.log(Level.WARNING, "Unable to set Max row count", exc); // NOI18N
-                    try {
-                        stmt.setMaxRows(0);
-                    } catch (SQLException ex) {}
                 }
+                stmt.setMaxRows(maxRows);
+            } catch (SQLException exc) {
+                LOGGER.log(Level.WARNING, "Unable to set Max row count", exc); // NOI18N
+                try {
+                    stmt.setMaxRows(0);
+                } catch (SQLException ex) {}
             }
         } else {
             stmt = useScrollableCursors
@@ -885,7 +852,7 @@ class SQLExecutionHelper {
             } else {
                 DataViewPageContext pc = dataView.getPageContexts().size() > 0
                         ? dataView.getPageContext(0) : null;
-                isResultSet = stmt.execute(appendLimitIfRequired(pc, sql));
+                isResultSet = stmt.execute(sql);
             }
         } catch (NullPointerException ex) {
             LOGGER.log(Level.INFO, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, ex});
@@ -916,45 +883,6 @@ class SQLExecutionHelper {
         return stmt.getUpdateCount();
     }
 
-    private void getTotalCount(boolean isSelect, String sql, Statement stmt,
-            DataViewPageContext pageContext) {
-        if (!isSelect) {
-            setTotalCount(null, pageContext);
-            return;
-        }
-
-        // SELECT COUNT(*) FROM (sqlquery) alias
-        ResultSet cntResultSet = null;
-        try {
-            cntResultSet = stmt.executeQuery(
-                    SQLStatementGenerator.getCountAsSubQuery(sql));
-            setTotalCount(cntResultSet, pageContext);
-            return;
-        } catch (SQLException e) {
-            LOGGER.log(Level.FINE, null, e);
-        } finally {
-            DataViewUtils.closeResources(cntResultSet);
-        }
-
-        // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
-        if (!isGroupByUsedInSelect(sql)) {
-            cntResultSet = null;
-            try {
-                cntResultSet = stmt.executeQuery(
-                        SQLStatementGenerator.getCountSQLQuery(sql));
-                setTotalCount(cntResultSet, pageContext);
-                return;
-            } catch (SQLException e) {
-                LOGGER.log(Level.FINE, null, e);
-            } finally {
-                DataViewUtils.closeResources(cntResultSet);
-            }
-        }
-
-        // Unable to compute the total rows
-        setTotalCount(null, pageContext);
-    }
-
     private boolean isSelectStatement(String queryString) {
         String sqlUpperTrimmed = queryString.trim().toUpperCase();
         return sqlUpperTrimmed.startsWith("SELECT")  // NOI18N
@@ -963,44 +891,6 @@ class SQLExecutionHelper {
 
     private boolean isLimitUsedInSelect(String sql) {
         return sql.toUpperCase().contains(LIMIT_CLAUSE);
-    }
-
-    static boolean isGroupByUsedInSelect(String sql) {
-        if (GROUP_BY_IN_SELECT == null) {
-            GROUP_BY_IN_SELECT = Pattern.compile(
-                    "\\Wgroup\\s+by\\W" //NOI18N
-                    + "|\\Wcount\\s*\\(\\s*\\*\\s*\\)", //NOI18N
-                    Pattern.CASE_INSENSITIVE);
-        }
-        return GROUP_BY_IN_SELECT.matcher(sql).find();
-    }
-
-    void setTotalCount(ResultSet countresultSet, DataViewPageContext pageContext) {
-        Integer count = null;
-        try {
-            if (countresultSet != null && countresultSet.next()) {
-                count = countresultSet.getInt(1);
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.INFO, "Could not get total row count ", ex); // NOI18N
-        }
-        pageContext.setTotalRows(count != null ? count : -1);
-    }
-
-    private String appendLimitIfRequired(DataViewPageContext pageContext,
-            String sql) {
-        int pageSize = pageContext == null ? dataView.getPageSize() : pageContext.getPageSize();
-        if (pageSize == 0 || useScrollableCursors) {
-            return sql;
-        } else if (limitSupported && isSelectStatement(sql)
-                && !isLimitUsedInSelect(sql)) {
-            int currentPos = pageContext == null ? 1
-                    : pageContext.getCurrentPos();
-            return sql + ' ' + LIMIT_CLAUSE + pageSize
-                    + ' ' + OFFSET_CLAUSE + (currentPos - 1);
-        } else {
-            return sql;
-        }
     }
 
     static String millisecondsToSeconds(long ms) {

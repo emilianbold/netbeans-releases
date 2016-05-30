@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.Locale;
 import org.w3c.dom.Node;
 
 /**
@@ -63,7 +64,7 @@ public class Stack extends Input {
         @Override
         public String toString() {
             if (this != QUEST) {
-                return super.toString().toLowerCase();
+                return super.toString().toLowerCase(Locale.US);
             } else {
                 return "?"; // NOI18N
             }

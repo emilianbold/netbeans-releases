@@ -216,13 +216,16 @@ public final class JavaIndex {
     }
 
     public static void setAttribute(URL root, String attributeName, String attributeValue) throws IOException {
+        boolean store;
         Properties p = loadProperties(root);
         if (attributeValue != null) {
-            p.setProperty(attributeName, attributeValue);
+            store = !attributeValue.equals(p.setProperty(attributeName, attributeValue));
         } else {
-            p.remove(attributeName);
+            store = p.remove(attributeName) != null;
         }
-        storeProperties(root, p, true);
+        if (store) {
+            storeProperties(root, p, true);
+        }
     }
 
     public static String getAttribute(URL root, String attributeName, String defaultValue) throws IOException {

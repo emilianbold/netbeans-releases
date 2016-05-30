@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -182,8 +183,314 @@ public class UtilitiesTest extends NbTestCase {
     public void testFieldGroup3() throws Exception {
         performResolveFieldGroupTest("package test; public class Test { private int a; |private int b;| private int c; }", 1);
     }
+    
+    public void testExitsAllBranches1() throws Exception {
+        performExitsTest("package test;\n"
+                + "\n"
+                + "import java.util.ArrayList;\n"
+                + "import java.util.List;\n"
+                + "import java.util.Map;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "    public enum Day {\n"
+                + "        SUNDAY, MONDAY, TUESDAY, WEDNESDAY,\n"
+                + "        THURSDAY, FRIDAY, SATURDAY\n"
+                + "    public class DayHolder {\n"
+                + "        Day day;\n"
+                + "        Day getDay() {\n"
+                + "            return day;\n"
+                + "        }\n"
+                + "    }\n"
+                + "public class Test {\n"
+                + "    public enum Day {\n"
+                + "        SUNDAY, MONDAY, TUESDAY, WEDNESDAY,\n"
+                + "        THURSDAY, FRIDAY, SATURDAY\n"
+                + "    }\n"
+                + "    public class DayHolder {\n"
+                + "        Day day;\n"
+                + "        Day getDay() {\n"
+                + "            return day;\n"
+                + "        }\n"
+                + "    }\n"
+                + "    public void test(Map<Integer, Day> evaluateExpressions) throws Exception {\n"
+                + "        List<DayHolder> params = new ArrayList<>();\n"
+                + "        for (int i = 0; i < params.size(); i++) {\n"
+                + "            DayHolder p = params.get(i);\n"
+                + "            if (evaluateExpressions.get(i) != null) {\n"
+                + "                if (evaluateExpressions.get(i) == Day.SUNDAY) {\n"
+                + "                    // Do something 1\n"
+                + "                } else if (evaluateExpressions.get(i) == Day.MONDAY) {\n"
+                + "                    swi|tch (p.getDay()) {\n"
+                + "                        case SUNDAY:\n"
+                + "                            break;\n"
+                + "                        default:\n"
+                + "                            throw new Exception(\"xxx\");\n"
+                + "                    }\n"
+                + "                } else if (evaluateExpressions.get(i) == Day.TUESDAY) {\n"
+                + "                    // Do something 2\n"
+                + "                }\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}", 
+                false);
+    }
+
+    /**
+     * While may never enter its statement; return false.
+     */
+    public void testExitsAllBranchesWhile() throws Exception {
+        performExitsTest("package test;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "    public void test(boolean param) {\n"
+                + "        whil|e (param) {\n"
+                + "            throw new IllegalArgumentException();\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+    
+    /**
+     * While may never enter its statement; return false.
+     */
+    public void testExitsAllBranchesDo() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(boolean param) {\n"
+                + "        ex: {\n"
+                + "            d|o {\n"
+                + "                break;\n"
+                + "            } while (true);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+    
+    /**
+     * While may never enter its statement; return false.
+     */
+    public void testExitsAllBranchesFor() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(boolean param) {\n"
+                + "        ex: {|\n"
+                + "            for (int i = 0; i < 5 ; i++) {\n"
+                + "                break ex;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+    
+    /**
+     * While may never enter its statement; return false.
+     */
+    public void testExitsAllBranchesDoBreakOutside() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(boolean param) {\n"
+                + "        ex: {\n"
+                + "            d|o {\n"
+                + "                break ex;\n"
+                + "            } while (true);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                true);
+    }
+    
+    /**
+     * All breaks break just the switch and continue execution
+     */
+    public void testExitsAllBranchesSwitch1() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(int param) {\n"
+                + "        ex: {\n"
+                + "            sw|itch (param) {\n"
+                + "                case 0:\n"
+                + "                    break;\n"
+                + "                case 1:\n"
+                + "                    break;\n"
+                + "                default:\n"
+                + "                    break;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+    
+    /**
+     * all breaks break to the enclosing block, escaping from the switch
+     */
+    public void testExitsAllBranchesSwitchBreakOut() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(int param) {\n"
+                + "        ex: {\n"
+                + "            sw|itch (param) {\n"
+                + "                case 0:\n"
+                + "                    break ex;\n"
+                + "                case 1:\n"
+                + "                    break ex;\n"
+                + "                default:\n"
+                + "                    break ex;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                true);
+    }
+
+    /**
+     * two cases share the same break statement
+     */
+    public void testExitsAllBranchesSwitchJoinedCases() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(int param) {\n"
+                + "        ex: {\n"
+                + "            sw|itch (param) {\n"
+                + "                case 0:\n"
+                + "                case 1:\n"
+                + "                    break ex;\n"
+                + "                default:\n"
+                + "                    break ex;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                true);
+    }
+
+    /**
+     * two cases share the same break statement
+     */
+    public void testExitsAllBranchesEnumSwitchIncomplete() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    enum Num { ONE, TWO, THREE };\n"
+                + "    public int test(Num param) {\n"
+                + "        swi|tch (param) {\n"
+                + "            case ONE:\n"
+                + "                return 1;\n"
+                + "            case TWO:\n"
+                + "                return 2;\n"
+                + "        }\n"
+                + "        return 0;"
+                + "    }\n"
+                + "}",
+                false);
+    }
+
+    /**
+     * two cases share the same break statement
+     */
+    public void testExitsAllBranchesEnumSwitchComplete() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    enum Num { ONE, TWO, THREE };\n"
+                + "    public int test(Num param) {\n"
+                + "        swi|tch (param) {\n"
+                + "            case ONE:\n"
+                + "                return 1;\n"
+                + "            case TWO:\n"
+                + "                return 2;\n"
+                + "            case THREE:\n"
+                + "                return 3;\n"
+                + "        }\n"
+                + "        return 0;"
+                + "    }\n"
+                + "}",
+                true);
+    }
+
+    /**
+     * two cases share the same break statement
+     */
+    public void testExitsAllBranchesEnumSwitchWithDefault() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    enum Num { ONE, TWO, THREE };\n"
+                + "    public int test(Num param) {\n"
+                + "        swi|tch (param) {\n"
+                + "            case ONE:\n"
+                + "                return 1;\n"
+                + "            case TWO:\n"
+                + "                return 2;\n"
+                + "            default:\n"
+                + "                return 3;\n"
+                + "        }\n"
+                + "        return 0;"
+                + "    }\n"
+                + "}",
+                true);
+    }
+
+    /**
+     * Default does not contain any break, continues normally
+     */
+    public void testExitsAllBranchesSwitchLastWithoutBreak() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(int param) {\n"
+                + "        ex: {\n"
+                + "            sw|itch (param) {\n"
+                + "                case 0:\n"
+                + "                    break ex;\n"
+                + "                case 1:\n"
+                + "                    break ex;\n"
+                + "                default:\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+
+    /**
+     * No default present, values not enumerated causes the switch to continue
+     */
+    public void testExitsAllBranchesSwitchDefaultMissing() throws Exception {
+        performExitsTest("package test;\n"
+                + "public class Test {\n"
+                + "    public void test(int param) {\n"
+                + "        ex: {\n"
+                + "            swi|tch (param) {\n"
+                + "                case 0:\n"
+                + "                    break ex;\n"
+                + "                case 1:\n"
+                + "                    break ex;\n"
+                + "            }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}",
+                false);
+    }
+
+    private void performExitsTest(String code, boolean expected) throws Exception {
+        int caretPos = code.indexOf('|');
+        code = code.replace("|", "");
+        prepareTest(code);
+        TreePath tp = info.getTreeUtilities().pathFor(caretPos);
+        while (tp != null && !StatementTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
+            tp = tp.getParentPath();
+        }
+        assertNotNull(tp);
+        boolean result = Utilities.exitsFromAllBranchers(info, tp);
+        assertEquals(expected, result);
+    }
 
     protected void prepareTest(String code) throws Exception {
+        prepareTest(code, "Test");
+    }
+    
+    protected void prepareTest(String code, String className) throws Exception {
         clearWorkDir();
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
@@ -193,7 +500,7 @@ public class UtilitiesTest extends NbTestCase {
         FileObject buildRoot  = workFO.createFolder("build");
         FileObject cache = workFO.createFolder("cache");
         
-        FileObject data = FileUtil.createData(sourceRoot, "test/Test.java");
+        FileObject data = FileUtil.createData(sourceRoot, "test/" + className + ".java");
         
         TestUtilities.copyStringToFile(FileUtil.toFile(data), code);
         
@@ -306,4 +613,5 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals(goldenStart, start);
         assertEquals(goldenEnd, end);
     }
+    
 }

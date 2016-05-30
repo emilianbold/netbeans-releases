@@ -174,7 +174,6 @@ public class DataViewTest extends NbTestCase {
         int pageSize = 4;
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
         final DataViewPageContext result = instance.getPageContext(0);
-        assertEquals(1, result.getTotalRows());
         assertTrue(Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
             @Override
             public Boolean run() {

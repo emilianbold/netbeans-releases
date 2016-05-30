@@ -155,6 +155,7 @@
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.prototypejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
+                <friend>org.netbeans.modules.javascript2.source.query</friend>
                 <package>org.netbeans.modules.javascript2.model.api</package>
                 <package>org.netbeans.modules.javascript2.model.spi</package>
             </friend-packages>
