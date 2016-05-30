@@ -51,9 +51,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -62,6 +64,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -69,19 +72,24 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class CachingArchiveClassLoader extends ClassLoader {
-
+    private static final String RES_PROCESSORS = "META-INF/services/javax.annotation.processing.Processor";    //NOI18N
     private static final int INI_SIZE = 16384;
     private static final Logger LOG = Logger.getLogger(CachingArchiveClassLoader.class.getName());
     //Todo: Performance Trie<File,ReentrantReadWriteLock>
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
-    private final Archive[] archives;
+    private final List<Pair<URL,Archive>> archives;
+    private final Optional<Consumer<? super URL>> usedRoots;
     private byte[] buffer;
 
-    private CachingArchiveClassLoader(final @NonNull Archive[] archives, final ClassLoader parent) {
+    private CachingArchiveClassLoader(
+            @NonNull final List<Pair<URL,Archive>> archives,
+            @NullAllowed final ClassLoader parent,
+            @NullAllowed final Consumer<? super URL> usedRoots) {
         super (parent);
         assert archives != null;
         this.archives = archives;
+        this.usedRoots = Optional.<Consumer<? super URL>>ofNullable(usedRoots);
     }
 
     @Override
@@ -157,10 +165,14 @@ public final class CachingArchiveClassLoader extends ClassLoader {
                 public Enumeration<URL> call() throws Exception {
                     @SuppressWarnings("UseOfObsoleteCollectionType")
                     final Vector<URL> v = new Vector<URL>();
-                    for (Archive archive : archives) {
+                    for (final Pair<URL,Archive> p : archives) {
+                        final Archive archive = p.second();
                         final FileObject file = archive.getFile(name);
                         if (file != null) {
                             v.add(file.toUri().toURL());
+                            usedRoots
+                                    .map((c) -> RES_PROCESSORS.equals(name) ? null : c)
+                                    .ifPresent((c) -> c.accept(p.first()));
                         }
                     }
                     return v.elements();
@@ -200,10 +212,12 @@ public final class CachingArchiveClassLoader extends ClassLoader {
 
     private FileObject findFileObject(final String resName) {
         assert LOCK.getReadLockCount() > 0;
-        for (Archive archive : archives) {
+        for (final Pair<URL,Archive> p : archives) {
+            final Archive archive = p.second();
             try {
                 final FileObject file = archive.getFile(resName);
                 if (file != null) {
+                    usedRoots.ifPresent((c) -> c.accept(p.first()));
                     return file;
                 }
             } catch (IOException ex) {
@@ -216,8 +230,10 @@ public final class CachingArchiveClassLoader extends ClassLoader {
         return null;
     }
 
-    public static ClassLoader forClassPath(final @NonNull ClassPath classPath,
-            final @NullAllowed ClassLoader parent) {
+    public static ClassLoader forClassPath(
+            @NonNull final ClassPath classPath,
+            @NullAllowed final ClassLoader parent,
+            @NullAllowed final Consumer<? super URL> usedRoots) {
         Parameters.notNull("classPath", classPath); //NOI18N
         final List<ClassPath.Entry> entries = classPath.entries();
         final URL[] urls = new URL[entries.size()];
@@ -225,20 +241,25 @@ public final class CachingArchiveClassLoader extends ClassLoader {
         for (int i=0; eit.hasNext(); i++) {
             urls[i] = eit.next().getURL();
         }
-        return forURLs(urls, parent);
+        return forURLs(urls, parent, usedRoots);
     }
 
-    public static ClassLoader forURLs(final @NonNull URL[] urls,
-            final @NullAllowed ClassLoader parent) {
+    public static ClassLoader forURLs(
+            @NonNull final URL[] urls,
+            @NullAllowed final ClassLoader parent,
+            @NullAllowed final Consumer<? super URL> usedRoots) {
         Parameters.notNull("urls", urls);       //NOI18N
-        final List<Archive> archives = new ArrayList<Archive>(urls.length);
+        final List<Pair<URL,Archive>> archives = new ArrayList<>(urls.length);
         for (URL url : urls) {
             final Archive arch = CachingArchiveProvider.getDefault().getArchive(url, false);
             if (arch != null) {
-                archives.add(arch);
+                archives.add(Pair.of(url,arch));
             }
         }
-        return new CachingArchiveClassLoader(archives.toArray(new Archive[archives.size()]), parent);
+        return new CachingArchiveClassLoader(
+                archives,
+                parent,
+                usedRoots);
     }
 
     public static <T> T readAction(@NonNull final Callable<T> action) throws Exception {

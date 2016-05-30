@@ -52,19 +52,26 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -74,6 +81,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -116,6 +124,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private final AnnotationProcessingQuery.Result aptOptions;
     private final SourceLevelQuery.Result sourceLevel;
     private final RequestProcessor.Task slidingRefresh;
+    private final UsedRoots usedRoots;
     private volatile ClassLoaderRef classLoaderCache;
 
     private APTUtils(@NonNull final FileObject root) {
@@ -125,23 +134,24 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         processorPath = new AtomicReference<>(ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH));
         aptOptions = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
         sourceLevel = SourceLevelQuery.getSourceLevel2(root);
-        this.slidingRefresh = RP.create(new Runnable() {
+        slidingRefresh = RP.create(new Runnable() {
             @Override
             public void run() {
+//                System.out.println("REFRESH: " + root.toURL());
                 IndexingManager.getDefault().refreshIndex(
                     root.toURL(),
                     Collections.<URL>emptyList(),
                     false);
             }
         });
+        usedRoots = new UsedRoots(root.toURL());
     }
 
-    @NonNull
+    @CheckForNull
     public static APTUtils get(final FileObject root) {
         if (root == null) {
             return null;
         }
-
         final URL rootUrl = root.toURL();
         if (knownSourceRootsMap.containsKey(rootUrl)) {
             APTUtils utils = knownSourceRootsMap.get(rootUrl);
@@ -155,11 +165,15 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
         Reference<APTUtils> utilsRef = auxiliarySourceRootsMap.get(root);
         APTUtils utils = utilsRef != null ? utilsRef.get() : null;
-
-        if (utils == null) {
-            auxiliarySourceRootsMap.put(root, new WeakReference<APTUtils>(utils = create(root)));
+        if (utils != null) {
+            return utils;
         }
 
+        if (isAptBuildGeneratedFolder(root)) {
+            return null;
+        }
+
+        auxiliarySourceRootsMap.put(root, new WeakReference<APTUtils>(utils = create(root)));
         return utils;
     }
 
@@ -218,6 +232,19 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return utils;
     }
 
+    private static boolean isAptBuildGeneratedFolder(@NonNull final FileObject root) {
+        final ClassPath scp = ClassPath.getClassPath(root, ClassPath.SOURCE);
+        if (scp != null) {
+            for (FileObject srcRoot : scp.getRoots()) {
+                if (root.toURL().equals(
+                        AnnotationProcessingQuery.getAnnotationProcessingOptions(srcRoot).sourceOutputDirectory())) {
+                   return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean aptEnabledOnScan() {
         return aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.ON_SCAN);
     }
@@ -239,7 +266,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             if (pp == null) {
                 pp = ClassPath.EMPTY;
             }
-            cl = CachingArchiveClassLoader.forClassPath(pp, new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
+            cl = CachingArchiveClassLoader.forClassPath(
+                    pp,
+                    new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()),
+                    usedRoots);
             classLoaderCache = !DISABLE_CLASSLOADER_CACHE ? new ClassLoaderRef(cl, root) : null;
         }
         Collection<Processor> result = lookupProcessors(cl, onScan);
@@ -259,13 +289,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+//        System.out.println("PROPERTY CHANGE FROM CLASSPATH");
+        Collection<? extends File> changed = null;
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
+            changed = usedRoots.getRoots();
         }
-        if (verifyAttributes(root, true)) {
+        if (verifyProcessorPath(root, changed)) {
             slidingRefresh.schedule(SLIDING_WINDOW);
-
-        }        
+        }
+//        System.out.println("END.");
     }
 
     private void listen() {
@@ -422,6 +455,52 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return vote;
     }
 
+    private boolean verifyProcessorPath(
+        @NonNull final FileObject root,
+        @NullAllowed final Collection<? extends File> used) {
+        try {
+            final URL url = root.toURL();
+            final ClassPath pp = validatePaths();
+            final List<File> currentFiles = pp.entries().stream()
+                    .map((e) -> e.getRoot())
+                    .filter((fo) -> fo != null && fo.isValid())
+                    .map((fo) -> FileUtil.isArchiveArtifact(fo) ? FileUtil.getArchiveFile(fo) : fo)
+                    .filter((fo) -> fo != null && fo.isValid())
+                    .map(FileUtil::toFile)
+                    .filter((file) -> file != null)
+                    .collect(Collectors.toList());
+            final String old = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
+            final List<File> oldFiles = Arrays.stream(old.split(File.pathSeparator))
+                    .map((path) -> new File(path))
+                    .collect(Collectors.toList());
+            Stream<File> added = new HashSet<>(currentFiles).stream()
+                    .filter((f) -> !oldFiles.contains(f));
+            Stream<File> removed = new HashSet<>(oldFiles).stream()
+                    .filter((f) -> !currentFiles.contains(f));
+            if (used != null) {
+                final Predicate<File> p = (f) -> used.contains(f);
+                added = added.filter(p);
+                removed = removed.filter(p);
+            }
+            final Predicate<File> p = (f) -> {
+                final URL furl = FileUtil.urlForArchiveOrDir(f);
+                return furl == null ?
+                        true :
+                        !SourceForBinaryQuery.findSourceRoots2(furl).preferSources();
+            };
+            added = added.filter(p);
+            removed = removed.filter(p);
+            final boolean res = added.findAny().isPresent() || removed.findAny().isPresent();
+            if (res) {
+                JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
+            }
+            return res;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return false;
+        }
+    }
+
     @NonNull
     private static String pathToString(@NullAllowed ClassPath cp) {
         final StringBuilder b = new StringBuilder();
@@ -444,8 +523,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     }
                     b.append(u);
                 }
-            }
-        }
+                    }
+                    }
         return b.toString();
     }
 
@@ -516,6 +595,119 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         private static long getTimeStamp(final FileObject root) {
             final FileObject archiveFile = FileUtil.getArchiveFile(root);
             return archiveFile != null ? root.lastModified().getTime() : -1L;
+        }
+    }
+
+    private static final class UsedRoots implements Consumer<URL> {
+        private static final String ATTR_USED_PROC = "apUsed";  //NOI18N
+        private static final int DEFERRED_SAVE = 2_500;    //ms
+        private static final Set<File> TOMBSTONE = Collections.unmodifiableSet(new HashSet<File>());
+        private static final RequestProcessor SAVER = new RequestProcessor(
+                UsedRoots.class.getName(),
+                1,
+                false,
+                false);
+        private final URL root;
+        private final RequestProcessor.Task saveTask;
+        //@GuardedBy("this")
+        private Set<File> used;
+
+        UsedRoots(@NonNull final URL root) {
+            this.root = root;
+            this.saveTask = SAVER.create(()->save());
+        }
+
+        @Override
+        public void accept(@NonNull final URL url) {
+            synchronized (this) {
+                load();
+                if (used == null || used == TOMBSTONE) {
+                    used = new HashSet<>();
+                }
+                final File f = FileUtil.archiveOrDirForURL(url);
+                if (f != null && used.add(f)) {
+                    saveTask.schedule(DEFERRED_SAVE);
+                }
+            }
+        }
+
+        void reset() {
+            synchronized (this) {
+                used = TOMBSTONE;
+            }
+        }
+
+        @CheckForNull
+        Collection<? extends File> getRoots() {
+            final Collection<File> res = load();
+            return res == TOMBSTONE ?
+                    null :
+                    res;
+        }
+
+        @NonNull
+        private synchronized Set<File> load() {
+            if (used == null) {
+                try {
+                    final String raw = JavaIndex.getAttribute(
+                            root,
+                            ATTR_USED_PROC,
+                            null);
+                    if (raw != null) {
+                        Set<File> s = new HashSet<>();
+                        final String[] parts = raw.split(File.pathSeparator);
+                        for (int i = 0; i < parts.length; i+=2) {
+                            final File f = new File(parts[i]);
+                            s.add(f);
+                        }
+                        used = s;
+                    } else {
+                        used = TOMBSTONE;
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    used = TOMBSTONE;
+                }
+            }
+            assert used != null;
+            return used;
+        }
+
+        private void save() {
+            final Collection<File> toSave;
+            synchronized (this) {
+                toSave = used == TOMBSTONE ?
+                        null :
+                        new ArrayList<>(used);
+            }
+            final String val;
+            if (toSave == null) {
+                val = null;
+            } else {
+                final StringBuilder raw = new StringBuilder();
+                for (File f : toSave) {
+                    if (raw.length() != 0) {
+                        raw.append(File.pathSeparatorChar);
+                    }
+                    raw.append(f.getAbsolutePath());
+                    raw.append(File.pathSeparator);
+                }
+                val = raw.toString();
+            }
+            try {
+                JavaIndex.setAttribute(
+                        root,
+                        ATTR_USED_PROC,
+                        val);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            } finally {
+                synchronized (this) {
+                    if (used == TOMBSTONE) {
+                        used = null;
+                    }
+                }
+            }
         }
     }
 }
