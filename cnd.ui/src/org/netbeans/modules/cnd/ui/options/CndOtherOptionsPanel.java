@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;

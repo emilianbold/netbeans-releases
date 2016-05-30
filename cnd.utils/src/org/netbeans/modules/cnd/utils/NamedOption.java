@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils.ui;
+package org.netbeans.modules.cnd.utils;
 
 import java.util.Arrays;
 import java.util.prefs.Preferences;

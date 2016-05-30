@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.ui.options.ReuseOutputTab;
 import org.netbeans.modules.cnd.makeproject.ui.options.SaveModifiedBeforBuild;
 import org.netbeans.modules.cnd.makeproject.ui.options.ShowConfigurationWarning;
 import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 
