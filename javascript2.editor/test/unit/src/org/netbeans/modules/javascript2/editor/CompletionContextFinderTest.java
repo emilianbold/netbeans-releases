@@ -111,11 +111,11 @@ public class CompletionContextFinderTest extends JsTestBase {
     }
     
     public void testString01() throws Exception {
-        checkCompletionContext("testfiles/completion/extDefine.js", "    extend: '^',", CompletionContext.STRING);
+        checkCompletionContext("testfiles/completion/extDefine.js", "    extend: '^',", CompletionContext.IN_STRING);
     }
     
     public void testString02() throws Exception {
-        checkCompletionContext("testfiles/completion/extDefine.js", "    extend2: 'Ext.panel.^',", CompletionContext.STRING);
+        checkCompletionContext("testfiles/completion/extDefine.js", "    extend2: 'Ext.panel.^',", CompletionContext.IN_STRING);
     }
 
     public void testIssue244803() throws Exception {

@@ -1,0 +1,6 @@
+Code completion result for source line:
+var d = g.next().v|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+FIELD      value: object                   [PUBLIC]   JS Platform

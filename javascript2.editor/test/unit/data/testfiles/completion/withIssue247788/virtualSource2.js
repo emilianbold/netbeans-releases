@@ -1,5 +1,5 @@
 (function () {
-    var $scope = controllers_L6.$scope;
+    var $scope = controllersL$6.$scope;
 
     with ($scope) {
         ironman.iterace;

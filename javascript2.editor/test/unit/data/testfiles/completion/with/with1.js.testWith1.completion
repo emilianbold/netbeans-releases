@@ -75,6 +75,7 @@ CLASS      Event                           [PUBLIC]   JS Platform
 CLASS      EventException                  [PUBLIC]   JS Platform
 CLASS      EventListener                   [PUBLIC]   JS Platform
 CLASS      EventTarget                     [PUBLIC]   JS Platform
+CLASS      Generator                       [PUBLIC]   JS Platform
 CLASS      HTMLAnchorElement               [PUBLIC]   JS Platform
 CLASS      HTMLAppletElement               [PUBLIC]   JS Platform
 CLASS      HTMLAreaElement                 [PUBLIC]   JS Platform
@@ -340,11 +341,13 @@ KEYWORD    default                                    null
 KEYWORD    delete                                     null
 KEYWORD    do                                         null
 KEYWORD    else                                       null
+KEYWORD    export                                     null
 KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    function                                   null
 KEYWORD    if                                         null
+KEYWORD    import                                     null
 KEYWORD    in                                         null
 KEYWORD    instanceof                                 null
 KEYWORD    new                                        null
