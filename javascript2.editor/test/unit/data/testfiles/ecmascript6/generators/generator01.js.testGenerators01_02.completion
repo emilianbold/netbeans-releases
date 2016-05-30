@@ -2,5 +2,5 @@ Code completion result for source line:
 var d = g.next().v|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      value                           [PUBLIC]   <font color=#999999>generator02.js</font>
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
-FIELD      value: object                   [PUBLIC]   JS Platform

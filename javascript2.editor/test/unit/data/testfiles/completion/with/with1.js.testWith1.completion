@@ -3,21 +3,45 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO Array                           [PUBLIC]   JS Platform
+CONSTRUCTO ArrayBuffer                     [PUBLIC]   JS Platform
 CONSTRUCTO Boolean                         [PUBLIC]   JS Platform
+CONSTRUCTO DataView                        [PUBLIC]   JS Platform
 CONSTRUCTO Date                            [PUBLIC]   JS Platform
 CONSTRUCTO Error                           [PUBLIC]   JS Platform
 CONSTRUCTO EvalError                       [PUBLIC]   JS Platform
+CONSTRUCTO Float32Array(length): Array     [PUBLIC]   JS Platform
+CONSTRUCTO Float64Array(length): Array     [PUBLIC]   JS Platform
 CONSTRUCTO Function                        [PUBLIC]   JS Platform
+CONSTRUCTO Generator                       [PUBLIC]   JS Platform
+CONSTRUCTO GeneratorFunction               [PUBLIC]   JS Platform
+CONSTRUCTO Infinity(): Number              [PUBLIC]   JS Platform
+CONSTRUCTO Int16Array(length): Array       [PUBLIC]   JS Platform
+CONSTRUCTO Int32Array(length): Array       [PUBLIC]   JS Platform
+CONSTRUCTO Int8Array(length): Array        [PUBLIC]   JS Platform
+CONSTRUCTO Map                             [PUBLIC]   JS Platform
+CONSTRUCTO NaN(): Number                   [PUBLIC]   JS Platform
 CONSTRUCTO Number                          [PUBLIC]   JS Platform
 CONSTRUCTO Object                          [PUBLIC]   JS Platform
+CONSTRUCTO Promise                         [PUBLIC]   JS Platform
+CONSTRUCTO Proxy                           [PUBLIC]   JS Platform
 CONSTRUCTO RangeError                      [PUBLIC]   JS Platform
 CONSTRUCTO ReferenceError                  [PUBLIC]   JS Platform
 CONSTRUCTO RegExp                          [PUBLIC]   JS Platform
+CONSTRUCTO Set                             [PUBLIC]   JS Platform
 CONSTRUCTO String                          [PUBLIC]   JS Platform
+CONSTRUCTO Symbol                          [PUBLIC]   JS Platform
 CONSTRUCTO SyntaxError                     [PUBLIC]   JS Platform
 CONSTRUCTO TypeError                       [PUBLIC]   JS Platform
 CONSTRUCTO URIError                        [PUBLIC]   JS Platform
+CONSTRUCTO Uint16Array(length): Array      [PUBLIC]   JS Platform
+CONSTRUCTO Uint32Array(length): Array      [PUBLIC]   JS Platform
+CONSTRUCTO Uint8Array(length): Array       [PUBLIC]   JS Platform
+CONSTRUCTO Uint8ClampedArray(length): Arr  [PUBLIC]   JS Platform
+CONSTRUCTO WeakMap                         [PUBLIC]   JS Platform
+CONSTRUCTO WeakSet                         [PUBLIC]   JS Platform
 CONSTRUCTO XMLHttpRequest                  [PUBLIC]   JS Platform
+CONSTRUCTO arguments                       [PUBLIC]   JS Platform
+CONSTRUCTO undefined                       [PUBLIC]   JS Platform
 CLASS      AbstractView                    [PUBLIC]   JS Platform
 CLASS      AbstractWorker                  [PUBLIC]   JS Platform
 CLASS      Arguments                       [PUBLIC]   JS Platform
@@ -75,7 +99,6 @@ CLASS      Event                           [PUBLIC]   JS Platform
 CLASS      EventException                  [PUBLIC]   JS Platform
 CLASS      EventListener                   [PUBLIC]   JS Platform
 CLASS      EventTarget                     [PUBLIC]   JS Platform
-CLASS      Generator                       [PUBLIC]   JS Platform
 CLASS      HTMLAnchorElement               [PUBLIC]   JS Platform
 CLASS      HTMLAppletElement               [PUBLIC]   JS Platform
 CLASS      HTMLAreaElement                 [PUBLIC]   JS Platform
@@ -133,8 +156,6 @@ CLASS      HTMLTextAreaElement             [PUBLIC]   JS Platform
 CLASS      HTMLTitleElement                [PUBLIC]   JS Platform
 CLASS      HTMLUListElement                [PUBLIC]   JS Platform
 CLASS      History                         [PUBLIC]   JS Platform
-CLASS      InternalError                   [PUBLIC]   JS Platform
-CLASS      Iterator                        [PUBLIC]   JS Platform
 CLASS      JSON                            [PUBLIC]   JS Platform
 CLASS      LinkStyle                       [PUBLIC]   JS Platform
 CLASS      Location                        [PUBLIC]   JS Platform
@@ -155,8 +176,8 @@ CLASS      RGBColor                        [PUBLIC]   JS Platform
 CLASS      Range                           [PUBLIC]   JS Platform
 CLASS      RangeException                  [PUBLIC]   JS Platform
 CLASS      Rect                            [PUBLIC]   JS Platform
+CLASS      Reflect                         [PUBLIC]   JS Platform
 CLASS      Screen                          [PUBLIC]   JS Platform
-CLASS      StopIteration                   [PUBLIC]   JS Platform
 CLASS      Storage                         [PUBLIC]   JS Platform
 CLASS      StyleSheet                      [PUBLIC]   JS Platform
 CLASS      StyleSheetList                  [PUBLIC]   JS Platform
@@ -172,9 +193,11 @@ CLASS      prototype                       [PUBLIC]   JS Platform
 CLASS      z                               [PUBLIC]   with1.js
 METHOD     Image                           [PUBLIC,   JS Platform
 METHOD     Option                          [PUBLIC,   JS Platform
+METHOD     Runtime(x: String, evalRealm:   [PUBLIC]   JS Platform
 METHOD     Worker                          [PUBLIC,   JS Platform
 METHOD     addEventListener(type: String,  [PUBLIC,   JS Platform
 METHOD     alert(): undefined              [PUBLIC,   JS Platform
+METHOD     assign(target: Object): Object  [PUBLIC,   JS Platform
 METHOD     atob(encodedData: String): Str  [PUBLIC,   JS Platform
 METHOD     back(): undefined               [PUBLIC,   JS Platform
 METHOD     blur(): undefined               [PUBLIC,   JS Platform
@@ -184,46 +207,48 @@ METHOD     clearInterval(intervalID: Numb  [PUBLIC,   JS Platform
 METHOD     clearTimeout(timeoutID: Number  [PUBLIC,   JS Platform
 METHOD     close(): undefined              [PUBLIC,   JS Platform
 METHOD     confirm(message: String): Bool  [PUBLIC,   JS Platform
-METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     decodeURI(encodedURI: String):  [PUBLIC]   JS Platform
-METHOD     decodeURIComponent(encodedURI:  [PUBLIC]   JS Platform
-METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
-METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+METHOD     decodeURIComponent(encodedURIC  [PUBLIC]   JS Platform
+METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
+METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
 METHOD     dump(message: String): undefin  [PUBLIC,   JS Platform
-METHOD     encodeURI(URI: String): String  [PUBLIC]   JS Platform
-METHOD     encodeURIComponent(str: String  [PUBLIC]   JS Platform
+METHOD     encodeURI(uri: String): String  [PUBLIC]   JS Platform
+METHOD     encodeURIComponent(uriComponen  [PUBLIC]   JS Platform
 METHOD     escape(regular: String): Strin  [PUBLIC,   JS Platform
-METHOD     eval(string: String): Object    [PUBLIC]   JS Platform
+METHOD     eval(x: String): undefined      [PUBLIC]   JS Platform
 METHOD     find(aString: String, aCaseSen  [PUBLIC,   JS Platform
 METHOD     focus(): undefined              [PUBLIC,   JS Platform
 METHOD     forward(): undefined            [PUBLIC,   JS Platform
-METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     getAttention(): undefined       [PUBLIC,   JS Platform
 METHOD     getComputedStyle(element: Elem  [PUBLIC,   JS Platform
-METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
-METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
-METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
+METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
 METHOD     getSelection(): Selection       [PUBLIC,   JS Platform
-METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
-METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   JS Platform
+METHOD     is(value1: String, value2: Str  [PUBLIC,   JS Platform
+METHOD     isExtensible(obj: Object): Boo  [PUBLIC,   JS Platform
 METHOD     isFinite(number: Number): Bool  [PUBLIC]   JS Platform
-METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
-METHOD     isNaN(testValue: String): Bool  [PUBLIC]   JS Platform
-METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
-METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
-METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
+METHOD     isFrozen(obj: Object): Boolean  [PUBLIC,   JS Platform
+METHOD     isNaN(number: Number): Boolean  [PUBLIC]   JS Platform
+METHOD     isPrototypeOf(obj): Boolean     [PUBLIC]   JS Platform
+METHOD     isSealed(obj: Object): Boolean  [PUBLIC,   JS Platform
+METHOD     keys(obj: Object): Array        [PUBLIC,   JS Platform
 METHOD     matchMedia(mediaQueryString: S  [PUBLIC,   JS Platform
 METHOD     moveBy(deltaX: Number, deltaY:  [PUBLIC,   JS Platform
 METHOD     moveTo(x: Number, y: Number):   [PUBLIC,   JS Platform
 METHOD     open(strUrl: String, strWindow  [PUBLIC,   JS Platform
 METHOD     openDialog(url: String, name:   [PUBLIC,   JS Platform
 METHOD     parseFloat(string: String): Nu  [PUBLIC]   JS Platform
-METHOD     parseInt(string: String): Numb  [PUBLIC]   JS Platform
+METHOD     parseInt(string: String, radix  [PUBLIC]   JS Platform
 METHOD     postMessage(message: String, t  [PUBLIC,   JS Platform
-METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     preventExtensions(obj: Object)  [PUBLIC,   JS Platform
 METHOD     print(): undefined              [PUBLIC,   JS Platform
 METHOD     prompt(text: String, value: St  [PUBLIC,   JS Platform
-METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   JS Platform
 METHOD     removeEventListener(type: Stri  [PUBLIC,   JS Platform
 METHOD     resizeBy(xDelta: Number, yDelt  [PUBLIC,   JS Platform
 METHOD     resizeTo(iWidth: Number, iHeig  [PUBLIC,   JS Platform
@@ -232,7 +257,7 @@ METHOD     scrollBy(X: Number, Y: Number)  [PUBLIC,   JS Platform
 METHOD     scrollByLines(lines: Number):   [PUBLIC,   JS Platform
 METHOD     scrollByPages(pages: Number):   [PUBLIC,   JS Platform
 METHOD     scrollTo(xcoord: Number, ycoor  [PUBLIC,   JS Platform
-METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     seal(obj: Object): Object       [PUBLIC,   JS Platform
 METHOD     setCursor(): undefined          [PUBLIC,   JS Platform
 METHOD     setImmediate(func: Function):   [PUBLIC,   JS Platform
 METHOD     setInterval(func: Function, de  [PUBLIC,   JS Platform
@@ -243,7 +268,6 @@ METHOD     stop(): undefined               [PUBLIC,   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     unescape(escaped: String): Str  [PUBLIC,   JS Platform
-METHOD     uneval(): Number                [PUBLIC]   JS Platform
 METHOD     updateCommands(sCommandName):   [PUBLIC,   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      Components: Components          [PUBLIC]   JS Platform
@@ -328,10 +352,6 @@ FIELD      top: Window                     [PUBLIC]   JS Platform
 FIELD      window: Window                  [PUBLIC]   JS Platform
 FIELD      x: String                       [PUBLIC]   with1.js
 FIELD      y: Number                       [PUBLIC]   with1.js
-VARIABLE   Infinity: Number                [PUBLIC]   JS Platform
-VARIABLE   NaN: Number                     [PUBLIC]   JS Platform
-VARIABLE   Proxy                           [PUBLIC]   JS Platform
-VARIABLE   undefined                       [PUBLIC]   JS Platform
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
