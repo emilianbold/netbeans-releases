@@ -75,6 +75,10 @@ import org.openide.filesystems.JarFileSystem;
 public class WildflyPluginUtils {
 
     public static final Version JBOSS_7_0_0 = new Version("7.0.0", true); // NOI18N
+    
+    public static final Version EAP_6_1_0 = new Version("7.2.0", false); // NOI18N    
+    
+    public static final Version EAP_6_2_0 = new Version("7.3.0", false); // NOI18N
 
     public static final Version EAP_6_3_0 = new Version("7.4.0", false); // NOI18N
 

@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
@@ -236,7 +237,8 @@ class WildflyStartRunnable implements Runnable {
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT) != null) {
             try {
                 int adminPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT));
-                if (WildflyPluginUtils.WILDFLY_9_0_0.compareTo(dm.getServerVersion()) <= 0) {
+                Version currentVersion = dm.getServerVersion();
+                if (!currentVersion.isWidlfy() || WildflyPluginUtils.WILDFLY_8_2_0.compareTo(currentVersion) <= 0) {
                     javaOptsBuilder.append(" -Djboss.management.http.port=").append(adminPort);
                 } else {
                     javaOptsBuilder.append(" -Djboss.management.native.port=").append(adminPort);
