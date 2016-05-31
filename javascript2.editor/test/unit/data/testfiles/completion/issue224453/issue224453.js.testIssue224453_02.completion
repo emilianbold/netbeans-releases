@@ -3,4 +3,4 @@ $scope.s|pecification.id + "/v/" + view);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      specification                   [PUBLIC]   issue224453.js
-METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     seal(obj: Object): Object       [PUBLIC,   JS Platform

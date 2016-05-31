@@ -246,3 +246,5 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-api-knockout@" value="${javadoc.docs.org-netbeans-api-knockout}"/>
 <replacefilter token="@org-netbeans-lib-v8debug@" value="${javadoc.docs.org-netbeans-lib-v8debug}"/>
 <replacefilter token="@org-netbeans-modules-docker-api@" value="${javadoc.docs.org-netbeans-modules-docker-api}"/>
+<replacefilter token="@org-netbeans-modules-csl-types@" value="${javadoc.docs.org-netbeans-modules-csl-types}"/>
+<replacefilter token="@org-netbeans-modules-csl-api@" value="${javadoc.docs.org-netbeans-modules-csl-api}"/>

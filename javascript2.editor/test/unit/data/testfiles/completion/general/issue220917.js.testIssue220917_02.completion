@@ -2,7 +2,7 @@ Code completion result for source line:
 document.create|Attribute();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     createAttribute(name: String):  [PUBLIC]   JS Platform
 METHOD     createAttributeNS(namespaceURI  [PUBLIC]   JS Platform
 METHOD     createCDATASection(data: Strin  [PUBLIC]   JS Platform

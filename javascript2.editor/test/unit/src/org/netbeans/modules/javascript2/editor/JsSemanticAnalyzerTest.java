@@ -128,6 +128,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/coloring/unusedVariable03.js"); 
     }
     
+    public void testUnusedArrowParameter01() throws Exception {
+        checkSemantic("testfiles/hints/arrowFunction.js"); 
+    }
+    
     public void testIssue217443() throws Exception {
         checkSemantic("testfiles/coloring/issue217443.js"); 
     }
@@ -421,7 +425,7 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/model/issue251911.js");
     }
     
-    public void testIssue2511819() throws Exception {
+    public void testIssue251819() throws Exception {
         checkSemantic("testfiles/coloring/issue251819.js");
     }
     
@@ -499,5 +503,115 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     
     public void testIssue255494() throws Exception {
         checkSemantic("testfiles/coloring/issue255494.js");
+    }
+    
+    public void testIssue258857() throws Exception {
+        checkSemantic("testfiles/coloring/issue258857.js");
+    }
+    
+    public void testIssue258968() throws Exception {
+        checkSemantic("testfiles/coloring/issue258968.js");
+    }
+    
+    public void testClass01() throws Exception {
+        checkSemantic("testfiles/markoccurences/classes/class01.js");
+    }
+    
+    public void testClass02() throws Exception {
+        checkSemantic("testfiles/markoccurences/classes/class02.js");
+    }
+    
+    public void testClass03() throws Exception {
+        checkSemantic("testfiles/markoccurences/classes/class03.js");
+    }
+    
+    public void testClass04() throws Exception {
+        checkSemantic("testfiles/markoccurences/classes/class04.js");
+    }
+    
+    public void testGenerator01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator01.js");
+    }
+    
+    public void testGenerator02() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator02.js");
+    }
+    
+    public void testGenerator03() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator03.js");
+    }
+    
+    public void testGenerator04() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator04.js");
+    }
+    
+    public void testFunctionDeclaration05() throws Exception {
+        checkSemantic("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js");
+    }
+   
+    public void testShorthandPropertyNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js");
+    }
+    
+    public void testShorthandMethodNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/shorthandMethodNames.js");
+    }
+    
+    public void testComputedPropertyNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
+    }
+    
+    public void testNumberLiterals() throws Exception {
+        checkSemantic("testfiles/completion/general/numberLiterals01.js");
+    }
+    
+    public void testArrayDestructuringAssing01() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js");
+    }
+    
+    public void testObjectDestructuringAssing01() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js");
+    }
+    
+    public void testObjectDestructuringAssing02() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js");
+    }
+    
+    public void testObjectDestructuringAssing03() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring03.js");
+    }
+    
+    public void testObjectDestructuringAssing04() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js");
+    }
+    
+    public void testObjectDestructuringAssing05() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring05.js");
+    }
+    
+    public void testObjectDestructuringAssing06() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js");
+    }
+    
+    public void testExample01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/example01.js");
+    }
+    
+    public void testObjectPropertyAssignment01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkSemantic("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js");
+    }
+    
+    public void testSemanticalKeywords() throws Exception {
+        checkSemantic("testfiles/coloring/semanticalKeywords.js");
+    }
+    
+    public void testBlockScope05() throws Exception {
+        checkSemantic("testfiles/markoccurences/blockscope/scope05.js");
+    }
+    
+    public void testArrayLiteralInBlockScope01() throws Exception {
+        checkSemantic("testfiles/markoccurences/blockscope/arrayLiteral01.js");
     }
 }

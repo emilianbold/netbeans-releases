@@ -8,8 +8,9 @@ METHOD     getElementsByName(elementName:  [PUBLIC]   JS Platform
 METHOD     getElementsByTagName(tagname:   [PUBLIC]   JS Platform
 METHOD     getElementsByTagNameNS(namespa  [PUBLIC]   JS Platform
 METHOD     getFeature(feature: String, ve  [PUBLIC]   JS Platform
-METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
-METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
-METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
+METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
 METHOD     getSelection(): Selection       [PUBLIC,   JS Platform
 METHOD     getUserData(key: String): DOMU  [PUBLIC]   JS Platform

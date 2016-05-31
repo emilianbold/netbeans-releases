@@ -1,6 +1,6 @@
 (function () {
     var |>CLASS:context<|;
-    context.|>METHOD:Parser<| = function |>METHOD:Parser<|() {
+    context.|>METHOD:Parser<| = function |>METHOD,UNUSED:Parser<|() {
 
 
 
@@ -11,6 +11,6 @@
         MyError.prototype.|>METHOD:constructor<| = MyError;
     }
     
-    context.|>METHOD:Parser2<| = Parser;
+    context.|>FIELD:Parser2<| = |>GLOBAL:Parser<|;
        
 }());

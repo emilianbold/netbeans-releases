@@ -98,7 +98,7 @@ public class JQueryCodeCompletionTest extends JsCodeCompletionBase {
     }
 
     public void testIssue223963() throws Exception {
-        checkCompletionDocumentation("testfiles/completion/jQuery/issue223963.js", "$(document).a^", false, "a");
+        checkCompletionDocumentation("testfiles/completion/jQuery/issue223963.js", "$(document).a^", false, "addClass");
     }
 
     public void testIssue223060() throws Exception {

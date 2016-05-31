@@ -54,10 +54,10 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.openide.filesystems.FileObject;
@@ -79,7 +79,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             return Collections.EMPTY_LIST;
         }
         List<CompletionProposal> result = new ArrayList<CompletionProposal>();
-        if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
+        if (jsCompletionContext == CompletionContext.IN_STRING || jsCompletionContext == CompletionContext.EXPRESSION
                 || jsCompletionContext == CompletionContext.GLOBAL) {
             TokenHierarchy<?> th = ccContext.getParserResult().getSnapshot().getTokenHierarchy();
             if (th == null) {
@@ -102,7 +102,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             }
 
             Token<? extends JsTokenId> token = null;
-            if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION || jsCompletionContext == CompletionContext.GLOBAL) {
+            if (jsCompletionContext == CompletionContext.IN_STRING || jsCompletionContext == CompletionContext.EXPRESSION || jsCompletionContext == CompletionContext.GLOBAL) {
                 String wholePrefix = ts.token().id() == JsTokenId.STRING ? ts.token().text().toString().trim() : "";
                 NodeJsContext nodeContext = NodeJsContext.findContext(ts, eOffset);
               

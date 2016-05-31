@@ -37,30 +37,34 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class SanitizingParser extends Parser {
+public abstract class SanitizingParser<R extends BaseParserResult> extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(SanitizingParser.class.getName());
     
@@ -74,11 +78,13 @@ public abstract class SanitizingParser extends Parser {
     private static final int MAX_RIGHT_CURLY_BRACKETS = 30;
 
     private final Language<JsTokenId> language;
+    private final ChangeSupport listeners;
 
-    private JsParserResult lastResult = null;
+    private R lastResult = null;
 
     public SanitizingParser(Language<JsTokenId> language) {
         this.language = language;
+        this.listeners = new ChangeSupport(this);
     }
 
     @Override
@@ -88,24 +94,32 @@ public abstract class SanitizingParser extends Parser {
         }
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot, language);
-            lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
+            lastResult = parseSource(snapshot, event, getSanitizeStrategy(), errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
             LOGGER.log (Level.INFO, "Exception during parsing", ex);
             // TODO create empty result
-            lastResult = new JsParserResult(snapshot, null);
+            lastResult = createErrorResult(snapshot);
         }
     }
 
     protected abstract String getDefaultScriptName();
 
-    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset,  JsErrorManager errorManager) throws Exception;
+    @CheckForNull
+    protected abstract R parseSource(Context context, JsErrorManager errorManager) throws Exception;
 
     protected abstract String getMimeType();
-    
-    private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
+
+    @NonNull
+    protected abstract R createErrorResult(@NonNull Snapshot snapshot);
+
+    protected Sanitize getSanitizeStrategy() {
+        return Sanitize.NONE;
+    }
+
+    final R parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
-        
+
         FileObject fo = snapshot.getSource().getFileObject();
         long startTime = System.nanoTime();
         String scriptName;
@@ -115,12 +129,18 @@ public abstract class SanitizingParser extends Parser {
             scriptName = getDefaultScriptName();
         }
         if (!isParsable(snapshot)) {
-            return new JsParserResult(snapshot, null);
+            return createErrorResult(snapshot);
         }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
-        
-        JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset),
-                sanitizing, errorManager);
+
+        Context context = new Context(scriptName, snapshot, caretOffset, language);
+        R result = parseContext(context, sanitizing, errorManager);
+        if (!result.success() && context.isModule()) {
+            // module may be broken completely by broken/unfinished export
+            // try to at least parse it as normal source
+            context.isModule = false;
+            result = parseContext(context, sanitizing, errorManager, false);
+        }
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
@@ -128,7 +148,7 @@ public abstract class SanitizingParser extends Parser {
         }
         return result;
     }
-    
+
     /**
      * This method try to analyze the text and says whether the snapshot should be file
      * @param snapshot
@@ -168,7 +188,7 @@ public abstract class SanitizingParser extends Parser {
                     }
                     if (countedLines > 0 && (countChars / countedLines) > 200) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(Level.FINE, "The file {0} was not parsed because the is minimize and size is big.", scriptName);
+                            LOGGER.log(Level.FINE, "The file {0} was not parsed because it is minimized and the size is too big.", scriptName);
                         }
                         return false;
                     }
@@ -195,12 +215,12 @@ public abstract class SanitizingParser extends Parser {
         return true;
     }
     
-    JsParserResult parseContext(Context context, Sanitize sanitizing,
+    R parseContext(Context context, Sanitize sanitizing,
             JsErrorManager errorManager) throws Exception {
         return parseContext(context, sanitizing, errorManager, true);
     }
     
-    private JsParserResult parseContext(Context context, Sanitize sanitizing,
+    private R parseContext(Context context, Sanitize sanitizing,
             JsErrorManager errorManager, boolean copyErrors) throws Exception {
         
         boolean sanitized = false;
@@ -217,8 +237,7 @@ public abstract class SanitizingParser extends Parser {
         }
         
         JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
-        FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
-                context.getSource(), context.getCaretOffset(), current);
+        R r = parseSource(context, current);
 
         if (copyErrors) {
             errorManager.fillErrors(current);
@@ -234,11 +253,13 @@ public abstract class SanitizingParser extends Parser {
                 }
             }
             // TODO not very clever check
-            if (node == null || !current.isEmpty()) {
+            if (r == null || !current.isEmpty()) {
                 return parseContext(context, sanitizing.next(), errorManager, false);
             }
         }
-        return new JsParserResult(context.getSnapshot(), node);
+        return r != null ?
+            r :
+            createErrorResult(context.getSnapshot());
     }
 
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
@@ -515,13 +536,19 @@ public abstract class SanitizingParser extends Parser {
     }
 
     @Override
-    public final void addChangeListener(ChangeListener changeListener) {
+    public final void addChangeListener(@NonNull final ChangeListener changeListener) {
         LOGGER.log(Level.FINE, "Adding changeListener: {0}", changeListener); //NOI18N)
+        listeners.addChangeListener(changeListener);
     }
 
     @Override
-    public final void removeChangeListener(ChangeListener changeListener) {
+    public final void removeChangeListener(@NonNull final ChangeListener changeListener) {
         LOGGER.log(Level.FINE, "Removing changeListener: {0}", changeListener); //NOI18N)
+        listeners.removeChangeListener(changeListener);
+    }
+
+    protected final void fireChange() {
+        listeners.fireChange();
     }
 
     private static void erase(StringBuilder builder, int start, int end) {
@@ -534,24 +561,35 @@ public abstract class SanitizingParser extends Parser {
     /**
      * Parsing context
      */
-    static class Context {
+    protected final static class Context {
 
+        private static final List<JsTokenId> IMPORT_EXPORT = new ArrayList<JsTokenId>(2);
+
+        static {
+            Collections.addAll(IMPORT_EXPORT, JsTokenId.KEYWORD_IMPORT, JsTokenId.KEYWORD_EXPORT);
+        }
+        
         private final String name;
         
         private final Snapshot snapshot;
 
         private final int caretOffset;
         
+        private final Language<JsTokenId> language;
+        
         private String source;
 
         private String sanitizedSource;
 
         private Sanitize sanitization;
+        
+        private Boolean isModule = null;
 
-        public Context(String name, Snapshot snapshot, int caretOffset) {
+        Context(String name, Snapshot snapshot, int caretOffset, Language<JsTokenId> language) {
             this.name = name;
             this.snapshot = snapshot;
             this.caretOffset = caretOffset;
+            this.language = language;
         }
 
         public String getName() {
@@ -596,6 +634,46 @@ public abstract class SanitizingParser extends Parser {
             this.sanitization = sanitization;
         }
 
+        public boolean isModule() {
+            if (isModule == null) {
+                isModule = isModule(snapshot, language);
+            }
+            return isModule;
+        }
+
+        private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language) {
+            if (BaseParserResult.isEmbedded(snapshot)) {
+                return isModule(snapshot, language, 0, Integer.MAX_VALUE);
+            } else {
+                TokenSequence<? extends JsTokenId> seq = LexUtilities.getJsPositionedSequence(snapshot, 0);
+                if (seq == null) {
+                    return false;
+                } else {
+                    Token<? extends JsTokenId> token = LexUtilities.findNextToken(seq, IMPORT_EXPORT);
+                    if (token != null && IMPORT_EXPORT.contains(token.id())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language, int offset, int max) {
+            assert BaseParserResult.isEmbedded(snapshot);
+            TokenSequence<? extends JsTokenId> seq = LexUtilities.getNextJsTokenSequence(
+                snapshot, offset, Integer.MAX_VALUE, language);
+            if (seq != null) {
+                Token<? extends JsTokenId> token = LexUtilities.findNextToken(seq, IMPORT_EXPORT);
+                if (token != null) {
+                    if (IMPORT_EXPORT.contains(token.id())) {
+                        return true;
+                    } else {
+                        return isModule(snapshot, language, seq.offset() + token.length(), max);
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     /** Attempts to sanitize the input buffer */
