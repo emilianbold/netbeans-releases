@@ -53,10 +53,10 @@ import org.openide.nodes.Sheet;
 
 import org.netbeans.api.project.Project;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNodeProvider;
 // OLD import org.openide.util.lookup.ServiceProvider;
 
 // OLD @ServiceProvider(service = CustomizerNodeProvider.class)
