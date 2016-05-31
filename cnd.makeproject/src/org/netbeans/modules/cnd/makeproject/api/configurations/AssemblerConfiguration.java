@@ -44,14 +44,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class AssemblerConfiguration extends BasicCompilerConfiguration implements Cloneable {
     // Constructors
@@ -126,44 +120,5 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
-    }
-
-    // Sheet
-    public Sheet getGeneralSheet(MakeConfiguration conf) {
-        Sheet sheet = new Sheet();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        AbstractCompiler assemblerCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.Assembler);
-
-        Sheet.Set basicSet = getBasicSet();
-        basicSet.remove("StripSymbols"); // NOI18N
-        sheet.put(basicSet);
-        if (getMaster() != null) {
-            sheet.put(getInputSet());
-        }
-        Sheet.Set set4 = new Sheet.Set();
-        set4.setName("Tool"); // NOI18N
-        set4.setDisplayName(getString("ToolTxt1"));
-        set4.setShortDescription(getString("ToolHint1"));
-        if (assemblerCompiler != null) {
-            set4.put(new StringNodeProp(getTool(), assemblerCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
-        }
-        sheet.put(set4);
-
-        String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-        Sheet.Set set2 = new Sheet.Set();
-        set2.setName("CommandLine"); // NOI18N
-        set2.setDisplayName(getString("CommandLineTxt"));
-        set2.setShortDescription(getString("CommandLineHint"));
-        if (assemblerCompiler != null) {
-            set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, assemblerCompiler, null, texts));
-        }
-        sheet.put(set2);
-
-        return sheet;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(AssemblerConfiguration.class, s);
     }
 }

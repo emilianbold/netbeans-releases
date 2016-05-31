@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.actions;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.ManageLaunchers;
+import org.netbeans.modules.cnd.makeproject.ui.launchers.actions.ManageLaunchers;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

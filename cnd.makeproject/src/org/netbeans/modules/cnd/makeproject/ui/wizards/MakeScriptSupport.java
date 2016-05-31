@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFileProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -132,9 +132,9 @@ public class MakeScriptSupport implements BuildFileProvider {
             String res;
             String name = CndPathUtilities.getBaseName(script);
             if (name == null) {
-                res = BuildSupport.MAKE_MACRO+" clean"; // NOI18N
+                res = MakeArtifact.MAKE_MACRO+" clean"; // NOI18N
             } else {
-                res = BuildSupport.MAKE_MACRO+" -f "+name+" clean"; // NOI18N
+                res = MakeArtifact.MAKE_MACRO+" -f "+name+" clean"; // NOI18N
             }
             if (arguments != null && !arguments.isEmpty()) {
                 res+=" "+arguments; // NOI18N
@@ -147,9 +147,9 @@ public class MakeScriptSupport implements BuildFileProvider {
             String res;
             String name = CndPathUtilities.getBaseName(script);
             if (name == null) {
-                res = BuildSupport.MAKE_MACRO;
+                res = MakeArtifact.MAKE_MACRO;
             } else {
-                res = BuildSupport.MAKE_MACRO+" -f "+name; // NOI18N
+                res = MakeArtifact.MAKE_MACRO+" -f "+name; // NOI18N
             }
             if (arguments != null && !arguments.isEmpty()) {
                 res+=" "+arguments; // NOI18N

@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation;
+import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;

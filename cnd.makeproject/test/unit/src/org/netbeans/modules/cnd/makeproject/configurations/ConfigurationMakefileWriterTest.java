@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -138,8 +137,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello1lib",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello1lib.a",
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
@@ -150,8 +149,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello3lib",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello3lib." + libsuffix,
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);

@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
+import static org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;

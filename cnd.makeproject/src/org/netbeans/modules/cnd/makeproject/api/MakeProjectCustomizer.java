@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Sheet;
 

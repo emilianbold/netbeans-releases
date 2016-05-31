@@ -47,9 +47,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerRootNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.PrioritizedCustomizerNode;
 import org.openide.util.Lookup;
 
 public class DebuggerChooserConfiguration implements Cloneable {

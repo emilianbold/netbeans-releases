@@ -43,22 +43,14 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
-import java.beans.PropertyEditor;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class CCCompilerConfiguration extends CCCCompilerConfiguration implements Cloneable {
@@ -68,7 +60,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public static final int STANDARD_CPP11 = 2;
     public static final int STANDARD_CPP14 = 3;
     public static final int STANDARD_INHERITED = 4;
-    private static final String[] STANDARD_NAMES = {
+    public static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_CPP98"),
         getString("STANDARD_CPP11"),
@@ -305,114 +297,6 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return cs.getCompilerFlavor().getToolchainDescriptor().getCpp();
     }
 
-    // Sheet
-    public Sheet getSheet(MakeConfiguration conf, Folder folder, Item item) {
-        Sheet sheet = new Sheet();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-
-        IntNodeProp standardProp = new IntNodeProp(getCppStandard(), true, "CPPStandard", getString("CPPStandardTxt"), getString("CPPStandardHint")) {  // NOI18N
-
-                @Override
-                public PropertyEditor getPropertyEditor() {
-                    if (intEditor == null) {
-                        intEditor = new NewIntEditor();
-                    }
-                    return intEditor;
-                }
-
-                class NewIntEditor extends IntEditor {
-
-                    @Override
-                    public String getAsText() {
-                        if (CCCompilerConfiguration.this.getCppStandard().getValue() == STANDARD_INHERITED) {
-                             return NbBundle.getMessage(CCCompilerConfiguration.class, "STANDARD_INHERITED_WITH_VALUE", STANDARD_NAMES[CCCompilerConfiguration.this.getInheritedCppStandard()]); //NOI18N
-                        }
-                        return super.getAsText();
-                    }
-                                       
-                }
-         
-        };
-        Sheet.Set set0 = getSet(null, folder, item);
-        sheet.put(set0);
-        if (conf.isCompileConfiguration()) {
-            if (folder == null) {
-                Sheet.Set bset = getBasicSet();
-                sheet.put(bset);
-                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler                
-                    Sheet.Set set2 = new Sheet.Set();
-                    set2.setName("OtherOptions"); // NOI18N
-                    set2.setDisplayName(getString("OtherOptionsTxt"));
-                    set2.setShortDescription(getString("OtherOptionsHint"));
-                    set2.put(new IntNodeProp(getMTLevel(), (getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getLibraryLevel(), (getMaster() == null), "LibraryLevel", getString("LibraryLevelTxt"), getString("LibraryLevelHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getStandardsEvolution(), (getMaster() == null), "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getLanguageExt(), (getMaster() == null), "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
-                    sheet.put(set2);
-                } //else {
-                    if (STANDARDS_SUPPORT) {
-                        bset.put(standardProp);
-                    }
-                //}
-                if (getMaster() != null) {
-                    sheet.put(getInputSet());
-                }
-
-                Sheet.Set set4 = new Sheet.Set();
-                set4.setName("Tool"); // NOI18N
-                set4.setDisplayName(getString("ToolTxt1"));
-                set4.setShortDescription(getString("ToolHint1"));
-                if (ccCompiler != null) {
-                    set4.put(new StringNodeProp(getTool(), ccCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
-                }
-                sheet.put(set4);
-            }
-            
-            String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-            Sheet.Set set2 = new Sheet.Set();
-            set2.setName("CommandLine"); // NOI18N
-            set2.setDisplayName(getString("CommandLineTxt"));
-            set2.setShortDescription(getString("CommandLineHint"));
-            if (ccCompiler != null) {
-                set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, ccCompiler, null, texts));
-            }
-            sheet.put(set2);
-        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item != null && ccCompiler != null) {
-            AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
-            if (options != null) {
-                String compileLine = options.getAllOptions(ccCompiler);
-                if (compileLine != null) {
-                    int hasPath = compileLine.indexOf('#');
-                    if (hasPath >= 0) {
-                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine.substring(hasPath+1)));
-                        set0.put(new StringRONodeProp(getString("CompileFolderTxt"), getString("CompileFolderHint"), compileLine.substring(0, hasPath)));
-                    } else {
-                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine));
-                    }
-                }
-            }
-        }  
-        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                if (STANDARDS_SUPPORT) {
-                    set0.put(standardProp);
-                }
-            //}
-        }
-        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
-            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
-           conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
-            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                if (STANDARDS_SUPPORT) {
-                    set0.put(standardProp);
-                }
-            //}
-        }
-        
-        return sheet;
-    }
-    
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CCCompilerConfiguration.class, s);

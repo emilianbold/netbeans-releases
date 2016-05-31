@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.ComboStringNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,12 +63,30 @@ public class CompileCustomizerNode extends CustomizerNode {
 
     @Override
     public Sheet[] getSheets(Configuration configuration) {
-        Sheet sheet = ((MakeConfiguration) configuration).getCompileConfiguration().getSheet();
+        Sheet sheet = getSheet(((MakeConfiguration) configuration).getCompileConfiguration());
         return new Sheet[]{sheet};
     }
-
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("ProjectPropsCompile"); // NOI18N
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(CompileCustomizerNode.class, key);
+    }
+
+    private Sheet getSheet(CompileConfiguration cc) {
+        Sheet sheet = new Sheet();
+        
+        Sheet.Set set = new Sheet.Set();
+        set.setName("Compile"); // NOI18N
+        set.setDisplayName(getString("CompileTxt")); // NOI18N
+        set.setShortDescription(getString("CompileHint")); // NOI18N
+        set.put(new ComboStringNodeProp(cc.getCompileCommandWorkingDir(), true, getString("CompileWorkingDirectory_LBL"), getString("CompileWorkingDirectory_TT"))); // NOI18N
+        set.put(new ComboStringNodeProp(cc.getCompileCommand(), true, getString("CompileCommandLine_LBL"), getString("CompileCommandLine_TT"))); // NOI18N
+        sheet.put(set);
+        
+        return sheet;
     }
 }

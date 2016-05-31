@@ -20,7 +20,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
+import static org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;

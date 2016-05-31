@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersPanel;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 

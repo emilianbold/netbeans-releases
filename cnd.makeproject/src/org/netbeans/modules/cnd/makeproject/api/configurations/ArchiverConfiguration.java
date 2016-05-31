@@ -45,16 +45,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Locale;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
 
@@ -234,85 +227,11 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
         return CppUtils.reformatWhitespaces(options.toString());
     }
 
-    // Sheet
-    public Sheet getGeneralSheet() {
-        Sheet sheet = new Sheet();
-        Sheet.Set set1 = new Sheet.Set();
-        set1.setName("General"); // NOI18N
-        set1.setDisplayName(getString("GeneralTxt"));
-        set1.setShortDescription(getString("GeneralHint"));
-        set1.put(new OutputNodeProp(getOutput(), getOutputValue(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        set1.put(new BooleanNodeProp(getRunRanlib(), true, "RunRanlib", getString("RunRanlibTxt"), getString("RunRanlibHint"))); // NOI18N
-        sheet.put(set1);
-        Sheet.Set set2 = new Sheet.Set();
-        set2.setName("Options"); // NOI18N
-        set2.setDisplayName(getString("OptionsTxt"));
-        set2.setShortDescription(getString("OptionsHint"));
-        //set2.put(new BooleanNodeProp(getReplaceOption(), "Add", "Add", "Add (-r)"));
-        set2.put(new BooleanNodeProp(getVerboseOption(), true, "Verbose", getString("VerboseTxt"), getString("VerboseHint"))); // NOI18N
-        set2.put(new BooleanNodeProp(getSupressOption(), true, "SupressDiagnostics", getString("SupressDiagnosticsTxt"), getString("SupressDiagnosticsHint"))); // NOI18N
-        sheet.put(set2);
-        Sheet.Set set3 = new Sheet.Set();
-        String[] texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")}; // NOI18N
-        set3.setName("Input"); // NOI18N
-        set3.setDisplayName(getString("InputTxt"));
-        set3.setShortDescription(getString("InputHint"));
-        set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
-        sheet.put(set3);
-        Sheet.Set set4 = new Sheet.Set();
-        set4.setName("Tool"); // NOI18N
-        set4.setDisplayName(getString("ToolTxt1"));
-        set4.setShortDescription(getString("ToolHint1"));
-        set4.put(new StringNodeProp(getTool(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
-        set4.put(new StringNodeProp(getRanlibTool(), "ranlibTool", getString("RanlibToolTxt"), getString("RanlibToolHint"))); // NOI18N
-        sheet.put(set4);
-
-        texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-        set2 = new Sheet.Set();
-        set2.setName("CommandLine"); // NOI18N
-        set2.setDisplayName(getString("CommandLineTxt"));
-        set2.setShortDescription(getString("CommandLineHint"));
-        set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
-        sheet.put(set2);
-
-        return sheet;
-    }
-
-    private class AdditionalDependenciesOptions implements AllOptionsProvider {
-
-        public String getOptions() {
-            return null; // Not used
-        }
-
-        @Override
-        public String getAllOptions(Tool tool) {
-            String options = ""; // NOI18N
-            options += additionalDependencies.getPreDefined();
-            return CppUtils.reformatWhitespaces(options);
-        }
-    }
-
     public String getOutputValue() {
         if (getOutput().getModified()) {
             return getOutput().getValue();
         } else {
             return getOutputDefault();
-        }
-    }
-
-    private static class OutputNodeProp extends StringNodeProp {
-
-        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, def, txt1, txt2, txt3);
-        }
-
-        @Override
-        public void setValue(String v) {
-            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-            super.setValue(v);
         }
     }
 
@@ -334,10 +253,5 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
         String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase(Locale.getDefault());
         outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // UNIX path // NOI18N
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(ArchiverConfiguration.class, s);
     }
 }

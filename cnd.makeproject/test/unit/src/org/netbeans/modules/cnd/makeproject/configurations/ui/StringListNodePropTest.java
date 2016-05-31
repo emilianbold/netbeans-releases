@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import org.netbeans.modules.cnd.makeproject.ui.configurations.StringListNodeProp;
 import java.beans.PropertyEditor;
 import java.util.List;
 import static org.junit.Assert.*;

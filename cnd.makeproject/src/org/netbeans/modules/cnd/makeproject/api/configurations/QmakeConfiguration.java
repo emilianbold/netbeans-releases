@@ -41,18 +41,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -131,66 +122,6 @@ public class QmakeConfiguration implements Cloneable {
         qmakespec = new StringConfiguration(null, ""); // NOI18N
     }
 
-    public Sheet getGeneralSheet() {
-        Sheet sheet = new Sheet();
-
-        Sheet.Set basic = new Sheet.Set();
-        basic.setName("QtGeneral"); // NOI18N
-        basic.setDisplayName(getString("QtGeneralTxt")); // NOI18N
-        basic.setShortDescription(getString("QtGeneralHint")); // NOI18N
-        basic.put(new StringNodeProp(destdir, getDestdirDefault(), "QtDestdir", getString("QtDestdirTxt"), getString("QtDestdirHint"))); // NOI18N
-        basic.put(new StringNodeProp(target, getTargetDefault(), "QtTarget", getString("QtTargetTxt"), getString("QtTargetHint"))); // NOI18N
-        basic.put(new StringNodeProp(version, "QtVersion", getString("QtVersionTxt"), getString("QtVersionHint"))); // NOI18N
-        basic.put(new IntNodeProp(buildMode, true, "QtBuildMode", getString("QtBuildModeTxt"), getString("QtBuildModeHint"))); // NOI18N
-        sheet.put(basic);
-
-        Sheet.Set modules = new Sheet.Set();
-        modules.setName("QtModules"); // NOI18N
-        modules.setDisplayName(getString("QtModulesTxt")); // NOI18N
-        modules.setShortDescription(getString("QtModulesHint")); // NOI18N
-        modules.put(new BooleanNodeProp(coreEnabled, true, "QtCore", getString("QtCoreTxt"), getString("QtCoreHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(guiEnabled, true, "QtGui", getString("QtGuiTxt"), getString("QtGuiHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(widgetsEnabled, true, "QtWidgets", getString("QtWidgetsTxt"), getString("QtWidgetsHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(networkEnabled, true, "QtNetwork", getString("QtNetworkTxt"), getString("QtNetworkHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(openglEnabled, true, "QtOpengl", getString("QtOpenglTxt"), getString("QtOpenglHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(phononEnabled, true, "QtPhonon", getString("QtPhononTxt"), getString("QtPhononHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(qt3SupportEnabled, true, "Qt3Support", getString("Qt3SupportTxt"), getString("Qt3SupportHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(printSupportEnabled, true, "QtPrintSupport", getString("QtPrintSupportTxt"), getString("QtPrintSupportHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(sqlEnabled, true, "QtSql", getString("QtSqlTxt"), getString("QtSqlHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(svgEnabled, true, "QtSvg", getString("QtSvgTxt"), getString("QtSvgHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(xmlEnabled, true, "QtXml", getString("QtXmlTxt"), getString("QtXmlHint"))); // NOI18N
-        modules.put(new BooleanNodeProp(webkitEnabled, true, "QtWebkit", getString("QtWebkitTxt"), getString("QtWebkitHint"))); // NOI18N
-        sheet.put(modules);
-
-        Sheet.Set generatedFiles = new Sheet.Set();
-        generatedFiles.setName("QtIntermediateFiles"); // NOI18N
-        generatedFiles.setDisplayName(getString("QtIntermediateFilesTxt")); // NOI18N
-        generatedFiles.setShortDescription(getString("QtIntermediateFilesHint")); // NOI18N
-        generatedFiles.put(new StringNodeProp(mocDir, "QtMocDir", getString("QtMocDirTxt"), getString("QtMocDirHint"))); // NOI18N
-        generatedFiles.put(new StringNodeProp(rccDir, "QtRccDir", getString("QtRccDirTxt"), getString("QtRccDirHint"))); // NOI18N
-        generatedFiles.put(new StringNodeProp(uiDir, "QtUiDir", getString("QtUiDirTxt"), getString("QtUiDirHint"))); // NOI18N
-        sheet.put(generatedFiles);
-
-        Sheet.Set expert = new Sheet.Set();
-        expert.setName("QtExpert"); // NOI18N
-        expert.setDisplayName(getString("QtExpertTxt")); // NOI18N
-        expert.setShortDescription(getString("QtExpertHint")); // NOI18N
-        expert.put(new StringNodeProp(qmakespec, "QtQmakeSpec", getString("QtQmakeSpecTxt"), getString("QtQmakeSpecHint"))); // NOI18N
-        expert.put(new StringListNodeProp(customDefs, null, new String[]{"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP) { // NOI18N
-            @Override
-            protected List<String> convertToList(String text) {
-                return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
-            }
-            @Override
-            protected String convertToString(List<String> list) {
-                return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
-            }
-        });
-        sheet.put(expert);
-
-        return sheet;
-    }
-
     public String getDestdirValue() {
         if (destdir.getModified()) {
             return destdir.getValue();
@@ -199,7 +130,7 @@ public class QmakeConfiguration implements Cloneable {
         }
     }
 
-    private String getDestdirDefault() {
+    public String getDestdirDefault() {
         return MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO; // NOI18N
     }
 
@@ -219,7 +150,7 @@ public class QmakeConfiguration implements Cloneable {
         }
     }
 
-    private String getTargetDefault() {
+    public String getTargetDefault() {
         return ConfigurationSupport.makeNameLegal(CndPathUtilities.getBaseName(makeConfiguration.getBaseDir()));
     }
 
@@ -539,10 +470,6 @@ public class QmakeConfiguration implements Cloneable {
             ex.printStackTrace(System.err);
             return null;
         }
-    }
-
-    private static String getString(String s) {
-        return NbBundle.getMessage(QmakeConfiguration.class, s);
     }
 
     private static void append(StringBuilder buf, String val) {

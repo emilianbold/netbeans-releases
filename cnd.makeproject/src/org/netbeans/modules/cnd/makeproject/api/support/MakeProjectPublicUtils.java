@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.support;
 
-import org.netbeans.modules.cnd.makeproject.actions.RunDialogAction;
+import org.netbeans.modules.cnd.makeproject.ui.actions.RunDialogAction;
 import org.openide.filesystems.FileObject;
 
 /**

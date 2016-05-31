@@ -48,7 +48,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
 
 public class ConsoleIntNodeProp extends IntNodeProp {
 

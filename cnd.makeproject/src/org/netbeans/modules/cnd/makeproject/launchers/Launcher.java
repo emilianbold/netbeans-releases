@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
+import static org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 
 /**
  *

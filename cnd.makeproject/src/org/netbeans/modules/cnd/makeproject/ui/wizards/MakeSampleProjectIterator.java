@@ -157,7 +157,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wiz));
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
         prjParams.setHostToolchain(hostUID, toolchain, defaultToolchain);
-        return ProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);
+        return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);
     }
 
     @Override

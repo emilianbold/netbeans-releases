@@ -99,7 +99,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -694,12 +693,12 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
+        bw.write("\t\""+MakeArtifact.MAKE_MACRO+"\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
         bw.write(MakeConfiguration.CND_BUILDDIR_MACRO+"/" + conf.getName() + "/%.o: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
+        bw.write("\t"+MakeArtifact.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -707,7 +706,7 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" " // NOI18N
+        bw.write("\t\""+MakeArtifact.MAKE_MACRO+"\" " // NOI18N
                 + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
                 + output + "\n"); // NOI18N
 
@@ -1538,7 +1537,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
+            bw.write("\t"+MakeArtifact.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);
