@@ -45,6 +45,7 @@
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -139,7 +140,7 @@ class WildflyStopRunnable implements Runnable {
                     if (outputSupport != null) {
                         try {
                             outputSupport.waitForStop(10000);
-                        } catch (TimeoutException ex) {
+                        } catch (TimeoutException | CancellationException ex) {
                             LOGGER.log(Level.FINE, null, ex);
                         }
                         outputSupport.stop();
