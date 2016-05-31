@@ -409,14 +409,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     return vote;
                 }
             }
-            if (JavaIndex.ensureAttributeValue(url, BOOT_PATH, pathToString(bootPath),checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, BOOT_PATH, pathToString(bootPath, true), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to boot path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
                     return vote;
                 }
             }
-            if (JavaIndex.ensureAttributeValue(url, COMPILE_PATH, pathToString(compilePath),checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, COMPILE_PATH, pathToString(compilePath, true), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to compile path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -435,7 +435,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(pp), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(pp, false), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -486,7 +486,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 final URL furl = FileUtil.urlForArchiveOrDir(f);
                 return furl == null ?
                         true :
-                        !SourceForBinaryQuery.findSourceRoots2(furl).preferSources();
+                        !hasSourceCache(furl);
             };
             added = added.filter(p);
             removed = removed.filter(p);
@@ -502,7 +502,9 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     @NonNull
-    private static String pathToString(@NullAllowed ClassPath cp) {
+    private static String pathToString(
+            @NullAllowed ClassPath cp,
+            final boolean allowCaches) {
         final StringBuilder b = new StringBuilder();
         if (cp == null) {
             cp = ClassPath.EMPTY;
@@ -511,24 +513,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             final FileObject fo = cpe.getRoot();
             if (fo != null) {
                 final URL u = fo.toURL();
-                final File f = FileUtil.archiveOrDirForURL(u);
-                if (f != null) {
-                    if (b.length() > 0) {
-                        b.append(File.pathSeparatorChar);
-                    }
-                    b.append(f.getAbsolutePath());
-                } else {
-                    if (b.length() > 0) {
-                        b.append(File.pathSeparatorChar);
-                    }
-                    b.append(u);
-                }
-                    }
-                    }
+                append(b, u);
+            } else if (allowCaches && hasSourceCache(cpe.getURL())) {
+                final URL u = cpe.getURL();
+                append(b,u);
+            }
+        }
         return b.toString();
     }
 
-    private String encodeToStirng(Iterable<? extends String> strings) {
+    private static String encodeToStirng(Iterable<? extends String> strings) {
         if (strings == null)
             return null;
         StringBuilder sb = new StringBuilder();
@@ -538,6 +532,29 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 sb.append(',');
         }
         return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    @NonNull
+    private static StringBuilder append (
+            @NonNull final StringBuilder builder,
+            @NonNull final URL url) {
+        final File f = FileUtil.archiveOrDirForURL(url);
+        if (f != null) {
+            if (builder.length() > 0) {
+                builder.append(File.pathSeparatorChar);
+            }
+            builder.append(f.getAbsolutePath());
+        } else {
+            if (builder.length() > 0) {
+                builder.append(File.pathSeparatorChar);
+            }
+            builder.append(url);
+        }
+        return builder;
+    }
+
+    private static boolean hasSourceCache(@NonNull final URL root) {
+        return SourceForBinaryQuery.findSourceRoots2(root).preferSources();
     }
 
     //keep synchronized with libs.javacapi/manifest.mf and libs.javacimpl/manifest.mf
