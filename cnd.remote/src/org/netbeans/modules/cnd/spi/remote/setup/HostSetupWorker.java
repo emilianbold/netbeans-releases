@@ -43,9 +43,7 @@
 package org.netbeans.modules.cnd.spi.remote.setup;
 
 import org.netbeans.modules.cnd.spi.remote.*;
-import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
 
 /**
  * Sets up a host.
@@ -73,19 +71,6 @@ public interface HostSetupWorker {
         public Runnable getRunOnFinish();
     }
 
-    /**
-     * Gets panels of a wizard for setting up a new host.
-     *
-     * Infrastructure that calls getWizardPanels is free to add some panels
-     * before and/or after the panels returned by this method.
-     *
-     * HostSetupWorker instance is responsible for calling HostValidator
-     * and pass it the same execution environment as will be returned by getResult.
-     *
-     * @param validator
-     * @return
-     */
-    List<WizardDescriptor.Panel<WizardDescriptor>> getWizardPanels(HostValidator validator);
 
     /**
      * Gets result

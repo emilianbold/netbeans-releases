@@ -53,11 +53,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -216,7 +216,7 @@ public final class GCCErrorParser extends ErrorParser {
                 popLevel();
             }
             if (isEntered) {
-                if (!ToolUtils.isPathAbsolute(directory)) {
+                if (!CndPathUtilities.isAbsolute(directory)) {
                     if (relativeTo != null) {
                         if (relativeTo.isFolder()) {
                             directory = relativeTo.toURL().getPath() + File.separator + directory;
@@ -235,7 +235,7 @@ public final class GCCErrorParser extends ErrorParser {
         }
         if (m.pattern() == GCC_DIRECTORY_CD) {
             String directory = trimQuotes(m.group(1));
-            if (!ToolUtils.isPathAbsolute(directory)) {
+            if (!CndPathUtilities.isAbsolute(directory)) {
                 if (relativeTo != null) {
                     if (relativeTo.isFolder()) {
                         directory = relativeTo.toURL().getPath() + File.separator + directory;
@@ -251,7 +251,7 @@ public final class GCCErrorParser extends ErrorParser {
         if (m.pattern() == GCC_DIRECTORY_MAKE_ALL) {
             FileObject relativeDir = relativesTo.peek();
             String directory = m.group(1);
-            if (!ToolUtils.isPathAbsolute(directory)) {
+            if (!CndPathUtilities.isAbsolute(directory)) {
                 if (relativeDir != null) {
                     if (relativeDir.isFolder()) {
                         directory = relativeDir.toURL().getPath() + File.separator + directory;

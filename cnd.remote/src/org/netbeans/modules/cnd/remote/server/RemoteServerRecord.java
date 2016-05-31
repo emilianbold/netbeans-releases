@@ -53,16 +53,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.support.ParallelWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -71,8 +70,9 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.modules.remote.api.ConnectionNotifier;
+//import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+//import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -161,7 +161,7 @@ public class RemoteServerRecord implements ServerRecord, ConnectionNotifier.Expl
         }
         RemoteUtil.LOGGER.log(Level.FINE, "RSR.validate2: Validating {0}", toString());
         if (force) {
-            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
+            ProgressHandle ph = ProgressHandle.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
             init(null);
             ph.finish();
@@ -172,7 +172,7 @@ public class RemoteServerRecord implements ServerRecord, ConnectionNotifier.Expl
         } else {
             msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getDisplayName(), getStateAsText(), getReason());// NOI18N
         }
-        StatusDisplayer.getDefault().setStatusText(msg);        
+        CndNotifier.getDefault().notifyStatus(msg);
     }
 
     @Override
@@ -198,7 +198,7 @@ public class RemoteServerRecord implements ServerRecord, ConnectionNotifier.Expl
         try {
             ConnectionManager.getInstance().connectTo(executionEnvironment);
         } catch (IOException ex) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RemoteServerRecord.class, "ERR_ConnectingToHost", executionEnvironment, ex.getLocalizedMessage()));
+            CndNotifier.getDefault().notifyStatus(NbBundle.getMessage(RemoteServerRecord.class, "ERR_ConnectingToHost", executionEnvironment, ex.getLocalizedMessage()));
             reason = ex.getMessage();            
             setState(State.OFFLINE);
             return;

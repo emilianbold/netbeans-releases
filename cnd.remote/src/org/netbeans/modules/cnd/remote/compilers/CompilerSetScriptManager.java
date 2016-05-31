@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.remote.compilers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -123,6 +125,7 @@ import org.openide.util.Exceptions;
                             new Object[]{System.currentTimeMillis()});
                 }
                 time = System.currentTimeMillis();
+                Future<List<String>> err = ProcessUtils.readProcessErrorAsync(process);
                 List<String> lines = ProcessUtils.readProcessOutput(process);
                 int status = -1;
                 if (log.isLoggable(Level.FINEST)) {
@@ -138,7 +141,12 @@ import org.openide.util.Exceptions;
 
                 if (status != 0) {
                     RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
-                    ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
+                    try {
+                        for (String e : err.get()) {
+                            RemoteUtil.LOGGER.log(Level.ALL, "ERROR: {0}", e); // NOI18N
+                        }
+                    } catch (InterruptedException | ExecutionException ex) {
+                    }
                 } else {
                     int i = 0;
                     for (String s: lines) {

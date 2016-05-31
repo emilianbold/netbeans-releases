@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 

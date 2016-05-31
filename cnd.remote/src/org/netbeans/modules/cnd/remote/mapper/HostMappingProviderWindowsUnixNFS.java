@@ -50,7 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Masha
  */
-public class HostMappingProviderWindowsUnixNFS  implements HostMappingProvider
+/*package*/final class HostMappingProviderWindowsUnixNFS  implements HostMappingProvider
 {
 
     /**

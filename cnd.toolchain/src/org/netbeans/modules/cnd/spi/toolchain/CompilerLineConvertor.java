@@ -63,13 +63,13 @@ import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.toolchain.execution.CompileErrorScanner;
-import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.InputOutput;
+
 
 /**
  *
@@ -123,7 +123,7 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
 
             @Override
             public void run() {
-                OutputListenerImpl.attach(registry);
+                OutputListenerProvider.getInstance().attach(registry);
             }
         });
     }

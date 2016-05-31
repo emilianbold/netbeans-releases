@@ -536,19 +536,19 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected boolean canRead(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-r", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     protected boolean canWrite(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-w", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     protected boolean canExecute(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-x", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {

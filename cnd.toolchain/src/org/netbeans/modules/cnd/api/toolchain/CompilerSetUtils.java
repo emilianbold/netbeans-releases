@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.cnd.api.toolchain;
 
-import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 
