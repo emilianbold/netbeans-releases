@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * A single caret inside {@link EditorCaret} handled internally by EditorCaret.
@@ -75,7 +76,11 @@ final class CaretItem implements Comparable {
     
     private Position dotPos;
 
+    private Position.Bias dotBias;
+
     private Position markPos;
+
+    private Position.Bias markBias;
 
     private Point magicCaretPosition;
     
@@ -96,10 +101,12 @@ final class CaretItem implements Comparable {
      */
     private int statusBits;
 
-    CaretItem(EditorCaret editorCaret, Position dotPos, Position markPos) {
+    CaretItem(EditorCaret editorCaret, Position dotPos, Position.Bias dotBias, Position markPos, Position.Bias markBias) {
         this.editorCaret = editorCaret;
         this.dotPos = dotPos;
+        this.dotBias = dotBias;
         this.markPos = markPos;
+        this.markBias = markBias;
         this.statusBits = UPDATE_CARET_BOUNDS; // Request visual bounds updating automatically
     }
     
@@ -146,6 +153,16 @@ final class CaretItem implements Comparable {
     Position getDotPosition() {
         return dotPos;
     }
+    
+    /**
+     * Get the bias of the dot either forward or backward bias.
+     *
+     * @return either forward or backward bias.
+     */
+    @NonNull
+    Position.Bias getDotBias() {
+        return dotBias;
+    }
 
     /**
      * Return either the same object like {@link #getDotPosition()} if there's
@@ -159,6 +176,16 @@ final class CaretItem implements Comparable {
     @CheckForNull
     Position getMarkPosition() {
         return markPos;
+    }
+
+    /**
+     * Get the bias of the mark either forward or backward bias.
+     *
+     * @return either forward or backward bias.
+     */
+    @NonNull
+    Position.Bias getMarkBias() {
+        return markBias;
     }
 
     int getDot() {
