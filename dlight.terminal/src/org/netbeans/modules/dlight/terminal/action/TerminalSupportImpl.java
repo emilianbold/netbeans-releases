@@ -94,6 +94,7 @@ import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import static org.netbeans.lib.terminalemulator.Term.ExternalCommandsConstants.*;
+import org.netbeans.modules.terminal.api.IOConnect;
 
 /**
  *
@@ -165,10 +166,12 @@ public final class TerminalSupportImpl {
                     }
                 };
 
+                RequestProcessor.Task task = RP.create(delegate);
+
                 private final HyperlinkAdapter retryLink = new HyperlinkAdapter() {
                     @Override
                     public void outputLineAction(OutputEvent ev) {
-                        RP.post(delegate);
+                        task.schedule(0);
                     }
                 };
 
@@ -180,7 +183,7 @@ public final class TerminalSupportImpl {
                 private void doWork() {
                     boolean verbose = env.isRemote(); // can use silentMode instead
                     OutputWriter out = ioRef.get().getOut();
-                    
+
                     long id = TerminalPinSupport.getDefault().createPinDetails(TerminalCreationDetails.create(IOTerm.term(ioRef.get()), termId, env.getDisplayName(), pwdFlag));
 
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
@@ -268,7 +271,7 @@ public final class TerminalSupportImpl {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
-                    
+
                     if (verbose) {
                         try {
                             // Erase "log" in case we successfully connected to host
