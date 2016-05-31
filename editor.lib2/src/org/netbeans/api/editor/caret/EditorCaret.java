@@ -404,7 +404,7 @@ public final class EditorCaret implements Caret {
     public EditorCaret() {
         caretItems = new GapList<>();
         sortedCaretItems = new GapList<>();
-        CaretItem singleCaret = new CaretItem(this, null, null);
+        CaretItem singleCaret = new CaretItem(this, null, Position.Bias.Forward, null, Position.Bias.Forward);
         caretItems.add(singleCaret);
         sortedCaretItems.add(singleCaret);
 
@@ -421,6 +421,20 @@ public final class EditorCaret implements Caret {
     public int getDot() {
         return getLastCaret().getDot();
     }
+    
+    /**
+     * Get a bias of the dot position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text document.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getDotBias() {
+        return getLastCaret().getDotBias();
+    }
 
     /**
      * Get mark offset of the last created caret in the underlying document.
@@ -433,6 +447,20 @@ public final class EditorCaret implements Caret {
         return getLastCaret().getMark();
     }
     
+    /**
+     * Get a bias of the mark position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text document.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getMarkBias() {
+        return getLastCaret().getMarkBias();
+    }
+
     /**
      * Get information about all existing carets in the order they were created.
      * <br>
@@ -533,7 +561,7 @@ public final class EditorCaret implements Caret {
      * @see Caret#setDot(int) 
      */
     public @Override void setDot(final int offset) {
-        setDot(offset, MoveCaretsOrigin.DEFAULT);
+        setDot(offset, Position.Bias.Forward, MoveCaretsOrigin.DEFAULT);
     }
 
     /**
@@ -550,11 +578,14 @@ public final class EditorCaret implements Caret {
      * actions (pg up, pg down, left, right, ...).
      * </p>
      * @param offset new offset for the caret
+     * @param bias new bias for the caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @param orig specifies the operation which caused the caret to move.
      * @see #setDot(int) 
      * @since 2.10
      */
-    public void setDot(final int offset, MoveCaretsOrigin orig) {
+    public void setDot(final int offset, Position.Bias bias, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
@@ -588,7 +619,7 @@ public final class EditorCaret implements Caret {
      * @see Caret#moveDot(int) 
      */
     public @Override void moveDot(final int offset) {
-        moveDot(offset, MoveCaretsOrigin.DEFAULT);
+        moveDot(offset, Position.Bias.Forward, MoveCaretsOrigin.DEFAULT);
     }
     
     /**
@@ -606,11 +637,14 @@ public final class EditorCaret implements Caret {
      * </p>
      * 
      * @param offset new offset for the caret
+     * @param bias new bias for the caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @param orig specifies the operation which caused the caret to move.
      * @see #moveDot(int) 
      * @since 2.10
      */
-    public void moveDot(final int offset, MoveCaretsOrigin orig) {
+    public void moveDot(final int offset, Position.Bias bias, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
@@ -722,18 +756,26 @@ public final class EditorCaret implements Caret {
      * </pre>
      * 
      * @param dotPos position of the newly created caret.
+     * @param dotBias bias of the new caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @param markPos beginning of the selection (the other end is dotPos) or the same position like dotPos for no selection.
      *  The markPos may have higher offset than dotPos to select in a backward direction.
+     * @param markBias bias of the begining of the selection. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @return difference between current count of carets and the number of carets when the operation started.
-     *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
+     *  Returns Integer.MIN_VALUE if the operation was canceled due to the caret not being installed in any text component
      *  or no document installed in the text component.
      *  <br>
      *  Note that adding a new caret to offset where another caret is already located may lead
      *  or no document installed in the text component.
      */
-    public int addCaret(@NonNull Position dotPos, @NonNull Position markPos) {
+    public int addCaret(@NonNull Position dotPos, @NonNull Position.Bias dotBias,
+            @NonNull Position markPos, @NonNull Position.Bias markBias)
+    {
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                new CaretItem[] { new CaretItem(this, dotPos, markPos) }, null);
+                new CaretItem[] { new CaretItem(this, dotPos, dotBias, markPos, markBias) }, null);
     }
     
     /**
@@ -761,13 +803,16 @@ public final class EditorCaret implements Caret {
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like the dot
      *  if the particular caret has no selection. The list must have even size.
+     * @param dotAndMarkBiases list of position biases (corresponding to the dot and mark positions
+     *  in the previous parameter) or null may be passed if all dotAndMarkPosPairs positions should have a forward bias.
      * @return difference between current count of carets and the number of carets when the operation started.
-     *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
+     *  Returns Integer.MIN_VALUE if the operation was canceled due to the caret not being installed in any text component
      *  or no document installed in the text component.
+     * @see #addCaret(javax.swing.text.Position, javax.swing.text.Position.Bias, javax.swing.text.Position, javax.swing.text.Position.Bias)
      */
-    public int addCarets(@NonNull List<Position> dotAndMarkPosPairs) {
+    public int addCarets(@NonNull List<Position> dotAndMarkPosPairs, List<Position.Bias> dotAndMarkBiases) {
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                CaretTransaction.asCaretItems(this, dotAndMarkPosPairs), null);
+                CaretTransaction.asCaretItems(this, dotAndMarkPosPairs, dotAndMarkBiases), null);
     }
 
     /**
@@ -779,15 +824,17 @@ public final class EditorCaret implements Caret {
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like dot
      *  if the particular caret has no selection. The list must have even size.
+     * @param dotAndMarkBiases list of position biases (corresponding to the dot and mark positions
+     *  in the previous parameter) or null may be passed if all dotAndMarkPosPairs positions should have a forward bias.
      * @return difference between current count of carets and the number of carets when the operation started.
      *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
      *  or no document installed in the text component.
      */
-    public int replaceCarets(@NonNull List<Position> dotAndMarkPosPairs) {
+    public int replaceCarets(@NonNull List<Position> dotAndMarkPosPairs, List<Position.Bias> dotAndMarkBiases) {
         if (dotAndMarkPosPairs.isEmpty()) {
             throw new IllegalArgumentException("dotAndSelectionStartPosPairs list must not be empty");
         }
-        CaretItem[] addedItems = CaretTransaction.asCaretItems(this, dotAndMarkPosPairs);
+        CaretItem[] addedItems = CaretTransaction.asCaretItems(this, dotAndMarkPosPairs, dotAndMarkBiases);
         return runTransaction(CaretTransaction.RemoveType.REMOVE_ALL_CARETS, 0, addedItems, null);
     }
 
@@ -1795,7 +1842,8 @@ public final class EditorCaret implements Caret {
 
             // Set caret to zero position upon document change (DefaultCaret impl does this too)
             runTransaction(CaretTransaction.RemoveType.REMOVE_ALL_CARETS, 0,
-                    new CaretItem[] { new CaretItem(this, newDoc.getStartPosition(), null) }, null);
+                    new CaretItem[] { new CaretItem(this, newDoc.getStartPosition(), Position.Bias.Forward,
+                            null, Position.Bias.Forward ) }, null);
             
             // Leave caretPos and markPos null => offset==0
             prefs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(Preferences.class) : null;
@@ -2619,7 +2667,7 @@ public final class EditorCaret implements Caret {
                                 try {
                                     Position pos = doc.createPosition(offset);
                                     runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, pos) }, null);
+                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward) }, null);
                                     evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
