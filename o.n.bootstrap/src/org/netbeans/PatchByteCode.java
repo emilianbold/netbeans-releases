@@ -214,16 +214,21 @@ public final class PatchByteCode {
             case 10: // CONSTANT_Methodref
             case 11: // CONSTANT_InterfaceMethodref
             case 12: // CONSTANT_NameAndType
+            case 18:    //CONSTANT_InvokeDynamic
                 pos += 4;
                 break;
             case 7: // CONSTANT_Class
             case 8: // CONSTANT_String
+            case 16:    //CONSTANT_MethodType
                 pos += 2;
                 break;
             case 5: // CONSTANT_Long
             case 6: // CONSTANT_Double
                 pos += 8;
                 i++; // next entry is ignored
+                break;
+            case 15: //CONSTANT_MethodHandle
+                pos +=3;
                 break;
             default:
                 throw new IllegalArgumentException("illegal constant pool tag " + tag + " at index " + i + " out of " + constant_pool_count);
