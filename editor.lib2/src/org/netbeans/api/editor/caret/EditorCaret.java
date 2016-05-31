@@ -2620,6 +2620,7 @@ public final class EditorCaret implements Caret {
                                     Position pos = doc.createPosition(offset);
                                     runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
                                              new CaretItem[] { new CaretItem(EditorCaret.this, pos, pos) }, null);
+                                    evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
                                 }
@@ -2744,6 +2745,9 @@ public final class EditorCaret implements Caret {
 
             JTextComponent c = component;
             if (c != null) {
+                if (evt.getClickCount() == 1 && evt.isControlDown() && evt.isShiftDown()) {
+                    evt.consume(); // consume event already handled by mousePressed
+                }
                 if (isMiddleMouseButtonExt(evt)) {
                     if (evt.getClickCount() == 1) {
                         if (c == null) {
