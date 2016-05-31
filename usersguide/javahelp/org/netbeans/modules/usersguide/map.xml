@@ -10494,8 +10494,10 @@
   <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
   <mapID target="f1_html029.htm-sthref601" url="f1_html029.htm#sthref601" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
+  <mapID target="docker_registering_connection" url="f1_html030.htm#docker_registering_connection" />
+  <!-- "Add Docker Instance"-->
   <mapID target="f1_html030.htm-sthref603" url="f1_html030.htm#sthref603" />
-  <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
+  <!-- "Add Docker Instance"-->
   <mapID target="about_source_editor" url="f1_xml.htm#about_source_editor" />
   <!-- "Using XML "-->
   <mapID target="NBCSH4405" url="f1_xml.htm#NBCSH4405" />
