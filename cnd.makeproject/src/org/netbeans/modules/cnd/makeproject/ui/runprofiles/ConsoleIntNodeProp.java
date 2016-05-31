@@ -41,13 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.runprofiles;
+package org.netbeans.modules.cnd.makeproject.ui.runprofiles;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
 
 public class ConsoleIntNodeProp extends IntNodeProp {

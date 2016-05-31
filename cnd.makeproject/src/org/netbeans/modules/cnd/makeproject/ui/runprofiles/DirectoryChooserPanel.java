@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.runprofiles;
+package org.netbeans.modules.cnd.makeproject.ui.runprofiles;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

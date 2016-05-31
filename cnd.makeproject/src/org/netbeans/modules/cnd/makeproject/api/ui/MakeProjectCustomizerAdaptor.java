@@ -39,11 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Sheet;
