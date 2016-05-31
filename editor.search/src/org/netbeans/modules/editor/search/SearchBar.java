@@ -947,7 +947,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         newCarets.add(startPos);
                     }
                     
-                    editorCaret.replaceCarets(newCarets);
+                    editorCaret.replaceCarets(newCarets, null); // TODO handle biases
                     
                     textComponent.requestFocusInWindow();
                 }
