@@ -86,6 +86,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
+import org.netbeans.modules.java.source.usages.LongHashMap;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
@@ -290,7 +291,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("PROPERTY CHANGE FROM CLASSPATH");
-        Collection<? extends File> changed = null;
+        LongHashMap<? extends File> changed = null;
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
             changed = usedRoots.getRoots();
@@ -457,7 +458,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private boolean verifyProcessorPath(
         @NonNull final FileObject root,
-        @NullAllowed final Collection<? extends File> used) {
+        @NullAllowed final LongHashMap<? extends File> used) {
         try {
             final URL url = root.toURL();
             final ClassPath pp = validatePaths();
@@ -478,7 +479,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             Stream<File> removed = new HashSet<>(oldFiles).stream()
                     .filter((f) -> !currentFiles.contains(f));
             if (used != null) {
-                final Predicate<File> p = (f) -> used.contains(f);
+                final Predicate<File> p = (f) -> used.containsKey(f);
                 added = added.filter(p);
                 removed = removed.filter(p);
             }
@@ -618,7 +619,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final class UsedRoots implements Consumer<URL> {
         private static final String ATTR_USED_PROC = "apUsed";  //NOI18N
         private static final int DEFERRED_SAVE = 2_500;    //ms
-        private static final Set<File> TOMBSTONE = Collections.unmodifiableSet(new HashSet<File>());
+        private static final LongHashMap<File> TOMBSTONE = new LongHashMap<>();
         private static final RequestProcessor SAVER = new RequestProcessor(
                 UsedRoots.class.getName(),
                 1,
@@ -627,7 +628,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         private final URL root;
         private final RequestProcessor.Task saveTask;
         //@GuardedBy("this")
-        private Set<File> used;
+        private LongHashMap<File> used;
 
         UsedRoots(@NonNull final URL root) {
             this.root = root;
@@ -639,10 +640,30 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             synchronized (this) {
                 load();
                 if (used == null || used == TOMBSTONE) {
-                    used = new HashSet<>();
+                    used = new LongHashMap<>();
                 }
                 final File f = FileUtil.archiveOrDirForURL(url);
-                if (f != null && used.add(f)) {
+                if (f != null) {
+                    final long size = f.isFile() ?
+                            f.length() :
+                            -1;
+                    if (!used.containsKey(f)) {
+                        used.put(f, size);
+                        saveTask.schedule(DEFERRED_SAVE);
+                    }
+                }
+            }
+        }
+
+        void update(
+                @NonNull final File file,
+                final long size) {
+            synchronized (this) {
+                load();
+                if (used == null || used == TOMBSTONE) {
+                    used = new LongHashMap<>();
+                }
+                if (used.put(file, size) != size) {
                     saveTask.schedule(DEFERRED_SAVE);
                 }
             }
@@ -655,15 +676,15 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         @CheckForNull
-        Collection<? extends File> getRoots() {
-            final Collection<File> res = load();
+        LongHashMap<? extends File> getRoots() {
+            final LongHashMap<File> res = load();
             return res == TOMBSTONE ?
                     null :
                     res;
         }
 
         @NonNull
-        private synchronized Set<File> load() {
+        private synchronized LongHashMap<File> load() {
             if (used == null) {
                 try {
                     final String raw = JavaIndex.getAttribute(
@@ -671,11 +692,27 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                             ATTR_USED_PROC,
                             null);
                     if (raw != null) {
-                        Set<File> s = new HashSet<>();
+                        LongHashMap<File> s = new LongHashMap<>();
                         final String[] parts = raw.split(File.pathSeparator);
                         for (int i = 0; i < parts.length; i+=2) {
                             final File f = new File(parts[i]);
-                            s.add(f);
+                            long size = -1;
+                            if (i+1 < parts.length) {
+                                try {
+                                    size = Long.parseLong(parts[i+1]);
+                                } catch (NumberFormatException e) {
+                                    LOG.log(
+                                            parts[i+1].isEmpty() ?
+                                                Level.FINE :
+                                                Level.WARNING,
+                                            "Wrong size of {0}: {1}",   //NOI18N
+                                            new Object[]{
+                                                f.getAbsolutePath(),
+                                                parts[i+1]
+                                            });
+                                }
+                            }
+                            s.put(f, size);
                         }
                         used = s;
                     } else {
@@ -691,23 +728,24 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         private void save() {
-            final Collection<File> toSave;
+            final LongHashMap<File> toSave;
             synchronized (this) {
                 toSave = used == TOMBSTONE ?
                         null :
-                        new ArrayList<>(used);
+                        new LongHashMap<File>(used);
             }
             final String val;
             if (toSave == null) {
                 val = null;
             } else {
                 final StringBuilder raw = new StringBuilder();
-                for (File f : toSave) {
+                for (LongHashMap.Entry<File> e : toSave.entrySet()) {
                     if (raw.length() != 0) {
                         raw.append(File.pathSeparatorChar);
                     }
-                    raw.append(f.getAbsolutePath());
+                    raw.append(e.getKey().getAbsolutePath());
                     raw.append(File.pathSeparator);
+                    raw.append(e.getValue());
                 }
                 val = raw.toString();
             }
