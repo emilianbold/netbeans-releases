@@ -427,6 +427,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
 
     public void mouseClicked(MouseEvent e) {
+        if(e.isConsumed()) return;
         boolean activate = false;
         HyperlinkType type = getHyperlinkType(e);
         if ( type != null ) {
