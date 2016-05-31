@@ -7,19 +7,15 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.Notification;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -77,14 +73,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             } catch (IOException ex) {
                 //Exceptions.printStackTrace(ex);
             } catch (final IllegalArgumentException ex) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                        Bundle.illegal_string(publicLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
-                    }
-                });
+                CndNotifier.getDefault().notifyErrorLater(Bundle.illegal_string(publicLaunchers.getPath(), ex.getMessage()));
             }
         }
         if (privateLaunchers != null && privateLaunchers.isValid()) {
@@ -93,14 +82,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             } catch (IOException ex) {
                 //Exceptions.printStackTrace(ex);
             } catch (final IllegalArgumentException ex) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                        Bundle.illegal_string(privateLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
-                    }
-                });
+                CndNotifier.getDefault().notifyErrorLater(Bundle.illegal_string(privateLaunchers.getPath(), ex.getMessage()));
             }
         }
         

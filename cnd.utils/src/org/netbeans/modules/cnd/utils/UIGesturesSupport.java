@@ -40,12 +40,11 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.utils.ui;
+package org.netbeans.modules.cnd.utils;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *

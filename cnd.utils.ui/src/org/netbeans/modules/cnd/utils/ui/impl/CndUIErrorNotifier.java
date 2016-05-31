@@ -61,6 +61,11 @@ public final class CndUIErrorNotifier extends CndNotifier {
     }
 
     @Override
+    public void notifyInfo(String msg) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+    }
+
+    @Override
     public boolean notifyAndIgnore(String title, String msg) {
         NotifyDescriptor nd = new NotifyDescriptor(msg,
                 title, NotifyDescriptor.YES_NO_OPTION,

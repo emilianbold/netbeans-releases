@@ -68,8 +68,8 @@ public class LaunchersConfig {
     private final TreeMap<Integer, LauncherConfig> map = new TreeMap<>();
     private final ArrayList<String> commentsPublic = new ArrayList<>();
     private final ArrayList<String> commentsPrivate = new ArrayList<>();
-    public static final int COMMON_LAUNCHER_INDEX = -1;
-    private static final int COMMON_PUBLIC_INDEX = COMMON_LAUNCHER_INDEX;
+    //public static final int COMMON_LAUNCHER_INDEX = -1;
+    private static final int COMMON_PUBLIC_INDEX = LaunchersRegistry.COMMON_LAUNCHER_INDEX;
     private static final int COMMON_PRIVATE_INDEX = -2;
     public LaunchersConfig(Project project) {
         this.project = project;

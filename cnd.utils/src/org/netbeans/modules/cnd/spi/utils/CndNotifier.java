@@ -89,6 +89,13 @@ public abstract class  CndNotifier {
      * @param title
      * @param msg
      */
+    abstract public void notifyInfo(String msg);
+
+    /**
+     * 
+     * @param title
+     * @param msg
+     */
     abstract public void notifyErrorLater(String msg);   
     
     
@@ -111,6 +118,11 @@ public abstract class  CndNotifier {
         }
 
         @Override
+        public void notifyInfo(String msg) {
+            System.out.println(msg);//NOI18N
+        }
+
+        @Override
         public boolean notifyAndIgnore(String title, String msg) {
            notifyError(msg);
            return true;
@@ -120,7 +132,7 @@ public abstract class  CndNotifier {
         public void notifyStatus(String text) {
             System.out.println(text);
         }
-        
+
     }
     
 }

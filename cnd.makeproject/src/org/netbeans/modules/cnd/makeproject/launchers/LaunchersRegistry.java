@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
@@ -74,6 +73,7 @@ public final class LaunchersRegistry {
     public static final String ENV_TAG = "env";// NOI18N
     public static final String HIDE_TAG = "hide";// NOI18N
     public static final String RUN_IN_OWN_TAB_TAG = "runInOwnTab";// NOI18N
+    public static final int COMMON_LAUNCHER_INDEX = -1;
     
     private static  Pattern pattern;
 

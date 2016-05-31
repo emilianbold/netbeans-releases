@@ -960,7 +960,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
 
         private void updateIcon() {
-            final String resources = "org/netbeans/modules/cnd/makeproject/launchers/resources/"; // NOI18N
+            final String resources = "org/netbeans/modules/cnd/makeproject/ui/launchers/actions/resources/"; // NOI18N
             String iconFile;
             if (id >= 0) {
                 iconFile = pub ? "launcher_public.png" : "launcher_private.png"; // NOI18N

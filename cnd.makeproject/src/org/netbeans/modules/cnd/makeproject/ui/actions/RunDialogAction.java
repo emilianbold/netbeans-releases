@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;
-import org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction;
+import org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LauncherAction;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

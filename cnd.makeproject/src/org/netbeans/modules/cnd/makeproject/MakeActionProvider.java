@@ -123,6 +123,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvide
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -1401,12 +1402,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         if (!ret) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-                }
-            });
+            CndNotifier.getDefault().notifyErrorLater(getString("ERR_EMPTY_PROJECT"));
         }
 
         return ret;
@@ -1887,7 +1883,7 @@ public final class MakeActionProvider implements ActionProvider {
 //        }
 
         if (errormsg != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            CndNotifier.getDefault().notifyError(errormsg);
             if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
                 MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
                 if (makeCustomizerProvider != null) {

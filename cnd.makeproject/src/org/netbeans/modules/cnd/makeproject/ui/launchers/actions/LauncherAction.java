@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.makeproject.launchers.actions;
+package org.netbeans.modules.cnd.makeproject.ui.launchers.actions;
 
 import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;

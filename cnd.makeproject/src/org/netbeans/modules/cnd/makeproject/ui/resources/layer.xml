@@ -344,16 +344,16 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectManageLaunchersAction"/>
             </file>
              <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-BuildAsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.buildAsAction"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LauncherAction.buildAsAction"/>            
             </file>           
             <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.runAsAction"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LauncherAction.runAsAction"/>            
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.debugAsAction"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LauncherAction.debugAsAction"/>            
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.stepIntoAction"/>            
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LauncherAction.stepIntoAction"/>            
             </file>
         </folder>
         <folder name="Tools">
