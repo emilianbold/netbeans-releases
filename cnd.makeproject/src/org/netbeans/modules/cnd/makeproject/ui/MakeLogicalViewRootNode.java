@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -81,6 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.ui.MakeProjectCustomizerEx;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -451,7 +453,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         Action[] projectActions = null;
         if (active != null && active.isCustomConfiguration()) {
             //TODO: fix it as all actions can use  HIDE_WHEN_DISABLE and be enabled in own context only
-            projectActions = active.getProjectCustomizer().getActions(getProject(), Arrays.asList(CommonProjectActions.forType(projectType)));            
+            projectActions = ((MakeProjectCustomizerEx)active.getProjectCustomizer()).getActions(getProject(), Arrays.asList(CommonProjectActions.forType(projectType)));            
             projectType = active.getProjectCustomizer().getCustomizerId();                        
         }        
         projectActions = projectActions == null ? CommonProjectActions.forType(projectType) : projectActions;

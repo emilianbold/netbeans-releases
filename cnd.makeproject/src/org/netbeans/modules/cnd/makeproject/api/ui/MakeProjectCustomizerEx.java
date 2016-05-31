@@ -39,24 +39,21 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject.api.ui;
 
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.openide.nodes.Sheet;
 
 /**
  *
  * @author thp
  */
-public interface MakeProjectCustomizer {
-    public String getCustomizerId();
-    public String getIconPath();
-    public String getMakefileWriter();
-    public Object[] getLookup(FileObject getProjectDirectory, Object[] base);
-    public boolean isCompileConfiguration();
-    public boolean isLibraryConfiguration();
-    public boolean isLinkerConfiguration();
-    public boolean isDynamicLibraryConfiguration();
-    public boolean isArchiverConfiguration();
-    public boolean isStandardManagedConfiguration();
-    public boolean isApplicationConfiguration();
+public interface MakeProjectCustomizerEx extends MakeProjectCustomizer {
+    public Action[] getActions(Project project, List<Action> actions);
+    public Sheet getPropertySheet(Sheet sheet);
+    public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode);
 }
