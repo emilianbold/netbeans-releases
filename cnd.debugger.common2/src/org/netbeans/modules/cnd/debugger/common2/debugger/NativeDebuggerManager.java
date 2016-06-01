@@ -1240,11 +1240,15 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      * Start debugging by attaching to pid.
      */
     public void attach(DebugTarget dt) {
+        attach(dt, null);
+    }
+    public void attach(DebugTarget dt, DbgActionHandler dah) {
         final Configuration conf = dt.getConfig();
 
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
         ndi.setPid(dt.getPid());
+        ndi.setDah(dah);
 
         //ndi.setTarget(dt.getExecutable());
 	Host host = Host.byName(dt.getHostName());
@@ -1265,7 +1269,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (dt.getProjectMode() == DebugTarget.ProjectMode.OLD_PROJECT) {
             String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
             symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
-            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+            if (!symbolFile.isEmpty() && !CndPathUtilities.isPathAbsolute(symbolFile)) {
                 symbolFile = ((MakeConfiguration) conf).getBaseDir() + "/" + symbolFile; // NOI18N
                 symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
                 symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);

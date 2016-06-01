@@ -73,6 +73,7 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
                 case RUN:
                 case DEBUG:
                 case DEBUG_STEPINTO:
+                case ATTACH:
                 case DEBUG_TEST:
                 case DEBUG_STEPINTO_TEST:
                 case CHECK_EXECUTABLE:

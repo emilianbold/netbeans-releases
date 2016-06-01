@@ -1090,7 +1090,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
-        if (output == null) {
+        if (output == null || output.isEmpty()) {
             return output;
         }
         if (!CndPathUtilities.isPathAbsolute(output)) {

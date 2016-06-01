@@ -459,7 +459,8 @@ public class ProjectActionSupport {
                     boolean isDebugAction = type == PredefinedType.DEBUG
                             || type == PredefinedType.DEBUG_STEPINTO
                             || type == PredefinedType.DEBUG_TEST
-                            || type == PredefinedType.DEBUG_STEPINTO_TEST;
+                            || type == PredefinedType.DEBUG_STEPINTO_TEST
+                            || type == PredefinedType.ATTACH;
                     // Validate executable
                     boolean isRunAction = (type == PredefinedType.RUN
                             || isDebugAction
