@@ -39,18 +39,23 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,6 +73,28 @@ import org.openide.filesystems.FileUtil;
  */
 public class SmartOutputStream extends OutputStream {
 
+    public static byte[] convertLineSeparator(ByteArrayOutputStream in, FileObject fo, FileObject dir) {
+        String lineSeparator = new LineSeparatorDetector(fo, dir).getInitialSeparator();
+        byte[] data = in.toByteArray();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data), "UTF-8")); // NOI18N
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            while(true){
+                String line = reader.readLine();
+                if (line == null){
+                    break;
+                }
+                baos.write(line.getBytes("UTF-8")); // NOI18N
+                baos.write(lineSeparator.getBytes("UTF-8")); // NOI18N
+            }
+            reader.close();
+            baos.close();
+            data = baos.toByteArray();
+        } catch (IOException ex) {
+        }
+        return data;
+    }
+    
     public static OutputStream getSmartOutputStream(FileObject fileObject) throws IOException {
         return getSmartOutputStream(fileObject, null);
     }

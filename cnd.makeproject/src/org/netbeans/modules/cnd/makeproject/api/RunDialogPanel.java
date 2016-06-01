@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1135,7 +1136,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             if (extension != null) {
                 Map<String, Object> map = new HashMap<>();
                 WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, getExecutablePath());
-                WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+                WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
                 WizardConstants.DISCOVERY_ROOT_FOLDER.toMap(map, lastSelectedProject.getProjectDirectory().getPath());
                 IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
                 extension.discoverProject(map, lastSelectedProject, kind); // NOI18N

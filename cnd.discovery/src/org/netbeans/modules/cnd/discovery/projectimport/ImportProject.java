@@ -109,7 +109,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -307,7 +307,7 @@ public class ImportProject implements PropertyChangeListener {
         });
         sources = list.iterator();
         sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
-        resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
+        resolveSymLinks = MakeProjectOptions.getResolveSymbolicLinks();
         useBuildAnalyzer = WizardConstants.PROPERTY_USE_BUILD_ANALYZER.get(wizard);
     }
 
@@ -343,7 +343,7 @@ public class ImportProject implements PropertyChangeListener {
         if (resolve != null) {
             resolveSymLinks = resolve;
         } else {
-            resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
+            resolveSymLinks = MakeProjectOptions.getResolveSymbolicLinks();
         }
         useBuildAnalyzer = WizardConstants.PROPERTY_USE_BUILD_ANALYZER.get(wizard);
     }

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -64,7 +64,8 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -205,13 +206,13 @@ public class MakeProjectGeneratorImpl {
         String mainFile = prjParams.getMainFile();
         MakeProjectHelper h = null;
         try {
-            h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
+            h = MakeProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         } catch (IllegalArgumentException e) {
             throw new IOException(e);
         }
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
+        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
 

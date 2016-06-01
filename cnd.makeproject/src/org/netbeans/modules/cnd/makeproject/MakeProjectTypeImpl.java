@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.IOException;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.project.NativeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
@@ -62,19 +62,13 @@ import org.w3c.dom.NodeList;
  * 
  * @author Alexander Simon
  */
-public final class MakeProjectTypeImpl implements NativeProjectType {
+public final class MakeProjectTypeImpl implements MakeProjectType {
 
-    public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
-    public static final String PROJECT_TYPE = "org-netbeans-modules-cnd-makeproject";//NOI18N
-    public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
-    public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
-    public final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
     public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
     public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N

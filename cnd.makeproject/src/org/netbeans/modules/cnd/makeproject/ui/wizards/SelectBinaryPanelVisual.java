@@ -100,6 +100,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ExpandableEditableComboBox;
@@ -230,7 +231,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 }
                 WizardConstants.DISCOVERY_LIBRARIES.toMap(map, buf.toString());
             }
-            WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
             if (env.isRemote()) {
                 WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
             }

@@ -44,7 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.BooleanNodeProp;

@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -81,7 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
  * Support for creating logical views.
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
-    
+
     @ServiceProvider(service = MakeProjectLookupProvider.class)
     public static class MakeLogicalViewProviderFactory implements MakeProjectLookupProvider {
 
@@ -90,6 +91,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             ic.add(new MakeLogicalViewProvider(owner));
         }
     }
+    // this is hard reference to template operations
+    private static MakeTemplateListener templateListener;
 
     private static final String brokenLinkBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
@@ -113,6 +116,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         // runners: BaseMakeViewChildren.refreshKeysTask & MakeLogicalViewProvider.setVisible
         annotationRP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater " + project, 1); // NOI18N
         assert project != null;
+        synchronized(MakeLogicalViewProvider.class) {
+            // it is created instance of template oerations and register in data pool
+            if (templateListener == null) {
+                templateListener = MakeTemplateListener.createInstance();
+            }
+        }
     }
 
     @Override

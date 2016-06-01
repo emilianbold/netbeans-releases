@@ -49,10 +49,8 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -216,7 +214,7 @@ public class AddExistingItemAction extends NodeAction {
                 MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
                 projectDescriptor.save();
                 if (notifySources) {
-                    ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
+                    //((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
                 }
             }
         });

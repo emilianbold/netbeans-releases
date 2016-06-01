@@ -264,10 +264,6 @@ public final class MakeSources implements Sources, MakeProjectListener {
         // fireChange(); // ignore - cnd projects don't keep source file info in project.xml
     }
 
-    public void descriptorChanged() {
-        // fireChange(); // ignore
-    }
-
     @Override
     public void propertiesChanged(MakeProjectEvent ev) {
         // ignore

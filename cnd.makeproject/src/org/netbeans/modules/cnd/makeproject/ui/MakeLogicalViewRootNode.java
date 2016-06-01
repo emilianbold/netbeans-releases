@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -446,7 +446,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
 
         MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-        String projectType = MakeProjectTypeImpl.PROJECT_TYPE;
+        String projectType = MakeProjectType.PROJECT_TYPE;
         Action[] projectActions = null;
         if (active != null && active.isCustomConfiguration()) {
             //TODO: fix it as all actions can use  HIDE_WHEN_DISABLE and be enabled in own context only

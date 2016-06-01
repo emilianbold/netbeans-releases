@@ -165,7 +165,6 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
     private final RequestProcessor RP;
-    private static MakeTemplateListener templateListener = null;
     private final MakeProjectTypeImpl kind;
     private final MakeProjectHelper helper;
     //private final PropertyEvaluator eval;
@@ -216,11 +215,6 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
         sourceEncoding = getSourceEncodingFromProjectXml();
 
-        synchronized(MakeProjectImpl.class) {
-            if (templateListener == null) {
-                templateListener = MakeTemplateListener.createInstance();
-            }
-        }
         LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProjectImpl.this), helper.getProjectDirectory()}); // NOI18N
     }
 
@@ -275,6 +269,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         //ic.add(new MakeLogicalViewProvider(this));
         //ic.add(BrokenReferencesSupport.createPlatformVersionProblemProvider(this));
         //ic.add(new MakeProjectSearchInfo(projectDescriptorProvider));
+        //ic.add(new TemplateAttributesProviderImpl(this));
         for(MakeProjectLookupProvider p : Lookup.getDefault().lookupAll(MakeProjectLookupProvider.class)) {
             p.addLookup(this, ic);
         }
@@ -295,7 +290,6 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         ic.add(new ToolchainProjectImpl(this));
         ic.add(new CacheDirectoryProviderImpl(helper.getProjectDirectory()));
         ic.add(new CndDocumentCodeStyleProviderImpl());
-        ic.add(new TemplateAttributesProviderImpl(this, encodingQuery));
         ic.add(this);
         
         Object[] lookups = ic.toArray(new Object[ic.size()]);

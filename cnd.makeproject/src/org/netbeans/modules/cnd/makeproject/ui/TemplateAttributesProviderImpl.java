@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -64,6 +66,7 @@ import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -71,14 +74,21 @@ import org.openide.util.Exceptions;
  */
 public class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProvider {
 
+    @ServiceProvider(service = MakeProjectLookupProvider.class)
+    public static class TemplateAttributesProviderFactory implements MakeProjectLookupProvider {
+
+        @Override
+        public void addLookup(MakeProject owner, ArrayList<Object> ic) {
+            ic.add(new TemplateAttributesProviderImpl(owner));
+        }
+    }
     private final MakeProject project;
-    private final FileEncodingQueryImplementation encodingQuery;
+    private FileEncodingQueryImplementation encodingQuery;
     private static final Logger LOG = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
 
 
-    public TemplateAttributesProviderImpl(MakeProject project, FileEncodingQueryImplementation encodingQuery) {
+    public TemplateAttributesProviderImpl(MakeProject project) {
         this.project = project;
-        this.encodingQuery = encodingQuery;
     }
 
     @Override
@@ -127,6 +137,9 @@ public class TemplateAttributesProviderImpl implements CreateFromTemplateAttribu
         }
         if (license != null) {
             values.put("license", license); // NOI18N
+        }
+        if (encodingQuery == null) {
+            encodingQuery = project.getLookup().lookup(FileEncodingQueryImplementation.class);
         }
         Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
         String encoding = (charset != null) ? charset.name() : null;

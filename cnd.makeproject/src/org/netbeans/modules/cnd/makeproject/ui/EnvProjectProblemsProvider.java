@@ -55,7 +55,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -220,8 +219,8 @@ public final class EnvProjectProblemsProvider {
                     updateProblems();
                     if (changed) {
                         NativeProject nativeProject = getProject().getLookup().lookup(NativeProject.class);
-                        if (nativeProject instanceof NativeProjectProvider) {
-                            ((NativeProjectProvider) nativeProject).fireFilesPropertiesChanged();
+                        if (nativeProject != null) {
+                            nativeProject.fireFilesPropertiesChanged();
                         }
                     }
                     return new BrokenReferencesSupport.Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
@@ -309,8 +308,8 @@ public final class EnvProjectProblemsProvider {
             }
             if (changed) {
                 NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
-                if (nativeProject instanceof NativeProjectProvider) {
-                    ((NativeProjectProvider) nativeProject).fireFilesPropertiesChanged();
+                if (nativeProject != null) {
+                    nativeProject.fireFilesPropertiesChanged();
                 }                
             }
             BrokenReferencesSupport.updateProblems(project);

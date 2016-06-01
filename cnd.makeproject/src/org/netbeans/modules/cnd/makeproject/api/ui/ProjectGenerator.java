@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +50,11 @@ import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
+import org.netbeans.modules.cnd.makeproject.ui.MakeProjectGeneratorImpl;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;

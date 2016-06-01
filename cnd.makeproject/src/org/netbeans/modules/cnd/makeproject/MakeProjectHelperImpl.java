@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.makeproject.api.support.SmartOutputStream;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -66,7 +67,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
@@ -338,31 +338,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
 
     private byte[] convertLineSeparator(ByteArrayOutputStream in, final String path) {
-        return convertLineSeparator(in, dir.getFileObject(path), dir);
+        return SmartOutputStream.convertLineSeparator(in, dir.getFileObject(path), dir);
     }
 
-    public static byte[] convertLineSeparator(ByteArrayOutputStream in, FileObject fo, FileObject dir) {
-        String lineSeparator = new LineSeparatorDetector(fo, dir).getInitialSeparator();
-        byte[] data = in.toByteArray();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data), "UTF-8")); // NOI18N
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            while(true){
-                String line = reader.readLine();
-                if (line == null){
-                    break;
-                }
-                baos.write(line.getBytes("UTF-8")); // NOI18N
-                baos.write(lineSeparator.getBytes("UTF-8")); // NOI18N
-            }
-            reader.close();
-            baos.close();
-            data = baos.toByteArray();
-        } catch (IOException ex) {
-        }
-        return data;
-    }
-    
     /**
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
@@ -574,7 +552,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
 
     /**
      * Mark this project as being modified without actually changing anything in it.
-     * Should only be called from {@link ProjectGenerator#createProject}.
+     * Should only be called from {@link org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator#createProject}.
      */
     public void markModified() {
         assert ProjectManager.mutex().isWriteAccess();

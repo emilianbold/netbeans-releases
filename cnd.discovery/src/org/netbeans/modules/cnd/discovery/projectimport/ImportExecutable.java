@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -283,7 +283,7 @@ public class ImportExecutable implements PropertyChangeListener {
             if (fullRemotefileSystem != null) {
                 DiscoveryDescriptor.FILE_SYSTEM.toMap(map, fullRemotefileSystem);
             }
-            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
             if (sourcesPath != null && sourcesPath.length()>1) {
                 DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
             } else {
@@ -356,7 +356,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 configurationDescriptor.addSourceRoot(sourcesPath);
                                  DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
                             }
-                            configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
+                            configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(MakeProjectOptions.getResolveSymbolicLinks());
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }

@@ -70,10 +70,9 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.support.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -161,7 +160,7 @@ public class MakeSampleProjectGenerator {
 
     private static void addEmptyNode(Document doc, String nodeName) {
         Element data = null;
-        NodeList list = doc.getElementsByTagName(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAME);
+        NodeList list = doc.getElementsByTagName(MakeProjectType.PROJECT_CONFIGURATION_NAME);
         if (list != null && list.getLength() > 0) {
             for (int i = 0; i < list.getLength(); i++) {
                 Node node = list.item(i);
@@ -180,7 +179,7 @@ public class MakeSampleProjectGenerator {
             return;
         }
         // Create new source root node
-        Element element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, nodeName);
+        Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, nodeName);
         data.appendChild(element);
     }
 
@@ -194,7 +193,7 @@ public class MakeSampleProjectGenerator {
                 //changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
                 changeXmlFileByTagName(doc, "name", name, null); // NOI18N
             }
-            addEmptyNode(doc, MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
+            addEmptyNode(doc, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
             saveXml(doc, prjLoc, MakeProjectHelper.PROJECT_XML_PATH);
 
             // Change working dir and default conf in 'projectDescriptor.xml'
@@ -603,7 +602,7 @@ public class MakeSampleProjectGenerator {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-            final byte[] data = MakeProjectHelperImpl.convertLineSeparator(baos, xml, xml.getParent());
+            final byte[] data = SmartOutputStream.convertLineSeparator(baos, xml, xml.getParent());
             OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
             try {
                 os.write(data);
