@@ -59,7 +59,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -67,7 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.ui.MakeProjectCustomizerEx;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
@@ -549,7 +549,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                                     if (sheets != null) {
                                         for (Sheet sheet : sheets) {
                                             if (((MakeConfigurationDescriptor) projectDescriptor).hasProjectCustomizer()) {
-                                                MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor) projectDescriptor).getProjectCustomizer();
+                                                MakeProjectCustomizerEx makeProjectCustomizer = (MakeProjectCustomizerEx) ((MakeConfigurationDescriptor) projectDescriptor).getProjectCustomizer();
                                                 sheet = makeProjectCustomizer.getPropertySheet(sheet);
                                             }
 

@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.FormattingPropPanel;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.FormattingPropPanel;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.ResolveReferencePanel;

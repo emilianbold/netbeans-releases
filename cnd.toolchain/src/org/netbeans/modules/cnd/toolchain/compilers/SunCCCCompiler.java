@@ -51,11 +51,10 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
-import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+//import org.openide.DialogDisplayer;
+//import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /*package*/ abstract class SunCCCCompiler extends CCCCompiler {
@@ -98,11 +97,12 @@ import org.openide.util.NbBundle;
             } else {
                 errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
             }
-            if (CndUtils.isStandalone()) {
-                System.err.println(errormsg);
-            } else {
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            }
+            CndNotifier.getDefault().notifyErrorLater(errormsg);
+//            if (CndUtils.isStandalone()) {
+//                System.err.println(errormsg);
+//            } else {
+//                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+//            }
         }
         
         checkModel(res, getCallable());

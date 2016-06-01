@@ -160,7 +160,12 @@ public final class ProjectActionEvent {
 
     // TODO: move method to ProjectActionHandlerFactory or ProjectActionHandler
     public String getActionName() {
-        return type.getLocalizedName();
+        Type myType = getContext().lookup(Type.class);
+        if (myType != null) {
+            return myType.getLocalizedName();
+        } else {
+            return type.getLocalizedName();
+        }
     }
 
     private String getExecutableFromRunCommand() {

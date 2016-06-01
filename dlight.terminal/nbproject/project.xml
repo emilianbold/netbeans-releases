@@ -44,7 +44,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.26.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -155,6 +155,7 @@
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.remote.ui</friend>
                 <package>org.netbeans.modules.dlight.api.terminal</package>
             </friend-packages>
         </data>

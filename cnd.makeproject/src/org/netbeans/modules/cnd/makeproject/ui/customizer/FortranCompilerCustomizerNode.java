@@ -45,13 +45,21 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.OptionsNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.StringNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 class FortranCompilerCustomizerNode extends CustomizerNode {
 
@@ -68,19 +76,63 @@ class FortranCompilerCustomizerNode extends CustomizerNode {
                 for (SharedItemConfiguration cfg : sharedConfigurations) {
                     ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
                     if (itemConfiguration != null) {
-                        out.add(itemConfiguration.getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration));
+                        out.add(getGeneralSheet((MakeConfiguration) configuration, itemConfiguration.getFortranCompilerConfiguration()));
                     }
                 }
                 return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
             case Project:
-                Sheet generalSheet = ((MakeConfiguration) configuration).getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+                Sheet generalSheet = getGeneralSheet((MakeConfiguration) configuration, ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
                 return new Sheet[]{generalSheet};
         }
         return null;
     }
-
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("ProjectPropsCompiling"); // NOI18N
+    }
+
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(FortranCompilerCustomizerNode.class, s);
+    }
+
+    private Sheet getGeneralSheet(MakeConfiguration conf, FortranCompilerConfiguration cconf) {
+        Sheet sheet = new Sheet();
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        AbstractCompiler fortranCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
+
+        sheet.put(BasicCompilerCustomizerNode.getBasicSet(cconf));
+        if (cconf.getMaster() != null) {
+            sheet.put(BasicCompilerCustomizerNode.getInputSet(cconf));
+        }
+        if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
+            Sheet.Set set2 = new Sheet.Set();
+            set2.setName("OtherOptions"); // NOI18N
+            set2.setDisplayName(getString("OtherOptionsTxt"));
+            set2.setShortDescription(getString("OtherOptionsHint"));
+            set2.put(new IntNodeProp(cconf.getMTLevel(), (cconf.getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+            sheet.put(set2);
+        }
+        Sheet.Set set4 = new Sheet.Set();
+        set4.setName("Tool"); // NOI18N
+        set4.setDisplayName(getString("ToolTxt1"));
+        set4.setShortDescription(getString("ToolHint1"));
+        if (fortranCompiler != null) {
+            set4.put(new StringNodeProp(cconf.getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        }
+        sheet.put(set4);
+
+        String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
+        Sheet.Set set2 = new Sheet.Set();
+        set2.setName("CommandLine"); // NOI18N
+        set2.setDisplayName(getString("CommandLineTxt"));
+        set2.setShortDescription(getString("CommandLineHint"));
+        if (fortranCompiler != null) {
+            set2.put(new OptionsNodeProp(cconf.getCommandLineConfiguration(), null, cconf, fortranCompiler, null, texts));
+        }
+        sheet.put(set2);
+
+        return sheet;
     }
 }

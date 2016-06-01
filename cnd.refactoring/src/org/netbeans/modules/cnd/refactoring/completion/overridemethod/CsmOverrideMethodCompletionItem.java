@@ -125,12 +125,18 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         String appendItemText = createAppendText(item, cls);
         String rightText = createRightName(item);
         String coloredItemText;
+        int priority = PRIORITY;
         if (item == null || CsmKindUtilities.isDestructor(item)) {
             coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "destructor.txt")); //NOI18N
         } else {
-            coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "override.txt")); //NOI18N
+            if (CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isAbstract()) {
+                coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "implement.txt")); //NOI18N
+                priority--;
+            } else {
+                coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "override.txt")); //NOI18N
+            }
         }
-        return new CsmOverrideMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
+        return new CsmOverrideMethodCompletionItem(item, substitutionOffset, priority, sortItemText, appendItemText, coloredItemText, true, rightText);
     }
 
     private static String createDisplayName(CsmMember item, CsmClass parent, String operation) {

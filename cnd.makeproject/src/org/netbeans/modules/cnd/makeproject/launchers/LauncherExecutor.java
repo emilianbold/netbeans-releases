@@ -12,6 +12,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -19,9 +20,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -139,7 +139,7 @@ public final class LauncherExecutor {
             }
         }
         // launcher without index is for common
-        return COMMON_LAUNCHER_INDEX;
+        return LaunchersRegistry.COMMON_LAUNCHER_INDEX;
     }
     
     private void onBuild(final Project project) {
@@ -218,8 +218,12 @@ public final class LauncherExecutor {
                 //expand macros if presented
                 executable = preprocessValueField(executable, conf);
             }
-            
-            Lookup context = Lookups.fixed(new ExecutionListenerImpl(), executable);
+            Lookup context;
+            if (launcher.runInOwnTab()) {
+                context = Lookups.fixed(new ExecutionListenerImpl(), executable, new MyType(actionType, launcher.getName()));
+            } else {
+                context = Lookups.fixed(new ExecutionListenerImpl(), executable);
+            }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                     project,
                     actionType,
@@ -265,4 +269,39 @@ public final class LauncherExecutor {
             listener.executionFinished(rc);
         }
     }
+    private final class MyType implements Type {
+        private final Type delegate;
+        private final String name;
+        
+        private MyType(Type delegate, String name) {
+            this.delegate = delegate;
+            this.name = name;
+        }
+
+        @Override
+        public int ordinal() {
+            return delegate.ordinal();
+        }
+
+        @Override
+        public String name() {
+            return delegate.name();
+        }
+
+        @Override
+        public String getLocalizedName() {
+            if (name.isEmpty()) {
+                return delegate.getLocalizedName();
+            } else {
+                return delegate.getLocalizedName()+" "+name; //NOI18N
+            }
+        }
+
+        @Override
+        public void setLocalizedName(String name) {
+            throw new UnsupportedOperationException();
+        }
+                
+    }
+
 }

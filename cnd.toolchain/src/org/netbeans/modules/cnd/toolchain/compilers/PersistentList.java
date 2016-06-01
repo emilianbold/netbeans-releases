@@ -55,7 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-/*package*/ final class PersistentList<E> extends Vector<E> implements Serializable{
+public final class PersistentList<E> extends Vector<E> implements Serializable{
     private static final long serialVersionUID = -8893123456464434693L;
     
     private final transient Object lock;

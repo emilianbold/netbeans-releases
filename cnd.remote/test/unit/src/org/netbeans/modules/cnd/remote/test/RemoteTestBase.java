@@ -63,15 +63,16 @@ import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.HostValidatorProvider;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -231,7 +232,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
         if (! hosts.contains(execEnv)) {
             ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
-            HostValidatorImpl validator = new HostValidatorImpl(tcm);
+            HostValidator validator = HostValidatorProvider.getInstance(tcm);
             boolean ok = validator.validate(execEnv, true, new PrintWriter(System.out));
             if (ok) {
                 hosts.add(execEnv);

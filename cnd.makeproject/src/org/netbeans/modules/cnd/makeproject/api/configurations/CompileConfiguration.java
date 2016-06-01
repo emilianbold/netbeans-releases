@@ -42,10 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 
 /**
  *
@@ -59,7 +56,7 @@ public class CompileConfiguration implements Cloneable {
     private final DefaultPicklistModel compileCommandPicklist;
     public static final String AUTO_FOLDER = "${AUTO_FOLDER}"; // NOI18N
     public static final String AUTO_COMPILE = "${AUTO_COMPILE}"; // NOI18N
-    public static final String AUTO_MAKE = BuildSupport.MAKE_MACRO;
+    public static final String AUTO_MAKE = MakeArtifact.MAKE_MACRO;
     public static final String AUTO_ITEM_PATH = "${ITEM_PATH}"; // NOI18N
     public static final String AUTO_ITEM_NAME = "${ITEM_NAME}"; // NOI18N
 
@@ -77,20 +74,6 @@ public class CompileConfiguration implements Cloneable {
         compileCommand = new ComboStringConfiguration(null, AUTO_COMPILE, compileCommandPicklist); // NOI18N
     }
     
-    public Sheet getSheet() {
-        Sheet sheet = new Sheet();
-        
-        Sheet.Set set = new Sheet.Set();
-        set.setName("Compile"); // NOI18N
-        set.setDisplayName(getString("CompileTxt")); // NOI18N
-        set.setShortDescription(getString("CompileHint")); // NOI18N
-        set.put(new ComboStringNodeProp(getCompileCommandWorkingDir(), true, getString("CompileWorkingDirectory_LBL"), getString("CompileWorkingDirectory_TT"))); // NOI18N
-        set.put(new ComboStringNodeProp(getCompileCommand(), true, getString("CompileCommandLine_LBL"), getString("CompileCommandLine_TT"))); // NOI18N
-        sheet.put(set);
-        
-        return sheet;
-    }
-
     public ComboStringConfiguration getCompileCommandWorkingDir() {
         return compileCommandWorkingDir;
     }
@@ -107,10 +90,6 @@ public class CompileConfiguration implements Cloneable {
         this.compileCommand = compileCommand;
     }
 
-    private String getString(String key) {
-        return NbBundle.getMessage(CompileConfiguration.class, key);
-    }
-    
     public MakeConfiguration getMakeConfiguration() {
         return makeConfiguration;
     }

@@ -54,7 +54,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
+                        <specification-version>1.39</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -100,11 +100,27 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.toolchain.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.utils</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.48.5</specification-version>
+                        <specification-version>1.53</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,7 +128,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -128,7 +144,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.33.1</specification-version>
+                        <specification-version>1.39.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -136,7 +152,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.29.4</specification-version>
+                        <specification-version>1.29.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -491,16 +507,17 @@
                 <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.remote.projectui</friend>
+                <friend>org.netbeans.modules.cnd.remote.ui</friend>
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.support</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
+                <package>org.netbeans.modules.cnd.makeproject.api.ui.actions</package>
+                <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.launchers.actions</package>

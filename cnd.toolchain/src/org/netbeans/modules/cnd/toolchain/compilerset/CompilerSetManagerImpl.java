@@ -64,7 +64,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -79,6 +78,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ToolChainPathProvider;
@@ -146,7 +146,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         } else {
             final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
             final String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", env.getDisplayName());
-            final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+            //use non-UI API for progress - in UI case UI  services will be turned on
+            final ProgressHandle progressHandle = ProgressHandle.createHandle(
                     progressMessage,
                     new Cancellable() {
                 @Override
@@ -222,7 +223,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             CndUtils.assertNonUiThread();
             if (isUninitialized() && !DISABLED) {
                 log.log(Level.FINE, "CSM.getDefault: Doing remote setup from EDT?{0}", SwingUtilities.isEventDispatchThread());
-                pHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(getClass(), "PROGRESS_TEXT", getExecutionEnvironment().getDisplayName())); // NOI18N
+                pHandle = ProgressHandle.createHandle(NbBundle.getMessage(getClass(), "PROGRESS_TEXT", getExecutionEnvironment().getDisplayName())); // NOI18N
                 pHandle.start();
                 this.sets.clear();
                 initRemoteCompilerSets(true, runCompilerSetDataLoader);
@@ -350,7 +351,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) { // this means we run in tests or standalone application
             runnable.run();
         } else {
-            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
+            ProgressHandle progressHandle = ProgressHandle.createHandle(progressMessage);
             progressHandle.start();
             initializationTask = RP.post(runnable);
             initializationTask.waitFinished();
@@ -423,7 +424,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                         // Don't look here.
                         continue;
                     }
-                    if (!ToolUtils.isPathAbsolute(path)) {
+                    if (!CndPathUtilities.isAbsolute(path)) {
                         path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
                     }
                     File dir = new File(path);
@@ -515,7 +516,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
     }
 
-    public List<CompilerSet> findRemoteCompilerSets(String path) {
+        public List<CompilerSet> findRemoteCompilerSets(String path) {
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 	record.validate(true);
@@ -983,14 +984,14 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             String path = ToolUtils.findCommand(cs, name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
-                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
+                                                    return cs.addNewTool(env, CndPathUtilities.getBaseName(path), path, tool, null);
                                                 }
                                             }
                                         }
                                      } else {
                                         String path = cs.getPathCandidate(tool);
                                         if (path != null) {
-                                            String name = ToolUtils.getBaseName(path);
+                                            String name = CndPathUtilities.getBaseName(path);
                                             if (notSkipedName(cs, descriptor, path, name)) {
                                                 return cs.addNewTool(env, name, path, tool, null);
                                             }
@@ -1004,7 +1005,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                                 String path = ToolUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
                                                     if (notSkipedName(cs, descriptor, path, name)) {
-                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
+                                                        return cs.addNewTool(env, CndPathUtilities.getBaseName(path), path, tool, null);
                                                     }
                                                 }
                                             }
@@ -1021,7 +1022,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             }
                                             String path = ToolUtils.findCommand(name, method);
                                             if (path != null) {
-                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
+                                                return cs.addNewTool(env, CndPathUtilities.getBaseName(path), path, tool, null);
                                             }
                                         }
                                     } else {

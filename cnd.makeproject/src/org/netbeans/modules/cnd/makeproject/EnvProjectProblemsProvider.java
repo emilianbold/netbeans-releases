@@ -68,7 +68,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.netbeans.modules.remote.api.ConnectionNotifier;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

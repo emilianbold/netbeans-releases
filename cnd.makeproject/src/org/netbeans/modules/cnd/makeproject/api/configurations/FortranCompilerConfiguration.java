@@ -45,15 +45,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements Cloneable {
 
@@ -134,48 +127,4 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         return CppUtils.reformatWhitespaces(options);
     }
 
-    // Sheet
-    public Sheet getGeneralSheet(MakeConfiguration conf) {
-        Sheet sheet = new Sheet();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        AbstractCompiler fortranCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
-
-        sheet.put(getBasicSet());
-        if (getMaster() != null) {
-            sheet.put(getInputSet());
-        }
-        if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
-            Sheet.Set set2 = new Sheet.Set();
-            set2.setName("OtherOptions"); // NOI18N
-            set2.setDisplayName(getString("OtherOptionsTxt"));
-            set2.setShortDescription(getString("OtherOptionsHint"));
-            set2.put(new IntNodeProp(getMTLevel(), (getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-            sheet.put(set2);
-        }
-        Sheet.Set set4 = new Sheet.Set();
-        set4.setName("Tool"); // NOI18N
-        set4.setDisplayName(getString("ToolTxt1"));
-        set4.setShortDescription(getString("ToolHint1"));
-        if (fortranCompiler != null) {
-            set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
-        }
-        sheet.put(set4);
-
-        String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-        Sheet.Set set2 = new Sheet.Set();
-        set2.setName("CommandLine"); // NOI18N
-        set2.setDisplayName(getString("CommandLineTxt"));
-        set2.setShortDescription(getString("CommandLineHint"));
-        if (fortranCompiler != null) {
-            set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, fortranCompiler, null, texts));
-        }
-        sheet.put(set2);
-
-        return sheet;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(FortranCompilerConfiguration.class, s);
-    }
 }

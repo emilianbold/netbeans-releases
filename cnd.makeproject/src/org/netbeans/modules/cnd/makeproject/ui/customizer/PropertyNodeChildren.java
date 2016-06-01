@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

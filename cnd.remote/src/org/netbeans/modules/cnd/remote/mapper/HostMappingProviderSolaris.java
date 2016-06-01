@@ -42,14 +42,14 @@
 package org.netbeans.modules.cnd.remote.mapper;
 
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderSolaris extends HostMappingProviderUnixAbstract {
+/*package*/final class HostMappingProviderSolaris extends HostMappingProviderUnixAbstract {
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
         ExecutionEnvironment otherEnv = otherPlatform.getExecutionEnvironment();

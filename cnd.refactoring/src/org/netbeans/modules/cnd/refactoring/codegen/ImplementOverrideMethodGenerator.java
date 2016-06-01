@@ -52,7 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ImplementOverridePanel;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;

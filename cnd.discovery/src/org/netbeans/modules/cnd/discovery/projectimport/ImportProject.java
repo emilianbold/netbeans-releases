@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -118,7 +119,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
@@ -158,8 +158,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
-    private static final String BUILD_COMMAND = BuildSupport.MAKE_MACRO+" -f Makefile";  // NOI18N
-    private static final String CLEAN_COMMAND = BuildSupport.MAKE_MACRO+" -f Makefile clean";  // NOI18N
+    private static final String BUILD_COMMAND = MakeArtifact.MAKE_MACRO+" -f Makefile";  // NOI18N
+    private static final String CLEAN_COMMAND = MakeArtifact.MAKE_MACRO+" -f Makefile clean";  // NOI18N
     static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     public static final Logger logger;
     static {

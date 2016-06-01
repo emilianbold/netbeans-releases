@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
