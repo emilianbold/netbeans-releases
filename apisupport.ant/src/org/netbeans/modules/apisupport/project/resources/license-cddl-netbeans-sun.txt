@@ -3,7 +3,7 @@ ${licenseFirst}
 </#if>
 ${licensePrefix}DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 ${licensePrefix?replace(" +$", "", "r")}
-${licensePrefix}Copyright ${date?date?string("yyyy")} Oracle and/or its affiliates. All rights reserved.
+${licensePrefix}Copyright (c) ${date?date?string("yyyy")} Oracle and/or its affiliates. All rights reserved.
 ${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 ${licensePrefix}Other names may be trademarks of their respective owners.
