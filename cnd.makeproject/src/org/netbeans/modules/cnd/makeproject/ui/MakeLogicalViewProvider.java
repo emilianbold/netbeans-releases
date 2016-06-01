@@ -52,7 +52,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -77,11 +76,12 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 
 /**
  * Support for creating logical views.
  */
-public class MakeLogicalViewProvider implements LogicalViewProvider {
+public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogicalViewModel {
 
     @ServiceProvider(service = MakeProjectLookupProvider.class)
     public static class MakeLogicalViewProviderFactory implements MakeProjectLookupProvider {
@@ -421,7 +421,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    public static void checkForChangedName(final Project project) {
+    @Override
+    public void checkForChangedName() {
+        checkForChangedName(project);
+    }
+
+    private static void checkForChangedName(final Project project) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -440,7 +445,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         });
     }
 
-    public static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
+    @Override
+    public void checkForChangedViewItemNodes(Delta delta) {
+        checkForChangedViewItemNodes(project, delta);
+    }
+
+    private static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -456,7 +466,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         refreshProjectNodes(project);
     }
 
-    public static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
+    @Override
+    public void checkForChangedViewItemNodes(Folder folder, Item item) {
+        checkForChangedViewItemNodes(project, folder, item);
+    }
+
+    private static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -466,6 +481,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private static void refreshProjectNodes(final Project project) {
         ProjectNodesRefreshSupport.refreshProjectNodes(project);
+    }
+
+    @Override
+    public void refreshBrokenItems() {
+        refreshBrokenItems(project);
     }
 
     /**

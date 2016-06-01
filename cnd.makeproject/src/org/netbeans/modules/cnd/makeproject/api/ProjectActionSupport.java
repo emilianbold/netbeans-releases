@@ -84,10 +84,10 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.runprofiles.RerunArguments;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -205,7 +205,10 @@ public class ProjectActionSupport {
                 public void run() {
                     FileUtil.runAtomicAction(refresher);
                     fon.onFinish(curPAE);
-                    MakeLogicalViewProvider.refreshBrokenItems(project);
+                    MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+                    if (viewModel != null) {
+                        viewModel.refreshBrokenItems();
+                    }
                 }
             });
             ConfigurationDescriptorProvider.SnapShot snapShot = curPAE.getContext().lookup(ConfigurationDescriptorProvider.SnapShot.class);

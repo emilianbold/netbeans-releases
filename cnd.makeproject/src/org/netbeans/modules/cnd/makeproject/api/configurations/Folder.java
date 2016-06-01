@@ -63,11 +63,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -81,7 +79,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
@@ -117,7 +114,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String id = null;
     private String root;
     private volatile boolean removed;
-    private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static final boolean checkedLogging = checkLogging();
     private final Kind kind;
 
@@ -707,7 +704,10 @@ public class Folder implements FileChangeListener, ChangeListener {
                     conf.getExcluded().setValue(false);
                 }
             }
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(this.getProject(), this, added);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(this, item);
+            }
         }
         return added;
     }
@@ -751,15 +751,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
-            DataObject dao = item.getDataObject();
-            NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getLookup().lookup(NativeFileItemSet.class);
-            if (myNativeFileItemSet != null) {
-                myNativeFileItemSet.add(item);
-            } else {
-                if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "can not add NativeFileItem for folder''s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
-                }
-            }
+            item.onAddedToFolder(this);
         }
 
         // Add it to project Items

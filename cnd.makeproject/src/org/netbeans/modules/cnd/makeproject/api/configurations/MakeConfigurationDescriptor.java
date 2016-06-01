@@ -94,7 +94,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXM
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -706,7 +705,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             checkForChangedItems2(folder, item);
         }
-        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
+        MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+        if (viewModel != null) {
+            viewModel.checkForChangedViewItemNodes(folder, item);
+        }
     }
 
     private void checkForChangedItems2(final Folder folder, final Item item) {
@@ -956,7 +958,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             checkForChangedItems2(delta);
         }
-        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
+        MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+        if (viewModel != null) {
+            viewModel.checkForChangedViewItemNodes(delta);
+        }
     }
 
     private void checkForChangedItems2(final Delta delta) {

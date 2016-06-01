@@ -1209,6 +1209,18 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return false;
     }
 
+    void onAddedToFolder(Folder folder) {
+        DataObject dao = this.getDataObject();
+        NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getLookup().lookup(NativeFileItemSet.class);
+        if (myNativeFileItemSet != null) {
+            myNativeFileItemSet.add(this);
+        } else {
+            if (Folder.log.isLoggable(Level.FINEST)) {
+                Folder.log.log(Level.FINEST, "can not add NativeFileItem for folder''s {0} item {1} using {2}", new Object[]{folder, this, dao}); // NOI18N
+            }
+        }
+    }
+
     private static final class SpiAccessor {
 
         private Collection<? extends UserOptionsProvider> uoProviders;

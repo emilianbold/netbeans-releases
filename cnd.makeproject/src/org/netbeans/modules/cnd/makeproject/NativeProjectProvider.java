@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -448,8 +448,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(items, true, true, true);
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
-            MakeLogicalViewProvider.checkForChangedName(proj);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(null, null);
+                viewModel.checkForChangedName();
+            }
             return;
         }
 
@@ -457,9 +460,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())
                 || !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(null, null);
+            }
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-                MakeLogicalViewProvider.checkForChangedName(proj);
+                if (viewModel != null) {
+                    viewModel.checkForChangedName();
+                }
             }
             toolColectionChanged = true;
         }
@@ -491,7 +499,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     // included
                     added.add(items[i]);
                 }
-                MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, items[i]);
+                MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+                if (viewModel != null) {
+                    viewModel.checkForChangedViewItemNodes(null, items[i]);
+                }
                 continue;
             }
 
