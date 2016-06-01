@@ -38,8 +38,6 @@ ${licensePrefix}Version 2 license, then the option applies only if the new code 
 ${licensePrefix}made subject to such option by the copyright holder.
 ${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Contributor(s):
-${licensePrefix?replace(" +$", "", "r")}
-${licensePrefix}Portions Copyrighted ${date?date?string("yyyy")} Sun Microsystems, Inc.
 <#if licenseLast??>
 ${licenseLast}
 </#if>
