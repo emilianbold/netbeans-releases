@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.configurations.FormattingPropPanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -133,18 +132,6 @@ public final class BrokenReferencesSupport {
             }
         }
         return "";
-    }
-
-    public static boolean hasTemporaryEnv(ExecutionEnvironment ee) {
-        return TempEnv.getInstance(ee).hasTemporaryEnv();
-    }
-
-    public static void addTemporaryEnv(ExecutionEnvironment ee, Map<String, String> map2fill) {
-        TempEnv.getInstance(ee).addTemporaryEnv(map2fill);
-    }
-
-    public static String getTemporaryEnv(ExecutionEnvironment ee, String key) {
-        return TempEnv.getInstance(ee).getTemporaryEnv(key);
     }
 
     private static boolean isIncorectVersion(@NonNull final MakeProject project) {

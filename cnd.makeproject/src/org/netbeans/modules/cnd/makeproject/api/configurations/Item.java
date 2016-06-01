@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenReferencesSupport;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
@@ -1317,7 +1317,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     Exceptions.printStackTrace(ex);
                 }                    
             }
-            BrokenReferencesSupport.addTemporaryEnv(env, envVariables);
+            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
             this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
         }
 

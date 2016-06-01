@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

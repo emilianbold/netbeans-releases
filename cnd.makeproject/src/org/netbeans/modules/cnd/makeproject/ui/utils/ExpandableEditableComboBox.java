@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenReferencesSupport;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -97,7 +97,7 @@ public final class ExpandableEditableComboBox extends EditableComboBox {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            BrokenReferencesSupport.addTemporaryEnv(env, envVariables);
+            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
             this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
         }
 

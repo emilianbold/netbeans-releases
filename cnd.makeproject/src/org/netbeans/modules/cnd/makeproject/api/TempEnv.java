@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui;
+package org.netbeans.modules.cnd.makeproject.api;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +55,7 @@ import org.openide.util.NbPreferences;
  * @author vkvashin
  */
 
-/*package*/ final class TempEnv {
+public final class TempEnv {
 
     private static final Map<ExecutionEnvironment, TempEnv> instances = new HashMap<>();
     
