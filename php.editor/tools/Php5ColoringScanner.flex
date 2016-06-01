@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.lexer;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.modules.web.common.api.ByteStack;
 
 @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING", "EI_EXPOSE_REP"})
 %%
@@ -88,7 +89,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %{
 
-    private final StateStack stack = new StateStack();
+    private final ByteStack stack = new ByteStack();
     private String heredoc = null;
     private int hereocLength = 0;
     private boolean aspTagsAllowed;
@@ -105,9 +106,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             setState((LexerState) info.state());
         } else {
             //initial state
-            stack.pushStack(YYINITIAL);
+            stack.push(YYINITIAL);
             if (inPHP) {
-                stack.pushStack(ST_PHP_IN_SCRIPTING);
+                stack.push(ST_PHP_IN_SCRIPTING);
                 zzState = ST_PHP_IN_SCRIPTING;
                 zzLexicalState = ST_PHP_IN_SCRIPTING;
             } else {
@@ -119,7 +120,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public static final class LexerState  {
-        final StateStack stack;
+        final ByteStack stack;
         /* the current state of the DFA */
         final int zzState;
         /* the current lexical state */
@@ -129,7 +130,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /* and the lenght of */
         final int hereocLength;
 
-        LexerState(StateStack stack, int zzState, int zzLexicalState, String heredoc, int hereocLength) {
+        LexerState(ByteStack stack, int zzState, int zzLexicalState, String heredoc, int hereocLength) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
@@ -172,7 +173,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, hereocLength);
+        return new LexerState(stack.copyOf(), zzState, zzLexicalState, heredoc, hereocLength);
     }
 
     public void setState(LexerState state) {
@@ -220,11 +221,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     protected void popState() {
-        yybegin(stack.popStack());
+        yybegin(stack.pop());
     }
 
     protected void pushState(final int state) {
-        stack.pushStack(getZZLexicalState());
+        stack.push(getZZLexicalState());
         yybegin(state);
     }
 
@@ -721,7 +722,7 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
 }
 
 <ST_PHP_IN_SCRIPTING>"}" {
-    int lastState = stack.get(stack.size() - 1);
+    int lastState = stack.peek();
     if (lastState != ST_PHP_IN_SCRIPTING && lastState != YYINITIAL) {
         // probably in some sub state -> "{$" or "${"
         popState();
