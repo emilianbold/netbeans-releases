@@ -39,28 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-//@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=700)
-public class FullFileIndexer extends NamedOption {
-    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
-
+@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=500)
+public class ViewBinaryFiles extends NamedOption {
+    // Display binary files
+    public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
+    
     @Override
     public String getName() {
-        return FULL_FILE_INDEXER;
+        return VIEW_BINARY_FILES;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(FullFileIndexer.class, "FullFileIndexerName"); //NOI18N
+        return NbBundle.getMessage(ViewBinaryFiles.class, "DISPLAY_BINARY_FILES_TXT"); //NOI18N
     }
 
     @Override
@@ -75,6 +76,6 @@ public class FullFileIndexer extends NamedOption {
 
     @Override
     public Object getDefaultValue() {
-        return CndTraceFlags.USE_INDEXING_API;
+        return false;
     }
 }

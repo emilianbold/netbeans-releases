@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,9 +37,9 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
@@ -49,38 +49,38 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=2000)
-public class ResolveSymbolicLinks extends NamedOption {
-    // Reuse
-    public static final String RESOLVE_SYMBOLIC_LINKS = "resolveSymbolicLinks";  // NOI18N
-    
+@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=800)
+public class FixUnresolvedInclude extends NamedOption {
+    public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
+
     @Override
     public String getName() {
-        return RESOLVE_SYMBOLIC_LINKS;
+        return FIX_UNRESOLVED_INCLUDE;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ReuseOutputTab.class, "RESOLVE_SYMBOLIC_LINKS_CHECKBOX_TXT"); //NOI18N
+        return NbBundle.getMessage(FixUnresolvedInclude.class, "fixUnresolvedInclude"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(ReuseOutputTab.class, "RESOLVE_SYMBOLIC_LINKS_CHECKBOX_AD"); //NOI18N
+        return null;
     }
 
     @Override
-    public NamedOption.OptionKind getKind() {
-        return NamedOption.OptionKind.Boolean;
+    public OptionKind getKind() {
+        return OptionKind.Boolean;
     }
 
     @Override
     public Object getDefaultValue() {
-        return Boolean.getBoolean("cnd.project.resolve.symlinks");
+        return true;
     }
 
     @Override
     public boolean isVisible() {
-        return true;
+        return Boolean.getBoolean(NamedOption.EXTRA_OPTIONS_FLAG);
     }
+        
 }

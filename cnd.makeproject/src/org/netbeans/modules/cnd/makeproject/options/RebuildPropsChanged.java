@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;

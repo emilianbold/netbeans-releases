@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
@@ -49,24 +49,24 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=400)
-public class DependencyChecking extends NamedOption {
-    // Dependency checking
-    public static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=200)
+public class SaveModifiedBeforBuild extends NamedOption {
+    // Save
+    public static final String SAVE = "save";  // NOI18N
     
     @Override
     public String getName() {
-        return DEPENDENCY_CHECKING;
+        return SAVE;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(DependencyChecking.class, "DEPENDENCY_CHECKING_TXT"); //NOI18N
+        return NbBundle.getMessage(SaveModifiedBeforBuild.class, "SAVE_CHECKBOX_TXT"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(DependencyChecking.class, "DEPENDENCY_CHECKBOX_AD"); //NOI18N
+        return NbBundle.getMessage(SaveModifiedBeforBuild.class, "SAVE_CHECKBOX_AD"); //NOI18N
     }
 
     @Override
@@ -78,4 +78,10 @@ public class DependencyChecking extends NamedOption {
     public Object getDefaultValue() {
         return true;
     }
+
+    @Override
+    public boolean isVisible() {
+        return Boolean.getBoolean(NamedOption.EXTRA_OPTIONS_FLAG);
+    }
+        
 }

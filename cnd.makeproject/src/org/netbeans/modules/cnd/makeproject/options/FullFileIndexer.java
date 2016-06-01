@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -49,24 +50,23 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=300)
-public class ReuseOutputTab extends NamedOption {
-    // Reuse
-    public static final String REUSE = "reuse";  // NOI18N
-    
+//@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=700)
+public class FullFileIndexer extends NamedOption {
+    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
+
     @Override
     public String getName() {
-        return REUSE;
+        return FULL_FILE_INDEXER;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ReuseOutputTab.class, "REUSE_CHECKBOX_TXT"); //NOI18N
+        return NbBundle.getMessage(FullFileIndexer.class, "FullFileIndexerName"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(ReuseOutputTab.class, "REUSE_CHECKBOX_AD"); //NOI18N
+        return null;
     }
 
     @Override
@@ -76,6 +76,6 @@ public class ReuseOutputTab extends NamedOption {
 
     @Override
     public Object getDefaultValue() {
-        return true;
+        return CndTraceFlags.USE_INDEXING_API;
     }
 }

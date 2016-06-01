@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.nodes.Node;
@@ -86,7 +85,7 @@ public final class PropertiesFolderAction extends NodeAction {
     @Override
     public void performAction(Node[] activatedNodes) {
         List<Folder> list = new ArrayList<>();
-        MakeCustomizerProvider best = null;
+        MakeCustomizerProviderImpl best = null;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
             Folder folder = (Folder) n.getValue("Folder"); // NOI18N
@@ -94,7 +93,7 @@ public final class PropertiesFolderAction extends NodeAction {
             if (project == null) {
                 return;  // FIXUP
             }
-            MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
+            MakeCustomizerProviderImpl cp = project.getLookup().lookup(MakeCustomizerProviderImpl.class);
             if (cp == null) {
                 continue; // FIXUP
             }

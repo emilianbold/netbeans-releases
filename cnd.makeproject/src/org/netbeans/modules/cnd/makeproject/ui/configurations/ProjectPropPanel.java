@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -87,7 +86,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 //        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
 //            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
 //        }
-        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
+//        MakeCustomizerProviderImpl makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProviderImpl.class);
 //        makeCustomizerProvider.addActionListener(this);
 
         originalEncoding = ((MakeProject) project).getSourceEncoding();

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.makeproject.options;
 
 import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.NbBundle;
@@ -49,23 +49,24 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=600)
-public class ShowConfigurationWarning extends NamedOption {
-    public static final String SHOW_CONFIGURATION_WARNING = "showConfigurationWarning"; // NOI18N
-
+@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=300)
+public class ReuseOutputTab extends NamedOption {
+    // Reuse
+    public static final String REUSE = "reuse";  // NOI18N
+    
     @Override
     public String getName() {
-        return SHOW_CONFIGURATION_WARNING;
+        return REUSE;
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ShowConfigurationWarning.class, "SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.TXT"); //NOI18N
+        return NbBundle.getMessage(ReuseOutputTab.class, "REUSE_CHECKBOX_TXT"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-        return null;
+        return NbBundle.getMessage(ReuseOutputTab.class, "REUSE_CHECKBOX_AD"); //NOI18N
     }
 
     @Override

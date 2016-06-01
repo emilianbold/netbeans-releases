@@ -47,7 +47,7 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author Alexander Simon
  */
-public interface MakeActionProvider extends ActionProvider{
+public interface MakeActionProvider extends ActionProvider {
 
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N

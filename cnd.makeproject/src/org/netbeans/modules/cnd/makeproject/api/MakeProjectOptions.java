@@ -45,9 +45,11 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.options.ViewBinaryFiles;
 import org.openide.util.NbBundle;
 
 public final class MakeProjectOptions {
+    public static final String VIEW_BINARY_FILES_EVENT_NAME = ViewBinaryFiles.VIEW_BINARY_FILES;
 
     public static enum PathMode {
         

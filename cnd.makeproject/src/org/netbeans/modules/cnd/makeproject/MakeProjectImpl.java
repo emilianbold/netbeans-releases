@@ -89,7 +89,6 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -102,7 +101,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
-import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
+import org.netbeans.modules.cnd.makeproject.options.FullFileIndexer;
 import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
@@ -270,10 +269,10 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         //ic.add(BrokenReferencesSupport.createPlatformVersionProblemProvider(this));
         //ic.add(new MakeProjectSearchInfo(projectDescriptorProvider));
         //ic.add(new TemplateAttributesProviderImpl(this));
+        //ic.add(new MakeCustomizerProviderImpl(this));
         for(MakeProjectLookupProvider p : Lookup.getDefault().lookupAll(MakeProjectLookupProvider.class)) {
             p.addLookup(this, ic);
         }
-        ic.add(new MakeCustomizerProvider(this, projectDescriptorProvider));
         ic.add(new MakeArtifactProviderImpl(this));
         ic.add(UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)));
         ic.add(new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()));
