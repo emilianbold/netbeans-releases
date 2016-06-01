@@ -64,7 +64,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.ui.actions.CreateProjectAction;
 import org.netbeans.modules.cnd.makeproject.ui.actions.DebugDialogAction;
 import org.netbeans.modules.cnd.makeproject.ui.actions.NewTestActionFactory;
@@ -108,13 +107,13 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     private Folder folder;
     private Item item;
     private volatile boolean itemIsExcludedCache = false;
-    private final MakeProject project;
+    private final Project project;
     private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
     private final boolean simpleRunDebug;
     private Action runAction;
     private final VisualUpdater visualUpdater = new VisualUpdater();
 
-    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project, boolean simpleRunDebug) {
+    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, Project project, boolean simpleRunDebug) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
         this.childrenKeys = childrenKeys;
         this.folder = folder;
@@ -143,7 +142,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         itemIsExcludedCache = isExcluded();
     }
 
-    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
+    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, Project project) {
         this(childrenKeys, folder, item, dataObject, project, false);
     }
 

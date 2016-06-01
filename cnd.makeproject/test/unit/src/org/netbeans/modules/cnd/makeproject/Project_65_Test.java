@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.CndUtils;

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.HashMap;
 import java.util.Map;

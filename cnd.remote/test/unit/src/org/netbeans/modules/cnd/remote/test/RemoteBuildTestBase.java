@@ -68,9 +68,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -322,7 +323,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File publicConfFile = new File(nbproject, "configurations.xml");
         publicConfFile.setLastModified(publicConfFile.lastModified() + 1000*60*60); // this forces makefile regeneration for managed projects
         FileUtil.toFileObject(publicConfFile).refresh(true);
-        makeProject.save();
+        ((MakeProjectImpl)makeProject).save();
     }
 
     private void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {

@@ -46,8 +46,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProject.CodeStyleWrapper;
+import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
@@ -94,7 +94,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         this.project = project;
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
-        MakeProject.CodeStyleWrapper style;
+        CodeStyleWrapper style;
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.C_MIME_TYPE);
         StylePresentation def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {

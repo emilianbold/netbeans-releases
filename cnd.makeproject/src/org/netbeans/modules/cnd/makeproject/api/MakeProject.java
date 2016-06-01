@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api;
 
-package org.netbeans.modules.cnd.remote.pbuild;
-
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.api.project.ProjectManager;
+import java.util.Properties;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.makeproject.api.MakeProject;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public class RemoteBuildRequiredProjectsTestCase extends RemoteBuildTestBase {
+public interface MakeProject extends Project {
+    MakeProjectHelper getHelper();
+    Properties getProjectProperties(boolean b);
+    void saveProjectProperties(Properties projectProperties, boolean b);
 
-    public RemoteBuildRequiredProjectsTestCase(String testName) {
-        super(testName);
-    }
+    String getSourceEncoding();
+    void setSourceEncoding(String encName);
 
-    public RemoteBuildRequiredProjectsTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
+    CodeStyleWrapper getProjectFormattingStyle(String mime);
+    boolean isProjectFormattingStyle();
+    void setProjectFormattingStyle(boolean selected);
+    void setProjectFormattingStyle(String C_MIME_TYPE, CodeStyleWrapper key);
 
-    private void doTest(Toolchain toolchain) throws Exception {
-        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
-        MakeProject projectB = openProject("B", execEnv, Sync.RFS, toolchain);
-        MakeProject projectA = (MakeProject) ProjectManager.getDefault().findProject(projectB.getProjectDirectory().getParent().getFileObject("A"));
-        assertNotNull(projectA);
-        ensureMakefilesWritten(projectA);
-        buildProject(projectB, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    @ForAllEnvironments
-    public void testRemoteRequiredProjectsBuild() throws Exception {
-        doTest(Toolchain.GNU);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildRequiredProjectsTestCase.class);
-    }
+    ExecutionEnvironment getFileSystemHost();
+    
+    ConfigurationDescriptorProvider getConfigurationDescriptorProvider();
+    
+    ProjectConfigurationProvider<Configuration> getProjectConfigurationProvider();
+    MakeConfiguration getActiveConfiguration();
+    ExecutionEnvironment getDevelopmentHost();
 }

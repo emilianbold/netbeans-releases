@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -119,13 +120,13 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyDeleting() throws IOException {
         LOGGER.log(Level.FINE, "notify Deleting MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.setDeleted();
+        ((MakeProjectImpl)project).setDeleted();
     }
 
     @Override
     public void notifyDeleted() throws IOException {
         LOGGER.log(Level.FINE, "notify Deleted MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.getMakeProjectHelper().notifyDeleted();
+        project.getHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
             ((NativeProjectProvider) nativeProject).fireProjectDeleted();
@@ -187,7 +188,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //      fixDistJarProperty (nueName);
 //      project.getReferenceHelper().fixReferences(originalPath);
 
-        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        MakeProjectImpl.InfoInterface info = (MakeProjectImpl.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
         info.setName(nueName);
 
         MakeSharabilityQuery makeSharabilityQuery = original.getLookup().lookup(MakeSharabilityQuery.class);
@@ -198,7 +199,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     public void notifyMoving() throws IOException {
         LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
         storedOriginalPath = project.getProjectDirectory().getPath();
-        project.setDeleted();
+        ((MakeProjectImpl)project).setDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -207,7 +208,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
-            project.getMakeProjectHelper().notifyDeleted();
+            project.getHelper().notifyDeleted();
             return;
         }
         // Update all external relative paths
@@ -220,7 +221,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
-        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        MakeProjectImpl.InfoInterface info = (MakeProjectImpl.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
         info.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
         //ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -239,7 +240,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     @Override
     public void notifyRenamed(String nueName) throws IOException {
-        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        MakeProjectImpl.InfoInterface info = (MakeProjectImpl.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
         info.setName(nueName);
         info.firePropertyChange(ProjectInformation.PROP_NAME);
         info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);

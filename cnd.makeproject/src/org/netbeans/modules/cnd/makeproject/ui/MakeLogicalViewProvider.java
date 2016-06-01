@@ -52,16 +52,15 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
@@ -74,11 +73,23 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 
 /**
  * Support for creating logical views.
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
+    
+    @ServiceProvider(service = MakeProjectLookupProvider.class)
+    public static class MakeLogicalViewProviderFactory implements MakeProjectLookupProvider {
+
+        @Override
+        public void addLookup(MakeProject owner, ArrayList<Object> ic) {
+            ic.add(new MakeLogicalViewProvider(owner));
+        }
+    }
 
     private static final String brokenLinkBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
@@ -508,13 +519,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     static String getShortDescription(MakeProject project) {
         String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-        DevelopmentHostConfiguration devHost = project.getDevelopmentHostConfiguration();
-        if (devHost == null || devHost.isLocalhost()) {
+        ExecutionEnvironment devHost = project.getDevelopmentHost();
+        if (devHost == null || devHost.isLocal()) {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
                     "HINT_project_root_node", prjDirDispName); // NOI18N
         } else {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true)); // NOI18N
+                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName()); // NOI18N
         }
     }
 

@@ -61,11 +61,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.remote.HostValidatorProvider;
 import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
@@ -316,7 +316,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
             //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
             RemoteSyncTestSupport.waitWorkerFinished(20);
-            assertTrue("build failed: on " + makeProject.getDevelopmentHostExecutionEnvironment()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+            assertTrue("build failed: on " + makeProject.getDevelopmentHost()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
         } finally {
             ((CndTestIOProvider) iop).removeListener(listener);
         }

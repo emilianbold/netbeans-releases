@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -492,8 +492,8 @@ public abstract class ConfigurationDescriptorProvider {
             if (interrupter.cancelled()) {
                 return;
             }
-            if (project instanceof MakeProject) {
-                if (((MakeProject)project).isDeleted()) {
+            if (project instanceof MakeProjectImpl) {
+                if (((MakeProjectImpl)project).isDeleted()) {
                     return;
                 }
             }

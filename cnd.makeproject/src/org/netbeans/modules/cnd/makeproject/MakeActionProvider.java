@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsI
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -277,10 +278,10 @@ public final class MakeActionProvider implements ActionProvider {
             try {
                 // it's better to set deleted flag right here, otherwise we can start saving the project
                 // #196501 - "Error synchronizing project to <login>@<host> null"
-                project.setDeleting(true);  // can't set setDeleted here since user can answer "No"
+                ((MakeProjectImpl)project).setDeleting(true);  // can't set setDeleted here since user can answer "No"
                 DefaultProjectOperationsImplementation.deleteProject(project);
             } finally {
-                project.setDeleting(false);                 
+                ((MakeProjectImpl)project).setDeleting(false);                 
             }
             return;
         }

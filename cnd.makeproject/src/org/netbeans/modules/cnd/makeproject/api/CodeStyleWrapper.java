@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.remote.pbuild;
-
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.makeproject.api.MakeProject;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public class RemoteBuildRequiredProjectsTestCase extends RemoteBuildTestBase {
+public final class CodeStyleWrapper {
+    
+    private final String styleId;
+    private final String displayName;
 
-    public RemoteBuildRequiredProjectsTestCase(String testName) {
-        super(testName);
+    public CodeStyleWrapper(String styleId, String displayName) {
+        this.styleId = styleId;
+        this.displayName = displayName;
     }
 
-    public RemoteBuildRequiredProjectsTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    public CodeStyleWrapper(String styleIdAndDisplayName) {
+        int i = styleIdAndDisplayName.indexOf('|');
+        if (i > 0) {
+            this.styleId = styleIdAndDisplayName.substring(0, i);
+            this.displayName = styleIdAndDisplayName.substring(i + 1);
+        } else {
+            this.styleId = styleIdAndDisplayName;
+            this.displayName = styleIdAndDisplayName;
+        }
     }
 
-    private void doTest(Toolchain toolchain) throws Exception {
-        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
-        MakeProject projectB = openProject("B", execEnv, Sync.RFS, toolchain);
-        MakeProject projectA = (MakeProject) ProjectManager.getDefault().findProject(projectB.getProjectDirectory().getParent().getFileObject("A"));
-        assertNotNull(projectA);
-        ensureMakefilesWritten(projectA);
-        buildProject(projectB, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    public String getStyleId() {
+        return styleId;
     }
 
-    @ForAllEnvironments
-    public void testRemoteRequiredProjectsBuild() throws Exception {
-        doTest(Toolchain.GNU);
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildRequiredProjectsTestCase.class);
+    public String toExternal() {
+        return styleId + '|' + displayName;
     }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
+    
 }

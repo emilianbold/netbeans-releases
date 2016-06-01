@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -76,7 +76,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         this.refreshKeysTask = provider.getAnnotationRP().create(keyUpdater, true);
     }
 
-    protected final MakeProject getProject() {
+    protected final Project getProject() {
         return provider.getProject();
     }
 

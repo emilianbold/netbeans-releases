@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -90,7 +91,7 @@ public class TemplateAttributesProviderImpl implements CreateFromTemplateAttribu
             licensePath = props.getProperty(MakeProjectHelper.PROJECT_LICENSE_PATH_PROPERTY);
         }
         if (licensePath != null) {
-            FileObject fo = project.getMakeProjectHelper().resolveFileObject(licensePath);
+            FileObject fo = project.getHelper().resolveFileObject(licensePath);
             if (fo != null && fo.isValid()) {
                 File file = FileUtil.toFile(fo);
                 if (file == null) {

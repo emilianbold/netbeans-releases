@@ -537,7 +537,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         
         @Override
         public final String getProjectName() {
-            MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+            MakeProjectImpl.InfoInterface info = (MakeProjectImpl.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
             return info.getDisplayName();
         }   
         

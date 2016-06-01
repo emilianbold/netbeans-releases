@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -77,13 +76,14 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -1100,7 +1100,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public boolean save() {
-        return save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
+        return save(NbBundle.getMessage(MakeProjectImpl.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
     }
 
     @Override
@@ -1123,7 +1123,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * @param needAdd list of needed extensions of header files.
      */
     public boolean addAdditionalHeaderExtensions(Collection<String> needAdd) {
-        return ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
+        return ((MakeProjectImpl) getProject()).addAdditionalHeaderExtensions(needAdd);
     }
 
     public CndVisibilityQuery getFolderVisibilityQuery() {
@@ -1287,7 +1287,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
             return;
         }
-        MakeProjectHelper helper = ((MakeProject) getProject()).getMakeProjectHelper();
+        MakeProjectHelper helper = ((MakeProject) getProject()).getHelper();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
 
@@ -1416,7 +1416,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getProject() == null) {
             return;
         }
-        MakeProjectHelper helper = ((MakeProject) getProject()).getMakeProjectHelper();
+        MakeProjectHelper helper = ((MakeProject) getProject()).getHelper();
         Element data = helper.getPrimaryConfigurationData(false);
         Document doc = data.getOwnerDocument();
 
@@ -1492,9 +1492,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void updateExtensionList() {
-        Set<String> h = MakeProject.createExtensionSet();
-        Set<String> c = MakeProject.createExtensionSet();
-        Set<String> cpp = MakeProject.createExtensionSet();
+        Set<String> h = MakeProjectImpl.createExtensionSet();
+        Set<String> c = MakeProjectImpl.createExtensionSet();
+        Set<String> cpp = MakeProjectImpl.createExtensionSet();
         for (Item item : getProjectItems()) {
             String itemName = item.getName();
             String ext = FileUtil.getExtension(itemName);
@@ -1510,7 +1510,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
-        MakeProject makeProject = (MakeProject) getProject();
+        MakeProjectImpl makeProject = (MakeProjectImpl) getProject();
         if (makeProject != null) {
             makeProject.updateExtensions(c, cpp, h);
         }

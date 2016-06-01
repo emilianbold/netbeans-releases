@@ -146,7 +146,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
     
     public Project createProject(MakeProjectHelper helper) throws IOException {
-        return new MakeProject(helper);
+        return new MakeProjectImpl(helper);
     }
 
     @Override

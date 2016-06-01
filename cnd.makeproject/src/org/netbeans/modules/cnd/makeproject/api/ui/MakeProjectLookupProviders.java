@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api.ui;
 
-package org.netbeans.modules.cnd.remote.pbuild;
-
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.makeproject.api.MakeProject;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author alsimon
  */
-public class RemoteBuildRequiredProjectsTestCase extends RemoteBuildTestBase {
-
-    public RemoteBuildRequiredProjectsTestCase(String testName) {
-        super(testName);
+public class MakeProjectLookupProviders {
+    
+    public void addLookup(InstanceContent ic) {
+        
     }
-
-    public RemoteBuildRequiredProjectsTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
-
-    private void doTest(Toolchain toolchain) throws Exception {
-        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
-        MakeProject projectB = openProject("B", execEnv, Sync.RFS, toolchain);
-        MakeProject projectA = (MakeProject) ProjectManager.getDefault().findProject(projectB.getProjectDirectory().getParent().getFileObject("A"));
-        assertNotNull(projectA);
-        ensureMakefilesWritten(projectA);
-        buildProject(projectB, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    @ForAllEnvironments
-    public void testRemoteRequiredProjectsBuild() throws Exception {
-        doTest(Toolchain.GNU);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildRequiredProjectsTestCase.class);
-    }
+    
 }

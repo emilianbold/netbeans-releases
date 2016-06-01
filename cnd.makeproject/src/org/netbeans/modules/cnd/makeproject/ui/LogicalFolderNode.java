@@ -59,8 +59,8 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.ui.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.ui.actions.DebugTestAction;
@@ -399,7 +399,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         if (!aFolder.isDiskFolder()) {
             Folder parent = aFolder.getParent();
             if (parent != null && provider != null) { // provider != null is probably a paranoia
-                MakeProject project = provider.getProject();
+                Project project = provider.getProject();
                 if (project != null) {                    
                     ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {

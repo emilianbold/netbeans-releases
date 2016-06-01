@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
@@ -59,16 +59,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject.CodeStyleWrapper;
+import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.FormattingPropPanel;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.makeproject.ui.ResolveReferencePanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -81,23 +77,31 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 
 /**
  *
  * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
+    
+    @ServiceProvider(service = MakeProjectLookupProvider.class)
+    public static class BrokenReferencesSupportFactory implements MakeProjectLookupProvider {
+
+        @Override
+        public void addLookup(MakeProject owner, ArrayList<Object> ic) {
+            ic.add(BrokenReferencesSupport.createPlatformVersionProblemProvider(owner));
+        }
+    }
 
     private BrokenReferencesSupport() {
     }
 
     @NonNull
-    public static ProjectProblemsProvider createPlatformVersionProblemProvider(
-            @NonNull final MakeProject project,
-            @NonNull final MakeProjectHelper helper,
-            @NonNull final ConfigurationDescriptorProvider projectDescriptorProvider,
-            @NonNull final MakeProjectConfigurationProvider makeProjectConfigurationProvider) {
-        ProjectProblemsProviderImpl pp = new ProjectProblemsProviderImpl(project, helper, projectDescriptorProvider, makeProjectConfigurationProvider);
+    public static ProjectProblemsProvider createPlatformVersionProblemProvider(@NonNull final MakeProject project) {
+        ProjectProblemsProviderImpl pp = new ProjectProblemsProviderImpl(project);
         pp.attachListeners();
         return pp;
     }
@@ -277,7 +281,7 @@ public final class BrokenReferencesSupport {
     }
 
     private static void reInitWithUnsupportedVersion(final MakeProject project) {
-        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        ConfigurationDescriptorProvider cdp = project.getConfigurationDescriptorProvider();
         final MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         MakeLogicalViewProvider view = project.getLookup().lookup(MakeLogicalViewProvider.class);
         view.reInit(mcd, true);
@@ -287,20 +291,10 @@ public final class BrokenReferencesSupport {
 
         private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
         private final MakeProject project;
-        private final MakeProjectHelper helper;
-        private final ConfigurationDescriptorProvider projectDescriptorProvider;
-        private final MakeProjectConfigurationProvider makeProjectConfigurationProvider;
         private final EnvProjectProblemsProvider envProblemsProvider;
 
-        public ProjectProblemsProviderImpl(
-                @NonNull final MakeProject project,
-                @NonNull final MakeProjectHelper helper,
-                @NonNull final ConfigurationDescriptorProvider projectDescriptorProvider,
-                @NonNull final MakeProjectConfigurationProvider makeProjectConfigurationProvider) {
+        public ProjectProblemsProviderImpl(@NonNull final MakeProject project) {
             this.project = project;
-            this.helper = helper;
-            this.projectDescriptorProvider = projectDescriptorProvider;
-            this.makeProjectConfigurationProvider = makeProjectConfigurationProvider;
             this.envProblemsProvider = new EnvProjectProblemsProvider(project);
         }
 
@@ -348,7 +342,7 @@ public final class BrokenReferencesSupport {
         }
 
         void attachListeners() {
-            makeProjectConfigurationProvider.addPropertyChangeListener(this);
+            project.getProjectConfigurationProvider().addPropertyChangeListener(this);
         }
     }
 

@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
+import org.netbeans.modules.cnd.makeproject.ui.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;

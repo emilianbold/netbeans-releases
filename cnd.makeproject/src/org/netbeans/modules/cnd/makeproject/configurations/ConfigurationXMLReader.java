@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -161,8 +161,8 @@ public class ConfigurationXMLReader extends XMLDocReader {
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath(), interrupter);
-            if (getMasterComment() != null && project instanceof MakeProject) {
-                ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
+            if (getMasterComment() != null && project instanceof MakeProjectImpl) {
+                ((MakeProjectImpl) project).setConfigurationXMLComment(getMasterComment());
             }
         } finally {
             deregisterXMLDecoder(decoder);
@@ -205,7 +205,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Read things from private/project.xml
         if (project != null) {
-            int activeIndex = ((MakeProject) project).getActiveConfigurationIndexFromPrivateXML();
+            int activeIndex = ((MakeProjectImpl) project).getActiveConfigurationIndexFromPrivateXML();
             if (activeIndex >= 0) {
                 configurationDescriptor.getConfs().setActive(activeIndex);
             } else {
