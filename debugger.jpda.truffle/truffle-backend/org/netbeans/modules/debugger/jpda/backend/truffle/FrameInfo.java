@@ -127,7 +127,8 @@ final class FrameInfo {
         topFrame = DebuggerVisualizer.getDisplayName(astNode.getRootNode().getCallTarget()) + "\n" +
                    DebuggerVisualizer.getMethodName(astNode.getRootNode()) + "\n" +
                    DebuggerVisualizer.getSourceLocation(astNode) + "\n" +
-                   position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+                   position.id + "\n" + position.name + "\n" + position.path + "\n" +
+                   position.uri.toString() + "\n" + position.line;
         //System.err.println("  top frame = \n'"+topFrame+"'");
     }
     

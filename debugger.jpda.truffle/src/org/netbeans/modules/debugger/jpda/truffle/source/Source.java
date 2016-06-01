@@ -47,6 +47,7 @@ import com.sun.jdi.Value;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.openide.util.Exceptions;
 public final class Source {
     
     public static final String URL_PROTOCOL = "truffle-scripts"; // NOI18N
+    static final String ATTR_URI = "com.oracle.truffle InternalURI"; // NOI18N
     
     private static final String SOURCE_VAR_NAME = "name";   // NOI18N
     private static final String SOURCE_VAR_CONTENT = "content"; // NOI18N
@@ -83,21 +85,23 @@ public final class Source {
     private final StringReference codeRef;
     private final String name;
     //private final JPDAClassType classType;
-    private final URL url;          // The original file source
+    private final URI uri;          // The original source URI
+    private final URL url;          // The source
     //private final URL runtimeURL;   // The current content in runtime, or null when equal to 'url'
     //private final int contentLineShift; // Line shift of 'url' content in 'runtimeURL'. Can not be negative.
     private final long hash;
     private String content;
     
-    private Source(String name, URL url, long hash, StringReference codeRef) {
+    private Source(String name, URI uri, long hash, StringReference codeRef) {
         this.name = name;
         this.codeRef = codeRef;
         //this.classType = classType;
         URL rURL = null;
         int lineShift = 0;
-        if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
+        URL url = null;
+        if (uri == null || !"file".equalsIgnoreCase(uri.getScheme())) {
             try {
-                url = SourceFilesCache.getDefault().getSourceFile(name, hash, getContent());
+                url = SourceFilesCache.getDefault().getSourceFile(name, hash, uri, getContent());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -115,7 +119,15 @@ public final class Source {
             }
             */
         }
+        if (url == null) {
+            try {
+                url = uri.toURL();
+            } catch (MalformedURLException muex) {
+                Exceptions.printStackTrace(muex);
+            }
+        }
         this.url = url;
+        this.uri = uri;
         //this.runtimeURL = rURL;
         //this.contentLineShift = lineShift;
         this.hash = hash;
@@ -134,6 +146,29 @@ public final class Source {
         return null;
     }
     
+    /**
+     * Find an existing Source instance for the given FileObject.
+     * Currently, this method returns sources only for non-file sources.
+     * @param fo
+     * @return a Source, or <code>null</code>.
+     *
+    public static Source get(JPDADebugger debugger, FileObject fo) {
+        URI uri = fo.toURI();
+        if (!URL_PROTOCOL.equals(uri.getScheme())) {
+            return null;
+        }
+        String path = uri.getPath();
+        int hashEnd = path.indexOf('/');
+        String hashStr = path.substring(0, hashEnd);
+        long id = Long.parseUnsignedLong(hashStr, 16);
+        return getExistingSource(debugger, id);
+    }*/
+    
+    public static URI getTruffleInternalURI(FileObject fo) {
+        return (URI) fo.getAttribute(ATTR_URI);
+    }
+    
+    /*
     public static Source getSource(JPDADebugger debugger, long id,
                                    StringReference nameRef,
                                    StringReference pathRef,
@@ -158,11 +193,12 @@ public final class Source {
             return null;
         }
         return getTheSource(debugger, id, name, path, codeRef);
-    }
+    }*/
     
     public static Source getSource(JPDADebugger debugger, long id,
                                    String name,
                                    String path,
+                                   URI uri,
                                    StringReference codeRef) {
         synchronized (knownSources) {
             Map<Long, Source> dbgSources = knownSources.get(debugger);
@@ -173,22 +209,23 @@ public final class Source {
                 }
             }
         }
-        return getTheSource(debugger, id, name, path, codeRef);
+        return getTheSource(debugger, id, name, path, uri, codeRef);
     }
     
     private static Source getTheSource(JPDADebugger debugger, long id,
                                        String name,
                                        String path,
+                                       URI uri,
                                        StringReference codeRef) {
         
-        URL url = null;
+        /*URL url = null;
         File file = new File(path);
         if (file.isAbsolute() && file.canRead()) {
             try {
                 url = file.toURI().toURL();
             } catch (MalformedURLException muex) {}
-        }
-        Source src = new Source(name, url, id, codeRef);
+        }*/
+        Source src = new Source(name, uri, id, codeRef);
         synchronized (knownSources) {
             Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
@@ -286,6 +323,11 @@ public final class Source {
     public URL getUrl() {
         return url;
     }
+    
+    public URI getURI() {
+        return uri;
+    }
+    
     /*
     public URL getRuntimeURL() {
         return runtimeURL;

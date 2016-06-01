@@ -7,6 +7,7 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.source.Source;
+import java.net.URI;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -24,6 +25,7 @@ final class SourcePosition {
     final String path;
     final int line;
     final String code;
+    final URI uri;
 
     public SourcePosition(Source source, String name, String path, int line, String code) {
         this.id = getId(source);
@@ -31,6 +33,7 @@ final class SourcePosition {
         this.path = path;
         this.line = line;
         this.code = code;
+        this.uri = source.getURI();
     }
 
     private static synchronized long getId(Source s) {
