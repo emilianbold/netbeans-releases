@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -1096,7 +1097,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        return Item.createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
+        return ItemFactory.getDefault().createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {

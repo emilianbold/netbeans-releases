@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.ItemEx;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -63,11 +63,11 @@ final class ExternalFilesChildren extends BaseMakeViewChildren {
         if (key instanceof LoadingNode) {
             return new Node[]{(Node) key};
         }
-        if (!(key instanceof Item)) {
+        if (!(key instanceof ItemEx)) {
             System.err.println("wrong item in external files folder " + key); // NOI18N
             return null;
         }
-        Item item = (Item) key;
+        ItemEx item = (ItemEx) key;
         DataObject fileDO = item.getDataObject();
         Node node;
         if (fileDO != null && fileDO.isValid()) {

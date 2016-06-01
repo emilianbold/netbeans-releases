@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
@@ -112,7 +113,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -353,7 +353,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void initLogicalFolders(Iterator<? extends SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<? extends SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
-            String mainFilePath, DataObject mainFileTemplate, boolean addGeneratedMakefileToLogicalView) {
+            String mainFilePath, /*DataObject mainFileTemplate,*/ boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -365,7 +365,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         if (!addGeneratedMakefileToLogicalView) {
             if (!getProjectMakefileName().isEmpty()) {
-                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
+                externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
             }
         }
         if (logicalFolderItems != null) {
@@ -373,7 +373,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 LogicalFolderItemsInfo logicalFolderInfo = logicalFolderItems.next();
                 Folder f = rootFolder.findFolderByName(logicalFolderInfo.getLogicalFolderName());
                 if (f != null) {
-                    f.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+                    f.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
                 }
             }
         }
@@ -394,7 +394,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
-                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, importantItems.next()));
+                externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, importantItems.next()));
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true
@@ -402,8 +402,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (mainFilePath != null) {
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
-                Item added = srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
-                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, added);
+                Item added = srcFolder.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, mainFilePath));
+                PredefinedToolKind defaultToolForItem = added.getDefaultTool(); //Item.getDefaultToolForItem(mainFileTemplate, added);
                 for (ItemConfiguration ic : added.getItemConfigurations()) {
                     ic.setTool(defaultToolForItem);
                 }
@@ -568,7 +568,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void setExternalFileItems(List<String> items) {
         externalFileItems.reset();
         for (String s : items) {
-            externalFileItems.addItem(Item.createInFileSystem(baseDirFS, s));
+            externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, s));
         }
     }
 
@@ -2053,7 +2053,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                         try {
                             performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
                             String path = ProjectSupport.toProperPath(baseDirFO, file, project);
-                            item = Item.createInBaseDir(baseDirFO, path);
+                            item = ItemFactory.getDefault().createInBaseDir(baseDirFO, path);
                             if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                                 filesAdded.add(item);
                             }

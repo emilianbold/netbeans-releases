@@ -56,9 +56,11 @@ import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.ItemEx;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
@@ -134,8 +136,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
             } else {
                 node = new ExternalFilesNode(folder, provider);
             }
-        } else if (key instanceof Item) {
-            Item item = (Item) key;
+        } else if (key instanceof ItemEx) {
+            ItemEx item = (ItemEx) key;
             DataObject fileDO = item.getDataObject();
             if (fileDO != null && fileDO.isValid()) {
                 node = new ViewItemNode(this, getFolder(), item, fileDO, provider.getProject());
@@ -192,7 +194,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                                 }
                             }
                             // Add file to the view
-                            Item item = Item.createDetachedViewItem(baseDirFileSystem, child.getPath());
+                            Item item = ItemFactory.getDefault().createDetachedViewItem(baseDirFileSystem, child.getPath());
                             Folder.insertItemElementInList(collection2, item);
                         }
                     }

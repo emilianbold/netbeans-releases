@@ -151,6 +151,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectFileProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 
 /**
@@ -1603,7 +1604,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
             helper.removeMakeProjectListener(this);
             save();
             MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
-            MakeProjectFileProviderFactory.removeSearchBase(this);
+            MakeProjectFileProvider.removeSearchBase(this);
             // project is in closed state
             openStateAndLock.set(false);
             RP.post(new Runnable() {

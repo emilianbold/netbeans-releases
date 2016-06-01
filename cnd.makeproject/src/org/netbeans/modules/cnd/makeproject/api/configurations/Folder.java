@@ -65,7 +65,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectFileProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -270,7 +271,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (otherFileList.size() > 0) {
                     otherFileList.trimToSize();
                 }
-                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
+                MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
                 for (FileObject file : fileList) {
                     if (interrupter != null && interrupter.cancelled()) {
                         return;
@@ -309,7 +310,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                             Item item = null;
                             try {
                                 performanceEvent.setTimeOut(FS_TIME_OUT);
-                                item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
+                                item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
                                 addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
                             } finally {
                                 performanceEvent.log(item);
@@ -761,7 +762,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
                     CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-                    MakeProjectFileProviderFactory.addToSearchBase(project, this, itemPath);
+                    MakeProjectFileProvider.addToSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
             }
@@ -996,7 +997,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
                     CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-                    MakeProjectFileProviderFactory.removeFromSearchBase(project, this, itemPath);
+                    MakeProjectFileProvider.removeFromSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
             }
@@ -1031,9 +1032,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean ret = false;
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
-                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), f, null);
+                MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), f, null);
             }
-            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), folder, null);
+            MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), folder, null);
             if (folder.isDiskFolder()) {
                 folder.detachListener();
             }
@@ -1466,7 +1467,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             String itemPath = fileObject.getPath();
             itemPath = CndPathUtilities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-            Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
+            Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
             addItemActionImpl(item, true, true);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {

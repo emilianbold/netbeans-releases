@@ -61,8 +61,6 @@ import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.jumpto.file.FileProvider;
-import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -163,13 +161,6 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
 
     @Override
     public NativeFileSearch getNativeFileSearch(NativeProject project) {
-        NativeFileSearch search = null;
-        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
-            FileProvider provider = fpf.createFileProvider();
-            if (provider instanceof NativeFileSearch) {
-                search = (NativeFileSearch) provider;
-            }
-        }
-        return search;
+        return Lookup.getDefault().lookup(NativeFileSearch.class);
     }
 }

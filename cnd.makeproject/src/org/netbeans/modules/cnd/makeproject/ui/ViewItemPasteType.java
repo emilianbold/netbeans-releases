@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -193,7 +194,7 @@ final class ViewItemPasteType extends PasteType {
                             String newPath = fromNewToOriginal + fromItem.getPath();
                             newPath = CndPathUtilities.trimDotDot(newPath);
                             if (fromFolder.removeItemAction(fromItem)) {
-                                toFolder.addItemAction(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
+                                toFolder.addItemAction(ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
                             }
                         }
                     } else {
@@ -204,7 +205,7 @@ final class ViewItemPasteType extends PasteType {
                             String newPath = CndPathUtilities.toRelativePath(toProject.getProjectDirectory().getPath(), copy.getPath());
                             if (fromFolder.removeItemAction(fromItem)) {
                                 itemFO.delete();
-                                toFolder.addItemAction(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
+                                toFolder.addItemAction(ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
                             }
                         }
                     }
@@ -242,7 +243,7 @@ final class ViewItemPasteType extends PasteType {
                                 newPath = newPath + "." + ext; // NOI18N
                             }
                             newPath = CndPathUtilities.toRelativePath(fromFolder.getProject().getProjectDirectory().getPath(), newPath);
-                            Item newItem = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath));
+                            Item newItem = ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath));
                             toFolder.addItemAction(newItem);
                             copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
                         }
@@ -261,7 +262,7 @@ final class ViewItemPasteType extends PasteType {
                     if (toFolder.getConfigurationDescriptor().getBaseDirFileSystem().equals(itemFO.getFileSystem()) &&
                         (CndPathUtilities.isPathAbsolute(fromItem.getPath()) || fromItem.getPath().startsWith(".."))) { // NOI18N
                         if (CndPathUtilities.isPathAbsolute(fromItem.getPath())) {
-                            toFolder.addItem(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), fromItem.getPath()));
+                            toFolder.addItem(ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), fromItem.getPath()));
                         } else {
                             String originalFilePath = fromFolder.getProject().getProjectDirectory().getPath();
                             String newFilePath = toFolder.getProject().getProjectDirectory().getPath();
@@ -269,7 +270,7 @@ final class ViewItemPasteType extends PasteType {
                             fromNewToOriginal = CndPathUtilities.normalizeSlashes(fromNewToOriginal);
                             String newPath = fromNewToOriginal + fromItem.getPath();
                             newPath = CndPathUtilities.trimDotDot(newPath);
-                            toFolder.addItemAction(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
+                            toFolder.addItemAction(ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath)));
                         }
                     } else {
                         if (itemFO.isValid()) {
@@ -281,7 +282,7 @@ final class ViewItemPasteType extends PasteType {
                             if (ext.length() > 0) {
                                 newPath = newPath + "." + ext; // NOI18N
                             }
-                            toFolder.addItemAction(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath))); // NOI18N
+                            toFolder.addItemAction(ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath))); // NOI18N
                         }
                     }
                 }

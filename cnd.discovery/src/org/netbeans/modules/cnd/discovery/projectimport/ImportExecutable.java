@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
@@ -525,9 +526,9 @@ public class ImportExecutable implements PropertyChangeListener {
                     break;
                 }
             }
-            externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getPath()));
+            externalItemFolder.addItem(ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getPath()));
             if (configure.script != null) {
-                externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getPath()));
+                externalItemFolder.addItem(ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getPath()));
             }
         }
     }

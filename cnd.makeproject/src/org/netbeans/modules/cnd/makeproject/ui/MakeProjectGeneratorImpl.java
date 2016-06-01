@@ -241,7 +241,7 @@ public class MakeProjectGeneratorImpl {
         }
 
         projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
-                logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, mainFileParams.templateDO, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, /*mainFileParams.templateDO,*/ false); // FIXUP: need a better check whether logical folder should be ccreated or not.
 
         projectDescriptor.save();
         // finish postponed activity when project metadata is ready

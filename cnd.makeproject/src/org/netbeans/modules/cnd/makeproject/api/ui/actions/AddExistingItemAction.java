@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -194,7 +195,7 @@ public class AddExistingItemAction extends NodeAction {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                         //return;
                     } else {
-                        Item item = Item.createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
+                        Item item = ItemFactory.getDefault().createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
                         folder.addItemAction(item);
                         items.add(item);
                         if (CndPathUtilities.isPathAbsolute(itemPath)) {

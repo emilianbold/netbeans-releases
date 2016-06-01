@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConf
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -387,7 +388,7 @@ public class Generator implements PropertyChangeListener {
         newSource = folder.createData(header.getName(), "cpp"); //NOI18N
         buf.append("// Native methods implementation of\n// ").append(fileObject.getPath()).append("\n\n"); //NOI18N
         buf.append("#include \"").append(header.getNameExt()).append("\"\n"); //NOI18N
-        Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());
+        Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());
         sourceFolder.addItemAction(item);
         return newSource;
     }
@@ -418,7 +419,7 @@ public class Generator implements PropertyChangeListener {
             folder = configurationDescriptor.getBaseDirFileObject();
         }
         FileObject newHeader = FileUtil.copyFile(header, folder, header.getName());
-        Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), newHeader.getPath());
+        Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), newHeader.getPath());
         headersFolder.addItemAction(item);
         return newHeader;
     }

@@ -94,8 +94,6 @@ import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.jumpto.file.FileProvider;
-import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -839,14 +837,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     /*package*/NativeFileSearch getNativeFileSearch() {
-        NativeFileSearch search = null;
-        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
-            FileProvider provider = fpf.createFileProvider();
-            if (provider instanceof NativeFileSearch) {
-                search = (NativeFileSearch) provider;
-            }
-        }
-        return search;
+        return Lookup.getDefault().lookup(NativeFileSearch.class);
     }
 
     @Override
