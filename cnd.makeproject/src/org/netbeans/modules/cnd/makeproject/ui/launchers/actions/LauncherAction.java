@@ -4,7 +4,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.launchers.actions;
 
-import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
+import org.netbeans.modules.cnd.makeproject.api.LaunchersRegistryAccessor;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.makeproject.launchers.LauncherExecutor;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;

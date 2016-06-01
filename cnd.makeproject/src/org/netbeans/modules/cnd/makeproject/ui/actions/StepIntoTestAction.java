@@ -44,7 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.actions;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;

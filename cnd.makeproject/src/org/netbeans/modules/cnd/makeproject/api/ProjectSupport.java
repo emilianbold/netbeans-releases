@@ -53,7 +53,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeActionProviderImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -110,7 +110,7 @@ public class ProjectSupport {
             return;
         }
 
-        MakeActionProvider ap = project.getLookup().lookup(MakeActionProvider.class );
+        MakeActionProviderImpl ap = project.getLookup().lookup(MakeActionProviderImpl.class );
         if (ap == null) {
             return;
         }

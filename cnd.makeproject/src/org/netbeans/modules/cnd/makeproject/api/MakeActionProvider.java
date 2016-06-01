@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api;
 
-package org.netbeans.modules.cnd.makeproject;
-
-import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
- * @author Nikolay Koldunov
- * 
- * for debugging purposes only
+ * @author Alexander Simon
  */
-public abstract class LaunchersRegistryAccessor {
-    private static volatile LaunchersRegistryAccessor DEFAULT;
+public interface MakeActionProvider extends ActionProvider{
 
-    public static void setDefault(LaunchersRegistryAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
-    }
-
-    public static synchronized LaunchersRegistryAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(LaunchersRegistry.class.getName(), true,
-                    LaunchersRegistry.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
-    }
+    // Commands available from Make project
+    public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
+    public static final String COMMAND_PRE_BUILD = "pre_build"; // NOI18N
+    public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
+    public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
+    public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
+    public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     
-    public abstract void assertPrivateListenerNotNull(FileObject dir);
 }

@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -148,7 +147,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         if (gotMakeConfigurationDescriptor()) {
-            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            ProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
             if (confProvider != null){                
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
                 confProviderListenerAttached = true;
@@ -216,7 +215,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
         if (!confProviderListenerAttached) {
-            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            ProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
             if (confProvider != null) {
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
                 confProviderListenerAttached = true;

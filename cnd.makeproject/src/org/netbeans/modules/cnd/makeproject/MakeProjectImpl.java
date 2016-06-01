@@ -271,7 +271,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         ArrayList<Object> ic = new ArrayList<>();
         ic.add(info);
         ic.add(aux);
-        ic.add(new MakeActionProvider(this));
+        ic.add(new MakeActionProviderImpl(this));
         //ic.add(new MakeLogicalViewProvider(this));
         //ic.add(BrokenReferencesSupport.createPlatformVersionProblemProvider(this));
         //ic.add(new MakeProjectSearchInfo(projectDescriptorProvider));

@@ -60,7 +60,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static junit.framework.TestCase.assertNotNull;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeActionProviderImpl;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
@@ -305,7 +305,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         };
         try {
             ((CndTestIOProvider) iop).addListener(listener);
-            MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+            MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
             makeActionProvider.invokeAction(command, Lookup.EMPTY);
             if (timeout <= 0) {
                 done.await();

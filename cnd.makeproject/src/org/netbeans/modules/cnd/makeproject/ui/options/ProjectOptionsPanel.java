@@ -55,7 +55,6 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.cnd.utils.NamedOption;
@@ -116,13 +115,12 @@ public class ProjectOptionsPanel extends JPanel {
     }
 
     public void update() {
-        MakeOptions makeOptions = MakeOptions.getInstance();
-        makeOptionsTextField.setText(makeOptions.getMakeOptions());
+        makeOptionsTextField.setText(MakeProjectOptions.getMakeOptions());
         filePathcomboBox.removeAllItems();
         for (MakeProjectOptions.PathMode pathMode : MakeProjectOptions.PathMode.values()) {
             filePathcomboBox.addItem(pathMode);
         }
-        filePathcomboBox.setSelectedItem(makeOptions.getPathMode());
+        filePathcomboBox.setSelectedItem(MakeProjectOptions.getPathMode());
         for(JCheckBox cb : checkBoxes) {
             NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
             cb.setSelected(NamedOption.getAccessor().getBoolean(entry.getName()));
@@ -133,9 +131,8 @@ public class ProjectOptionsPanel extends JPanel {
 
     /** Apply changes */
     public void applyChanges() {
-        MakeOptions makeOptions = MakeOptions.getInstance();
-        makeOptions.setMakeOptions(makeOptionsTextField.getText());
-        makeOptions.setPathMode((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
+        MakeProjectOptions.setMakeOptions(makeOptionsTextField.getText());
+        MakeProjectOptions.setPathMode((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
         for(JCheckBox cb : checkBoxes) {
             NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
             NamedOption.getAccessor().setBoolean(entry.getName(), cb.isSelected());
@@ -169,9 +166,8 @@ public class ProjectOptionsPanel extends JPanel {
     
     private boolean areMakeOptionsChanged() {
         boolean isChanged = false;
-        MakeOptions makeOptions = MakeOptions.getInstance();
-        isChanged |= !makeOptions.getMakeOptions().equals(makeOptionsTextField.getText())
-                || !makeOptions.getPathMode().equals((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
+        isChanged |= !MakeProjectOptions.getMakeOptions().equals(makeOptionsTextField.getText())
+                || !MakeProjectOptions.getPathMode().equals((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
         if (isChanged) { // no need to iterate further
             return true;
         }

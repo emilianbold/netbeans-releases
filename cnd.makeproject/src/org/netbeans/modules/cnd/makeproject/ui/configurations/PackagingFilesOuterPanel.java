@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui.configurations;
 
 import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
@@ -77,18 +77,18 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         
         // Set default values
-        String val = MakeOptions.getInstance().getDefExePerm();
+        String val = MakeProjectOptions.getDefExePerm();
         if (val.length() != 3) {
             val = "755"; // NOI18N
         }
         exePermTextField.setText(val); // NOI18N
-        val = MakeOptions.getInstance().getDefFilePerm();
+        val = MakeProjectOptions.getDefFilePerm();
         if (val.length() != 3) {
             val = "644"; // NOI18N
         }
         filePermTextField.setText(val); // NOI18N
-        groupTextField.setText(MakeOptions.getInstance().getDefGroup()); // NOI18N
-        ownerTextField.setText(MakeOptions.getInstance().getDefOwner()); // NOI18N
+        groupTextField.setText(MakeProjectOptions.getDefGroup()); // NOI18N
+        ownerTextField.setText(MakeProjectOptions.getDefOwner()); // NOI18N
         
         // Hide some fields:
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
@@ -139,7 +139,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
             int regValInt3 = rWECheckBoxRegR3.getVal() + rWECheckBoxRegW3.getVal() + rWECheckBoxRegE3.getVal();
             String regVal = "" + regValInt1 + regValInt2 + regValInt3; // NOI18N
             filePermTextField.setText(regVal);
-            MakeOptions.getInstance().setDefFilePerm(regVal);
+            MakeProjectOptions.setDefFilePerm(regVal);
         }
     }
     
@@ -151,7 +151,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
             int exeValInt3 = rWECheckBoxExeR3.getVal() + rWECheckBoxExeW3.getVal() + rWECheckBoxExeE3.getVal();
             String exeVal = "" + exeValInt1 + exeValInt2 + exeValInt3; // NOI18N
             exePermTextField.setText(exeVal);
-            MakeOptions.getInstance().setDefExePerm(exeVal);
+            MakeProjectOptions.setDefExePerm(exeVal);
         }
     }
     
@@ -579,19 +579,19 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void exePermTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exePermTextFieldActionPerformed
-    MakeOptions.getInstance().setDefExePerm(exePermTextField.getText());
+    MakeProjectOptions.setDefExePerm(exePermTextField.getText());
 }//GEN-LAST:event_exePermTextFieldActionPerformed
 
 private void filePermTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filePermTextFieldActionPerformed
-    MakeOptions.getInstance().setDefFilePerm(filePermTextField.getText());
+    MakeProjectOptions.setDefFilePerm(filePermTextField.getText());
 }//GEN-LAST:event_filePermTextFieldActionPerformed
 
 private void groupTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupTextFieldActionPerformed
-    MakeOptions.getInstance().setDefGroup(groupTextField.getText());
+    MakeProjectOptions.setDefGroup(groupTextField.getText());
 }//GEN-LAST:event_groupTextFieldActionPerformed
 
 private void ownerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ownerTextFieldActionPerformed
-    MakeOptions.getInstance().setDefOwner(ownerTextField.getText());
+    MakeProjectOptions.setDefOwner(ownerTextField.getText());
 }//GEN-LAST:event_ownerTextFieldActionPerformed
 
 

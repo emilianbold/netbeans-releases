@@ -53,7 +53,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -81,8 +81,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
     @Override
     protected void onFolderChange(Folder folder) {
         if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().removePropertyChangeListener(this);
-            MakeOptions.getInstance().addPropertyChangeListener(this);
+            MakeProjectOptions.removePropertyChangeListener(this);
+            MakeProjectOptions.addPropertyChangeListener(this);
         }
     }
     
@@ -91,7 +91,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
         super.removeNotify();
         final Folder folder = getFolder();
         if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().removePropertyChangeListener(this);
+            MakeProjectOptions.removePropertyChangeListener(this);
         }
     }
 
@@ -188,7 +188,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                             }
 
                             if (!getFolder().isTestLogicalFolder()) {
-                                if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
+                                if (!MakeProjectOptions.getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
                                     continue;
                                 }
                             }

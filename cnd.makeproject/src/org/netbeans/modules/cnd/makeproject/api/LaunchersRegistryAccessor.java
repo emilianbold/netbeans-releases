@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Nikolay Koldunov
+ * 
  */
-public interface MakeConfigurationSaveListener {
-    void configurationSaving(MakeConfigurationDescriptor makeConfigurationDescriptor);
-    void configurationSaved(MakeConfigurationDescriptor makeConfigurationDescriptor, boolean success);
+public abstract class LaunchersRegistryAccessor {
+    private static volatile LaunchersRegistryAccessor DEFAULT;
+
+    public static void setDefault(LaunchersRegistryAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public static synchronized LaunchersRegistryAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(LaunchersRegistry.class.getName(), true,
+                    LaunchersRegistry.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+    
+    public abstract void assertPrivateListenerNotNull(FileObject dir);
 }

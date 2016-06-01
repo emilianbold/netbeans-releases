@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
@@ -168,15 +169,8 @@ import org.openide.windows.WindowManager;
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
  */
-public final class MakeActionProvider implements ActionProvider {
+public final class MakeActionProviderImpl implements MakeActionProvider {
 
-    // Commands available from Make project
-    public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
-    public static final String COMMAND_PRE_BUILD = "pre_build"; // NOI18N
-    public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
-    public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
-    public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
-    public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_PRE_BUILD,
         COMMAND_BUILD,
@@ -227,7 +221,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String DEBUG_STEPINTO_TEST_STEP = "debug-stepinto-test"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Make Action RP", 1);// NOI18N
 
-    public MakeActionProvider(MakeProject project) {
+    public MakeActionProviderImpl(MakeProject project) {
         this.project = project;
         commands = loadAcrionSteps("CND/BuildAction"); // NOI18N
     }
@@ -372,7 +366,7 @@ public final class MakeActionProvider implements ActionProvider {
             @Override
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
-                addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
+                addAction(actionEvents, pd, conf, MakeActionProviderImpl.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
@@ -446,8 +440,8 @@ public final class MakeActionProvider implements ActionProvider {
         }
         if (SwingUtilities.isEventDispatchThread()) {
             Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
-            String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
+            String msg = NbBundle.getMessage(MakeActionProviderImpl.class, "MSG_Validate_Host", record.getDisplayName());
+            String title = NbBundle.getMessage(MakeActionProviderImpl.class, "DLG_TITLE_Validate_Host");
             ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
         } else {
             wrapper.run();
@@ -1679,7 +1673,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // Confiiguration was created with unknown tool set. Use the now default one.
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
                 // NB: cs == null still possible (see #219798), although I don't know how to reproduce
-                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
+                String errMsg = NbBundle.getMessage(MakeActionProviderImpl.class, "ERR_UnknownCompiler", csname);
                 errs.add(errMsg);
                 runBTA = true;
             } else {
@@ -1691,7 +1685,7 @@ public final class MakeActionProvider implements ActionProvider {
                     flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
                 }
                 cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
-                String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
+                String errMsg = NbBundle.getMessage(MakeActionProviderImpl.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
                 errs.add(errMsg);
                 runBTA = true;
             }
@@ -1860,7 +1854,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         if (PackagerManager.getDefault().getPackager(conf.getPackagingConfiguration().getType().getValue()) == null) {
-            errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL4", conf.getPackagingConfiguration().getType().getValue()); // NOI18N
+            errormsg = NbBundle.getMessage(MakeActionProviderImpl.class, "ERR_MISSING_TOOL4", conf.getPackagingConfiguration().getType().getValue()); // NOI18N
         }
 
         // Don;t verify the tool. It is too difficult to get right (148728)
@@ -1976,11 +1970,11 @@ public final class MakeActionProvider implements ActionProvider {
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getMessage(MakeActionProvider.class, s);
+        return NbBundle.getMessage(MakeActionProviderImpl.class, s);
     }
 
     private static String getString(String s, String arg1, String arg2) {
-        return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
+        return NbBundle.getMessage(MakeActionProviderImpl.class, s, arg1, arg2);
     }
 
     private abstract static class CancellableTask implements Runnable, Cancellable {

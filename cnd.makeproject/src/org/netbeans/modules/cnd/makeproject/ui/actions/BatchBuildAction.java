@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui.actions;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.launchers;
 
-import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
+import org.netbeans.modules.cnd.makeproject.api.LaunchersRegistryAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

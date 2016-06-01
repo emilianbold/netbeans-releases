@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.openide.util.NbBundle;
 
@@ -75,6 +76,30 @@ public final class MakeProjectOptions {
     private MakeProjectOptions() {
     }
 
+    public static void setDefaultMakeOptions(String makeOptions) {
+        MakeOptions.setDefaultMakeOptions(makeOptions);
+    }
+
+    public static String getMakeOptions() {
+        return MakeOptions.getInstance().getMakeOptions();
+    }
+
+    public static void setMakeOptions(String options) {
+        MakeOptions.getInstance().setMakeOptions(options);
+    }
+
+    public static String getPrefApplicationLanguage() {
+        return MakeOptions.getInstance().getPrefApplicationLanguage();
+    }
+
+    public static void setPrefApplicationLanguage(String lang) {
+        MakeOptions.getInstance().setPrefApplicationLanguage(lang);
+    }
+
+    public static boolean getResolveSymbolicLinks() {
+         return MakeOptions.getInstance().getResolveSymbolicLinks();
+    }
+
     public static boolean getDepencyChecking() {
         return MakeOptions.getInstance().getDepencyChecking();
     }
@@ -85,5 +110,54 @@ public final class MakeProjectOptions {
 
     public static MakeProjectOptions.PathMode getPathMode() {
         return MakeOptions.getInstance().getPathMode();
+    }
+
+    public static void setPathMode(PathMode pathMode) {
+        MakeOptions.getInstance().setPathMode(pathMode);
+    }
+
+    
+    public static void addPropertyChangeListener(PropertyChangeListener l) {
+        MakeOptions.getInstance().addPropertyChangeListener(l);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener l) {
+        MakeOptions.getInstance().removePropertyChangeListener(l);
+    }
+
+    public static boolean getViewBinaryFiles() {
+        return MakeOptions.getInstance().getViewBinaryFiles();
+    }
+
+    public static String getDefExePerm() {
+        return MakeOptions.getInstance().getDefExePerm();
+    }
+
+    public static void setDefExePerm(String perm) {
+        MakeOptions.getInstance().setDefExePerm(perm);
+    }
+    
+    public static String getDefGroup() {
+        return MakeOptions.getInstance().getDefGroup();
+    }
+
+    public static void setDefGroup(String group) {
+        MakeOptions.getInstance().setDefGroup(group);
+    }
+
+    public static String getDefOwner() {
+        return MakeOptions.getInstance().getDefOwner();
+    }
+
+    public static void setDefOwner(String owner) {
+        MakeOptions.getInstance().setDefOwner(owner);
+    }
+
+    public static String getDefFilePerm() {
+        return MakeOptions.getInstance().getDefFilePerm();
+    }
+
+    public static void setDefFilePerm(String rerm) {
+        MakeOptions.getInstance().setDefFilePerm(rerm);
     }
 }
