@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.examples;
+package org.netbeans.modules.j2ee.samples;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -76,9 +76,9 @@ import org.xml.sax.InputSource;
  *
  * @author Martin Grebac
  */
-public class WebSampleProjectGenerator {
+public class SampleProjectGenerator {
     
-    private WebSampleProjectGenerator() {}
+    private SampleProjectGenerator() {}
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";    //NOI18N
     public static final String JSPC_CLASSPATH = "jspc.classpath";
