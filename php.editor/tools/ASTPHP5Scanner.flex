@@ -47,6 +47,7 @@ import java.util.List;
 import java_cup.runtime.*;
 import org.netbeans.modules.php.editor.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.web.common.api.ByteStack;
 
 @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING", "EI_EXPOSE_REP2", "UUF_UNUSED_FIELD"})
 %%
@@ -100,7 +101,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
     private String comment = null;
     private boolean asp_tags = false;
     private boolean short_tags_allowed = true;
-    private StateStack stack = new StateStack();
+    private ByteStack stack = new ByteStack();
     private char yy_old_buffer[] = new char[ZZ_BUFFERSIZE];
     private int yy_old_pushbackPos;
     protected int commentStartPosition;
@@ -189,12 +190,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 	}
 
     private void pushState(int state) {
-        stack.pushStack(zzLexicalState);
+        stack.push(zzLexicalState);
         yybegin(state);
     }
 
     private void popState() {
-        yybegin(stack.popStack());
+        yybegin(stack.pop());
     }
 
     public int getCurrentLine() {

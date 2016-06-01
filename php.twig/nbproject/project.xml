@@ -163,6 +163,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.97</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -220,14 +228,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -241,6 +241,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -312,7 +320,6 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.parsing.nb</code-name-base>
                     </test-dependency>
-                    
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                         <test/>
