@@ -462,6 +462,7 @@ public class JiraRepository {
 
     public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {                       
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
+        MylynSupport.getInstance().notifyCredentialsChanged(taskRepository); // bug #247291
     }
     
     /**
@@ -497,6 +498,7 @@ public class JiraRepository {
             String user, char[] password, String httpUser, char[] httpPassword) {
         repository.setRepositoryLabel(displayName);
         MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
+        MylynSupport.getInstance().notifyCredentialsChanged(repository); // bug #247291
     }
 
     public String getUsername() {
