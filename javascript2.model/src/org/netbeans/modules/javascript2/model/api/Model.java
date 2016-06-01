@@ -315,6 +315,8 @@ public final class Model {
                         }
                     }
                 }
+                // the object needs to be resolved again to handle right occurrences
+                resolveLocalTypes(fromType, JsDocumentationSupport.getDocumentationHolder(parserResult));
             } else {
                 Collection<IndexedElement> properties = jsIndex.getProperties(type.getType());
                 if (!properties.isEmpty()) {
