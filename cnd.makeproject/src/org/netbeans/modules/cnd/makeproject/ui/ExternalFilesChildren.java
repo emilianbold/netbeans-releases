@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.ui.configurations.ItemEx;
+import org.netbeans.modules.cnd.makeproject.api.ui.ItemEx;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 

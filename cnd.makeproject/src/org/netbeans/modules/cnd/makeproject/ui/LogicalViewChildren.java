@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
-import org.netbeans.modules.cnd.makeproject.ui.configurations.ItemEx;
+import org.netbeans.modules.cnd.makeproject.api.ui.ItemEx;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;

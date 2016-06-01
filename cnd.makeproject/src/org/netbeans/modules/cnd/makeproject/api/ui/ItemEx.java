@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.configurations;
+package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
