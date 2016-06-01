@@ -60,7 +60,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.examples.WebSampleProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -114,7 +113,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
         FileObject dir = null;
         if ("web".equals(template.getAttribute("prjType"))) { // NOI18N
             // Use generator from web.examples to create project with specified name
-            dir = WebSampleProjectGenerator.createProjectFromTemplate(template, dirF, name);
+            dir = SampleProjectGenerator.createProjectFromTemplate(template, dirF, name);
         }
         else {
             // Unzip prepared project only (no way to change name of the project)
@@ -123,9 +122,9 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressIns
             createFolder(dirF);
             dir = FileUtil.toFileObject(dirF);
             unZipFile(template.getInputStream(), dir);
-            WebSampleProjectGenerator.configureServer(dir);
+            SampleProjectGenerator.configureServer(dir);
             for (FileObject child : dir.getChildren()) {
-                WebSampleProjectGenerator.configureServer(child);
+                SampleProjectGenerator.configureServer(child);
             }
         }
 
