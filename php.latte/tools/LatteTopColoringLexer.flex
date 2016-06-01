@@ -46,6 +46,7 @@ import java.util.ArrayDeque;
 import java.util.Objects;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.modules.web.common.api.ByteStack;
 
 @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
@@ -71,7 +72,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %{
 
-    private LatteStateStack stack = new LatteStateStack();
+    private ByteStack stack = new ByteStack();
     private LexerInput input;
     private Syntax syntax;
     private ArrayDeque<HtmlTag> tags;
@@ -121,7 +122,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public static final class LexerState  {
-        final LatteStateStack stack;
+        final ByteStack stack;
         /** the current state of the DFA */
         final int zzState;
         /** the current lexical state */
@@ -129,7 +130,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         private final Syntax syntax;
         private final ArrayDeque<HtmlTag> tags;
 
-        LexerState(LatteStateStack stack, int zzState, int zzLexicalState, Syntax syntax, ArrayDeque<HtmlTag> tags) {
+        LexerState(ByteStack stack, int zzState, int zzLexicalState, Syntax syntax, ArrayDeque<HtmlTag> tags) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
@@ -177,7 +178,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, syntax, tags.clone());
+        return new LexerState(stack.copyOf(), zzState, zzLexicalState, syntax, tags.clone());
     }
 
     public void setState(LexerState state) {
@@ -191,11 +192,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     protected void popState() {
-        yybegin(stack.popStack());
+        yybegin(stack.pop());
     }
 
     protected void pushState(final int state) {
-        stack.pushStack(getZZLexicalState());
+        stack.push(getZZLexicalState());
         yybegin(state);
     }
 
