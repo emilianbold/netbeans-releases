@@ -290,7 +290,7 @@ public final class LauncherExecutor {
 
         @Override
         public String getLocalizedName() {
-            if (name.isEmpty()) {
+            if (name == null || name.isEmpty()) {
                 return delegate.getLocalizedName();
             } else {
                 return delegate.getLocalizedName()+" "+name; //NOI18N
