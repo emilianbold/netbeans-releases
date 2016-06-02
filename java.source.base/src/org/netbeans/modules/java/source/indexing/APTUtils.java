@@ -62,6 +62,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -138,7 +139,6 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         slidingRefresh = RP.create(new Runnable() {
             @Override
             public void run() {
-//                System.out.println("REFRESH: " + root.toURL());
                 IndexingManager.getDefault().refreshIndex(
                     root.toURL(),
                     Collections.<URL>emptyList(),
@@ -290,14 +290,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-//        System.out.println("PROPERTY CHANGE FROM CLASSPATH");
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
             if (verifyProcessorPath(root, usedRoots)) {
                 slidingRefresh.schedule(SLIDING_WINDOW);
             }
         }
-//        System.out.println("END.");
     }
 
     private void listen() {
@@ -581,6 +579,11 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return b.toString();
     }
 
+    /**
+     * Translated classpath to String (ENTRY PATH_SEPARATOR FLAGS) (PATH_SEPARATOR ENTRY PATH_SEPARATOR FLAGS)*
+     * @param cp the classpath to translate
+     * @return the translated classpath
+     */
     @NonNull
     private static String pathToFlaggedString(@NullAllowed ClassPath cp) {
         final StringBuilder b = new StringBuilder();
@@ -588,10 +591,15 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             cp = ClassPath.EMPTY;
         }
         for (final ClassPath.Entry cpe : cp.entries()) {
-            final FileObject fo = cpe.getRoot();
+            //Entry.getRoot() returns root which is valid for deleted jar
+            //in ClassPath.PROP_ROOTS event
+            final boolean exists = Optional.ofNullable(cpe.getRoot())
+                    .map((fo) -> FileUtil.isArchiveArtifact(fo) ? FileUtil.getArchiveFile(fo) : fo)
+                    .map((fo) -> fo.isValid())
+                    .orElse(Boolean.FALSE);
             append(b,cpe.getURL())
                     .append(File.pathSeparatorChar)
-                    .append(fo != null ? PATH_FLAG_EXISTS : 0);
+                    .append(exists ? PATH_FLAG_EXISTS : 0);
         }
         return b.toString();
     }
