@@ -48,7 +48,6 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;

@@ -50,7 +50,6 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;
