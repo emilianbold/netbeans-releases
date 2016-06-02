@@ -67,6 +67,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -397,6 +399,8 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append('\n');
             frameInfos.append(position.path);
             frameInfos.append('\n');
+            frameInfos.append(position.uri.toString());
+            frameInfos.append('\n');
             frameInfos.append(position.line);
             
             frameInfos.append("\n\n");
@@ -429,9 +433,9 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static Breakpoint setLineBreakpoint(String path, int line,
-                                            int ignoreCount, String condition) {
-        return doSetLineBreakpoint(path, line, ignoreCount, condition, false);
+    static Breakpoint setLineBreakpoint(String uriStr, int line,
+                                        int ignoreCount, String condition) throws URISyntaxException {
+        return doSetLineBreakpoint(new URI(uriStr), line, ignoreCount, condition, false);
     }
     
     static Breakpoint setLineBreakpoint(URL url, int line,
@@ -439,8 +443,8 @@ public class JPDATruffleAccessor extends Object {
         return doSetLineBreakpoint(url, line, ignoreCount, condition, false);
     }
     
-    static Breakpoint setOneShotLineBreakpoint(String path, int line) {
-        return doSetLineBreakpoint(path, line, 0, null, true);
+    static Breakpoint setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
+        return doSetLineBreakpoint(new URI(uriStr), line, 0, null, true);
     }
     
     static Breakpoint setOneShotLineBreakpoint(URL url, int line) {
@@ -490,6 +494,30 @@ public class JPDATruffleAccessor extends Object {
             lb = debugManager.getDebugger().setLineBreakpoint(0, bpLineLocation, oneShot);
         } catch (IOException dex) {
             System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
+            return null;
+        }
+        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        if (ignoreCount != 0) {
+            lb.setIgnoreCount(ignoreCount);
+        }
+        if (condition != null) {
+            try {
+                lb.setCondition(condition);
+            } catch (IOException dex) {
+                System.err.println("Wrong condition "+condition+" : "+dex);
+            }
+        }
+        return lb;
+    }
+    
+    private static Breakpoint doSetLineBreakpoint(URI uri, int line,
+                                                  int ignoreCount, String condition,
+                                                  boolean oneShot) {
+        Breakpoint lb;
+        try {
+            lb = debugManager.getDebugger().setLineBreakpoint(0, uri, line, oneShot);
+        } catch (IOException dex) {
+            System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
             return null;
         }
         //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);

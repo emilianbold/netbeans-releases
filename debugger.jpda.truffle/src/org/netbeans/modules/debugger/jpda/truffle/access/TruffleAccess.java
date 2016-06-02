@@ -54,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -277,9 +278,10 @@ public class TruffleAccess implements JPDABreakpointListener {
             if (src == null) {
                 String name = (String) sourcePositionVar.getField("name").createMirrorObject();
                 String path = (String) sourcePositionVar.getField("path").createMirrorObject();
+                URI uri = (URI) sourcePositionVar.getField("uri").createMirrorObject();
                 //String code = (String) sourcePositionVar.getField("code").createMirrorObject();
                 StringReference codeRef = (StringReference) ((JDIVariable) sourcePositionVar.getField("code")).getJDIValue();
-                src = Source.getSource(debugger, id, name, path, codeRef);
+                src = Source.getSource(debugger, id, name, path, uri, codeRef);
             }
             SourcePosition sp = new SourcePosition(debugger, id, src, line);
             

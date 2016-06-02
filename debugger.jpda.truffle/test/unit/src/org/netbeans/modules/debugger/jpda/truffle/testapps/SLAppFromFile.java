@@ -58,12 +58,12 @@ public class SLAppFromFile {
         String path = args[0];
         Source src = Source.fromFileName(path);
         
-        Object result = engine.eval(src).get();
-        assertNull("No code executed yet", result);
+        Object result = engine.eval(src).get(); // LBREAKPOINT
+        //assertNull("No code executed yet", result);
 
-        PolyglotEngine.Value main = engine.findGlobalSymbol("main");
-        assertNotNull("main method found", main);
-        result = main.invoke(null).get(); // LBREAKPOINT
+        //PolyglotEngine.Value main = engine.findGlobalSymbol("main");
+        //assertNotNull("main method found", main);
+        //result = main.invoke(null).get(); // L XXX BREAKPOINT
 
         assertEquals("Expected result", 42L, result);
         assertEquals("Expected output", "42\n", os.toString("UTF-8"));

@@ -123,7 +123,6 @@ public class MylynUtils {
             repository.setProperty(TaskRepository.PROXY_PORT, null);
             repository.setCredentials(AuthenticationType.PROXY, null, false);
         }  
-        MylynSupport.getInstance().notifyCredentialsChanged(repository);
     }
     
     public static void logCredentials(TaskRepository repository, String user, char[] psswd, String msg) {

@@ -51,7 +51,7 @@ import static org.junit.Assert.assertNull;
 public class SLApp {
     public static void main(String... args) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        PolyglotEngine engine = PolyglotEngine.buildNew().
+        PolyglotEngine engine = PolyglotEngine.newBuilder().
             setOut(os).
             build();
 
@@ -69,20 +69,21 @@ public class SLApp {
             "Meaning of world.sl"
         ).withMimeType("application/x-sl");
         
-        Object result = engine.eval(src).get();
-        assertNull("No code executed yet", result);
-
+        Object result = engine.eval(src).get();                         // LBREAKPOINT
+        //Was before: assertNull("No code executed yet", result);
+        /*
         PolyglotEngine.Value main = engine.findGlobalSymbol("main");
         assertNotNull("main method found", main);
-        result = main.invoke(null).get();                               // LBREAKPOINT
-
+        result = main.execute().get();                                  // L XX BREAKPOINT
+        */
+        // Is now:
         assertEquals("Expected result", 42L, result);
         assertEquals("Expected output", "42\n", os.toString("UTF-8"));
         
         // dynamic generated interface
         PolyglotEngine.Value init = engine.findGlobalSymbol("init");
         assertNotNull("init method found", init);
-        Compute c = init.invoke(null).as(Compute.class);                // LBREAKPOINT
+        Compute c = init.execute().as(Compute.class);                   // LBREAKPOINT
         result = c.fourtyTwo();                                         // LBREAKPOINT
         assertEquals("Expected result", 42L, result);
         assertEquals("Expected output", "42\n42\n", os.toString("UTF-8"));
