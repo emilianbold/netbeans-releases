@@ -99,9 +99,8 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
                 //pass - handle as non dir
             }
             if (!dir) {
-                //Special case for /tmp/build/.jar/ see issue #235695
                 boolean exists = false;
-                if (f == null || (exists = f.exists()) || !f.getName().equals(".jar")) {   //NOI18N
+                if (f == null || (exists = f.exists())) {   //NOI18N
                     final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL."    //NOI18N
                             + "[File: " + f + ", exists: " + exists +"]"    //NOI18N
                             + context);
