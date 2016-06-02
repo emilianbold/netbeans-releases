@@ -194,18 +194,18 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
     @Override
     protected void scanFinished(Context context) {
         //notify the FaceletsLibrarySupport that the libraries might have changed.
-        if(context.getRoot() != null) {  //looks like can be null
-            for(Project p : LibraryUtils.getOpenedJSFProjects()) {
+        if (context.getRoot() != null) {  //looks like can be null
+            for (Project p : LibraryUtils.getOpenedJSFProjects()) {
                 JsfSupport support = JsfSupportProvider.get(p);
-                if(support != null) {
+                if (support != null) {
                     JsfSupportImpl jsfSupportImpl = (JsfSupportImpl) support;
-                    jsfSupportImpl.indexedContentPossiblyChanged();
-                    jsfSupportImpl.getIndex().notifyChange();
+                    if (Arrays.stream(jsfSupportImpl.getClassPathRoots()).anyMatch(f -> f.equals(context.getRoot()))) {
+                        jsfSupportImpl.indexedContentPossiblyChanged();
+                        jsfSupportImpl.getIndex().notifyChange();
+                    }
                 }
             }
         }
-        
-        super.scanFinished(context); 
     }
     
 }
