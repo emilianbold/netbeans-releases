@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
@@ -65,12 +64,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -268,26 +266,19 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectDirectory.getPath()); // NOI18N
+            final String autoMessage = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING_AUTO");
             if (CndUtils.isStandalone()) {
                 System.err.print(message);
-                System.err.println(NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING_AUTO"));
+                System.err.println(autoMessage);
                 configurationDescriptor.setModified();
             } else {
-                Runnable warning = new Runnable() {
-
+                String title = NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE");
+                ConfirmSupport.getConfirmVersionFactory().create(title, message, autoMessage, new Runnable() {
                     @Override
                     public void run() {
-                        NotifyDescriptor nd = new NotifyDescriptor(message,
-                                NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
-                                NotifyDescriptor.QUESTION_MESSAGE,
-                                null, NotifyDescriptor.YES_OPTION);
-                        Object ret = DialogDisplayer.getDefault().notify(nd);
-                        if (ret == NotifyDescriptor.YES_OPTION) {
-                            configurationDescriptor.setModified();
-                        }
+                        configurationDescriptor.setModified();
                     }
-                };
-                SwingUtilities.invokeLater(warning);
+                });
             }
         }
 

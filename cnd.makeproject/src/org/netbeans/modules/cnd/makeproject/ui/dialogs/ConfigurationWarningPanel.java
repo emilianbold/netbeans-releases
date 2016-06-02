@@ -46,7 +46,7 @@
  * Created on Dec 16, 2009, 11:39:20 AM
  */
 
-package org.netbeans.modules.cnd.makeproject.configurations;
+package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 
 import java.awt.Color;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;

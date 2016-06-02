@@ -124,6 +124,7 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -148,7 +149,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -1653,11 +1653,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
+                String autoConfirm = errormsg + "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                 if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
-                    errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
-                    new Exception(errormsg).printStackTrace(System.err);
+                    new Exception(autoConfirm).printStackTrace(System.err);
                 } else {
-                    if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
+                    ConfirmSupport.ConfirmPlatformMismatch confirm = ConfirmSupport.getConfirmPlatformMismatchFactory().createAndWait(errormsg, autoConfirm);
+                    if (confirm == null) {
                         return false;
                     }
                 }

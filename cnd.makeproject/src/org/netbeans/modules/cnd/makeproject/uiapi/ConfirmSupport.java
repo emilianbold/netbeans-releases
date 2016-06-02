@@ -41,6 +41,9 @@ package org.netbeans.modules.cnd.makeproject.uiapi;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -58,28 +61,99 @@ public final class ConfirmSupport {
     public interface MimeExtension {
         boolean addNewExtension();
     }
+    
+    public interface SelectExecutable {
+        String getExecutable();
+    }
 
+    public interface AutoConfirm {
+    }
+
+    public interface ConfirmPlatformMismatch {
+    }
+
+    public interface ConfirmVersion {
+    }
+
+    public interface ForbidBuildAnalyzer {
+    }
+
+    public interface ResolveRfsLibrary {
+    }
+    
     public interface ConfirmMimeExtensionsFactory {
         MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH);
         MimeExtension create(Set<String> usedExtension, String mime);
     }
-    
-    private static final ConfirmMimeExtensionsFactory DEFAULT = new Default();
 
-    private static ConfirmMimeExtensionsFactory defaultFactory;
+    public interface SelectExecutableFactory {
+        SelectExecutable create(ProjectActionEvent pae);
+    }
+
+    public interface AutoConfirmFactory {
+        AutoConfirm create(String dialogTitle, String message, String autoConfirmMessage);
+    }
+
+    public interface ConfirmPlatformMismatchFactory {
+        ConfirmPlatformMismatch create(String dialogTitle, String message);
+        ConfirmPlatformMismatch createAndWait(String message, String autoConfirmMessage);
+    }
+    
+    public interface ConfirmVersionFactory {
+        ConfirmVersion create(String dialogTitle, String message, String autoConfirmMessage, Runnable onConfirm);
+        ConfirmVersion createAndWait(String dialogTitle, String message, String autoConfirmMessage);
+    }
+
+    public interface ForbidBuildAnalyzerFactory {
+        ForbidBuildAnalyzer create(Project project);
+    }
+
+    public interface ResolveRfsLibraryFactory {
+        ResolveRfsLibrary create(ExecutionEnvironment env);
+    }
+    
+    private static final Default DEFAULT = new Default();
 
     private ConfirmSupport() {
     }
 
-    public static ConfirmMimeExtensionsFactory getDefault() {
-        if (defaultFactory != null) {
-            return defaultFactory;
-        }
-        defaultFactory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
+    public static ConfirmMimeExtensionsFactory getDefaultConfirmMimeExtensionsFactory() {
+        ConfirmMimeExtensionsFactory defaultFactory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
         return defaultFactory == null ? DEFAULT : defaultFactory;
     }
 
-    private static final class Default implements ConfirmMimeExtensionsFactory {
+    public static SelectExecutableFactory getDefaultSelectExecutableFactory() {
+        SelectExecutableFactory defaultFactory = Lookup.getDefault().lookup(SelectExecutableFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static AutoConfirmFactory getAutoConfirmFactory() {
+        AutoConfirmFactory defaultFactory = Lookup.getDefault().lookup(AutoConfirmFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static ConfirmPlatformMismatchFactory getConfirmPlatformMismatchFactory() {
+        ConfirmPlatformMismatchFactory defaultFactory = Lookup.getDefault().lookup(ConfirmPlatformMismatchFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static ConfirmVersionFactory getConfirmVersionFactory() {
+        ConfirmVersionFactory defaultFactory = Lookup.getDefault().lookup(ConfirmVersionFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static ForbidBuildAnalyzerFactory getForbidBuildAnalyzerFactory() {
+        ForbidBuildAnalyzerFactory defaultFactory = Lookup.getDefault().lookup(ForbidBuildAnalyzerFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static ResolveRfsLibraryFactory getResolveRfsLibraryFactory() {
+        ResolveRfsLibraryFactory defaultFactory = Lookup.getDefault().lookup(ResolveRfsLibraryFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    private static final class Default implements ConfirmMimeExtensionsFactory, SelectExecutableFactory, AutoConfirmFactory,
+            ConfirmPlatformMismatchFactory, ConfirmVersionFactory, ForbidBuildAnalyzerFactory, ResolveRfsLibraryFactory {
 
         @Override
         public MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
@@ -90,7 +164,47 @@ public final class ConfirmSupport {
         public MimeExtension create(Set<String> usedExtension, String mime) {
             return new ConfirmExtensionUiImpl();
         }
+
+        @Override
+        public SelectExecutable create(ProjectActionEvent pae) {
+            return null;
+        }
+
+        @Override
+        public AutoConfirm create(String dialogTitle, String message, String autoConfirmMessage) {
+            return new AutoConfirmImpl(dialogTitle, message, autoConfirmMessage);
+        }
+
+        @Override
+        public ConfirmPlatformMismatch create(String dialogTitle, String message) {
+            return new ConfirmPlatformMismatchImpl(dialogTitle, message);
+        }
+
+        @Override
+        public ConfirmPlatformMismatch createAndWait(String message, String autoConfirmMessage) {
+            return new ConfirmPlatformMismatchImpl(message, autoConfirmMessage);
+        }
+
+        @Override
+        public ConfirmVersion create(String dialogTitle, String message, String autoConfirmMessage, Runnable onConfirm) {
+            return new ConfirmVersionImpl(dialogTitle, message, autoConfirmMessage, onConfirm);
+        }
         
+        @Override
+        public ConfirmVersion createAndWait(String dialogTitle, String message, String autoConfirmMessage) {
+            return new ConfirmVersionImpl(dialogTitle, message, autoConfirmMessage);
+        }
+
+        @Override
+        public ForbidBuildAnalyzer create(Project project) {
+            return null;
+        }
+
+        @Override
+        public ResolveRfsLibrary create(ExecutionEnvironment env) {
+            return null;
+        }
+
         private static final class ConfirmExtensionsUiImpl implements MimeExtensions {
             private final AtomicBoolean cCheck;
             private final AtomicBoolean cppCheck;
@@ -124,7 +238,31 @@ public final class ConfirmSupport {
             public boolean addNewExtension() {
                 return true;
             }
-            
+        }
+        
+        private static final class AutoConfirmImpl implements AutoConfirm {
+            private AutoConfirmImpl(String dialogTitle, String message, String autoConfirmMessage) {
+                System.err.print(message);
+                System.err.println(autoConfirmMessage);
+            }
+        }
+        
+        private static final class ConfirmPlatformMismatchImpl implements ConfirmPlatformMismatch {
+            private ConfirmPlatformMismatchImpl(String dialogTitle, String message) {
+                new Exception(message).printStackTrace(System.err);
+            }
+        }
+        
+        private static final class ConfirmVersionImpl implements ConfirmVersion {
+            private ConfirmVersionImpl(String dialogTitle, String message, String autoConfirmMessage, Runnable onConfirm) {
+                System.err.print(message);
+                System.err.println(autoConfirmMessage);
+                onConfirm.run();
+            }
+            private ConfirmVersionImpl(String dialogTitle, String message, String autoConfirmMessage) {
+                System.err.print(message);
+                System.err.println(autoConfirmMessage);
+            }
         }
     }    
 }

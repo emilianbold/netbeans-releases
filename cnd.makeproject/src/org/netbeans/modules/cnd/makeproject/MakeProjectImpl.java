@@ -385,6 +385,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return (T[]) newLookups.toArray();
     }
 
+    @Override
     public Properties getProjectProperties(boolean shared) {
         Properties props = new Properties();
         FileObject propsFO;
@@ -412,6 +413,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return props;
     }
 
+    @Override
     public void saveProjectProperties(Properties props, boolean shared) {
         FileObject propsFO = null;
         if (shared) {
@@ -577,16 +579,15 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
                 addMIMETypeExtensions(unknownH, MIMENames.HEADER_MIME_TYPE);
             }
         } else if (!(unknownC.isEmpty() && unknownCpp.isEmpty() && unknownH.isEmpty())) {
-            ConfirmMimeExtensionsFactory factory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
-            ConfirmSupport.MimeExtensions panel = factory.create(unknownC, unknownCpp, unknownH);
-            if (panel != null) {
-                if (panel.isC()) {
+            ConfirmSupport.MimeExtensions confirm = ConfirmSupport.getDefaultConfirmMimeExtensionsFactory().create(unknownC, unknownCpp, unknownH);
+            if (confirm != null) {
+                if (confirm.isC()) {
                     addMIMETypeExtensions(unknownC, MIMENames.C_MIME_TYPE);
                 }
-                if (panel.isCpp()) {
+                if (confirm.isCpp()) {
                     addMIMETypeExtensions(unknownCpp, MIMENames.CPLUSPLUS_MIME_TYPE);
                 }
-                if (panel.isHeader()) {
+                if (confirm.isHeader()) {
                     addMIMETypeExtensions(unknownH, MIMENames.HEADER_MIME_TYPE);
                 }
             }
@@ -669,10 +670,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         if (UNIT_TEST_MODE || CndUtils.isStandalone()) {
             return true;
         }
-        ConfirmMimeExtensionsFactory factory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
-        ConfirmSupport.MimeExtension panel = factory.create(usedExtension, type);
-        if (panel != null) {
-            return panel.addNewExtension();
+        ConfirmSupport.MimeExtension confirm = ConfirmSupport.getDefaultConfirmMimeExtensionsFactory().create(usedExtension, type);
+        if (confirm != null) {
+            return confirm.addNewExtension();
         }
         return false;
     }

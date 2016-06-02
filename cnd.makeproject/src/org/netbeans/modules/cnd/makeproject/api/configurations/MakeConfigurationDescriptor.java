@@ -95,6 +95,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXM
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -107,8 +109,6 @@ import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -1249,8 +1249,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndUtils.isStandalone() || SwingUtilities.isEventDispatchThread()) {
                 LOGGER.info(text.toString());
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+                CndNotifier.getDefault().notifyError(text.toString());
             }
             return allOk;
         }
@@ -2075,12 +2074,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
         if (previousVersion < currentVersion) {
             String txt = getString("UPGRADE_TXT"); //NOI18N
+            String autoMassage = getString("UPGRADE_TXT_AUTO");
             if (CndUtils.isStandalone()) {
                 System.err.print(txt);
-                System.err.println(getString("UPGRADE_TXT_AUTO")); //NOI18N
+                System.err.println(autoMassage); //NOI18N
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                String dialogTitle = getString("UPGRADE_DIALOG_TITLE");
+                ConfirmSupport.ConfirmVersion confirm = ConfirmSupport.getConfirmVersionFactory().createAndWait(dialogTitle, txt, autoMassage);
+                if (confirm == null) {
                     return false;
                 }
             }
