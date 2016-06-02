@@ -34,11 +34,11 @@ METHOD     clearInterval(intervalID: Numb  [PUBLIC]   JS Platform
 METHOD     clearTimeout(timeoutID: Number  [PUBLIC]   JS Platform
 METHOD     close(): undefined              [PUBLIC]   JS Platform
 METHOD     confirm(message: String): Bool  [PUBLIC]   JS Platform
-METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     decodeURI(encodedURI: String):  [PUBLIC]   JS Platform
 METHOD     decodeURIComponent(encodedURI:  [PUBLIC]   JS Platform
-METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
-METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
+METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
 METHOD     dump(message: String): undefin  [PUBLIC]   JS Platform
 METHOD     encodeURI(URI: String): String  [PUBLIC]   JS Platform
 METHOD     encodeURIComponent(str: String  [PUBLIC]   JS Platform
@@ -54,7 +54,7 @@ METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
 METHOD     getSelection(): Selection       [PUBLIC]   JS Platform
-METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   JS Platform
 METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFinite(number: Number): Bool  [PUBLIC]   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
@@ -70,10 +70,10 @@ METHOD     openDialog(url: String, name:   [PUBLIC]   JS Platform
 METHOD     parseFloat(string: String): Nu  [PUBLIC]   JS Platform
 METHOD     parseInt(string: String): Numb  [PUBLIC]   JS Platform
 METHOD     postMessage(message: String, t  [PUBLIC]   JS Platform
-METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     preventExtensions(obj: Object)  [PUBLIC,   JS Platform
 METHOD     print(): undefined              [PUBLIC]   JS Platform
 METHOD     prompt(text: String, value: St  [PUBLIC]   JS Platform
-METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   JS Platform
 METHOD     removeEventListener(type: Stri  [PUBLIC]   JS Platform
 METHOD     resizeBy(xDelta: Number, yDelt  [PUBLIC]   JS Platform
 METHOD     resizeTo(iWidth: Number, iHeig  [PUBLIC]   JS Platform
@@ -82,7 +82,7 @@ METHOD     scrollBy(X: Number, Y: Number)  [PUBLIC]   JS Platform
 METHOD     scrollByLines(lines: Number):   [PUBLIC]   JS Platform
 METHOD     scrollByPages(pages: Number):   [PUBLIC]   JS Platform
 METHOD     scrollTo(xcoord: Number, ycoor  [PUBLIC]   JS Platform
-METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     seal(obj: Object): Object       [PUBLIC,   JS Platform
 METHOD     setCursor(): undefined          [PUBLIC]   JS Platform
 METHOD     setImmediate(func: Function):   [PUBLIC]   JS Platform
 METHOD     setInterval(func: Function, de  [PUBLIC]   JS Platform
