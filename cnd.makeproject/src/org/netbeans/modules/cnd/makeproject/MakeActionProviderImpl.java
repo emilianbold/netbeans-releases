@@ -57,7 +57,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
@@ -373,18 +372,18 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
         } else {
             String message;
             if (record.isDeleted()) {
-                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
+                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName()); //NOI18N
+                String autoConfirm = message +"\n Confirm Yes"; //NOI18N
                 if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
-                    message += "\n Confirm Yes"; //NOI18N
-                    new Exception(message).printStackTrace(System.err);
+                    new Exception(autoConfirm).printStackTrace(System.err);
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 } else {
-                    int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
-                    if (res == JOptionPane.YES_OPTION) {
-                        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-                    } else {
+                    ConfirmSupport.AutoConfirm confirm = ConfirmSupport.getConfirmCreateConnectionFactory().createConnection(
+                            getString("DLG_TITLE_DeletedConnection"), message, autoConfirm); //NOI18N
+                    if (confirm == null) {
                         return;
                     }
+                    ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 }
             }
             // start validation phase
@@ -413,14 +412,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                             new Exception(message).printStackTrace(System.err);
                         } else {
                             final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                                            message, title, JOptionPane.ERROR_MESSAGE);
-                                }
-                            });
+                            ConfirmSupport.getNotifyCantConnectFactory().showErrorLater(title, message);
                         }
                     }
                     if (record.isOnline()) {

@@ -44,7 +44,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.execution.LDErrorParser;
-import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ForbidBuildAnalyzer;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ForbidBuildAnalyzerFactory;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
@@ -55,11 +54,11 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class ForbidBuildAnalyzerImpl implements ForbidBuildAnalyzer {
+public class ForbidBuildAnalyzerImpl {
     @org.openide.util.lookup.ServiceProvider(service = ForbidBuildAnalyzerFactory.class)
     public static final class ForbidBuildAnalyzerFactoryImpl implements ForbidBuildAnalyzerFactory {
         @Override
-        public ForbidBuildAnalyzer create(final Project project) {
+        public void show(final Project project) {
             JButton forbid = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Forbid.text")); // NOI18N
             JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Close.text")); // NOI18N
             NotifyDescriptor d = new NotifyDescriptor(
@@ -88,7 +87,6 @@ public class ForbidBuildAnalyzerImpl implements ForbidBuildAnalyzer {
                     }
                 });
             }
-            return null;
         }
     }
 

@@ -184,7 +184,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            ConfirmSupport.getForbidBuildAnalyzerFactory().create(project);
+            ConfirmSupport.getForbidBuildAnalyzerFactory().show(project);
         }
 
         @Override
@@ -204,7 +204,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            ConfirmSupport.getResolveRfsLibraryFactory().create(execEnv);
+            ConfirmSupport.getResolveRfsLibraryFactory().show(execEnv);
         }
 
         @Override

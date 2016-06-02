@@ -77,12 +77,6 @@ public final class ConfirmSupport {
     public interface ConfirmVersion {
     }
 
-    public interface ForbidBuildAnalyzer {
-    }
-
-    public interface ResolveRfsLibrary {
-    }
-    
     public interface BatchConfigurationSelector {
         String getCommand();
         Configuration[] getSelectedConfs();
@@ -112,17 +106,25 @@ public final class ConfirmSupport {
     }
 
     public interface ForbidBuildAnalyzerFactory {
-        ForbidBuildAnalyzer create(Project project);
+        void show(Project project);
     }
 
     public interface ResolveRfsLibraryFactory {
-        ResolveRfsLibrary create(ExecutionEnvironment env);
+        void show(ExecutionEnvironment env);
     }
     
     public interface BatchConfigurationSelectorFactory {
         BatchConfigurationSelector create(MakeProject project, Configuration[] confs);
     }
-            
+
+    public interface NotifyCantConnectFactory {
+        void showErrorLater(String dialogTitle, String message);
+    }
+    
+    public interface ConfirmCreateConnectionFactory {
+        AutoConfirm createConnection(String dialogTitle, String message, String autoConfirmMessage);
+    }
+    
     private static final Default DEFAULT = new Default();
 
     private ConfirmSupport() {
@@ -168,9 +170,19 @@ public final class ConfirmSupport {
         return defaultFactory == null ? DEFAULT : defaultFactory;
     }
 
+    public static NotifyCantConnectFactory getNotifyCantConnectFactory() {
+        NotifyCantConnectFactory defaultFactory = Lookup.getDefault().lookup(NotifyCantConnectFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
+    public static ConfirmCreateConnectionFactory getConfirmCreateConnectionFactory() {
+        ConfirmCreateConnectionFactory defaultFactory = Lookup.getDefault().lookup(ConfirmCreateConnectionFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
     private static final class Default implements ConfirmMimeExtensionsFactory, SelectExecutableFactory, AutoConfirmFactory,
             ConfirmPlatformMismatchFactory, ConfirmVersionFactory, ForbidBuildAnalyzerFactory, ResolveRfsLibraryFactory,
-            BatchConfigurationSelectorFactory {
+            BatchConfigurationSelectorFactory, NotifyCantConnectFactory, ConfirmCreateConnectionFactory {
 
         @Override
         public MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
@@ -213,18 +225,28 @@ public final class ConfirmSupport {
         }
 
         @Override
-        public ForbidBuildAnalyzer create(Project project) {
-            return null;
+        public void show(Project project) {
         }
 
         @Override
-        public ResolveRfsLibrary create(ExecutionEnvironment env) {
-            return null;
+        public void show(ExecutionEnvironment env) {
         }
 
         @Override
         public BatchConfigurationSelector create(MakeProject project, Configuration[] confs) {
             return null;
+        }
+
+        @Override
+        public void showErrorLater(String dialogTitle, String message) {
+            new Exception(message).printStackTrace(System.err);
+        }
+
+        @Override
+        public AutoConfirm createConnection(String dialogTitle, String message, String autoConfirmMessage) {
+            new Exception(autoConfirmMessage).printStackTrace(System.err);
+            return new AutoConfirm() {
+            };
         }
 
         private static final class ConfirmExtensionsUiImpl implements MimeExtensions {

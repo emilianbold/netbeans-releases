@@ -39,45 +39,28 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
-import org.netbeans.modules.cnd.makeproject.execution.LDErrorParser;
-import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ResolveRfsLibraryFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import javax.swing.JOptionPane;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ConfirmCreateConnectionFactory;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ResolveRfsLibraryImpl {
-    @org.openide.util.lookup.ServiceProvider(service = ResolveRfsLibraryFactory.class)
-    public static final class ResolveRfsLibraryFactoryImpl implements ResolveRfsLibraryFactory {
+public class ConfirmCreateConnectionImpl {
+    @org.openide.util.lookup.ServiceProvider(service = ConfirmCreateConnectionFactory.class)
+    public static final class ConfirmCreateConnectionFactoryImpl implements ConfirmCreateConnectionFactory {            
 
         @Override
-        public void show(final ExecutionEnvironment execEnv) {
-            JButton change = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Forbid.text")); // NOI18N
-            JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Close.text")); // NOI18N
-            NotifyDescriptor d = new NotifyDescriptor(
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Explanation.text"), // NOI18N
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Title.text"), // NOI18N
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE,
-                    new JButton[]{change, close},
-                    change
-            );
-            if (DialogDisplayer.getDefault().notify(d) == change) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ServerListUI.showServerRecordPropertiesDialog(execEnv);
-                    }
-                });
+        public ConfirmSupport.AutoConfirm createConnection(String dialogTitle, String message, String autoConfirmMessage) {
+            int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, dialogTitle, JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                return new ConfirmSupport.AutoConfirm() {
+                };
             }
+            return null;
         }
-    }
+        
+    }    
 }
