@@ -432,7 +432,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToFlaggedString(pp), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToFlaggedString(pp, false), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -500,7 +500,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             LOG.log(Level.FINEST, "Added: {0}", added);     //NOI18N
             LOG.log(Level.FINEST, "Removed: {0}", removed); //NOI18N
             if (!added.isEmpty() || !removed.isEmpty()) {
-                JavaIndex.setAttribute(url, PROCESSOR_PATH, pathToFlaggedString(pp));
+                JavaIndex.setAttribute(url, PROCESSOR_PATH, pathToFlaggedString(pp, true));
             }
             boolean res = false;
 
@@ -585,7 +585,9 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
      * @return the translated classpath
      */
     @NonNull
-    private static String pathToFlaggedString(@NullAllowed ClassPath cp) {
+    private static String pathToFlaggedString(
+            @NullAllowed ClassPath cp,
+            final boolean checkArchiveFile) {
         final StringBuilder b = new StringBuilder();
         if (cp == null) {
             cp = ClassPath.EMPTY;
@@ -594,8 +596,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             //Entry.getRoot() returns root which is valid for deleted jar
             //in ClassPath.PROP_ROOTS event
             final boolean exists = Optional.ofNullable(cpe.getRoot())
-                    .map((fo) -> FileUtil.isArchiveArtifact(fo) ? FileUtil.getArchiveFile(fo) : fo)
-                    .map((fo) -> fo.isValid())
+                    .map((fo) -> (checkArchiveFile && FileUtil.isArchiveArtifact(fo)) ? FileUtil.getArchiveFile(fo) : fo)
+                    .map((fo) -> checkArchiveFile ? fo.isValid() : true)
                     .orElse(Boolean.FALSE);
             append(b,cpe.getURL())
                     .append(File.pathSeparatorChar)
