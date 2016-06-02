@@ -93,6 +93,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -110,7 +111,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String JRE_PROFILE = "jreProfile";        //NOI18N
-    private static final int PATH_FLAG_USED = 1;
+    private static final int PATH_FLAG_EXISTS = 1;
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
@@ -290,13 +291,11 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("PROPERTY CHANGE FROM CLASSPATH");
-        LongHashMap<? extends File> changed = null;
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
-            changed = usedRoots.getRoots();
-        }
-        if (verifyProcessorPath(root, changed)) {
-            slidingRefresh.schedule(SLIDING_WINDOW);
+            if (verifyProcessorPath(root, usedRoots)) {
+                slidingRefresh.schedule(SLIDING_WINDOW);
+            }
         }
 //        System.out.println("END.");
     }
@@ -457,8 +456,9 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private boolean verifyProcessorPath(
         @NonNull final FileObject root,
-        @NullAllowed final LongHashMap<? extends File> used) {
+        @NonNull final UsedRoots usedRoots) {
         try {
+            final LongHashMap<? extends File> used = usedRoots.getRoots();
             final URL url = root.toURL();
             final ClassPath pp = validatePaths();
             final Set<File> currentExitingFiles = pp.entries().stream()
@@ -473,32 +473,37 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     .map((e) -> FileUtil.archiveOrDirForURL(e.getURL()))
                     .filter((file) -> file != null)
                     .collect(Collectors.toSet());
-            final String raw = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
-            final String[] parts = raw.split(File.pathSeparator);
+
             final Set<File> oldExistingFiles = new HashSet<>();
             final Set<File> oldAllFiles = new HashSet<>();
-            for (int i=0; i < parts.length; i+=2) {
-                final File f = new File(parts[i]);
-                int flags = PATH_FLAG_USED;
-                try {
-                    if (i+i < parts.length) {
-                        flags = Integer.parseInt(parts[i+1]);
+            final String raw = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
+            if (!raw.isEmpty()) {
+                final String[] parts = raw.split(File.pathSeparator);
+                for (int i=0; i < parts.length; i+=2) {
+                    final File f = new File(parts[i]);
+                    int flags = PATH_FLAG_EXISTS;
+                    try {
+                        if (i+1 < parts.length) {
+                            flags = Integer.parseInt(parts[i+1]);
+                        }
+                    } catch (NumberFormatException nfe) {
+                        //pass with PATH_FLAG_USED set
                     }
-                } catch (NumberFormatException nfe) {
-                    //pass with PATH_FLAG_USED set
-                }
-                oldAllFiles.add(f);
-                if ((flags & PATH_FLAG_USED) == PATH_FLAG_USED) {
-                    oldExistingFiles.add(f);
+                    oldAllFiles.add(f);
+                    if ((flags & PATH_FLAG_EXISTS) == PATH_FLAG_EXISTS) {
+                        oldExistingFiles.add(f);
+                    }
                 }
             }
-
             Set<File> added = new HashSet<>(currentExitingFiles);
             added.removeAll(oldExistingFiles);
             Set<File> removed = new HashSet<>(oldExistingFiles);
             removed.removeAll(currentExitingFiles);
             LOG.log(Level.FINEST, "Added: {0}", added);     //NOI18N
             LOG.log(Level.FINEST, "Removed: {0}", removed); //NOI18N
+            if (!added.isEmpty() || !removed.isEmpty()) {
+                JavaIndex.setAttribute(url, PROCESSOR_PATH, pathToFlaggedString(pp));
+            }
             boolean res = false;
 
             for (Iterator<File> it = removed.iterator(); it.hasNext();) {
@@ -506,11 +511,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 if (!currentAllFiles.contains(f)) {
                     LOG.log(Level.FINEST, "Removed from path: {0}", f);  //NOI18N
                     it.remove();
+                    usedRoots.remove(f);
                     res = true;
                 }
             }
             final Predicate<File> pUsed = (f) -> used == null || used.containsKey(f);
-            final Predicate<File> pModified = (f) -> used == null || used.get(f) != f.length();
+            final Predicate<Pair<File,Long>> pModified = (p) -> used == null || used.get(p.first()) != p.second();
             final Predicate<File> pNotProjDep = (f) -> {
                 final URL furl = FileUtil.urlForArchiveOrDir(f);
                 return furl == null ?
@@ -534,12 +540,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     res = true;
                 }
             }
-            added = added.stream()
+            final Collection<Pair<File,Long>> times = added.stream()
                     .filter(pUsed)
+                    .map((f) -> Pair.of(f, f.length()))
                     .filter(pModified)
-                    .collect(Collectors.toSet());
-            if (!added.isEmpty()) {
-                LOG.log(Level.FINEST, "Important created: {0}", removed);    //NOI18N
+                    .collect(Collectors.toList());
+            if (!times.isEmpty()) {
+                LOG.log(Level.FINEST, "Important changed: {0}", added);    //NOI18N
+                for (Pair<File,Long> p : times) {
+                    usedRoots.update(p.first(), p.second());
+                }
                 res = true;
             }
             if (res) {
@@ -581,7 +591,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             final FileObject fo = cpe.getRoot();
             append(b,cpe.getURL())
                     .append(File.pathSeparatorChar)
-                    .append(fo != null ? PATH_FLAG_USED : 0);
+                    .append(fo != null ? PATH_FLAG_EXISTS : 0);
         }
         return b.toString();
     }
@@ -732,6 +742,18 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             }
         }
 
+        void remove(@NonNull final File file) {
+            synchronized (this) {
+                load();
+                if (used == null || used == TOMBSTONE) {
+                    return;
+                }
+                if (used.remove(file) != LongHashMap.NO_VALUE) {
+                    saveTask.schedule(DEFERRED_SAVE);
+                }
+            }
+        }
+
         void reset() {
             synchronized (this) {
                 used = TOMBSTONE;
@@ -754,7 +776,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                             root,
                             ATTR_USED_PROC,
                             null);
-                    if (raw != null) {
+                    if (raw != null && !raw.isEmpty()) {
                         LongHashMap<File> s = new LongHashMap<>();
                         final String[] parts = raw.split(File.pathSeparator);
                         for (int i = 0; i < parts.length; i+=2) {
