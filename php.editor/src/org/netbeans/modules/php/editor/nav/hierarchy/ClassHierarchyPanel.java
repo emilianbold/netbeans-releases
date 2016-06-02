@@ -66,6 +66,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -295,8 +296,6 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
     @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP2"})
     protected abstract static class AbstractTypeNode implements TreeNode {
 
-        static final String ICON_BASE = "org/netbeans/modules/php/editor/resources/"; //NOI18N
-        static final String ICON_EXTENSION = ".png"; //NOI18N
         private AbstractTypeNode[] childern;
 
         protected AbstractTypeNode() {
@@ -380,11 +379,13 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         Set<TypeElement> recursionDetection = new HashSet<>();
         types.addAll(ModelUtils.getDeclaredClasses(fileScope));
         types.addAll(ModelUtils.getDeclaredInterfaces(fileScope));
+        types.addAll(ModelUtils.getDeclaredTraits(fileScope));
         TypeNode[] childernNodes = new TypeNode[types.size()];
         if (types.size() > 0) {
             Index index = fileScope.getIndexScope().getIndex();
             Iterator<TypeElement> iterator = types.iterator();
             for (int i = 0; iterator.hasNext(); i++) {
+                recursionDetection.clear();
                 TypeElement type = iterator.next();
                 TreeElement<TypeElement> treeType = subDirection
                         ? index.getInheritedByTypesAsTree(type, types)
@@ -450,6 +451,12 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private static class TypeNode extends AbstractTypeNode {
+        @StaticResource
+        private static final String CLASS_ICON = "org/netbeans/modules/php/editor/resources/class.png"; //NOI18N
+        @StaticResource
+        private static final String IFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
+        @StaticResource
+        private static final String TRAIT_ICON = "org/netbeans/modules/php/editor/resources/trait.png"; //NOI18N
         private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
         private static final String CLOSE_FONT = "</font>"; //NOI18N
         private final TreeNode parent;
@@ -458,6 +465,9 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         private final FileObject fileObject;
         private final int offset;
         private final boolean isClass;
+        private final boolean isInterface;
+        private final boolean isTrait;
+
 
         public TypeNode(final TreeNode parent, final TreeElement<TypeElement> classElement) {
             this.parent = parent;
@@ -467,6 +477,8 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
             this.fileObject = type.getFileObject();
             this.offset = type.getOffset();
             this.isClass = type.isClass();
+            this.isInterface = type.isInterface();
+            this.isTrait = type.isTrait();
             if (type instanceof ClassElement) {
                 ClassElement clz = (ClassElement) type;
                 QualifiedName superClassName = clz.getSuperClassName();
@@ -495,7 +507,18 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public Image getIcon() {
-            return ImageUtilities.loadImage(ICON_BASE + (isClass ? "class" : "interface") + ICON_EXTENSION); //NOI18N
+            String img;
+            if (isClass) {
+                img = CLASS_ICON;
+            } else if (isInterface) {
+                img = IFACE_ICON;
+            } else if (isTrait) {
+                img = TRAIT_ICON;
+            } else {
+                assert false : "Unknown type";
+                img = CLASS_ICON;
+            }
+            return ImageUtilities.loadImage(img);
         }
 
         @Override
@@ -535,7 +558,11 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
     })
     private static class ErrTypeNode extends TypeNode {
 
-        public ErrTypeNode(TreeNode parent, TreeElement<TypeElement> classElement) {
+        @StaticResource
+        private static final String ICON = "org/netbeans/modules/php/editor/resources/error-glyph.gif"; //NOI18N
+
+
+        ErrTypeNode(TreeNode parent, TreeElement<TypeElement> classElement) {
             super(parent, classElement);
         }
 
@@ -551,7 +578,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public Image getIcon() {
-            return ImageUtilities.loadImage(ICON_BASE + "error-glyph.gif"); //NOI18N
+            return ImageUtilities.loadImage(ICON);
         }
 
     }
