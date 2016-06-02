@@ -43,9 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -59,11 +57,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
@@ -123,7 +119,6 @@ import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
@@ -146,8 +141,6 @@ import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -314,13 +307,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
         final List<MakeConfiguration> confs = new ArrayList<>();
         if (command.equals(COMMAND_BATCH_BUILD)) {
-            BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().toArray());
-            String batchCommand = batchConfigurationSelector.getCommand();
-            Configuration[] confsArray = batchConfigurationSelector.getSelectedConfs();
-            if (batchCommand == null || confsArray == null || confsArray.length == 0) {
+            ConfirmSupport.BatchConfigurationSelector selector = ConfirmSupport.getBatchConfigurationSelectorFactory().create(project, pd.getConfs().toArray());
+            if (selector == null) {
                 return;
             }
-            command = batchCommand;
+            command = selector.getCommand();
+            Configuration[] confsArray = selector.getSelectedConfs();
             for (Configuration conf : confsArray) {
                 confs.add((MakeConfiguration) conf);
             }
@@ -2023,77 +2015,6 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
         public synchronized boolean isInterruptable(){
             return interruptable.get();
-        }
-    }
-
-    private static class BatchConfigurationSelector implements ActionListener {
-
-        private JButton buildButton = new JButton(getString("BuildButton"));
-        private JButton rebuildButton = new JButton(getString("CleanBuildButton"));
-        private JButton cleanButton = new JButton(getString("CleanButton"));
-        private JButton closeButton = new JButton(getString("CloseButton"));
-        private ConfSelectorPanel confSelectorPanel;
-        private String command = null;
-        private Dialog dialog = null;
-        private final String recentSelectionKey;
-
-        BatchConfigurationSelector(MakeProject project, Configuration[] confs) {
-            confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[]{buildButton, rebuildButton, cleanButton});
-            recentSelectionKey = project.getProjectDirectory().getPath();
-            confSelectorPanel.restoreSelection(recentSelectionKey);
-
-            String dialogTitle = MessageFormat.format(getString("BatchBuildTitle"), // NOI18N
-                    new Object[]{ProjectUtils.getInformation(project).getDisplayName()});
-
-            buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
-            buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
-            buildButton.addActionListener(BatchConfigurationSelector.this);
-            rebuildButton.setMnemonic(getString("CleanBuildButtonMn").charAt(0));
-            rebuildButton.addActionListener(BatchConfigurationSelector.this);
-            rebuildButton.getAccessibleContext().setAccessibleDescription(getString("CleanBuildButtonAD"));
-            cleanButton.setMnemonic(getString("CleanButtonMn").charAt(0));
-            cleanButton.addActionListener(BatchConfigurationSelector.this);
-            cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
-            closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
-            // Show the dialog
-            DialogDescriptor dd = new DialogDescriptor(confSelectorPanel, dialogTitle, true, new Object[]{closeButton}, closeButton, 0, null, null);
-            //DialogDisplayer.getDefault().notify(dd);
-            dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dialog.getAccessibleContext().setAccessibleDescription(getString("BatchBuildDialogAD"));
-
-            try {
-                dialog.setVisible(true);
-            } catch (Throwable th){
-                if (!(th.getCause() instanceof InterruptedException)) {
-                    throw new RuntimeException(th);
-                }
-                dd.setValue(closeButton);
-            } finally {
-                dialog.setVisible(false);
-            }
-        }
-
-        public Configuration[] getSelectedConfs() {
-            return confSelectorPanel.getSelectedConfs();
-        }
-
-        public String getCommand() {
-            return command;
-        }
-
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == buildButton) {
-                command = COMMAND_BUILD;
-            } else if (evt.getSource() == rebuildButton) {
-                command = COMMAND_REBUILD;
-            } else if (evt.getSource() == cleanButton) {
-                command = COMMAND_CLEAN;
-            } else {
-                assert false;
-            }
-            dialog.dispose();
-            confSelectorPanel.storeSelection(recentSelectionKey);
         }
     }
 

@@ -42,7 +42,9 @@ package org.netbeans.modules.cnd.makeproject.uiapi;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -81,6 +83,11 @@ public final class ConfirmSupport {
     public interface ResolveRfsLibrary {
     }
     
+    public interface BatchConfigurationSelector {
+        String getCommand();
+        Configuration[] getSelectedConfs();
+    }
+    
     public interface ConfirmMimeExtensionsFactory {
         MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH);
         MimeExtension create(Set<String> usedExtension, String mime);
@@ -112,6 +119,10 @@ public final class ConfirmSupport {
         ResolveRfsLibrary create(ExecutionEnvironment env);
     }
     
+    public interface BatchConfigurationSelectorFactory {
+        BatchConfigurationSelector create(MakeProject project, Configuration[] confs);
+    }
+            
     private static final Default DEFAULT = new Default();
 
     private ConfirmSupport() {
@@ -152,8 +163,14 @@ public final class ConfirmSupport {
         return defaultFactory == null ? DEFAULT : defaultFactory;
     }
 
+    public static BatchConfigurationSelectorFactory getBatchConfigurationSelectorFactory() {
+        BatchConfigurationSelectorFactory defaultFactory = Lookup.getDefault().lookup(BatchConfigurationSelectorFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
     private static final class Default implements ConfirmMimeExtensionsFactory, SelectExecutableFactory, AutoConfirmFactory,
-            ConfirmPlatformMismatchFactory, ConfirmVersionFactory, ForbidBuildAnalyzerFactory, ResolveRfsLibraryFactory {
+            ConfirmPlatformMismatchFactory, ConfirmVersionFactory, ForbidBuildAnalyzerFactory, ResolveRfsLibraryFactory,
+            BatchConfigurationSelectorFactory {
 
         @Override
         public MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
@@ -202,6 +219,11 @@ public final class ConfirmSupport {
 
         @Override
         public ResolveRfsLibrary create(ExecutionEnvironment env) {
+            return null;
+        }
+
+        @Override
+        public BatchConfigurationSelector create(MakeProject project, Configuration[] confs) {
             return null;
         }
 
