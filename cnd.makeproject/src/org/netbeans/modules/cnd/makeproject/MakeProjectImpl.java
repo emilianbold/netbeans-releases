@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -53,7 +52,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,9 +85,13 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectFileProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -102,6 +104,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
 import org.netbeans.modules.cnd.makeproject.options.FullFileIndexer;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
@@ -127,9 +130,6 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -150,9 +150,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.netbeans.modules.cnd.makeproject.api.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectFileProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ConfirmMimeExtensionsFactory;
 
 /**
  * Represents one plain Make project.
@@ -579,11 +577,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
                 addMIMETypeExtensions(unknownH, MIMENames.HEADER_MIME_TYPE);
             }
         } else if (!(unknownC.isEmpty() && unknownCpp.isEmpty() && unknownH.isEmpty())) {
-            ConfirmExtensions panel = new ConfirmExtensions(unknownC, unknownCpp, unknownH);
-            DialogDescriptor dialogDescriptor = new DialogDescriptor(panel,
-                    getString("ConfirmExtensions.dialog.title")); // NOI18N
-            DialogDisplayer.getDefault().notify(dialogDescriptor);
-            if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            ConfirmMimeExtensionsFactory factory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
+            ConfirmSupport.MimeExtensions panel = factory.create(unknownC, unknownCpp, unknownH);
+            if (panel != null) {
                 if (panel.isC()) {
                     addMIMETypeExtensions(unknownC, MIMENames.C_MIME_TYPE);
                 }
@@ -673,19 +669,12 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         if (UNIT_TEST_MODE || CndUtils.isStandalone()) {
             return true;
         }
-        String message = getString("ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
-        StringBuilder extensions = new StringBuilder();
-        for (String ext : usedExtension) {
-            if (extensions.length() > 0) {
-                extensions.append(',');
-            }
-            extensions.append(ext);
+        ConfirmMimeExtensionsFactory factory = Lookup.getDefault().lookup(ConfirmMimeExtensionsFactory.class);
+        ConfirmSupport.MimeExtension panel = factory.create(usedExtension, type);
+        if (panel != null) {
+            return panel.addNewExtension();
         }
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                MessageFormat.format(message, new Object[]{extensions.toString()}),
-                getString("ADD_EXTENSION_DIALOG_TITLE" + type + (usedExtension.size() == 1 ? "" : "S")), // NOI18N
-                NotifyDescriptor.YES_NO_OPTION);
-        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
+        return false;
     }
 
     public static Set<String> createExtensionSet() {

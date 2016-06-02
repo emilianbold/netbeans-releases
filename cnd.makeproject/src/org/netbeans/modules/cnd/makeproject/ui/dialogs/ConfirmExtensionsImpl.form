@@ -32,7 +32,7 @@
     <Component class="javax.swing.JCheckBox" name="headerCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, &quot;ConfirmExtensions.headerCheck.text1&quot;, getHeaderList())" type="code"/>
+          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, &quot;ConfirmExtensionsImpl.headerCheck.text1&quot;, getHeaderList())" type="code"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -47,7 +47,7 @@
     <Component class="javax.swing.JCheckBox" name="cCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, &quot;ConfirmExtensions.cCheck.text1&quot;, getCList())" type="code"/>
+          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, &quot;ConfirmExtensionsImpl.cCheck.text1&quot;, getCList())" type="code"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -62,7 +62,7 @@
     <Component class="javax.swing.JCheckBox" name="cppCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, &quot;ConfirmExtensions.cppCheck.text1&quot;, getCppList())" type="code"/>
+          <Connection code="org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, &quot;ConfirmExtensionsImpl.cppCheck.text1&quot;, getCppList())" type="code"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -97,7 +97,7 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/Bundle.properties" key="ConfirmExtensions.textPane.text1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/dialogs/Bundle.properties" key="ConfirmExtensionsImpl.textPane.text1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>

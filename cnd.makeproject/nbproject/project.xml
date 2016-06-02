@@ -520,9 +520,9 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.launchers</package>
-                <package>org.netbeans.modules.cnd.makeproject.launchers.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
+                <package>org.netbeans.modules.cnd.makeproject.uiapi</package>
             </friend-packages>
         </data>
     </configuration>

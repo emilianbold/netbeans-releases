@@ -46,21 +46,69 @@
  * Created on Dec 30, 2008, 1:49:00 PM
  */
 
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 
+import java.text.MessageFormat;
 import java.util.Set;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.MimeExtensions;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ConfirmMimeExtensionsFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ConfirmExtensions extends javax.swing.JPanel {
+public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExtensions {
+    @org.openide.util.lookup.ServiceProvider(service=ConfirmMimeExtensionsFactory.class)
+    public static final class ConfirmExtensionsUiFactoryImpl implements ConfirmMimeExtensionsFactory {
+
+        @Override
+        public MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
+            ConfirmExtensionsImpl confirmExtensions = new ConfirmExtensionsImpl(unknownC, unknownCpp, unknownH);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(confirmExtensions,
+                    NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensions.dialog.title")); // NOI18N
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                return confirmExtensions;
+            }
+            return null;
+        }
+
+        @Override
+        public ConfirmSupport.MimeExtension create(Set<String> usedExtension, String type) {
+            String message = NbBundle.getMessage(ConfirmExtensionsImpl.class,"ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
+            StringBuilder extensions = new StringBuilder();
+            for (String ext : usedExtension) {
+                if (extensions.length() > 0) {
+                    extensions.append(',');
+                }
+                extensions.append(ext);
+            }
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                    MessageFormat.format(message, new Object[]{extensions.toString()}),
+                    NbBundle.getMessage(ConfirmExtensionsImpl.class, "ADD_EXTENSION_DIALOG_TITLE" + type + (usedExtension.size() == 1 ? "" : "S")), // NOI18N
+                    NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                return new ConfirmSupport.MimeExtension() {
+                    @Override
+                    public boolean addNewExtension() {
+                        return true;
+                    }
+                };
+            }
+            return null;
+        }
+    }
     private final Set<String> unknownC;
     private final Set<String> unknownCpp;
     private final Set<String> unknownH;
 
     /** Creates new form ConfirmExtensions */
-    public ConfirmExtensions(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
+    private ConfirmExtensionsImpl(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
         this.unknownC = unknownC;
         this.unknownCpp = unknownCpp;
         this.unknownH = unknownH;
@@ -86,6 +134,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public boolean isC(){
         return cCheck.isSelected();
     }
@@ -94,6 +143,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         return extensionText(unknownC);
     }
 
+    @Override
     public boolean isCpp(){
         return cppCheck.isSelected();
     }
@@ -102,6 +152,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         return extensionText(unknownCpp);
     }
 
+    @Override
     public boolean isHeader(){
         return headerCheck.isSelected();
     }
@@ -143,7 +194,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(300, 200));
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(headerCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, "ConfirmExtensions.headerCheck.text1", getHeaderList()));
+        org.openide.awt.Mnemonics.setLocalizedText(headerCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.headerCheck.text1", getHeaderList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -153,7 +204,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(headerCheck, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, "ConfirmExtensions.cCheck.text1", getCList()));
+        org.openide.awt.Mnemonics.setLocalizedText(cCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.cCheck.text1", getCList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -163,7 +214,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(cCheck, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cppCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, "ConfirmExtensions.cppCheck.text1", getCppList()));
+        org.openide.awt.Mnemonics.setLocalizedText(cppCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.cppCheck.text1", getCppList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -177,7 +228,7 @@ public class ConfirmExtensions extends javax.swing.JPanel {
         jScrollPane1.setFocusable(false);
 
         textPane.setEditable(false);
-        textPane.setText(org.openide.util.NbBundle.getMessage(ConfirmExtensions.class, "ConfirmExtensions.textPane.text1")); // NOI18N
+        textPane.setText(org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.textPane.text1")); // NOI18N
         textPane.setFocusable(false);
         jScrollPane1.setViewportView(textPane);
 
