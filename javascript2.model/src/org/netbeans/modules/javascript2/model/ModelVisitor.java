@@ -831,16 +831,13 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 for (ImportSpecifierNode importSpecifier : importSpecifiers) {
                     Identifier importedAs = create(parserResult, importSpecifier.getBindingIdentifier());
                     JsObjectImpl property;
+                    property = createVariableFromImport(importedAs);
+                    property.addOccurrence(importedAs.getOffsetRange());
                     if (importSpecifier.getIdentifier() != null) {
-                        Identifier local = create(parserResult, importSpecifier.getIdentifier());
-                        property = createVariableFromImport(local);
-                        property.addOccurrence(local.getOffsetRange());
-                        addOccurence(importSpecifier.getBindingIdentifier(), false);
-                    } else {
-                        property = createVariableFromImport(importedAs);
-                        property.addOccurrence(importedAs.getOffsetRange());
+                        Identifier inModuleName = create(parserResult, importSpecifier.getIdentifier());
+                        property.addAssignment(new TypeUsage(inModuleName.getName()), inModuleName.getOffsetRange().getEnd());
                     }
-                    property.addAssignment(new TypeUsage(importedAs.getName()), importedAs.getOffsetRange().getEnd());
+                    
                 }
             }
         }

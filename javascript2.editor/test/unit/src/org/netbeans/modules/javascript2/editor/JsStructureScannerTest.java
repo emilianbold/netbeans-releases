@@ -745,4 +745,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testStrangeMethodNames() throws Exception {
         checkStructure("testfiles/markoccurences/strangeMethodName.js");
     }
+    
+     public void testImport01() throws Exception {
+        checkStructure("testfiles/ecmascript6/importExport/import01.js");
+    }
 }
