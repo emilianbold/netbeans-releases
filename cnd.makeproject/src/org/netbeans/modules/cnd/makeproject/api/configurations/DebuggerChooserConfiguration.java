@@ -44,62 +44,28 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.ui.configurations.PrioritizedCustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.spi.DebuggerChooserProvider;
 import org.openide.util.Lookup;
 
 public class DebuggerChooserConfiguration implements Cloneable {
 
-    private static List<CustomizerNode>  nodes = null;
-    private static String[] names;
-    private static int def;
+    private static DebuggerChooserProvider storage;
 
     private int value;
     private boolean modified;
     private boolean dirty = false;
 
     public DebuggerChooserConfiguration(Lookup lookup) {
-        init(lookup);
+        if (storage == null) {
+            storage = DebuggerChooserProvider.getInstance();
+        }
         reset();
     }
 
     private DebuggerChooserConfiguration(DebuggerChooserConfiguration conf) {
         value = conf.value;
         setModified(false);
-    }
-
-    private static void init(Lookup lookup) {
-        if (nodes == null) {
-            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug", lookup); // NOI18N
-            String[] defnames = new String[] { "" };
-
-            if (nodes.size() >= 1) {
-                int priority = PrioritizedCustomizerNode.DEFAULT_PRIORITY;
-                int idx = 0;
-                List<String> n = new ArrayList<>();
-                for (CustomizerNode node : nodes) {
-                    if (node instanceof PrioritizedCustomizerNode) {
-                        if (((PrioritizedCustomizerNode) node).getPriority() > priority) {
-                            priority = ((PrioritizedCustomizerNode) node).getPriority();
-                            idx = n.size();
-                        }
-                    } else if (node.getClass().getName().toLowerCase(Locale.getDefault()).contains("dbx")) { // NOI18N
-                        priority = PrioritizedCustomizerNode.MAX_PRIORITY;
-                        idx = n.size();
-                    }
-                    n.add(node.getDisplayName());
-                }
-                names = n.toArray(defnames);
-                def = idx;
-            } else {
-                names = defnames;
-                def = 0;
-            }
-        }
     }
 
     public void setValue(int value) {
@@ -109,8 +75,8 @@ public class DebuggerChooserConfiguration implements Cloneable {
 
     public void setValue(String s) {
         if (s != null) {
-            for (int i = 0; i < names.length; i++) {
-                if (s.equals(names[i])) {
+            for (int i = 0; i < storage.getNames().length; i++) {
+                if (s.equals(storage.getName(i))) {
                     setValue(i);
                     break;
                 }
@@ -139,7 +105,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
     }
 
     public int getDefault() {
-        return def;
+        return storage.getDefault();
     }
 
     public final void reset() {
@@ -148,23 +114,23 @@ public class DebuggerChooserConfiguration implements Cloneable {
     }
 
     public String getName() {
-        if (getValue() < names.length) {
-            return names[getValue()];
+        if (getValue() < storage.getNames().length) {
+            return storage.getName(getValue());
         } else {
             return "???"; // FIXUP // NOI18N
         }
     }
 
-    public CustomizerNode getNode() {
-        if (getValue() < nodes.size()) {
-            return nodes.get(getValue());
+    public ProjectActionHandlerFactory getNode() {
+        if (getValue() < storage.getNodesSize()) {
+            return storage.getNode(getValue());
         } else {
             return null;
         }
     }
 
     public String[] getNames() {
-        return names;
+        return storage.getNames();
     }
 
     // Clone and Assign

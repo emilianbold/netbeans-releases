@@ -85,7 +85,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
-import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.runprofiles.RerunArguments;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
@@ -230,9 +229,9 @@ public class ProjectActionSupport {
     public boolean canHandle(MakeConfiguration conf, Lookup context, ProjectActionEvent.Type type) {
         if (conf != null) {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
-            CustomizerNode node = chooser.getNode();
-            if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type, context, conf)) {
+            ProjectActionHandlerFactory node = chooser.getNode();
+            if (node != null) {
+                if (node.canHandle(type, context, conf)) {
                     return true;
                 }
             }
