@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.openide.util.NbBundle;
 
 public class CCCompilerConfiguration extends CCCCompilerConfiguration implements Cloneable {
@@ -178,7 +178,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         StringBuilder options = new StringBuilder("$(COMPILE.cc) "); // NOI18N
         options.append(getAllOptions2(compiler)).append(' '); // NOI18N
         options.append(getCommandLineOptions(true));
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
 
     public String getCCFlagsBasic(AbstractCompiler compiler) {
@@ -192,13 +192,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
     
     public String getCCFlags(AbstractCompiler compiler) {
         String options = getCCFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
     
     @Override
@@ -214,7 +214,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             options.append(master.getCommandLineConfiguration().getValue()).append(" "); // NOI18N
         }
         options.append(getAllOptions2(compiler)).append(" "); // NOI18N
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
     
     public String getAllOptions2(AbstractCompiler compiler) {
@@ -228,7 +228,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         options += getLibrariesFlags();
         options += compiler.getCppStandardOptions(getInheritedCppStandard());
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public int getInheritedCppStandard() {

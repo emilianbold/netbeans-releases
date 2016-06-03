@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
-import org.netbeans.modules.cnd.makeproject.execution.LDErrorParser;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ResolveRfsLibraryFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;

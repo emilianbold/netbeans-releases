@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -88,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -884,7 +884,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
-                List<String> list = CppUtils.tokenizeString(currentText);
+                List<String> list = MakeProjectOptionsFormat.tokenizeString(currentText);
                 List<String> res = new ArrayList<>();
                 for (String val : list) {
                     res.add(this.getString(val));

@@ -42,17 +42,21 @@
 
 package org.netbeans.modules.cnd.makeproject.api.support;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
+import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Utility class for misc make project related functions
@@ -113,5 +117,23 @@ public class MakeProjectUtils {
             i++;
         }
         return name;
+    }
+    
+    public static void forgetDeadProjectIfNeed(FileObject projectDirFO) {
+        FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        if (nbProjFO != null && nbProjFO.isValid()) {
+            return;
+        }
+        try {
+            Project prj = ProjectManager.getDefault().findProject(projectDirFO);
+            if (prj != null) {
+                MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
+                if (h != null) {
+                    h.notifyDeleted();
+                }
+            }                        
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

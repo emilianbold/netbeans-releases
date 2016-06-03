@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.support;
+package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.util.ArrayList;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -61,89 +60,6 @@ import org.openide.filesystems.FileSystem;
 public class CppUtils {
 
     private CppUtils() {
-    }
-
-    public static String reformatWhitespaces(String string)  {
-        return reformatWhitespaces(string, ""); // NOI18N
-    }
-    
-    public static String reformatWhitespaces(String string, String prepend)  {
-        return reformatWhitespaces(string, prepend, ""); // NOI18N
-    }
-    
-    public static String reformatWhitespaces(String string, String prepend, String delimiter)  {
-        if (string == null || string.length() == 0) {
-            return string;
-        }
-        
-        final String FAKE_ENDING = "##!?!##"; // NOI18N        
-        boolean firstToken = true;
-        // We need to take case about the following strings: "str\\    " (without quotes)
-        // Should be converted to: "str\\ " (without quotes)
-        boolean endsWithSpace = string.endsWith(" ") && string.trim().endsWith("\\"); // NOI18N
-        if (endsWithSpace) {
-            string = string.trim() + ' ' + FAKE_ENDING; // NOI18N
-        }
-        ArrayList<String> tokens = tokenizeString(string);
-        StringBuilder formattedString = new StringBuilder(string.length());
-        for (String token : tokens) {
-            if (!firstToken) {
-                formattedString.append(delimiter);
-                formattedString.append(" "); // NOI18N
-            }
-            formattedString.append(prepend);
-            formattedString.append(token);
-            firstToken = false;
-        }
-       
-        return endsWithSpace? formattedString.toString().replace(FAKE_ENDING, ""): formattedString.toString(); // NOI18N
-    }
-    
-    public static ArrayList<String> tokenizeString(String string)  {
-        ArrayList<String> list = new ArrayList<>(0);
-        
-        if (string == null || string.length() == 0) {
-            return list;
-        }
-        StringBuilder token = new StringBuilder();
-        boolean inToken = false;
-        boolean inQuote = false;
-        char quoteChar = '\0';
-        for (int i = 0; i <= string.length(); i++) {
-            boolean eol = (i == string.length());
-            if (eol || inToken) {
-                if (!eol && inQuote) {
-                    token.append(string.charAt(i));
-                    if (string.charAt(i) == quoteChar) {
-                        inQuote = false;
-                    }
-                } else {
-                    if (eol || Character.isWhitespace(string.charAt(i))) {
-                        if (token.length() > 0) {
-                            list.add(token.toString());
-                            }
-                        inToken = false;
-                        token = new StringBuilder();
-                    } else {
-                        token.append(string.charAt(i));
-                        if (string.charAt(i) == '"' || string.charAt(i) == '`' || string.charAt(i) == '\'') {
-                            inQuote = true;
-                            quoteChar = string.charAt(i);
-                        }
-                    }
-                }
-            } else {
-                if (!Character.isWhitespace(string.charAt(i))) {
-                    token.append(string.charAt(i));
-                    inToken = true;
-                }
-            }
-        }
-        if (token.length() > 0) {
-            list.add(token.toString());
-        }
-        
-        return list;
     }
 
     /**

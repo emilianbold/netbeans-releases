@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Platforms;
 import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
 import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

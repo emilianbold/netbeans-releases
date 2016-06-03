@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 
 public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements Cloneable {
 
@@ -82,7 +82,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         StringBuilder options = new StringBuilder("$(COMPILE.f) "); // NOI18N
         options.append(getAllOptions2(compiler)).append(' '); // NOI18N
         options.append(getCommandLineOptions(true));
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
 
     public String getFFlagsBasic(AbstractCompiler compiler) {
@@ -93,13 +93,13 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public String getFFlags(AbstractCompiler compiler) {
         String options = getFFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
         }
         options += getAllOptions2(compiler) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public String getAllOptions2(AbstractCompiler compiler) {
@@ -124,7 +124,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
             options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         }
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
 }

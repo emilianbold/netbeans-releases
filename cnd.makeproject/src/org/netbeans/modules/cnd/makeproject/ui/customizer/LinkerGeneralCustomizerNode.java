@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfigurati
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.OptionsNodeProp;
@@ -240,7 +240,7 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
         public String getAllOptions(Tool tool) {
             String options = ""; // NOI18N
             options += lc.getAdditionalDependencies().getPreDefined();
-            return CppUtils.reformatWhitespaces(options);
+            return MakeProjectOptionsFormat.reformatWhitespaces(options);
         }
     }
 

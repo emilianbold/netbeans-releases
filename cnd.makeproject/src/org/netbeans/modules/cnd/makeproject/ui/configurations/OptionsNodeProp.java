@@ -49,8 +49,8 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -92,7 +92,7 @@ public class OptionsNodeProp extends PropertySupport<String> {
 
     @Override
     public void setValue(String v) {
-        String s = CppUtils.reformatWhitespaces(v);
+        String s = MakeProjectOptionsFormat.reformatWhitespaces(v);
         commandLineConfiguration.setValue(s);
     }
 
@@ -146,7 +146,7 @@ public class OptionsNodeProp extends PropertySupport<String> {
         @Override
         public String getAsText() {
             String s = (String) super.getValue();
-            return CppUtils.reformatWhitespaces(s, "", delimiter); // NOI18N
+            return MakeProjectOptionsFormat.reformatWhitespaces(s, "", delimiter); // NOI18N
         }
 
         @Override

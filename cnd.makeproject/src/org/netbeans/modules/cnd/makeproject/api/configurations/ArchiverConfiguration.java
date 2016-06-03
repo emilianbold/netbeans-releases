@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Locale;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
@@ -202,7 +202,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
         String options = getAllOptions(false) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         options += getOutputValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
             options.append(getOutputValue());  // NOI18N
             options.append(" ");  // NOI18N
         }
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
 
     public String getOutputValue() {

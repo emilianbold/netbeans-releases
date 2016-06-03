@@ -41,10 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.platform;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisIntel;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisSparc;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformWindows;
 
 public final class Platforms {
     private static final ArrayList<Platform> platforms = new ArrayList<>();

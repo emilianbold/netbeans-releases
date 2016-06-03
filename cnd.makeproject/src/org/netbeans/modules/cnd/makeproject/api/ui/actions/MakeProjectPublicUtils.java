@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api.support;
+package org.netbeans.modules.cnd.makeproject.api.ui.actions;
 
 import org.netbeans.modules.cnd.makeproject.ui.actions.RunDialogAction;
 import org.openide.filesystems.FileObject;

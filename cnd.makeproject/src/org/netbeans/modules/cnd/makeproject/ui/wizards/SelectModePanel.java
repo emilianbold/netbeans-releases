@@ -62,9 +62,8 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFileProvider;
@@ -549,11 +548,8 @@ public class SelectModePanel extends javax.swing.JPanel {
                 try {
                     Project prj = ProjectManager.getDefault().findProject(projectDirFO);
                     if (prj != null) {
-                        MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
-                        if (h != null) {
-                            h.notifyDeleted();
-                            prj = ProjectManager.getDefault().findProject(projectDirFO);
-                        }
+                        MakeProjectUtils.forgetDeadProjectIfNeed(projectDirFO);
+                        prj = ProjectManager.getDefault().findProject(projectDirFO);
                     }                        
                     if (prj != null) {
                         messageKind = alreadyNbPoject;

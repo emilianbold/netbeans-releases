@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 
 public class AssemblerConfiguration extends BasicCompilerConfiguration implements Cloneable {
     // Constructors
@@ -80,7 +80,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         StringBuilder options = new StringBuilder("$(AS) $(ASFLAGS) "); // NOI18N
         options.append(getAllOptions2(compiler)).append(' '); // NOI18N
         options.append(getCommandLineOptions(true));
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
 
     public String getAsFlagsBasic(AbstractCompiler compiler) {
@@ -90,13 +90,13 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public String getAsFlags(AbstractCompiler compiler) {
         String options = getAsFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     @Override
@@ -112,13 +112,13 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
             options.append(master.getCommandLineConfiguration().getValue()).append(' ');
         }
         options.append(getAllOptions2(compiler)).append(' ');
-        return CppUtils.reformatWhitespaces(options.toString());
+        return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }
 
     public String getAllOptions2(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 }
