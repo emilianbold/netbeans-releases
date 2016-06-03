@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.wizards;
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -72,14 +72,12 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.support.SmartOutputStream;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.ui.wizard.PostProjectCreationProcessor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.UIGesturesSupport;
@@ -91,7 +89,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -114,7 +111,7 @@ public class MakeSampleProjectGenerator {
     private MakeSampleProjectGenerator() {
     }
 
-    public static Set<DataObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+    public static Set<FileObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String mainProject = (String) template.getAttribute("mainProjectLocation"); // NOI18N
         if (mainProject != null && mainProject.length() > 0) {
             prjParams.setMainProject(mainProject);
@@ -436,7 +433,7 @@ public class MakeSampleProjectGenerator {
         }
     }
 
-    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+    public static Set<FileObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
         FOPath fopath = new FOPath(projectFolderPath);
         FileObject prjLoc;
@@ -451,22 +448,22 @@ public class MakeSampleProjectGenerator {
 
         prjLoc.refresh(false);
 
-        return Collections.singleton(DataObject.find(prjLoc));
+        return Collections.singleton(prjLoc);
     }
 
-    private static void addToSet(List<DataObject> set, FileObject projectFile, ProjectGenerator.ProjectParameters prjParams, String projectName) throws IOException {
+    private static void addToSet(List<FileObject> set, FileObject projectFile, ProjectGenerator.ProjectParameters prjParams, String projectName) throws IOException {
         try {
             postProcessProject(projectFile, projectName, prjParams);
             projectFile.refresh(false);
-            set.add(DataObject.find(projectFile));
+            set.add(projectFile);
         } catch (Exception e) {
             IOException ex = new IOException(e);
             throw ex;
         }
     }
 
-    private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, FileObject parentFolderLocation, FileObject mainProjectLocation, FileObject[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
-        List<DataObject> set = new ArrayList<>();
+    private static Set<FileObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, FileObject parentFolderLocation, FileObject mainProjectLocation, FileObject[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+        List<FileObject> set = new ArrayList<>();
         unzip(templateResourceStream, parentFolderLocation);
         addToSet(set, mainProjectLocation, prjParams, prjParams.getProjectName());
         if (subProjectLocations != null) {

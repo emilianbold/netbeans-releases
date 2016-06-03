@@ -118,7 +118,10 @@ public final class MakeProjectOptions {
         MakeOptions.getInstance().setPathMode(pathMode);
     }
 
-    
+    public static void setShowConfigurationWarning(boolean val) {
+        MakeOptions.getInstance().setShowConfigurationWarning(val);
+    }
+
     public static void addPropertyChangeListener(PropertyChangeListener l) {
         MakeOptions.getInstance().addPropertyChangeListener(l);
     }

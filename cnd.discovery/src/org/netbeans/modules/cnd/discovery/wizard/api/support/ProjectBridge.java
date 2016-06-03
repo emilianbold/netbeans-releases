@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -142,7 +142,7 @@ public class ProjectBridge {
         String prjName = "DiscoveryProject"; // NOI18N
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, CndFileUtils.createLocalFile(baseFolder, prjName));// NOI18N
         prjParams.setOpenFlag(true).setConfiguration(extConf);
-        project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
+        project = ProjectGenerator.getDefault().createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();

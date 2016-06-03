@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,45 +36,41 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui;
 
-package org.netbeans.modules.cnd.makeproject.api;
-
-import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersRegistry;
-import org.openide.filesystems.FileObject;
+import java.io.IOException;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  *
- * @author Nikolay Koldunov
- * 
+ * @author alsimon
  */
-public abstract class LaunchersRegistryAccessor {
-    private static volatile LaunchersRegistryAccessor DEFAULT;
+@org.openide.util.lookup.ServiceProvider(service=DefaultMakeProjectLocationProvider.class)
+public class DefaultMakeProjectLocationProviderImpl extends DefaultMakeProjectLocationProvider {
 
-    public static void setDefault(LaunchersRegistryAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
+    @Override
+    public String getDefaultProjectFolder() {
+        return ProjectChooser.getProjectsFolder().getPath();
     }
 
-    public static synchronized LaunchersRegistryAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
+    @Override
+    public String getDefaultProjectFolder(ExecutionEnvironment env) {
         try {
-            Class.forName(LaunchersRegistry.class.getName(), true,
-                    LaunchersRegistry.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
+            if (env.isLocal()) {
+                return getDefaultProjectFolder();
+            } else {
+                return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+        } catch (ConnectionManager.CancellationException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         }
-
-        return DEFAULT;
+        return null;
     }
-    
-    public abstract void assertPrivateListenerNotNull(FileObject dir);
 }

@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -234,7 +234,7 @@ public class Generator implements PropertyChangeListener {
         prjParams.setHostUID(hostUID);
 
         prjParams.setTemplateParams(new HashMap<String,Object>(wiz.getProperties()));
-        Project createProject = ProjectGenerator.createProject(prjParams);
+        Project createProject = ProjectGenerator.getDefault().createProject(prjParams);
         return createProject;
     }
 

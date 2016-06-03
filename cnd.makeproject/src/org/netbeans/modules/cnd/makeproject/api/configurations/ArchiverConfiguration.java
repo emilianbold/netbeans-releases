@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Locale;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 

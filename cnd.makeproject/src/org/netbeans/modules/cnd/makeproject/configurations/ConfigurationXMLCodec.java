@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;

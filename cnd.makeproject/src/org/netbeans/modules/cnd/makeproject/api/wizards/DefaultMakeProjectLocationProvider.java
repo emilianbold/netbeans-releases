@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,45 +36,60 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
-package org.netbeans.modules.cnd.makeproject.api;
-
-import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersRegistry;
-import org.openide.filesystems.FileObject;
+import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Nikolay Koldunov
- * 
+ * @author Alexander
  */
-public abstract class LaunchersRegistryAccessor {
-    private static volatile LaunchersRegistryAccessor DEFAULT;
+public abstract class DefaultMakeProjectLocationProvider {
 
-    public static void setDefault(LaunchersRegistryAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
+    private static final DefaultMakeProjectLocationProvider EMPTY = new Empty();
 
-        DEFAULT = accessor;
+    protected DefaultMakeProjectLocationProvider() {
     }
 
-    public static synchronized LaunchersRegistryAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(LaunchersRegistry.class.getName(), true,
-                    LaunchersRegistry.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
+    public static DefaultMakeProjectLocationProvider getDefault() {
+        DefaultMakeProjectLocationProvider provider = Lookup.getDefault().lookup(DefaultMakeProjectLocationProvider.class);
+        return provider == null ? EMPTY : provider;
     }
-    
-    public abstract void assertPrivateListenerNotNull(FileObject dir);
+
+    public abstract String getDefaultProjectFolder();
+
+    public abstract String getDefaultProjectFolder(ExecutionEnvironment env);
+
+    private static final class Empty extends DefaultMakeProjectLocationProvider {
+
+        Empty() {
+        }
+
+        @Override
+        public String getDefaultProjectFolder() {
+            return System.getProperty("user.home"); //NOI18N
+        }
+
+        @Override
+        public String getDefaultProjectFolder(ExecutionEnvironment env) {
+            try {
+                if (env.isLocal()) {
+                    return getDefaultProjectFolder();
+                } else {
+                    return HostInfoUtils.getHostInfo(env).getUserDir();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+            } catch (ConnectionManager.CancellationException ex) {
+                ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+            }
+            return null;
+        }
+
+    }
 }

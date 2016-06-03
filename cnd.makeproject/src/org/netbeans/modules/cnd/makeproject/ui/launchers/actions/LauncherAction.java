@@ -4,10 +4,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.launchers.actions;
 
-import org.netbeans.modules.cnd.makeproject.api.LaunchersRegistryAccessor;
-import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
-import org.netbeans.modules.cnd.makeproject.launchers.LauncherExecutor;
-import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -16,8 +12,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.LaunchersRegistryAccessor;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.launchers.Launcher;
+import org.netbeans.modules.cnd.makeproject.api.launchers.LauncherExecutor;
+import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersRegistryFactory;
 import org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.spi.project.ActionProvider;

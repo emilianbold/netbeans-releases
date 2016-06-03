@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.ui;
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,12 +50,9 @@ import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.ui.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
-import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -64,8 +61,10 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 
-public class ProjectGenerator {
+public abstract class ProjectGenerator {
+    private static final ProjectGenerator EMPTY = new Empty();
 
     public static final class ProjectParameters {
 
@@ -368,32 +367,51 @@ public class ProjectGenerator {
 
     }
     
-    public static String getDefaultProjectFolder() {
-        return MakeProjectGeneratorImpl.getDefaultProjectFolder();
+    protected ProjectGenerator() {
     }
 
-    public static String getDefaultProjectFolder(ExecutionEnvironment env) {
-        return MakeProjectGeneratorImpl.getDefaultProjectFolder(env);
+    public String getValidProjectName(String projectFolder) {
+        return getValidProjectName(projectFolder, "Project"); // NOI18N
     }
 
-    public static String getValidProjectName(String projectFolder) {
-        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder);
+    public String getValidProjectName(String projectFolder, String name) {
+        int baseCount = 0;
+        String projectName = null;
+        while (true) {
+            if (baseCount == 0) {
+                projectName = name;
+            } else {
+                projectName = name + baseCount;
+            }
+            File projectNameFile = CndFileUtils.createLocalFile(projectFolder, projectName);
+            if (!projectNameFile.exists()) {
+                break;
+            }
+            baseCount++;
+        }
+        return projectName;
     }
 
-    public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
-        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder, suggestedProjectName);
+    public abstract Project createBlankProject(ProjectParameters prjParams) throws IOException;
+    public abstract Project createProject(ProjectParameters prjParams) throws IOException;
+
+    
+    public static ProjectGenerator getDefault() {
+        ProjectGenerator provider = Lookup.getDefault().lookup(ProjectGenerator.class);
+        return provider == null ? EMPTY : provider;
     }
 
-    public static Project createBlankProject(ProjectParameters prjParams) throws IOException {
-        return MakeProjectGeneratorImpl.createBlankProject(prjParams);
-    }
+    private static final class Empty extends ProjectGenerator {
 
-    public static Project createProject(ProjectParameters prjParams) throws IOException {
-        MakeProject createdProject = MakeProjectGeneratorImpl.createProject(prjParams);
-        ConfigurationDescriptorProvider.recordCreatedProjectMetrics(prjParams.getConfigurations());
-        return createdProject;
-    }
+        @Override
+        public Project createBlankProject(ProjectParameters prjParams) throws IOException {
+            throw new IOException("Not supported yet."); //NOI18N
+        }
 
-    private ProjectGenerator() {
+        @Override
+        public Project createProject(ProjectParameters prjParams) throws IOException {
+            throw new IOException("Not supported yet."); //NOI18N
+        }
+        
     }
 }

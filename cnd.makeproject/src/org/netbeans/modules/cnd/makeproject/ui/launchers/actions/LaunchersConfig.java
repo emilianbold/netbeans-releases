@@ -53,8 +53,8 @@ import java.util.Objects;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
-import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
+import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersProjectMetadataFactory;
+import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 

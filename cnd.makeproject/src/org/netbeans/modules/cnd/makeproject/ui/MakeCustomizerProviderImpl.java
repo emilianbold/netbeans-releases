@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDescriptor;
@@ -280,7 +279,7 @@ public class MakeCustomizerProviderImpl implements MakeCustomizerProvider {
                     @Override
                     public void run() {
                         int previousVersion = projectDescriptor.getVersion();
-                        int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
+                        int currentVersion = ConfigurationDescriptor.CURRENT_VERSION;
                         if (previousVersion < currentVersion) {
                             // Check
                             boolean issueRequiredProjectBuildWarning = false;

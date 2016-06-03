@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.makeproject.launchers;
+package org.netbeans.modules.cnd.makeproject.api.launchers;
 
 import java.util.Arrays;
 import java.util.Map;

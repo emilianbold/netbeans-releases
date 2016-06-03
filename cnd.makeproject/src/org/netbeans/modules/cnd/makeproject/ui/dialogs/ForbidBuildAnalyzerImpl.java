@@ -43,7 +43,6 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.execution.LDErrorParser;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ForbidBuildAnalyzerFactory;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
@@ -59,11 +58,11 @@ public class ForbidBuildAnalyzerImpl {
     public static final class ForbidBuildAnalyzerFactoryImpl implements ForbidBuildAnalyzerFactory {
         @Override
         public void show(final Project project) {
-            JButton forbid = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Forbid.text")); // NOI18N
-            JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Close.text")); // NOI18N
+            JButton forbid = new JButton(NbBundle.getMessage(ForbidBuildAnalyzerImpl.class, "ResolveBuildLibrary.Forbid.text")); // NOI18N
+            JButton close = new JButton(NbBundle.getMessage(ForbidBuildAnalyzerImpl.class, "ResolveBuildLibrary.Close.text")); // NOI18N
             NotifyDescriptor d = new NotifyDescriptor(
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Explanation.text"), // NOI18N
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Title.text"), // NOI18N
+                    NbBundle.getMessage(ForbidBuildAnalyzerImpl.class, "ResolveBuildLibrary.Explanation.text"), // NOI18N
+                    NbBundle.getMessage(ForbidBuildAnalyzerImpl.class, "ResolveBuildLibrary.Title.text"), // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new JButton[] {forbid, close},

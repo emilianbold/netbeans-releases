@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -76,6 +75,7 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 
 /**
@@ -171,7 +171,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
         if (checkVersion) {
             if (gotMakeConfigurationDescriptor()) {
                 int version = getMakeConfigurationDescriptor().getVersion();
-                return version > CommonConfigurationXMLCodec.CURRENT_VERSION;
+                return version > ConfigurationDescriptor.CURRENT_VERSION;
             }
         }
         return false;

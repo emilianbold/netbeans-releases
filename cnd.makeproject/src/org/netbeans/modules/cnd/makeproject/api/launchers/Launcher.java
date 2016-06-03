@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.launchers;
+package org.netbeans.modules.cnd.makeproject.api.launchers;
 
 import java.util.HashMap;
 import java.util.Map;

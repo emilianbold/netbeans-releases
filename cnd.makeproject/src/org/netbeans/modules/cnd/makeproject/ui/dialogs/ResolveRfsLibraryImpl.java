@@ -59,11 +59,11 @@ public class ResolveRfsLibraryImpl {
 
         @Override
         public void show(final ExecutionEnvironment execEnv) {
-            JButton change = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Forbid.text")); // NOI18N
-            JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Close.text")); // NOI18N
+            JButton change = new JButton(NbBundle.getMessage(ResolveRfsLibraryImpl.class, "ResolveRfsLibrary.Forbid.text")); // NOI18N
+            JButton close = new JButton(NbBundle.getMessage(ResolveRfsLibraryImpl.class, "ResolveRfsLibrary.Close.text")); // NOI18N
             NotifyDescriptor d = new NotifyDescriptor(
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Explanation.text"), // NOI18N
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Title.text"), // NOI18N
+                    NbBundle.getMessage(ResolveRfsLibraryImpl.class, "ResolveRfsLibrary.Explanation.text"), // NOI18N
+                    NbBundle.getMessage(ResolveRfsLibraryImpl.class, "ResolveRfsLibrary.Title.text"), // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new JButton[]{change, close},

@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -336,8 +337,8 @@ public class CreateDependencies implements PropertyChangeListener {
     
     private Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
         Project project;
-        String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
-        String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(executablePath));
+        String projectParentFolder = DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder();
+        String projectName = ProjectGenerator.getDefault().getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(executablePath));
         String baseDir = projectParentFolder + CndFileUtils.getFileSeparatorChar(sourceFileSystem) + projectName;
         MakeConfiguration conf =  MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir, "Default"); // NOI18N
         // Working dir
@@ -354,7 +355,7 @@ public class CreateDependencies implements PropertyChangeListener {
         FSPath projectFolder = new FSPath(sourceFileSystem, projectParentFolder+CndFileUtils.getFileSeparatorChar(sourceFileSystem)+projectName);
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false).setConfiguration(conf).setImportantFiles(Collections.<String>singletonList(exe).iterator());
-        project = ProjectGenerator.createBlankProject(prjParams);
+        project = ProjectGenerator.getDefault().createBlankProject(prjParams);
         return project;
     }
 }

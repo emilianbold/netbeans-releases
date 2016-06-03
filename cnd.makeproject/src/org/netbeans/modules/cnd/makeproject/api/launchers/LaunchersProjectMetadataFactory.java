@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.makeproject.launchers;
+package org.netbeans.modules.cnd.makeproject.api.launchers;
 
 import java.io.IOException;
 import java.io.InputStream;

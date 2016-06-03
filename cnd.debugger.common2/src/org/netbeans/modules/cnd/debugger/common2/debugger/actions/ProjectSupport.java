@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 
@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -484,9 +485,8 @@ public final class ProjectSupport {
 		break;
 
 	    case NEW_PROJECT:
-		projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
-		projectName = ProjectGenerator.
-		    getValidProjectName(projectParentFolder, seed.projectName);
+		projectParentFolder = DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder();
+		projectName = ProjectGenerator.getDefault().getValidProjectName(projectParentFolder, seed.projectName);
 
 		if (seed.directory != null) {
 		    baseDir = seed.directory;
@@ -512,7 +512,7 @@ public final class ProjectSupport {
 		    final boolean open = true;
                     ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectParentFolder, projectName));
                     prjParams.setOpenFlag(open).setConfiguration(seed.conf);
-		    seed.project =  ProjectGenerator.createBlankProject(prjParams);
+		    seed.project =  ProjectGenerator.getDefault().createBlankProject(prjParams);
 		} catch (Exception e) {
 		    seed.project = null;
 		}

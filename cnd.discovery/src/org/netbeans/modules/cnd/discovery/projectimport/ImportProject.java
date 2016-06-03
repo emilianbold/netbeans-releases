@@ -109,7 +109,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -454,7 +454,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             prjParams.setMakefileName(""); //NOI18N
         }
-        makeProject = ProjectGenerator.createProject(prjParams);
+        makeProject = ProjectGenerator.getDefault().createProject(prjParams);
         FileObject dir = projectFolder.getFileObject();
         importResult.put(Step.Project, State.Successful);
         switchModel(false);

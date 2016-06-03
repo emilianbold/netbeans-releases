@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.actions;
 
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -512,11 +513,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectLocationField.setEnabled(true);
             projectLocationButton.setEnabled(true);
             projectFolderField.setEnabled(true);
-            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder(FileSystemProvider.getExecutionEnvironment(fileSystem)));
+            projectLocationField.setText(DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder(FileSystemProvider.getExecutionEnvironment(fileSystem)));
             if (executable != null && executable.isValid()) {
-                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
+                projectNameField.setText(ProjectGenerator.getDefault().getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
             } else {
-                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), "")); //NOI18N
+                projectNameField.setText(ProjectGenerator.getDefault().getValidProjectName(projectLocationField.getText(), "")); //NOI18N
             }
         } else {
             configurationCombobox.setEnabled(true);
@@ -1022,7 +1023,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                  .setHostUID(hostID)
                  .setImportantFiles(Collections.<String>singletonList(exe).iterator())
                  .setMakefileName(""); //NOI18N
-        Project project = ProjectGenerator.createBlankProject(prjParams);
+        Project project = ProjectGenerator.getDefault().createBlankProject(prjParams);
         lastSelectedProject = project;
         IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {

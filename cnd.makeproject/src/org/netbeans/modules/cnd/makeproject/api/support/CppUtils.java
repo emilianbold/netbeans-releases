@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.configurations;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
 import java.util.ArrayList;
 import org.netbeans.api.annotations.common.CheckReturnValue;
@@ -211,14 +211,14 @@ public class CppUtils {
         return ExecutionEnvironmentFactory.toUniqueID(env);
     }
 
-    /*package*/ static ExecutionEnvironment convertAfterReading(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
+    public static ExecutionEnvironment convertAfterReading(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
         if (env.isLocal()) {
             return makeConfiguration.getFileSystemHost();
         }
         return env;
     }    
     
-    /*package*/ static ExecutionEnvironment convertBeforeWriting(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
+    public static ExecutionEnvironment convertBeforeWriting(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
         if (env.isRemote() && env.equals(makeConfiguration.getFileSystemHost())) {
             return ExecutionEnvironmentFactory.getLocal();
         }

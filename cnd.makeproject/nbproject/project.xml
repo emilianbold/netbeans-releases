@@ -496,6 +496,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
+                <package>org.netbeans.modules.cnd.makeproject.api.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.support</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
@@ -503,7 +504,6 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui.wizard</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
-                <package>org.netbeans.modules.cnd.makeproject.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.uiapi</package>

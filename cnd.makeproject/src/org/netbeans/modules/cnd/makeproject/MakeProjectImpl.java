@@ -101,7 +101,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
-import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
+import org.netbeans.modules.cnd.makeproject.api.launchers.LaunchersProjectMetadataFactory;
 import org.netbeans.modules.cnd.makeproject.options.FullFileIndexer;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;

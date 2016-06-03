@@ -63,8 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ui.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.ui.MakeProjectGeneratorImpl;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -486,7 +485,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<>(wiz.getProperties()));
             
-            MakeProjectGeneratorImpl.createProject(prjParams);
+            Lookup.getDefault().lookup(ProjectGenerator.class).createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = dirF.getFileObject();
             resultSet.add(dir);

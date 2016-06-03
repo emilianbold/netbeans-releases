@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -65,7 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -75,15 +74,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
@@ -96,55 +91,16 @@ import org.w3c.dom.Element;
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
  */
-public class MakeProjectGeneratorImpl {
+@org.openide.util.lookup.ServiceProvider(service=ProjectGenerator.class)
+public class MakeProjectGeneratorImpl extends ProjectGenerator {
 
     private static final String PROP_DBCONN = "dbconn"; // NOI18N
 
-    private MakeProjectGeneratorImpl() {
+    public MakeProjectGeneratorImpl() {
     }
 
-    public static String getDefaultProjectFolder() {
-        return ProjectChooser.getProjectsFolder().getPath();
-    }
-
-    public static String getDefaultProjectFolder(ExecutionEnvironment env) {
-        try {
-            if (env.isLocal()) {
-                return getDefaultProjectFolder();
-            } else {
-                return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
-        } catch (CancellationException ex) {
-            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
-        }
-        return null;
-    }
-
-    public static String getValidProjectName(String projectFolder) {
-        return getValidProjectName(projectFolder, "Project"); // NOI18N
-    }
-
-    public static String getValidProjectName(String projectFolder, String name) {
-        int baseCount = 0;
-        String projectName = null;
-        while (true) {
-            if (baseCount == 0) {
-                projectName = name;
-            } else {
-                projectName = name + baseCount;
-            }
-            File projectNameFile = CndFileUtils.createLocalFile(projectFolder, projectName);
-            if (!projectNameFile.exists()) {
-                break;
-            }
-            baseCount++;
-        }
-        return projectName;
-    }
-
-    public static MakeProject createBlankProject(ProjectParameters prjParams) throws IOException {
+    @Override
+    public MakeProject createBlankProject(ProjectParameters prjParams) throws IOException {
         MakeConfiguration[] confs = prjParams.getConfigurations();
         String projectFolderPath = prjParams.getProjectFolderPath();
 
@@ -177,7 +133,8 @@ public class MakeProjectGeneratorImpl {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
+    @Override
+    public MakeProject createProject(ProjectParameters prjParams) throws IOException {
         FileObject dirFO = createProjectDir(prjParams);
         createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
@@ -190,7 +147,7 @@ public class MakeProjectGeneratorImpl {
         return p;
     }
 
-    private static MakeProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
+    private MakeProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
@@ -267,7 +224,7 @@ public class MakeProjectGeneratorImpl {
         return h;
     }
 
-    private static void copyURLFile(String fromURL, OutputStream os) throws IOException {
+    private void copyURLFile(String fromURL, OutputStream os) throws IOException {
         InputStream is = null;
         try {
             URL url = new URL(fromURL);
@@ -290,7 +247,7 @@ public class MakeProjectGeneratorImpl {
      * @param os The Output Stream
      * @throws java.io.IOException
      */
-    private static void copy(InputStream is, OutputStream os) throws IOException {
+    private void copy(InputStream is, OutputStream os) throws IOException {
         BufferedReader br = null;
         BufferedWriter bw = null;
         try {
@@ -312,7 +269,7 @@ public class MakeProjectGeneratorImpl {
         }
     }
 
-    private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
+    private FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
         MakeSampleProjectGenerator.FOPath fopath = new MakeSampleProjectGenerator.FOPath(projectFolderPath);
         FileObject dirFO;
@@ -337,7 +294,7 @@ public class MakeProjectGeneratorImpl {
         return dirFO;
     }
 
-    private static CreateMainParams prepareMainIfNeeded(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
+    private CreateMainParams prepareMainIfNeeded(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
         if (mainFile.length() == 0) {
             return new CreateMainParams(null, null, null);
         }

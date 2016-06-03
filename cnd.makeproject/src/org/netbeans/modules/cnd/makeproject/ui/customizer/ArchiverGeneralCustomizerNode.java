@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.CppUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.StringNodeProp;

@@ -49,7 +49,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 
 import java.awt.Color;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 
 /**
  *
@@ -119,7 +119,7 @@ public class ConfigurationWarningPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void doNotShowAginCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doNotShowAginCheckBoxActionPerformed
-        MakeOptions.getInstance().setShowConfigurationWarning(!doNotShowAginCheckBox.isSelected());
+        MakeProjectOptions.setShowConfigurationWarning(!doNotShowAginCheckBox.isSelected());
     }//GEN-LAST:event_doNotShowAginCheckBoxActionPerformed
 
 

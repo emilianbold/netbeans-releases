@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ui.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -200,9 +201,9 @@ public class ImportExecutable implements PropertyChangeListener {
                 projectName = CndPathUtilities.getBaseName(baseDir);
             }
         } else {
-            String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
+            String projectParentFolder = DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder();
             if (projectName == null) {
-                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
+                projectName = ProjectGenerator.getDefault().getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
             }
             ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
             sourceFileSystem = FileSystemProvider.getFileSystem(ee);
@@ -278,7 +279,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
         prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
-            lastSelectedProject = ProjectGenerator.createProject(prjParams);
+            lastSelectedProject = ProjectGenerator.getDefault().createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
             DiscoveryDescriptor.BUILD_RESULT.toMap(map, binaryPath);
             if (fullRemotefileSystem != null) {
