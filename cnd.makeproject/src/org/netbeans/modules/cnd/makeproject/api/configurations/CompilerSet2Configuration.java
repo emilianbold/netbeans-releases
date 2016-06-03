@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.makeproject.ui.configurations.CompilerSetNodeProp;
+import org.netbeans.modules.cnd.makeproject.uiapi.NodePesentation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
@@ -61,9 +61,10 @@ import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration implements PropertyChangeListener, Cloneable {
     public static final String DEFAULT_CS = "default"; // NOI18N
+    public static final String DEFAULT_CS_NAME = NbBundle.getMessage(CompilerSet2Configuration.class, "default_cs"); //NOI18N
     private DevelopmentHostConfiguration dhconf;
     private StringConfiguration compilerSetName;
-    private CompilerSetNodeProp compilerSetNodeProp;
+    private NodePesentation compilerSetNodeProp;
     private String flavor;
     private boolean dirty = false;
     private final Map<String, String> oldNameMap = new HashMap<>();
@@ -119,7 +120,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
         this.compilerSetName = compilerSetName;
     }
 
-    public void setCompilerSetNodeProp(CompilerSetNodeProp compilerSetNodeProp) {
+    public void setCompilerSetNodeProp(NodePesentation compilerSetNodeProp) {
         this.compilerSetNodeProp = compilerSetNodeProp;
     }
 
@@ -150,7 +151,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
     }
 
     private void setValue(String name, String flavor) {
-        if (name == null || name.startsWith(CompilerSetNodeProp.DEFAULT_CS+" (")) { // NOI18N
+        if (name == null || name.startsWith(DEFAULT_CS_NAME+" (")) { // NOI18N
             name = DEFAULT_CS;
         }
         getCompilerSetName().setValue(name);
@@ -192,7 +193,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
 
         if (compilerSet != null) {
             if (isDefault) {
-                displayName = CompilerSetNodeProp.DEFAULT_CS+" ("+compilerSet.getName()+")"; //NOI18N
+                displayName = DEFAULT_CS_NAME+" ("+compilerSet.getName()+")"; //NOI18N
             } else {
                 displayName = compilerSet.getName();
             }
@@ -317,7 +318,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
                         // Not sure why we do this in an RP, but don't want to remove it this late in the release
                         setValue(focs.getName());
                         if (compilerSetNodeProp != null) {
-                            compilerSetNodeProp.repaint();
+                            compilerSetNodeProp.update();
                         }
                     }
                 }

@@ -60,12 +60,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.uiapi.NodePesentation;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class CompilerSetNodeProp extends Node.Property<String> {
+public class CompilerSetNodeProp extends Node.Property<String> implements NodePesentation {
 
     private final CompilerSet2Configuration configuration;
     private final DevelopmentHostConfiguration hostConfiguration;
@@ -75,7 +76,6 @@ public class CompilerSetNodeProp extends Node.Property<String> {
     private final String txt2;
     private final String txt3;
     private final String oldname;
-    public static final String DEFAULT_CS = NbBundle.getMessage(CompilerSetNodeProp.class, "default_cs"); //NOI18N
 
     public CompilerSetNodeProp(CompilerSet2Configuration configuration, DevelopmentHostConfiguration hostConf, boolean canWrite, String txt1, String txt2, String txt3) {
         super(String.class);
@@ -160,7 +160,8 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return true;
     }
 
-    public void repaint() {
+    @Override
+    public void update() {
         ((CompilerSetEditor) getPropertyEditor()).repaint();
     }
 
@@ -203,7 +204,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
                     list.add(cs.getName());
                 }
                 if (defaultCompilerSet != null) {
-                    list.add(0, DEFAULT_CS+" ("+defaultCompilerSet.getName()+")"); //NOI18N
+                    list.add(0, CompilerSet2Configuration.DEFAULT_CS_NAME+" ("+defaultCompilerSet.getName()+")"); //NOI18N
                 }
             }
             return list.toArray(new String[list.size()]);
