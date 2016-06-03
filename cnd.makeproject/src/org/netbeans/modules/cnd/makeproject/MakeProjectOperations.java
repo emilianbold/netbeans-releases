@@ -163,7 +163,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         storedOriginalPath = project.getProjectDirectory().getPath();
         //project.save();
         // Also move private
-        MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
+        MakeSharabilityQueryImpl makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQueryImpl.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
 
@@ -191,7 +191,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         MakeProjectImpl.InfoInterface info = (MakeProjectImpl.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
         info.setName(nueName);
 
-        MakeSharabilityQuery makeSharabilityQuery = original.getLookup().lookup(MakeSharabilityQuery.class);
+        MakeSharabilityQueryImpl makeSharabilityQuery = original.getLookup().lookup(MakeSharabilityQueryImpl.class);
         makeSharabilityQuery.setPrivateShared(false);
     }
 
@@ -201,7 +201,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         storedOriginalPath = project.getProjectDirectory().getPath();
         ((MakeProjectImpl)project).setDeleted();
         // Also move private
-        MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
+        MakeSharabilityQueryImpl makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQueryImpl.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
 

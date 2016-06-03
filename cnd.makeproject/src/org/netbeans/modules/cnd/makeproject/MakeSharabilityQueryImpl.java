@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.makeproject.api.MakeSharabilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -56,14 +57,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 
 /**
  * SharabilityQueryImplementation for make project with multiple sources
  */
-public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
+public class MakeSharabilityQueryImpl implements MakeSharabilityQuery {
 
     private final FileObject baseDirFile;
     private final String baseDir;
@@ -74,7 +74,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
     private boolean inited = false;
     private Set<String> skippedFiles = new HashSet<>();
 
-    MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, FileObject baseDirFile) {
+    MakeSharabilityQueryImpl(ConfigurationDescriptorProvider projectDescriptorProvider, FileObject baseDirFile) {
         this.projectDescriptorProvider = projectDescriptorProvider;
         this.baseDirFile = baseDirFile;
         this.baseDir = baseDirFile.getPath();
@@ -105,7 +105,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
 
             @Override
             public Sharability run() {
-                synchronized (MakeSharabilityQuery.this) {
+                synchronized (MakeSharabilityQueryImpl.this) {
                     if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(uri.getPath()))  {
                         return Sharability.NOT_SHARABLE;
                     }
@@ -161,6 +161,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
         return privateShared;
     }
 
+    @Override
     public void update() {
         inited = false;
         init();

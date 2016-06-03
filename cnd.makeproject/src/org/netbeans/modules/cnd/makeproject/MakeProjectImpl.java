@@ -272,7 +272,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         }
         ic.add(new MakeArtifactProviderImpl(this));
         ic.add(UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)));
-        ic.add(new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()));
+        ic.add(new MakeSharabilityQueryImpl(projectDescriptorProvider, getProjectDirectory()));
         ic.add(sources);
         ic.add(helper);
         ic.add(projectDescriptorProvider);
