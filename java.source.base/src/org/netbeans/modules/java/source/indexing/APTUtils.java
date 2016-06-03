@@ -514,7 +514,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 }
             }
             final Predicate<File> pUsed = (f) -> used == null || used.containsKey(f);
-            final Predicate<Pair<File,Long>> pModified = (p) -> used == null || used.get(p.first()) != p.second();
+            final Predicate<Pair<File,Long>> pModified = (p) -> used == null || p.second() == -1 || used.get(p.first()) != p.second();
             final Predicate<File> pNotProjDep = (f) -> {
                 final URL furl = FileUtil.urlForArchiveOrDir(f);
                 return furl == null ?
@@ -540,7 +540,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             }
             final Collection<Pair<File,Long>> times = added.stream()
                     .filter(pUsed)
-                    .map((f) -> Pair.of(f, f.length()))
+                    .map((f) -> Pair.of(f, f.isFile() ? f.length() : -1))
                     .filter(pModified)
                     .collect(Collectors.toList());
             if (!times.isEmpty()) {
