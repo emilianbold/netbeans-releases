@@ -67,7 +67,7 @@ public class DebuggerChooserConfiguration implements Cloneable {
         reset();
     }
 
-    public DebuggerChooserConfiguration(DebuggerChooserConfiguration conf) {
+    private DebuggerChooserConfiguration(DebuggerChooserConfiguration conf) {
         value = conf.value;
         setModified(false);
     }

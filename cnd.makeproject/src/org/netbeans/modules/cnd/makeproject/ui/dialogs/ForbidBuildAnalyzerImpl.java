@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject.ui.dialogs;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ui.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.execution.LDErrorParser;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ForbidBuildAnalyzerFactory;
 import org.netbeans.spi.project.ui.CustomizerProvider;

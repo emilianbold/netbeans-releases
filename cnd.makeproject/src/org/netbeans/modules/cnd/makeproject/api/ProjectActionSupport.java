@@ -89,7 +89,6 @@ import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.runprofiles.RerunArguments;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
-import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.SelectExecutableFactory;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;

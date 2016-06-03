@@ -49,7 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ui.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 

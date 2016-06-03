@@ -60,7 +60,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSharabilityQuery;
-import org.netbeans.modules.cnd.makeproject.api.ui.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
