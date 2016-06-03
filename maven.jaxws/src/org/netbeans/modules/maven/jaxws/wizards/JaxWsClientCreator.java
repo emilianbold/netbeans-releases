@@ -152,7 +152,7 @@ public class JaxWsClientCreator implements ClientCreator {
                         MavenModelUtils.addWsimportExecution(plugin, clientName, 
                                 relativePath,wsdlLocation, packageName);
                         if (WSUtils.isWeb(project)) { // expecting web project
-                            MavenModelUtils.addWarPlugin(model);
+                            MavenModelUtils.addWarPlugin(model, true);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
                         }
