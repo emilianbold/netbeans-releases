@@ -501,6 +501,7 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
+                <package>org.netbeans.modules.cnd.makeproject.api.ui.wizard</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
