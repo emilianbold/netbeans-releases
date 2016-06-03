@@ -52,6 +52,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -354,35 +355,41 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return result;
     }
 
-    private Iterable<? extends String> getProcessorNames(ClassLoader cl) {
-        Collection<String> result = new LinkedList<String>();
+    @NonNull
+    private Iterable<? extends String> getProcessorNames(@NonNull final ClassLoader cl) {
         try {
-            Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
-            while (resources.hasMoreElements()) {
-                BufferedReader ins = null;
-                try {
-                    ins = new BufferedReader(new InputStreamReader(resources.nextElement().openStream(), "UTF-8")); //NOI18N
-                    String line;
-                    while ((line = ins.readLine()) != null) {
-                        int hash = line.indexOf('#');
-                        line = hash != (-1) ? line.substring(0, hash) : line;
-                        line = line.trim();
-                        if (line.length() > 0) {
-                            result.add(line);
+            return CachingArchiveClassLoader.readAction(() -> {
+                Collection<String> result = new LinkedList<>();
+                Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
+                while (resources.hasMoreElements()) {
+                    BufferedReader ins = null;
+                    try {
+                        final URLConnection uc = resources.nextElement().openConnection();
+                        uc.setUseCaches(false);
+                        ins = new BufferedReader(new InputStreamReader(uc.getInputStream(), "UTF-8")); //NOI18N
+                        String line;
+                        while ((line = ins.readLine()) != null) {
+                            int hash = line.indexOf('#');
+                            line = hash != (-1) ? line.substring(0, hash) : line;
+                            line = line.trim();
+                            if (line.length() > 0) {
+                                result.add(line);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                    } finally {
+                        if (ins != null) {
+                            ins.close();
                         }
                     }
-                } catch (IOException ex) {
-                    LOG.log(Level.FINE, null, ex);
-                } finally {
-                    if (ins != null) {
-                        ins.close();
-                    }
                 }
-            }
-        } catch (IOException ex) {
+                return result;
+            });
+        }  catch (Exception ex) {
             LOG.log(Level.FINE, null, ex);
+            return Collections.emptySet();
         }
-        return result;
     }
 
     boolean verifyAttributes(FileObject fo, boolean checkOnly) {
