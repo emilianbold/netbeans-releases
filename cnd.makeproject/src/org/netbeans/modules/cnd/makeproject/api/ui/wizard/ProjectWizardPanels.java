@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.api.ui.wizard;
 
-package org.netbeans.modules.cnd.discovery.api;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
-import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator;
+import org.openide.WizardDescriptor;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface DiscoveryExtensionInterface extends IteratorExtension {
-    boolean canApply(Map<String,Object> map, Project project);
-    boolean canApply(Map<String,Object> map, Project project, Interrupter interrupter);
+public final class ProjectWizardPanels {
 
-    void apply(Map<String,Object> map, Project project) throws IOException;
-    void apply(Map<String,Object> map, Project project, Interrupter interrupter) throws IOException;
-
-    interface Applicable {
-        boolean isApplicable();
-
-        int getPriority();
-
-        String getCompilerName();
-
-        boolean isSunStudio();
-
-        List<String> getDependencies();
-
-        List<String> getSearchPaths();
-
-        String getSourceRoot();
-
-        Position getMainFunction();
-
-        List<String> getErrors();
+    private ProjectWizardPanels() {
+    }
+    
+    public static List<WizardDescriptor.Panel<WizardDescriptor>> getNewProjectWizardPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
+        return NewMakeProjectWizardIterator.getPanels(wizardtype, name, wizardTitle, wizardACSD, fullRemote);
     }
 
-    interface Position {
-        String getFilePath();
+    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
+            String wizardACSD, boolean fullRemote) {
+        return getMakeSampleProjectWizardPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, null);
+    }
+    
+    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
+            String wizardACSD, boolean fullRemote, String helpCtx) {
+        return MakeSampleProjectIterator.getPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, helpCtx);
+    }
+    
+    
+    public static MakeModePanel<WizardDescriptor> getSelectModePanel() {
+        return  NewMakeProjectWizardIterator.createSelectModePanel();
+    }
 
-        int getLine();
+    public static WizardDescriptor.Panel<WizardDescriptor> getSelectBinaryPanel() {
+        return  NewMakeProjectWizardIterator.getSelectBinaryPanel();
+    }
+
+    public interface MakeSamplePanel<T> extends WizardDescriptor.FinishablePanel<T> {
+        void setFinishPanel(boolean isFinishPanel);
+    }
+
+    public interface MakeModePanel<T> extends MakeSamplePanel<T> {
+    }
+
+    public interface NamedPanel {
+        String getName();
     }
 }

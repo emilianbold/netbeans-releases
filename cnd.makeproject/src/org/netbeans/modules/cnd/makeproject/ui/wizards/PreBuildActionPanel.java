@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;

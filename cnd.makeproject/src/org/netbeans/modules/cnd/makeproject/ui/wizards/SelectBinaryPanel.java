@@ -43,7 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +51,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;

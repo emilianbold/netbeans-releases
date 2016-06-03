@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,58 +40,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api.wizards;
 
-import java.util.List;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator;
+package org.netbeans.modules.cnd.makeproject.api.ui.wizard;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class ProjectWizardPanels {
+public interface IteratorExtension {
 
-    private ProjectWizardPanels() {
-    }
+    /**
+     * Method discover additional project artifacts by folder or binary file
+     * 
+     * @param map input/output map
+     */
+    void discoverArtifacts(Map<String,Object> map);
+
+    /**
+     * Method delegates a project creating to discovery.
+     * Instantiate make project in simple mode.
+     * 
+     * @param wizard
+     * @return set of make projects
+     * @throws java.io.IOException
+     */
+    Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
+
+    /**
+     * Method invoke discovery for created project.
+     * 
+     * @param map input map
+     * @param project that will be configured or created
+     * @param projectKind fullness of configured project
+     */
+    void discoverProject(Map<String,Object> map, Project project, ProjectKind projectKind);
     
-    public static List<WizardDescriptor.Panel<WizardDescriptor>> getNewProjectWizardPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
-        return NewMakeProjectWizardIterator.getPanels(wizardtype, name, wizardTitle, wizardACSD, fullRemote);
-    }
+    /**
+     * Adds headers items in the project, changes exclude/include state of headers items
+     * according to code model. Returns immediately, listens until parse in done,
+     * tunes project on parse finish.
+     * 
+     * @param project 
+     */
+    void discoverHeadersByModel(Project project);
 
-    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
-            String wizardACSD, boolean fullRemote) {
-        return getMakeSampleProjectWizardPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, null);
-    }
-    
-    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
-            String wizardACSD, boolean fullRemote, String helpCtx) {
-        return MakeSampleProjectIterator.getPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, helpCtx);
-    }
-    
-    
-    public static MakeModePanel<WizardDescriptor> getSelectModePanel() {
-        return  NewMakeProjectWizardIterator.createSelectModePanel();
-    }
+    /**
+     * Method disable code model for project
+     * 
+     * @param project
+     */
+    void disableModel(Project project);
 
-    public static WizardDescriptor.Panel<WizardDescriptor> getSelectBinaryPanel() {
-        return  NewMakeProjectWizardIterator.getSelectBinaryPanel();
-    }
-
-    public interface MakeSamplePanel<T> extends WizardDescriptor.FinishablePanel<T> {
-        void setFinishPanel(boolean isFinishPanel);
-    }
-
-    public interface MakeModePanel<T> extends MakeSamplePanel<T> {
-    }
-
-    public interface NamedPanel {
-        String getName();
+    public enum ProjectKind {
+        Minimal, // include in project com
+        IncludeDependencies,
+        CreateDependencies
     }
 }

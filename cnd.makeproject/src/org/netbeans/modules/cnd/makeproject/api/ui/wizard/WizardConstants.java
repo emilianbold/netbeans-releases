@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.wizards;
+package org.netbeans.modules.cnd.makeproject.api.ui.wizard;
 
 import java.util.Iterator;
 import java.util.List;

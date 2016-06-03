@@ -69,7 +69,6 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -105,7 +104,6 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
 import org.netbeans.modules.cnd.makeproject.options.FullFileIndexer;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
-import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -150,7 +148,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ConfirmMimeExtensionsFactory;
 
 /**
  * Represents one plain Make project.
@@ -269,6 +266,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         //ic.add(new MakeProjectSearchInfo(projectDescriptorProvider));
         //ic.add(new TemplateAttributesProviderImpl(this));
         //ic.add(new MakeCustomizerProviderImpl(this));
+        //ic.add(new CndDocumentCodeStyleProviderImpl());
         for(MakeProjectLookupProvider p : Lookup.getDefault().lookupAll(MakeProjectLookupProvider.class)) {
             p.addLookup(this, ic);
         }
@@ -287,7 +285,6 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         ic.add(remoteProject);
         ic.add(new ToolchainProjectImpl(this));
         ic.add(new CacheDirectoryProviderImpl(helper.getProjectDirectory()));
-        ic.add(new CndDocumentCodeStyleProviderImpl());
         ic.add(this);
         
         Object[] lookups = ic.toArray(new Object[ic.size()]);
@@ -1917,20 +1914,5 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
             cancelled.set(true);
             return true;
         }
-    }
-    
-    private final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
-
-        @Override
-        public String getCurrentCodeStyle(String mimeType, Document doc) {
-            if (MakeProjectImpl.this.isProjectFormattingStyle()) {
-                CodeStyleWrapper style = MakeProjectImpl.this.getProjectFormattingStyle(mimeType);
-                if (style != null) {
-                    return style.getStyleId();
-                }
-            }
-            return null;
-        }
-    }
-    
+    }    
 }

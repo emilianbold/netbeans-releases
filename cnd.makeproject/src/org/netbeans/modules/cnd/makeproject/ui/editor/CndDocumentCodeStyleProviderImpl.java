@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,53 +36,46 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.editor;
 
-package org.netbeans.modules.cnd.discovery.api;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
-import org.netbeans.modules.cnd.support.Interrupter;
+import java.util.ArrayList;
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public interface DiscoveryExtensionInterface extends IteratorExtension {
-    boolean canApply(Map<String,Object> map, Project project);
-    boolean canApply(Map<String,Object> map, Project project, Interrupter interrupter);
+final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
+    
+    @ServiceProvider(service = MakeProjectLookupProvider.class)
+    public static class CndDocumentCodeStyleProviderFactory implements MakeProjectLookupProvider {
 
-    void apply(Map<String,Object> map, Project project) throws IOException;
-    void apply(Map<String,Object> map, Project project, Interrupter interrupter) throws IOException;
+        @Override
+        public void addLookup(MakeProject owner, ArrayList<Object> ic) {
+            ic.add(new CndDocumentCodeStyleProviderImpl(owner));
+        }
+    }
+    private final MakeProject project;
 
-    interface Applicable {
-        boolean isApplicable();
-
-        int getPriority();
-
-        String getCompilerName();
-
-        boolean isSunStudio();
-
-        List<String> getDependencies();
-
-        List<String> getSearchPaths();
-
-        String getSourceRoot();
-
-        Position getMainFunction();
-
-        List<String> getErrors();
+    private CndDocumentCodeStyleProviderImpl(MakeProject owner) {
+        project = owner;
     }
 
-    interface Position {
-        String getFilePath();
-
-        int getLine();
+    @Override
+    public String getCurrentCodeStyle(String mimeType, Document doc) {
+        if (project.isProjectFormattingStyle()) {
+            CodeStyleWrapper style = project.getProjectFormattingStyle(mimeType);
+            if (style != null) {
+                return style.getStyleId();
+            }
+        }
+        return null;
     }
+    
 }

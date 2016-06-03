@@ -69,10 +69,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.DatabaseProjectProviderEx;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.ProjectWizardPanels;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.ProjectWizardPanels.NamedPanel;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -288,7 +289,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
                 panelConfigureProjectTrue.setFinishPanel(false);
                 panels.add(panelConfigureProjectTrue);
-                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                DatabaseProjectProviderEx provider = Lookup.getDefault().lookup(DatabaseProjectProviderEx.class);
                 if(provider != null) {
                     provider.setupAdditionalWizardPanels(panels);
                 }

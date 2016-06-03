@@ -84,7 +84,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.ui.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;

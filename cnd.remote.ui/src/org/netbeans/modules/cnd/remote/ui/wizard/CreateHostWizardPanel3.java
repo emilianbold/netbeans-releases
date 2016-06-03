@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
