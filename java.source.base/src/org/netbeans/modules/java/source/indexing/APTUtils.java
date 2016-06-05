@@ -52,7 +52,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.ArrayList;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +63,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,7 +72,6 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -95,6 +95,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -112,6 +113,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String JRE_PROFILE = "jreProfile";        //NOI18N
+    private static final int PATH_FLAG_EXISTS = 1;
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
@@ -138,7 +140,6 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         slidingRefresh = RP.create(new Runnable() {
             @Override
             public void run() {
-//                System.out.println("REFRESH: " + root.toURL());
                 IndexingManager.getDefault().refreshIndex(
                     root.toURL(),
                     Collections.<URL>emptyList(),
@@ -290,16 +291,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-//        System.out.println("PROPERTY CHANGE FROM CLASSPATH");
-        LongHashMap<? extends File> changed = null;
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
-            changed = usedRoots.getRoots();
+            if (verifyProcessorPath(root, usedRoots)) {
+                slidingRefresh.schedule(SLIDING_WINDOW);
+            }
         }
-        if (verifyProcessorPath(root, changed)) {
-            slidingRefresh.schedule(SLIDING_WINDOW);
-        }
-//        System.out.println("END.");
     }
 
     private void listen() {
@@ -358,35 +355,41 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return result;
     }
 
-    private Iterable<? extends String> getProcessorNames(ClassLoader cl) {
-        Collection<String> result = new LinkedList<String>();
+    @NonNull
+    private Iterable<? extends String> getProcessorNames(@NonNull final ClassLoader cl) {
         try {
-            Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
-            while (resources.hasMoreElements()) {
-                BufferedReader ins = null;
-                try {
-                    ins = new BufferedReader(new InputStreamReader(resources.nextElement().openStream(), "UTF-8")); //NOI18N
-                    String line;
-                    while ((line = ins.readLine()) != null) {
-                        int hash = line.indexOf('#');
-                        line = hash != (-1) ? line.substring(0, hash) : line;
-                        line = line.trim();
-                        if (line.length() > 0) {
-                            result.add(line);
+            return CachingArchiveClassLoader.readAction(() -> {
+                Collection<String> result = new LinkedList<>();
+                Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
+                while (resources.hasMoreElements()) {
+                    BufferedReader ins = null;
+                    try {
+                        final URLConnection uc = resources.nextElement().openConnection();
+                        uc.setUseCaches(false);
+                        ins = new BufferedReader(new InputStreamReader(uc.getInputStream(), "UTF-8")); //NOI18N
+                        String line;
+                        while ((line = ins.readLine()) != null) {
+                            int hash = line.indexOf('#');
+                            line = hash != (-1) ? line.substring(0, hash) : line;
+                            line = line.trim();
+                            if (line.length() > 0) {
+                                result.add(line);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                    } finally {
+                        if (ins != null) {
+                            ins.close();
                         }
                     }
-                } catch (IOException ex) {
-                    LOG.log(Level.FINE, null, ex);
-                } finally {
-                    if (ins != null) {
-                        ins.close();
-                    }
                 }
-            }
-        } catch (IOException ex) {
+                return result;
+            });
+        }  catch (Exception ex) {
             LOG.log(Level.FINE, null, ex);
+            return Collections.emptySet();
         }
-        return result;
     }
 
     boolean verifyAttributes(FileObject fo, boolean checkOnly) {
@@ -410,14 +413,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     return vote;
                 }
             }
-            if (JavaIndex.ensureAttributeValue(url, BOOT_PATH, pathToString(bootPath, true), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, BOOT_PATH, pathToString(bootPath), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to boot path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
                     return vote;
                 }
             }
-            if (JavaIndex.ensureAttributeValue(url, COMPILE_PATH, pathToString(compilePath, true), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, COMPILE_PATH, pathToString(compilePath), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to compile path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -436,7 +439,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(pp, false), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToFlaggedString(pp, false), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -458,40 +461,102 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private boolean verifyProcessorPath(
         @NonNull final FileObject root,
-        @NullAllowed final LongHashMap<? extends File> used) {
+        @NonNull final UsedRoots usedRoots) {
         try {
+            final LongHashMap<? extends File> used = usedRoots.getRoots();
             final URL url = root.toURL();
             final ClassPath pp = validatePaths();
-            final List<File> currentFiles = pp.entries().stream()
+            final Set<File> currentExitingFiles = pp.entries().stream()
                     .map((e) -> e.getRoot())
                     .filter((fo) -> fo != null && fo.isValid())
                     .map((fo) -> FileUtil.isArchiveArtifact(fo) ? FileUtil.getArchiveFile(fo) : fo)
                     .filter((fo) -> fo != null && fo.isValid())
                     .map(FileUtil::toFile)
                     .filter((file) -> file != null)
-                    .collect(Collectors.toList());
-            final String old = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
-            final List<File> oldFiles = Arrays.stream(old.split(File.pathSeparator))
-                    .map((path) -> new File(path))
-                    .collect(Collectors.toList());
-            Stream<File> added = new HashSet<>(currentFiles).stream()
-                    .filter((f) -> !oldFiles.contains(f));
-            Stream<File> removed = new HashSet<>(oldFiles).stream()
-                    .filter((f) -> !currentFiles.contains(f));
-            if (used != null) {
-                final Predicate<File> p = (f) -> used.containsKey(f);
-                added = added.filter(p);
-                removed = removed.filter(p);
+                    .collect(Collectors.toSet());
+            final Set<File> currentAllFiles = pp.entries().stream()
+                    .map((e) -> FileUtil.archiveOrDirForURL(e.getURL()))
+                    .filter((file) -> file != null)
+                    .collect(Collectors.toSet());
+
+            final Set<File> oldExistingFiles = new HashSet<>();
+            final Set<File> oldAllFiles = new HashSet<>();
+            final String raw = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
+            if (!raw.isEmpty()) {
+                final String[] parts = raw.split(File.pathSeparator);
+                for (int i=0; i < parts.length; i+=2) {
+                    final File f = new File(parts[i]);
+                    int flags = PATH_FLAG_EXISTS;
+                    try {
+                        if (i+1 < parts.length) {
+                            flags = Integer.parseInt(parts[i+1]);
+                        }
+                    } catch (NumberFormatException nfe) {
+                        //pass with PATH_FLAG_USED set
+                    }
+                    oldAllFiles.add(f);
+                    if ((flags & PATH_FLAG_EXISTS) == PATH_FLAG_EXISTS) {
+                        oldExistingFiles.add(f);
+                    }
+                }
             }
-            final Predicate<File> p = (f) -> {
+            Set<File> added = new HashSet<>(currentExitingFiles);
+            added.removeAll(oldExistingFiles);
+            Set<File> removed = new HashSet<>(oldExistingFiles);
+            removed.removeAll(currentExitingFiles);
+            LOG.log(Level.FINEST, "Added: {0}", added);     //NOI18N
+            LOG.log(Level.FINEST, "Removed: {0}", removed); //NOI18N
+            if (!added.isEmpty() || !removed.isEmpty()) {
+                JavaIndex.setAttribute(url, PROCESSOR_PATH, pathToFlaggedString(pp, true));
+            }
+            boolean res = false;
+
+            for (Iterator<File> it = removed.iterator(); it.hasNext();) {
+                File f = it.next();
+                if (!currentAllFiles.contains(f)) {
+                    LOG.log(Level.FINEST, "Removed from path: {0}", f);  //NOI18N
+                    it.remove();
+                    usedRoots.remove(f);
+                    res = true;
+                }
+            }
+            final Predicate<File> pUsed = (f) -> used == null || used.containsKey(f);
+            final Predicate<Pair<File,Long>> pModified = (p) -> used == null || p.second() == -1 || used.get(p.first()) != p.second();
+            final Predicate<File> pNotProjDep = (f) -> {
                 final URL furl = FileUtil.urlForArchiveOrDir(f);
                 return furl == null ?
                         true :
                         !hasSourceCache(furl);
             };
-            added = added.filter(p);
-            removed = removed.filter(p);
-            final boolean res = added.findAny().isPresent() || removed.findAny().isPresent();
+            removed = removed.stream()
+                    .filter(pUsed)
+                    .filter(pNotProjDep)
+                    .collect(Collectors.toSet());
+            if (!removed.isEmpty()) {
+                LOG.log(Level.FINEST, "Important deleted: {0}", removed);    //NOI18N
+                res = true;
+            }
+
+            for (Iterator<File> it = added.iterator(); it.hasNext();) {
+                final File f = it.next();
+                if(!oldAllFiles.contains(f)) {
+                    LOG.log(Level.FINEST, "Added to path: {0}", f);  //NOI18N
+                    it.remove();
+                    res = true;
+                }
+            }
+            final Collection<Pair<File,Long>> times = added.stream()
+                    .filter(pUsed)
+                    .map((f) -> Pair.of(f, f.isFile() ? f.length() : -1))
+                    .filter(pModified)
+                    .collect(Collectors.toList());
+            if (!times.isEmpty()) {
+                LOG.log(Level.FINEST, "Important changed: {0}", added);    //NOI18N
+                for (Pair<File,Long> p : times) {
+                    usedRoots.update(p.first(), p.second());
+                }
+                res = true;
+            }
             if (res) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
             }
@@ -503,9 +568,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     @NonNull
-    private static String pathToString(
-            @NullAllowed ClassPath cp,
-            final boolean allowCaches) {
+    private static String pathToString(@NullAllowed ClassPath cp) {
         final StringBuilder b = new StringBuilder();
         if (cp == null) {
             cp = ClassPath.EMPTY;
@@ -515,10 +578,37 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             if (fo != null) {
                 final URL u = fo.toURL();
                 append(b, u);
-            } else if (allowCaches && hasSourceCache(cpe.getURL())) {
+            } else if (hasSourceCache(cpe.getURL())) {
                 final URL u = cpe.getURL();
                 append(b,u);
             }
+        }
+        return b.toString();
+    }
+
+    /**
+     * Translated classpath to String (ENTRY PATH_SEPARATOR FLAGS) (PATH_SEPARATOR ENTRY PATH_SEPARATOR FLAGS)*
+     * @param cp the classpath to translate
+     * @return the translated classpath
+     */
+    @NonNull
+    private static String pathToFlaggedString(
+            @NullAllowed ClassPath cp,
+            final boolean checkArchiveFile) {
+        final StringBuilder b = new StringBuilder();
+        if (cp == null) {
+            cp = ClassPath.EMPTY;
+        }
+        for (final ClassPath.Entry cpe : cp.entries()) {
+            //Entry.getRoot() returns root which is valid for deleted jar
+            //in ClassPath.PROP_ROOTS event
+            final boolean exists = Optional.ofNullable(cpe.getRoot())
+                    .map((fo) -> (checkArchiveFile && FileUtil.isArchiveArtifact(fo)) ? FileUtil.getArchiveFile(fo) : fo)
+                    .map((fo) -> checkArchiveFile ? fo.isValid() : true)
+                    .orElse(Boolean.FALSE);
+            append(b,cpe.getURL())
+                    .append(File.pathSeparatorChar)
+                    .append(exists ? PATH_FLAG_EXISTS : 0);
         }
         return b.toString();
     }
@@ -669,6 +759,18 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             }
         }
 
+        void remove(@NonNull final File file) {
+            synchronized (this) {
+                load();
+                if (used == null || used == TOMBSTONE) {
+                    return;
+                }
+                if (used.remove(file) != LongHashMap.NO_VALUE) {
+                    saveTask.schedule(DEFERRED_SAVE);
+                }
+            }
+        }
+
         void reset() {
             synchronized (this) {
                 used = TOMBSTONE;
@@ -691,7 +793,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                             root,
                             ATTR_USED_PROC,
                             null);
-                    if (raw != null) {
+                    if (raw != null && !raw.isEmpty()) {
                         LongHashMap<File> s = new LongHashMap<>();
                         final String[] parts = raw.split(File.pathSeparator);
                         for (int i = 0; i < parts.length; i+=2) {

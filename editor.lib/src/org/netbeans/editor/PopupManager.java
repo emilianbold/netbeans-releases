@@ -481,11 +481,15 @@ public class PopupManager {
     private final class PopupKeyListener implements KeyListener{
         
         public @Override void keyTyped(KeyEvent e) {
-            // no-op
+            if (e != null && popup != null && popup.isShowing()) {
+                consumeIfKeyPressInActionMap(e);
+            }
         }
 
         public @Override void keyReleased(KeyEvent e) {
-            // no-op
+            if (e != null && popup != null && popup.isShowing()) {
+                consumeIfKeyPressInActionMap(e);
+            }
         }
         
         public @Override void keyPressed(KeyEvent e){
@@ -499,8 +503,7 @@ public class PopupManager {
                 KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
                 Object obj = im.get(ks);
                 LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key={2}", new Object [] { e, ks, obj }); //NOI18N
-                if (obj != null && 
-                    !obj.equals("tooltip-no-action") && obj.equals("tooltip-hide-action") //NOI18N ignore ToolTipSupport installed actions
+                if (obj != null && !obj.equals("tooltip-no-action") //NOI18N ignore ToolTipSupport installed actions
                 ) {
                     // if yes, gets the popup's action for this keystroke, perform it 
                     // and consume key event
@@ -522,6 +525,34 @@ public class PopupManager {
                 ) {
                     // hide tooltip if any was shown
                     Utilities.getEditorUI(textComponent).getToolTipSupport().setToolTipVisible(false);
+                }
+            }
+        }
+
+        private void consumeIfKeyPressInActionMap(KeyEvent e) {
+            // get popup's registered keyboard actions
+            ActionMap am = popup.getActionMap();
+            InputMap  im = popup.getInputMap();
+
+            // check whether popup registers keystroke
+            // If we consumed key pressed, we need to consume other key events as well:
+            KeyStroke ks = KeyStroke.getKeyStrokeForEvent(
+                    new KeyEvent((Component) e.getSource(),
+                                 KeyEvent.KEY_PRESSED,
+                                 e.getWhen(),
+                                 e.getModifiers(),
+                                 KeyEvent.getExtendedKeyCodeForChar(e.getKeyChar()),
+                                 e.getKeyChar(),
+                                 e.getKeyLocation())
+            );
+            Object obj = im.get(ks);
+            if (obj != null && !obj.equals("tooltip-no-action") //NOI18N ignore ToolTipSupport installed actions
+            ) {
+                // if yes, if there is a popup's action, consume key event
+                Action action = am.get(obj);
+                if (action != null) {
+                    // actionPerformed on key press only.
+                    e.consume();
                 }
             }
         }
