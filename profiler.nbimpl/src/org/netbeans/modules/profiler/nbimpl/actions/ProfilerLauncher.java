@@ -346,7 +346,7 @@ public class ProfilerLauncher {
 //            ProfilingSettings ps = ProfilingSupport.getDefault().selectTaskForProfiling(project, ss, fo, true);;
 //            if (ps != null) {
 //                this.ps = ps;
-                this.ps.store(props);
+//                this.ps.store(props); // TODO: check whether necessary or not!
                 
                 setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
                 pSupport.configurePropertiesForProfiling(props, fo);
