@@ -133,7 +133,7 @@ public class FixUsesPerformer {
     }
 
     private void processSelections() {
-        resolveDuplicateSelections();
+        final List<ImportData.DataItem> dataItems = resolveDuplicateSelections();
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
         assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
@@ -159,7 +159,7 @@ public class FixUsesPerformer {
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
-                for (UsedNamespaceName usedNamespaceName : importData.getItems().get(i).getUsedNamespaceNames()) {
+                for (UsedNamespaceName usedNamespaceName : dataItems.get(i).getUsedNamespaceNames()) {
                     editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), false, 0);
                 }
             }
@@ -177,8 +177,8 @@ public class FixUsesPerformer {
         }
     }
 
-    private void resolveDuplicateSelections() {
-        List<ImportData.DataItem> dataItems = importData.getItems();
+    private List<ImportData.DataItem> resolveDuplicateSelections() {
+        final List<ImportData.DataItem> dataItems = new ArrayList<>(importData.getItems());
         List<ItemVariant> selectionsCopy = new ArrayList<>(selections);
         List<Integer> itemIndexesToRemove = new ArrayList<>();
         for (int i = 0; i < selections.size(); i++) {
@@ -189,10 +189,10 @@ public class FixUsesPerformer {
             }
             for (int j = i + 1; j < selectionsCopy.size(); j++) {
                 ItemVariant testedVariant = selectionsCopy.get(j);
-                if (baseVariant.equals(testedVariant) && !itemIndexesToRemove.contains(j)) {
+                if (baseVariant.equals(testedVariant)
+                        && itemIndexesToRemove.add(j)) {
                     ImportData.DataItem duplicateItem = dataItems.get(j);
                     usedNamespaceNames.addAll(duplicateItem.getUsedNamespaceNames());
-                    itemIndexesToRemove.add(j);
                 }
             }
             if (!usedNamespaceNames.isEmpty()) {
@@ -201,9 +201,12 @@ public class FixUsesPerformer {
         }
         Collections.sort(itemIndexesToRemove);
         Collections.reverse(itemIndexesToRemove);
-        for (Integer itemIndexToRemove : itemIndexesToRemove) {
-            selections.remove((int) itemIndexToRemove);
+        for (int itemIndexToRemove : itemIndexesToRemove) {
+            // we need to remove selection as well as its dataitem (they are paired by their indexes)
+            selections.remove(itemIndexToRemove);
+            dataItems.remove(itemIndexToRemove);
         }
+        return dataItems;
     }
 
     private AliasStrategy createAliasStrategy(final int selectionIndex, final List<UsePart> existingUseParts, final List<ItemVariant> selections) {
@@ -523,23 +526,21 @@ public class FixUsesPerformer {
         }
 
         private boolean existSelectionWith(final String name, final int selectionIndex) {
-            boolean result = false;
             for (int i = selectionIndex + 1; i < selections.size(); i++) {
                 if (endsWithName(selections.get(i).getName(), name)) {
-                    result = true;
+                    return true;
                 }
             }
-            return result;
+            return false;
         }
 
         private boolean existUseWith(final String name) {
-            boolean result = false;
             for (UsePart existingUsePart : existingUseParts) {
                 if (endsWithName(existingUsePart.getTextPart(), name) || existingUsePart.getTextPart().endsWith(SPACE + name)) {
-                    result = true;
+                    return true;
                 }
             }
-            return result;
+            return false;
         }
 
         private boolean endsWithName(final String usePart, final String name) {
