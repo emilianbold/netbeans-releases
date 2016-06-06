@@ -1110,7 +1110,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
-        LongOperation.getLongOperation().executeLongOperation2(initTask, 
+        LongOperation.getLongOperation().executeLongOperation2(saveRunnable, 
                 getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
                 getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         return saveRunnable.ret;
