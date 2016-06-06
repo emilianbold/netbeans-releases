@@ -168,7 +168,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         if (!exp.isEmpty()) {
             String type = exp.get(exp.size() - 1);
             String preType = exp.size() > 1 ? exp.get(exp.size() - 2) : "";
-            if (!ST_THIS.equals(type) && !(preType.startsWith(ST_START_DELIMITER))) {
+            if (!ST_THIS.equals(type) && !(preType.startsWith(ST_START_DELIMITER)) && !type.startsWith(ST_ANONYM)) {
                 exp.add(exp.size() - 1, ST_PRO);
             }
         }
