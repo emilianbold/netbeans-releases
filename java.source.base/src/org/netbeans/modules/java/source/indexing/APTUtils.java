@@ -561,7 +561,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     .filter(pModified)
                     .collect(Collectors.toList());
             if (!times.isEmpty()) {
-                LOG.log(Level.FINEST, "Important changed: {0}", added);    //NOI18N
+                LOG.log(Level.FINEST, "Important changed: {0}", times);    //NOI18N
                 for (Pair<File,Long> p : times) {
                     usedRoots.update(p.first(), p.second());
                 }
