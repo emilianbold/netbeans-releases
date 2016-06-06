@@ -46,7 +46,7 @@ export * |>CUSTOM2:from<| 'ooo';
 import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
 import * |>CUSTOM2:as<| |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
 
-import {|>GLOBAL:i2<| |>CUSTOM2:as<| |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
+import {i2 |>CUSTOM2:as<| |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
 
 |>CUSTOM2:let<| |>GLOBAL:test<| = 7;
 
