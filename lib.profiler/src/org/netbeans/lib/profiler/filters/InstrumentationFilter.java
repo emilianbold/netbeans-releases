@@ -39,30 +39,31 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.ui.impl;
-
-import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
-import org.netbeans.modules.cnd.spi.toolchain.OutputListenerExt;
-import org.netbeans.modules.cnd.spi.toolchain.OutputListenerProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.IOPosition;
+package org.netbeans.lib.profiler.filters;
 
 /**
  *
- * @author masha
+ * @author Jiri Sedlacek
  */
-@ServiceProvider (service = OutputListenerProvider.class, position = 100)
-public class OutputListenerProviderImpl extends OutputListenerProvider{
+public class InstrumentationFilter extends JavaTypeFilter {
 
-    @Override
-    public OutputListenerExt get(ErrorParserProvider.OutputListenerRegistry registry, FileObject file, int line, boolean isError, String description, IOPosition.Position ioPos) {
-        return new OutputListenerImpl(registry, file, line, isError, description, ioPos);
+    private boolean fake;
+    
+    public InstrumentationFilter() {
+        super();
+    }
+    
+    public InstrumentationFilter(GenericFilter other) {
+        super(other);
+        if (!(other instanceof JavaTypeFilter)) {
+            fake = true;
+        }
     }
 
     @Override
-    public void attach(ErrorParserProvider.OutputListenerRegistry registry) {
-        OutputListenerImpl.attach(registry);
+    public boolean passes(String string) {
+        if (fake) return true;
+        return super.passes(string);
     }
     
 }
