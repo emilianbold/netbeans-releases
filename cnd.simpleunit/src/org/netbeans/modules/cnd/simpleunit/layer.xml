@@ -45,7 +45,7 @@ Contributor(s):
             <folder name="x-h">
                 <folder name="Popup">
                     <file name="TestSubmenuAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-ui-actions-TestSubmenuAction.instance"/>
                         <attr name="position" intvalue="1558"/>
                     </file>
                 </folder>
@@ -53,7 +53,7 @@ Contributor(s):
             <folder name="x-c++">
                 <folder name="Popup">
                     <file name="TestSubmenuAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-ui-actions-TestSubmenuAction.instance"/>
                         <attr name="position" intvalue="1558"/>
                     </file>
                 </folder>
@@ -61,7 +61,7 @@ Contributor(s):
             <folder name="x-c">
                 <folder name="Popup">
                     <file name="TestSubmenuAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-ui-actions-TestSubmenuAction.instance"/>
                         <attr name="position" intvalue="1558"/>
                     </file>
                 </folder>

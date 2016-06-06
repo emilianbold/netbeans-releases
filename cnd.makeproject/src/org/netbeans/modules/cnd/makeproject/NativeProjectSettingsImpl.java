@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.util.Mutex;
 import org.w3c.dom.DOMException;

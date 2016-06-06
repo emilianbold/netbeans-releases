@@ -59,16 +59,15 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
-import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -129,7 +128,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
         MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, HostInfoUtils.LOCALHOST);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(ItemFactory.getDefault().createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
         LibraryItem.ProjectItem projectItem;
         projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                 "../hello1lib",
@@ -138,8 +137,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello1lib",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello1lib.a",
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
@@ -150,8 +149,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello3lib",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
-                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug",
+                MakeArtifact.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello3lib." + libsuffix,
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
@@ -268,7 +267,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
         MakeConfiguration conf =MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB, null, HostInfoUtils.LOCALHOST);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(ItemFactory.getDefault().createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");

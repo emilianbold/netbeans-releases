@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.actions;
 
 import java.util.ResourceBundle;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;

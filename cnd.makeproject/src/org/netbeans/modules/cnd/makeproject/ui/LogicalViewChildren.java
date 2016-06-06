@@ -53,13 +53,14 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
-import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
+import org.netbeans.modules.cnd.makeproject.api.ui.ItemEx;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
@@ -81,8 +82,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
     @Override
     protected void onFolderChange(Folder folder) {
         if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().removePropertyChangeListener(this);
-            MakeOptions.getInstance().addPropertyChangeListener(this);
+            MakeProjectOptions.removePropertyChangeListener(this);
+            MakeProjectOptions.addPropertyChangeListener(this);
         }
     }
     
@@ -91,14 +92,14 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
         super.removeNotify();
         final Folder folder = getFolder();
         if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().removePropertyChangeListener(this);
+            MakeProjectOptions.removePropertyChangeListener(this);
         }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
-        if (property.equals(ViewBinaryFiles.VIEW_BINARY_FILES)) {
+        if (property.equals(MakeProjectOptions.VIEW_BINARY_FILES_EVENT_NAME)) {
             stateChanged(new ChangeEvent(this));
         }
     }
@@ -135,8 +136,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
             } else {
                 node = new ExternalFilesNode(folder, provider);
             }
-        } else if (key instanceof Item) {
-            Item item = (Item) key;
+        } else if (key instanceof ItemEx) {
+            ItemEx item = (ItemEx) key;
             DataObject fileDO = item.getDataObject();
             if (fileDO != null && fileDO.isValid()) {
                 node = new ViewItemNode(this, getFolder(), item, fileDO, provider.getProject());
@@ -188,12 +189,12 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                             }
 
                             if (!getFolder().isTestLogicalFolder()) {
-                                if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
+                                if (!MakeProjectOptions.getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
                                     continue;
                                 }
                             }
                             // Add file to the view
-                            Item item = Item.createDetachedViewItem(baseDirFileSystem, child.getPath());
+                            Item item = ItemFactory.getDefault().createDetachedViewItem(baseDirFileSystem, child.getPath());
                             Folder.insertItemElementInList(collection2, item);
                         }
                     }

@@ -64,7 +64,7 @@ public interface RunOffEDTProvider {
      *
      * @since 1.19
      */
-    public interface Progress extends RunOffEDTProvider {
+     public interface Progress extends RunOffEDTProvider {
 
         /**
          * Show a modal progress dialog that blocks the main window while running

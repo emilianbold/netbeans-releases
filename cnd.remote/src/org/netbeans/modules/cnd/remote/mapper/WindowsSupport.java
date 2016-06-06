@@ -54,9 +54,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
 
@@ -82,7 +83,7 @@ public class WindowsSupport {
             ProcessBuilder pb = new ProcessBuilder("wmic", "/locale:ms_409","netuse", "list", "full");//NOI18N
             File file = File.createTempFile("wmic_output" , "" + System.currentTimeMillis());//NOI18N
             pb.redirectOutput(file);
-            Process exec = pb.start();
+            Process exec = ProcessUtils.ignoreProcessError(pb.start()); // out is redirectrd => no ProcessUtils.execute (otherwise unnecessary thread)
             try {
                 int waitFor = exec.waitFor();
                 if (waitFor != 0) {
@@ -232,7 +233,7 @@ public class WindowsSupport {
             ProcessBuilder pb = new ProcessBuilder("net", "use");//NOI18N
             File file = File.createTempFile("netuse_output" , "" + System.currentTimeMillis());//NOI18N
             pb.redirectOutput(file);
-            Process exec = pb.start();
+            Process exec = ProcessUtils.ignoreProcessError(pb.start()); // out is redirectrd => no ProcessUtils.execute (otherwise unnecessary thread)
             try {
                 int waitFor = exec.waitFor();
                 if (waitFor != 0) {

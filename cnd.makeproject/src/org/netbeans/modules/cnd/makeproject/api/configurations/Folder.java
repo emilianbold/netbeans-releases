@@ -63,15 +63,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectFileProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -81,7 +80,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
@@ -117,7 +115,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String id = null;
     private String root;
     private volatile boolean removed;
-    private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
+    final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static final boolean checkedLogging = checkLogging();
     private final Kind kind;
 
@@ -273,7 +271,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (otherFileList.size() > 0) {
                     otherFileList.trimToSize();
                 }
-                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
+                MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
                 for (FileObject file : fileList) {
                     if (interrupter != null && interrupter.cancelled()) {
                         return;
@@ -312,7 +310,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                             Item item = null;
                             try {
                                 performanceEvent.setTimeOut(FS_TIME_OUT);
-                                item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
+                                item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
                                 addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
                             } finally {
                                 performanceEvent.log(item);
@@ -707,7 +705,10 @@ public class Folder implements FileChangeListener, ChangeListener {
                     conf.getExcluded().setValue(false);
                 }
             }
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(this.getProject(), this, added);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(this, item);
+            }
         }
         return added;
     }
@@ -751,15 +752,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
-            DataObject dao = item.getDataObject();
-            NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getLookup().lookup(NativeFileItemSet.class);
-            if (myNativeFileItemSet != null) {
-                myNativeFileItemSet.add(item);
-            } else {
-                if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "can not add NativeFileItem for folder''s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
-                }
-            }
+            item.onAddedToFolder(this);
         }
 
         // Add it to project Items
@@ -769,7 +762,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
                     CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-                    MakeProjectFileProviderFactory.addToSearchBase(project, this, itemPath);
+                    MakeProjectFileProvider.addToSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
             }
@@ -1004,7 +997,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
                     CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-                    MakeProjectFileProviderFactory.removeFromSearchBase(project, this, itemPath);
+                    MakeProjectFileProvider.removeFromSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
             }
@@ -1039,9 +1032,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean ret = false;
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
-                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), f, null);
+                MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), f, null);
             }
-            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), folder, null);
+            MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), folder, null);
             if (folder.isDiskFolder()) {
                 folder.detachListener();
             }
@@ -1474,7 +1467,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             String itemPath = fileObject.getPath();
             itemPath = CndPathUtilities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-            Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
+            Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
             addItemActionImpl(item, true, true);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {

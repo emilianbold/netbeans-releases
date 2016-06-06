@@ -76,20 +76,22 @@ import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension.ProjectKind;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -199,9 +201,9 @@ public class ImportExecutable implements PropertyChangeListener {
                 projectName = CndPathUtilities.getBaseName(baseDir);
             }
         } else {
-            String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
+            String projectParentFolder = DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder();
             if (projectName == null) {
-                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
+                projectName = ProjectGenerator.getDefault().getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
             }
             ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
             sourceFileSystem = FileSystemProvider.getFileSystem(ee);
@@ -277,13 +279,13 @@ public class ImportExecutable implements PropertyChangeListener {
         }
         prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
-            lastSelectedProject = ProjectGenerator.createProject(prjParams);
+            lastSelectedProject = ProjectGenerator.getDefault().createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
             DiscoveryDescriptor.BUILD_RESULT.toMap(map, binaryPath);
             if (fullRemotefileSystem != null) {
                 DiscoveryDescriptor.FILE_SYSTEM.toMap(map, fullRemotefileSystem);
             }
-            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
             if (sourcesPath != null && sourcesPath.length()>1) {
                 DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
             } else {
@@ -356,7 +358,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 configurationDescriptor.addSourceRoot(sourcesPath);
                                  DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
                             }
-                            configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
+                            configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(MakeProjectOptions.getResolveSymbolicLinks());
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
@@ -516,8 +518,8 @@ public class ImportExecutable implements PropertyChangeListener {
         }
         if (configure.makefile != null) {
             activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParent().getPath());
-            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue(BuildSupport.MAKE_MACRO+" -f "+configure.makefile.getName()); // NOI18N
-            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue(BuildSupport.MAKE_MACRO+" -f "+configure.makefile.getName()+" clean"); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue(MakeArtifact.MAKE_MACRO+" -f "+configure.makefile.getName()); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue(MakeArtifact.MAKE_MACRO+" -f "+configure.makefile.getName()+" clean"); // NOI18N
             Folder externalItemFolder = configurationDescriptor.getExternalItemFolder();
             for(Item item : externalItemFolder.getAllItemsAsArray()){
                 if (MIMENames.MAKEFILE_MIME_TYPE.equals(item.getMIMEType())) {
@@ -525,9 +527,9 @@ public class ImportExecutable implements PropertyChangeListener {
                     break;
                 }
             }
-            externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getPath()));
+            externalItemFolder.addItem(ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getPath()));
             if (configure.script != null) {
-                externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getPath()));
+                externalItemFolder.addItem(ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getPath()));
             }
         }
     }

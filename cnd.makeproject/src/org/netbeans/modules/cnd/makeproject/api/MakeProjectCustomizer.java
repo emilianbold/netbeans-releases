@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Sheet;
 
 /**
  *
@@ -56,10 +51,7 @@ public interface MakeProjectCustomizer {
     public String getCustomizerId();
     public String getIconPath();
     public String getMakefileWriter();
-    public Action[] getActions(Project project, List<Action> actions);
     public Object[] getLookup(FileObject getProjectDirectory, Object[] base);
-    public Sheet getPropertySheet(Sheet sheet);
-    public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode);
     public boolean isCompileConfiguration();
     public boolean isLibraryConfiguration();
     public boolean isLinkerConfiguration();

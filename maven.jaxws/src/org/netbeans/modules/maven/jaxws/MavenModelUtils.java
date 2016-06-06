@@ -153,7 +153,7 @@ public final class MavenModelUtils {
      * @param model
      * @return WAR plugin
      */
-    public static Plugin addWarPlugin(POMModel model) {
+    public static Plugin addWarPlugin(POMModel model, boolean client) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
         Build bld = model.getProject().getBuild();
         if (bld == null) {
@@ -180,33 +180,14 @@ public final class MavenModelUtils {
                     POMQName.createQName("webResources", model.getPOMQNames().isNSAware()));
             config.addExtensibilityElement(webResources);
         }
-       //check for resource containing jax-ws-catalog.xml
-        if (!hasResource(webResources, JAXWS_CATALOG)) {
-            POMExtensibilityElement  res = model.getFactory().createPOMExtensibilityElement(
-                    POMQName.createQName("resource", model.getPOMQNames().isNSAware()));
-            webResources.addExtensibilityElement(res);
-            POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(
-                    POMQName.createQName("directory", model.getPOMQNames().isNSAware()));
-            dir.setElementText("src");
-            res.addExtensibilityElement(dir);
-
-            POMExtensibilityElement tp = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("targetPath",
-                    model.getPOMQNames().isNSAware()));
-            tp.setElementText("WEB-INF");
-            res.addExtensibilityElement(tp);
-
-            POMExtensibilityElement in = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("includes",
-                    model.getPOMQNames().isNSAware()));
-            res.addExtensibilityElement(in);
-
-            POMExtensibilityElement include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
-                    model.getPOMQNames().isNSAware()));
-            include.setElementText(JAXWS_CATALOG);
-            in.addExtensibilityElement(include);
-            include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
-                    model.getPOMQNames().isNSAware()));
-            include.setElementText("wsdl/**");
-            in.addExtensibilityElement(include);
+        //check for resource containing jax-ws-catalog.xml
+        List<String> includes = new ArrayList<String>(2);
+        Collections.addAll(includes, JAXWS_CATALOG, "wsdl/**"); // NOI18N
+        if (!hasResource(webResources, JAXWS_CATALOG, "WEB-INF")) { // NOI18N
+            addResource(model, webResources, "WEB-INF", includes); // NOI18N
+        }
+        if (client && !hasResource(webResources, JAXWS_CATALOG, "WEB-INF/classes/META-INF")) { // NOI18N
+            addResource(model, webResources, "WEB-INF/classes/META-INF", includes); // NOI18N
         }
         return plugin; 
     }
@@ -614,18 +595,48 @@ public final class MavenModelUtils {
         }
     }
 
-    private static boolean hasResource(POMExtensibilityElement webResources, String resourceName) {
+    private static void addResource(POMModel model, POMExtensibilityElement webResources,
+            String targetPath, List<String> includes) {
+        POMExtensibilityElement res = model.getFactory().createPOMExtensibilityElement(
+                POMQName.createQName("resource", model.getPOMQNames().isNSAware()));
+        webResources.addExtensibilityElement(res);
+        POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(
+                POMQName.createQName("directory", model.getPOMQNames().isNSAware()));
+        dir.setElementText("src");
+        res.addExtensibilityElement(dir);
+
+        POMExtensibilityElement tp = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("targetPath",
+                model.getPOMQNames().isNSAware()));
+        tp.setElementText(targetPath);
+        res.addExtensibilityElement(tp);
+
+        POMExtensibilityElement in = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("includes",
+                model.getPOMQNames().isNSAware()));
+        res.addExtensibilityElement(in);
+
+        for (String includeString : includes) {
+            POMExtensibilityElement include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
+                    model.getPOMQNames().isNSAware()));
+            include.setElementText(includeString);
+            in.addExtensibilityElement(include);
+        }
+    }
+
+    private static boolean hasResource(POMExtensibilityElement webResources, String resourceName, String targetPath) {
         List<POMExtensibilityElement> resources = webResources.getChildren(POMExtensibilityElement.class);
         for (POMExtensibilityElement res : resources) {
-           POMExtensibilityElement includesEl = findChild(res.getExtensibilityElements(), "includes"); //NOI18N
-           if (includesEl != null) {
-               List<POMExtensibilityElement> includes = includesEl.getChildren(POMExtensibilityElement.class);
-               for (POMExtensibilityElement include : includes) {
-                   if (resourceName.equals(include.getElementText())) {
-                       return true;
-                   }
-               }
-           }
+            POMExtensibilityElement targetPathEl = findChild(res.getExtensibilityElements(), "targetPath"); //NOI18N
+            if (targetPathEl != null && targetPath.equals(targetPathEl.getElementText())) {
+                POMExtensibilityElement includesEl = findChild(res.getExtensibilityElements(), "includes"); //NOI18N
+                if (includesEl != null) {
+                    List<POMExtensibilityElement> includes = includesEl.getChildren(POMExtensibilityElement.class);
+                    for (POMExtensibilityElement include : includes) {
+                        if (resourceName.equals(include.getElementText())) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
         return false;
     }

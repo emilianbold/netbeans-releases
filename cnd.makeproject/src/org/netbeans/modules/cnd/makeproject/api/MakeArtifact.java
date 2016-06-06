@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -60,6 +59,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 
 public class MakeArtifact implements Cloneable {
+    public static final String MAKE_MACRO = "${MAKE}"; //NOI18N
+    public static final String MAKEFLAGS_MACRO = "${MAKEFLAGS}"; //NOI18N
     public static final int TYPE_UNKNOWN = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -140,11 +141,11 @@ public class MakeArtifact implements Cloneable {
         } else {
             workingDirectory = projectLocation;
             if (!pd.getProjectMakefileName().isEmpty()) {
-                buildCommand = BuildSupport.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-                cleanCommand = BuildSupport.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+                buildCommand = MakeArtifact.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = MakeArtifact.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
             } else {
-                buildCommand = BuildSupport.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName; // NOI18N
-                cleanCommand = BuildSupport.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName + " clean"; // NOI18N
+                buildCommand = MakeArtifact.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = MakeArtifact.MAKE_MACRO+" " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName + " clean"; // NOI18N
             }
         }
 
@@ -244,8 +245,8 @@ public class MakeArtifact implements Cloneable {
         if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
             makeCommand = "\""+makeCommand+"\""; // NOI18N
         }
-        int startCommand = template.indexOf(BuildSupport.MAKE_MACRO);
-        int startFlags = template.indexOf(BuildSupport.MAKEFLAGS_MACRO);
+        int startCommand = template.indexOf(MakeArtifact.MAKE_MACRO);
+        int startFlags = template.indexOf(MakeArtifact.MAKEFLAGS_MACRO);
         if (startCommand >= 0) {
             if (makeFlags.length() > 0 && startFlags < 0) {
                 makeCommand = makeCommand + " "+makeFlags; // NOI18N
@@ -254,7 +255,7 @@ public class MakeArtifact implements Cloneable {
         }
 
         if (startFlags >= 0) {
-            startFlags = template.indexOf(BuildSupport.MAKEFLAGS_MACRO);
+            startFlags = template.indexOf(MakeArtifact.MAKEFLAGS_MACRO);
             template = template.substring(0, startFlags) + makeFlags + template.substring(startFlags + 12);
         } else {
             if (startCommand < 0) {

@@ -48,13 +48,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.MakeProjectCustomizerEx;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerRootNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.DebuggerCustomizerNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -137,7 +137,7 @@ public class ProjectNodeFactory {
         
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)context.getConfigurationDescriptor();
         if (makeConfigurationDescriptor.hasProjectCustomizer()) {
-            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getProjectCustomizer();
+            MakeProjectCustomizerEx makeprojectCustomizer = (MakeProjectCustomizerEx) makeConfigurationDescriptor.getProjectCustomizer();
             rootDescription = makeprojectCustomizer.getRootPropertyNode(rootDescription);
         }
 
@@ -329,6 +329,6 @@ public class ProjectNodeFactory {
 
 
     private static String getString(String s) {
-        return NbBundle.getMessage(MakeCustomizer.class, s);
+        return NbBundle.getMessage(ProjectNodeFactory.class, s);
     }
 }

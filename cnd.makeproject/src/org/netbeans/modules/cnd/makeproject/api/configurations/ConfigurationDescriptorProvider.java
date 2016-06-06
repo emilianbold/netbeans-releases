@@ -57,16 +57,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -492,21 +490,21 @@ public abstract class ConfigurationDescriptorProvider {
             if (interrupter.cancelled()) {
                 return;
             }
-            if (project instanceof MakeProject) {
-                if (((MakeProject)project).isDeleted()) {
+            if (project instanceof MakeProjectImpl) {
+                if (((MakeProjectImpl)project).isDeleted()) {
                     return;
                 }
             }
             // Ask user if descriptor is modified in memory.
+            String title = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"); // NOI18N
             String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
+            String autoConfirm = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto");
             if (CndUtils.isStandalone()) {
                 System.err.print(txt);
-                System.err.println(NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto")); //NOI18N
+                System.err.println(autoConfirm); //NOI18N
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt,
-                        NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"), // NOI18N
-                        NotifyDescriptor.YES_NO_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                ConfirmSupport.AutoConfirm confirm = ConfirmSupport.getAutoConfirmFactory().create(title, txt, autoConfirm);
+                if (confirm == null) {
                     return;
                 }
             }

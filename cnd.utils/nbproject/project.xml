@@ -207,6 +207,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.api.project</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.api.remote.ui</friend>
+                <friend>org.netbeans.modules.cnd.api.toolchain</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
@@ -247,6 +248,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.remote.projectui</friend>
+                <friend>org.netbeans.modules.cnd.remote.ui</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <friend>org.netbeans.modules.cnd.repository.api</friend>
                 <friend>org.netbeans.modules.cnd.script</friend>
@@ -256,6 +258,8 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.cnd.toolchain.ui</friend>
+                <friend>org.netbeans.modules.cnd.ui</friend>
                 <friend>org.netbeans.modules.cnd.utils.ui</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
@@ -263,6 +267,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
+                <package>org.netbeans.modules.cnd.spi</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>
                 <package>org.netbeans.modules.cnd.support</package>
                 <package>org.netbeans.modules.cnd.utils</package>

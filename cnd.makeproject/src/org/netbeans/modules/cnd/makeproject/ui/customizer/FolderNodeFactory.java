@@ -43,8 +43,11 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -93,5 +96,36 @@ public class FolderNodeFactory {
     private static String getString(String s) {
         return NbBundle.getBundle(MakeCustomizer.class).getString(s);
     }
+    
+    public static Sheet getGeneralSheet(FolderConfiguration fc) {
+        Sheet sheet = new Sheet();
 
+        Sheet.Set set = new Sheet.Set();
+        set.setName("FolderConfiguration"); // NOI18N
+        set.setDisplayName(getString("FolderConfigurationTxt"));
+        set.setShortDescription(getString("FolderConfigurationHint"));
+        set.put(new StringRONodeProp(getString("NameTxt"), fc.getFolder().getDisplayName()));
+        sheet.put(set);
+
+        return sheet;
+    }
+
+    private static class StringRONodeProp extends PropertySupport<String> {
+
+        private final String value;
+
+        public StringRONodeProp(String name, String value) {
+            super(name, String.class, name, name, true, false);
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(String v) {
+        }
+    }
 }

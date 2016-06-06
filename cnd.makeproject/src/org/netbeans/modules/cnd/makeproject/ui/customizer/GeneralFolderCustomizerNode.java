@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
@@ -64,7 +64,7 @@ class GeneralFolderCustomizerNode extends CustomizerNode {
         List<Sheet> out = new ArrayList<>();
         if (folders != null) {
             for (Folder folder : folders) {
-                Sheet generalSheet = folder.getFolderConfiguration(configuration).getGeneralSheet();
+                Sheet generalSheet = FolderNodeFactory.getGeneralSheet(folder.getFolderConfiguration(configuration));
                 out.add(generalSheet);
             }
         }

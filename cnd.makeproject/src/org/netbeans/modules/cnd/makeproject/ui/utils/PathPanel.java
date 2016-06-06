@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 
 public class PathPanel extends javax.swing.JPanel {
@@ -59,7 +58,7 @@ public class PathPanel extends javax.swing.JPanel {
     }
     
     private void setMode(MakeProjectOptions.PathMode mode) {
-	MakeOptions.getInstance().setPathMode(mode);
+	MakeProjectOptions.setPathMode(mode);
         switch (mode) {
             case ABS:
                 absRadioButton.setSelected(true);
@@ -148,15 +147,15 @@ public class PathPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void absRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_absRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.ABS);
+	MakeProjectOptions.setPathMode(MakeProjectOptions.PathMode.ABS);
     }//GEN-LAST:event_absRadioButtonActionPerformed
 
     private void relRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.REL);
+	MakeProjectOptions.setPathMode(MakeProjectOptions.PathMode.REL);
     }//GEN-LAST:event_relRadioButtonActionPerformed
 
     private void relOrAbsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relOrAbsRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.REL_OR_ABS);
+	MakeProjectOptions.setPathMode(MakeProjectOptions.PathMode.REL_OR_ABS);
     }//GEN-LAST:event_relOrAbsRadioButtonActionPerformed
     
     

@@ -67,16 +67,35 @@ import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.SelectExecutable;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.SelectExecutableFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class SelectExecutablePanel extends javax.swing.JPanel {
+public class SelectExecutablePanel extends javax.swing.JPanel implements SelectExecutable {
+    @org.openide.util.lookup.ServiceProvider(service=SelectExecutableFactory.class)
+    public static final class ConfirmExtensionsUiFactoryImpl implements SelectExecutableFactory {
+
+        @Override
+        public ConfirmSupport.SelectExecutable create(ProjectActionEvent pae) {
+            SelectExecutablePanel panel = new SelectExecutablePanel(pae);
+            DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE")); // NOI18N
+            panel.setDialogDescriptor(descriptor);
+            DialogDisplayer.getDefault().notify(descriptor);
+            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                return panel;
+            }
+            return null;
+        }
+    }
 
     private final JList exeList;
     private final FileFilterFactory.AbstractFileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
@@ -226,6 +245,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public String getExecutable() {
         String path = executableTextField.getText();
         if (mapper != null) {

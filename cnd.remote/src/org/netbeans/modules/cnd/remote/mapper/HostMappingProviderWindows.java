@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderWindows implements HostMappingProvider {
+/*package*/ final class HostMappingProviderWindows implements HostMappingProvider {
 
    
     @Override

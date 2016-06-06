@@ -84,11 +84,11 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.runprofiles.ui.RerunArguments;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.makeproject.ui.runprofiles.RerunArguments;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -101,10 +101,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -205,7 +202,10 @@ public class ProjectActionSupport {
                 public void run() {
                     FileUtil.runAtomicAction(refresher);
                     fon.onFinish(curPAE);
-                    MakeLogicalViewProvider.refreshBrokenItems(project);
+                    MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+                    if (viewModel != null) {
+                        viewModel.refreshBrokenItems();
+                    }
                 }
             });
             ConfigurationDescriptorProvider.SnapShot snapShot = curPAE.getContext().lookup(ConfigurationDescriptorProvider.SnapShot.class);
@@ -229,9 +229,9 @@ public class ProjectActionSupport {
     public boolean canHandle(MakeConfiguration conf, Lookup context, ProjectActionEvent.Type type) {
         if (conf != null) {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
-            CustomizerNode node = chooser.getNode();
-            if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type, context, conf)) {
+            ProjectActionHandlerFactory node = chooser.getNode();
+            if (node != null) {
+                if (node.canHandle(type, context, conf)) {
                     return true;
                 }
             }
@@ -456,7 +456,8 @@ public class ProjectActionSupport {
                     boolean isDebugAction = type == PredefinedType.DEBUG
                             || type == PredefinedType.DEBUG_STEPINTO
                             || type == PredefinedType.DEBUG_TEST
-                            || type == PredefinedType.DEBUG_STEPINTO_TEST;
+                            || type == PredefinedType.DEBUG_STEPINTO_TEST
+                            || type == PredefinedType.ATTACH;
                     // Validate executable
                     boolean isRunAction = (type == PredefinedType.RUN
                             || isDebugAction
@@ -695,12 +696,9 @@ public class ProjectActionSupport {
             // Check if something is specified
             String executable = pae.getExecutable();
             if (executable.length() == 0) {
-                SelectExecutablePanel panel = new SelectExecutablePanel(pae);
-                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE")); // NOI18N
-                panel.setDialogDescriptor(descriptor);
-                DialogDisplayer.getDefault().notify(descriptor);
-                if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                    final String selectedExecutable = panel.getExecutable();
+                ConfirmSupport.SelectExecutable confirm = ConfirmSupport.getDefaultSelectExecutableFactory().create(pae);
+                if (confirm != null) {
+                    final String selectedExecutable = confirm.getExecutable();
                     final MakeConfiguration projectConfiguration = pae.getConfiguration();
 
                     // Modify Configuration ...
@@ -800,7 +798,7 @@ public class ProjectActionSupport {
                 if (!ok) {
                     String value = pae.getProfile().getRunCommand().getValue();
                     String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", executable); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                    CndNotifier.getDefault().notifyError(errormsg);
                     return false;
                 }
             }

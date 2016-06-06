@@ -141,6 +141,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.source</friend>
                 <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
+                <friend>org.netbeans.modules.cnd.ui</friend>
                 <package>org.netbeans.cnd.api.lexer</package>
                 <package>org.netbeans.cnd.spi.lexer</package>
             </friend-packages>

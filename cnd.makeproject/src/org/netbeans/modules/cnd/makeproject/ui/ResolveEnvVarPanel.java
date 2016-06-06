@@ -48,8 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
-import org.netbeans.modules.cnd.makeproject.EnvProjectProblemsProvider;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -79,7 +78,7 @@ public class ResolveEnvVarPanel extends javax.swing.JPanel {
             add(varLabel, gridBagConstraints);
             
             ExecutionEnvironment env = unset.getExecutionEnvironment();
-            String defValue = BrokenReferencesSupport.getTemporaryEnv(env, var);
+            String defValue = TempEnv.getInstance(env).getTemporaryEnv(var);
             if (defValue != null) {
                 unset.editValue(var, defValue);
             }

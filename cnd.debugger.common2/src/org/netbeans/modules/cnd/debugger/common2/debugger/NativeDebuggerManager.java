@@ -115,6 +115,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -137,6 +138,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1238,11 +1240,15 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      * Start debugging by attaching to pid.
      */
     public void attach(DebugTarget dt) {
+        attach(dt, null);
+    }
+    public void attach(DebugTarget dt, DbgActionHandler dah) {
         final Configuration conf = dt.getConfig();
 
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
         ndi.setPid(dt.getPid());
+        ndi.setDah(dah);
 
         //ndi.setTarget(dt.getExecutable());
 	Host host = Host.byName(dt.getHostName());
@@ -1263,7 +1269,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (dt.getProjectMode() == DebugTarget.ProjectMode.OLD_PROJECT) {
             String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
             symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
-            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+            if (!symbolFile.isEmpty() && !CndPathUtilities.isPathAbsolute(symbolFile)) {
                 symbolFile = ((MakeConfiguration) conf).getBaseDir() + "/" + symbolFile; // NOI18N
                 symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
                 symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
@@ -1382,11 +1388,25 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     public ModelListenerSupport watchModelListener() {
         return watchModelListener;
     }
-    private ModelChangeDelegator watchUpdater = new ModelChangeDelegator();
+    private final ModelChangeDelegator watchUpdater = new ModelChangeDelegator();
 
     public ModelChangeDelegator watchUpdater() {
         return watchUpdater;
     }
+    
+    private final Map<NativeDebugger, PinWatchUISupport.ValueProvider.ValueChangeListener> pinnedWatchesUpdaters = new ConcurrentHashMap();
+    
+    /*package*/ void registerPinnedWatchesUpdater(NativeDebugger debugger, PinWatchUISupport.ValueProvider.ValueChangeListener listener) {
+        pinnedWatchesUpdaters.put(debugger, listener);
+    }
+    
+    public void firePinnedWatchChange(NativeDebugger debugger, Watch watch) {
+        PinWatchUISupport.ValueProvider.ValueChangeListener listener = pinnedWatchesUpdaters.get(debugger);
+        if (listener != null) {
+            listener.valueChanged(watch);
+        }
+    }
+    
     /*
      * Stuff to manage global breakpoints
      */

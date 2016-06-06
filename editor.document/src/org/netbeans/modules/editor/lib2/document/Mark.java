@@ -43,6 +43,8 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Mark is an element of the {@link MarkVector}.
@@ -62,6 +64,9 @@ import java.lang.ref.WeakReference;
 
 final class Mark extends WeakReference<EditorPosition> implements Runnable {
 
+    // -J-Dorg.netbeans.modules.editor.lib2.document.Mark.level=FINE
+    static final Logger LOG = Logger.getLogger(Mark.class.getName());
+    
     /**
      * Offset at which the mark is located in the document.
      * It can be ORed with UNSHARABLE_BIT and it must be pre-processed with
@@ -128,15 +133,18 @@ final class Mark extends WeakReference<EditorPosition> implements Runnable {
     public String toString() {
         StringBuilder sb = new StringBuilder(8);
         sb.append(getOffset());
-        EditorPosition pos = get();
-        sb.append(';');
-        if (isBackwardBias()) {
-            sb.append("B"); // Means backward-bias mark
+        if (LOG.isLoggable(Level.FINE)) {
+            EditorPosition pos = get();
+            if (isBackwardBias()) {
+                sb.append("B"); // Means backward-bias mark
+            }
+            if (pos == null) {
+                sb.append('D'); // Disposed mark
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                sb.append(";M@").append(Integer.toHexString(System.identityHashCode(this)));
+            }
         }
-        if (get() == null) {
-            sb.append('D'); // Disposed mark
-        }
-        sb.append("M@").append(System.identityHashCode(this));
         return sb.toString();
     }
     

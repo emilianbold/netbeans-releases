@@ -56,12 +56,12 @@ import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -1644,8 +1644,8 @@ public abstract class CommonConfigurationXMLCodec
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
                 environment.putAll(hostInfo.getEnvironment());
                 ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
-                if (BrokenReferencesSupport.hasTemporaryEnv(env)) {
-                    BrokenReferencesSupport.addTemporaryEnv(env, environment);
+                if (TempEnv.getInstance(env).hasTemporaryEnv()) {
+                    TempEnv.getInstance(env).addTemporaryEnv(environment);
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

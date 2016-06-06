@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.support.CompilerDefinition;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -65,13 +66,14 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import static org.netbeans.modules.nativeexecution.api.util.Path.getPath;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends AbstractCompiler {
-
+    
     private static final Logger LOG = Logger.getLogger(CCCCompiler.class.getName());
     private static final String DEV_NULL = "/dev/null"; // NOI18N
     private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
@@ -98,8 +100,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
         boolean res = copySystemIncludeDirectoriesImpl(values, false);
         if (res) {
             if (values instanceof CompilerDefinition) {
-                compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions.clear();
-                compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeDirectoriesList).clear();
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeDirectoriesList).
+                        addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition)values));
             }
         }
         return res;
@@ -117,7 +120,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
         if (normalize) {
             normalizePaths(systemIncludeDirectoriesList);
         }
-        systemIncludeDirectoriesList.userAddedDefinitions.addAll(compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions);
+        CompilerDefinitionAccessor.get().getUserAddedDefinitions(systemIncludeDirectoriesList).
+                addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeDirectoriesList));
         compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
         return true;
     }
@@ -131,8 +135,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
         boolean res = copySystemIncludeHeadersImpl(values, false);
         if (res) {
             if (values instanceof CompilerDefinition) {
-                compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions.clear();
-                compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeHeadersList).clear();
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeHeadersList).
+                        addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition)values));
             }
         }
         return res;
@@ -150,7 +155,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
         if (normalize) {
             normalizePaths(systemIncludeHeadersList);
         }
-        systemIncludeHeadersList.userAddedDefinitions.addAll(compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions);
+        CompilerDefinitionAccessor.get().getUserAddedDefinitions(systemIncludeHeadersList).
+                addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemIncludeHeadersList));
         compilerDefinitions.systemIncludeHeadersList = systemIncludeHeadersList;
         return true;
     }
@@ -165,7 +171,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
             return false;
         }
         CompilerDefinition systemPreprocessorSymbolsList = new CompilerDefinition(values);
-        systemPreprocessorSymbolsList.userAddedDefinitions.addAll(compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions);
+        CompilerDefinitionAccessor.get().getUserAddedDefinitions(systemPreprocessorSymbolsList).
+                addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemPreprocessorSymbolsList));
         compilerDefinitions.systemPreprocessorSymbolsList = systemPreprocessorSymbolsList;
         return true;
     }
@@ -174,8 +181,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
         boolean res = setSystemPreprocessorSymbols(values);
         if (res) {
             if (values instanceof CompilerDefinition) {
-                compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions.clear();
-                compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemPreprocessorSymbolsList).clear();
+                CompilerDefinitionAccessor.get().getUserAddedDefinitions(compilerDefinitions.systemPreprocessorSymbolsList).
+                        addAll(CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition)values));
             }
         }
         return res;
@@ -218,7 +226,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         {
             List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
             if (systemPreprocessorSymbols instanceof CompilerDefinition) {
-                for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
+                for (int i : CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition) systemPreprocessorSymbols)) {
                     addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
                 }
             }
@@ -226,7 +234,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         {
             List<String> systemIncludeDirectories = getSystemIncludeDirectories();
             if (systemIncludeDirectories instanceof CompilerDefinition) {
-                for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                for (int i : CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition) systemIncludeDirectories)) {
                     // TODO implement "merge" which inserts user's path in best place
                     addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
                 }
@@ -235,7 +243,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         {
             List<String> systemIncludeHeaders = getSystemIncludeHeaders();
             if (systemIncludeHeaders instanceof CompilerDefinition) {
-                for (int i : ((CompilerDefinition) systemIncludeHeaders).userAddedDefinitions) {
+                for (int i : CompilerDefinitionAccessor.get().getUserAddedDefinitions((CompilerDefinition) systemIncludeHeaders)) {
                     // TODO implement "merge" which inserts user's path in best place
                     addUnique(particular.systemIncludeHeadersList, systemIncludeHeaders.get(i));
                 }
@@ -1330,58 +1338,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
             systemIncludeHeadersList = new CompilerDefinition(0);
             exitCode = 0;
         }
+
     }
     
-    public static final class CompilerDefinition extends ArrayList<String> {
-        private List<Integer> userAddedDefinitions = new ArrayList<Integer>(0);
-        
-        public CompilerDefinition() {
-            super();
-        }
-        
-        public CompilerDefinition(int size) {
-            super(size);
-        }
-        
-        public CompilerDefinition(Collection<String> c) {
-            super(c);
-        }
-        
-        public boolean isUserAdded(int i) {
-            return userAddedDefinitions.contains(i);
-        }
-        
-        public void setUserAdded(boolean isUserAddes, int i) {
-            if (isUserAddes) {
-                if (!userAddedDefinitions.contains(i)) {
-                    userAddedDefinitions.add(i);
-                }
-            } else {
-                if (userAddedDefinitions.contains(i)) {
-                    userAddedDefinitions.remove(Integer.valueOf(i));
-                }
-            }
-        }
-
-        public void sort() {
-            Set<String> set = new HashSet<String>();
-            for(Integer i : userAddedDefinitions) {
-                if (i < size()) {
-                    set.add(get(i));
-                }
-            }
-            Collections.sort(this, new Comparator<String>() {
-                @Override
-                public int compare(String s1, String s2) {
-                    return s1.compareToIgnoreCase(s2);
-                }
-            });
-            userAddedDefinitions.clear();
-            for(String s : set) {
-                userAddedDefinitions.add(indexOf(s));
-            }
-        }
-    }
     
     protected interface MyCallable<V>{
         V call(String p);

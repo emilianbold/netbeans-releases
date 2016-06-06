@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JTextPane;
@@ -54,6 +54,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -71,8 +72,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private String makefileName = null;
     
     private static final String DEF_WORKING_DIR = ""; // NOI18N
-    private static final String DEF_BUILD_COMMAND = BuildSupport.MAKE_MACRO;
-    private static final String DEF_CLEAN_COMMAND = BuildSupport.MAKE_MACRO+" clean"; // NOI18N
+    private static final String DEF_BUILD_COMMAND = MakeArtifact.MAKE_MACRO;
+    private static final String DEF_CLEAN_COMMAND = MakeArtifact.MAKE_MACRO+" clean"; // NOI18N
     private static final String DEF_COMMAND_CLEAN_COMMAND = "echo clean"; // NOI18N
     private static final String DEF_COMMAND_BUILD_COMMAND = "echo build"; // NOI18N
     

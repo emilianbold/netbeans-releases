@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
@@ -119,7 +120,7 @@ public class AddExternalItemAction extends AbstractAction {
                 items.add(item);
             }
             else {
-                item = Item.createInFileSystem(makeProjectDescriptor.getBaseDirFileSystem(), itemPath);
+                item = ItemFactory.getDefault().createInFileSystem(makeProjectDescriptor.getBaseDirFileSystem(), itemPath);
                 makeProjectDescriptor.getExternalItemFolder().addItem(item);
                 items.add(item);
             }

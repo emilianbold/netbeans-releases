@@ -59,16 +59,16 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
-import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
-import org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory;
-import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
-import org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.ui.actions.AddExistingFolderItemsAction;
+import org.netbeans.modules.cnd.makeproject.ui.actions.DebugTestAction;
+import org.netbeans.modules.cnd.makeproject.ui.actions.NewTestActionFactory;
+import org.netbeans.modules.cnd.makeproject.ui.actions.RunTestAction;
+import org.netbeans.modules.cnd.makeproject.ui.actions.StepIntoTestAction;
+import org.netbeans.modules.cnd.makeproject.api.ui.actions.AddExistingItemAction;
+import org.netbeans.modules.cnd.makeproject.api.ui.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -399,7 +399,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         if (!aFolder.isDiskFolder()) {
             Folder parent = aFolder.getParent();
             if (parent != null && provider != null) { // provider != null is probably a paranoia
-                MakeProject project = provider.getProject();
+                Project project = provider.getProject();
                 if (project != null) {                    
                     ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
@@ -572,7 +572,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                         SystemAction.get(PropertiesFolderAction.class),};
         }
         // makeproject sensitive actions
-        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
+        final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
         final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.folderActionsPath());
         result = NodeActionFactory.insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), RenameNodeAction.class);
         result = NodeActionFactory.insertSyncActions(result, RenameNodeAction.class);

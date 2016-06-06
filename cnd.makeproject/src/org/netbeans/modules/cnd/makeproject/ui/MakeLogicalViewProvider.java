@@ -52,16 +52,14 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
@@ -74,11 +72,27 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 
 /**
  * Support for creating logical views.
  */
-public class MakeLogicalViewProvider implements LogicalViewProvider {
+public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogicalViewModel {
+
+    @ServiceProvider(service = MakeProjectLookupProvider.class)
+    public static class MakeLogicalViewProviderFactory implements MakeProjectLookupProvider {
+
+        @Override
+        public void addLookup(MakeProject owner, ArrayList<Object> ic) {
+            ic.add(new MakeLogicalViewProvider(owner));
+        }
+    }
+    // this is hard reference to template operations
+    private static MakeTemplateListener templateListener;
 
     private static final String brokenLinkBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
@@ -102,6 +116,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         // runners: BaseMakeViewChildren.refreshKeysTask & MakeLogicalViewProvider.setVisible
         annotationRP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater " + project, 1); // NOI18N
         assert project != null;
+        synchronized(MakeLogicalViewProvider.class) {
+            // it is created instance of template oerations and register in data pool
+            if (templateListener == null) {
+                templateListener = MakeTemplateListener.createInstance();
+            }
+        }
     }
 
     @Override
@@ -151,7 +171,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (checkVersion) {
             if (gotMakeConfigurationDescriptor()) {
                 int version = getMakeConfigurationDescriptor().getVersion();
-                return version > CommonConfigurationXMLCodec.CURRENT_VERSION;
+                return version > ConfigurationDescriptor.CURRENT_VERSION;
             }
         }
         return false;
@@ -401,7 +421,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    public static void checkForChangedName(final Project project) {
+    @Override
+    public void checkForChangedName() {
+        checkForChangedName(project);
+    }
+
+    private static void checkForChangedName(final Project project) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -420,7 +445,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         });
     }
 
-    public static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
+    @Override
+    public void checkForChangedViewItemNodes(Delta delta) {
+        checkForChangedViewItemNodes(project, delta);
+    }
+
+    private static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -436,7 +466,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         refreshProjectNodes(project);
     }
 
-    public static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
+    @Override
+    public void checkForChangedViewItemNodes(Folder folder, Item item) {
+        checkForChangedViewItemNodes(project, folder, item);
+    }
+
+    private static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
         if (CndUtils.isStandalone()) {
             return;
         }
@@ -446,6 +481,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private static void refreshProjectNodes(final Project project) {
         ProjectNodesRefreshSupport.refreshProjectNodes(project);
+    }
+
+    @Override
+    public void refreshBrokenItems() {
+        refreshBrokenItems(project);
     }
 
     /**
@@ -508,13 +548,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     static String getShortDescription(MakeProject project) {
         String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-        DevelopmentHostConfiguration devHost = project.getDevelopmentHostConfiguration();
-        if (devHost == null || devHost.isLocalhost()) {
+        ExecutionEnvironment devHost = project.getDevelopmentHost();
+        if (devHost == null || devHost.isLocal()) {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
                     "HINT_project_root_node", prjDirDispName); // NOI18N
         } else {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true)); // NOI18N
+                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName()); // NOI18N
         }
     }
 

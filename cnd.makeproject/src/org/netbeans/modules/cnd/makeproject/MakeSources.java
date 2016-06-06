@@ -55,6 +55,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -261,10 +262,6 @@ public final class MakeSources implements Sources, MakeProjectListener {
     @Override
     public void configurationXmlChanged(MakeProjectEvent ev) {
         // fireChange(); // ignore - cnd projects don't keep source file info in project.xml
-    }
-
-    public void descriptorChanged() {
-        // fireChange(); // ignore
     }
 
     @Override

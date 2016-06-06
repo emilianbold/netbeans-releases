@@ -48,12 +48,12 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.LicenseHeadersPanel;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.LicensePanelContentHandler;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.LicenseHeadersPanel;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.LicensePanelContentHandler;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
@@ -125,7 +125,7 @@ public class LicenseCustomizerNode extends CustomizerNode implements MakeContext
         if (projectLicenseContent != null) {
             String path = projectLicenseLocation;
             assert path != null; //path needs to exist once we have content?
-            FSPath file = project.getMakeProjectHelper().resolveFSPath(path);
+            FSPath file = project.getHelper().resolveFSPath(path);
             FileObject fo = file.getFileObject();
             if (fo == null) {
                 try {
@@ -172,7 +172,7 @@ public class LicenseCustomizerNode extends CustomizerNode implements MakeContext
         @Override
         public FileObject resolveProjectLocation(@NonNull String path) {
             final MakeProject project = (MakeProject) context.getProject();
-            return project.getMakeProjectHelper().resolveFileObject(path);
+            return project.getHelper().resolveFileObject(path);
         }
 
         @Override

@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -83,11 +81,12 @@ public class RemoveItemAction extends NodeAction {
             folder.removeItemAction(item);
             makeConfigurationDescriptor.save();
             if (CndPathUtilities.isPathAbsolute(item.getPath())) {
-                ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
+                //((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
             }
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }

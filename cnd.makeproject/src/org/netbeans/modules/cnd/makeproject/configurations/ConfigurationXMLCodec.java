@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -86,7 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -625,7 +626,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
+                val = val.replace("$(MAKE)", MakeArtifact.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(val);
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
@@ -633,7 +634,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
+                val = val.replace("$(MAKE)", MakeArtifact.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
         } else if (element.equals(PRE_BUILD_WORKING_DIR_ELEMENT)) {
@@ -883,7 +884,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
-                List<String> list = CppUtils.tokenizeString(currentText);
+                List<String> list = MakeProjectOptionsFormat.tokenizeString(currentText);
                 List<String> res = new ArrayList<>();
                 for (String val : list) {
                     res.add(this.getString(val));
@@ -1097,7 +1098,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        return Item.createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
+        return ItemFactory.getDefault().createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {

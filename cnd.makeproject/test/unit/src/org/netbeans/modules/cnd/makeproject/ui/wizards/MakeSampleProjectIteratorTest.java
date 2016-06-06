@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -63,10 +63,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeActionProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -278,7 +278,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
         CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
-        MakeOptions.setDefaultMakeOptions(makeOptions);
+        MakeProjectOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
         File projectDir = new File(workDir, sample + set.getName() + conf);
@@ -337,7 +337,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
-        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+        MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
         makeActionProvider.invokeAction("build", Lookup.EMPTY);
 
 //        File makefile = new File(mainProjectDir, "Makefile");

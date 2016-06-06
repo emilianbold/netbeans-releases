@@ -50,7 +50,7 @@ import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -89,7 +89,7 @@ public class RfsRemoteControllerDeathTestCase extends RemoteTestBase {
         pb.setExecutable(rcPath); //I18N
         pb.setWorkingDirectory("/tmp");
         pb.getEnvironment().put("RFS_CONTROLLER_TRACE", "1"); // NOI18N
-        NativeProcess controller = pb.call();
+        NativeProcess controller = pb.call(); // ProcessUtils.execute doesn't work here
 
         RequestProcessor.getDefault().post(new ProcessReader(controller.getErrorStream(),
                 ProcessUtils.getWriter(System.err, true)));

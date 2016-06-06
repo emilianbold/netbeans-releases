@@ -43,12 +43,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.RequiredProjectsNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 class RequiredProjectsCustomizerNode extends CustomizerNode {
 
@@ -58,12 +61,30 @@ class RequiredProjectsCustomizerNode extends CustomizerNode {
 
     @Override
     public Sheet[] getSheets(Configuration configuration) {
-        Sheet generalSheet = ((MakeConfiguration) configuration).getRequiredProjectsSheet(getContext().getProject(), (MakeConfiguration) configuration);
+        Sheet generalSheet = getRequiredProjectsSheet(getContext().getProject(), (MakeConfiguration) configuration);
         return new Sheet[]{generalSheet};
     }
 
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("ProjectPropsRequiredProjects"); // NOI18N
+    }
+    
+    private static String getString(String s) {
+        return NbBundle.getMessage(RequiredProjectsCustomizerNode.class, s);
+    }
+    
+    private Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
+        Sheet sheet = new Sheet();
+        String[] texts = new String[]{getString("ProjectsTxt1"), getString("ProjectsHint"), getString("ProjectsTxt2"), getString("AllOptionsTxt2")};
+
+        Sheet.Set set2 = new Sheet.Set();
+        set2.setName("Projects"); // NOI18N
+        set2.setDisplayName(getString("ProjectsTxt1"));
+        set2.setShortDescription(getString("ProjectsHint"));
+        set2.put(new RequiredProjectsNodeProp(conf.getRequiredProjectsConfiguration(), project, conf, conf.getBaseFSPath(), texts));
+        sheet.put(set2);
+
+        return sheet;
     }
 }

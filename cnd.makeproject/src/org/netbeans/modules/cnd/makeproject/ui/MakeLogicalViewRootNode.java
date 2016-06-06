@@ -70,10 +70,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -81,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.ui.MakeProjectCustomizerEx;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -148,7 +147,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         if (gotMakeConfigurationDescriptor()) {
-            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            ProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
             if (confProvider != null){                
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
                 confProviderListenerAttached = true;
@@ -216,7 +215,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
         if (!confProviderListenerAttached) {
-            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            ProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
             if (confProvider != null) {
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
                 confProviderListenerAttached = true;
@@ -281,7 +280,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         return folder;
     }
 
-    private MakeProject getProject() {
+    private Project getProject() {
         return provider.getProject();
     }
 
@@ -447,11 +446,11 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
 
         MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-        String projectType = MakeProjectTypeImpl.PROJECT_TYPE;
+        String projectType = MakeProjectType.PROJECT_TYPE;
         Action[] projectActions = null;
         if (active != null && active.isCustomConfiguration()) {
             //TODO: fix it as all actions can use  HIDE_WHEN_DISABLE and be enabled in own context only
-            projectActions = active.getProjectCustomizer().getActions(getProject(), Arrays.asList(CommonProjectActions.forType(projectType)));            
+            projectActions = ((MakeProjectCustomizerEx)active.getProjectCustomizer()).getActions(getProject(), Arrays.asList(CommonProjectActions.forType(projectType)));            
             projectType = active.getProjectCustomizer().getCustomizerId();                        
         }        
         projectActions = projectActions == null ? CommonProjectActions.forType(projectType) : projectActions;

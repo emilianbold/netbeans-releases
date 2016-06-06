@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
@@ -65,7 +65,7 @@ class CustomBuildItemCustomizerNode extends CustomizerNode {
             for (SharedItemConfiguration cfg : configurations) {
                 ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
                 if (itemConfiguration != null) {
-                    out.add(itemConfiguration.getCustomToolConfiguration().getSheet());
+                    out.add(CustomToolCustomizerNode.getSheet(itemConfiguration.getCustomToolConfiguration()));
                 }
             }
         }

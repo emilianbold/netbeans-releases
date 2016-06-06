@@ -45,7 +45,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 
 public class OptionsConfiguration implements Cloneable {
     private String preDefined = ""; // NOI18N
@@ -90,7 +90,7 @@ public class OptionsConfiguration implements Cloneable {
     }
 
     public String getOptions(String prepend) {
-	return CppUtils.reformatWhitespaces(getValue(), prepend);
+	return MakeProjectOptionsFormat.reformatWhitespaces(getValue(), prepend);
     }
 
     public String[] getValues() {
@@ -104,7 +104,7 @@ public class OptionsConfiguration implements Cloneable {
     }
 
     public List<String> getValuesAsList() {
-        return CppUtils.tokenizeString(getValue());
+        return MakeProjectOptionsFormat.tokenizeString(getValue());
     }
 
     // Predefined

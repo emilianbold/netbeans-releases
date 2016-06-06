@@ -47,13 +47,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public abstract class BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase {
@@ -362,28 +358,6 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getAdditionalDependencies().assign(conf.getAdditionalDependencies());
         getTool().assign(conf.getTool());
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
-    }
-
-    // Sheets
-    protected Sheet.Set getBasicSet() {
-        Sheet.Set set = new Sheet.Set();
-        set.setName("BasicOptions"); // NOI18N
-        set.setDisplayName(getString("BasicOptionsTxt"));
-        set.setShortDescription(getString("BasicOptionsHint"));
-        set.put(new IntNodeProp(getDevelopmentMode(), true, "DevelopmentMode", getString("DevelopmentModeTxt"), getString("DevelopmentModeHint"))); // NOI18N
-        set.put(new IntNodeProp(getWarningLevel(), true, "WarningLevel", getString("WarningLevelTxt"), getString("WarningLevelHint"))); // NOI18N
-        set.put(new IntNodeProp(getSixtyfourBits(), true, "64BitArchitecture", getString("64BitArchitectureTxt"), getString("64BitArchitectureHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getStrip(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-        return set;
-    }
-
-    protected Sheet.Set getInputSet() {
-        Sheet.Set set = new Sheet.Set();
-        set.setName("Input"); // NOI18N
-        set.setDisplayName(getString("InputTxt"));
-        set.setShortDescription(getString("InputHint"));
-        set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint")));  // NOI18N
-        return set;
     }
 
     /** Look up i18n strings here */

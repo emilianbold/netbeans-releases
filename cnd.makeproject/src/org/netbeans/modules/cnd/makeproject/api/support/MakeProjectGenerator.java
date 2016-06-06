@@ -55,7 +55,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -125,7 +124,7 @@ public final class MakeProjectGenerator {
                     
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                    final byte[] data = MakeProjectHelperImpl.convertLineSeparator(baos, projectXml, projectXml.getParent());
+                    final byte[] data = SmartOutputStream.convertLineSeparator(baos, projectXml, projectXml.getParent());
                     OutputStream os = SmartOutputStream.getSmartOutputStream(projectXml);
                     try {
                         os.write(data);

@@ -43,7 +43,6 @@ package org.netbeans.modules.terminal.iocontainer;
 
 
 
-import org.netbeans.modules.terminal.api.TabContentProvider;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -66,8 +65,9 @@ import org.netbeans.lib.terminalemulator.support.FindState;
 
 import org.netbeans.modules.terminal.api.IOVisibilityControl;
 import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.ioprovider.Terminal;
 
-abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider, TabContentProvider {
+abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider {
 
     private final static String PROP_ATTRIBUTES =
 	    "TerminalContainerCommonImpl.ATTRIBUTES";	// NOI18N
@@ -388,7 +388,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 	actionBar.setVisible(false);
 
         findBar = new FindBar(new FindBar.Owner() {
-
+                
 	    @Override
             public void close(FindBar fb) {
                 findBar.getState().setVisible(false);
@@ -529,6 +529,14 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 	}
         actionBar.revalidate();
         actionBar.repaint();
+    }
+    
+    @Override
+    public void activateSearch(JComponent comp) {
+        Attributes attrs = attributesFor(comp);
+        
+        attrs.findState = ((Terminal) comp).getFindState();
+        setFindBar(attrs.findState);
     }
 
     private void updateBars(JComponent comp) {

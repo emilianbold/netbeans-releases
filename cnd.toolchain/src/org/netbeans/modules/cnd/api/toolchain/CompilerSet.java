@@ -139,12 +139,14 @@ public abstract class CompilerSet {
      * @return true if tool collection is represented as reference on update center and need to be installed
      */
     public abstract boolean isUrlPointer();
-
+    
     /**
      *
      * @return tool collection encoding
      */
     public abstract Charset getEncoding();
+    
+    abstract public boolean isDefault();
 
     protected CompilerSet() {
         if (!getClass().equals(CompilerSetImpl.class)) {

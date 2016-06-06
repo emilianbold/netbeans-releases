@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -74,8 +74,8 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
@@ -168,7 +168,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
             fillComboBox(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.FORTRAN_MIME_TYPE);
-            String prefLanguage = MakeOptions.getInstance().getPrefApplicationLanguage();
+            String prefLanguage = MakeProjectOptions.getPrefApplicationLanguage();
             createMainComboBox.setSelectedItem(prefLanguage);
         } else if (type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
             createMainCheckBox.setVisible(true);
@@ -731,7 +731,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                         }
                     }
                 }
-                MakeOptions.getInstance().setPrefApplicationLanguage((String) createMainComboBox.getSelectedItem());
+                MakeProjectOptions.setPrefApplicationLanguage((String) createMainComboBox.getSelectedItem());
             } else if (type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
                 Pair<String, Integer> languageStandard = getLanguageStandard((String) createMainComboBox.getSelectedItem());
                 if (languageStandard != null) {

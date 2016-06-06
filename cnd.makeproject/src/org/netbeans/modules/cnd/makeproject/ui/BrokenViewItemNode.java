@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenViewItemRefreshSupport.BrokenViewItemListener;
@@ -68,10 +67,10 @@ final class BrokenViewItemNode extends AbstractNode {
     private final RefreshableItemsContainer childrenKeys;
     private final Folder folder;
     private final Item item;
-    private final MakeProject project;
+    private final Project project;
     private final BrokenViewItemListener brokenViewItemListener;
 
-    public BrokenViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, MakeProject project) {
+    public BrokenViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, Project project) {
         super(Children.LEAF);
         this.childrenKeys = childrenKeys;
         this.folder = folder;

@@ -2976,7 +2976,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	retryWatches();
         updateMIVar();
     }
-
+    
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
         MITList attr_results = attr.results();
         String value = attr_results.getConstValue("attr"); // NOI18N
@@ -3027,6 +3027,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
+            final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
+            if (nativeWatch != null) {
+                NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+            }
         } else {
             localUpdater.treeNodeChanged(v); // just update this node
         }
@@ -3785,7 +3789,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 showThreads();
             }
 
-            if (get_watches) {
+            if (get_watches || watchBag().hasPinnedWatches()) {
                 updateWatches();
             }
             

@@ -45,8 +45,10 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import javax.swing.Icon;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 
 public abstract class ConfigurationDescriptor {
+    public static final int CURRENT_VERSION = CommonConfigurationXMLCodec.CURRENT_VERSION;
     private Configurations confs = new Configurations();
     private int version = -1;
     private volatile State state = State.READING;
