@@ -2018,7 +2018,7 @@ public final class EditorCaret implements Caret {
                         Rectangle caretBounds = null;
                         if (caretItem.getAndClearUpdateCaretBounds()) {
                             caretBounds = lvh.modelToViewBounds(caretItem.getDot(), Position.Bias.Forward);
-                            lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c);                            
+                            caretItem.setCaretBoundsWithRepaint(caretBounds, c);                            
                             if (log) {
                                 LOG.fine("  [" + i + "] new caretBounds=" + caretBounds + " for caretItem=" + caretItem + "\n"); // NOI18N
                             }
