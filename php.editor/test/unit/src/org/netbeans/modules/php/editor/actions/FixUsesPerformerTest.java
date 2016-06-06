@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -75,7 +74,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@RandomlyFails
 public class FixUsesPerformerTest extends PHPTestBase {
     private static final String CAN_NOT_BE_RESOLVED = "<CAN-NOT-BE-RRESOLVED>"; //NOI18N
 
@@ -118,19 +116,17 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
-    // XXX incorrect result
-//    public void testIssue211585_02() throws Exception {
-//        String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
-//        Options options = new Options(false, false, true, true, false);
-//        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
-//    }
+    public void testIssue211585_02() throws Exception {
+        String[] selections = new String[] {"\\Baz\\Bat\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        Options options = new Options(false, false, true, true, false);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
+    }
 
-    // XXX incorrect result
-//    public void testIssue211585_03() throws Exception {
-//        String[] selections = new String[] {"\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName"};
-//        Options options = new Options(false, false, true, true, false);
-//        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
-//    }
+    public void testIssue211585_03() throws Exception {
+        String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        Options options = new Options(false, false, true, true, false);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
+    }
 
     public void testIssue233527() throws Exception {
         String[] selections = new String[] {"\\NS1\\NS2\\SomeClass", "\\NS1\\NS2\\SomeClass"};
