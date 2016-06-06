@@ -523,23 +523,21 @@ public class FixUsesPerformer {
         }
 
         private boolean existSelectionWith(final String name, final int selectionIndex) {
-            boolean result = false;
             for (int i = selectionIndex + 1; i < selections.size(); i++) {
                 if (endsWithName(selections.get(i).getName(), name)) {
-                    result = true;
+                    return true;
                 }
             }
-            return result;
+            return false;
         }
 
         private boolean existUseWith(final String name) {
-            boolean result = false;
             for (UsePart existingUsePart : existingUseParts) {
                 if (endsWithName(existingUsePart.getTextPart(), name) || existingUsePart.getTextPart().endsWith(SPACE + name)) {
-                    result = true;
+                    return true;
                 }
             }
-            return result;
+            return false;
         }
 
         private boolean endsWithName(final String usePart, final String name) {
