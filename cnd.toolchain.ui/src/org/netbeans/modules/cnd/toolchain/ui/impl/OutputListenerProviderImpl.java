@@ -45,12 +45,14 @@ import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.OutputListenerExt;
 import org.netbeans.modules.cnd.spi.toolchain.OutputListenerProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOPosition;
 
 /**
  *
  * @author masha
  */
+@ServiceProvider (service = OutputListenerProvider.class, position = 100)
 public class OutputListenerProviderImpl extends OutputListenerProvider{
 
     @Override
