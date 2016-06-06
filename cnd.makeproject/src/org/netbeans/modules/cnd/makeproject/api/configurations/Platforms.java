@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
 import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
 import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;

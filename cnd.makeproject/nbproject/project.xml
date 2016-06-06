@@ -382,6 +382,10 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.makeproject.ui</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.remote</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -481,6 +485,7 @@
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
+                <friend>org.netbeans.modules.cnd.makeproject.ui</friend>
                 <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.otool.debugger.api</friend>
@@ -499,10 +504,6 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.support</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.actions</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.wizard</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
