@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -57,9 +56,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -74,14 +71,9 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
-import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -119,14 +111,20 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ResolveBuildToolsFactory;
+import org.netbeans.modules.cnd.makeproject.uiapi.DefaultProjectOperationsImplementationUI;
+import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
+import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation.CanceledState;
+import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation.CancellableTask;
+import org.netbeans.modules.cnd.makeproject.uiapi.RunActionSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.OSSComponentUsages;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -144,18 +142,13 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
@@ -264,7 +257,8 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 // it's better to set deleted flag right here, otherwise we can start saving the project
                 // #196501 - "Error synchronizing project to <login>@<host> null"
                 ((MakeProjectImpl)project).setDeleting(true);  // can't set setDeleted here since user can answer "No"
-                DefaultProjectOperationsImplementation.deleteProject(project);
+                DefaultProjectOperationsImplementationUI.getDefaultProjectOperationsImplementationUI()
+                        .deleteProject(project, new DefaultProjectOperationsImplementationExecutorImpl());
             } finally {
                 ((MakeProjectImpl)project).setDeleting(false);                 
             }
@@ -273,27 +267,27 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
         if (COMMAND_COPY.equals(command)) {
             saveIfModified();
-            DefaultProjectOperationsImplementation.copyProject(project);
+                DefaultProjectOperationsImplementationUI.getDefaultProjectOperationsImplementationUI()
+                        .copyProject(project, new DefaultProjectOperationsImplementationExecutorImpl());
             return;
         }
 
         if (COMMAND_MOVE.equals(command)) {
             saveIfModified();
-            DefaultProjectOperationsImplementation.moveProject(project);
+                DefaultProjectOperationsImplementationUI.getDefaultProjectOperationsImplementationUI()
+                        .moveProject(project, new DefaultProjectOperationsImplementationExecutorImpl());
             return;
         }
 
         if (COMMAND_RENAME.equals(command)) {
             saveIfModified();
-            DefaultProjectOperationsImplementation.renameProject(project, null);
+                DefaultProjectOperationsImplementationUI.getDefaultProjectOperationsImplementationUI()
+                        .renameProject(project, new DefaultProjectOperationsImplementationExecutorImpl());
             return;
         }
 
         if (COMMAND_RUN_SINGLE.equals(command)) {
-            Node node = context.lookup(Node.class);
-            if (node != null) {
-                ShellRunAction.performAction(node);
-            }
+            RunActionSupport.geRunActionSupport().run(context);
             return;
         }
 
@@ -421,14 +415,9 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 }
             };
         }
-        if (SwingUtilities.isEventDispatchThread()) {
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            String msg = NbBundle.getMessage(MakeActionProviderImpl.class, "MSG_Validate_Host", record.getDisplayName());
-            String title = NbBundle.getMessage(MakeActionProviderImpl.class, "DLG_TITLE_Validate_Host");
-            ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
-        } else {
-            wrapper.run();
-        }
+        LongOperation.getLongOperation().executeLongOperation(wrapper,
+                NbBundle.getMessage(MakeActionProviderImpl.class, "DLG_TITLE_Validate_Host"),
+                NbBundle.getMessage(MakeActionProviderImpl.class, "MSG_Validate_Host", record.getDisplayName()));
     }
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,
@@ -528,12 +517,6 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
         validated.set(true);
 
         Folder targetFolder = context.lookup(Folder.class);
-        if (targetFolder == null) {
-            Node node = context.lookup(Node.class);
-            if (node != null) {
-                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
-            }
-        }
         if (targetFolder != null) { // DEBUG TEST
             String path = ""; // NOI18N
             if (targetFolder.isTest()) {
@@ -795,8 +778,8 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
     private boolean onRunSingleStep(MakeConfiguration conf, ArrayList<ProjectActionEvent> actionEvents, Lookup context, Type actionEvent) {
         // FIXUP: not sure this is used...
         if (conf.isMakefileConfiguration()) {
-            DataObject d = context.lookup(DataObject.class);
-            String path = CndFileUtils.toFile(d.getPrimaryFile()).getPath();
+            FileObject f = context.lookup(FileObject.class);
+            String path = CndFileUtils.toFile(f).getPath();
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
         } else {
@@ -965,34 +948,29 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
     }
 
     private boolean onCompileSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
-        Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
-        while (it.hasNext()) {
-            Node node = it.next();
-            Item item = getNoteItem(node); // NOI18N
-            if (item == null) {
-                return false;
-            }
-            ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-            if (itemConfiguration == null) {
-                return false;
-            }
-            if (itemConfiguration.getExcluded().getValue()) {
-                Item bestComileUnit = getBestComileUnit(item, conf);
-                if (bestComileUnit != null) {
-                    return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
-                }
-                return false;
-            }
-            if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
-                Item bestComileUnit = getBestComileUnit(item, conf);
-                if (bestComileUnit != null) {
-                    return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
-                }
-                return false;
-            }
-            return onCompileSingleStepImpl(pd, conf, item, itemConfiguration, actionEvents, context, actionEvent);
+        Item item = getNoteItem(context);
+        if (item == null) {
+            return false;
         }
-        return true;
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null) {
+            return false;
+        }
+        if (itemConfiguration.getExcluded().getValue()) {
+            Item bestComileUnit = getBestComileUnit(item, conf);
+            if (bestComileUnit != null) {
+                return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
+            }
+            return false;
+        }
+        if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+            Item bestComileUnit = getBestComileUnit(item, conf);
+            if (bestComileUnit != null) {
+                return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
+            }
+            return false;
+        }
+        return onCompileSingleStepImpl(pd, conf, item, itemConfiguration, actionEvents, context, actionEvent);
     }
 
     private boolean onCompileSingleStepImpl(MakeConfigurationDescriptor pd, MakeConfiguration conf, Item item, ItemConfiguration itemConfiguration, ArrayList<ProjectActionEvent> actionEvents, Lookup context, Type actionEvent) {
@@ -1303,13 +1281,6 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
             Folder targetFolder = context.lookup(Folder.class);
             if (targetFolder == null) {
-                Node node = context.lookup(Node.class);
-                if (node == null) {
-                    return true;
-                }
-                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
-            }
-            if (targetFolder == null) {
                 return true;
             }
 
@@ -1438,8 +1409,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
             File file = FileUtil.toFile(project.getProjectDirectory());
             return file != null;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
-            Node node = context.lookup(Node.class);
-            return (node != null) && (node.getLookup().lookup(ShellExecSupport.class) != null);
+            return RunActionSupport.geRunActionSupport().canRun(context);
         } else if (command.equals(COMMAND_TEST)) {
             Folder root = getProjectDescriptor().getLogicalFolders();
             Folder testRootFolder = null;
@@ -1456,69 +1426,64 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
     }
 
     private boolean isCompileEnable(Lookup context, MakeConfiguration conf) {
-        boolean enabled = true;
-        Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
-        while (it.hasNext()) {
-            Node node = it.next();
-            Item item = getNoteItem(node);
-            if (item == null) {
-                return false;
-            }
-            ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-            if (itemConfiguration == null) {
-                return false;
-            }
-            if (itemConfiguration.getExcluded().getValue()) {
-                CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
-                if (ca.hasCodeAssistance(item)) {
-                    // included header
-                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
-                    for(NativeFileItem i : listCU) {
-                        if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
-                           (i instanceof Item)) {
-                            if (checkItemCompileConfuguration((Item) i, conf)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-            if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
-                CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
-                if (ca.hasCodeAssistance(item)) {
-                    // included header
-                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
-                    for(NativeFileItem i : listCU) {
-                        if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
-                           (i instanceof Item)) {
-                            if (checkItemCompileConfuguration((Item) i, conf)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-            if (conf.isMakefileConfiguration()) {
-                //AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
-                //if (options != null) {
-                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                    AbstractCompiler ccCompiler = null;
-                    if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                    } 
-                    if (ccCompiler == null) {
-                        return false;
-                    }
-                    return true;
-                //}
-                //return false;
-            }
+        Item item = getNoteItem(context);
+        if (item == null) {
+            return false;
         }
-        return enabled;
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null) {
+            return false;
+        }
+        if (itemConfiguration.getExcluded().getValue()) {
+            CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
+            if (ca.hasCodeAssistance(item)) {
+                // included header
+                List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
+                for(NativeFileItem i : listCU) {
+                    if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
+                       (i instanceof Item)) {
+                        if (checkItemCompileConfuguration((Item) i, conf)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+            CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
+            if (ca.hasCodeAssistance(item)) {
+                // included header
+                List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
+                for(NativeFileItem i : listCU) {
+                    if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
+                       (i instanceof Item)) {
+                        if (checkItemCompileConfuguration((Item) i, conf)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        if (conf.isMakefileConfiguration()) {
+            //AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+            //if (options != null) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                AbstractCompiler ccCompiler = null;
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } 
+                if (ccCompiler == null) {
+                    return false;
+                }
+                return true;
+            //}
+            //return false;
+        }
+        return false;
     }
     
     private boolean checkItemCompileConfuguration(Item item, MakeConfiguration conf) {
@@ -1548,20 +1513,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
         return true;
     }
     
-    private Item getNoteItem(Node node) {
-        Item item = (Item) node.getValue("Item"); // NOI18N
-        if (item == null) {
-            // try to find Item in associated data object if any
-            try {
-                DataObject dao = node.getLookup().lookup(DataObject.class);
-                if (dao != null) {
-                    item = getProjectDescriptor().findItemByFileObject(dao.getPrimaryFile());
-                }
-            } catch (NullPointerException ex) {
-                // not found item
-            }
+    private Item getNoteItem(Lookup context) {
+        FileObject fo = context.lookup(FileObject.class);
+        if (fo != null) {
+            return getProjectDescriptor().findItemByFileObject(fo);
         }
-        return item;
+        return null;
     }
 
     private static String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
@@ -1692,7 +1649,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
             // Check for a valid make program
             if (conf.getDevelopmentHost().isLocalhost()) {
                 file = new File(makeTool.getPath());
-                if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
+                if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolchainUtilities.isUnsupportedMake(file.getPath())) {
                     runBTA = true;
                 }
             } else {
@@ -1740,39 +1697,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
             if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
                 lastValidation = false;
-            } else {//if (conf.getDevelopmentHost().isLocalhost()) {
-                BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
-                bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
-                ToolsPanelModel model = new LocalToolsPanelModel();
-                model.setSelectedDevelopmentHost(env); // only localhost until BTA becomes more functional for remote sets
-                model.setEnableDevelopmentHostChange(false);
-                model.setCompilerSetName(null); // means don't change
-                model.setSelectedCompilerSetName(csname);
-                model.setMakeRequired(true);
-                model.setDebuggerRequired(false);
-                model.setCRequired(cRequired);
-                model.setCppRequired(cppRequired);
-                model.setFortranRequired(fRequired);
-                model.setQMakeRequired(conf.isQmakeConfiguration());
-                model.setAsRequired(asRequired);
-                model.setShowRequiredBuildTools(true);
-                model.setShowRequiredDebugTools(false);
-                model.setEnableRequiredCompilerCB(conf.isMakefileConfiguration());
-                if (bt.initBuildTools(model, errs, cs) && pd.okToChange()) {
-                    String name = model.getSelectedCompilerSetName();
-                    ToolsPanelModel.resetCompilerSetName(name);
-                    conf.getCRequired().setValue(model.isCRequired());
-                    conf.getCppRequired().setValue(model.isCppRequired());
-                    conf.getFortranRequired().setValue(model.isFortranRequired());
-                    conf.getAssemblerRequired().setValue(model.isAsRequired());
-                    conf.getCompilerSet().setValue(name);
+            } else {
+                String title = NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title");
+                ResolveBuildToolsFactory resolver = Lookup.getDefault().lookup(ResolveBuildToolsFactory.class);
+                lastValidation = resolver.resolveTools(title, pd, conf, env, csname, cs, cRequired, cppRequired, fRequired, asRequired, errs);
+                if (lastValidation) {
                     cs = conf.getCompilerSet().getCompilerSet();
-                    CndUtils.assertNotNull(cs, "Null compiler set for " + name); //NOI18N
-                    pd.setModified();
-                    pd.save();
-                    lastValidation = true;
-                } else {
-                    lastValidation = false;
                 }
             }
         } else {
@@ -1959,55 +1889,6 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
     private static String getString(String s, String arg1, String arg2) {
         return NbBundle.getMessage(MakeActionProviderImpl.class, s, arg1, arg2);
-    }
-
-    private abstract static class CancellableTask implements Runnable, Cancellable {
-
-        protected abstract void runImpl();
-        
-        @Override
-        public final void run() {
-            thread = Thread.currentThread();
-            if (!cancelled.isCanceled()) {
-                runImpl();
-            }
-        }
-
-        @Override
-        public boolean cancel() {
-            cancelled.cancel();
-            if (thread != null && cancelled.isInterruptable()) { // we never set it back to null => no sync
-                thread.interrupt();
-            }
-            return true;
-        }
-
-        private volatile Thread thread;
-        protected final CanceledState cancelled = new CanceledState();
-    }
-
-    private static final class CanceledState {
-        private final AtomicBoolean cancelled = new AtomicBoolean(false);
-        private final AtomicBoolean interruptable = new AtomicBoolean(true);
-        
-        private CanceledState() {
-        }
-        
-        public synchronized void cancel() {
-            cancelled.set(true);
-        }
-        
-        public synchronized boolean isCanceled() {
-            return cancelled.get();
-        }
-
-        public synchronized void setInterruptable(boolean interruptable){
-            this.interruptable.set(interruptable);
-        }
-
-        public synchronized boolean isInterruptable(){
-            return interruptable.get();
-        }
     }
 
     private static final class MyType implements Type {

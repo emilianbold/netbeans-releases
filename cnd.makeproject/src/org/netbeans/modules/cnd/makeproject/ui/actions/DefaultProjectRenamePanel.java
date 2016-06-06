@@ -123,10 +123,12 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -288,15 +290,18 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         return alsoRenameFolder.isSelected();
     }
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         //ignored
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateProjectFolder();
         validateDialog();
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateProjectFolder();
         validateDialog();
@@ -314,6 +319,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
     
+    @Override
     public boolean isPanelValid() {
         return " ".equals(errorMessage.getText()); // NOI18N
     }
@@ -338,6 +344,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), !getRenameProjectFolder());
     }
     
+    @Override
     public void showProgress() {
         projectFolder.setEnabled(false);
         projectName.setEnabled(false);

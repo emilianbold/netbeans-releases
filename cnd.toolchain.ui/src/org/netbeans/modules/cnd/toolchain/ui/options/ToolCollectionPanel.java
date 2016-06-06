@@ -518,7 +518,7 @@ import org.openide.util.Utilities;
         boolean qmakeValid = cbQMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.QMakeTool) : true;
         boolean asValid = cbAsRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.Assembler) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
-            if (ToolsPanelSupport.isUnsupportedMake(tfMakePath.getText())) {
+            if (ToolchainUtilities.isUnsupportedMake(tfMakePath.getText())) {
                 errors.add(ToolsPanel.getString("TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
             } else {
                 errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
@@ -587,7 +587,7 @@ import org.openide.util.Utilities;
             lastValid.put(tool, false);
             updateField(field, false, tool);
             return;
-        } else if (tool == PredefinedToolKind.MakeTool && ToolsPanelSupport.isUnsupportedMake(txt)) {
+        } else if (tool == PredefinedToolKind.MakeTool && ToolchainUtilities.isUnsupportedMake(txt)) {
             lastValid.put(tool, false);
             updateField(field, false, tool);
             return;

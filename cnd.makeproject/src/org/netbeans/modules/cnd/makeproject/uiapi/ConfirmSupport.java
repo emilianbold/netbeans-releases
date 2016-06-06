@@ -39,12 +39,16 @@
  */
 package org.netbeans.modules.cnd.makeproject.uiapi;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -124,6 +128,10 @@ public final class ConfirmSupport {
     public interface ConfirmCreateConnectionFactory {
         AutoConfirm createConnection(String dialogTitle, String message, String autoConfirmMessage);
     }
+
+    public interface ResolveBuildToolsFactory {
+        boolean resolveTools(String title, MakeConfigurationDescriptor pd, MakeConfiguration conf, ExecutionEnvironment env, String csname, CompilerSet cs, boolean cRequired, boolean cppRequired, boolean fRequired, boolean asRequired, ArrayList<String> errs);
+    }
     
     private static final Default DEFAULT = new Default();
 
@@ -180,9 +188,14 @@ public final class ConfirmSupport {
         return defaultFactory == null ? DEFAULT : defaultFactory;
     }
 
+    public static ResolveBuildToolsFactory getResolveBuildToolsFactory() {
+        ResolveBuildToolsFactory defaultFactory = Lookup.getDefault().lookup(ResolveBuildToolsFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+
     private static final class Default implements ConfirmMimeExtensionsFactory, SelectExecutableFactory, AutoConfirmFactory,
             ConfirmPlatformMismatchFactory, ConfirmVersionFactory, ForbidBuildAnalyzerFactory, ResolveRfsLibraryFactory,
-            BatchConfigurationSelectorFactory, NotifyCantConnectFactory, ConfirmCreateConnectionFactory {
+            BatchConfigurationSelectorFactory, NotifyCantConnectFactory, ConfirmCreateConnectionFactory, ResolveBuildToolsFactory {
 
         @Override
         public MimeExtensions create(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {
@@ -247,6 +260,11 @@ public final class ConfirmSupport {
             new Exception(autoConfirmMessage).printStackTrace(System.err);
             return new AutoConfirm() {
             };
+        }
+
+        @Override
+        public boolean resolveTools(String title, MakeConfigurationDescriptor pd, MakeConfiguration conf, ExecutionEnvironment env, String csname, CompilerSet cs, boolean cRequired, boolean cppRequired, boolean fRequired, boolean asRequired, ArrayList<String> errs) {
+            return false;
         }
 
         private static final class ConfirmExtensionsUiImpl implements MimeExtensions {

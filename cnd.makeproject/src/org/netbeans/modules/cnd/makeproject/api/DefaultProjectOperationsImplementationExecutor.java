@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,78 +34,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.openide.util.Lookup;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
- * Provider of additional actions in the build log window
- * 
+ *
  * @author Alexander Simon
  */
-public abstract class BuildActionsProvider {
-
-    private static final BuildActionsProvider DEFAULT = new Default();
-
-    public abstract List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events);
-
-    protected BuildActionsProvider() {
-    }
-
-    /**
-     * Static method to obtain the BuildActionsProvider implementation.
-     * @return the BuildActionsProvider
-     */
-    public static synchronized BuildActionsProvider getDefault() {
-        return DEFAULT;
-    }
-
-    public interface BuildAction extends Action, ExecutionListener {
-
-        void setStep(int step);
-    }
-
-    public interface OutputStreamHandler {
-        void handleLine(String line);
-
-        void flush();
-
-        void close();
-    }
-
-    public interface EventsProcessor {
-        void submitTask();
-        ProjectActionEvent[] getProjectActionEvents();
-        boolean checkProject(ProjectActionEvent pae);
-    }
-
-    /**
-     * Implementation of the default BuildActionsProvider
-     */
-    private static final class Default extends BuildActionsProvider {
-
-        private final Lookup.Result<BuildActionsProvider> res;
-
-        Default() {
-            res = Lookup.getDefault().lookupResult(BuildActionsProvider.class);
-        }
-
-        @Override
-        public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-            List<BuildAction> list = new ArrayList<>();
-            for (BuildActionsProvider provider : res.allInstances()) {
-                list.addAll(provider.getActions(ioTabName, events));
-            }
-            return list;
-        }
-    }
+public interface DefaultProjectOperationsImplementationExecutor {
+    void doDeleteProject(Project project, boolean onlyMetadata, ProgressHandle handle) throws Exception;
+    Project doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) throws Exception;
+    Project doMoveProject(ProgressHandle handle, Project project, String nueFolderName, String nueProjectName, FileObject newTarget, boolean isMove) throws Exception;
+    Project doRenameProject(ProgressHandle handle, Project project, String nueName) throws Exception;
+    boolean isOldStyleRename(ProgressHandle handle, Project project, String nueName) throws Exception;
 }

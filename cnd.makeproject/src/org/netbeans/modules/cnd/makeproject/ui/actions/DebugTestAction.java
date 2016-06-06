@@ -45,11 +45,17 @@ package org.netbeans.modules.cnd.makeproject.ui.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
 public class DebugTestAction extends NodeAction {
@@ -86,13 +92,20 @@ public class DebugTestAction extends NodeAction {
 //            DialogDisplayer.getDefault().notify(nd);
 //        }
 
-
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ap.invokeAction(MakeActionProvider.COMMAND_DEBUG_TEST, Lookups.fixed(new Object[]{project, n}));
+            InstanceContent ic = new InstanceContent();
+            ic.add(project);
+            Folder targetFolder = (Folder) n.getValue("Folder"); // NOI18N
+            if (targetFolder != null) {
+                ic.add(targetFolder);
+            }
+            DataObject d = n.getLookup().lookup(DataObject.class);
+            if (d != null) {
+                ic.add(d.getPrimaryFile());
+            }
+            ap.invokeAction(MakeActionProvider.COMMAND_DEBUG_TEST, new AbstractLookup(ic));
         }
-
-
     }
 
     @Override

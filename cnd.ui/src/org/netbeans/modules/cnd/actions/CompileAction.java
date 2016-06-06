@@ -82,10 +82,13 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FileEntry.Folder;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -140,7 +143,17 @@ public class CompileAction extends AbstractExecutorRunAction {
         if (project != null) {
             ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
             if (ap != null) {
-                Lookup lookup = Lookups.singleton(node);
+                InstanceContent ic = new InstanceContent();
+                ic.add(project);
+                Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+                if (targetFolder != null) {
+                    ic.add(targetFolder);
+                }
+                DataObject d = node.getLookup().lookup(DataObject.class);
+                if (d != null) {
+                    ic.add(d.getPrimaryFile());
+                }
+                Lookup lookup = new AbstractLookup(ic);
                 if (ap.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, lookup)) {
                     ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, lookup);
                     return;
