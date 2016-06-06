@@ -1126,7 +1126,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             return result;
         }
         ts.move(request.info.getSnapshot().getEmbeddedOffset(request.anchor));
-        if (ts.moveNext()) {
+        if (ts.movePrevious()) {
             Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_DOT));
             if (token != null && JsTokenId.KEYWORD_THIS == token.id()) {
                 result = true;
