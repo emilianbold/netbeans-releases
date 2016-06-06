@@ -995,9 +995,13 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 JsObject singleton = resolveThisInSingletonPattern(fncScope);
                 if (singleton != null) {
                     fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-                    List<JsObject> properties = new ArrayList(fncScope.getProperties().values());
-                    for (JsObject property : properties) {
-                        ModelUtils.moveProperty(singleton, property);
+                    if (fncScope.isAnonymous()) {
+                        // TODO we probably should not move the properties, or at least increase offset range
+                        // of the singleton to fit offsets of these methods in the singleton object
+                        List<JsObject> properties = new ArrayList(fncScope.getProperties().values());
+                        for (JsObject property : properties) {
+                            ModelUtils.moveProperty(singleton, property);
+                        }
                     }
                 }
             }
