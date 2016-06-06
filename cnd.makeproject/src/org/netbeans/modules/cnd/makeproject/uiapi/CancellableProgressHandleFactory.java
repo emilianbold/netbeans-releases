@@ -37,41 +37,32 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.cnd.makeproject.ui.utils;
+package org.netbeans.modules.cnd.makeproject.uiapi;
 
-import java.awt.Frame;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.openide.windows.WindowManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = LongOperation.class)
-public class LongOperationImpl extends LongOperation {
+public abstract class CancellableProgressHandleFactory {
+    public abstract ProgressHandle createProgressHandle(IOTabsController.InputOutputTab ioTab, ProjectActionHandler handlerToUse, EventsProcessorActions epa);
+    
+    private static final Default DEFAULT = new Default();
 
-    @Override
-    public void executeLongOperation(CancellableTask task, String title, String message) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            ModalMessageDlg.runLongTask(mainWindow, task, null, task, title, message);
-        } else {
-            task.run();
+    public static CancellableProgressHandleFactory getProgressHandleFactory() {
+        CancellableProgressHandleFactory defaultFactory = Lookup.getDefault().lookup(CancellableProgressHandleFactory.class);
+        return defaultFactory == null ? DEFAULT : defaultFactory;
+    }
+    private static final class Default extends CancellableProgressHandleFactory {
+
+        @Override
+        public ProgressHandle createProgressHandle(IOTabsController.InputOutputTab ioTab, ProjectActionHandler handlerToUse, EventsProcessorActions epa) {
+            return ProgressHandle.createHandle(ioTab.getName());
         }
     }
-
-    @Override
-    public void executeLongOperation2(Runnable task, String title, String message) {
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
-            ModalMessageDlg.runLongTask(
-                    WindowManager.getDefault().getMainWindow(),
-                    task, null, null,
-                    title,
-                    message);
-        } else {
-            task.run();
-        }
-    }
+    
 }

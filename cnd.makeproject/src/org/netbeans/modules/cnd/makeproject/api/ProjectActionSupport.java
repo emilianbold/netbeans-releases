@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,10 +58,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -83,7 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.ui.runprofiles.EventsProcessorActionsImpl;
+import org.netbeans.modules.cnd.makeproject.uiapi.CancellableProgressHandleFactory;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.makeproject.uiapi.EventsProcessorActions;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
@@ -105,7 +102,6 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -404,25 +400,6 @@ public class ProjectActionSupport {
             return name.toString();
         }
 
-        private ProgressHandle createProgressHandle(final InputOutputTab ioTab, final ProjectActionHandler handlerToUse) {
-            final Cancellable cancel = handlerToUse.canCancel() ? new Cancellable() {
-
-                @Override
-                public boolean cancel() {
-                    epa.stopAction();
-                    return true;
-                }
-            } : null;
-
-            return ProgressHandleFactory.createHandle(ioTab.getName(), cancel, new AbstractAction() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ioTab.select();
-                }
-            });
-        }
-
         @Override
         public void run() {
             tabs.lockAndReset();
@@ -585,7 +562,7 @@ public class ProjectActionSupport {
                         initHandler(handlerToUse, currentEvent, paes);
                         epa.setActiveHandler(handlerToUse);
                         handlerToUse.addExecutionListener(eventExecutionListener);
-                        progressHandle = createProgressHandle(ioTab, handlerToUse);
+                        progressHandle = CancellableProgressHandleFactory.getProgressHandleFactory().createProgressHandle(ioTab, handlerToUse, epa);
                         progressHandle.start();
                         handlerToUse.execute(IOTabsController.getInputOutput(ioTab));
                         try {

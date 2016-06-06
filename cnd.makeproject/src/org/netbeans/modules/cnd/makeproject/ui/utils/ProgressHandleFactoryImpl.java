@@ -39,39 +39,40 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
-import java.awt.Frame;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.openide.windows.WindowManager;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.uiapi.CancellableProgressHandleFactory;
+import org.netbeans.modules.cnd.makeproject.uiapi.EventsProcessorActions;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
+import org.openide.util.Cancellable;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = LongOperation.class)
-public class LongOperationImpl extends LongOperation {
+@org.openide.util.lookup.ServiceProvider(service=CancellableProgressHandleFactory.class)
+public class ProgressHandleFactoryImpl extends CancellableProgressHandleFactory {
 
     @Override
-    public void executeLongOperation(CancellableTask task, String title, String message) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            ModalMessageDlg.runLongTask(mainWindow, task, null, task, title, message);
-        } else {
-            task.run();
-        }
-    }
+    public ProgressHandle createProgressHandle(final IOTabsController.InputOutputTab ioTab, final ProjectActionHandler handlerToUse, final EventsProcessorActions epa) {
+            final Cancellable cancel = handlerToUse.canCancel() ? new Cancellable() {
 
-    @Override
-    public void executeLongOperation2(Runnable task, String title, String message) {
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
-            ModalMessageDlg.runLongTask(
-                    WindowManager.getDefault().getMainWindow(),
-                    task, null, null,
-                    title,
-                    message);
-        } else {
-            task.run();
-        }
+                @Override
+                public boolean cancel() {
+                    epa.stopAction();
+                    return true;
+                }
+            } : null;
+            return ProgressHandleFactory.createHandle(ioTab.getName(), cancel, new AbstractAction() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ioTab.select();
+                }
+            });
     }
+    
 }

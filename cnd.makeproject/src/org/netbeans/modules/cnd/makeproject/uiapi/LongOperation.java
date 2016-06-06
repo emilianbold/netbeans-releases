@@ -98,6 +98,7 @@ public abstract class LongOperation {
     }
     
     public abstract void executeLongOperation(CancellableTask task, String title, String message);
+    public abstract void executeLongOperation2(Runnable task, String title, String message);
     
     private static final Default DEFAULT = new Default();
 
@@ -110,6 +111,11 @@ public abstract class LongOperation {
 
         @Override
         public void executeLongOperation(CancellableTask task, String title, String message) {
+            task.run();
+        }
+
+        @Override
+        public void executeLongOperation2(Runnable task, String title, String message) {
             task.run();
         }
     }

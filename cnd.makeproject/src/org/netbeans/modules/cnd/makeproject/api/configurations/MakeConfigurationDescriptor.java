@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -104,7 +105,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -120,7 +120,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1111,15 +1110,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
-            ModalMessageDlg.runLongTask(
-                    WindowManager.getDefault().getMainWindow(),
-                    saveRunnable, null, null,
-                    getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
-                    getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
-        } else {
-            saveRunnable.run();
-        }
+        LongOperation.getLongOperation().executeLongOperation2(initTask, 
+                getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+                getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         return saveRunnable.ret;
     }
     
