@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<!--
+<#--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2013, 2016 Oracle and/or its affiliates. All rights reserved.
+Copyright 2016 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -37,6 +37,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 
 Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
 -->
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
