@@ -2499,6 +2499,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
 		protected void onDone(MIRecord record) {
 		    updateLocalsForSelectFrame();
+                    if (RegistersWindow.getDefault().isShowing()) {
+                        requestRegisters();
+                    }
 		    finish();
 		}
 	    };
