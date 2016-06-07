@@ -55,12 +55,8 @@ import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public abstract class LibraryItem implements Cloneable {
     public static final int PROJECT_ITEM = 0;

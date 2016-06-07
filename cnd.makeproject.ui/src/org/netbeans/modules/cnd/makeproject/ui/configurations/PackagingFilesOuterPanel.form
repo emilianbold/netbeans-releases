@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -11,7 +11,7 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,2,88"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,56,0,0,2,54"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
@@ -31,7 +31,7 @@
               <ComponentRef name="topDirectoryTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.topDirectoryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.topDirectoryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -70,12 +70,12 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="592" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="558" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="180" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="197" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -95,7 +95,7 @@
               <ComponentRef name="ownerTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.ownerLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.ownerLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -131,7 +131,7 @@
               <ComponentRef name="groupTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.groupLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.groupLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -164,7 +164,7 @@
         <Component class="javax.swing.JLabel" name="defaultValues">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.defaultValues.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.defaultValues.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -176,7 +176,7 @@
         <Component class="javax.swing.JLabel" name="jLabel4">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -191,7 +191,7 @@
               <ComponentRef name="rWECheckBoxRegR1"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.filePermLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.filePermLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -209,7 +209,7 @@
               <ComponentRef name="rWECheckBoxExeR1"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.exePermLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.exePermLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -223,8 +223,8 @@
         </Component>
         <Component class="javax.swing.JTextField" name="exePermTextField">
           <Properties>
-            <Property name="columns" type="int" value="3"/>
             <Property name="editable" type="boolean" value="false"/>
+            <Property name="columns" type="int" value="3"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -245,8 +245,8 @@
         </Component>
         <Component class="javax.swing.JTextField" name="filePermTextField">
           <Properties>
-            <Property name="columns" type="int" value="3"/>
             <Property name="editable" type="boolean" value="false"/>
+            <Property name="columns" type="int" value="3"/>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -268,7 +268,7 @@
         <Component class="javax.swing.JLabel" name="rLabel1">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.rLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.rLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -280,7 +280,7 @@
         <Component class="javax.swing.JLabel" name="wLabel1">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.wLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.wLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -292,7 +292,7 @@
         <Component class="javax.swing.JLabel" name="eLabel1">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.eLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.eLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -364,7 +364,7 @@
         <Component class="javax.swing.JLabel" name="rLabel2">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.rLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.rLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -376,7 +376,7 @@
         <Component class="javax.swing.JLabel" name="wLabel2">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.wLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.wLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -388,7 +388,7 @@
         <Component class="javax.swing.JLabel" name="eLabel2">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.eLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.eLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -460,7 +460,7 @@
         <Component class="javax.swing.JLabel" name="rLabel3">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.rLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.rLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -472,7 +472,7 @@
         <Component class="javax.swing.JLabel" name="wLabel3">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.wLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.wLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -484,7 +484,7 @@
         <Component class="javax.swing.JLabel" name="eLabel3">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle.properties" key="PackagingFilesOuterPanel.eLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/configurations/Bundle.properties" key="PackagingFilesOuterPanel.eLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>

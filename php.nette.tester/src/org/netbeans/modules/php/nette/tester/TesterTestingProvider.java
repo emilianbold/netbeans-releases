@@ -44,7 +44,7 @@ package org.netbeans.modules.php.nette.tester;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.php.api.editor.PhpClass.Method;
+import org.netbeans.modules.php.api.editor.PhpType.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;

@@ -224,8 +224,8 @@ class MakefileCustomizerNode extends CustomizerNode {
         }
 
         private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-            String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
-            String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
+            String titleText = NbBundle.getMessage(MakefileCustomizerNode.class, "Run_Directory");
+            String buttonText = NbBundle.getMessage(MakefileCustomizerNode.class, "SelectLabel");
             final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(getSourceExecutionEnvironment(conf), titleText, buttonText,
                     JFileChooser.DIRECTORIES_ONLY, null, seed, true);
             chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,61 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.zend2.ui.actions;
 
-import java.io.File;
-import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpType;
-import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
-import org.netbeans.modules.php.zend2.util.Zend2Utils;
+package org.netbeans.modules.php.api.editor;
+
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
-public class Zend2GoToActionAction extends GoToActionAction {
+/**
+ * Class representing a PHP interface.
+ */
+public final class PhpInterface extends PhpType {
 
-    private static final long serialVersionUID = -5246856421654L;
+    public PhpInterface(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
+        super(name, fullyQualifiedName, description);
+    }
 
-    private final File file;
+    public PhpInterface(@NonNull String name, @NullAllowed String fullyQualifiedName) {
+        super(name, fullyQualifiedName);
+    }
 
-    public Zend2GoToActionAction(File file) {
-        assert Zend2Utils.isViewWithAction(file);
-        this.file = file;
+    public PhpInterface(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
+        this(name, fullyQualifiedName, offset, null);
+    }
+
+    public PhpInterface(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
+        super(name, fullyQualifiedName, offset, description);
     }
 
     @Override
-    public boolean goToAction() {
-        File controller = Zend2Utils.getController(file);
-        if (controller != null) {
-            FileObject fo = FileUtil.toFileObject(controller);
-            if (fo != null) {
-                UiUtils.open(fo, getActionMethodOffset(fo));
-                return true;
-            }
-        }
-        return false;
+    public PhpInterface addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
+        super.addMethod(name, fullyQualifiedName, offset, description);
+        return this;
     }
 
-    private int getActionMethodOffset(FileObject controller) {
-        String actionMethodName = Zend2Utils.getActionName(file);
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        for (PhpClass phpClass : editorSupport.getClasses(controller)) {
-            if (phpClass.getName().endsWith(Zend2Utils.CONTROLLER_CLASS_SUFFIX)) {
-                if (actionMethodName != null) {
-                    for (PhpType.Method method : phpClass.getMethods()) {
-                        if (actionMethodName.equals(method.getName())) {
-                            return method.getOffset();
-                        }
-                    }
-                }
-                return phpClass.getOffset();
-            }
-        }
-        return DEFAULT_OFFSET;
+    @Override
+    public PhpInterface addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
+        return addMethod(name, fullyQualifiedName, offset, null);
+    }
+
+    @Override
+    public PhpInterface addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName) {
+        return addMethod(name, fullyQualifiedName, -1, null);
+    }
+
+    @Override
+    public PhpInterface addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
+        return addMethod(name, fullyQualifiedName, -1, description);
     }
 
 }

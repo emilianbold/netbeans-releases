@@ -130,7 +130,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.14</specification-version>
+                        <specification-version>0.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -156,7 +156,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.19</specification-version>
+                        <specification-version>0.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
