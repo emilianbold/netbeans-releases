@@ -44,6 +44,12 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,10 +59,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
@@ -67,9 +76,12 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
@@ -132,6 +144,9 @@ public class J2SEActionProvider extends BaseActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
     };
 
+    //Post compile on save actions
+    private final CosAction cosAction;
+
     /** Map from commands to ant targets */
     private Map<String,String[]> commands;
 
@@ -179,6 +194,11 @@ public class J2SEActionProvider extends BaseActionProvider {
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
+        this.cosAction = new CosAction(
+                this,
+                project.evaluator(),
+                project.getSourceRoots(),
+                project.getTestSourceRoots());
     }
 
     @Override
@@ -318,5 +338,139 @@ public class J2SEActionProvider extends BaseActionProvider {
             return prj.getClassPathProvider().findClassPath(file, type);
         }
 
+    }
+
+    private static final class CosAction implements BuildArtifactMapper.ArtifactsUpdated,
+            PropertyChangeListener {
+        private static final String COS_UPDATED = "$cos.update";    //NOI18N
+        private static final Object NONE = new Object();
+        private final J2SEActionProvider owner;
+        private final PropertyEvaluator eval;
+        private final SourceRoots src;
+        private final SourceRoots tests;
+        private final BuildArtifactMapper mapper;
+        private final Map</*@GuardedBy("this")*/URL,BuildArtifactMapper.ArtifactsUpdated> currentListeners;
+        private volatile Object targetCache;
+
+        private CosAction(
+                @NonNull final J2SEActionProvider owner,
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final SourceRoots src,
+                @NonNull final SourceRoots tests) {
+            this.owner = owner;
+            this.eval = eval;
+            this.src = src;
+            this.tests = tests;
+            this.mapper = new BuildArtifactMapper();
+            this.currentListeners = new HashMap<>();
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+            this.src.addPropertyChangeListener(WeakListeners.propertyChange(this, this.src));
+            this.tests.addPropertyChangeListener(WeakListeners.propertyChange(this, this.tests));
+            updateRootsListeners();
+        }
+
+        @Override
+        public void artifactsUpdated(@NonNull final Iterable<File> artifacts) {
+            final String target = getTarget();
+            if (target != null) {
+                final FileObject buildXml = owner.findBuildXml();
+                if (buildXml != null) {
+                    try {
+                        ActionUtils.runTarget(
+                                buildXml,
+                                new String[] {target},
+                                null,
+                                null);
+                    } catch (IOException ioe) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot execute pos compile on save target: {0} in: {1}",   //NOI18N
+                                new Object[]{
+                                    target,
+                                    FileUtil.getFileDisplayName(buildXml)
+                                });
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            final String name = evt.getPropertyName();
+            if (name == null || COS_UPDATED.equals(name)) {
+                targetCache = null;
+            } else if (SourceRoots.PROP_ROOTS.equals(name)) {
+                updateRootsListeners();
+            }
+        }
+
+        private void updateRootsListeners() {
+            final Set<URL> newRoots = new HashSet<>();
+            Collections.addAll(newRoots, this.src.getRootURLs());
+            Collections.addAll(newRoots, this.tests.getRootURLs());
+            synchronized (this) {
+                final Set<URL> toRemove = new HashSet<>(currentListeners.keySet());
+                toRemove.removeAll(newRoots);
+                newRoots.removeAll(currentListeners.keySet());
+                for (URL u : toRemove) {
+                    final BuildArtifactMapper.ArtifactsUpdated l = currentListeners.remove(u);
+                    mapper.removeArtifactsUpdatedListener(u, l);
+                }
+                for (URL u : newRoots) {
+                    final BuildArtifactMapper.ArtifactsUpdated l = new WeakArtifactUpdated(this, mapper, u);
+                    currentListeners.put(u, l);
+                    mapper.addArtifactsUpdatedListener(u, l);
+                }
+            }
+        }
+
+        @CheckForNull
+        private String getTarget() {
+            Object target = targetCache;
+            if (target == null) {
+                final String val = eval.getProperty(COS_UPDATED);
+                target = targetCache = val != null && !val.isEmpty() ?
+                        val :
+                        NONE;
+            }
+            if (target == NONE) {
+                return null;
+            }
+            return owner.isCompileOnSaveEnabled() ?
+                    (String) target :
+                    null;
+        }
+
+        private static final class WeakArtifactUpdated extends WeakReference<BuildArtifactMapper.ArtifactsUpdated>
+                implements BuildArtifactMapper.ArtifactsUpdated, Runnable {
+
+            private final BuildArtifactMapper source;
+            private final URL url;
+
+            WeakArtifactUpdated(
+                    @NonNull final BuildArtifactMapper.ArtifactsUpdated delegate,
+                    @NonNull final BuildArtifactMapper source,
+                    @NonNull final URL url) {
+                super(delegate);
+                Parameters.notNull("source", source);   //NOI18N
+                Parameters.notNull("url", url); //NOI18N
+                this.source = source;
+                this.url = url;
+            }
+
+            @Override
+            public void artifactsUpdated(
+                    @NonNull final Iterable<File> artifacts) {
+                final BuildArtifactMapper.ArtifactsUpdated delegate = get();
+                if (delegate != null) {
+                    delegate.artifactsUpdated(artifacts);
+                }
+            }
+
+            @Override
+            public void run() {
+                source.removeArtifactsUpdatedListener(url, this);
+            }
+        }
     }
 }
