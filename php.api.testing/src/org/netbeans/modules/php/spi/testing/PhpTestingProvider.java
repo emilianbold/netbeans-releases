@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
@@ -101,7 +101,7 @@ public interface PhpTestingProvider {
      * @return {@code true} if the test is a test case (test method)
      * @since 0.3
      */
-    boolean isTestCase(@NonNull PhpModule phpModule, @NonNull PhpClass.Method method);
+    boolean isTestCase(@NonNull PhpModule phpModule, @NonNull PhpType.Method method);
 
     /**
      * Run tests, <b>synchronously</b>, for the given {@link TestRunInfo info} and use

@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- * Class representing a PHP element ({@link PhpClass PHP class}, method, field etc.).
+ * Class representing a PHP element ({@link PhpType PHP type}, method, field etc.).
  */
 public abstract class PhpBaseElement {
 
@@ -57,9 +57,10 @@ public abstract class PhpBaseElement {
     private FileObject file;
     private final int offset;
     private final String description;
-    private final PhpClass type;
+    private final PhpType type;
 
-    protected PhpBaseElement(@NonNull String name, @NullAllowed PhpClass type) {
+
+    protected PhpBaseElement(@NonNull String name, @NullAllowed PhpType type) {
         this(name, null, type, null, -1, null);
     }
 
@@ -83,11 +84,13 @@ public abstract class PhpBaseElement {
         this(name, fullyQualifiedName, null, offset, description);
     }
 
-    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file, int offset, @NullAllowed String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file,
+            int offset, @NullAllowed String description) {
         this(name, fullyQualifiedName, null, file, offset, description);
     }
 
-    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset, @NullAllowed String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed PhpType type,
+            @NullAllowed FileObject file, int offset, @NullAllowed String description) {
         Parameters.notEmpty("name", name);
 
         this.name = name;
@@ -108,7 +111,7 @@ public abstract class PhpBaseElement {
     }
 
     @CheckForNull
-    public PhpClass getType() {
+    public PhpType getType() {
         return type;
     }
 
@@ -132,4 +135,5 @@ public abstract class PhpBaseElement {
     public void setFile(FileObject file) {
         this.file = file;
     }
+
 }

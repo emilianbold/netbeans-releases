@@ -44,6 +44,7 @@ package org.netbeans.modules.php.zend.ui.actions;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
 import org.netbeans.modules.php.zend.util.ZendUtils;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ public final class ZendGoToActionAction extends GoToActionAction {
         for (PhpClass phpClass : editorSupport.getClasses(action)) {
             if (phpClass.getName().endsWith(ZendUtils.CONTROLLER_CLASS_SUFFIX)) {
                 if (actionMethodName != null) {
-                    for (PhpClass.Method method : phpClass.getMethods()) {
+                    for (PhpType.Method method : phpClass.getMethods()) {
                         if (actionMethodName.equals(method.getName())) {
                             return method.getOffset();
                         }

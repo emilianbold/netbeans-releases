@@ -48,13 +48,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -62,6 +60,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -73,8 +72,6 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableScope;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -155,10 +152,13 @@ public class Zend2EditorExtender extends EditorExtender {
                     // add them to global variables...
                     allVariables.addAll(newVariables);
                     // ...and also as fields to $this variable
-                    PhpClass type = viewVariable.getType();
+                    PhpType type = viewVariable.getType();
                     assert type != null;
-                    for (PhpVariable variable : newVariables) {
-                        type.addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
+                    if (type instanceof PhpClass) {
+                        PhpClass phpClass = (PhpClass) type;
+                        for (PhpVariable variable : newVariables) {
+                            phpClass.addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
+                        }
                     }
                 }
 

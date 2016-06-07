@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
@@ -46,7 +46,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -111,17 +111,17 @@ public final class TestSingleMethodSupport {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null;
         PhpBaseElement element = editorSupport.getElement(fileObject, caret);
-        if (!(element instanceof PhpClass.Method)) {
+        if (!(element instanceof PhpType.Method)) {
             return null;
         }
-        PhpClass.Method method = (PhpClass.Method) element;
+        PhpType.Method method = (PhpType.Method) element;
         PhpProject project = PhpProjectUtils.getPhpProject(fileObject);
         assert project != null;
         PhpModule phpModule = project.getPhpModule();
         for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
             if (testingProvider.isTestFile(phpModule, fileObject)
                     && testingProvider.isTestCase(phpModule, method)) {
-                return new SingleMethod(fileObject, CommandUtils.encodeMethod(method.getPhpClass().getFullyQualifiedName(), method.getName()));
+                return new SingleMethod(fileObject, CommandUtils.encodeMethod(method.getPhpType().getFullyQualifiedName(), method.getName()));
             }
         }
         return null;

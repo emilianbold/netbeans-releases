@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.editor.lib2.caret;
 
+import java.awt.Point;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Editor caret may request a possible fold(s) expansion upon dot or mark position setting.
@@ -62,6 +64,22 @@ public abstract class CaretFoldExpander {
         CaretFoldExpander.caretFoldExpander = caretFoldExpander;
     }
     
-    public abstract void checkExpandFolds(JTextComponent c, List<Position> posList);
+    /**
+     * Check whether any of the given positions points to a collapsed fold and if so
+     * then expand these folds.
+     *
+     * @param c non-null text component.
+     * @param posList non-null list of positions to check.
+     */
+    public abstract void checkExpandFolds(@NonNull JTextComponent c, @NonNull List<Position> posList);
+    
+    /**
+     * Check whether there's an unexpanded fold at the point that caret points to
+     * and if so then expand it.
+     *
+     * @param c non-null text component.
+     * @param p point (relative to the component) to which the caret points.
+     */
+    public abstract boolean checkExpandFold(@NonNull JTextComponent c, @NonNull Point p);
 
 }

@@ -46,8 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpClass.Field;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -162,10 +161,10 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
                 VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
-    static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
+    static FieldElement fromFrameworks(final TypeElement type, final PhpType.Field field, final ElementQuery elementQuery) {
         Parameters.notNull("field", field);
         Parameters.notNull("elementQuery", elementQuery);
-        final PhpClass fldType = field.getType();
+        final PhpType fldType = field.getType();
         final Set<TypeResolver> typeResolvers = fldType != null
                 ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName()))
                 : Collections.<TypeResolver>emptySet();

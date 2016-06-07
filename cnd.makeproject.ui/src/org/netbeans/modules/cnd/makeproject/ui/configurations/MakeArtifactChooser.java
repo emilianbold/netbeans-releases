@@ -141,7 +141,6 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(projectTextField, gridBagConstraints);
 
-        libFilesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("{bundleNameSlashes}").getString("PROJECT_LIBRARY_FILES_MN").charAt(0));
         libFilesLabel.setLabelFor(listArtifacts);
         org.openide.awt.Mnemonics.setLocalizedText(libFilesLabel, bundle.getString("PROJECT_LIBRARY_FILES_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

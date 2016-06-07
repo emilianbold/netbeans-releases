@@ -144,7 +144,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
                 String shell = HostInfoUtils.getHostInfo(targetEnv).getShell();
                 if (shell != null) {
                     shell = CndPathUtilities.getBaseName(shell);
-                    runComboHintSuffix = NbBundle.getMessage(RunProfile.class, "ShellSyntaxSupported", shell); // NOI18N
+                    runComboHintSuffix = NbBundle.getMessage(RunProfileNodeProvider.class, "ShellSyntaxSupported", shell); // NOI18N
                 }
             } catch (IOException ex) {
             } catch (ConnectionManager.CancellationException ex) {

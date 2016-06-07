@@ -194,7 +194,7 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
         setPreferredSize(new java.awt.Dimension(300, 200));
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(headerCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.headerCheck.text1", getHeaderList()));
+        org.openide.awt.Mnemonics.setLocalizedText(headerCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensions.headerCheck.text1", getHeaderList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -204,7 +204,7 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
         gridBagConstraints.weightx = 1.0;
         add(headerCheck, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.cCheck.text1", getCList()));
+        org.openide.awt.Mnemonics.setLocalizedText(cCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensions.cCheck.text1", getCList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -214,7 +214,7 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
         gridBagConstraints.weightx = 1.0;
         add(cCheck, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cppCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.cppCheck.text1", getCppList()));
+        org.openide.awt.Mnemonics.setLocalizedText(cppCheck, org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensions.cppCheck.text1", getCppList()));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -228,7 +228,7 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
         jScrollPane1.setFocusable(false);
 
         textPane.setEditable(false);
-        textPane.setText(org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensionsImpl.textPane.text1")); // NOI18N
+        textPane.setText(org.openide.util.NbBundle.getMessage(ConfirmExtensionsImpl.class, "ConfirmExtensions.textPane.text1")); // NOI18N
         textPane.setFocusable(false);
         jScrollPane1.setViewportView(textPane);
 
