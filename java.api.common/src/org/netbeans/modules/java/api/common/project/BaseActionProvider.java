@@ -391,7 +391,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @CheckForNull
-    private FileObject findBuildXml() {
+    protected final FileObject findBuildXml() {
         String name = buildXMLName;
         if (name == null) {
             buildXMLName = name = getBuildXmlName(project, evaluator);
