@@ -4,6 +4,8 @@
 /nbproject/private$
 /nbproject/sqe.properties$
 /nbproject/findbugs.settings$
+/nbproject/.*\.mk$
+/nbproject/.*\.bash$
 /test/(coverage|lib|results|work)$
 derby\.log
 \.class$
