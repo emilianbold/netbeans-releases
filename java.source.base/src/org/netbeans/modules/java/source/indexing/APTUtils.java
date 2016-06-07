@@ -110,6 +110,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String BOOT_PATH = "bootPath"; //NOI18N
     private static final String COMPILE_PATH = "compilePath";   //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
+    private static final String APT_DIRTY = "aptDirty"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String JRE_PROFILE = "jreProfile";        //NOI18N
@@ -399,6 +400,15 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         try {
             final ClassPath pp = validatePaths();
             final URL url = fo.toURL();
+            String val = JavaIndex.getAttribute(url, APT_DIRTY, null);
+            if (Boolean.parseBoolean(val)) {
+                JavaIndex.LOG.fine("forcing reindex due to processors dirty"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+                JavaIndex.setAttribute(url, APT_DIRTY, null);
+            }
             if (JavaIndex.ensureAttributeValue(url, SOURCE_LEVEL_ROOT, sourceLevel.getSourceLevel(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
                 vote = true;
@@ -551,13 +561,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     .filter(pModified)
                     .collect(Collectors.toList());
             if (!times.isEmpty()) {
-                LOG.log(Level.FINEST, "Important changed: {0}", added);    //NOI18N
+                LOG.log(Level.FINEST, "Important changed: {0}", times);    //NOI18N
                 for (Pair<File,Long> p : times) {
                     usedRoots.update(p.first(), p.second());
                 }
                 res = true;
             }
             if (res) {
+                JavaIndex.setAttribute(url, APT_DIRTY, Boolean.TRUE.toString());
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
             }
             return res;
