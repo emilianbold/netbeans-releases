@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.utils.ImportUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeActionProvider;
@@ -1698,7 +1697,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 // do not show any dialogs in unit test mode, just silently fail validation
                 lastValidation = false;
             } else {
-                String title = NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title");
+                String title = NbBundle.getMessage(MakeActionProviderImpl.class, "LBL_ResolveMissingTools_Title");
                 ResolveBuildToolsFactory resolver = Lookup.getDefault().lookup(ResolveBuildToolsFactory.class);
                 lastValidation = resolver.resolveTools(title, pd, conf, env, csname, cs, cRequired, cppRequired, fRequired, asRequired, errs);
                 if (lastValidation) {
