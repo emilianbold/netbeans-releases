@@ -183,17 +183,6 @@ Contributor(s):
         </folder>
     </folder>
 
-    <folder name="CND">
-        <folder name="Extensions">
-            <file name="Assembler">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
-                <attr name="mimeType" stringvalue="text/x-asm"/>
-                <attr name="default" stringvalue="s"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Templates">
         <folder name="asmFiles">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>

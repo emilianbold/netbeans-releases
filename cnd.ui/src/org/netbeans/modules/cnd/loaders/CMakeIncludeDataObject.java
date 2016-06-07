@@ -46,18 +46,12 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-@MIMEResolver.Registration(
-    displayName = "#ExtBasedResolver", // NOI18N
-    position = 215,
-    resource = "../resources/mime-resolver-ext-based.xml" // NOI18N
-)
 public class CMakeIncludeDataObject extends MultiDataObject {
     public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

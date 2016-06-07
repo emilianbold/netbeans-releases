@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations;
+package org.netbeans.modules.cnd.makeproject.ui.configurations;
 
 import java.io.BufferedReader;
 import java.io.File;

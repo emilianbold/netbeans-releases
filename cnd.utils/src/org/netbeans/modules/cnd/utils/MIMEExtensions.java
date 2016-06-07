@@ -64,16 +64,23 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakSet;
+
 
 /**
  * we use own manager to unify work with extensions and support default extension
  * + unfortunately implementation of FileUtil.getMIMETypeExtensions is extremely slow
  * @author Vladimir Voskresensky
  */
+@MIMEResolver.Registration(displayName = "#ExtBasedResolver", position = 215, resource = "resources/mime-resolver-ext-based.xml") // NOI18N
+@Messages({
+    "ExtBasedResolver=Common C/C++ Extensions"
+})
 public final class MIMEExtensions {
     private static final String STANDARD_SUFFIX = "/standard"; //NOI18N
     private final static Preferences preferences = NbPreferences.forModule(MIMEExtensions.class);
@@ -81,19 +88,42 @@ public final class MIMEExtensions {
     private final ReentrantReadWriteLock listenersLock = new ReentrantReadWriteLock();
     private final WeakSet<ChangeListener> listeners = new WeakSet<ChangeListener>();
 
-    // access methods
+    @MIMEResolver.Registration(displayName="#CExtResolver", position=214, resource="resources/mime-resolver-ext-based-c.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_C_SOURCES_FILEFILTER"}) // NOI18N
+    @Messages({
+        "CExtResolver=C MIME Resolver (ext-based)",
+        "FILECHOOSER_C_SOURCES_FILEFILTER=C Source Files"
+    })
     public static MIMEExtensions get(String mimeType) {
         return manager.get(mimeType);
     }
 
+    @MIMEResolver.Registration(displayName="#FortranExtResolver", position=219, resource="resources/mime-resolver-ext-based-fortran.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_FORTRAN_SOURCES_FILEFILTER"}) // NOI18N
+    @Messages({
+        "FortranExtResolver=Fortran MIME Resolver (ext-based)",
+        "FILECHOOSER_FORTRAN_SOURCES_FILEFILTER=Fortran Source Files"
+    })
     public static List<MIMEExtensions> getCustomizable() {
         return manager.getOrderedExtensions();
     }
 
+    @MIMEResolver.Registration(displayName="#HExtResolver", position=217, resource="resources/mime-resolver-ext-based-h.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_HEADER_SOURCES_FILEFILTER"}) // NOI18N
+    @Messages({
+        "HExtResolver=H MIME Resolver (ext-based)",
+        "FILECHOOSER_HEADER_SOURCES_FILEFILTER=Header Files"
+    })
     public static boolean isCustomizableExtensions(String mimeType) {
         return get(mimeType) != null;
     }
 
+    @MIMEResolver.Registration(displayName="#CCExtResolver", position=216, resource="resources/mime-resolver-ext-based-cpp.xml", // NOI18N
+        showInFileChooser={"#FILECHOOSER_CC_SOURCES_FILEFILTER"}) // NOI18N
+    @Messages({
+        "CCExtResolver=C++ MIME Resolver (ext-based)",
+        "FILECHOOSER_CC_SOURCES_FILEFILTER=C++ Source Files"
+    })
     public static boolean isRegistered(String mimeType, String ext) {
         if (ext == null || ext.length() == 0) {
             return false;
@@ -110,6 +140,10 @@ public final class MIMEExtensions {
      * Add a listener to changes.
      * @param l a listener to add
      */
+    @MIMEResolver.Registration(displayName="#ContentResolver", position=470, resource="resources/mime-resolver-content-based.xml") // NOI18N
+    @Messages({
+        "ContentResolver=H MIME Resolver (content-based)"
+    })
     public void addChangeListener(ChangeListener l) {
         listenersLock.writeLock().lock();
         try {
@@ -123,6 +157,12 @@ public final class MIMEExtensions {
      * Stop listening to changes.
      * @param l a listener to remove
      */
+    @MIMEResolver.Registration(displayName = "#QtNameExtResolver.Name", position = 218, resource = "resources/mime-resolver-ext-based-qt.xml", // NOI18N
+        showInFileChooser={"#QtNameExtResolver.FileChooserName"}) // NOI18N
+    @Messages({
+        "QtNameExtResolver.Name=Qt Files",
+        "QtNameExtResolver.FileChooserName=Qt Files"
+    })
     public void removeChangeListener(ChangeListener l) {
         listenersLock.writeLock().lock();
         try {
@@ -174,6 +214,10 @@ public final class MIMEExtensions {
      * @param defaultExt default extension for mimeType
      * @throws IllegalArgumentException if input list doesn't contain default extension
      */
+    @MIMEResolver.Registration(displayName="#NameExtResolver", position=138, resource="resources/mime-resolver-name-ext.xml") // NOI18N
+    @Messages({
+        "NameExtResolver=C Make Files"
+    })
     public void setExtensions(List<String> newExts, String defaultExt) {
         if (newExts.isEmpty()) {
             return;
@@ -201,10 +245,20 @@ public final class MIMEExtensions {
         preferences.put(getMIMEType(), defaultExt);
     }
 
+    @MIMEResolver.Registration(displayName="#HexBasedResolver", position=500, resource="resources/mime-resolver-hex-based.xml") // NOI18N
+    @Messages({
+        "HexBasedResolver=Magic C/C++ Headers"
+    })
     public String getMIMEType() {
         return mimeType;
     }
-
+    
+    @MIMEResolver.Registration(displayName="#MakeResolver.Name", position=140, resource="resources/mime-resolver-make.xml", // NOI18N
+        showInFileChooser="#MakeResolver.FileChooserName") // NOI18N
+    @Messages({
+        "MakeResolver.Name=Makefile Resolver",
+        "MakeResolver.FileChooserName=Makefiles"
+    })
     public String getDefaultExtension() {
         String defaultExt = preferences.get(getMIMEType(), "");
         if (defaultExt.length() == 0) {
@@ -215,6 +269,10 @@ public final class MIMEExtensions {
         }
     }
 
+    @MIMEResolver.Registration(displayName="#ShellResolver", position=139, resource="resources/mime-resolver.xml")
+    @Messages({
+        "ShellResolver=Common Shell Extensions"
+    })
     public CndLanguageStandard getDefaultStandard() {
         return CndLanguageStandards.StringToLanguageStandard(preferences.get(getMIMEType()+STANDARD_SUFFIX, ""));
     }

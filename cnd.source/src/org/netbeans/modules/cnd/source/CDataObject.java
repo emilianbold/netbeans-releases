@@ -48,7 +48,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -58,8 +57,6 @@ import org.openide.windows.TopComponent;
 /** Represents a C++ object in the Repository.
  *
  */
-@MIMEResolver.Registration(displayName="#CExtResolver", position=214, resource="resources/mime-resolver-ext-based-c.xml", // NOI18N
-        showInFileChooser={"#FILECHOOSER_C_SOURCES_FILEFILTER"}) // NOI18N
 public class CDataObject extends SourceDataObject {
 
     /** Serial version number */

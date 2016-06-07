@@ -49,14 +49,11 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-@MIMEResolver.Registration(displayName="#HExtResolver", position=217, resource="resources/mime-resolver-ext-based-h.xml", // NOI18N
-        showInFileChooser={"#FILECHOOSER_HEADER_SOURCES_FILEFILTER"}) // NOI18N
 /** Represents a .h header object in the Repository */
 public class HDataObject extends SourceDataObject {
 

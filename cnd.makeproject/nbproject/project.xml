@@ -127,7 +127,7 @@ Contributor(s):
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.53</specification-version>
+                        <specification-version>1.53.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -295,10 +295,6 @@ Contributor(s):
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.editor</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.cnd.makeproject.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

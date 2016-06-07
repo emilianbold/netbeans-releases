@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="CND">
+        <folder name="Extensions">
+            <file name="Header">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.utils.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="default" stringvalue="h"/>
+                <attr name="standard" stringvalue="C++11"/>
+                <attr name="mimeType" stringvalue="text/x-h"/>
+            </file>
+            <file name="C++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.utils.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="default" stringvalue="cpp"/>
+                <attr name="standard" stringvalue="C++11"/>
+                <attr name="mimeType" stringvalue="text/x-c++"/>
+            </file>
+            <file name="C">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.utils.resources.Bundle"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="default" stringvalue="c"/>
+                <attr name="standard" stringvalue="C11"/>
+                <attr name="mimeType" stringvalue="text/x-c"/>
+            </file>
+            <file name="Fortran">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.utils.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="default" stringvalue="f"/>
+                <attr name="mimeType" stringvalue="text/x-fortran"/>
+            </file>
+            <file name="Assembler">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.utils.resources.Bundle"/>
+                <attr name="mimeType" stringvalue="text/x-asm"/>
+                <attr name="default" stringvalue="s"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
+    </folder>	<!-- CND -->
+</filesystem>
