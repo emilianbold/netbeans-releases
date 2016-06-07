@@ -49,7 +49,7 @@
 
 function error_field($title, array $errors) {
     foreach ($errors as $error) {
-        /* @var $error Error */
+        /* @var $error ValidationError */
         if ($error->getSource() == $title) {
             return ' error-field';
         }
@@ -71,7 +71,7 @@ function error_field($title, array $errors) {
 <?php if (!empty($errors)): ?>
 <ul class="errors">
     <?php foreach ($errors as $error): ?>
-        <?php /* @var $error Error */ ?>
+        <?php /* @var $error ValidationError */ ?>
         <li><?php echo $error->getMessage(); ?></li>
     <?php endforeach; ?>
 </ul>

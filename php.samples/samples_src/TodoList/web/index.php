@@ -74,7 +74,7 @@ final class Index {
     /**
      * Exception handler.
      */
-    public function handleException(Exception $ex) {
+    public function handleException($ex) {
         $extra = array('message' => $ex->getMessage());
         if ($ex instanceof NotFoundException) {
             header('HTTP/1.0 404 Not Found');
@@ -92,7 +92,6 @@ final class Index {
     public function loadClass($name) {
         $classes = array(
             'Config' => '../config/Config.php',
-            'Error' => '../validation/Error.php',
             'Flash' => '../flash/Flash.php',
             'NotFoundException' => '../exception/NotFoundException.php',
             'TodoDao' => '../dao/TodoDao.php',
@@ -101,6 +100,7 @@ final class Index {
             'TodoSearchCriteria' => '../dao/TodoSearchCriteria.php',
             'TodoValidator' => '../validation/TodoValidator.php',
             'Utils' => '../util/Utils.php',
+            'ValidationError' => '../validation/ValidationError.php',
         );
         if (!array_key_exists($name, $classes)) {
             die('Class "' . $name . '" not found.');

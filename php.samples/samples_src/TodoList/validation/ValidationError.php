@@ -44,14 +44,14 @@
 /**
  * Validation error.
  */
-final class Error {
+final class ValidationError {
 
     private $source;
     private $message;
 
 
     /**
-     * Create new error.
+     * Create new validation error.
      * @param mixed $source source of the error
      * @param string $message error message
      */

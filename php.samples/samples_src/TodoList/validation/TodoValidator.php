@@ -58,26 +58,26 @@ final class TodoValidator {
     public static function validate(Todo $todo) {
         $errors = array();
         if (!$todo->getCreatedOn()) {
-            $errors[] = new Error('createdOn', 'Empty or invalid Created On.');
+            $errors[] = new ValidationError('createdOn', 'Empty or invalid Created On.');
         }
         if (!$todo->getLastModifiedOn()) {
-            $errors[] = new Error('lastModifiedOn', 'Empty or invalid Last Modified On.');
+            $errors[] = new ValidationError('lastModifiedOn', 'Empty or invalid Last Modified On.');
         }
         if (!trim($todo->getTitle())) {
-            $errors[] = new Error('title', 'Title cannot be empty.');
+            $errors[] = new ValidationError('title', 'Title cannot be empty.');
         }
         if (!$todo->getDueOn()) {
-            $errors[] = new Error('dueOn', 'Empty or invalid Due On.');
+            $errors[] = new ValidationError('dueOn', 'Empty or invalid Due On.');
         }
         if (!trim($todo->getPriority())) {
-            $errors[] = new Error('priority', 'Priority cannot be empty.');
+            $errors[] = new ValidationError('priority', 'Priority cannot be empty.');
         } elseif (!self::isValidPriority($todo->getPriority())) {
-            $errors[] = new Error('priority', 'Invalid Priority set.');
+            $errors[] = new ValidationError('priority', 'Invalid Priority set.');
         }
         if (!trim($todo->getStatus())) {
-            $errors[] = new Error('status', 'Status cannot be empty.');
+            $errors[] = new ValidationError('status', 'Status cannot be empty.');
         } elseif (!self::isValidStatus($todo->getStatus())) {
-            $errors[] = new Error('status', 'Invalid Status set.');
+            $errors[] = new ValidationError('status', 'Invalid Status set.');
         }
         return $errors;
     }
