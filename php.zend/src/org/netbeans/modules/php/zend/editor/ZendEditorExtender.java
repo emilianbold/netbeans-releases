@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -189,17 +190,20 @@ public class ZendEditorExtender extends EditorExtender {
                                     }
                                     Variable field = node.getField();
 
-                                    PhpClass type = view.getType();
-                                    String fieldName = "$" + CodeUtils.extractVariableName(field);  // NOI18N
-                                    PhpClass fieldType = name != null ? new PhpClass(name, fqn) : null;
-                                    String fieldTypesS = fieldName + "#" + (fieldType == null ? "null" : fieldType.getFullyQualifiedName()); // NOI18N
-                                    if (!addedFields.contains(fieldTypesS)) {
-                                        type.addField(
-                                                fieldName, 
-                                                fieldType,
-                                                action,
-                                                ASTNodeInfo.toOffsetRangeVar(field).getStart());
-                                        addedFields.add(fieldTypesS);
+                                    PhpType type = view.getType();
+                                    if (type instanceof PhpClass) {
+                                        PhpClass phpClass = (PhpClass) type;
+                                        String fieldName = "$" + CodeUtils.extractVariableName(field);  // NOI18N
+                                        PhpClass fieldType = name != null ? new PhpClass(name, fqn) : null;
+                                        String fieldTypesS = fieldName + "#" + (fieldType == null ? "null" : fieldType.getFullyQualifiedName()); // NOI18N
+                                        if (!addedFields.contains(fieldTypesS)) {
+                                            phpClass.addField(
+                                                    fieldName,
+                                                    fieldType,
+                                                    action,
+                                                    ASTNodeInfo.toOffsetRangeVar(field).getStart());
+                                            addedFields.add(fieldTypesS);
+                                        }
                                     }
                                 }
                             }

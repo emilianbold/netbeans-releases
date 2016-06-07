@@ -45,6 +45,7 @@ import java.io.File;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
 import org.netbeans.modules.php.zend2.util.Zend2Utils;
 import org.openide.filesystems.FileObject;
@@ -81,7 +82,7 @@ public class Zend2GoToActionAction extends GoToActionAction {
         for (PhpClass phpClass : editorSupport.getClasses(controller)) {
             if (phpClass.getName().endsWith(Zend2Utils.CONTROLLER_CLASS_SUFFIX)) {
                 if (actionMethodName != null) {
-                    for (PhpClass.Method method : phpClass.getMethods()) {
+                    for (PhpType.Method method : phpClass.getMethods()) {
                         if (actionMethodName.equals(method.getName())) {
                             return method.getOffset();
                         }

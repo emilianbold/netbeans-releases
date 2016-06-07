@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.coverage.CoverageProvider;
@@ -112,8 +112,8 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
-        if (!PhpUnit.isTestClass(method.getPhpClass().getName())) {
+    public boolean isTestCase(PhpModule phpModule, PhpType.Method method) {
+        if (!PhpUnit.isTestClass(method.getPhpType().getName())) {
             return false;
         }
         return PhpUnit.isTestMethod(method.getName());
