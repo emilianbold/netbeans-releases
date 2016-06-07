@@ -37,6 +37,7 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.antlr/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.api.model/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.api.project/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.api.remote/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.api.remote.ui/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.apt/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.asm/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.callgraph/src | tee ${LOG}
@@ -49,6 +50,7 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.discovery/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.dwarfdiscovery/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.dwarfdump/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.editor/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.folding/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.gizmo/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.gotodeclaration/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.highlight/src | tee ${LOG}
@@ -57,8 +59,11 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.kit/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.lexer/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.makeproject/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.makeproject.source.bridge/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.makeproject.ui/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.model.services/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.modeldiscovery/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.mixeddev/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.model.jclank.bridge/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.modelimpl/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.modelui/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.modelutil/src | tee ${LOG}
@@ -67,6 +72,7 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.qnavigator/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.refactoring/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.remote/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.remote.projectui/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.remote.ui/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.repository/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.repository.api/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.script/src | tee ${LOG}
@@ -76,7 +82,10 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.source/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.spellchecker.bindings/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.testrunner/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.toolchain/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.toolchain.ui/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.ui/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.utils/src | tee ${LOG}
+perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.utils.ui/src | tee ${LOG}
 
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/dlight/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/dlight.annotationsupport/src | tee ${LOG}
