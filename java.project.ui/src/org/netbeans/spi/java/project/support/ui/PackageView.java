@@ -84,6 +84,7 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -326,7 +327,7 @@ public class PackageView {
         }
         
         private static Node getOriginalNode(SourceGroup group) {
-            FileObject root = group.getRootFolder();
+            final FileObject root = group.getRootFolder();
             //Guard condition, if the project is (closed) and deleted but not yet gced
             // and the view is switched, the source group is not valid.
             if ( root == null || !root.isValid()) {
@@ -342,18 +343,27 @@ public class PackageView {
                 });
                 return new AbstractNode (Children.LEAF);
             }
-            switch (JavaProjectSettings.getPackageViewType()) {
-                case PACKAGES:
-                    return new PackageRootNode(group);
-                case TREE:
-                    return new TreeRootNode(group, false);
-                case REDUCED_TREE:
-                    return new TreeRootNode(group, true);
-                default:
-                    assert false : "Unknown PackageView Type"; //NOI18N
-                    return new PackageRootNode(group);
+            try {
+                switch (JavaProjectSettings.getPackageViewType()) {
+                    case PACKAGES:
+                        return new PackageRootNode(group);
+                    case TREE:
+                        return new TreeRootNode(group, false);
+                    case REDUCED_TREE:
+                        return new TreeRootNode(group, true);
+                    default:
+                        assert false : "Unknown PackageView Type"; //NOI18N
+                        return new PackageRootNode(group);
+                }
+            } catch (IllegalArgumentException iae) {
+                if (iae.getCause() instanceof DataObjectNotFoundException) {
+                    LOG.log(Level.WARNING, "The root: {0} does not exist.", FileUtil.getFileDisplayName(root)); //NOI18N
+                    return new AbstractNode (Children.LEAF);
+                } else {
+                    throw iae;
+                }
             }
-        }        
+        }
     }
     
     /**
