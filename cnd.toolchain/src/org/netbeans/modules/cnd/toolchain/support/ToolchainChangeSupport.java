@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,40 +36,29 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.toolchain.support;
 
-import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
+import org.openide.util.WeakSet;
 
-public class CMakeIncludeDataObject extends MultiDataObject {
-    public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor(MIMENames.CMAKE_INCLUDE_MIME_TYPE, true);
+/**
+ *
+ * @author Alexander Simon
+ */
+public abstract class ToolchainChangeSupport {
+    protected final static Set<ChangeListener> listenerModified = new WeakSet<ChangeListener>();
+
+    public static void addCompilerSetModifiedListener(ChangeListener l) {
+        synchronized (listenerModified) {
+            listenerModified.add(l);
+        }
     }
 
-    @MultiViewElement.Registration(displayName = "#Source",
-    iconBase = "org/netbeans/modules/cnd/loaders/cmake.png", //NOI18N
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    mimeType = MIMENames.CMAKE_INCLUDE_MIME_TYPE,
-    preferredID = "cmakeincludefile.source", //NOI18N
-    position = 1)
-    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-        return new MultiViewEditorElement(context);
-    }
-
-    @Override
-    protected int associateLookup() {
-        return 1;
+    public static void removeCompilerSetModifiedListener(ChangeListener l) {
+        synchronized (listenerModified) {
+            listenerModified.remove(l);
+        }
     }
 }

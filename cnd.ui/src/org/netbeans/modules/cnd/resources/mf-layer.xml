@@ -64,37 +64,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder> <!-- JavaHelp -->
     </folder>	<!-- Services -->
-    <folder name="CND">
-        <folder name="Extensions">
-            <file name="Header">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
-                <attr name="default" stringvalue="h"/>
-                <attr name="standard" stringvalue="C++11"/>
-                <attr name="mimeType" stringvalue="text/x-h"/>
-            </file>
-            <file name="C++">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="200"/>
-                <attr name="default" stringvalue="cpp"/>
-                <attr name="standard" stringvalue="C++11"/>
-                <attr name="mimeType" stringvalue="text/x-c++"/>
-            </file>
-            <file name="C">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="300"/>
-                <attr name="default" stringvalue="c"/>
-                <attr name="standard" stringvalue="C11"/>
-                <attr name="mimeType" stringvalue="text/x-c"/>
-            </file>
-            <file name="Fortran">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="400"/>
-                <attr name="default" stringvalue="f"/>
-                <attr name="mimeType" stringvalue="text/x-fortran"/>
-            </file>
-        </folder>
-    </folder>	<!-- CND -->
 
     <folder name="Templates">
         <folder name="cFiles">

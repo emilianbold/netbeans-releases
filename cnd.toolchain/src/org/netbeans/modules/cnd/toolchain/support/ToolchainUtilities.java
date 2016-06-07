@@ -71,7 +71,7 @@ public final class ToolchainUtilities {
     private ToolchainUtilities() {
     }
    
-private static final Set<ChangeListener> codeAssistanceChanged = new WeakSet<ChangeListener>();
+    private static final Set<ChangeListener> codeAssistanceChanged = new WeakSet<ChangeListener>();
 
     public static void addCodeAssistanceChangeListener(ChangeListener l) {
         synchronized (codeAssistanceChanged) {

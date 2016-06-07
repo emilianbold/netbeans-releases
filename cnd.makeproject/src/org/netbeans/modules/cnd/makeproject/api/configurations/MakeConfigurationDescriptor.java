@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
@@ -99,6 +98,7 @@ import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainChangeSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -210,7 +210,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (interrupter != null && interrupter.cancelled()) {
             return;
         }
-        ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        ToolchainChangeSupport.addCompilerSetModifiedListener(this);
         //for (Item item : getProjectItems()) {
         //    if (interrupter != null && interrupter.cancelled()) {
         //        return;
@@ -228,7 +228,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      */
     @Override
     public void closed() {
-        ToolsPanelSupport.removeCompilerSetModifiedListener(this);
+        ToolchainChangeSupport.removeCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
             item.onClose();
         }

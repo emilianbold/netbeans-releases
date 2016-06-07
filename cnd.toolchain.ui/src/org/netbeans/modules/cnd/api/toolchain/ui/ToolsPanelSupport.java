@@ -56,10 +56,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainChangeSupport;
 import org.netbeans.modules.cnd.toolchain.ui.options.AddCompilerSetPanel;
 import org.netbeans.modules.cnd.toolchain.ui.options.HostToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -73,7 +73,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Alexander Simon
  */
-public class ToolsPanelSupport {
+public class ToolsPanelSupport extends ToolchainChangeSupport {
     private static CompilerSet currentCompilerSet;
     private static final ToolsCacheManager cacheManager = (ToolsCacheManager) ToolsCacheManager.createInstance();
     // component.getClientProperty(OK_LISTENER_KEY) can have vetoable listener (VetoableChangeListener)
@@ -108,20 +108,6 @@ public class ToolsPanelSupport {
             for (ChangeListener l : listenerChanged) {
                 l.stateChanged(ev);
             }
-        }
-    }
-
-    private final static Set<ChangeListener> listenerModified = new WeakSet<ChangeListener>();
-
-    public static void addCompilerSetModifiedListener(ChangeListener l) {
-        synchronized (listenerModified) {
-            listenerModified.add(l);
-        }
-    }
-
-    public static void removeCompilerSetModifiedListener(ChangeListener l) {
-        synchronized (listenerModified) {
-            listenerModified.remove(l);
         }
     }
 

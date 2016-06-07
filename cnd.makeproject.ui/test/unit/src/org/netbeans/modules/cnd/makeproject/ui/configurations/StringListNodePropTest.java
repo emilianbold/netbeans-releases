@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
+package org.netbeans.modules.cnd.makeproject.ui.configurations;
 
-import org.netbeans.modules.cnd.makeproject.ui.configurations.StringListNodeProp;
 import java.beans.PropertyEditor;
 import java.util.List;
 import static org.junit.Assert.*;
