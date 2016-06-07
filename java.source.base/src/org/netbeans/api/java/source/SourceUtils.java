@@ -103,9 +103,11 @@ import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
+import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -540,7 +542,11 @@ public class SourceUtils {
                         for (String candidate : (List<String>)fnames) {
                             FileObject match = findMatchingChild(candidate, folders, caseSensitive);
                             if (match != null) {
-                                return match;
+                                FileObject ownerRoot = sourcePath.entries().isEmpty() ? root : sourcePath.findOwnerRoot(match);
+                                FQN2Files fQN2Files = ownerRoot != null ? FQN2Files.forRoot(ownerRoot.toURL()) : null;
+                                if (fQN2Files == null || !fQN2Files.check(signature[0], match)) {
+                                    return match;
+                                }
                             }
                         }
                     }
