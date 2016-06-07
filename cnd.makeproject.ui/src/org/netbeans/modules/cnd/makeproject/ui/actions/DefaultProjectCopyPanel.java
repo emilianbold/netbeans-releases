@@ -219,7 +219,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         projectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectCopyPanel.class, "ACSN_Project_Folder", new Object[] {})); // NOI18N
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectCopyPanel.class, "ACSD_Project_Folder", new Object[] {})); // NOI18N
 
-        extSourcesWarning.setForeground(UIManager.getColor("nb.errorForeground"));
+        extSourcesWarning.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -228,7 +228,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(extSourcesWarning, gridBagConstraints);
 
-        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -238,7 +238,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         add(errorMessage, gridBagConstraints);
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress");
+        progress.add(jPanel4, "not-progress"); // NOI18N
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
@@ -258,7 +258,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jPanel3, gridBagConstraints);
 
-        progress.add(progressImpl, "progress");
+        progress.add(progressImpl, "progress"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -273,7 +273,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
 
         warningTextArea.setColumns(20);
         warningTextArea.setEditable(false);
-        warningTextArea.setForeground(UIManager.getColor("nb.errorForeground"));
+        warningTextArea.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         warningTextArea.setLineWrap(true);
         warningTextArea.setRows(5);
         warningTextArea.setText(org.openide.util.NbBundle.getMessage(DefaultProjectCopyPanel.class, "VCSWarningMessage")); // NOI18N
