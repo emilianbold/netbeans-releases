@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.fold.ui;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -119,6 +120,27 @@ public final class CaretFoldExpanderImpl extends CaretFoldExpander {
                     foldHierarchy.unlock();
                 }
             }
+        }
+    }
+
+    @Override
+    public boolean checkExpandFold(JTextComponent c, Point p) {
+        FoldHierarchy foldHierarchy = FoldHierarchy.get(c);
+        foldHierarchy.lock();
+        try {
+            int offset = c.viewToModel(p);
+            Iterator collapsedFoldIterator = FoldUtilities.collapsedFoldIterator(foldHierarchy, offset, offset);
+            if (collapsedFoldIterator.hasNext()) {
+                Fold fold = (Fold) collapsedFoldIterator.next();
+                // Expand even if the offset is at fold's begining/end because that's what viewToModel() will return
+                if (offset >= fold.getStartOffset() && offset <= fold.getEndOffset()) {
+                    foldHierarchy.expand(fold);
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            foldHierarchy.unlock();
         }
     }
     
