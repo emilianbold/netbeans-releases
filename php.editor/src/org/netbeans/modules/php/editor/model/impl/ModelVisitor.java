@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -230,7 +231,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (namespaceScope != null) {
                             final String varName = phpVariable.getName();
                             VariableNameImpl variable = findVariable(namespace, varName);
-                            final PhpClass type = phpVariable.getType();
+                            final PhpType type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
                                         varName,

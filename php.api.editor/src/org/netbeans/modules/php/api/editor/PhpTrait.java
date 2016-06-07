@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.api.editor;
@@ -47,72 +47,71 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 
 /**
- * Class representing a PHP class.
- * @author Tomas Mysik
+ * Class representing a PHP trait.
  */
-public final class PhpClass extends PhpType {
+public final class PhpTrait extends PhpType {
 
-    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
+    public PhpTrait(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         super(name, fullyQualifiedName, description);
     }
 
-    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName) {
+    public PhpTrait(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         super(name, fullyQualifiedName);
     }
 
-    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
+    public PhpTrait(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         this(name, fullyQualifiedName, offset, null);
     }
 
-    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
+    public PhpTrait(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super(name, fullyQualifiedName, offset, description);
     }
 
     @Override
-    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
+    public PhpTrait addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super.addField(name, fullyQualifiedName, offset, description);
         return this;
     }
 
     @Override
-    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
+    public PhpTrait addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addField(name, fullyQualifiedName, offset, null);
     }
 
     @Override
-    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName) {
+    public PhpTrait addField(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addField(name, fullyQualifiedName, -1, null);
     }
 
     @Override
-    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
+    public PhpTrait addField(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
     @Override
-    public PhpClass addField(@NonNull String name, @NullAllowed PhpType type, @NullAllowed FileObject file, int offset) {
+    public PhpTrait addField(@NonNull String name, @NullAllowed PhpType type, @NullAllowed FileObject file, int offset) {
         super.addField(name, type, file, offset);
         return this;
     }
 
     @Override
-    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
+    public PhpTrait addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super.addMethod(name, fullyQualifiedName, offset, description);
         return this;
     }
 
     @Override
-    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
+    public PhpTrait addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addMethod(name, fullyQualifiedName, offset, null);
     }
 
     @Override
-    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName) {
+    public PhpTrait addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addMethod(name, fullyQualifiedName, -1, null);
     }
 
     @Override
-    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
+    public PhpTrait addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addMethod(name, fullyQualifiedName, -1, description);
     }
 
