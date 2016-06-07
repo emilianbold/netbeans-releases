@@ -48,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -258,12 +257,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
         }
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
     private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(EnvPanel.class);
-	}
-	return bundle.getString(s);
+	return NbBundle.getMessage(EnvPanel.class, s);
     }
 }

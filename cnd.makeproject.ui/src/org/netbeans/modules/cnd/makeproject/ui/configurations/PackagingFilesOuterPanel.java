@@ -259,11 +259,11 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
             tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 592, Short.MAX_VALUE)
+            .addGap(0, 558, Short.MAX_VALUE)
         );
         tmpPanelLayout.setVerticalGroup(
             tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 180, Short.MAX_VALUE)
+            .addGap(0, 197, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -359,8 +359,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         defaultsPanel.add(exePermLabel, gridBagConstraints);
 
-        exePermTextField.setColumns(3);
         exePermTextField.setEditable(false);
+        exePermTextField.setColumns(3);
         exePermTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exePermTextFieldActionPerformed(evt);
@@ -375,8 +375,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         exePermTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleName")); // NOI18N
         exePermTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
-        filePermTextField.setColumns(3);
         filePermTextField.setEditable(false);
+        filePermTextField.setColumns(3);
         filePermTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filePermTextFieldActionPerformed(evt);
