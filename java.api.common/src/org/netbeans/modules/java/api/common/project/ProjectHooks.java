@@ -84,6 +84,7 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MOD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
+import org.openide.modules.Places;
 
 
 /**
@@ -570,7 +571,7 @@ public final class ProjectHooks {
 
         private void updateUserBuildPropertiesRef() {
             final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            final File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+            final File buildProperties = new File(Places.getUserDirectory(), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         }
