@@ -72,14 +72,6 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress.nb</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.40</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.search</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -93,7 +85,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.39</specification-version>
+                        <specification-version>1.41.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -115,39 +107,15 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.api.remote.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.source</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.21.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.toolchain</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.34.3</specification-version>
+                        <specification-version>1.34.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.cnd.toolchain.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -160,14 +128,6 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.53</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.utils.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -203,39 +163,12 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.33</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.19</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.18</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -292,38 +225,6 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.actions</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.7.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.8</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.explorer</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.11</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -348,27 +249,11 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.61</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -395,14 +280,6 @@ Contributor(s):
                         <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -418,6 +295,10 @@ Contributor(s):
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.makeproject.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -520,6 +401,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
+                <friend>org.netbeans.modules.cnd.makeproject.ui</friend>
                 <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.otool.debugger.api</friend>
@@ -538,10 +420,6 @@ Contributor(s):
                 <package>org.netbeans.modules.cnd.makeproject.api.launchers</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.support</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.actions</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.configurations</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.ui.wizard</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>

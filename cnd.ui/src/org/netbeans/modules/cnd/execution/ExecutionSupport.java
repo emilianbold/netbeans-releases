@@ -48,7 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.builds.ImportUtils;
+import org.netbeans.modules.cnd.api.utils.ImportUtils;
 import org.openide.loaders.MultiDataObject;
 
 import org.openide.nodes.Node;

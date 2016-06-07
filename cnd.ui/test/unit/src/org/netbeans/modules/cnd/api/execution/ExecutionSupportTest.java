@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.api.execution;
 
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.builds.ImportUtils;
+import org.netbeans.modules.cnd.api.utils.ImportUtils;
 
 /**
  *

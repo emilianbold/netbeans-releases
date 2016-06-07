@@ -265,6 +265,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.kit</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
+                <friend>org.netbeans.modules.cnd.makeproject.ui</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.ui</friend>
                 <package>org.netbeans.modules.cnd.source.spi</package>

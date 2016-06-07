@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.builds;
+package org.netbeans.modules.cnd.api.utils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -54,10 +54,10 @@ made subject to such option by the copyright holder.
                          <attr name="position" intvalue="120"/>
                          <attr name="misplaced.action.allowed" boolvalue="true"/>
                      </file>
-                     <file name="Separator0.instance">
+                     <!--file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
-                    </file>
+                    </file-->
 		 </folder>
 	     </folder>
 	 </folder>

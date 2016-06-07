@@ -87,11 +87,6 @@ public class ToolsPanelSupport {
         return cacheManager;
     }
 
-    public static boolean isUnsupportedMake(String name) {
-        name = CndPathUtilities.getBaseName(name);
-        return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
-    }
-
     private static final Set<ChangeListener> listenerChanged = new WeakSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {

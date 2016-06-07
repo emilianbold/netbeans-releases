@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="cnd.makeproject.ui">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.makeproject.ui</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <!-- zip up samples before creating the jar file -->
+    <property name="sample-src" value="samples_src"/>
+    <property name="sample-dist" value="build/classes/org/netbeans/modules/cnd/makeproject/ui/resources/samples"/>
+    <patternset id="sample-src-pattern-set">
+        <include name="**/*"/>
+        <exclude name="**/SCCS"/>
+        <exclude name="**/CVS"/>
+    </patternset>
+    <target name="jar-prep" depends="projectized-common.jar-prep">
+        <mkdir dir="${sample-dist}"/>
+        <zip zipfile="${sample-dist}/args.zip" >
+            <fileset dir="${sample-src}/args">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/mp.zip" >
+            <fileset dir="${sample-src}/mp">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/welcome.zip" >
+            <fileset dir="${sample-src}/welcome">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/helloapp.zip" >
+            <fileset dir="${sample-src}/helloapp">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/quote.zip" >
+            <fileset dir="${sample-src}/quote">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/freeway.zip" >
+            <fileset dir="${sample-src}/freeway">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/io.zip" >
+            <fileset dir="${sample-src}/io">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/lexyacc.zip" >
+            <fileset dir="${sample-src}/lexyacc">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/fractal.zip" >
+            <fileset dir="${sample-src}/fractal">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/hello.zip" >
+            <fileset dir="${sample-src}/hello">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/pi.zip" >
+            <fileset dir="${sample-src}/pi">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/hellocmake.zip" >
+            <fileset dir="${sample-src}/hellocmake">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/helloqt.zip" >
+            <fileset dir="${sample-src}/helloqt">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+    </target>
+</project>

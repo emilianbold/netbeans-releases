@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.platform;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.Platform;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;

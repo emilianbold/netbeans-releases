@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platform;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;

@@ -95,7 +95,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.56</specification-version>
+                        <specification-version>2.58</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -251,6 +251,10 @@ Contributor(s):
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.makeproject.ui</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.modelimpl</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -265,6 +269,10 @@ Contributor(s):
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.script</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

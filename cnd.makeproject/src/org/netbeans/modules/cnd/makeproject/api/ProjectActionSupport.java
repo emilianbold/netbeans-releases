@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,10 +58,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -71,14 +68,11 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.EventsProcessor;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
-import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.IOTabFactory;
-import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.InputOutputTab;
-import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.TabsGroup;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -86,16 +80,19 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.ui.runprofiles.RerunArguments;
+import org.netbeans.modules.cnd.makeproject.uiapi.CancellableProgressHandleFactory;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.EventsProcessorActions;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.IOTabFactory;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.InputOutputTab;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.TabsGroup;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -105,8 +102,6 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -254,10 +249,10 @@ public class ProjectActionSupport {
     }
 
     public void fireActionPerformed(ProjectActionEvent[] paes, ProjectActionHandler preferredHandler) {
-        submitTask(new EventsProcessor(paes, preferredHandler));
+        submitTask(new EventsProcessorImpl(paes, preferredHandler));
     }
 
-    private static void submitTask(final EventsProcessor eventsProcessor) {
+    private static void submitTask(final EventsProcessorImpl eventsProcessor) {
         tasksProcessor.post(eventsProcessor);
     }
 
@@ -335,44 +330,36 @@ public class ProjectActionSupport {
         }
     }
 
-    private final class EventsProcessor implements Runnable {
+    
+    private final class EventsProcessorImpl implements Runnable, EventsProcessor {
 
         private final TabsGroup tabs;
         private final ProjectActionEvent[] paes;
-        private final AtomicReference<ProjectActionHandler> activeHandlerRef = new AtomicReference<>(null);
-        private final StopAction stopAction = new StopAction(activeHandlerRef);
-        private final RerunAction rerunAction = new RerunAction(this);
-        private final RerunModAction rerunModAction = new RerunModAction(this);
-        private final TermAction ta = new TermAction(this);
-        private List<BuildAction> additional;
         private final ProjectActionHandler customHandler;
         private final FileOperationsNotifier fon;
+        private final EventsProcessorActions epa;
 
-        public EventsProcessor(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
+        public EventsProcessorImpl(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
+            epa = EventsProcessorActions.getEventsProcessorActionsFactory().getEventsProcessorActions(this);
             fon = getFileOperationsNotifier(paes);
             tabs = IOTabsController.getDefault().openTabsGroup(getTabName(paes), MakeOptions.getInstance().getReuse());
         }
 
-        private Action[] getActions(String name) {
-            List<Action> list = new ArrayList<>();
-            list.add(stopAction);
-            list.add(rerunAction);
-            for(int i = 0; i < paes.length; i++) {
-                if (paes[i].getType() == PredefinedType.RUN) {
-                    list.add(rerunModAction);
-                    break;
-                }
-            }
-            list.add(ta);
-            if (additional == null) {
-                additional = BuildActionsProvider.getDefault().getActions(name, paes);
-            }
-            // TODO: actions should have acces to output writer. Action should listen output writer.
-            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
-            list.addAll(additional);
-            return list.toArray(new Action[list.size()]);
+        @Override
+        public void submitTask() {
+            tasksProcessor.post(this);
+        }
+
+        @Override
+        public ProjectActionEvent[] getProjectActionEvents() {
+            return paes;
+        }
+
+        @Override
+        public boolean checkProject(ProjectActionEvent pae) {
+            return ProjectActionSupport.checkProject(pae);
         }
 
         private String getTabName(ProjectActionEvent[] paes) {
@@ -413,32 +400,13 @@ public class ProjectActionSupport {
             return name.toString();
         }
 
-        private ProgressHandle createProgressHandle(final InputOutputTab ioTab, final ProjectActionHandler handlerToUse) {
-            final Cancellable cancel = handlerToUse.canCancel() ? new Cancellable() {
-
-                @Override
-                public boolean cancel() {
-                    stopAction.actionPerformed(null);
-                    return true;
-                }
-            } : null;
-
-            return ProgressHandleFactory.createHandle(ioTab.getName(), cancel, new AbstractAction() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ioTab.select();
-                }
-            });
-        }
-
         @Override
         public void run() {
             tabs.lockAndReset();
             LifecycleManager.getDefault().saveAll();
-            rerunAction.setEnabled(false);
-            rerunModAction.setEnabled(false);
-            stopAction.setEnabled(false);
+            epa.setEnableRerunAction(false);
+            epa.setEnableRerunModAction(false);
+            epa.setEnableStopAction(false);
 
             final AtomicInteger currentEventIndex = new AtomicInteger(-1);
             final AtomicReference<InputOutputTab> currentIORef = new AtomicReference<>(null);
@@ -491,7 +459,7 @@ public class ProjectActionSupport {
                                 if (ioProvider == null) {
                                     ioProvider = IOProvider.getDefault();
                                 }
-                                return ioProvider.getIO(tabName, getActions(currentEvent.getActionName()));
+                                return ioProvider.getIO(tabName, epa.getActions(currentEvent.getActionName()));
                             }
                         };
                     } else if (isDebugAction) {
@@ -505,7 +473,7 @@ public class ProjectActionSupport {
 
                             @Override
                             public InputOutput createNewTab(final String tabName) {
-                                return IOProvider.getDefault().getIO(tabName, getActions(currentEvent.getActionName()));
+                                return IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
                             }
                         };
                     } else {
@@ -514,7 +482,7 @@ public class ProjectActionSupport {
 
                             @Override
                             public InputOutput createNewTab(final String tabName) {
-                                return IOProvider.getDefault().getIO(tabName, getActions(currentEvent.getActionName()));
+                                return IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
                             }
                         };
                     }
@@ -553,10 +521,10 @@ public class ProjectActionSupport {
                         @Override
                         public void executionStarted(int pid) {
                             try {
-                                final ProjectActionHandler handler = activeHandlerRef.get();
-                                stopAction.setEnabled(handler != null && handler.canCancel());
-                                if (additional != null) {
-                                    for (BuildAction action : additional) {
+                                final ProjectActionHandler handler = epa.getActiveHandler();
+                                epa.setEnableStopAction(handler != null && handler.canCancel());
+                                if (epa.getAdditional() != null) {
+                                    for (BuildAction action : epa.getAdditional()) {
                                         try {
                                             action.setStep(currentEventIndex.get());
                                             action.executionStarted(pid);
@@ -572,10 +540,10 @@ public class ProjectActionSupport {
                         @Override
                         public void executionFinished(final int rc) {
                             try {
-                                stopAction.setEnabled(false);
+                                epa.setEnableStopAction(false);
                                 stepFailed.set(rc != 0);
-                                if (additional != null) {
-                                    for (Action action : additional) {
+                                if (epa.getAdditional() != null) {
+                                    for (Action action : epa.getAdditional()) {
                                         try {
                                             ((ExecutionListener) action).executionFinished(rc);
                                         } catch (Throwable th) {
@@ -592,9 +560,9 @@ public class ProjectActionSupport {
 
                     try {
                         initHandler(handlerToUse, currentEvent, paes);
-                        activeHandlerRef.set(handlerToUse);
+                        epa.setActiveHandler(handlerToUse);
                         handlerToUse.addExecutionListener(eventExecutionListener);
-                        progressHandle = createProgressHandle(ioTab, handlerToUse);
+                        progressHandle = CancellableProgressHandleFactory.getProgressHandleFactory().createProgressHandle(ioTab, handlerToUse, epa);
                         progressHandle.start();
                         handlerToUse.execute(IOTabsController.getInputOutput(ioTab));
                         try {
@@ -610,11 +578,11 @@ public class ProjectActionSupport {
                         }
                     } finally {
                         handlerToUse.removeExecutionListener(eventExecutionListener);
-                        activeHandlerRef.set(null);
+                        epa.setActiveHandler(null);
                         if (progressHandle != null) {
                             progressHandle.finish();
                         }
-                        stopAction.setEnabled(false);
+                        epa.setEnableStopAction(false);
                     }
                 }
             } catch (IllegalStateException ex) {
@@ -622,19 +590,19 @@ public class ProjectActionSupport {
                 ex.printStackTrace();
             } finally {
                 tabs.unlockAndCloseOutput();
-                rerunAction.setEnabled(true);
-                rerunModAction.setEnabled(true);
-                stopAction.setEnabled(false);
+                epa.setEnableRerunAction(true);
+                epa.setEnableRerunModAction(true);
+                epa.setEnableStopAction(false);
                 fon.finishAll();
             }
         }
 
         private void initHandler(final ProjectActionHandler handler, final ProjectActionEvent pae, final ProjectActionEvent[] paes) {
-            if (additional == null) {
-                additional = BuildActionsProvider.getDefault().getActions(pae.getActionName(), paes);
+            if (epa.getAdditional() == null) {
+                epa.setAdditional(pae.getActionName());
             }
             List<OutputStreamHandler> streamHandlers = new ArrayList<>();
-            for (BuildAction action : additional) {
+            for (BuildAction action : epa.getAdditional()) {
                 if (action instanceof OutputStreamHandler) {
                     streamHandlers.add((OutputStreamHandler) action);
                 }
@@ -831,114 +799,10 @@ public class ProjectActionSupport {
 //        }
 //        return false;
 //    }
-    private static final class StopAction extends AbstractAction {
-
-        private final AtomicReference<ProjectActionHandler> activeHandlerRef;
-
-        public StopAction(AtomicReference<ProjectActionHandler> activeHandlerRef) {
-            this.activeHandlerRef = activeHandlerRef;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/stop.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.StopAction.stop")); // NOI18N
-            //System.out.println("handleEvents 1 " + handleEvents);
-            //setEnabled(false); // initially, until ready
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            setEnabled(false);
-            ProjectActionHandler handler = activeHandlerRef.getAndSet(null);
-            if (handler != null) {
-                handler.cancel();
-            }
-        }
-    }
-
-    private static final class RerunAction extends AbstractAction {
-
-        private final EventsProcessor eventsProcessor;
-
-        public RerunAction(final EventsProcessor eventsProcessor) {
-            this.eventsProcessor = eventsProcessor;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            setEnabled(false);
-            submitTask(eventsProcessor);
-        }
-    }
-
-    private static final class RerunModAction extends AbstractAction {
-
-        private final EventsProcessor eventsProcessor;
-
-        public RerunModAction(final EventsProcessor eventsProcessor) {
-            this.eventsProcessor = eventsProcessor;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/rerun-mod.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun-mod")); // NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            setEnabled(false);
-            if (new RerunArguments(eventsProcessor.paes).showMe()) {
-                submitTask(eventsProcessor);
-            } else {
-                setEnabled(true);
-            }
-        }
-    }
-
-    private static final class TermAction extends AbstractAction {
-
-        private final EventsProcessor handleEvents;
-
-        public TermAction(EventsProcessor handleEvents) {
-            this.handleEvents = handleEvents;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/ui/term.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.TermAction.text")); // NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            for (int i = handleEvents.paes.length - 1; i >= 0; i--) {
-                ProjectActionEvent pae = handleEvents.paes[i];
-                if (ProjectActionSupport.checkProject(pae)) {
-                    String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
-                    String dir = pae.getProfile().getRunDirectory();
-                    ExecutionEnvironment env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
-                    if (env.isRemote()) {
-                        if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
-                            PathMap pathMap = RemoteSyncSupport.getPathMap(pae.getProject());
-                            if (pathMap != null) {
-                                String aDir = pathMap.getRemotePath(dir);
-                                if (aDir != null) {
-                                    dir = aDir;
-                                }
-                            } else {
-                                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), dir}); //NOI18N
-                            }
-                        }
-                    }
-                    TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
-                }
-                break;
-            }
-        }
-    }
-
+    
     /**
      * Look up i18n strings here
      */
-    private static String getString(String s) {
-        return NbBundle.getMessage(ProjectActionSupport.class, s);
-    }
-
     private static String getString(String s, String... arg) {
         return NbBundle.getMessage(ProjectActionSupport.class, s, arg);
     }

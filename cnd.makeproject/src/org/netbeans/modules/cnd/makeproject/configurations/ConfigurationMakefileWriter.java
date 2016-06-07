@@ -99,7 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;

@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.toolchain.support;
 
 import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,18 +52,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainValidator;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -184,5 +177,9 @@ private static final Set<ChangeListener> codeAssistanceChanged = new WeakSet<Cha
     public static void fixCSM(final Map<Tool, List<List<String>>> needReset, CompilerSetManager csm) {
         ToolchainValidator.INSTANCE.applyChanges(needReset, csm);
     }
-
+    
+    public static boolean isUnsupportedMake(String name) {
+        name = CndPathUtilities.getBaseName(name);
+        return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
+    }
 }
