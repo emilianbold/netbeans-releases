@@ -53,6 +53,14 @@ import org.openide.util.Pair;
 public interface EditorSupport {
 
     /**
+     * Get {@link PhpType PHP types} from the given {@link FileObject file object}.
+     * @param fo {@link FileObject file object} source file to investigate
+     * @return collection of {@link PhpType PHP types}, never <code>null</code>
+     * @since 0.28
+     */
+    Collection<PhpType> getTypes(FileObject fo);
+
+    /**
      * Get {@link PhpClass PHP classes} from the given {@link FileObject file object}.
      * @param fo {@link FileObject file object} source file to investigate
      * @return collection of {@link PhpClass PHP classes}, never <code>null</code>
