@@ -447,31 +447,6 @@ public class SourceUtilsTest extends ClassIndexTestCase {
         f = SourceUtils.getFile(ElementHandle.create(test), info.getClasspathInfo());
         assertEquals("TestDollarSourceName.java", f.getNameExt());
     }
-    
-    /**
-     * Checks that an inner class is found in outer class' source file even though a source file
-     * matching outer$inner.java is present
-     */
-    public void testInnerClassName() throws Exception {
-        File work = getWorkDir();
-        FileObject workFO = FileUtil.toFileObject(work);
-        FileObject sourceRoot = workFO.createFolder("src");
-        TestUtil.copyFiles(FileUtil.toFile(sourceRoot), "sourceutils/TestInnerClassName$InnerClass.java");
-        prepareTest();
-        
-        FileObject s1 = sourceRoot.getFileObject("sourceutils/TestInnerClassName.java");
-        FileObject s2 = sourceRoot.getFileObject("sourceutils/TestInnerClassName$InnerClass.java");
-        
-        js = JavaSource.create(js.getClasspathInfo(), s1, s2);
-        assertNotNull(js);
-        info = SourceUtilsTestUtil.getCompilationInfo(js, JavaSource.Phase.RESOLVED);
-
-        TypeElement test = info.getElements().getTypeElement("sourceutils.TestInnerClassName.InnerClass");
-        assertNotNull(test);
-        
-        FileObject f = SourceUtils.getFile(ElementHandle.create(test), info.getClasspathInfo());
-        assertEquals("TestInnerClassName.java", f.getNameExt());
-    }
 
     //<editor-fold defaultstate="collapsed" desc="Helper methods & Mock services">
     

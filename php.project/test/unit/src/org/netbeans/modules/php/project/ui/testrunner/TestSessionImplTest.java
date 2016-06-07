@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.util.PhpTestCase;
@@ -134,7 +134,7 @@ public class TestSessionImplTest extends PhpTestCase {
         }
 
         @Override
-        public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
+        public boolean isTestCase(PhpModule phpModule, PhpType.Method method) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

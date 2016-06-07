@@ -2678,14 +2678,13 @@ public final class EditorCaret implements Caret {
                             mouseState = MouseState.WORD_SELECTION;
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
-                            // Check possible fold expansion
                             try {
-                                // hack, to get knowledge of possible expansion. Editor depends on Folding, so it's not really possible
-                                // to have Folding depend on EditorCaret (= a cycle). If EditorCaret moves to editor.lib2, this contract
-                                // can be formalized as an interface.
-                                @SuppressWarnings("unchecked")
-                                Callable<Boolean> cc = (Callable<Boolean>) c.getClientProperty("org.netbeans.api.fold.expander");
-                                if (cc == null || !cc.equals(this)) {
+                                boolean foldExpanded = false;
+                                CaretFoldExpander caretFoldExpander = CaretFoldExpander.get();
+                                if (caretFoldExpander != null) {
+                                    foldExpanded = caretFoldExpander.checkExpandFold(c, evt.getPoint());
+                                }
+                                if (!foldExpanded) {
                                     if (selectWordAction == null) {
                                         selectWordAction = EditorActionUtilities.getAction(
                                                 c.getUI().getEditorKit(c), DefaultEditorKit.selectWordAction);

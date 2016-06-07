@@ -1,21 +1,40 @@
-#******************************************************************************
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#	FILE NAME: easy_rpm.pl
+# Copyright 2004, 2016 Oracle and/or its affiliates. All rights reserved.
 #
-#	AUTHOR: Jerry Huth	DATE: Aug 19 10:16:49 PDT 2003
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
-#	ABSTRACT: This script is a wrapper on top of the RPM build
-#	software that makes it easier to create RPM's.  Some macros
-#	are predefined, which can be used in the %files section of
-#	the spec files, to solve some of the trickier problems that
-#	can occur when creating RPM's.
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common
+# Development and Distribution License("CDDL") (collectively, the
+# "License"). You may not use this file except in compliance with the
+# License. You can obtain a copy of the License at
+# http://www.netbeans.org/cddl-gplv2.html
+# or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+# specific language governing permissions and limitations under the
+# License.  When distributing the software, include this License Header
+# Notice in each file and include the License file at
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+# particular file as subject to the "Classpath" exception as provided
+# by Oracle in the GPL Version 2 section of the License file that
+# accompanied this code. If applicable, add the following below the
+# License Header, with the fields enclosed by brackets [] replaced by
+# your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
 #
-#	The "-help" option causes this script to print information
-#	about using this script, including an example RPM spec.
+# If you wish your version of this file to be governed by only the CDDL
+# or only the GPL Version 2, indicate your decision by adding
+# "[Contributor] elects to include this software in this distribution
+# under the [CDDL or GPL Version 2] license." If you do not indicate a
+# single choice of license, a recipient has the option to distribute
+# your version of this file under either the CDDL, the GPL Version 2 or
+# to extend the choice of license to its licensees as provided above.
+# However, if you add GPL Version 2 code and therefore, elected the GPL
+# Version 2 license, then the option applies only if the new code is
+# made subject to such option by the copyright holder.
 #
-#	Copyright (C) 2003 Sun Microsystems, Inc. ALL RIGHTS RESERVED
-#
-#******************************************************************************
+# Contributor(s):
 
 
 # Set the name of the automatically included spec files. #

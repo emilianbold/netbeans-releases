@@ -131,7 +131,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>0.11</specification-version>
+                        <specification-version>0.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

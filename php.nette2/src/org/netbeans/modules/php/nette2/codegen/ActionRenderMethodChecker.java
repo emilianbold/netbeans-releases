@@ -44,7 +44,7 @@ package org.netbeans.modules.php.nette2.codegen;
 import java.util.Collection;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpClass.Method;
+import org.netbeans.modules.php.api.editor.PhpType.Method;
 import org.netbeans.modules.php.nette2.utils.Constants;
 import org.netbeans.modules.php.nette2.utils.EditorUtils;
 import org.openide.filesystems.FileObject;

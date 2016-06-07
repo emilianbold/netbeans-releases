@@ -48,7 +48,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -189,9 +189,9 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
                     continue;
                 }
                 if (FileUtils.isPhpFile(child)) {
-                    for (PhpClass phpClass : editorSupport.getClasses(child)) {
-                        String name = phpClass.getName();
-                        String fqn = phpClass.getFullyQualifiedName();
+                    for (PhpType phpType : editorSupport.getTypes(child)) {
+                        String name = phpType.getName();
+                        String fqn = phpType.getFullyQualifiedName();
                         if (fqn == null
                                 || name.length() + 1 == fqn.length()) {
                             // fqn not known or default namespace
