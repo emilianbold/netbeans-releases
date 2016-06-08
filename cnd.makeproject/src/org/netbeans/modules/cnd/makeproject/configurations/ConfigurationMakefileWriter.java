@@ -557,7 +557,7 @@ public class ConfigurationMakefileWriter {
 //        if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
 //            explicitDot = " -L. -L${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}";
 //        }
-        bw.write("LDLIBSOPTIONS=-Wl,-rpath,'.' " + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + explicitDot + "\n"); // NOI18N
+        bw.write("LDLIBSOPTIONS=" + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + explicitDot + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
