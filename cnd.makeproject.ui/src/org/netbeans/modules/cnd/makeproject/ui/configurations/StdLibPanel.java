@@ -69,14 +69,42 @@ public class StdLibPanel extends javax.swing.JPanel {
         libraryList.getAccessibleContext().setAccessibleName(getString("LIBRARY_LIST_NM"));
         getAccessibleContext().setAccessibleDescription(getString("LIBRARY_LIST_SD"));
     }
+    
+    static String getLibraryIconResource(LibraryItem libraryItem) {
+        String iconName = "org/netbeans/modules/cnd/resources/blank.gif"; // NOI18N
+        switch(libraryItem.getType()) {
+            case LibraryItem.PROJECT_ITEM:
+                iconName = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
+                break;
+            case LibraryItem.STD_LIB_ITEM:
+                iconName = "org/netbeans/modules/cnd/resources/stdLibrary.gif"; // NOI18N
+                break;
+            case LibraryItem.LIB_ITEM:
+                iconName = "org/netbeans/modules/cnd/loaders/LibraryIcon.gif"; // NOI18N
+                break;
+            case LibraryItem.LIB_FILE_ITEM:
+                if (libraryItem.getPath().endsWith(".so") || libraryItem.getPath().endsWith(".dll") || libraryItem.getPath().endsWith(".dylib")) { // NOI18N
+                    iconName = "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
+                } else if (libraryItem.getPath().endsWith(".a")) { // NOI18N
+                    iconName = "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N
+                } else {
+                    iconName = "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
+                }
+                break;
+            case LibraryItem.OPTION_ITEM:
+                iconName = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
+                break;
+        }
+        return iconName;
+    }
 
     private static final class MyListCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	    LibraryItem libraryItem = (LibraryItem)value;
-	    label.setIcon(ImageUtilities.loadImageIcon(libraryItem.getIconName(), false));
-	    label.setToolTipText(libraryItem.getToolTip());
+	    label.setIcon(ImageUtilities.loadImageIcon(StdLibPanel.getLibraryIconResource(libraryItem), false));
+	    label.setToolTipText(libraryItem.getDescription());
             return label;
         }
     }   
