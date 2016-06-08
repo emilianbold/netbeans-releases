@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
         <folder name="CDI">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
             <attr name="position" intvalue="876"/>
-            <file name="beans.xml" url="beans-1.0.xml">
+            <file name="beans.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
                 <attr name="position" intvalue="10"/>
                 <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
