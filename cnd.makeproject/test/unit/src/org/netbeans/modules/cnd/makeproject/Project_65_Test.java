@@ -68,7 +68,12 @@ public class Project_65_Test extends CndBaseTestCase {
     public Project_65_Test(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
+    }
+
     protected MakeProject openProject(String projectName) throws IOException, Exception, IllegalArgumentException {
         File scriptFile = new File(getTestCaseDataDir(), "pre-process.sh");
         if (scriptFile.exists()) {

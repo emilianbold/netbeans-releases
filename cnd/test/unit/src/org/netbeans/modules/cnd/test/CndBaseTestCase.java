@@ -181,43 +181,65 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE));
         assertNotNull(lookup);
-        EditorKit kit = lookup.lookup(EditorKit.class);
-        assertTrue(kit instanceof  CCKit);
+        if (addEditorSupport()) {
+            EditorKit kit = lookup.lookup(EditorKit.class);
+            assertTrue(kit instanceof  CCKit);
+        }
 
         lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.HEADER_MIME_TYPE));
         assertNotNull(lookup);
-        kit = lookup.lookup(EditorKit.class);
-        assertTrue(kit instanceof  HKit);
+        if (addEditorSupport()) {
+            EditorKit kit = lookup.lookup(EditorKit.class);
+            assertTrue(kit instanceof  HKit);
+        }
 
         lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.C_MIME_TYPE));
         assertNotNull(lookup);
-        kit = lookup.lookup(EditorKit.class);
-        assertTrue(kit instanceof  CKit);
+        if (addEditorSupport()) {
+            EditorKit kit = lookup.lookup(EditorKit.class);
+            assertTrue(kit instanceof  CKit);
+        }
 
         lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.FORTRAN_MIME_TYPE));
         assertNotNull(lookup);
-        kit = lookup.lookup(EditorKit.class);
-        assertTrue(kit instanceof  FKit);
+        if (addEditorSupport()) {
+            EditorKit kit = lookup.lookup(EditorKit.class);
+            assertTrue(kit instanceof  FKit);
+        }
 
         lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.ASM_MIME_TYPE));
         assertNotNull(lookup);
-        kit = lookup.lookup(EditorKit.class);
-        //assertTrue(kit instanceof AsmEditorKit);
+        if (addEditorSupport()) {
+            EditorKit kit = lookup.lookup(EditorKit.class);
+            //assertTrue(kit instanceof AsmEditorKit);
+        }
     }
 
+    protected boolean addEditorSupport() {
+        return true;
+    }
+    
     protected void setUpMime() {
         mimePath1 = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath1, new CCKit(), new Reformatter.Factory());
         mimePath2 = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath2, new HKit(), new Reformatter.Factory());
         mimePath3 = MimePath.parse(MIMENames.C_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath3, new CKit(), new Reformatter.Factory());
         mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath4, new FKit(), new FortranReformatter.Factory());
         mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
-        // TODO: add needed dependency in all dependant test cases to use real asm editor kit
-        //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
-        MockMimeLookup.setInstances(mimePath5, new AsmStub());
+        if (addEditorSupport()) {
+            MockMimeLookup.setInstances(mimePath1, new CCKit(), new Reformatter.Factory());
+            MockMimeLookup.setInstances(mimePath2, new HKit(), new Reformatter.Factory());
+            MockMimeLookup.setInstances(mimePath3, new CKit(), new Reformatter.Factory());
+            MockMimeLookup.setInstances(mimePath4, new FKit(), new FortranReformatter.Factory());
+            // TODO: add needed dependency in all dependant test cases to use real asm editor kit
+            //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
+            MockMimeLookup.setInstances(mimePath5, new AsmStub());
+        } else {
+            MockMimeLookup.setInstances(mimePath1);
+            MockMimeLookup.setInstances(mimePath2);
+            MockMimeLookup.setInstances(mimePath3);
+            MockMimeLookup.setInstances(mimePath4);
+            MockMimeLookup.setInstances(mimePath5);
+        }
         //Main.getModuleSystem();
     }
 

@@ -88,6 +88,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         super(name);
         cleanUserDir();
     }
+    
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
+    }
 
     public static File getBaseFolder(){
         String dataPath = System.getProperty("java.io.tmpdir");
