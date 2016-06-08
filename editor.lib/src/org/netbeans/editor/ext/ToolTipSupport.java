@@ -181,6 +181,10 @@ public class ToolTipSupport {
     private static final String MOUSE_LISTENER = "ToolTipSupport.noOpMouseListener"; //NOI18N
 
     private static final Action NO_ACTION = new TextAction("tooltip-no-action") { //NOI18N
+        public @Override boolean isEnabled() {
+            return false;
+        }
+
         public @Override void actionPerformed(ActionEvent e) {
             // no-op
         }
