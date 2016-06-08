@@ -1474,7 +1474,16 @@ public class ConfigurationMakefileWriter {
             bw.write("\t${RM} -r " + MakeConfiguration.CND_BUILDDIR_MACRO + '/'+MakeConfiguration.CND_CONF_MACRO+ "\n"); // UNIX path // NOI18N
             String output = getOutput(projectDescriptor, conf, compilerSet);
             String outputDir = CndPathUtilities.getDirName(output);
-            bw.write("\t${RM} -r " + outputDir + "\n"); // NOI18N
+            Set<String> paths = conf.getLinkerConfiguration().getLibrariesConfiguration().getSharedLibraries();
+            if (!paths.isEmpty()) {
+                bw.write("\t${RM} -r"); //NOI18N
+                for (String path : paths) {
+                    String baseName = CndPathUtilities.getBaseName(path);
+                    bw.write(" " + outputDir + "/" + baseName); //NOI18N
+                }
+                bw.write("\n"); //NOI18N
+                bw.write("\t${RM} " + output + "\n"); //NOI18N
+            }
             if (compilerSet != null
                     && compilerSet.getCompilerFlavor().isSunStudioCompiler()
                     && conf.hasCPPFiles(projectDescriptor)) {
