@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
@@ -334,7 +335,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 }
             }
         });
-
+        
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
         MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
@@ -358,7 +359,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 //        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
 //
         try {
-            done.await();
+            done.await(20, TimeUnit.SECONDS);
         } catch (InterruptedException ir) {
         }
         String shell = null;
