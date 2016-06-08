@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <!-- USED BY j2ee.ejbcore DO NOT REMOVE -->
     <folder name="org-netbeans-modules-j2ee-ejbjarproject">
         <file name="ejb-jar-2.0.xml" url="ejb-jar-2.0.xml"/>
         <file name="ejb-jar-2.1.xml" url="ejb-jar-2.1.xml"/>
