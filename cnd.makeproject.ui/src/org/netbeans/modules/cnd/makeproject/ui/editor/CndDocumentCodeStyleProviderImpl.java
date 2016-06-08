@@ -44,7 +44,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
-import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
+import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
