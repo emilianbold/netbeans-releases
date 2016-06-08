@@ -133,8 +133,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
-    public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
-    public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
+    public static final String ICON = "org/netbeans/modules/cnd/makeproject/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT = "^(nbproject)$"; // NOI18N

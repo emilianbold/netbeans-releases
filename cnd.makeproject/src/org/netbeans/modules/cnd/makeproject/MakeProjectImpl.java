@@ -1374,9 +1374,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
                             if (outputValue.endsWith(".so") || // NOI18N
                                     outputValue.endsWith(".dll") || // NOI18N
                                     outputValue.endsWith(".dylib")) { // NOI18N
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-dynamic.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged-dynamic.png", false); // NOI18N
                             } else if (outputValue.endsWith(".a")) { // NOI18N
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged-static.png", false); // NOI18N
                             } else {
                                 icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             }
