@@ -100,7 +100,7 @@ public class DebuggerTest extends NbTestCase {
         assertNotNull(scriptFile);
         assertTrue(scriptFile.exists());
         final TestWrapper testWrapper = new TestWrapper(getTestForSuspendState(sessionId));
-        addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
+        addBreakpoint(scriptFo, 48, testWrapper, new RunContinuation(sessionId));
         startDebugging(sessionId, scriptFile);
         sessionId.isInitialized(true);
         testWrapper.assertTested();//sometimes, randomly fails
