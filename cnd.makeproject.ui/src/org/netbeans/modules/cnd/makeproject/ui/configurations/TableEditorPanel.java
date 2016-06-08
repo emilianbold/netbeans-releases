@@ -48,7 +48,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
 import java.util.List;
-import java.util.ResourceBundle;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -265,8 +264,8 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             }
             LibraryItem libraryItem = (LibraryItem) element;
             if (col == 0) {
-                Image iconImage = ImageUtilities.loadImage(libraryItem.getIconName());
-                label.setToolTipText(libraryItem.getToolTip());
+                Image iconImage = ImageUtilities.loadImage(StdLibPanel.getLibraryIconResource(libraryItem));
+                label.setToolTipText(libraryItem.getDescription());
                 if (libraryItem instanceof LibraryItem.ProjectItem && ((LibraryItem.ProjectItem) libraryItem).getProject(baseDir) == null) {
                     iconImage = ImageUtilities.mergeImages(iconImage, brokenProjectBadge, 8, 0);
                     label.setToolTipText(getString("BROKEN") + label.getToolTipText());
