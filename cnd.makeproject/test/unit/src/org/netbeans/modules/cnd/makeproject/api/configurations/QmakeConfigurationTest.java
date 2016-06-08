@@ -67,6 +67,11 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     public QmakeConfigurationTest(String name) {
         super(name);
     }
+    
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
+    }
 
     @Override @Before
     public void setUp() throws Exception {
