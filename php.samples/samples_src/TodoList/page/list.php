@@ -41,12 +41,19 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \TodoList\Dao\TodoDao;
+use \TodoList\Dao\TodoSearchCriteria;
+use \TodoList\Util\Utils;
+use \TodoList\Validation\TodoValidator;
+
 $status = Utils::getUrlParam('status');
 TodoValidator::validateStatus($status);
 
 $dao = new TodoDao();
-$search = new TodoSearchCriteria();
-$search->setStatus($status);
+$search = (new TodoSearchCriteria())
+        ->setStatus($status);
 
 // data for template
 $title = Utils::capitalize($status) . ' TODOs';

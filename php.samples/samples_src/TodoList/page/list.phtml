@@ -41,6 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \DateTime;
+use \TodoList\Model\Todo;
+use \TodoList\Util\Utils;
+
 //~ Template for list.php
 // variables:
 //  $title - page title
@@ -50,7 +56,7 @@
 ?>
 
 <h1>
-    <img src="img/status/<?php echo $status; ?>.png" alt="" title="<?php echo Utils::capitalize($status); ?>" class="icon" />
+    <?php echo Utils::iconStatus($status); ?>
     <?php echo $title; ?>
 </h1>
 
@@ -60,13 +66,16 @@
     <ul class="list">
         <?php foreach ($todos as $todo): ?>
             <?php /* @var $todo Todo */ ?>
-            <?php $tooLate = $status == Todo::STATUS_PENDING && $todo->getDueOn() < new DateTime(); ?>
+            <?php $tooLate = $status == Todo::STATUS_PENDING
+                    && $todo->getDueOn() < new DateTime(); ?>
             <li>
-                <?php if ($tooLate): ?>
-                    <img src="img/exclamation.png" alt="" title="Should be already done!" />
-                <?php endif; ?>
-                <img src="img/priority/<?php echo $todo->getPriority(); ?>.png" alt="Priority <?php echo $todo->getPriority(); ?>" title="Priority <?php echo $todo->getPriority(); ?>" />
-                <h3><a href="<?php echo Utils::createLink('detail', array('id' => $todo->getId())) ?>"><?php echo Utils::escape($todo->getTitle()); ?></a></h3>
+                <h3>
+                    <a href="<?php echo Utils::createLink('detail', ['id' => $todo->getId()]) ?>"><?php echo Utils::escape($todo->getTitle()); ?></a>
+                    <?php echo Utils::iconPriority($todo->getPriority()); ?>
+                    <?php if ($tooLate): ?>
+                        <i class="material-icons error" title="Should be already done!">error</i>
+                    <?php endif; ?>
+                </h3>
                 <?php if ($todo->getDescription()): ?>
                     <p class="description"><?php echo Utils::escape($todo->getDescription()); ?></p>
                 <?php endif; ?>

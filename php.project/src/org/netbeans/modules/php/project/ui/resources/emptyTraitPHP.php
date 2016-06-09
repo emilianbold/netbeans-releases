@@ -12,6 +12,6 @@ namespace ${namespace};
  *
  * @author ${user}
  */
-interface ${name} {
+trait ${name} {
     //put your code here
 }
