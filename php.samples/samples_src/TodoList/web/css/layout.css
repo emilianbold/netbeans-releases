@@ -46,8 +46,19 @@
 }
 
 #header {
-    height: 245px;
-    background: url(../img/header-bg.jpg) no-repeat left top;
+    margin-top: 10px;
+    margin-left: 26px;
+    margin-bottom: 20px;
+}
+#header i, #header .title {
+    float: left;
+    margin-right: 14px;
+}
+#header .title {
+    margin-top: 34px;
+}
+#header .nb {
+    float: right;
 }
 #header, #content, #footer {
     font-size: 0.75em;

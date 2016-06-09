@@ -41,6 +41,13 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \DateTime;
+use \TodoList\Model\Todo;
+use \TodoList\Util\Utils;
+
 // data for template
 $todo = Utils::getTodoByGetId();
-$tooLate = $todo->getStatus() == Todo::STATUS_PENDING && $todo->getDueOn() < new DateTime();
+$tooLate = $todo->getStatus() == Todo::STATUS_PENDING
+        && $todo->getDueOn() < new DateTime();

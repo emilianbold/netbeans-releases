@@ -41,9 +41,14 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Mapping;
+
+use \DateTime;
+use \TodoList\Model\Todo;
+
 /**
- * Mapper for {@link Todo} from array.
- * @see TodoValidator
+ * Mapper for {@link \TodoList\Model\Todo} from array.
+ * @see \TodoList\Validation\TodoValidator
  */
 final class TodoMapper {
 
