@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.java.source;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -57,6 +59,14 @@ public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbr
     protected long createTaggedCompilationController(FileObject file, long currenTag, Object[] out) throws IOException {
         assert file != null;
         final JavaSource js = JavaSource.forFileObject(file);
+        if (js == null) {
+            throw new FileNotFoundException(
+                    String.format("No java source for %s, exists: %b, file: %b",    //NOI18N
+                        FileUtil.getFileDisplayName(file),
+                        file.isValid(),
+                        file.isData()
+                    ));
+        }
         return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
     }
 
