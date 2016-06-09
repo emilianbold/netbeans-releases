@@ -71,7 +71,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbPreferences;
 
-import org.netbeans.modules.terminal.api.IOTopComponent;
+import org.netbeans.modules.terminal.api.ui.IOTopComponent;
 
 import org.netbeans.lib.terminalemulator.support.TermOptions;
 

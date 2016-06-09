@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FlyweightAction;
 import org.netbeans.modules.cnd.debugger.common2.utils.FlyweightBooleanStateAction;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
-import org.netbeans.modules.terminal.api.IOTopComponent;
+import org.netbeans.modules.terminal.api.ui.IOTopComponent;
 
 
 /**
