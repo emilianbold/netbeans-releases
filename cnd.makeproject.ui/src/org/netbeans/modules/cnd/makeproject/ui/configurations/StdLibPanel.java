@@ -74,7 +74,7 @@ public class StdLibPanel extends javax.swing.JPanel {
         String iconName = "org/netbeans/modules/cnd/resources/blank.gif"; // NOI18N
         switch(libraryItem.getType()) {
             case LibraryItem.PROJECT_ITEM:
-                iconName = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
+                iconName = "org/netbeans/modules/cnd/makeproject/resources/makeProject.gif"; // NOI18N
                 break;
             case LibraryItem.STD_LIB_ITEM:
                 iconName = "org/netbeans/modules/cnd/resources/stdLibrary.gif"; // NOI18N

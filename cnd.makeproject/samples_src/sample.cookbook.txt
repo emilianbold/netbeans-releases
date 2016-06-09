@@ -52,8 +52,8 @@ Follow these steps to create a sample project from a set of existing sources:
 <file name="quote.zip" url="samples/quote.zip">
   <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
   <attr name="template" boolvalue="true"/>
-  <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/quote.html"/>
-  <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
+  <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/resources/samples/quote.html"/>
+  <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/resources/makeProject.gif"/>
   <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
 </file>
 15) Edit org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle.properties and add an entry similar to this:
