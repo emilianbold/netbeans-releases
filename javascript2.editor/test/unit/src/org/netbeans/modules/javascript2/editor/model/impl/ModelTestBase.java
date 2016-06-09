@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.io.StringWriter;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -94,7 +94,7 @@ public class ModelTestBase extends JsTestBase {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
-                Model model = parameter.getModel();
+                Model model = Model.getModel(parameter, false);
                 globals[0] = model;
             }
         });        

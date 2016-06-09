@@ -128,6 +128,10 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/coloring/issue216851.js"); 
     }
     
+    public void testWithWooman() throws Exception {
+        checkStructure("testfiles/with/woman.js"); 
+    }
+    
     public void testIssue216640() throws Exception {
         checkStructure("testfiles/coloring/issue216640.js"); 
     }
@@ -646,5 +650,103 @@ public class JsStructureScannerTest extends JsTestBase {
     
     public void testIssue233155() throws Exception {
         checkStructure("testfiles/structure/issue233155.js");
+    }
+    
+    public void testClass01() throws Exception {
+        checkStructure("testfiles/markoccurences/classes/class01.js");
+    }
+    
+    public void testClass02() throws Exception {
+        checkStructure("testfiles/markoccurences/classes/class02.js");
+    }
+    
+    public void testClass03() throws Exception {
+        checkStructure("testfiles/markoccurences/classes/class03.js");
+    }
+    
+    public void testClass04() throws Exception {
+        checkStructure("testfiles/markoccurences/classes/class04.js");
+    }
+    
+    public void testGenerator01() throws Exception {
+        checkStructure("testfiles/ecmascript6/generators/generator01.js");
+    }
+    
+    public void testGenerator02() throws Exception {
+        checkStructure("testfiles/ecmascript6/generators/generator02.js");
+    }
+    
+    public void testGenerator03() throws Exception {
+        checkStructure("testfiles/ecmascript6/generators/generator03.js");
+    }
+    
+    public void testGenerator04() throws Exception {
+        checkStructure("testfiles/ecmascript6/generators/generator04.js");
+    }
+    
+    public void testShorthandPropertyNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js");
+    }
+    
+    public void testShorthandMethodNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/shorthandMethodNames.js");
+    }
+    
+    public void testComputedPropertyNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
+    }
+    
+    public void testConstants01() throws Exception {
+        checkStructure("testfiles/ecmascript6/constant/constant01.js");
+    }
+    
+    public void testArrayDestructuringAssing01() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js");
+    }
+    
+    public void testObjectDestructuringAssing01() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js");
+    }
+    
+    public void testObjectDestructuringAssing02() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js");
+    }
+    
+    public void testObjectDestructuringAssing03() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring03.js");
+    }
+    
+    public void testObjectDestructuringAssing04() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js");
+    }
+    
+    public void testObjectDestructuringAssing05() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring05.js");
+    }
+    
+    public void testObjectDestructuringAssing06() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring05.js");
+    }
+    
+    public void testExample01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkStructure("testfiles/markoccurences/destructuringAssignments/example01.js");
+    }
+    
+    public void testObjectPropertyAssignment01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkStructure("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js");
+    }
+    
+    public void testNode01() throws Exception {
+        checkStructure("testfiles/parser/node01.js");
+    }
+    
+    public void testStrangeMethodNames() throws Exception {
+        checkStructure("testfiles/markoccurences/strangeMethodName.js");
+    }
+    
+     public void testImport01() throws Exception {
+        checkStructure("testfiles/ecmascript6/importExport/import01.js");
     }
 }

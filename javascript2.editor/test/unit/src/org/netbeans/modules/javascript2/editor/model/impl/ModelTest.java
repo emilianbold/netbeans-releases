@@ -46,10 +46,10 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -294,5 +294,9 @@ public class ModelTest extends ModelTestBase {
     
     public void testIssue252135() throws Exception {
         checkModel("testfiles/markoccurences/issue252135.js");
+    }
+    
+    public void testIssue231530() throws Exception {
+        checkModel("testfiles/model/issue231530.js");
     }
 }

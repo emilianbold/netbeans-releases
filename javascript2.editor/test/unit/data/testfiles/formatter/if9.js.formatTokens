@@ -30,7 +30,6 @@ FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=20, text=1, id=NUMBER}
 FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=21, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null, id=null}
@@ -53,6 +52,8 @@ FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=30, text=", id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=31, text=ok, id=STRING}
 FormatToken{kind=TEXT, offset=33, text=", id=STRING_END}
+FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=34, text=
 , id=EOL}

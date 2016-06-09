@@ -52,8 +52,8 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
+import org.netbeans.modules.javascript2.model.spi.PlatformProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -62,14 +62,18 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Defines classpaths (boot CP) of JavaScript files.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-@ServiceProvider(service = ClassPathProvider.class)
-public class ClassPathProviderImpl implements ClassPathProvider {
+@ServiceProviders({
+    @ServiceProvider(service = ClassPathProvider.class),
+    @ServiceProvider(service = PlatformProvider.class)
+})
+public class ClassPathProviderImpl implements ClassPathProvider, PlatformProvider {
 
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     protected static final RequestProcessor RP = new RequestProcessor(ClassPathProviderImpl.class);
@@ -96,6 +100,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             return getBootClassPath();
         }
         return null;
+    }
+
+    @Override
+    public List<FileObject> getPlatformStubs() {
+        return Collections.unmodifiableList(getJsStubs());
     }
 
     public static synchronized ClassPath getBootClassPath() {

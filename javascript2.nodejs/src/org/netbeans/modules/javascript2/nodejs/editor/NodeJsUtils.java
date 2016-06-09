@@ -64,24 +64,24 @@ import org.openide.util.ImageUtilities;
  */
 public class NodeJsUtils {
 
-    public static String REQUIRE_METHOD_NAME = "require"; // NOI18N
-    public static String ON_METHOD_NAME = "on"; // NOI18N
-    public static String NODE_MODULES_NAME = "node_modules"; // NOI18N
-    public static String PACKAGE_NAME = "package"; //NOI18N
-    public static String INDEX_NAME = "index"; //NOI18N
-    public static String FAKE_OBJECT_NAME_PREFIX = "nm$_"; //NOI18N
-    public static String NODEJS_NAME = "NodeJS"; //NOI18N
+    public static final String REQUIRE_METHOD_NAME = "require"; // NOI18N
+    public static final String ON_METHOD_NAME = "on"; // NOI18N
+    public static final String NODE_MODULES_NAME = "node_modules"; // NOI18N
+    public static final String PACKAGE_NAME = "package"; //NOI18N
+    public static final String INDEX_NAME = "index"; //NOI18N
+    public static final String FAKE_OBJECT_NAME_PREFIX = "nm$_"; //NOI18N
+    public static final String NODEJS_NAME = "NodeJS"; //NOI18N
     
-    public static String JS_EXT = "js"; //NOI18N
-    public static String JSON_EXT = "json"; //NOI18N
-    public static String NODE_EXT = "node"; //NOI18N
+    public static final String JS_EXT = "js"; //NOI18N
+    public static final String JSON_EXT = "json"; //NOI18N
+    public static final String NODE_EXT = "node"; //NOI18N
     
-    private static String MAIN_FIELD = "main"; //NOI18N
+    private static final String MAIN_FIELD = "main"; //NOI18N
     private static final String SLASH = "/"; //NOI18N
     
-    public final static String EXPORTS = "exports"; //NOI18N
-    public final static String MODULE = "module"; //NOI18N
-    public final static String PROTOTYPE = "prototype"; //NOI18N
+    public static final String EXPORTS = "exports"; //NOI18N
+    public static final String MODULE = "module"; //NOI18N
+    public static final String PROTOTYPE = "prototype"; //NOI18N
 
     private static final String NODEJS_ICON_PATH = "org/netbeans/modules/javascript2/nodejs/resources/nodeJs16.png"; //NOI18N
     private static ImageIcon NODEJS_ICON = null;

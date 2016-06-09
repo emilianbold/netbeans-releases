@@ -90,7 +90,9 @@ Contributor(s):
                         </file>
                     </folder>
                 </folder>
-
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-javascript2-editor-JsCodeTemplateFilter$Factory.instance"/>
+                </folder>
                 <!-- file popup menu -->
                 <folder name="Popup">
                     <file name="select-connection">
@@ -148,6 +150,9 @@ Contributor(s):
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
                         </file>
                     </folder>
+                </folder>
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-javascript2-editor-doc-JsDocCodeTemplateFilter$Factory.instance"/>
                 </folder>
             </folder>
 <!--            <folder name="javascript">
@@ -292,6 +297,12 @@ Contributor(s):
                             <attr name="position" intvalue="200"/>
                         </file>
 
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtBlankLines.getController"/>
+                            <attr name="position" intvalue="250"/>
+                        </file>
+
                         <file name="Braces.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtBraces.getController"/>
@@ -316,6 +327,12 @@ Contributor(s):
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.json.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
+                        </file>
+
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.json.FmtBlankLines.getController"/>
+                            <attr name="position" intvalue="250"/>
                         </file>
 
                         <file name="Spaces.instance">
@@ -539,21 +556,6 @@ Contributor(s):
         </folder>
     </folder>
 
-    <folder name="javascript">
-        <folder name="doc">
-            <folder name="providers">
-                <file name="org-netbeans-modules-javascript2-editor-jsdoc-JsDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-javascript2-editor-sdoc-SDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-javascript2-editor-extdoc-ExtDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
        <folder name="csl-hints">
         <folder name="text">
             <folder name="javascript">
@@ -581,6 +583,7 @@ Contributor(s):
                         <file name="org-netbeans-modules-javascript2-editor-hints-WeirdAssignment.instance"/>
                         <file name="org-netbeans-modules-javascript2-editor-hints-GlobalIsNotDefined.instance"/>
                         <file name="org-netbeans-modules-javascript2-editor-hints-IncorrectReturnStatement.instance"/>
+                        <file name="org-netbeans-modules-javascript2-editor-hints-ECMA6InECMA5.instance"/>
                     </folder>
                 </folder>
             </folder>
