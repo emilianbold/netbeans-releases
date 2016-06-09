@@ -152,6 +152,15 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPInterfaceDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="350"/>
+            </file>
+            <file name="PHPTrait.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyTraitPHP.php">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/PHPTrait"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator.withNamespace"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPTraitDescription.html"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
