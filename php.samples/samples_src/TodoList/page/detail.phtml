@@ -41,6 +41,11 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \TodoList\Model\Todo;
+use \TodoList\Util\Utils;
+
 //~ Template for detail.php
 // variables:
 //  $todo - TODO to be displayed
@@ -51,7 +56,7 @@
 
 <h1>
     <?php if ($tooLate): ?>
-        <img src="img/exclamation.png" alt="" title="Should be already done!" />
+        <i class="material-icons error" title="Should be already done!">error</i>
     <?php endif; ?>
     <?php echo Utils::escape($todo->getTitle()); ?>
 </h1>
@@ -59,7 +64,7 @@
 <table class="detail">
     <tr>
         <th>Priority</th>
-        <td><img src="img/priority/<?php echo $todo->getPriority(); ?>.png" alt="Priority <?php echo $todo->getPriority(); ?>" title="Priority <?php echo $todo->getPriority(); ?>" /></td>
+        <td><?php echo Utils::iconPriority($todo->getPriority()); ?></td>
     </tr>
     <tr>
         <th>Created On</th>
@@ -87,7 +92,7 @@
     </tr>
     <tr>
         <th>Status</th>
-        <td><img src="img/status/<?php echo $todo->getStatus(); ?>.png" alt="" title="<?php echo Utils::capitalize($todo->getStatus()); ?>" class="icon" /></td>
+        <td><?php echo Utils::iconStatus($todo->getStatus()); ?></td>
     </tr>
     <tr>
         <td colspan="2">&nbsp;</td>
@@ -98,25 +103,27 @@
             <div class="statuses">
             <?php foreach (Todo::allStatuses() as $status): ?>
                 <?php if ($status != $todo->getStatus()): ?>
-                    <a href="<?php echo Utils::createLink('change-status', array('id' => $todo->getId(), 'status' => $status)); ?>" title="Change TODO status to <?php echo Utils::capitalize($status); ?>." class="change-status-link"
-                       ><img src="img/status/<?php echo $status; ?>.png" alt="" title="Make it <?php echo Utils::capitalize($status); ?>." class="icon" /></a>
+                    <a href="<?php echo Utils::createLink('change-status', ['id' => $todo->getId(), 'status' => $status]); ?>" title="Change TODO status to <?php echo Utils::capitalize($status); ?>."
+                       class="change-status-link" title="Make it <?php echo Utils::capitalize($status); ?>"
+                       ><?php echo Utils::iconStatus($status, false, false); ?></a>
                 <?php else: ?>
-                    <img src="img/status/<?php echo $status; ?>-disabled.png" alt="" title="This TODO is already <?php echo Utils::capitalize($status); ?>." class="icon" />
+                    <span title="This TODO is already <?php echo Utils::capitalize($status); ?>.">
+                        <?php echo Utils::iconStatus($status, true, false); ?>
+                    </span>
                 <?php endif; ?>
             <?php endforeach; ?>
             </div>
             <div class="actions">
-                <a href="<?php echo Utils::createLink('add-edit', array('id' => $todo->getId())); ?>"><img src="img/action/edit.png" alt="" title="Edit it." class="icon" /></a>
-                <a href="<?php echo Utils::createLink('delete', array('id' => $todo->getId())); ?>" id="delete-link"><img src="img/action/delete.png" alt="" title="Delete it." class="icon" /></a>
+                <a href="<?php echo Utils::createLink('add-edit', ['id' => $todo->getId()]); ?>" title="Edit it."><i class="material-icons multi">edit</i></a>
+                <a href="<?php echo Utils::createLink('delete', ['id' => $todo->getId()]); ?>" id="delete-link" title="Delete it."><i class="material-icons multi">delete</i></a>
             </div>
         </td>
     </tr>
 </table>
 
 <p>
-    <?php $backLink = Utils::createLink('list', array('status' => $todo->getStatus())); ?>
-    <a href="<?php echo $backLink; ?>"><img src="img/action/back.png" alt="" title="Back to the list." class="icon"/></a>&nbsp;
-    <a href="<?php echo $backLink; ?>">To the list</a>
+    <a href="<?php echo Utils::createLink('list', ['status' => $todo->getStatus()]); ?>" title="Back to the list."
+       ><i class="material-icons">fast_rewind</i>To the list</a>
 </p>
 
 <div id="delete-dialog" title="Delete this TODO?">

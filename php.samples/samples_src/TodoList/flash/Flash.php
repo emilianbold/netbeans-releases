@@ -41,6 +41,10 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Flash;
+
+use \Exception;
+
 /**
  * Class managing flash messages.
  * <p>
@@ -77,7 +81,7 @@ final class Flash {
     public static function getFlashes() {
         self::initFlashes();
         $copy = self::$flashes;
-        self::$flashes = array();
+        self::$flashes = [];
         return $copy;
     }
 
@@ -86,7 +90,7 @@ final class Flash {
             return;
         }
         if (!array_key_exists(self::FLASHES_KEY, $_SESSION)) {
-            $_SESSION[self::FLASHES_KEY] = array();
+            $_SESSION[self::FLASHES_KEY] = [];
         }
         self::$flashes = &$_SESSION[self::FLASHES_KEY];
     }
