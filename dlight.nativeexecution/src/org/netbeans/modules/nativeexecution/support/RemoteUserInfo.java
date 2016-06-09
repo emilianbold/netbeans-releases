@@ -43,59 +43,42 @@ package org.netbeans.modules.nativeexecution.support;
 
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.CharConversionException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+//import javax.swing.JOptionPane;
+//import javax.swing.Icon;
+//import javax.swing.JComponent;
+//import javax.swing.JOptionPane;
+//import javax.swing.JTextArea;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.netbeans.modules.nativeexecution.support.ui.CertPassphraseDlg;
-import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
-import org.netbeans.modules.nativeexecution.support.ui.PromptPasswordDialog;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Mutex;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
+import org.netbeans.modules.nativeexecution.spi.support.PasswordProvider;
+import org.netbeans.modules.nativeexecution.spi.support.PasswordProviderFactory;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
-import org.openide.windows.WindowManager;
-import org.openide.xml.XMLUtil;
 
 final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     private final static Object lock = RemoteUserInfo.class.getName() + "Lock"; // NOI18N
     private final static PasswordManager pm = PasswordManager.getInstance();
-    private final Component parent;
+//    private final Component parent;
     private final ExecutionEnvironment env;
-    private volatile Component parentWindow = null;
+  //  private volatile Component parentWindow = null;
     private final boolean allowInterraction;
     private char[] secret = null;
 
     public RemoteUserInfo(ExecutionEnvironment env, boolean allowToAskForPassword) {
         this.env = env;
         this.allowInterraction = allowToAskForPassword;
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                parentWindow = WindowManager.getDefault().getMainWindow();
-            }
-        });
-        parent = parentWindow;
+//        Mutex.EVENT.readAccess(new Runnable() {
+//            @Override
+//            public void run() {
+//                parentWindow = WindowManager.getDefault().getMainWindow();
+//            }
+//        });
+//        parent = parentWindow;
     }
 
     @Override
@@ -125,15 +108,15 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     @Override
     public boolean promptPassword(String message) {
-        return promptSecret(SecretType.PASSWORD, message);
+        return promptSecret(PasswordProvider.SecretType.PASSWORD, message);
     }
 
     @Override
     public boolean promptPassphrase(String message) {
-        return promptSecret(SecretType.PASSPHRASE, message);
+        return promptSecret(PasswordProvider.SecretType.PASSPHRASE, message);
     }
 
-    private boolean promptSecret(SecretType secretType, String message) {
+    private boolean promptSecret(PasswordProvider.SecretType secretType, String message) {
         synchronized (lock) {
             if (pm.getPassword(env) != null) {
                 return true;
@@ -142,26 +125,46 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             if (!allowInterraction) {
                 return false;
             }
-
-            PromptPasswordDialog dlg;
-            switch (secretType) {
-                case PASSWORD:
-                    dlg = new PasswordDlg();
-                    break;
-                case PASSPHRASE:
-                    dlg = new CertPassphraseDlg();
-                    break;
-                default:
-                    throw new InternalError("Wrong secret type"); // NOI18N
+            Collection<? extends PasswordProviderFactory> factories = 
+                    Lookup.getDefault().lookupAll(PasswordProviderFactory.class);
+            if (factories.isEmpty()) {
+                return false;
             }
-
-            if (!dlg.askPassword(env, message)) {
-                throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
+            PasswordProvider passwordProvider = null;
+            for (PasswordProviderFactory factory : factories) {
+                passwordProvider = factory.create(secretType);
+                if (passwordProvider != null) {
+                    break;
+                }
             }
-
-            secret = dlg.getPassword();
-            pm.storePassword(env, secret, dlg.isRememberPassword());
-            dlg.clearPassword();
+            if (passwordProvider == null) {
+                return false;
+            }
+            if (!passwordProvider.askPassword(env, message)) {
+                throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N 
+            }
+            secret = passwordProvider.getPassword();
+            pm.storePassword(env, secret, passwordProvider.isRememberPassword());
+            passwordProvider.clearPassword();
+//            PromptPasswordDialog dlg;
+//            switch (secretType) {
+//                case PASSWORD:
+//                    dlg = new PasswordDlg();
+//                    break;
+//                case PASSPHRASE:
+//                    dlg = new CertPassphraseDlg();
+//                    break;
+//                default:
+//                    throw new InternalError("Wrong secret type"); // NOI18N
+//            }
+//
+//            if (!dlg.askPassword(env, message)) {
+//                throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
+//            }
+//
+//            secret = dlg.getPassword();
+//            pm.storePassword(env, secret, dlg.isRememberPassword());
+//            dlg.clearPassword();
         }
 
         return true;
@@ -169,22 +172,14 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     @Override
     public boolean promptYesNo(String str) {
-        Object[] options = {"yes", "no"}; // NOI18N
-        int foo;
 
         synchronized (lock) {
             if (RemoteUserInfo.isUnitTestMode() || RemoteUserInfo.isStandalone()) {
                 System.err.println(str+" yes"); // NOI18N
-                foo = 0;
-            } else {
-                foo = JOptionPane.showOptionDialog(parent, str,
-                        loc("TITLE_YN_Warning"), // NOI18N
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+                return true;
             }
+            return NativeExecutionUserNotification.getDefault().showYesNoQuestion(loc("TITLE_YN_Warning"), str);               
         }
-
-        return foo == 0;
     }
 
     // copy-paste from CndUtils
@@ -277,14 +272,7 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         }
     }
 
-    private JComponent createMessageComponent(String message) {
-        final JTextArea textArea = new JTextArea(message.trim());
-        int fontSize = textArea.getFont().getSize();
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, fontSize)); //NOI18N
-        textArea.setEditable(false);
-        textArea.setOpaque(false);
-        return textArea;
-    }
+
         
 //    private JComponent createPopupDetails(final String title, final String message, final Icon icon) {
 //        ActionListener actionListener = new ActionListener() {
@@ -312,15 +300,10 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 //    }
     
     @Override
-    public void showMessage(final String message) {
-        final Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/exclamation.gif", false); // NOI18N
-        //final String title = NbBundle.getMessage(RemoteUserInfo.class, "TITLE_Message", env.getDisplayName());
-        final String titleAndBriefMessage = NbBundle.getMessage(RemoteUserInfo.class, "TITLE_Message_Ex", 
+    public void showMessage(final String message) {        
+          final String titleAndBriefMessage = NbBundle.getMessage(RemoteUserInfo.class, "TITLE_Message_Ex", 
                 env.getDisplayName(), getBriefMessage(message));
-        final JComponent baloonComponent = createMessageComponent(message);
-        final JComponent popupDetails = createMessageComponent(message); // createPopupDetails(titleAndBriefMessage, message, icon);
-        NotificationDisplayer.getDefault().notify(titleAndBriefMessage, icon, baloonComponent, popupDetails,
-                NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.INFO);
+        NativeExecutionUserNotification.getDefault().showInfoNotification(titleAndBriefMessage, titleAndBriefMessage, message);        
     }
 
     @Override
@@ -353,9 +336,5 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return NbBundle.getMessage(RemoteUserInfo.class, key, params);
     }
 
-    private static enum SecretType {
 
-        PASSWORD,
-        PASSPHRASE
-    }
 }

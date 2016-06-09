@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+//import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -74,7 +74,7 @@ public final class ConnectingProgressHandle {
                 return;
             }
 
-            ph = ProgressHandleFactory.createHandle(
+            ph = ProgressHandle.createHandle(
                     NbBundle.getMessage(ConnectingProgressHandle.class, "ConnectingProgressHandle.Connecting", // NOI18N
                     env.toString()), new Cancellable() {
 

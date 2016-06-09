@@ -62,9 +62,9 @@ import org.netbeans.modules.cnd.remote.ui.setup.TextComponentWriter;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidatorFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
-import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.nativeexecution.api.ui.util.NativeExecutionUIUtils;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidatablePanelListener;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -87,7 +87,7 @@ import org.openide.util.RequestProcessor;
         
         textLoginName.setText(System.getProperty("user.name"));
 
-        configurationPanel = ConnectionManager.getInstance().getConfigurationPanel(null);
+        configurationPanel = NativeExecutionUIUtils.getConfigurationPanel(null);
         configurationPanel.addValidationListener(cfgListener);
 
         authPanel.add(configurationPanel, BorderLayout.CENTER);
