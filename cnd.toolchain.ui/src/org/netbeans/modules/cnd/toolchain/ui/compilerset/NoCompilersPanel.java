@@ -76,8 +76,8 @@ public class NoCompilersPanel extends javax.swing.JPanel {
 
         jScrollPane1.setBorder(null);
 
-        textArea.setColumns(20);
         textArea.setEditable(false);
+        textArea.setColumns(20);
         textArea.setLineWrap(true);
         textArea.setRows(5);
         textArea.setText(org.openide.util.NbBundle.getMessage(NoCompilersPanel.class, "NO_COMPILERS_FOUND_MSG")); // NOI18N
