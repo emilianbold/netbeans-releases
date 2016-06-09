@@ -510,7 +510,7 @@ public class PopupManager {
                     Action action = am.get(obj);
                     LOG.log(Level.FINE, "Popup component''s action: {0}, {1}", new Object [] { action, action != null ? action.getValue(Action.NAME) : null }); //NOI18N
 
-                    if (action != null) {
+                    if (action != null && action.isEnabled()) {
                         action.actionPerformed(null);
                         e.consume();
                         return;
@@ -550,7 +550,7 @@ public class PopupManager {
             ) {
                 // if yes, if there is a popup's action, consume key event
                 Action action = am.get(obj);
-                if (action != null) {
+                if (action != null && action.isEnabled()) {
                     // actionPerformed on key press only.
                     e.consume();
                 }
