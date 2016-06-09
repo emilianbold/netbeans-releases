@@ -65,7 +65,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -133,6 +135,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final AuxiliaryConfiguration aux;
+    private final SourceForBinaryQueryImpl sfbqImpl;
     
     /**
      * Map from classpath types to maps from package roots to classpaths.
@@ -152,10 +155,15 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     //@GuardedBy(this)
     private Map<String,Set<ClassPath>> registeredClasspaths = null;
 
-    public Classpaths(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
+    public Classpaths(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final AuxiliaryConfiguration aux,
+            @NonNull final SourceForBinaryQueryImpl sfbqImpl) {
         this.helper = helper;
         this.evaluator = evaluator;
         this.aux = aux;
+        this.sfbqImpl = sfbqImpl;
         helper.addAntProjectListener(this);
         evaluator.addPropertyChangeListener(this);
     }
@@ -433,7 +441,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     private List<URL> createCompileClasspath(Element compilationUnitEl) {
         for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("compile")) { // NOI18N
-                return createClasspath(e, new RemoveSources(helper));
+                return createClasspath(e, new RemoveSources(helper, sfbqImpl));
             }
         }
         // None specified; assume it is empty.
@@ -470,7 +478,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     private List<URL> createExecuteClasspath(List<String> packageRoots, Element compilationUnitEl) {
         for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("execute")) { // NOI18N
-                return createClasspath(e, new RemoveSources(helper));
+                return createClasspath(e, new RemoveSources(helper, sfbqImpl));
             }
         }
         // None specified; assume it is same as compile classpath plus (cf. #49113) <built-to> dirs/JARs
@@ -479,7 +487,6 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         urls.addAll(createCompileClasspath(compilationUnitEl));
         final Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
         if (prj != null) {
-            final SourceForBinaryQueryImpl sfbqImpl = prj.getLookup().lookup(SourceForBinaryQueryImpl.class);
             for (URL src : createSourcePath(packageRoots)) {
                 urls.addAll(sfbqImpl.findBinaryRoots(src));
             }
@@ -492,7 +499,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (ap != null) {
             final Element path = XMLUtil.findElement(ap, AnnotationProcessingQueryImpl.EL_PROCESSOR_PATH, JavaProjectNature.NS_JAVA_LASTEST);
             if (path != null) {
-                return createClasspath(path, new RemoveSources(helper));
+                return createClasspath(path, new RemoveSources(helper, sfbqImpl));
             }
         }
         // None specified; assume it is the same as the compile classpath.
@@ -761,18 +768,16 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
     }
 
-    //Todo: Replace by JDK 8 fnc in NB 9 running on JDK8+.
-    private static interface Function<P,R> {
-        R apply(P p);
-    }
-
     private static final class RemoveSources implements Function<URL,Collection<URL>> {
         private final Set<URL> sourceRoots;
-        private final Project prj;
+        private final SourceForBinaryQueryImpl sfbqImpl;
 
-        RemoveSources(final AntProjectHelper helper) {
-            sourceRoots = new HashSet<>();
-            this.prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        RemoveSources(
+                @NonNull final AntProjectHelper helper,
+                @NonNull final SourceForBinaryQueryImpl sfbqImpl) {
+            this.sourceRoots = new HashSet<>();
+            this.sfbqImpl = sfbqImpl;
+            final Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
             if (prj != null) {
                 for (SourceGroup sg : ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                     final FileObject root = sg.getRootFolder();
@@ -787,7 +792,6 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         public Collection<URL> apply(URL p) {
             Collection<URL> res = Collections.emptySet();
             if (sourceRoots.contains(p)) {
-                final SourceForBinaryQueryImpl sfbqImpl = prj.getLookup().lookup(SourceForBinaryQueryImpl.class);
                 res = sfbqImpl.findBinaryRoots(p);
             }
             if (res.isEmpty()) {
