@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.source.spi;
+package org.netbeans.modules.cnd.spi;
 
 import javax.swing.text.Document;
 
