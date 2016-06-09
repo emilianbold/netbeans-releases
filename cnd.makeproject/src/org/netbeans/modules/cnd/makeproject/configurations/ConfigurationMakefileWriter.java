@@ -127,9 +127,9 @@ public class ConfigurationMakefileWriter {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
         cleanup();
         if (isMakefileProject()) {
-            for (MakeConfiguration conf : okConfs) {
+            okConfs.forEach((conf) -> {
                 writePackagingScript(conf);
-            }
+            });
         } else {
             writeMakefileImpl();
             for (MakeConfiguration conf : okConfs) {
@@ -211,9 +211,9 @@ public class ConfigurationMakefileWriter {
             int platformID = CompilerSetManager.get(execEnv).getPlatform();
             Platform platform = Platforms.getPlatform(platformID);
             StringBuilder list = new StringBuilder();
-            for (MakeConfiguration c : wrongPlatform) {
+            wrongPlatform.forEach((c) -> {
                 list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName())).append("\n"); // NOI18N
-            }
+            });
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
             if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
@@ -883,9 +883,9 @@ public class ConfigurationMakefileWriter {
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N
 
                     List<String> additionalDependencies = new ArrayList<>();
-                    for (LinkerConfiguration lc : linkerConfigurations) {
+                    linkerConfigurations.forEach((lc) -> {
                         additionalDependencies.addAll(lc.getAdditionalDependencies().getValuesAsList());
-                    }
+                    });
                     for (String dep : additionalDependencies) {
                         bw.write(output + ": " + dep + "\n\n"); // NOI18N
                     }
@@ -979,12 +979,7 @@ public class ConfigurationMakefileWriter {
 
     public static Item[] getSortedProjectItems(MakeConfigurationDescriptor projectDescriptor) {
         List<Item> res = new ArrayList<>(Arrays.asList(projectDescriptor.getProjectItems()));
-        Collections.<Item>sort(res, new Comparator<Item>(){
-            @Override
-            public int compare(Item o1, Item o2) {
-                return o1.getPath().compareTo(o2.getPath());
-            }
-        });
+        Collections.<Item>sort(res, (Item o1, Item o2) -> o1.getPath().compareTo(o2.getPath()));
         return res.toArray(new Item[res.size()]);
     }
 

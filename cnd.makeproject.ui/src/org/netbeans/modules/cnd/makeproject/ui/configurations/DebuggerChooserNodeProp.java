@@ -82,10 +82,12 @@ public class DebuggerChooserNodeProp extends Node.Property {
         }
     }
 
+    @Override
     public Object getValue() {
         return debuggerChooserConfiguration.getValue();
     }
 
+    @Override
     public void setValue(Object v) {
         debuggerChooserConfiguration.setValue((String) v);
     }
@@ -105,10 +107,12 @@ public class DebuggerChooserNodeProp extends Node.Property {
         return !debuggerChooserConfiguration.getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return true;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }

@@ -440,9 +440,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
             List<PackagerInfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
-            for (PackagerInfoElement elem : toBeRemove) {
+            toBeRemove.forEach((elem) -> {
                 currentPackagingConfiguration.getInfo().getValue().remove(elem);
-            }
+            });
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration) currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -784,13 +784,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 93 && currentList != null && !currentList.isEmpty() && currentCCCCompilerConfiguration != null) {
                 List<String> files = currentCCCCompilerConfiguration.getIncludeFiles().getValue();
                 for(String path : currentList) {
-                   if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
-                       files.add(path);
-                   }
+                    if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
+                        files.add(path);
+                    }
                 }
-                for(String path : files) {
+                files.forEach((path) -> {
                     currentList.remove(path);
-                }
+                });
             }
             currentList = null;
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
@@ -886,9 +886,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCCCCompilerConfiguration != null) {
                 List<String> list = MakeProjectOptionsFormat.tokenizeString(currentText);
                 List<String> res = new ArrayList<>();
-                for (String val : list) {
+                list.forEach((val) -> {
                     res.add(this.getString(val));
-                }
+                });
                 currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue().addAll(res);
             }
         } else if (element.equals(STRIP_SYMBOLS_ELEMENT)) {

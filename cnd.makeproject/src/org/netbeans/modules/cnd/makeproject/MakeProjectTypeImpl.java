@@ -199,6 +199,7 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
      * System fs path for other modules to add make project folders' specific actions
      * @return A path
      */
+    @Override
     public String folderActionsPath() {
         return projectLayerPath() + "/ActionsFolder"; //NOI18N
     }
@@ -207,6 +208,7 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
      * System fs path for other modules to add make project external folders' specific actions
      * @return A path
      */
+    @Override
     public String extFolderActionsPath() {
         return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
     }

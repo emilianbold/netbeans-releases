@@ -69,9 +69,9 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         List<String> optionalEntries = packager.getOptionalInfoList();
         if (optionalEntries != null) {
-            for (String entry : optionalEntries) {
+            optionalEntries.forEach((entry) -> {
                 entryComboBox.addItem(entry);
-            }
+            });
         }
         
     }

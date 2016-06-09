@@ -110,7 +110,6 @@ public final class BrokenReferencesSupport {
             Configuration[] confs = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
             for (Configuration cf : confs) {
                 if (cf.isDefault()) {
-                    cf.getName();
                     MakeConfiguration conf = (MakeConfiguration) cf;
                     if (conf.getDevelopmentHost().isLocalhost()
                             && CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
@@ -299,27 +298,19 @@ public final class BrokenReferencesSupport {
 
         @Override
         public Collection<? extends ProjectProblemsProvider.ProjectProblem> getProblems() {
-            return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
-                @Override
-                public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
-                            new Mutex.Action<Collection<? extends ProjectProblemsProvider.ProjectProblem>>() {
-                        @Override
-                        public Collection<? extends ProjectProblemsProvider.ProjectProblem> run() {
-                            final Set<ProjectProblemsProvider.ProjectProblem> newProblems = new LinkedHashSet<>();
-                            Set<? extends ProjectProblem> versionProblems = getVersionProblems(project);
-                            newProblems.addAll(versionProblems);
-                            if (versionProblems.isEmpty()) {
-                                newProblems.addAll(getReferenceProblems(project));
-                                newProblems.addAll(getPlatformProblems(project));
-                                newProblems.addAll(envProblemsProvider.getEnvProblems());
-                                newProblems.addAll(getFormattingStyleProblems(project));
-                            }
-                            return Collections.unmodifiableSet(newProblems);
-                        }
-                    });
-                    return currentProblems;
-                }
+            return problemsProviderSupport.getProblems(() -> {
+                return ProjectManager.mutex().readAccess((Mutex.Action<Collection<? extends ProjectProblemsProvider.ProjectProblem>>) () -> {
+                    final Set<ProjectProblemsProvider.ProjectProblem> newProblems = new LinkedHashSet<>();
+                    Set<? extends ProjectProblem> versionProblems = getVersionProblems(project);
+                    newProblems.addAll(versionProblems);
+                    if (versionProblems.isEmpty()) {
+                        newProblems.addAll(getReferenceProblems(project));
+                        newProblems.addAll(getPlatformProblems(project));
+                        newProblems.addAll(envProblemsProvider.getEnvProblems());
+                        newProblems.addAll(getFormattingStyleProblems(project));
+                    }
+                    return Collections.unmodifiableSet(newProblems);
+                });
             });
         }
 

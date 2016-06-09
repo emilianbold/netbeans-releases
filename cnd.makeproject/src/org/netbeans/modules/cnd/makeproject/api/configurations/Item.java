@@ -880,7 +880,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     private void addToMap(Map<String, String> res, List<String> list, boolean override) {
-        for(String macro : list){
+        list.forEach((macro) -> {
             int i = macro.indexOf('=');
             String key;
             String value;
@@ -894,17 +894,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             if (!res.containsKey(key) || override) {
                 res.put(key, value);
             }
-        }
+        });
     }
     
     private void addToList(Map<String, String> res, List<String> list) {
-        for(Map.Entry<String,String> e : res.entrySet()) {
+        res.entrySet().forEach((e) -> {
             if (e.getValue() == null) {
                 list.add(e.getKey());
             } else {
                 list.add(e.getKey()+"="+e.getValue()); //NOI18N
             }
-        }
+        });
     }
 
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
@@ -998,10 +998,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
-                            return LanguageFlavor.CPP;
+                                        return LanguageFlavor.CPP;
                     }
                 }
-            }            
+            }
         }
         
         if (flavor == LanguageFlavor.UNKNOWN) {
@@ -1114,9 +1114,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
                 List<IncludePath> res = new ArrayList<>(includes);
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                getUserOptionsProviders().forEach((provider) -> {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
-                }
+                });
                 return res;
             } else {
                 return includes;
@@ -1126,9 +1126,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
                 List<String> res = new ArrayList<>(macros);
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                getUserOptionsProviders().forEach((provider) -> {
                     res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
-                }
+                });
                 return res;
             } else {
                 return macros;

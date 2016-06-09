@@ -158,13 +158,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void addListeners(){
-        ((ExpandableEditableComboBox)binaryField).addChangeListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String path = ((ExpandableEditableComboBox)binaryField).getText().trim();
-                controller.getWizardStorage().setBinaryPath(fileSystem, path);
-                updateRoot();
-            }
+        ((ExpandableEditableComboBox)binaryField).addChangeListener((ActionEvent e) -> {
+            String path = ((ExpandableEditableComboBox)binaryField).getText().trim();
+            controller.getWizardStorage().setBinaryPath(fileSystem, path);
+            updateRoot();
         });
         sourcesField.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
@@ -187,11 +184,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 }
             }
         });
-        dependeciesComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                validateController();
-            }
+        dependeciesComboBox.addItemListener((ItemEvent e) -> {
+            validateController();
         });
         updateRoot();
     }
@@ -236,21 +230,17 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
             }
             if (extension != null) {
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        extension.discoverArtifacts(map);
-                        List<String> dlls = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES.fromMap(map);
-                        String root = WizardConstants.DISCOVERY_ROOT_FOLDER.fromMap(map);
-                        if (root == null) {
-                            root = "";
-                        }
-                        List<String> searchPaths = WizardConstants.DISCOVERY_BINARY_SEARCH_PATH.fromMap(map);
-                        final Map<String, String> resolvedDlls = searchingTable(dlls);
-                        updateArtifacts(root, map, resolvedDlls);
-                        checkDll(resolvedDlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
+                RP.post(() -> {
+                    extension.discoverArtifacts(map);
+                    List<String> dlls = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES.fromMap(map);
+                    String root = WizardConstants.DISCOVERY_ROOT_FOLDER.fromMap(map);
+                    if (root == null) {
+                        root = "";
                     }
+                    List<String> searchPaths = WizardConstants.DISCOVERY_BINARY_SEARCH_PATH.fromMap(map);
+                    final Map<String, String> resolvedDlls = searchingTable(dlls);
+                    updateArtifacts(root, map, resolvedDlls);
+                    checkDll(resolvedDlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
                 });
             }
         } else {
@@ -271,85 +261,26 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void updateArtifacts(final String root, final Map<String, Object> map, final Map<String, String> dlls){
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (env.isLocal()) {
-                    CompilerSet compiler = detectCompilerSet(WizardConstants.DISCOVERY_COMPILER.fromMap(map));
-                    if (compiler != null) {
-                        WizardConstants.PROPERTY_TOOLCHAIN.put(controller.getWizardDescriptor(), compiler);
-                        WizardConstants.PROPERTY_HOST_UID.put(controller.getWizardDescriptor(), ExecutionEnvironmentFactory.getLocal().getHost());
-                        // allow user to select right tool collection if discovery detected wrong one
-                        WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
-                    } else {
-                        WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
-                    }
-                    sourcesField.setText(root);
-                    int i = checking.decrementAndGet();
-                    if (i == 0) {
-                        boolean validBinary = validBinary();
-                        List<FSPath> validBinaryPath = getValidBinaryPath();
-                        sourcesField.setEnabled(validBinary);
-                        sourcesButton.setEnabled(validBinary);
-                        dependeciesComboBox.setEnabled(validBinary);
-                        viewComboBox.setEnabled(validBinary);
-                        if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
-                            if (binaryRoot != null) {
-                                if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
-                                    binaryRoot = null;
-                                }
-                            }
-                            updateTableModel(dlls, root, binaryRoot, true);
-                        } else {
-                            updateTableModel(Collections.<String, String>emptyMap(), root, null, true);
-                        }
-                    }
-                    List<String> errors = WizardConstants.DISCOVERY_ERRORS.fromMap(map);
-                    if (errors != null && errors.size() > 0) {
-                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errors.get(0));
-                    } else {
-                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
-                    }
+        SwingUtilities.invokeLater(() -> {
+            if (env.isLocal()) {
+                CompilerSet compiler = detectCompilerSet(WizardConstants.DISCOVERY_COMPILER.fromMap(map));
+                if (compiler != null) {
+                    WizardConstants.PROPERTY_TOOLCHAIN.put(controller.getWizardDescriptor(), compiler);
+                    WizardConstants.PROPERTY_HOST_UID.put(controller.getWizardDescriptor(), ExecutionEnvironmentFactory.getLocal().getHost());
+                    // allow user to select right tool collection if discovery detected wrong one
+                    WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
                 } else {
-                    sourcesField.setText(root);
-                    int i = checking.decrementAndGet();
-                    if (i == 0) {
-                        boolean validBinary = validBinary();
-                        List<FSPath> validBinaryPath = getValidBinaryPath();
-                        sourcesField.setEnabled(validBinary);
-                        sourcesButton.setEnabled(validBinary);
-                        dependeciesComboBox.setEnabled(true);
-                        viewComboBox.setEnabled(validBinary);
-                        if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
-                            if (binaryRoot != null) {
-                                if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
-                                    binaryRoot = null;
-                                }
-                            }
-                            updateTableModel(dlls, root, binaryRoot, true);
-                        } else {
-                            updateTableModel(Collections.<String, String>emptyMap(), root, null, true);
-                        }
-                    }
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+                    WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
                 }
-                validateController();
-            }
-        });
-    }
-
-    private void updateDllArtifacts(final String root, final Map<String, String> checkDll, final boolean searching){
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                int i = checking.get();
+                sourcesField.setText(root);
+                int i = checking.decrementAndGet();
                 if (i == 0) {
                     boolean validBinary = validBinary();
                     List<FSPath> validBinaryPath = getValidBinaryPath();
+                    sourcesField.setEnabled(validBinary);
+                    sourcesButton.setEnabled(validBinary);
+                    dependeciesComboBox.setEnabled(validBinary);
+                    viewComboBox.setEnabled(validBinary);
                     if (validBinary && validBinaryPath != null) {
                         String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
                         if (binaryRoot != null) {
@@ -357,13 +288,64 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                                 binaryRoot = null;
                             }
                         }
-                        updateTableModel(checkDll, root, binaryRoot, searching);
+                        updateTableModel(dlls, root, binaryRoot, true);
                     } else {
-                        updateTableModel(Collections.<String, String>emptyMap(), root, null, searching);
+                        updateTableModel(Collections.<String, String>emptyMap(), root, null, true);
                     }
                 }
-                validateController();
+                List<String> errors = WizardConstants.DISCOVERY_ERRORS.fromMap(map);
+                if (errors != null && errors.size() > 0) {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errors.get(0));
+                } else {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+                }
+            } else {
+                sourcesField.setText(root);
+                int i = checking.decrementAndGet();
+                if (i == 0) {
+                    boolean validBinary = validBinary();
+                    List<FSPath> validBinaryPath = getValidBinaryPath();
+                    sourcesField.setEnabled(validBinary);
+                    sourcesButton.setEnabled(validBinary);
+                    dependeciesComboBox.setEnabled(true);
+                    viewComboBox.setEnabled(validBinary);
+                    if (validBinary && validBinaryPath != null) {
+                        String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
+                        if (binaryRoot != null) {
+                            if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
+                                binaryRoot = null;
+                            }
+                        }
+                        updateTableModel(dlls, root, binaryRoot, true);
+                    } else {
+                        updateTableModel(Collections.<String, String>emptyMap(), root, null, true);
+                    }
+                }
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
             }
+            validateController();
+        });
+    }
+
+    private void updateDllArtifacts(final String root, final Map<String, String> checkDll, final boolean searching){
+        SwingUtilities.invokeLater(() -> {
+            int i = checking.get();
+            if (i == 0) {
+                boolean validBinary = validBinary();
+                List<FSPath> validBinaryPath = getValidBinaryPath();
+                if (validBinary && validBinaryPath != null) {
+                    String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
+                    if (binaryRoot != null) {
+                        if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
+                            binaryRoot = null;
+                        }
+                    }
+                    updateTableModel(checkDll, root, binaryRoot, searching);
+                } else {
+                    updateTableModel(Collections.<String, String>emptyMap(), root, null, searching);
+                }
+            }
+            validateController();
         });
     }
 
@@ -385,17 +367,17 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void cancelSearch() {
-        for(AtomicBoolean cancel : cancelable) {
+        cancelable.forEach((cancel) -> {
             cancel.set(true);
-        }
+        });
     }
 
     private Map<String,String> searchingTable(List<String> dlls) {
         Map<String,String> dllPaths = new TreeMap<>();
         if (dlls != null) {
-            for(String dll : dlls) {
-               dllPaths.put(dll, null);
-            }
+            dlls.forEach((dll) -> {
+                dllPaths.put(dll, null);
+            });
         }
         return dllPaths; 
     }
@@ -408,26 +390,17 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             synchronized (lock) {
                 final AtomicBoolean cancel = new AtomicBoolean(false);
                 cancelable.add(cancel);
-                ActionListener actionListener = new ActionListener(){
-                     @Override
-                     public void actionPerformed(ActionEvent e) {
-                         cancel.set(true);
-                     }
-                 };
+                ActionListener actionListener = (ActionEvent e) -> {
+                    cancel.set(true);
+                };
                 cancelSearch.addActionListener(actionListener);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        cancelSearch.setEnabled(true);
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    cancelSearch.setEnabled(true);
                 });
                 processDlls(searchPaths, binary, dllPaths, cancel, root);
                 cancelSearch.removeActionListener(actionListener);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        cancelSearch.setEnabled(false);
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    cancelSearch.setEnabled(false);
                 });
             }
             searching.set(false);
@@ -815,12 +788,12 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             }
             if (dd.getValue() == jOK) {
                 StringBuilder buf = new StringBuilder();
-                for (String s: panel.getFileList()) {
+                panel.getFileList().forEach((s) -> {
                     if (buf.length() > 0) {
                         buf.append(';');
                     }
                     buf.append(s);
-                }
+            });
                 ((ExpandableEditableComboBox)binaryField).setText(buf.toString());
             }
         //}

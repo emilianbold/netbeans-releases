@@ -108,9 +108,9 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
 
         StringBuilder options = new StringBuilder();
         options.append(getAsFlagsBasic(compiler)).append(' ');
-        for(BasicCompilerConfiguration master : getMasters(true)) {
+        getMasters(true).forEach((master) -> {
             options.append(master.getCommandLineConfiguration().getValue()).append(' ');
-        }
+        });
         options.append(getAllOptions2(compiler)).append(' ');
         return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }

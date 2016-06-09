@@ -79,15 +79,12 @@ final class BrokenViewItemNode extends AbstractNode {
         setDisplayName(item.getName());
         setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", item.getPath())); // NOI18N
         this.project = project;
-        brokenViewItemListener = new BrokenViewItemListener() {
-            @Override
-            public void revalidate(Project project) {
-                if (getParentNode() == null) {
-                    return;
-                }
-                if (project == BrokenViewItemNode.this.project) {
-                    refresh();
-                }
+        brokenViewItemListener = (Project project1) -> {
+            if (getParentNode() == null) {
+                return;
+            }
+            if (project1 == BrokenViewItemNode.this.project) {
+                refresh();
             }
         };
         BrokenViewItemRefreshSupport.addBrokenViewItemListener(

@@ -116,15 +116,15 @@ public class PropertiesItemAction extends NodeAction {
     }
 
     public void dumpList(String txt, List<String> list) {
-        for (String s : list) {
+        list.forEach((s) -> {
             System.out.println(txt + ":" + s); // NOI18N
-        }
+        });
     }
 
     private void dumpPathsList(String txt, List<IncludePath> list) {
-        for (IncludePath s : list) {
+        list.forEach((s) -> {
             System.out.println(txt + ":" + s.getFSPath().getURL()); // NOI18N
-        }
+        });
     }
 
     @Override

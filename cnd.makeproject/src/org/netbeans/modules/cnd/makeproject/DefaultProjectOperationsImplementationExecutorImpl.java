@@ -377,7 +377,7 @@ public class DefaultProjectOperationsImplementationExecutorImpl implements Defau
             }
         } else {
             assert from.isData();
-            FileObject target = FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
+            /*FileObject target =*/ FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
         }
     }
     
