@@ -331,7 +331,7 @@ public class ProjectConfigurations {
         };
         private final FileChangeListener fclWeak;
         private FileObject configDir;
-        private Map<String,Configuration> configs;
+        private volatile Map<String,Configuration> configs;
         private FileObject nbp;
 
         public ConfigurationProviderImpl(
@@ -378,8 +378,9 @@ public class ProjectConfigurations {
             });
         }
 
-        private void calculateConfigs() {
-            configs = new HashMap<String,Configuration>();
+        @NonNull
+        private Map<String,Configuration> calculateConfigs() {
+            final Map<String,Configuration> cfgs = new HashMap<>();
             if (configDir != null) {
                 for (FileObject kid : configDir.getChildren()) {
                     if (!kid.hasExt("properties")) {    //NOI18N
@@ -391,22 +392,33 @@ public class ProjectConfigurations {
                             props.load(is);
                             final String name = kid.getName();
                             final String label = props.getProperty("$label"); // NOI18N
-                            configs.put(name, new Configuration(name, label != null ? label : name));
+                            cfgs.put(name, new Configuration(name, label != null ? label : name));
                         }
                     } catch (IOException x) {
                         LOGGER.log(Level.INFO, null, x);
                     }
                 }
             }
-            LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
+            configs = cfgs;
+            LOGGER.log(Level.FINEST, "Calculated configurations: {0}", cfgs);
+            return cfgs;
+        }
+
+        @NonNull
+        private Map<String,Configuration> getConfigs() {
+            Map<String,Configuration> cfgs = configs;
+            if (cfgs == null) {
+                cfgs = calculateConfigs();
+            }
+            return cfgs;
         }
 
         @NonNull
         @Override
         public Collection<Configuration> getConfigurations() {
-            calculateConfigs();
-            List<Configuration> l = new ArrayList<Configuration>();
-            l.addAll(configs.values());
+            final Map<String,Configuration> cfgs = getConfigs();
+            final List<Configuration> l = new ArrayList<>();
+            l.addAll(cfgs.values());
             Collections.sort(l, new Comparator<Configuration>() {
                 Collator c = Collator.getInstance();
                 @Override
@@ -421,10 +433,10 @@ public class ProjectConfigurations {
         @NonNull
         @Override
         public Configuration getActiveConfiguration() {
-            calculateConfigs();
+            final Map<String,Configuration> cfgs = getConfigs();
             String config = eval.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
-            if (config != null && configs.containsKey(config)) {
-                return configs.get(config);
+            if (config != null && cfgs.containsKey(config)) {
+                return cfgs.get(config);
             } else {
                 return DEFAULT;
             }
@@ -432,8 +444,11 @@ public class ProjectConfigurations {
 
         @Override
         public void setActiveConfiguration(@NonNull final Configuration c) throws IllegalArgumentException, IOException {
-            if (c != DEFAULT && !configs.values().contains(c)) {
-                throw new IllegalArgumentException(String.valueOf(c));
+            final Map<String,Configuration> cfgs = getConfigs();
+            if (c != DEFAULT && !cfgs.values().contains(c)) {
+                throw new IllegalArgumentException(String.format("Configuration: %s, Known Configurations: %s",
+                        c,
+                        cfgs.values()));
             }
             assert ProjectManager.mutex().isWriteAccess();
             final String n = c.name;
