@@ -1897,7 +1897,7 @@ public final class EditorCaret implements Caret {
         synchronized (listenerList) {
             caretUpdatePending = false;
         }
-        JTextComponent c = component;
+        final JTextComponent c = component;
         if (c != null) {
             if (!calledFromPaint && !c.isValid()) {
                 updateLaterDuringPaint = true;
@@ -1973,7 +1973,22 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             if (editorRect == null || !editorRect.contains(scrollBounds)) {
-                                c.scrollRectToVisible(scrollBounds);
+                                // When typing on a longest line the size of the component may still not incorporate just performed insert
+                                // at this point so schedule the scrolling for later.
+                                Dimension size = c.getSize();
+                                if (scrollBounds.x + scrollBounds.width <= size.width &&
+                                    scrollBounds.y + scrollBounds.height <= size.height)
+                                {
+                                    c.scrollRectToVisible(scrollBounds);
+                                } else {
+                                    final Rectangle finalScrollBounds = scrollBounds;
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            c.scrollRectToVisible(finalScrollBounds);
+                                        }
+                                    });
+                                }
                                 // Schedule another update that will read the updated editorRect
                                 dispatchUpdate(true);
                                 return;
