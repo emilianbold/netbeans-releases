@@ -314,12 +314,18 @@ class WildflyStartRunnable implements Runnable {
             return null;
         }
         List<String> args = new LinkedList<>();
+        if(Utilities.isWindows()) {
+            builder.setExecutable("cmd"); // NOI18N
+            args.add("/c");  // NOI18N
+            args.add(serverRunFileName);
+        } else {
+            builder.setExecutable(serverRunFileName); // NOI18N
+        }
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null && !"".equals(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE))) {
             String configFile = ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
             args.add("-c"); // NOI18N
             args.add(configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1));
         }
-        builder.setExecutable(serverRunFileName);
         builder.setArguments(args);
         return builder;
     }
