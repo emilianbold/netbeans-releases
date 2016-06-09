@@ -979,7 +979,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                     }
                 }
             }
-            if (flavor == LanguageFlavor.UNKNOWN) {
+             if (flavor == LanguageFlavor.UNKNOWN) {
                 if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                     switch (itemConfiguration.getCCompilerConfiguration().getInheritedCStandard()) {
                         case CCompilerConfiguration.STANDARD_C99:
@@ -987,7 +987,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCompilerConfiguration.STANDARD_C11:
                             return LanguageFlavor.C11;
                         case CCompilerConfiguration.STANDARD_C89:
+                            return LanguageFlavor.C89;
                         case CCompilerConfiguration.STANDARD_DEFAULT:
+                            for(String macro : getSystemMacroDefinitions()) {
+                                if (macro.startsWith("_STDC_C99=")) { //NOI18N
+                                    return LanguageFlavor.C99;
+                                } else if (macro.startsWith("_STDC_C11=")) { //NOI18N
+                                    return LanguageFlavor.C11;
+                                }
+                            }
                             return LanguageFlavor.C89;
                     }
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
@@ -997,11 +1005,26 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
+                            return LanguageFlavor.CPP;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
+                            for(String macro : getSystemMacroDefinitions()) {
+                                if (macro.startsWith("__cplusplus=")) { //NOI18N
+                                    String year = macro.substring(12);
+                                    if (year.compareTo("2010") > 0) { //NOI18N
+                                        if (year.compareTo("2013") > 0) { //NOI18N
+                                            return LanguageFlavor.CPP14;
+                                        } else {
+                                            return LanguageFlavor.CPP11;
+                                        }
+                                    } else {
                                         return LanguageFlavor.CPP;
+                                    }
+                                }
+                            }
+                            return LanguageFlavor.CPP;
                     }
                 }
-            }
+            }            
         }
         
         if (flavor == LanguageFlavor.UNKNOWN) {
