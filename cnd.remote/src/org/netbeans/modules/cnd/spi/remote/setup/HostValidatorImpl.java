@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.ui.wizard;
+package org.netbeans.modules.cnd.spi.remote.setup;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -48,13 +48,11 @@ import java.io.Writer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.server.StopWatch;
 import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -66,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-public class HostValidatorImpl implements HostValidator {
+class HostValidatorImpl implements HostValidator {
 
     private final ToolsCacheManager cacheManager;
     private volatile Runnable runOnFinish;
