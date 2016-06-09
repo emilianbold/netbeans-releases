@@ -41,6 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Model;
+
+use \DateTime;
+use \Exception;
+use \TodoList\Validation\TodoValidator;
+
 /**
  * Model class representing one TODO item.
  */
@@ -89,19 +95,19 @@ final class Todo {
     }
 
     public static function allStatuses() {
-        return array(
+        return [
             self::STATUS_PENDING,
             self::STATUS_DONE,
             self::STATUS_VOIDED,
-        );
+        ];
     }
 
     public static function allPriorities() {
-        return array(
+        return [
             self::PRIORITY_HIGH,
             self::PRIORITY_MEDIUM,
             self::PRIORITY_LOW,
-        );
+        ];
     }
 
     //~ Getters & setters
@@ -114,10 +120,15 @@ final class Todo {
     }
 
     public function setId($id) {
-        if ($this->id !== null && $this->id != $id) {
+        if ($this->id !== null
+                && $this->id != $id) {
             throw new Exception('Cannot change identifier to ' . $id . ', already set to ' . $this->id);
         }
-        $this->id = (int) $id;
+        if ($id === null) {
+            $this->id = null;
+        } else {
+            $this->id = (int) $id;
+        }
     }
 
     /**
@@ -129,7 +140,7 @@ final class Todo {
 
     public function setPriority($priority) {
         TodoValidator::validatePriority($priority);
-        $this->priority = $priority;
+        $this->priority = (int) $priority;
     }
 
     /**

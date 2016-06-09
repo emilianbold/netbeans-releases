@@ -45,7 +45,6 @@
     padding: 0;
 }
 body {
-    background: url(../img/header-bg-left.jpg) repeat-x top #F5F5F5;
     font-family: Tahoma, Geneva, sans-serif;
     font-size: 100%;
     line-height: 1em;
@@ -59,7 +58,7 @@ h2 {
     margin-bottom: 20px;
 }
 h3 {
-    font-size: 1em;
+    font-size: 1.2em;
     color: #4c7cbd;
     margin-bottom: 12px;
 }
@@ -245,15 +244,6 @@ form input.submit {
     width: 100%;
 }
 
-.tail-top-right {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
-    height: 244px;
-    background: url(../img/header-bg-right.jpg) repeat-x right top;
-}
-
 .statuses {
     float: left;
 }
@@ -291,22 +281,12 @@ table.detail td {
     padding: 2px 14px;
 }
 
-.icon {
-    width: 16px;
-    height: 16px;
-    margin: 0px 2px;
-}
-
 .line-hor {
     border-bottom: 1px solid #000;
     margin: 20px 0;
     overflow: hidden;
     font-size: 0;
     line-height: 0;
-}
-
-.title {
-    margin-bottom: 18px;
 }
 
 /** flashes **/
@@ -330,4 +310,39 @@ ul#flashes li {
 }
 .ui-widget button {
     width: 70px;
+}
+
+/** icons **/
+.material-icons {
+    color: #0E1B55;
+    font-size: 18px;
+    margin: 0 4px;
+}
+.material-icons.disabled {
+    color: darkgray;
+}
+.material-icons.error {
+    color: indianred;
+}
+.material-icons.multi {
+    margin: 0;
+}
+.material-icons.logo {
+    margin: 0;
+    font-size: 128px;
+}
+.material-icons.priority {
+    color: gold;
+}
+.material-icons.pending {
+    color: deepskyblue;
+}
+.material-icons.done {
+    color: darkseagreen;
+}
+.material-icons.voided {
+    color: coral;
+}
+.material-icons.new {
+    color: khaki;
 }

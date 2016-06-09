@@ -41,13 +41,17 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Config;
+
+use \Exception;
+
 /**
- * Application config.
+ * Application configuration.
  */
 final class Config {
 
     /** @var array config data */
-    private static $data = null;
+    private static $DATA = null;
 
 
     /**
@@ -69,11 +73,11 @@ final class Config {
      * @return array
      */
     private static function getData() {
-        if (self::$data !== null) {
-            return self::$data;
+        if (self::$DATA !== null) {
+            return self::$DATA;
         }
-        self::$data = parse_ini_file('../config/config.ini', true);
-        return self::$data;
+        self::$DATA = parse_ini_file(__DIR__ . '/config.ini', true);
+        return self::$DATA;
     }
 
 }

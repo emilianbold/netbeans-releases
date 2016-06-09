@@ -41,10 +41,25 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Util;
+
+use DateTime;
+use Exception;
+use TodoList\Dao\TodoDao;
+use TodoList\Exception\NotFoundException;
+use TodoList\Model\Todo;
+use TodoList\Validation\TodoValidator;
+
 /**
  * Miscellaneous utility methods.
  */
 final class Utils {
+    
+    private static $STATUS_ICONS = [
+        Todo::STATUS_PENDING => 'event_note',
+        Todo::STATUS_DONE => 'event_available',
+        Todo::STATUS_VOIDED => 'event_busy',
+    ];
 
     private function __construct() {
     }
@@ -54,10 +69,9 @@ final class Utils {
      * @param string $page target page
      * @param array $params page parameters
      */
-    public static function createLink($page, array $params = array()) {
-        $params = array_merge(array('page' => $page), $params);
-        // TODO add support for Apache's module rewrite
-        return 'index.php?' .http_build_query($params);
+    public static function createLink($page, array $params = []) {
+        unset($params['page']);
+        return 'index.php?' .http_build_query(array_merge(['page' => $page], $params));
     }
 
     /**
@@ -85,11 +99,40 @@ final class Utils {
     }
 
     /**
+     * Returns icon for status.
+     * @param int $status status
+     * @param boolean $disabled whether to disable (change color)
+     * @param boolean $tooltip whether to show tooltip
+     * @return string icon for status
+     */
+    public static function iconStatus($status, $disabled = false, $tooltip = true) {
+        TodoValidator::validateStatus($status);
+        $title = $tooltip ?  : '';
+        $icon = '<i class="material-icons ' . ($disabled ? 'disabled' : strtolower($status)) . '"';
+        if ($tooltip) {
+            $icon .= ' title="' . self::capitalize($status) . '"';
+        }
+        $icon .= '>' . self::$STATUS_ICONS[$status] . '</i>';
+        return $icon;
+    }
+
+    /**
+     * Returns icon for priority.
+     * @param int $priority priority
+     * @return string icon for priority
+     */
+    public static function iconPriority($priority) {
+        return str_repeat(
+                '<i class="material-icons multi priority" title="Priority ' . $priority . '">star</i>',
+                4 - $priority);
+    }
+    
+    /**
      * Redirect to the given page.
      * @param type $page target page
      * @param array $params page parameters
      */
-    public static function redirect($page, array $params = array()) {
+    public static function redirect($page, array $params = []) {
         header('Location: ' . self::createLink($page, $params));
         die();
     }

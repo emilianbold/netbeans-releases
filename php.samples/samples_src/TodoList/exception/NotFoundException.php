@@ -41,9 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Exception;
+
+use \Exception;
+
 /**
  * Exception which causes HTTP ERROR 404 (Not Found).
  */
-final class NotFoundException extends Exception {
-
+class NotFoundException extends Exception {
 }
