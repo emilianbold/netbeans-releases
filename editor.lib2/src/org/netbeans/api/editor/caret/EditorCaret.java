@@ -80,7 +80,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -2570,6 +2569,14 @@ public final class EditorCaret implements Caret {
         }
 
         private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+            // For typing modification ensure that the last caret will be visible after the typing modification.
+            // Otherwise the caret would go off the screen when typing at the end of a long line.
+            // It might make sense to make an implicit dot setting to end of the modification
+            // but that would break existing tests like TypingCompletionUnitTest wihch expects
+            // that even typing modifications do not influence the caret position (not only the non-typing ones).
+            boolean typingModification = DocumentUtilities.isTypingModification(evt.getDocument());
+            scrollToLastCaret |= typingModification;
+
             if (!implicitSetDot(evt, setDotOffset)) {
                 // Ensure that a valid atomicSectionImplicitSetDotOffset value
                 // will be updated by the just performed document modification
@@ -2603,10 +2610,7 @@ public final class EditorCaret implements Caret {
          * @return true if the given offset was used or false if not.
          */
         private boolean implicitSetDot(DocumentEvent evt, int offset) {
-            if (evt == null ||
-                    UndoRedoDocumentEventResolver.isUndoRedoEvent(evt) ||
-                    DocumentUtilities.isTypingModification(evt.getDocument()))
-            {
+            if (evt == null || UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
                 if (getCarets().size() == 1) { // And if there is just a single caret
                     boolean inActiveTransaction;
                     synchronized (listenerList) {
