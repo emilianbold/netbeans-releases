@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -145,12 +146,13 @@ public class EditList {
         final Position [] lastPos = new Position [] { null };
         
         // Apply edits in reverse order (to keep offsets accurate)
-        for (Edit edit : edits) {
-            final Edit fEdit = edit;
-            final int [] fEnd = new int [] { -1 };
-
-            doc.runAtomic(new Runnable() {
-                public void run() {
+        final Reformat r = Reformat.get(doc);
+        r.lock();
+        try {
+            doc.runAtomic(() -> {
+                for (Edit edit : edits) {
+                    final Edit fEdit = edit;
+                    final int [] fEnd = new int [] { -1 };
                     try {
                         if (lastPos[0] == null) {
                             lastPos[0] = doc.createPosition(edits.get(0).offset, Position.Bias.Forward);
@@ -158,11 +160,23 @@ public class EditList {
 
                         if (fEdit.removeLen > 0) {
                             doc.remove(fEdit.offset, fEdit.removeLen);
-                            LOG.fine("Remove text: <" + fEdit.offset + ", " + (fEdit.offset + fEdit.removeLen) + ">"); //NOI18N
+                            LOG.log(
+                                    Level.FINE,
+                                    "Remove text: <{0}, {1}>",   //NOI18N
+                                    new Object[]{
+                                        fEdit.offset,
+                                        fEdit.offset + fEdit.removeLen
+                                    });
                         }
                         if (fEdit.getInsertText() != null) {
                             doc.insertString(fEdit.offset, fEdit.insertText, null);
-                            LOG.fine("Insert text: offset=" + fEdit.offset + ", text='" + fEdit.insertText + "'\n"); //NOI18N
+                            LOG.log(
+                                    Level.FINE,
+                                    "Insert text: offset={0}, text=''{1}''\n",   //NOI18N
+                                    new Object[]{
+                                        fEdit.offset,
+                                        fEdit.insertText
+                                    });
 
                             fEnd[0] = fEdit.offset + fEdit.insertText.length();
                             for (int i = 0; i < positions.size(); i++) {
@@ -176,50 +190,43 @@ public class EditList {
                     } catch (BadLocationException ble) {
                         Exceptions.printStackTrace(ble);
                     }
+
+                    if (edit.format && edit.offset <= fEnd[0]) {
+                        try {
+                            r.reformat(fEdit.offset, fEnd[0]);
+                            LOG.log(
+                                    Level.FINE,
+                                    "Formatting: <{0}, {1}>",    //NOI18N
+                                    new Object[]{
+                                        fEdit.offset,
+                                        fEnd[0]
+                                    });
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
+                        }
+                    }
+                }
+                if (formatAll) {
+                    final int firstOffset = edits.get(edits.size() - 1).offset;
+                    final int lastOffset = lastPos[0].getOffset();
+                    if (firstOffset <= lastOffset) {
+                        try {
+                            r.reformat(firstOffset, lastOffset);
+                            LOG.log(
+                                    Level.FINE,
+                                    "Formatting all: <{0}, {1}>",    //NOI18N
+                                    new Object[]{
+                                        firstOffset,
+                                        lastOffset
+                                    });
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
+                        }
+                    }
                 }
             });
-
-            if (edit.format && edit.offset <= fEnd[0]) {
-                final Reformat r = Reformat.get(doc);
-                r.lock();
-                try {
-                    doc.runAtomic(new Runnable() {
-                        public void run() {
-                            try {
-                                r.reformat(fEdit.offset, fEnd[0]);
-                                LOG.fine("Formatting: <" + fEdit.offset + ", " + (fEnd[0]) + ">"); //NOI18N
-                            } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
-                            }
-                        }
-                    });
-                } finally {
-                    r.unlock();
-                }
-            }
-        }
-
-        if (formatAll) {
-            final int firstOffset = edits.get(edits.size() - 1).offset;
-            final int lastOffset = lastPos[0].getOffset();
-            if (firstOffset <= lastOffset) {
-                final Reformat r = Reformat.get(doc);
-                r.lock();
-                try {
-                    doc.runAtomic(new Runnable() {
-                        public void run() {
-                            try {
-                                r.reformat(firstOffset, lastOffset);
-                                LOG.fine("Formatting all: <" + firstOffset + ", " + lastOffset + ">"); //NOI18N
-                            } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
-                            }
-                        }
-                    });
-                } finally {
-                    r.unlock();
-                }
-            }
+        } finally {
+            r.unlock();
         }
     }
     

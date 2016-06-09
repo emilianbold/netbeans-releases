@@ -318,19 +318,32 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     
     private synchronized void activeConfigurationSelected(final @NullAllowed ProjectConfiguration cfg, final @NullAllowed ProjectConfigurationProvider<?> ppcp) {
         final ProjectConfigurationProvider<?> lpcp = (ppcp != null) ? ppcp : pcp;
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
-                if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
-                    try {
-                        setActiveConfiguration(lpcp, cfg);
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, null, x);
+        if (lpcp != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
+                    final Collection<?> cfgs = lpcp.getConfigurations();
+                    if (cfgs.contains(cfg)) {
+                        if (cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
+                            try {
+                                setActiveConfiguration(lpcp, cfg);
+                            } catch (IOException x) {
+                                LOGGER.log(Level.WARNING, null, x);
+                            }
+                        }
+                    } else {
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Unknown configuration: {0}, active project configurations: {1}",
+                                new Object[]{
+                                    cfg,
+                                    cfgs
+                                });
                     }
                 }
-            }
-        });
+            });
+        }
     }
     
     public @Override HelpCtx getHelpCtx() {
