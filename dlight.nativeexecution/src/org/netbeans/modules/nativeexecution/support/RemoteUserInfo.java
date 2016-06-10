@@ -178,7 +178,7 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 System.err.println(str+" yes"); // NOI18N
                 return true;
             }
-            return NativeExecutionUserNotification.getDefault().showYesNoQuestion(loc("TITLE_YN_Warning"), str);               
+            return NativeExecutionUserNotification.getDefault().showYesNoQuestion(loc("TITLE_YN_Warning"), str); //NOI18N              
         }
     }
 

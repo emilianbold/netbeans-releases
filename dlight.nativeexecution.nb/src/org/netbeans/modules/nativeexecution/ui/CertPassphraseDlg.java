@@ -84,7 +84,7 @@ public class CertPassphraseDlg extends javax.swing.JPanel implements PromptPassw
 
         tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
         tfHost.setEditable(false);
-        tfHost.setText("null");
+        tfHost.setText(null);
         tfHost.setFocusable(false);
 
         promptLabel.setLabelFor(tfPassword);
@@ -99,7 +99,7 @@ public class CertPassphraseDlg extends javax.swing.JPanel implements PromptPassw
         jLabel0.setText(org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.jLabel0.text")); // NOI18N
         jLabel0.setFocusable(false);
 
-        tfPassword.setText("null");
+        tfPassword.setText(null);
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tfPasswordonPwdFocus(evt);
@@ -108,7 +108,7 @@ public class CertPassphraseDlg extends javax.swing.JPanel implements PromptPassw
 
         tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
         tfUser.setEditable(false);
-        tfUser.setText("null");
+        tfUser.setText(null);
         tfUser.setFocusable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

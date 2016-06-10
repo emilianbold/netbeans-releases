@@ -132,7 +132,7 @@ public class PasswordDlg extends javax.swing.JPanel implements PromptPasswordDia
         jLabel0 = new javax.swing.JLabel();
         tfUser = new javax.swing.JTextField();
 
-        tfPassword.setText("null");
+        tfPassword.setText(null);
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tfPasswordonPwdFocus(evt);
@@ -147,7 +147,7 @@ public class PasswordDlg extends javax.swing.JPanel implements PromptPasswordDia
 
         tfHost.setEditable(false);
         tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
-        tfHost.setText("null");
+        tfHost.setText(null);
         tfHost.setFocusable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.cbRememberPwd.text")); // NOI18N
@@ -157,7 +157,7 @@ public class PasswordDlg extends javax.swing.JPanel implements PromptPasswordDia
 
         tfUser.setEditable(false);
         tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
-        tfUser.setText("null");
+        tfUser.setText(null);
         tfUser.setFocusable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
