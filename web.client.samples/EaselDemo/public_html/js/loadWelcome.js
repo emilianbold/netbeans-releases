@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-document.write('<scr'+'ipt type="text/javascript" src="js/jquery.js" ></scr'+'ipt>');
+document.write('<scr'+'ipt type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js" ></scr'+'ipt>');
 var lang;
 
 function getWelcome() {
