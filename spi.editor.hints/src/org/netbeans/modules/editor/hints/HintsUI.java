@@ -775,6 +775,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         } else if ( e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
             if ( popupShowing ) {
                 removePopup();
+                e.consume();
             } else {
                 //user is tired of waiting for refresh before popup is shown
                 cancel.set(true);
