@@ -1,39 +1,52 @@
 /*
- * Copyright (c) 2005, 2006 Henri Sivonen
- * Copyright (c) 2007-2010 Mozilla Foundation
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.validation;
 
-import com.thaiopensource.relaxng.impl.CombineValidator;
 import com.thaiopensource.util.PropertyMap;
 import com.thaiopensource.util.PropertyMapBuilder;
 import com.thaiopensource.validate.*;
-import com.thaiopensource.validate.auto.AutoSchemaReader;
 import com.thaiopensource.validate.prop.rng.RngProperty;
-import com.thaiopensource.validate.prop.wrap.WrapProperty;
-import com.thaiopensource.validate.rng.CompactSchemaReader;
 import com.thaiopensource.xml.sax.XMLReaderCreator;
 import java.io.*;
-import java.lang.ref.SoftReference;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -43,7 +56,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import nu.validator.checker.XmlPiChecker;
 import nu.validator.checker.jing.CheckerSchema;
 import nu.validator.htmlparser.common.*;
 import nu.validator.htmlparser.sax.HtmlParser;
@@ -52,7 +64,10 @@ import nu.validator.messages.MessageEmitterAdapter;
 import nu.validator.messages.TooManyErrorsException;
 import nu.validator.servlet.ParserMode;
 import nu.validator.source.SourceCode;
-import nu.validator.spec.Spec;
+import nu.validator.messages.ValidationTransaction;
+import nu.validator.messages.BufferingRootNamespaceSniffer;
+import nu.validator.messages.RootNamespaceSniffer;
+import nu.validator.localentities.LocalCacheEntityResolver;
 import nu.validator.spec.html5.Html5SpecBuilder;
 import nu.validator.xml.*;
 import nu.validator.xml.dataattributes.DataAttributeDroppingSchemaWrapper;
@@ -61,21 +76,13 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffer;
-import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
-import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.openide.util.NbBundle;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
-/**
- * This class code was mainly extracted from the original class {@link VerifierServletTransaction}.
- *
- * @author hsivonen, mfukala@netbeans.org
- */
-public class ValidationTransaction implements DocumentModeHandler, SchemaResolver {
+public class NbValidationTransaction extends ValidationTransaction {
 
-    private static final Logger LOGGER = Logger.getLogger(ValidationTransaction.class.getCanonicalName());
+    private static final Logger LOGGER = Logger.getLogger(NbValidationTransaction.class.getCanonicalName());
 
     public static void enableDebug() {
         LOGGER.setLevel(Level.FINE);
@@ -96,67 +103,28 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         });
     }
     private static final Pattern SPACE = Pattern.compile("\\s+");
-    protected static final int HTML5_SCHEMA = 3;
-    protected static final int XHTML1STRICT_SCHEMA = 2;
-    protected static final int XHTML1FRAMESET_SCHEMA = 4;
-    protected static final int XHTML1TRANSITIONAL_SCHEMA = 1;
-    protected static final int XHTML5_SCHEMA = 7;
-    private static Spec html5spec;
-    private static int[] presetDoctypes;
-    private static String[] presetLabels;
-    private static String[] presetUrls;
-    private static String[] presetNamespaces;
-    // XXX SVG!!!
-    private static final String[] KNOWN_CONTENT_TYPES = {
-        "application/atom+xml", "application/docbook+xml",
-        "application/xhtml+xml", "application/xv+xml", "image/svg+xml"};
-    private static final String[] NAMESPACES_FOR_KNOWN_CONTENT_TYPES = {
-        "http://www.w3.org/2005/Atom", "http://docbook.org/ns/docbook",
-        "http://www.w3.org/1999/xhtml", "http://www.w3.org/1999/xhtml",
-        "http://www.w3.org/2000/svg"};
-    private static final String[] ALL_CHECKERS = {
-        "http://c.validator.nu/table/", "http://c.validator.nu/nfc/",
-        "http://c.validator.nu/text-content/",
-        "http://c.validator.nu/unchecked/",
-        "http://c.validator.nu/usemap/", "http://c.validator.nu/obsolete/",
-        "http://c.validator.nu/xml-pi/"};
-    private static final String[] ALL_CHECKERS_HTML4 = {
-        "http://c.validator.nu/table/", "http://c.validator.nu/nfc/",
-        "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
+
     private static boolean INITIALIZED = false;
     
-    private static String INTERNAL_ERROR_MSG_SEE_LOG = NbBundle.getMessage(ValidationTransaction.class, "MSG_Unexpected_Validator_Error_See_IDE_Log"); //NOI18N
-    private static String INTERNAL_ERROR_MSG = NbBundle.getMessage(ValidationTransaction.class, "MSG_Unexpected_Validator_Error"); //NOI18N
+    private static String INTERNAL_ERROR_MSG_SEE_LOG = NbBundle.getMessage(NbValidationTransaction.class, "MSG_Unexpected_Validator_Error_See_IDE_Log"); //NOI18N
+    private static String INTERNAL_ERROR_MSG = NbBundle.getMessage(NbValidationTransaction.class, "MSG_Unexpected_Validator_Error"); //NOI18N
     
     protected String document = null;
     ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
-    protected MessageEmitterAdapter errorHandler;
     protected final AttributesImpl attrs = new AttributesImpl();
-    private PropertyMap jingPropertyMap;
-    protected LocalCacheEntityResolver entityResolver;
-    private static String[] preloadedSchemaUrls;
-    private static Schema[] preloadedSchemas;
     private String schemaUrls = null;
-    protected Validator validator = null;
-    private BufferingRootNamespaceSniffer bufferingRootNamespaceSniffer = null;
-    private String contentType = null;
-    protected HtmlParser htmlParser = null;
     protected SAXParser xmlParser = null;
-    protected XMLReader reader;
     private CharacterHandlerReader sourceReader;
     protected TypedInputSource documentInput;
     protected DataUriEntityResolver dataRes;
     protected ContentTypeParser contentTypeParser;
-    private Map<String, Validator> loadedValidatorUrls = new HashMap<String, Validator>();
     private boolean checkNormalization = false;
-    private boolean rootNamespaceSeen = false;
     private SourceCode sourceCode = new SourceCode();
     private boolean showSource;
     private BaseUriTracker baseUriTracker = null;
     private String charsetOverride = null;
     private Set<String> filteredNamespaces = new LinkedHashSet<String>(); // linked
-    private LexicalHandler lexicalHandler;
     private Reader codeToValidate;
     private long validationTime;
     private ProblemsHandler problemsHandler = new ProblemsHandler();
@@ -164,8 +132,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private HtmlVersion version;
     private String encoding;
 
-    public static synchronized ValidationTransaction create(HtmlVersion version) {
-        return new ValidationTransaction(version);
+    public static synchronized NbValidationTransaction create(HtmlVersion version) {
+        return new NbValidationTransaction(version);
     }
 
     private static void initializeLocalEntities_HACK() {
@@ -203,8 +171,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             return;
         }
 
-        ProgressHandle progress = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ValidationTransaction.class, "MSG_InitHTMLValidation")); //NOI18N
+        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(NbValidationTransaction.class, "MSG_InitHTMLValidation")); //NOI18N
 
         progress.start();
         progress.switchToIndeterminate();
@@ -412,7 +379,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return false;
     }
 
-    public ValidationTransaction(HtmlVersion version) {
+    public NbValidationTransaction(HtmlVersion version) {
         this.version = version;
         initialize();
     }
@@ -882,18 +849,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         htmlParser.setEntityResolver(entityResolver);
     }
 
-    protected Validator validatorByDoctype(int schemaId) throws SAXException,
-            IOException, IncorrectSchemaException {
-        if (schemaId == 0) {
-            return null;
-        }
-        for (int i = 0; i < presetDoctypes.length; i++) {
-            if (presetDoctypes[i] == schemaId) {
-                return validatorByUrls(presetUrls[i]);
-            }
-        }
-        throw new RuntimeException("Doctype mappings not initialized properly.");
-    }
+    
 
     /**
      * @param entityResolver2
@@ -943,163 +899,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
     }
 
-    /**
-     * @param validator
-     * @return
-     * @throws SAXException
-     * @throws IOException
-     * @throws IncorrectSchemaException
-     */
-    private Validator validatorByUrls(String schemaList) throws SAXException,
-            IOException, IncorrectSchemaException {
-        Validator v = null;
-        String[] schemas = SPACE.split(schemaList);
-        for (int i = schemas.length - 1; i > -1; i--) {
-            String url = schemas[i];
-            if ("http://c.validator.nu/all/".equals(url)
-                    || "http://hsivonen.iki.fi/checkers/all/".equals(url)) {
-                for (int j = 0; j < ALL_CHECKERS.length; j++) {
-                    v = combineValidatorByUrl(v, ALL_CHECKERS[j]);
-                }
-            } else if ("http://c.validator.nu/all-html4/".equals(url)
-                    || "http://hsivonen.iki.fi/checkers/all-html4/".equals(url)) {
-                for (int j = 0; j < ALL_CHECKERS_HTML4.length; j++) {
-                    v = combineValidatorByUrl(v, ALL_CHECKERS_HTML4[j]);
-                }
-            } else {
-                v = combineValidatorByUrl(v, url);
-            }
-        }
-        return v;
-    }
-
-    /**
-     * @param val
-     * @param url
-     * @return
-     * @throws SAXException
-     * @throws IOException
-     * @throws IncorrectSchemaException
-     */
-    private Validator combineValidatorByUrl(Validator val, String url)
-            throws SAXException, IOException, IncorrectSchemaException {
-        if (!"".equals(url)) {
-            Validator v = validatorByUrl(url);
-            if (val == null) {
-                val = v;
-            } else {
-                val = new CombineValidator(v, val);
-            }
-        }
-        return val;
-    }
-
-    /**
-     * @param url
-     * @return
-     * @throws SAXException
-     * @throws IOException
-     * @throws IncorrectSchemaException
-     */
-    private Validator validatorByUrl(String url) throws SAXException,
-            IOException, IncorrectSchemaException {
-        Validator v = loadedValidatorUrls.get(url);
-        if (v != null) {
-            return v;
-        }
-
-
-        if ("http://s.validator.nu/html5/html5full-aria.rnc".equals(url)
-                || "http://s.validator.nu/xhtml5-aria-rdf-svg-mathml.rnc".equals(url)
-                || "http://s.validator.nu/html5/html5full.rnc".equals(url)
-                || "http://s.validator.nu/html5/xhtml5full-xhtml.rnc".equals(url)
-                || "http://s.validator.nu/html5-aria-svg-mathml.rnc".equals(url)) {
-            errorHandler.setSpec(html5spec);
-        }
-        Schema sch = resolveSchema(url, jingPropertyMap);
-        Validator validatorInstance = sch.createValidator(jingPropertyMap);
-        if (validatorInstance.getContentHandler() instanceof XmlPiChecker) {
-            lexicalHandler = (LexicalHandler) validatorInstance.getContentHandler();
-        }
-
-        loadedValidatorUrls.put(url, v);
-        return validatorInstance;
-    }
-
-    public Schema resolveSchema(String url, PropertyMap options)
-            throws SAXException, IOException, IncorrectSchemaException {
-        int i = Arrays.binarySearch(preloadedSchemaUrls, url);
-        if (i > -1) {
-            Schema rv = preloadedSchemas[i];
-            if (options.contains(WrapProperty.ATTRIBUTE_OWNER)) {
-                if(rv instanceof ProxySchema && ((ProxySchema)rv).getWrappedSchema() instanceof CheckerSchema) {
-                    errorHandler.error(new SAXParseException(
-                            "A non-schema checker cannot be used as an attribute schema.",
-                            null, url, -1, -1));
-                    throw new IncorrectSchemaException();
-                } else {
-                    // ugly fall through
-                }
-            } else {
-                return rv;
-            }
-        }
-
-        //this code line should not normally be encountered since the necessary
-        //schemas have been preloaded
-        LOGGER.log(Level.INFO, "Going to create a non preloaded Schema for {0}", url); //NOI18N
-        
-        TypedInputSource schemaInput = (TypedInputSource) entityResolver.resolveEntity(
-                null, url);
-        SchemaReader sr = null;
-        if ("application/relax-ng-compact-syntax".equals(schemaInput.getType())) {
-            sr = CompactSchemaReader.getInstance();
-        } else {
-            sr = new AutoSchemaReader();
-        }
-        Schema sch = sr.createSchema(schemaInput, options);
-        return sch;
-    }
-
-    private static Schema proxySchemaByUrl(String uri, EntityResolver resolver, PropertyMap pMap) {
-        return new ProxySchema(uri, resolver, pMap);
-    }
     
-    /**
-     * @param url
-     * @return
-     * @throws SAXException
-     * @throws IOException
-     * @throws IncorrectSchemaException
-     */
-    private static Schema schemaByUrl(String url, EntityResolver resolver,
-            PropertyMap pMap) throws SAXException, IOException,
-            IncorrectSchemaException {
-        LOGGER.fine(String.format("Will load schema: %s", url));
-        long a = System.currentTimeMillis();
-        TypedInputSource schemaInput;
-        try {
-            schemaInput = (TypedInputSource) resolver.resolveEntity(
-                    null, url);
-        } catch (ClassCastException e) {
-            LOGGER.log(Level.SEVERE, url, e);
-            throw e;
-        }
 
-        SchemaReader sr = null;
-        if ("application/relax-ng-compact-syntax".equals(schemaInput.getType())) {
-            sr = CompactSchemaReader.getInstance();
-            LOGGER.log(Level.FINE, "Used CompactSchemaReader");
-        } else {
-            sr = new AutoSchemaReader();
-            LOGGER.log(Level.FINE, "Used AutoSchemaReader");
-        }
-        long c = System.currentTimeMillis();
+    
 
-        Schema sch = sr.createSchema(schemaInput, pMap);
-        LOGGER.log(Level.FINE, String.format("Schema created in %s ms.", (System.currentTimeMillis() - c)));
-        return sch;
-    }
+    
+    
+    
 
     protected String shortenDataUri(String uri) {
         if (DataUri.startsWithData(uri)) {
@@ -1109,145 +915,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
     }
 
-    public void rootNamespace(String namespace, Locator locator) throws SAXException {
-        if (validator == null) {
-            int index = -1;
-            for (int i = 0; i < presetNamespaces.length; i++) {
-                if (namespace.equals(presetNamespaces[i])) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index == -1) {
-                String message = "Cannot find preset schema for namespace: \u201C"
-                        + namespace + "\u201D.";
-                SAXException se = new SAXException(message);
-                errorHandler.schemaError(se);
-                throw se;
-            }
-            String label = presetLabels[index];
-            String urls = presetUrls[index];
-            errorHandler.info("Using the preset for " + label
-                    + " based on the root namespace " + namespace);
-            try {
-                validator = validatorByUrls(urls);
-            } catch (IOException ioe) {
-                // At this point the schema comes from memory.
-                throw new RuntimeException(ioe);
-            } catch (IncorrectSchemaException e) {
-                // At this point the schema comes from memory.
-                throw new RuntimeException(e);
-            }
-            if (bufferingRootNamespaceSniffer == null) {
-                throw new RuntimeException(
-                        "Bug! bufferingRootNamespaceSniffer was null.");
-            }
-            bufferingRootNamespaceSniffer.setContentHandler(validator.getContentHandler());
-        }
-
-        if (!rootNamespaceSeen) {
-            rootNamespaceSeen = true;
-            if (contentType != null) {
-                int i;
-                if ((i = Arrays.binarySearch(KNOWN_CONTENT_TYPES, contentType)) > -1) {
-                    if (!NAMESPACES_FOR_KNOWN_CONTENT_TYPES[i].equals(namespace)) {
-                        String message = "".equals(namespace) ? "\u201C"
-                                + contentType
-                                + "\u201D is not an appropriate Content-Type for a document whose root element is not in a namespace."
-                                : "\u201C"
-                                + contentType
-                                + "\u201D is not an appropriate Content-Type for a document whose root namespace is \u201C"
-                                + namespace + "\u201D.";
-                        SAXParseException spe = new SAXParseException(message,
-                                locator);
-                        errorHandler.warning(spe);
-                    }
-                }
-            }
-        }
-    }
-
-    public void documentMode(DocumentMode mode, String publicIdentifier,
-            String systemIdentifier, boolean html4SpecificAdditionalErrorChecks)
-            throws SAXException {
-        if (validator == null) {
-            try {
-                if ("-//W3C//DTD XHTML 1.0 Transitional//EN".equals(publicIdentifier)) {
-                    errorHandler.info("XHTML 1.0 Transitional doctype seen. Appendix C is not supported. Proceeding anyway for your convenience. The parser is still an HTML parser, so namespace processing is not performed and \u201Cxml:*\u201D attributes are not supported. Using the schema for "
-                            + getPresetLabel(XHTML1TRANSITIONAL_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? " HTML4-specific tokenization errors are enabled."
-                            : ""));
-                    validator = validatorByDoctype(XHTML1TRANSITIONAL_SCHEMA);
-                } else if ("-//W3C//DTD XHTML 1.0 Strict//EN".equals(publicIdentifier)) {
-                    errorHandler.info("XHTML 1.0 Strict doctype seen. Appendix C is not supported. Proceeding anyway for your convenience. The parser is still an HTML parser, so namespace processing is not performed and \u201Cxml:*\u201D attributes are not supported. Using the schema for "
-                            + getPresetLabel(XHTML1STRICT_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? " HTML4-specific tokenization errors are enabled."
-                            : ""));
-                    validator = validatorByDoctype(XHTML1STRICT_SCHEMA);
-                } else if ("-//W3C//DTD HTML 4.01 Transitional//EN".equals(publicIdentifier)) {
-                    errorHandler.info("HTML 4.01 Transitional doctype seen. Using the schema for "
-                            + getPresetLabel(XHTML1TRANSITIONAL_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? ""
-                            : " HTML4-specific tokenization errors are not enabled."));
-                    validator = validatorByDoctype(XHTML1TRANSITIONAL_SCHEMA);
-                } else if ("-//W3C//DTD HTML 4.01//EN".equals(publicIdentifier)) {
-                    errorHandler.info("HTML 4.01 Strict doctype seen. Using the schema for "
-                            + getPresetLabel(XHTML1STRICT_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? ""
-                            : " HTML4-specific tokenization errors are not enabled."));
-                    validator = validatorByDoctype(XHTML1STRICT_SCHEMA);
-                } else if ("-//W3C//DTD HTML 4.0 Transitional//EN".equals(publicIdentifier)) {
-                    errorHandler.info("Legacy HTML 4.0 Transitional doctype seen.  Please consider using HTML 4.01 Transitional instead. Proceeding anyway for your convenience with the schema for "
-                            + getPresetLabel(XHTML1TRANSITIONAL_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? ""
-                            : " HTML4-specific tokenization errors are not enabled."));
-                    validator = validatorByDoctype(XHTML1TRANSITIONAL_SCHEMA);
-                } else if ("-//W3C//DTD HTML 4.0//EN".equals(publicIdentifier)) {
-                    errorHandler.info("Legacy HTML 4.0 Strict doctype seen. Please consider using HTML 4.01 instead. Proceeding anyway for your convenience with the schema for "
-                            + getPresetLabel(XHTML1STRICT_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? ""
-                            : " HTML4-specific tokenization errors are not enabled."));
-                    validator = validatorByDoctype(XHTML1STRICT_SCHEMA);
-                } else {
-                    errorHandler.info("Using the schema for "
-                            + getPresetLabel(HTML5_SCHEMA)
-                            + "."
-                            + (html4SpecificAdditionalErrorChecks ? " HTML4-specific tokenization errors are enabled."
-                            : ""));
-                    validator = validatorByDoctype(HTML5_SCHEMA);
-                }
-            } catch (IOException ioe) {
-                // At this point the schema comes from memory.
-                throw new RuntimeException(ioe);
-            } catch (IncorrectSchemaException e) {
-                // At this point the schema comes from memory.
-                throw new RuntimeException(e);
-            }
-            ContentHandler ch = validator.getContentHandler();
-            ch.setDocumentLocator(htmlParser.getDocumentLocator());
-            ch.startDocument();
-            reader.setContentHandler(ch);
-        } else {
-            if (html4SpecificAdditionalErrorChecks) {
-                errorHandler.info("HTML4-specific tokenization errors are enabled.");
-            }
-        }
-    }
-
-    private String getPresetLabel(int schemaId) {
-        for (int i = 0; i < presetDoctypes.length; i++) {
-            if (presetDoctypes[i] == schemaId) {
-                return presetLabels[i];
-            }
-        }
-        return "unknown";
-    }
+    
 
     /**
      * @param acceptAllKnownXmlTypes
@@ -1519,63 +1187,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return tlen - point;
     }
     
-    /**
-     * A Schema instance delegate, the delegated instance if softly reachable so it should 
-     * not be GCed so often. If the delegate is GCed a new instance is recreated.
-     */
-    private static class ProxySchema implements Schema {
     
-        private String uri;
-        private EntityResolver resolver;
-        private PropertyMap pMap;
-        
-        private SoftReference<Schema> delegateWeakRef;
-        
-        private ProxySchema(String uri, EntityResolver resolver, PropertyMap pMap) {
-            this.uri = uri;
-            this.resolver = resolver;
-            this.pMap = pMap;
-        }
-
-        //exposing just because of some instanceof test used in the code
-        private Schema getWrappedSchema() throws SAXException, IOException, IncorrectSchemaException {
-            return getSchemaDelegate();
-        }
-        
-        public Validator createValidator(PropertyMap pm) {
-            try {
-                return getSchemaDelegate().createValidator(pm);
-            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
-                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
-            }
-            return null;
-        }
-
-        public PropertyMap getProperties() {
-            try {
-                return getSchemaDelegate().getProperties();
-            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
-                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
-            }
-            return null;
-        }
-        
-        private synchronized Schema getSchemaDelegate() throws SAXException, IOException, IncorrectSchemaException {
-            Schema delegate = delegateWeakRef != null ? delegateWeakRef.get() : null;
-            if(delegate == null) {
-                long a = System.currentTimeMillis();
-                delegate = schemaByUrl(uri, resolver, pMap);
-                long b = System.currentTimeMillis();
-                delegateWeakRef = new SoftReference<Schema>(delegate);
-                LOGGER.log(Level.FINE, "Created new Schema instance for {0} in {1}ms.", new Object[]{uri, (b-a)});
-            } else {
-                LOGGER.log(Level.FINE, "Using cached Schema instance for {0}", uri);
-            }
-            return delegate;
-        }
-        
-        
-    }
     
     private static final class Marker {
         

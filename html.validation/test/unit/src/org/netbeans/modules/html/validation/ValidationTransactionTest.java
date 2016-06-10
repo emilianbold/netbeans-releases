@@ -79,7 +79,7 @@ public class ValidationTransactionTest extends TestBase {
     }
 
     public static Test xsuite() {
-        ValidationTransaction.enableDebug();
+        NbValidationTransaction.enableDebug();
 
         String testName = "testIssue194618";
         System.err.println("Running only following test: " + testName);
@@ -89,7 +89,7 @@ public class ValidationTransactionTest extends TestBase {
     }
 
     public void testBasic() throws SAXException, IOException {
-//        ValidationTransaction.enableDebug();
+//        NbValidationTransaction.enableDebug();
 
         validate("<!doctype html> <html><head><title>hello</title></head><body><div>ahoj!</div></body></html>", true);
         validate("<!doctype html> chybi open tag</div>", false);
@@ -159,7 +159,7 @@ public class ValidationTransactionTest extends TestBase {
 
 //    public void testFragment() throws SAXException {
 //        String code = "<div>aaa</div>";
-//        ValidationTransaction vt = ValidationTransaction.create(HtmlVersion.HTML5);
+//        NbValidationTransaction vt = NbValidationTransaction.create(HtmlVersion.HTML5);
 //        vt.setBodyFragmentContextMode(true);
 //        vt.validateCode(code);
 //        for (ProblemDescription pd : vt.getFoundProblems()) {
@@ -178,7 +178,7 @@ public class ValidationTransactionTest extends TestBase {
         HtmlVersion version = result.getHtmlVersion();
         assertSame(HtmlVersion.XHTML10_STICT, version);
 
-        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        NbValidationTransaction vt = NbValidationTransaction.create(result.getHtmlVersion());
         validate(code, true, result.getHtmlVersion(), vt);
 
         assertSame(ParserMode.XML_NO_EXTERNAL_ENTITIES, vt.parser);
@@ -198,7 +198,7 @@ public class ValidationTransactionTest extends TestBase {
         HtmlVersion version = result.getHtmlVersion();
         assertSame(HtmlVersion.XHTML5, version);
 
-        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        NbValidationTransaction vt = NbValidationTransaction.create(result.getHtmlVersion());
         validate(code, true, result.getHtmlVersion(), vt);
 
         assertSame(ParserMode.XML_NO_EXTERNAL_ENTITIES, vt.parser);
@@ -213,7 +213,7 @@ public class ValidationTransactionTest extends TestBase {
         SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(fo)).analyze();
         assertNotNull(result);
 
-        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        NbValidationTransaction vt = NbValidationTransaction.create(result.getHtmlVersion());
         validate(code, true, result.getHtmlVersion(), vt, Collections.singleton("http://wicket.apache.org"));
 
     }
@@ -260,7 +260,7 @@ public class ValidationTransactionTest extends TestBase {
         assertNotNull(result);
         assertNull(result.getDetectedHtmlVersion());
 
-        ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
+        NbValidationTransaction vt = NbValidationTransaction.create(result.getHtmlVersion());
         validate(code, false, result.getHtmlVersion(), vt);
 
         Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
@@ -279,57 +279,57 @@ public class ValidationTransactionTest extends TestBase {
 
         String suffix = "234!";
         String text = "\n1234" + suffix;
-        int diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        int diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "234!";
         text = "\n1234" + suffix;
         int tlen = text.length();
         text += "0000000000000";
-        diff = ValidationTransaction.findBackwardDiff(text, tlen, pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, tlen, pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "4!";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "!34";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "";
         text = suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         //does not match, but is suffix, lets return 0 diff in this case
         suffix = "34";
         text = suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
         suffix = "\n1234";
         text = "abcdXXXXX\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
         suffix = "\n1234";
         text = "abcd\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
         //try limited pattern length
         suffix = "\nxx34";
         text = "abcd" + suffix;
-        ValidationTransaction.PATTERN_LEN_LIMIT = 2;
-        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        NbValidationTransaction.PATTERN_LEN_LIMIT = 2;
+        diff = NbValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
     }
@@ -343,7 +343,7 @@ public class ValidationTransactionTest extends TestBase {
         int pfrom = 44;
         int plen = 1;
 
-        int diff = ValidationTransaction.findBackwardDiff(text, tend, text.toCharArray(), pfrom, plen);
+        int diff = NbValidationTransaction.findBackwardDiff(text, tend, text.toCharArray(), pfrom, plen);
         assertEquals(2, diff);
 
     }
@@ -353,15 +353,15 @@ public class ValidationTransactionTest extends TestBase {
     }
 
     private void validate(String code, boolean expectedPass, HtmlVersion version) throws SAXException {
-        ValidationTransaction vt = ValidationTransaction.create(version);
+        NbValidationTransaction vt = NbValidationTransaction.create(version);
         validate(code, expectedPass, version, vt);
     }
 
-    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt) throws SAXException {
+    private void validate(String code, boolean expectedPass, HtmlVersion version, NbValidationTransaction vt) throws SAXException {
         validate(code, expectedPass, version, vt, Collections.<String>emptySet());
     }
 
-    private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt, Set<String> filteredNamespaces) throws SAXException {
+    private void validate(String code, boolean expectedPass, HtmlVersion version, NbValidationTransaction vt, Set<String> filteredNamespaces) throws SAXException {
         System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
         vt.validateCode(new StringReader(code), null, filteredNamespaces, "UTF-8");
 
