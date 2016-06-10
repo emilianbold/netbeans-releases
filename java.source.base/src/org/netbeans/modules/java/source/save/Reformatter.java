@@ -1817,7 +1817,12 @@ public class Reformatter implements ReformatTask {
         public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
             ExpressionTree ms = node.getMethodSelect();
             if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
-                ExpressionTree exp = ((MemberSelectTree)ms).getExpression();
+                int old = indent;
+                if (isLastIndentContinuation) {
+                    indent += continuationIndentSize;
+                    isLastIndentContinuation = false;
+                }
+                ExpressionTree exp = ((MemberSelectTree)ms).getExpression();                
                 scan(exp, p);
                 WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
                 if (wrapStyle == WrapStyle.WRAP_ALWAYS && exp.getKind() != Tree.Kind.METHOD_INVOCATION)
@@ -1868,6 +1873,7 @@ public class Reformatter implements ReformatTask {
                         scanMethodCall(node);
                         break;
                 }
+                indent = old;
             } else {
                 scanMethodCall(node);
             }
