@@ -137,9 +137,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     }
                     String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
                             configurationDescriptor.getActiveConfiguration().getCustomizerId();
-                    for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)){
+                    Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class).forEach((f) -> {
                         f.read(projectDirectory);
-                    }
+                    });
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);
                 }
@@ -228,12 +228,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)
         Item[] projectItems = configurationDescriptor.getProjectItems();
-        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
+        configurationDescriptor.getConfs().getConfigurations().forEach((configuration) -> {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
                     ItemConfiguration itemConfiguration = new ItemConfiguration(configuration, item);
                     configuration.addAuxObject(itemConfiguration);
-                    // in version with inverted serialization all items not seen 
+                    // in version with inverted serialization all items not seen
                     // during deserialization of current 'configuration' are 
                     // considered as excluded by default => set exclude state to 'true'
                     if (configurationDescriptor.getVersion() >= CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
@@ -241,7 +241,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     }
                 }
             }
-        }
+        });
 
         boolean schemeWithExcludedItems = false;
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
@@ -273,12 +273,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 configurationDescriptor.setModified();
             } else {
                 String title = NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE");
-                ConfirmSupport.getConfirmVersionFactory().create(title, message, autoMessage, new Runnable() {
-                    @Override
-                    public void run() {
-                        configurationDescriptor.setModified();
-                    }
-                });
+                ConfirmSupport.getConfirmVersionFactory().create(title, message, autoMessage, configurationDescriptor::setModified);
             }
         }
 

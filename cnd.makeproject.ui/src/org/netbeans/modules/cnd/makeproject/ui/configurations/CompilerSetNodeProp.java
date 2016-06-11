@@ -200,9 +200,9 @@ public class CompilerSetNodeProp extends Node.Property<String> implements NodePe
             if (configuration.isDevHostSetUp()) {
                 CompilerSetManager compilerSetManager = configuration.getCompilerSetManager();
                 CompilerSet defaultCompilerSet = compilerSetManager.getDefaultCompilerSet();
-                for(CompilerSet cs : compilerSetManager.getCompilerSets()) {
+                compilerSetManager.getCompilerSets().forEach((cs) -> {
                     list.add(cs.getName());
-                }
+                });
                 if (defaultCompilerSet != null) {
                     list.add(0, CompilerSet2Configuration.DEFAULT_CS_NAME+" ("+defaultCompilerSet.getName()+")"); //NOI18N
                 }

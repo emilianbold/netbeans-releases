@@ -175,32 +175,24 @@ public class ProjectActionSupport {
             // IZ#201761  -  Too long refreshing file system after build.
             // refresh can take a lot of time for slow file systems
             // so we use worker and schedule it out of build process
-            final Runnable refresher = new Runnable() {
-
-                @Override
-                public void run() {
-                    final File[] array = files.toArray(new File[files.size()]);
-                    if (array.length > 0) {
-                        FileUtil.refreshFor(array);
-                    }
-                    if (!fileObjects.isEmpty()) {
-                        for (FileObject fo : fileObjects) {
-                            FileSystemProvider.scheduleRefresh(fo);
-                        }
-                    }
+            final Runnable refresher = () -> {
+                final File[] array = files.toArray(new File[files.size()]);
+                if (array.length > 0) {
+                    FileUtil.refreshFor(array);
+                }
+                if (!fileObjects.isEmpty()) {
+                    fileObjects.forEach((fo) -> {
+                        FileSystemProvider.scheduleRefresh(fo);
+                    });
                 }
             };
             // Always redirect into RP, otherwise status of build is not displayed for a long time
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    FileUtil.runAtomicAction(refresher);
-                    fon.onFinish(curPAE);
-                    MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
-                    if (viewModel != null) {
-                        viewModel.refreshBrokenItems();
-                    }
+            RP.post(() -> {
+                FileUtil.runAtomicAction(refresher);
+                fon.onFinish(curPAE);
+                MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+                if (viewModel != null) {
+                    viewModel.refreshBrokenItems();
                 }
             });
             ConfigurationDescriptorProvider.SnapShot snapShot = curPAE.getContext().lookup(ConfigurationDescriptorProvider.SnapShot.class);
@@ -451,16 +443,12 @@ public class ProjectActionSupport {
 
                     if (isRunAction && consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                         tabBaseName = getTabName(new ProjectActionEvent[]{currentEvent});
-                        tabFactory = new IOTabFactory() {
-
-                            @Override
-                            public InputOutput createNewTab(final String tabName) {
-                                IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
-                                if (ioProvider == null) {
-                                    ioProvider = IOProvider.getDefault();
-                                }
-                                return ioProvider.getIO(tabName, epa.getActions(currentEvent.getActionName()));
+                        tabFactory = (final String tabName) -> {
+                            IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
+                            if (ioProvider == null) {
+                                ioProvider = IOProvider.getDefault();
                             }
+                            return ioProvider.getIO(tabName, epa.getActions(currentEvent.getActionName()));
                         };
                     } else if (isDebugAction) {
                         //this if fix of bz#249112 - Input doesn't work in "Standard Output" mode (gdb debugger)
@@ -469,22 +457,10 @@ public class ProjectActionSupport {
                         //the flag inputClosed in NbIO was set to true and that was the reason
                         //user could not imput anything
                         tabBaseName = getTabName(new ProjectActionEvent[]{currentEvent});
-                        tabFactory = new IOTabFactory() {
-
-                            @Override
-                            public InputOutput createNewTab(final String tabName) {
-                                return IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
-                            }
-                        };
+                        tabFactory = (final String tabName) -> IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
                     } else {
                         tabBaseName = getTabName(paes);
-                        tabFactory = new IOTabFactory() {
-
-                            @Override
-                            public InputOutput createNewTab(final String tabName) {
-                                return IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
-                            }
-                        };
+                        tabFactory = (final String tabName) -> IOProvider.getDefault().getIO(tabName, epa.getActions(currentEvent.getActionName()));
                     }
 
                     final InputOutputTab ioTab = tabs.getTab(tabBaseName, tabFactory);
@@ -524,13 +500,13 @@ public class ProjectActionSupport {
                                 final ProjectActionHandler handler = epa.getActiveHandler();
                                 epa.setEnableStopAction(handler != null && handler.canCancel());
                                 if (epa.getAdditional() != null) {
-                                    for (BuildAction action : epa.getAdditional()) {
+                                    epa.getAdditional().forEach((action) -> {
                                         try {
                                             action.setStep(currentEventIndex.get());
                                             action.executionStarted(pid);
                                         } catch (Throwable th) {
                                         }
-                                    }
+                                    });
                                 }
                             } finally {
                                 fon.onStart(currentEvent);
@@ -543,12 +519,12 @@ public class ProjectActionSupport {
                                 epa.setEnableStopAction(false);
                                 stepFailed.set(rc != 0);
                                 if (epa.getAdditional() != null) {
-                                    for (Action action : epa.getAdditional()) {
+                                    epa.getAdditional().forEach((action) -> {
                                         try {
                                             ((ExecutionListener) action).executionFinished(rc);
                                         } catch (Throwable th) {
                                         }
-                                    }
+                                    });
                                 }
                             } finally {
                                 eventProcessed.countDown();

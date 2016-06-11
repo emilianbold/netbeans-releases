@@ -1064,7 +1064,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
                     subProjectOutputLocations.add(outputLocation);
                 } else {
                     subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
-                } // NOI18N
+                }
             }
         }
         return subProjectOutputLocations;

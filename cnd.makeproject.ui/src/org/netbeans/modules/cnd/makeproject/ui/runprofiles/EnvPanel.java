@@ -100,6 +100,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
         removeButton.setEnabled(envvarModel.getRowCount() > 0 && selRows != null && selRows.length > 0);
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         validateButtons();
     }
@@ -124,6 +125,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
     public void initFocus() {
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("Environment"); // NOI18N
     }
@@ -251,6 +253,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
 	return env;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());

@@ -92,9 +92,9 @@ public final class TempEnv {
     private void storeTemporaryEnv() {
         assert Thread.holdsLock(lock);
         Preferences node = getPreferences();
-        for (Map.Entry<String, EnvElement> entry : envVars.entrySet()) {
+        envVars.entrySet().forEach((entry) -> {
             node.put(entry.getKey(), entry.getValue().value);
-        }
+        });
     }
     
     private Preferences getPreferences() {
@@ -120,12 +120,12 @@ public final class TempEnv {
 
     public void addTemporaryEnv(Map<String, String> map2fill) {
         synchronized (lock) {
-            for (Map.Entry<String, EnvElement> entry : envVars.entrySet()) {
+            envVars.entrySet().forEach((entry) -> {
                 String key = entry.getKey();
                 if (!map2fill.containsKey(key)) {
                     map2fill.put(key, entry.getValue().value);
                 }
-            }
+            });
         }
     }
 

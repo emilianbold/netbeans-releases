@@ -57,9 +57,9 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.impl.RemoteSyncNotifierImpl;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
-import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.nativeexecution.api.ui.util.NativeExecutionUIUtils;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidatablePanelListener;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -152,7 +152,7 @@ public class HostPropertiesDialog extends JPanel {
         cbACL.setEnabled(FileSystemProvider.canSetAccessCheckType(execEnv));
         cbACL.setSelected(FileSystemProvider.getAccessCheckType(execEnv) == FileSystemProvider.AccessCheckType.FULL);
 
-        vpanel = ConnectionManager.getInstance().getConfigurationPanel(execEnv);
+        vpanel = NativeExecutionUIUtils.getConfigurationPanel(execEnv);
         vpanel.addValidationListener(validationListener);
 
         connectionPanel.add(vpanel);

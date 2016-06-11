@@ -93,20 +93,17 @@ public enum ConnectionHelper implements ConnectionListener {
                     return;
                 }
                 storage.add(env);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ConnectionManager.getInstance().connectTo(env);
-                            ServerRecord rec = ServerList.get(env);
-                            if (rec != null) {
-                                rec.checkSetupAfterConnection(null);
-                            }                            
-                        } catch (IOException ex) {
-
-                        } catch (CancellationException ex) {
-                            // don't log CancellationException
+                RP.post(() -> {
+                    try {
+                        ConnectionManager.getInstance().connectTo(env);
+                        ServerRecord rec = ServerList.get(env);
+                        if (rec != null) {
+                            rec.checkSetupAfterConnection(null);
                         }
+                    } catch (IOException ex) {
+                        
+                    } catch (CancellationException ex) {
+                        // don't log CancellationException
                     }
                 });
             } finally {

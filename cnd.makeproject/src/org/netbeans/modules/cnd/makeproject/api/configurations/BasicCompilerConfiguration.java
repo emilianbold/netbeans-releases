@@ -273,9 +273,9 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             options.add(0, masters.get(i).getCommandLineConfiguration().getValue());
         }
         StringBuilder sb = new StringBuilder();
-        for (String opt : options) {
+        options.forEach((opt) -> {
             sb.append(opt).append(' ');
-        }
+        });
         return sb.toString().trim();
     }
 
