@@ -74,8 +74,6 @@ public class Typing {
                 public void run() {
                     pane = new JEditorPane();
                     pane.setEditorKit(kit);
-                    BaseKit baseKit = (BaseKit)pane.getEditorKit();
-                    Action a = baseKit.getActionByName(DefaultEditorKit.deletePrevCharAction);
                     Document doc = pane.getDocument();
                     // Required by Java's default key typed
                     doc.putProperty(Language.class, HTMLTokenId.language());
