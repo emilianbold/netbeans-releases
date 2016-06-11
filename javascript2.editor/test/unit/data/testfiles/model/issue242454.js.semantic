@@ -1,4 +1,4 @@
-var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
+var |>GLOBAL:myLib<| = new function |>METHOD,UNUSED:MyLib<|() {
    
     
     /**

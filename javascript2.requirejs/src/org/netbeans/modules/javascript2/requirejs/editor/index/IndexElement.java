@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.requirejs.editor.index;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

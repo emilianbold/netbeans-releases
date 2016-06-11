@@ -29,13 +29,11 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
               dirtFactor     : OBJECT dirtFactor [ANONYMOUS: false, DECLARED: true - dirtFactor, MODIFIERS: PUBLIC, PROPERTY]
               eat            : FUNCTION eat [ANONYMOUS: false, DECLARED: true - eat, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             @exp;Person@pro;weight, RESOLVED: false
                              Number, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               exercise       : FUNCTION exercise [ANONYMOUS: false, DECLARED: true - exercise, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
-                             @exp;Person@pro;weight, RESOLVED: false
                              Number, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -54,7 +52,7 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               makeOlder      : FUNCTION makeOlder [ANONYMOUS: false, DECLARED: true - makeOlder, MODIFIERS: PRIVATE, METHOD]
                              # RETURN TYPES
-                             @exp;Person@pro;alive, RESOLVED: false
+                             Boolean, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               maxAge         : OBJECT maxAge [ANONYMOUS: false, DECLARED: true - maxAge, MODIFIERS: PRIVATE, VARIABLE]
