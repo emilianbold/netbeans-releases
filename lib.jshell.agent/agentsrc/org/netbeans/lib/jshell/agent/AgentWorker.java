@@ -250,6 +250,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         ObjectOutputStream out = new ObjectOutputStream(new MultiplexingOutputStream("command", socketOut));
         while (true) {
             int cmd = in.readInt();
+            prepareClassLoader();
             performCommand(cmd, in, out);
         }
     }
@@ -339,7 +340,6 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         }
         LOG.log(Level.FINE, "Sending properties: " + props);
         
-        prepareClassLoader();
         StringBuilder cp = new StringBuilder();
         for (URL u: loader.getURLs()) {
             try {
