@@ -46,16 +46,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Icon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.model.api.JsElement;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -75,12 +74,12 @@ public class JsIndexSearcher implements IndexSearcher{
     @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind searchType, Helper helper) {
         Set<JsDescriptor> result = new HashSet<JsDescriptor>();
-        final JsIndex index = getIndex(project);
+        final Index index = getIndex(project);
 
         if (index != null) {
             String fieldToSearch = (searchType == Kind.CASE_INSENSITIVE_CAMEL_CASE || searchType == Kind.CASE_INSENSITIVE_PREFIX || searchType == Kind.CASE_INSENSITIVE_REGEXP)
-                    ? JsIndex.FIELD_BASE_NAME_INSENSITIVE : JsIndex.FIELD_BASE_NAME;
-            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
+                    ? Index.FIELD_BASE_NAME_INSENSITIVE : Index.FIELD_BASE_NAME;
+            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, Index.TERMS_BASIC_INFO);
             for (IndexResult indexResult : indexResults) {
                 IndexedElement element = IndexedElement.create(indexResult);
                 if (element.getJSKind() == JsElement.Kind.CONSTRUCTOR
@@ -95,12 +94,12 @@ public class JsIndexSearcher implements IndexSearcher{
     @Override
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind searchType, Helper helper) {
         Set<JsDescriptor> result = new HashSet<JsDescriptor>();
-        final JsIndex index = getIndex(project);
+        final Index index = getIndex(project);
 
         if (index != null) {
             String fieldToSearch = (searchType == Kind.CASE_INSENSITIVE_CAMEL_CASE || searchType == Kind.CASE_INSENSITIVE_PREFIX || searchType == Kind.CASE_INSENSITIVE_REGEXP)
-                    ? JsIndex.FIELD_BASE_NAME_INSENSITIVE : JsIndex.FIELD_BASE_NAME;
-            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
+                    ? Index.FIELD_BASE_NAME_INSENSITIVE : Index.FIELD_BASE_NAME;
+            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, Index.TERMS_BASIC_INFO);
             for (IndexResult indexResult : indexResults) {
                 result.add(new JsDescriptor(helper, IndexedElement.create(indexResult)));
             }
@@ -108,7 +107,7 @@ public class JsIndexSearcher implements IndexSearcher{
         return result;
     }
 
-    private JsIndex getIndex(Project project) {
+    private Index getIndex(Project project) {
         Set<String> sourceIds = new HashSet<String>();
         Set<String> libraryIds = new HashSet<String>();
         Collection<? extends PathRecognizer> lookupAll = Lookup.getDefault().lookupAll(PathRecognizer.class);
@@ -127,7 +126,7 @@ public class JsIndexSearcher implements IndexSearcher{
                 sourceIds,
                 libraryIds,
                 Collections.<String>emptySet());
-        return JsIndex.get(findRoots);
+        return Index.get(findRoots);
     }
 
     private static class JsDescriptor extends Descriptor {

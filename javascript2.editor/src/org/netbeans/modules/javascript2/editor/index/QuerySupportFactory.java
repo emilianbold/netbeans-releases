@@ -47,14 +47,17 @@ import java.util.Collections;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Pisl
  */
-public class QuerySupportFactory {
+@ServiceProvider(service = org.netbeans.modules.javascript2.model.spi.QuerySupportFactory.class)
+public class QuerySupportFactory implements org.netbeans.modules.javascript2.model.spi.QuerySupportFactory {
     
-    public static QuerySupport get(final Collection<FileObject> roots) {
+    @Override
+    public QuerySupport get(final Collection<FileObject> roots) {
         try {
             return QuerySupport.forRoots(JsIndexer.Factory.NAME,
                     JsIndexer.Factory.VERSION,
@@ -65,7 +68,7 @@ public class QuerySupportFactory {
         return null;
     }
     
-    public static QuerySupport get(final FileObject source) {
+    public QuerySupport get(final FileObject source) {
         return get(QuerySupport.findRoots(source,
                 null,
                 null,

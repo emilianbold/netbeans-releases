@@ -1,0 +1,14 @@
+<Unnamed test>
+IDENTIFIER      "raw", la=1, st=-1
+TEMPLATE_HEAD   "`token ${", la=1, st=-1
+TEMPLATE_HEAD   "`nested ${", la=1, st=-1
+TEMPLATE_NOSUBSTITUTION  "`deeply`", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_PLUS   "+", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+BRACKET_LEFT_CURLY  "{", la=1, st=-1
+BRACKET_RIGHT_CURLY  "}", la=1, st=-1
+TEMPLATE_TAIL   "} blah`", la=1, st=-1
+TEMPLATE_TAIL   "}`", la=1, st=-1
+----- EOF -----
+

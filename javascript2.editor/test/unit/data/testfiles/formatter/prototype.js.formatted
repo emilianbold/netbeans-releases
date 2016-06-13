@@ -11,6 +11,7 @@ var Prototype = {
     BrowserFeatures: {
         XPath: !!document.evaluate
     },
+
     ScriptFragment: '(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)',
     emptyFunction: function () {},
     K: function (x) {
@@ -49,18 +50,21 @@ Object.extend(Object, {
             throw e;
         }
     },
+
     keys: function (object) {
         var keys = [];
         for (var property in object)
             keys.push(property);
         return keys;
     },
+
     values: function (object) {
         var values = [];
         for (var property in object)
             values.push(object[property]);
         return values;
     },
+
     clone: function (object) {
         return Object.extend({}, object);
     }
@@ -87,9 +91,11 @@ Object.extend(Number.prototype, {
             return '0' + digits;
         return digits;
     },
+
     succ: function () {
         return this + 1;
     },
+
     times: function (iterator) {
         $R(0, this, true).each(iterator);
         return this;
@@ -124,15 +130,18 @@ PeriodicalExecuter.prototype = {
 
         this.registerCallback();
     },
+
     registerCallback: function () {
         this.timer = setInterval(this.onTimerEvent.bind(this), this.frequency * 1000);
     },
+
     stop: function () {
         if (!this.timer)
             return;
         clearInterval(this.timer);
         this.timer = null;
     },
+
     onTimerEvent: function () {
         if (!this.currentlyExecuting) {
             try {
@@ -164,6 +173,7 @@ Object.extend(String.prototype, {
         }
         return result;
     },
+
     sub: function (pattern, replacement, count) {
         replacement = this.gsub.prepareReplacement(replacement);
         count = count === undefined ? 1 : count;
@@ -174,25 +184,31 @@ Object.extend(String.prototype, {
             return replacement(match);
         });
     },
+
     scan: function (pattern, iterator) {
         this.gsub(pattern, iterator);
         return this;
     },
+
     truncate: function (length, truncation) {
         length = length || 30;
         truncation = truncation === undefined ? '...' : truncation;
         return this.length > length ?
                 this.slice(0, length - truncation.length) + truncation : this;
     },
+
     strip: function () {
         return this.replace(/^\s+/, '').replace(/\s+$/, '');
     },
+
     stripTags: function () {
         return this.replace(/<\/?[^>]+>/gi, '');
     },
+
     stripScripts: function () {
         return this.replace(new RegExp(Prototype.ScriptFragment, 'img'), '');
     },
+
     extractScripts: function () {
         var matchAll = new RegExp(Prototype.ScriptFragment, 'img');
         var matchOne = new RegExp(Prototype.ScriptFragment, 'im');
@@ -200,17 +216,20 @@ Object.extend(String.prototype, {
             return (scriptTag.match(matchOne) || ['', ''])[1];
         });
     },
+
     evalScripts: function () {
         return this.extractScripts().map(function (script) {
             return eval(script)
         });
     },
+
     escapeHTML: function () {
         var div = document.createElement('div');
         var text = document.createTextNode(this);
         div.appendChild(text);
         return div.innerHTML;
     },
+
     unescapeHTML: function () {
         var div = document.createElement('div');
         div.innerHTML = this.stripTags();
@@ -220,6 +239,7 @@ Object.extend(String.prototype, {
         }) :
                 div.childNodes[0].nodeValue) : '';
     },
+
     toQueryParams: function (separator) {
         var match = this.strip().match(/([^?#]*)(#.*)?$/);
         if (!match)
@@ -241,13 +261,16 @@ Object.extend(String.prototype, {
             return hash;
         });
     },
+
     toArray: function () {
         return this.split('');
     },
+
     succ: function () {
         return this.slice(0, this.length - 1) +
                 String.fromCharCode(this.charCodeAt(this.length - 1) + 1);
     },
+
     camelize: function () {
         var parts = this.split('-'), len = parts.length;
         if (len == 1)
@@ -262,15 +285,19 @@ Object.extend(String.prototype, {
 
         return camelized;
     },
+
     capitalize: function () {
         return this.charAt(0).toUpperCase() + this.substring(1).toLowerCase();
     },
+
     underscore: function () {
         return this.gsub(/::/, '/').gsub(/([A-Z]+)([A-Z][a-z])/, '#{1}_#{2}').gsub(/([a-z\d])([A-Z])/, '#{1}_#{2}').gsub(/-/, '_').toLowerCase();
     },
+
     dasherize: function () {
         return this.gsub(/_/, '-');
     },
+
     inspect: function (useDoubleQuotes) {
         var escapedString = this.replace(/\\/g, '\\\\');
         if (useDoubleQuotes)
@@ -298,6 +325,7 @@ Template.prototype = {
         this.template = template.toString();
         this.pattern = pattern || Template.Pattern;
     },
+
     evaluate: function (object) {
         return this.template.gsub(this.pattern, function (match) {
             var before = match[1];
@@ -329,12 +357,14 @@ var Enumerable = {
         }
         return this;
     },
+
     eachSlice: function (number, iterator) {
         var index = -number, slices = [], array = this.toArray();
         while ((index += number) < array.length)
             slices.push(array.slice(index, index + number));
         return slices.map(iterator);
     },
+
     all: function (iterator) {
         var result = true;
         this.each(function (value, index) {
@@ -344,6 +374,7 @@ var Enumerable = {
         });
         return result;
     },
+
     any: function (iterator) {
         var result = false;
         this.each(function (value, index) {
@@ -352,6 +383,7 @@ var Enumerable = {
         });
         return result;
     },
+
     collect: function (iterator) {
         var results = [];
         this.each(function (value, index) {
@@ -359,6 +391,7 @@ var Enumerable = {
         });
         return results;
     },
+
     detect: function (iterator) {
         var result;
         this.each(function (value, index) {
@@ -369,6 +402,7 @@ var Enumerable = {
         });
         return result;
     },
+
     findAll: function (iterator) {
         var results = [];
         this.each(function (value, index) {
@@ -377,6 +411,7 @@ var Enumerable = {
         });
         return results;
     },
+
     grep: function (pattern, iterator) {
         var results = [];
         this.each(function (value, index) {
@@ -386,6 +421,7 @@ var Enumerable = {
         })
         return results;
     },
+
     include: function (object) {
         var found = false;
         this.each(function (value) {
@@ -396,6 +432,7 @@ var Enumerable = {
         });
         return found;
     },
+
     inGroupsOf: function (number, fillWith) {
         fillWith = fillWith === undefined ? null : fillWith;
         return this.eachSlice(number, function (slice) {
@@ -404,18 +441,21 @@ var Enumerable = {
             return slice;
         });
     },
+
     inject: function (memo, iterator) {
         this.each(function (value, index) {
             memo = iterator(memo, value, index);
         });
         return memo;
     },
+
     invoke: function (method) {
         var args = $A(arguments).slice(1);
         return this.map(function (value) {
             return value[method].apply(value, args);
         });
     },
+
     max: function (iterator) {
         var result;
         this.each(function (value, index) {
@@ -425,6 +465,7 @@ var Enumerable = {
         });
         return result;
     },
+
     min: function (iterator) {
         var result;
         this.each(function (value, index) {
@@ -434,6 +475,7 @@ var Enumerable = {
         });
         return result;
     },
+
     partition: function (iterator) {
         var trues = [], falses = [];
         this.each(function (value, index) {
@@ -442,6 +484,7 @@ var Enumerable = {
         });
         return [trues, falses];
     },
+
     pluck: function (property) {
         var results = [];
         this.each(function (value, index) {
@@ -449,6 +492,7 @@ var Enumerable = {
         });
         return results;
     },
+
     reject: function (iterator) {
         var results = [];
         this.each(function (value, index) {
@@ -457,6 +501,7 @@ var Enumerable = {
         });
         return results;
     },
+
     sortBy: function (iterator) {
         return this.map(function (value, index) {
             return {value: value, criteria: iterator(value, index)};
@@ -465,9 +510,11 @@ var Enumerable = {
             return a < b ? -1 : a > b ? 1 : 0;
         }).pluck('value');
     },
+
     toArray: function () {
         return this.map();
     },
+
     zip: function () {
         var iterator = Prototype.K, args = $A(arguments);
         if (typeof args.last() == 'function')
@@ -478,9 +525,11 @@ var Enumerable = {
             return iterator(collections.pluck(index));
         });
     },
+
     size: function () {
         return this.toArray().length;
     },
+
     inspect: function () {
         return '#<Enumerable:' + this.toArray().inspect() + '>';
     }
@@ -516,56 +565,69 @@ Object.extend(Array.prototype, {
         for (var i = 0, length = this.length; i < length; i++)
             iterator(this[i]);
     },
+
     clear: function () {
         this.length = 0;
         return this;
     },
+
     first: function () {
         return this[0];
     },
+
     last: function () {
         return this[this.length - 1];
     },
+
     compact: function () {
         return this.select(function (value) {
             return value != null;
         });
     },
+
     flatten: function () {
         return this.inject([], function (array, value) {
             return array.concat(value && value.constructor == Array ?
                     value.flatten() : [value]);
         });
     },
+
     without: function () {
         var values = $A(arguments);
         return this.select(function (value) {
             return !values.include(value);
         });
     },
+
     indexOf: function (object) {
         for (var i = 0, length = this.length; i < length; i++)
             if (this[i] == object)
                 return i;
         return -1;
     },
+
     reverse: function (inline) {
         return (inline !== false ? this : this.toArray())._reverse();
     },
+
     reduce: function () {
         return this.length > 1 ? this : this[0];
     },
+
     uniq: function () {
         return this.inject([], function (array, value) {
             return array.include(value) ? array : array.concat([value]);
         });
     },
+
     clone: function () {
         return [].concat(this);
     },
+
     size: function () {
         return this.length;
     },
+
     inspect: function () {
         return '[' + this.map(Object.inspect).join(', ') + ']';
     }
@@ -642,18 +704,22 @@ Object.extend(Hash.prototype, {
             iterator(pair);
         }
     },
+
     keys: function () {
         return this.pluck('key');
     },
+
     values: function () {
         return this.pluck('value');
     },
+
     merge: function (hash) {
         return $H(hash).inject(this, function (mergedHash, pair) {
             mergedHash[pair.key] = pair.value;
             return mergedHash;
         });
     },
+
     remove: function () {
         var result;
         for (var i = 0, length = arguments.length; i < length; i++) {
@@ -671,9 +737,11 @@ Object.extend(Hash.prototype, {
         }
         return result;
     },
+
     toQueryString: function () {
         return Hash.toQueryString(this);
     },
+
     inspect: function () {
         return '#<Hash:{' + this.map(function (pair) {
             return pair.map(Object.inspect).join(': ');
@@ -695,6 +763,7 @@ Object.extend(ObjectRange.prototype, {
         this.end = end;
         this.exclusive = exclusive;
     },
+
     _each: function (iterator) {
         var value = this.start;
         while (this.include(value)) {
@@ -702,6 +771,7 @@ Object.extend(ObjectRange.prototype, {
             value = value.succ();
         }
     },
+
     include: function (value) {
         if (value < this.start)
             return false;
@@ -729,21 +799,26 @@ var Ajax = {
                 }
         ) || false;
     },
+
     activeRequestCount: 0
 }
 
 Ajax.Responders = {
     responders: [],
+
     _each: function (iterator) {
         this.responders._each(iterator);
     },
+
     register: function (responder) {
         if (!this.include(responder))
             this.responders.push(responder);
     },
+
     unregister: function (responder) {
         this.responders = this.responders.without(responder);
     },
+
     dispatch: function (callback, request, transport, json) {
         this.each(function (responder) {
             if (typeof responder[callback] == 'function') {
@@ -791,11 +866,13 @@ Ajax.Request.Events =
 
 Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
     _complete: false,
+
     initialize: function (url, options) {
         this.transport = Ajax.getTransport();
         this.setOptions(options);
         this.request(url);
     },
+
     request: function (url) {
         this.url = url;
         this.method = this.options.method;
@@ -841,11 +918,13 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             this.dispatchException(e);
         }
     },
+
     onStateChange: function () {
         var readyState = this.transport.readyState;
         if (readyState > 1 && !((readyState == 4) && this._complete))
             this.respondToReadyState(this.transport.readyState);
     },
+
     setRequestHeaders: function () {
         var headers = {
             'X-Requested-With': 'XMLHttpRequest',
@@ -882,10 +961,12 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
         for (var name in headers)
             this.transport.setRequestHeader(name, headers[name]);
     },
+
     success: function () {
         return !this.transport.status
                 || (this.transport.status >= 200 && this.transport.status < 300);
     },
+
     respondToReadyState: function (readyState) {
         var state = Ajax.Request.Events[readyState];
         var transport = this.transport, json = this.evalJSON();
@@ -917,6 +998,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             this.transport.onreadystatechange = Prototype.emptyFunction;
         }
     },
+
     getHeader: function (name) {
         try {
             return this.transport.getResponseHeader(name);
@@ -924,6 +1006,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             return null
         }
     },
+
     evalJSON: function () {
         try {
             var json = this.getHeader('X-JSON');
@@ -932,6 +1015,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             return null
         }
     },
+
     evalResponse: function () {
         try {
             return eval(this.transport.responseText);
@@ -939,6 +1023,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
             this.dispatchException(e);
         }
     },
+
     dispatchException: function (exception) {
         (this.options.onException || Prototype.emptyFunction)(this, exception);
         Ajax.Responders.dispatch('onException', this, exception);
@@ -965,6 +1050,7 @@ Object.extend(Object.extend(Ajax.Updater.prototype, Ajax.Request.prototype), {
 
         this.request(url);
     },
+
     updateContent: function () {
         var receiver = this.container[this.success() ? 'success' : 'failure'];
         var response = this.transport.responseText;
@@ -1001,15 +1087,18 @@ Ajax.PeriodicalUpdater.prototype = Object.extend(new Ajax.Base(), {
 
         this.start();
     },
+
     start: function () {
         this.options.onComplete = this.updateComplete.bind(this);
         this.onTimerEvent();
     },
+
     stop: function () {
         this.updater.options.onComplete = undefined;
         clearTimeout(this.timer);
         (this.onComplete || Prototype.emptyFunction).apply(this, arguments);
     },
+
     updateComplete: function (request) {
         if (this.options.decay) {
             this.decay = (request.responseText == this.lastText ?
@@ -1020,6 +1109,7 @@ Ajax.PeriodicalUpdater.prototype = Object.extend(new Ajax.Base(), {
         this.timer = setTimeout(this.onTimerEvent.bind(this),
                 this.decay * this.frequency * 1000);
     },
+
     onTimerEvent: function () {
         this.updater = new Ajax.Updater(this.container, this.url, this.options);
     }
@@ -1104,24 +1194,29 @@ Element.Methods = {
     visible: function (element) {
         return $(element).style.display != 'none';
     },
+
     toggle: function (element) {
         element = $(element);
         Element[Element.visible(element) ? 'hide' : 'show'](element);
         return element;
     },
+
     hide: function (element) {
         $(element).style.display = 'none';
         return element;
     },
+
     show: function (element) {
         $(element).style.display = '';
         return element;
     },
+
     remove: function (element) {
         element = $(element);
         element.parentNode.removeChild(element);
         return element;
     },
+
     update: function (element, html) {
         html = typeof html == 'undefined' ? '' : html.toString();
         $(element).innerHTML = html.stripScripts();
@@ -1130,6 +1225,7 @@ Element.Methods = {
         }, 10);
         return element;
     },
+
     replace: function (element, html) {
         element = $(element);
         html = typeof html == 'undefined' ? '' : html.toString();
@@ -1146,6 +1242,7 @@ Element.Methods = {
         }, 10);
         return element;
     },
+
     inspect: function (element) {
         element = $(element);
         var result = '<' + element.tagName.toLowerCase();
@@ -1157,6 +1254,7 @@ Element.Methods = {
         });
         return result + '>';
     },
+
     recursivelyCollect: function (element, property) {
         element = $(element);
         var elements = [];
@@ -1165,12 +1263,15 @@ Element.Methods = {
                 elements.push(Element.extend(element));
         return elements;
     },
+
     ancestors: function (element) {
         return $(element).recursivelyCollect('parentNode');
     },
+
     descendants: function (element) {
         return $A($(element).getElementsByTagName('*'));
     },
+
     immediateDescendants: function (element) {
         if (!(element = $(element).firstChild))
             return [];
@@ -1180,40 +1281,51 @@ Element.Methods = {
             return [element].concat($(element).nextSiblings());
         return [];
     },
+
     previousSiblings: function (element) {
         return $(element).recursivelyCollect('previousSibling');
     },
+
     nextSiblings: function (element) {
         return $(element).recursivelyCollect('nextSibling');
     },
+
     siblings: function (element) {
         element = $(element);
         return element.previousSiblings().reverse().concat(element.nextSiblings());
     },
+
     match: function (element, selector) {
         if (typeof selector == 'string')
             selector = new Selector(selector);
         return selector.match($(element));
     },
+
     up: function (element, expression, index) {
         return Selector.findElement($(element).ancestors(), expression, index);
     },
+
     down: function (element, expression, index) {
         return Selector.findElement($(element).descendants(), expression, index);
     },
+
     previous: function (element, expression, index) {
         return Selector.findElement($(element).previousSiblings(), expression, index);
     },
+
     next: function (element, expression, index) {
         return Selector.findElement($(element).nextSiblings(), expression, index);
     },
+
     getElementsBySelector: function () {
         var args = $A(arguments), element = $(args.shift());
         return Selector.findChildElements(element, args);
     },
+
     getElementsByClassName: function (element, className) {
         return document.getElementsByClassName(className, element);
     },
+
     readAttribute: function (element, name) {
         element = $(element);
         if (document.all && !window.opera) {
@@ -1228,15 +1340,19 @@ Element.Methods = {
         }
         return element.getAttribute(name);
     },
+
     getHeight: function (element) {
         return $(element).getDimensions().height;
     },
+
     getWidth: function (element) {
         return $(element).getDimensions().width;
     },
+
     classNames: function (element) {
         return new Element.ClassNames(element);
     },
+
     hasClassName: function (element, className) {
         if (!(element = $(element)))
             return;
@@ -1248,32 +1364,38 @@ Element.Methods = {
             return true;
         return false;
     },
+
     addClassName: function (element, className) {
         if (!(element = $(element)))
             return;
         Element.classNames(element).add(className);
         return element;
     },
+
     removeClassName: function (element, className) {
         if (!(element = $(element)))
             return;
         Element.classNames(element).remove(className);
         return element;
     },
+
     toggleClassName: function (element, className) {
         if (!(element = $(element)))
             return;
         Element.classNames(element)[element.hasClassName(className) ? 'remove' : 'add'](className);
         return element;
     },
+
     observe: function () {
         Event.observe.apply(Event, arguments);
         return $A(arguments).first();
     },
+
     stopObserving: function () {
         Event.stopObserving.apply(Event, arguments);
         return $A(arguments).first();
     },
+
     // removes whitespace-only text node children
     cleanWhitespace: function (element) {
         element = $(element);
@@ -1286,9 +1408,11 @@ Element.Methods = {
         }
         return element;
     },
+
     empty: function (element) {
         return $(element).innerHTML.match(/^\s*$/);
     },
+
     descendantOf: function (element, ancestor) {
         element = $(element), ancestor = $(ancestor);
         while (element = element.parentNode)
@@ -1296,12 +1420,14 @@ Element.Methods = {
                 return true;
         return false;
     },
+
     scrollTo: function (element) {
         element = $(element);
         var pos = Position.cumulativeOffset(element);
         window.scrollTo(pos[0], pos[1]);
         return element;
     },
+
     getStyle: function (element, style) {
         element = $(element);
         if (['float', 'cssFloat'].include(style))
@@ -1333,6 +1459,7 @@ Element.Methods = {
         }
         return value == 'auto' ? null : value;
     },
+
     setStyle: function (element, style) {
         element = $(element);
         for (var name in style) {
@@ -1359,6 +1486,7 @@ Element.Methods = {
         }
         return element;
     },
+
     getDimensions: function (element) {
         element = $(element);
         var display = $(element).getStyle('display');
@@ -1381,6 +1509,7 @@ Element.Methods = {
         els.visibility = originalVisibility;
         return {width: originalWidth, height: originalHeight};
     },
+
     makePositioned: function (element) {
         element = $(element);
         var pos = Element.getStyle(element, 'position');
@@ -1396,6 +1525,7 @@ Element.Methods = {
         }
         return element;
     },
+
     undoPositioned: function (element) {
         element = $(element);
         if (element._madePositioned) {
@@ -1408,6 +1538,7 @@ Element.Methods = {
         }
         return element;
     },
+
     makeClipping: function (element) {
         element = $(element);
         if (element._overflow)
@@ -1417,6 +1548,7 @@ Element.Methods = {
             element.style.overflow = 'hidden';
         return element;
     },
+
     undoClipping: function (element) {
         element = $(element);
         if (!element._overflow)
@@ -1448,12 +1580,15 @@ Element._attributeTranslations.values = {
     _getAttr: function (element, attribute) {
         return element.getAttribute(attribute, 2);
     },
+
     _flag: function (element, attribute) {
         return $(element).hasAttribute(attribute) ? attribute : null;
     },
+
     style: function (element) {
         return element.style.cssText.toLowerCase();
     },
+
     title: function (element) {
         var node = element.getAttributeNode('title');
         return node.specified ? node.nodeValue : null;
@@ -1594,6 +1729,7 @@ Abstract.Insertion.prototype = {
             content.evalScripts()
         }, 10);
     },
+
     contentFromAnonymousTable: function () {
         var div = document.createElement('div');
         div.innerHTML = '<table><tbody>' + this.content + '</tbody></table>';
@@ -1608,6 +1744,7 @@ Insertion.Before.prototype = Object.extend(new Abstract.Insertion('beforeBegin')
     initializeRange: function () {
         this.range.setStartBefore(this.element);
     },
+
     insertContent: function (fragments) {
         fragments.each((function (fragment) {
             this.element.parentNode.insertBefore(fragment, this.element);
@@ -1621,6 +1758,7 @@ Insertion.Top.prototype = Object.extend(new Abstract.Insertion('afterBegin'), {
         this.range.selectNodeContents(this.element);
         this.range.collapse(true);
     },
+
     insertContent: function (fragments) {
         fragments.reverse(false).each((function (fragment) {
             this.element.insertBefore(fragment, this.element.firstChild);
@@ -1634,6 +1772,7 @@ Insertion.Bottom.prototype = Object.extend(new Abstract.Insertion('beforeEnd'), 
         this.range.selectNodeContents(this.element);
         this.range.collapse(this.element);
     },
+
     insertContent: function (fragments) {
         fragments.each((function (fragment) {
             this.element.appendChild(fragment);
@@ -1646,6 +1785,7 @@ Insertion.After.prototype = Object.extend(new Abstract.Insertion('afterEnd'), {
     initializeRange: function () {
         this.range.setStartAfter(this.element);
     },
+
     insertContent: function (fragments) {
         fragments.each((function (fragment) {
             this.element.parentNode.insertBefore(fragment,
@@ -1661,24 +1801,29 @@ Element.ClassNames.prototype = {
     initialize: function (element) {
         this.element = $(element);
     },
+
     _each: function (iterator) {
         this.element.className.split(/\s+/).select(function (name) {
             return name.length > 0;
         })._each(iterator);
     },
+
     set: function (className) {
         this.element.className = className;
     },
+
     add: function (classNameToAdd) {
         if (this.include(classNameToAdd))
             return;
         this.set($A(this).concat(classNameToAdd).join(' '));
     },
+
     remove: function (classNameToRemove) {
         if (!this.include(classNameToRemove))
             return;
         this.set($A(this).without(classNameToRemove).join(' '));
     },
+
     toString: function () {
         return $A(this).join(' ');
     }
@@ -1693,6 +1838,7 @@ Selector.prototype = {
         this.parseExpression();
         this.compileMatcher();
     },
+
     parseExpression: function () {
         function abort(message) {
             throw 'Parse error in selector: ' + message;
@@ -1733,6 +1879,7 @@ Selector.prototype = {
         if (expr.length > 0)
             abort(expr.inspect());
     },
+
     buildMatchExpression: function () {
         var params = this.params, conditions = [], clause;
 
@@ -1779,11 +1926,13 @@ Selector.prototype = {
 
         return conditions.join(' && ');
     },
+
     compileMatcher: function () {
         this.match = new Function('element', 'if (!element.tagName) return false; \
       element = $(element); \
       return ' + this.buildMatchExpression());
     },
+
     findElements: function (scope) {
         var element;
 
@@ -1801,6 +1950,7 @@ Selector.prototype = {
 
         return results;
     },
+
     toString: function () {
         return this.expression;
     }
@@ -1811,11 +1961,13 @@ Object.extend(Selector, {
         var selector = new Selector(expression);
         return elements.select(selector.match.bind(selector)).map(Element.extend);
     },
+
     findElement: function (elements, expression, index) {
         if (typeof expression == 'number')
             index = expression, expression = false;
         return Selector.matchElements(elements, expression || '*')[index || 0];
     },
+
     findChildElements: function (element, expressions) {
         return expressions.map(function (expression) {
             return expression.match(/[^\s"]+(?:"[^"]*"[^\s"]+)*/g).inject([null], function (results, expr) {
@@ -1836,6 +1988,7 @@ var Form = {
         $(form).reset();
         return form;
     },
+
     serializeElements: function (elements, getHash) {
         var data = elements.inject({}, function (result, element) {
             if (!element.disabled && element.name) {
@@ -1860,6 +2013,7 @@ Form.Methods = {
     serialize: function (form, getHash) {
         return Form.serializeElements(Form.getElements(form), getHash);
     },
+
     getElements: function (form) {
         return $A($(form).getElementsByTagName('*')).inject([],
                 function (elements, child) {
@@ -1869,6 +2023,7 @@ Form.Methods = {
                 }
         );
     },
+
     getInputs: function (form, typeName, name) {
         form = $(form);
         var inputs = form.getElementsByTagName('input');
@@ -1885,6 +2040,7 @@ Form.Methods = {
 
         return matchingInputs;
     },
+
     disable: function (form) {
         form = $(form);
         form.getElements().each(function (element) {
@@ -1893,6 +2049,7 @@ Form.Methods = {
         });
         return form;
     },
+
     enable: function (form) {
         form = $(form);
         form.getElements().each(function (element) {
@@ -1900,12 +2057,14 @@ Form.Methods = {
         });
         return form;
     },
+
     findFirstElement: function (form) {
         return $(form).getElements().find(function (element) {
             return element.type != 'hidden' && !element.disabled &&
                     ['input', 'select', 'textarea'].include(element.tagName.toLowerCase());
         });
     },
+
     focusFirstElement: function (form) {
         form = $(form);
         form.findFirstElement().activate();
@@ -1922,6 +2081,7 @@ Form.Element = {
         $(element).focus();
         return element;
     },
+
     select: function (element) {
         $(element).select();
         return element;
@@ -1941,18 +2101,22 @@ Form.Element.Methods = {
         }
         return '';
     },
+
     getValue: function (element) {
         element = $(element);
         var method = element.tagName.toLowerCase();
         return Form.Element.Serializers[method](element);
     },
+
     clear: function (element) {
         $(element).value = '';
         return element;
     },
+
     present: function (element) {
         return $(element).value != '';
     },
+
     activate: function (element) {
         element = $(element);
         element.focus();
@@ -1961,11 +2125,13 @@ Form.Element.Methods = {
             element.select();
         return element;
     },
+
     disable: function (element) {
         element = $(element);
         element.disabled = true;
         return element;
     },
+
     enable: function (element) {
         element = $(element);
         element.blur();
@@ -1990,20 +2156,25 @@ Form.Element.Serializers = {
                 return Form.Element.Serializers.textarea(element);
         }
     },
+
     inputSelector: function (element) {
         return element.checked ? element.value : null;
     },
+
     textarea: function (element) {
         return element.value;
     },
+
     select: function (element) {
         return this[element.type == 'select-one' ?
                 'selectOne' : 'selectMany'](element);
     },
+
     selectOne: function (element) {
         var index = element.selectedIndex;
         return index >= 0 ? this.optionValue(element.options[index]) : null;
     },
+
     selectMany: function (element) {
         var values, length = element.length;
         if (!length)
@@ -2016,6 +2187,7 @@ Form.Element.Serializers = {
         }
         return values;
     },
+
     optionValue: function (opt) {
         // extend element because hasAttribute may not be native
         return Element.extend(opt).hasAttribute('value') ? opt.value : opt.text;
@@ -2034,9 +2206,11 @@ Abstract.TimedObserver.prototype = {
         this.lastValue = this.getValue();
         this.registerCallback();
     },
+
     registerCallback: function () {
         setInterval(this.onTimerEvent.bind(this), this.frequency * 1000);
     },
+
     onTimerEvent: function () {
         var value = this.getValue();
         var changed = ('string' == typeof this.lastValue && 'string' == typeof value
@@ -2076,6 +2250,7 @@ Abstract.EventObserver.prototype = {
         else
             this.registerCallback(this.element);
     },
+
     onElementEvent: function () {
         var value = this.getValue();
         if (this.lastValue != value) {
@@ -2083,9 +2258,11 @@ Abstract.EventObserver.prototype = {
             this.lastValue = value;
         }
     },
+
     registerFormCallbacks: function () {
         Form.getElements(this.element).each(this.registerCallback.bind(this));
     },
+
     registerCallback: function (element) {
         if (element.type) {
             switch (element.type.toLowerCase()) {
@@ -2132,21 +2309,26 @@ Object.extend(Event, {
     KEY_END: 35,
     KEY_PAGEUP: 33,
     KEY_PAGEDOWN: 34,
+
     element: function (event) {
         return event.target || event.srcElement;
     },
+
     isLeftClick: function (event) {
         return (((event.which) && (event.which == 1)) ||
                 ((event.button) && (event.button == 1)));
     },
+
     pointerX: function (event) {
         return event.pageX || (event.clientX +
                 (document.documentElement.scrollLeft || document.body.scrollLeft));
     },
+
     pointerY: function (event) {
         return event.pageY || (event.clientY +
                 (document.documentElement.scrollTop || document.body.scrollTop));
     },
+
     stop: function (event) {
         if (event.preventDefault) {
             event.preventDefault();
@@ -2156,6 +2338,7 @@ Object.extend(Event, {
             event.cancelBubble = true;
         }
     },
+
     // find the first node with the given tagName, starting from the
     // node the event was triggered on; traverses the DOM upwards
     findElement: function (event, tagName) {
@@ -2165,7 +2348,9 @@ Object.extend(Event, {
             element = element.parentNode;
         return element;
     },
+
     observers: false,
+
     _observeAndCache: function (element, name, observer, useCapture) {
         if (!this.observers)
             this.observers = [];
@@ -2177,6 +2362,7 @@ Object.extend(Event, {
             element.attachEvent('on' + name, observer);
         }
     },
+
     unloadCache: function () {
         if (!Event.observers)
             return;
@@ -2186,6 +2372,7 @@ Object.extend(Event, {
         }
         Event.observers = false;
     },
+
     observe: function (element, name, observer, useCapture) {
         element = $(element);
         useCapture = useCapture || false;
@@ -2197,6 +2384,7 @@ Object.extend(Event, {
 
         Event._observeAndCache(element, name, observer, useCapture);
     },
+
     stopObserving: function (element, name, observer, useCapture) {
         element = $(element);
         useCapture = useCapture || false;
@@ -2225,6 +2413,7 @@ var Position = {
     // NOT neeeded for page scrolling, only if draggable contained in
     // scrollable elements
     includeScrollOffsets: false,
+
     // must be called before calling withinIncludingScrolloffset, every time the
     // page is scrolled
     prepare: function () {
@@ -2237,6 +2426,7 @@ var Position = {
                 || document.body.scrollTop
                 || 0;
     },
+
     realOffset: function (element) {
         var valueT = 0, valueL = 0;
         do {
@@ -2246,6 +2436,7 @@ var Position = {
         } while (element);
         return [valueL, valueT];
     },
+
     cumulativeOffset: function (element) {
         var valueT = 0, valueL = 0;
         do {
@@ -2255,6 +2446,7 @@ var Position = {
         } while (element);
         return [valueL, valueT];
     },
+
     positionedOffset: function (element) {
         var valueT = 0, valueL = 0;
         do {
@@ -2271,6 +2463,7 @@ var Position = {
         } while (element);
         return [valueL, valueT];
     },
+
     offsetParent: function (element) {
         if (element.offsetParent)
             return element.offsetParent;
@@ -2283,6 +2476,7 @@ var Position = {
 
         return document.body;
     },
+
     // caches x/y coordinate pair to use with overlap
     within: function (element, x, y) {
         if (this.includeScrollOffsets)
@@ -2296,6 +2490,7 @@ var Position = {
                 x >= this.offset[0] &&
                 x < this.offset[0] + element.offsetWidth);
     },
+
     withinIncludingScrolloffsets: function (element, x, y) {
         var offsetcache = this.realOffset(element);
 
@@ -2308,6 +2503,7 @@ var Position = {
                 this.xcomp >= this.offset[0] &&
                 this.xcomp < this.offset[0] + element.offsetWidth);
     },
+
     // within must be called directly before
     overlap: function (mode, element) {
         if (!mode)
@@ -2319,6 +2515,7 @@ var Position = {
             return ((this.offset[0] + element.offsetWidth) - this.xcomp) /
                     element.offsetWidth;
     },
+
     page: function (forElement) {
         var valueT = 0, valueL = 0;
 
@@ -2344,6 +2541,7 @@ var Position = {
 
         return [valueL, valueT];
     },
+
     clone: function (source, target) {
         var options = Object.extend({
             setLeft: true,
@@ -2385,6 +2583,7 @@ var Position = {
         if (options.setHeight)
             target.style.height = source.offsetHeight + 'px';
     },
+
     absolutize: function (element) {
         element = $(element);
         if (element.style.position == 'absolute')
@@ -2408,6 +2607,7 @@ var Position = {
         element.style.width = width + 'px';
         element.style.height = height + 'px';
     },
+
     relativize: function (element) {
         element = $(element);
         if (element.style.position == 'relative')

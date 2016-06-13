@@ -3,12 +3,12 @@ package org.netbeans.modules.javascript2.jquery.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.spi.FunctionArgument;
+import org.netbeans.modules.javascript2.model.spi.FunctionInterceptor;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /*

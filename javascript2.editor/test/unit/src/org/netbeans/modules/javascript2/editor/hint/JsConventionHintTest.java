@@ -76,6 +76,14 @@ public class JsConventionHintTest extends HintTestBase {
         return new DuplicatePropertyName();
     }
     
+    public void testClassDeclaration01() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/classDeclaration.js", null);
+    }
+    
+    public void testDefaultParameters01() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/defaultParameters.js", null);
+    }
+    
     public void testSemicolonAssignment() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/coloring/assignments01.js", null);
     }
@@ -90,6 +98,14 @@ public class JsConventionHintTest extends HintTestBase {
     
     public void testSemicolon03() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/hints/varInForNode.js", null);
+    }
+    
+    public void testSemicolon04() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/docComment1.js", null);
+    }
+    
+    public void testSemicolon05() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/docComment2.js", null);
     }
 
     public void testSemicolonIssue218042() throws Exception {
@@ -174,5 +190,29 @@ public class JsConventionHintTest extends HintTestBase {
     
     public void testIssue252023() throws Exception {
         checkHints(this, new AssignmentInCondition(), "testfiles/hints/issue252023.js", null);
+    }
+    
+    public void testIssue258874() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258874.js", null);
+    }
+    
+    public void testIssue258901_01() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258901_01.js", null);
+    }
+    
+    public void testIssue258901_02() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258901_02.js", null);
+    }
+    
+    public void testIssue258901_03() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258901_03.js", null);
+    }
+    
+    public void testIssue258901_04() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258901_04.js", null);
+    }
+    
+    public void testIssue258901_05() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue258901_05.js", null);
     }
 }

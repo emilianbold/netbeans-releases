@@ -49,6 +49,27 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="TypesSplit">
+        <summary>Separate common non UI classes</summary>
+        <version major="2" minor="54"/>
+        <date day="31" month="3" year="2016"/>
+        <author login="phejl"/>
+        <compatibility addition="no" deletion="yes" modification="no" binary="compatible" source="incompatible" deprecation="no"/>
+        <description>
+            <p>
+                Seperating the common non UI classes to avoid Swing dependency in dependent projects.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="Documentation" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="ElementHandle" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="ElementKind" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="Error" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="Modifier" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="OffsetRange" link="no"/>
+        <class package="org.netbeans.modules.csl.api" name="Severity" link="no"/>
+        <class package="org.netbeans.modules.csl.spi" name="ParserResult" link="no"/>
+        <issue number="258520"/>
+    </change>
     <change id="CancelSuppport">
         <api name="csl.api"/>
         <summary>Added <code>CancelSupport</code> to allow scanners and other CSL services to check task cancelling</summary>
