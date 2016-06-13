@@ -187,6 +187,9 @@ class J2SEProjectPlatformImpl implements J2SEProjectPlatform, PropertyChangeList
                         "true":                                                                              //NOI18N
                         "false");                                                                            //NOI18N
             root.insertBefore(platformNode, insertBefore);
+            if ("explicit-platform".equals(insertBefore.getNodeName())) { //NOI18N
+                root.removeChild(insertBefore);
+            }
             changed = true;
         }
         if (changed) {
