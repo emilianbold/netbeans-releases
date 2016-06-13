@@ -100,7 +100,9 @@ public class FormDataObject extends MultiDataObject {
             if (openEdit == null)
                 openEdit = new OpenEdit();
             retValue = type.cast(openEdit);
-        } else if (type.isAssignableFrom(getFormEditorSupport().getClass())) {
+        } else if (!type.equals(Cookie.class) && type.isAssignableFrom(getFormEditorSupportClass())) {
+            // Avoid calling synchronized getFormEditorSupport() when invoked from node lookup
+            // initialization from cookies (asking for base Node.Cookie).
             retValue = (T) getFormEditorSupport();
         } else {
             retValue = super.getCookie(type);
@@ -142,6 +144,10 @@ public class FormDataObject extends MultiDataObject {
 
     public final CookieSet getCookies() {
         return getCookieSet();
+    }
+
+    private Class getFormEditorSupportClass() {
+        return Lookup.getDefault().lookup(FormServices.class).getEditorSupportClass(this);
     }
 
     public synchronized EditorSupport getFormEditorSupport() {
