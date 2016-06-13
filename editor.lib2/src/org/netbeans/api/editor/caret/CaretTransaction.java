@@ -573,7 +573,9 @@ final class CaretTransaction {
         }
     }
 
-    static CaretItem[] asCaretItems(EditorCaret caret, @NonNull List<Position> dotAndSelectionStartPosPairs) {
+    static CaretItem[] asCaretItems(EditorCaret caret, @NonNull List<Position> dotAndSelectionStartPosPairs,
+            List<Position.Bias> dotAndMarkBiases)
+    {
         int size = dotAndSelectionStartPosPairs.size();
         if ((size & 1) != 0) {
             throw new IllegalStateException("Passed list has size=" + size + " which is not an even number.");
@@ -581,9 +583,13 @@ final class CaretTransaction {
         CaretItem[] addedCarets = new CaretItem[size >> 1];
         int listIndex = 0;
         for (int j = 0; j < addedCarets.length; j++) {
+            Position.Bias dotBias = (dotAndMarkBiases != null) ? dotAndMarkBiases.get(listIndex) : Position.Bias.Forward;
             Position dotPos = dotAndSelectionStartPosPairs.get(listIndex++);
+
+            Position.Bias markBias = (dotAndMarkBiases != null) ? dotAndMarkBiases.get(listIndex) : Position.Bias.Forward;
             Position selectionStartPos = dotAndSelectionStartPosPairs.get(listIndex++);
-            CaretItem caretItem = new CaretItem(caret, dotPos, selectionStartPos);
+
+            CaretItem caretItem = new CaretItem(caret, dotPos, dotBias, selectionStartPos, markBias);
             addedCarets[j] = caretItem;
         }
         return addedCarets;

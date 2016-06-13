@@ -187,7 +187,7 @@ public final class ScriptsRegistry {
 
             npb.setExecutable("/bin/sh"); // NOI18N
             npb.setArguments("-c", "/bin/rm " + hostInfo.getTempDir() + "/" + getFilePrefix(cfg) + "*"); // NOI18N
-            npb.call().waitFor();
+            ProcessUtils.execute(npb);
         } catch (Exception ex) {
         }
     }
@@ -228,11 +228,7 @@ public final class ScriptsRegistry {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/sh"); // NOI18N
             npb.setArguments("-c", "/bin/cat > " + fname); // NOI18N
-            NativeProcess process = npb.call();
-            PrintWriter w = ProcessUtils.getWriter(process.getOutputStream(), true);
-            w.write(script);
-            w.flush();
-            w.close();
+            ProcessUtils.execute(npb, script.getBytes(ProcessUtils.getRemoteCharSet()));
             return fname;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

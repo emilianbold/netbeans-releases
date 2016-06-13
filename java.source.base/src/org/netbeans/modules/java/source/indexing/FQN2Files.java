@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -130,5 +131,10 @@ public final class FQN2Files implements DuplicateClassChecker {
             Exceptions.printStackTrace(ex);
             return false;
         }
+    }
+
+    public boolean check(final String fqn, final FileObject fo) {
+        String value = props.getProperty(fqn);
+        return value != null && !value.equals(fo.toURL().toExternalForm());
     }
 }

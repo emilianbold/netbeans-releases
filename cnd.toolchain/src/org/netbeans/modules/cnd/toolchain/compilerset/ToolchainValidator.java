@@ -51,16 +51,19 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+//import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.spi.toolchain.CSMNotifier;
+//import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.Installer;
 import org.netbeans.modules.cnd.toolchain.compilers.SPICompilerAccesor;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -109,21 +112,26 @@ public final class ToolchainValidator {
         }
     }
 
-    void applyChanges(Map<Tool, List<List<String>>> needReset, final CompilerSetManagerImpl csm) {
+    //made this method public as it is placed in closed package so I do not see the need to keep 
+    //this method package visible and create accessor for it
+    public void applyChanges(Map<Tool, List<List<String>>> needReset, final CompilerSetManager csm) {
         for(Map.Entry<Tool, List<List<String>>> entry : needReset.entrySet()) {
             Tool tool = entry.getKey();
             List<List<String>> compilerDefinitions = entry.getValue();
             new SPICompilerAccesor(tool).applyCompilerDefinitions(compilerDefinitions);
         }
-        CompilerSetPreferences.saveToDisk(csm);
-        ToolsPanelSupport.fireCodeAssistanceChange(csm);
+        final CompilerSetManagerImpl csmImpl = (CompilerSetManagerImpl)csm;
+        CompilerSetPreferences.saveToDisk(csmImpl);
+        ToolchainUtilities.fireCodeAssistanceChange(csmImpl);
     }
 
     private void validateImpl(final ExecutionEnvironment env, final CompilerSetManagerImpl csm) {
+        //this method is not called when we are in standalone or unit test mode but we still should be 
+        //confident we do not have UI here
         if (Installer.isClosed()) {
             return;
         }
-        ProgressHandle createHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ToolchainValidator.class, "ToolCollectionValidation", env.getDisplayName())); // NOI18N
+        ProgressHandle createHandle = ProgressHandle.createHandle(NbBundle.getMessage(ToolchainValidator.class, "ToolCollectionValidation", env.getDisplayName())); // NOI18N
         createHandle.start();
         try {
             Map<Tool, List<List<String>>> needReset = new HashMap<Tool, List<List<String>>>();
@@ -147,7 +155,7 @@ public final class ToolchainValidator {
                 }
             }
             if (needReset.size() > 0) {
-                FixCodeAssistancePanel.showNotification(needReset, csm);
+                CSMNotifier.getInstance().showNotification(needReset, csm);
             }
         } catch (Throwable ex) {
             LOG.log(Level.INFO, ex.getMessage());

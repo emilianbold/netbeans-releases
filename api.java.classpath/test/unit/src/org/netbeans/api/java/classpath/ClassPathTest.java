@@ -77,6 +77,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -839,7 +840,9 @@ public class ClassPathTest extends NbTestCase {
             fail();
         } catch (IllegalArgumentException x) {/* right */}
         try {
-            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar/"));
+            File f = new File(getWorkDir(),"test.jar");
+            f.createNewFile();
+            ClassPathSupport.createClassPath(new URL(BaseUtilities.toURI(f).toString() + '/'));
             fail();
         } catch (IllegalArgumentException x) {/* right */}
     }

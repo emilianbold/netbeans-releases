@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -223,16 +224,16 @@ public class JsfCustomIndexer extends CustomIndexer {
 
         @Override
         public void scanFinished(Context context) {
-            super.scanFinished(context);
-
             //notify the FaceletsLibrarySupport that the libraries might have changed.
             if (context.getRoot() != null) {  //looks like can be null
                 for (Project p : LibraryUtils.getOpenedJSFProjects()) {
                     JsfSupport support = JsfSupportProvider.get(p);
                     if (support != null) {
                         JsfSupportImpl jsfSupportImpl = (JsfSupportImpl) support;
-                        jsfSupportImpl.indexedContentPossiblyChanged();
-                        jsfSupportImpl.getIndex().notifyChange();
+                        if (Arrays.stream(jsfSupportImpl.getClassPathRoots()).anyMatch(f -> f.equals(context.getRoot()))) {
+                            jsfSupportImpl.indexedContentPossiblyChanged();
+                            jsfSupportImpl.getIndex().notifyChange();   
+                        }
                     }
                 }
             }

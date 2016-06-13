@@ -45,7 +45,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.netbeans.modules.php.codeception.coverage.CoverageProvider;
@@ -107,10 +107,10 @@ public final class CodeceptionTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
-        boolean isTest = Codecept.isTestClass(method.getPhpClass().getName());
+    public boolean isTestCase(PhpModule phpModule, PhpType.Method method) {
+        boolean isTest = Codecept.isTestClass(method.getPhpType().getName());
         if (!isTest
-                && !Codecept.isCestClass(method.getPhpClass().getName())) {
+                && !Codecept.isCestClass(method.getPhpType().getName())) {
             return false;
         }
         return Codecept.isTestMethod(method.getName(), isTest);

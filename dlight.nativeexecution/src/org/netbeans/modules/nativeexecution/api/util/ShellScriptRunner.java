@@ -151,6 +151,7 @@ public final class ShellScriptRunner {
         shellProcess = pb.call();
 
         if (shellProcess.getState() == State.ERROR) {
+            ProcessUtils.readProcessError(shellProcess); // just in case
             throw new IOException("Cannot start " + info.getShell() + " -s"); // NOI18N
         }
 

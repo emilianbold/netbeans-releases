@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
@@ -68,6 +66,11 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
 
     public QmakeConfigurationTest(String name) {
         super(name);
+    }
+    
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
     }
 
     @Override @Before

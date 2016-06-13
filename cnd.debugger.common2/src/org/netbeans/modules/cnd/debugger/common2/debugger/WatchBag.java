@@ -49,6 +49,8 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.util.ArrayList;
+import org.netbeans.api.debugger.Watch;
+import org.netbeans.spi.debugger.ui.EditorPin;
 
 public class WatchBag {
     private ArrayList<NativeWatch> watches = new ArrayList<NativeWatch>();
@@ -72,7 +74,18 @@ public class WatchBag {
 	}
 	return ws.toArray(new WatchVariable[ws.size()]);
     }
-
+    
+    public synchronized boolean hasPinnedWatches() {
+        for (NativeWatch nativeWatch : watches) {
+            final Watch watch = nativeWatch.watch();
+            Watch.Pin pin = watch.getPin();
+            if (pin instanceof EditorPin) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void postDeleteAllWatches() {
 
 	// Use an array because

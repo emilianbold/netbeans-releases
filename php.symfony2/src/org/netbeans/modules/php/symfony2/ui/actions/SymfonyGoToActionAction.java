@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
 import org.netbeans.modules.php.symfony2.util.SymfonyUtils;
@@ -88,7 +89,7 @@ final class SymfonyGoToActionAction extends GoToActionAction {
         int firstClassOffset = -1;
         for (PhpClass phpClass : editorSupport.getClasses(controller)) {
             if (phpClass.getName().equals(controller.getName())) {
-                for (PhpClass.Method method : phpClass.getMethods()) {
+                for (PhpType.Method method : phpClass.getMethods()) {
                     if (actionMethodName.equals(method.getName())) {
                         return method.getOffset();
                     }

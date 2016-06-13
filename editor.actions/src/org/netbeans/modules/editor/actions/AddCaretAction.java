@@ -81,16 +81,18 @@ public class AddCaretAction extends AbstractEditorAction {
                 doc.runAtomicAsUser(new Runnable() {
                     @Override
                     public void run() {
-                        final List<Position> dots = new ArrayList<>(editorCaret.getCarets().size() << 1);
+                        final List<Position> dotAndMarks = new ArrayList<>(editorCaret.getCarets().size() << 1);
+                        final List<Position.Bias> dotAndMarkBiases = new ArrayList<>(editorCaret.getCarets().size() << 1);
                         editorCaret.moveCarets(new CaretMoveHandler() {
                             @Override
                             public void moveCarets(CaretMoveContext context) {
                                 for (org.netbeans.api.editor.caret.CaretInfo caretInfo : context.getOriginalCarets()) {
                                     try {
                                         int dot = caretInfo.getDot();
+                                        Position.Bias dotBias = caretInfo.getDotBias();
                                         Point p = caretInfo.getMagicCaretPosition();
                                         if (p == null) {
-                                            Rectangle r = target.modelToView(dot);
+                                            Rectangle r = target.getUI().modelToView(target, dot, dotBias);
                                             if (r != null) {
                                                 p = new Point(r.x, r.y);
                                                 context.setMagicCaretPosition(caretInfo, p);
@@ -102,9 +104,13 @@ public class AddCaretAction extends AbstractEditorAction {
                                             dot = upAction
                                                     ? Utilities.getPositionAbove(target, dot, p.x)
                                                     : Utilities.getPositionBelow(target, dot, p.x);
+                                            // TODO compute proper bias by using getNextVisualPositionFrom() either in target.navifilter or target.ui
                                             Position dotPos = doc.createPosition(dot);
-                                            dots.add(dotPos);
-                                            dots.add(dotPos);
+                                            dotAndMarks.add(dotPos);
+                                            dotAndMarks.add(dotPos);
+                                            dotAndMarkBiases.add(dotBias);
+                                            dotAndMarkBiases.add(dotBias);
+                                            
                                         } catch (BadLocationException e) {
                                             // the position stays the same
                                         }
@@ -115,7 +121,7 @@ public class AddCaretAction extends AbstractEditorAction {
                             }
                         });
 
-                        editorCaret.addCarets(dots);
+                        editorCaret.addCarets(dotAndMarks, dotAndMarkBiases);
                     }
                 });
             }

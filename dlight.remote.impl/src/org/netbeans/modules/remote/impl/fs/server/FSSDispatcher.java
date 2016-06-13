@@ -576,7 +576,7 @@ import org.openide.util.RequestProcessor;
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N
-            npb.call().waitFor();
+            ProcessUtils.execute(npb);
             Future<CommonTasksSupport.UploadStatus> copyTask;
             copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
             CommonTasksSupport.UploadStatus uploadStatus = copyTask.get();

@@ -54,7 +54,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderSamba implements HostMappingProvider {
+/*package*/final class HostMappingProviderSamba implements HostMappingProvider {
 
     @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {

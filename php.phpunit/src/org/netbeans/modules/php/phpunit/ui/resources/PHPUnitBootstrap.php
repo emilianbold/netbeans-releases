@@ -13,4 +13,3 @@
 ini_set('include_path', ini_get('include_path')%INCLUDE_PATH%);
 
 // put your code here
-?>

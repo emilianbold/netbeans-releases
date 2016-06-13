@@ -43,11 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,28 +65,18 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
-import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -129,7 +116,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
     public static final int CONSOLE_TYPE_INTERNAL = 3;
-    private static final String[] consoleTypeNames = {
+    public static final String[] consoleTypeNames = {
         //getString("ConsoleType_Default"), // NOI18N // Carefull: names no longer match CONSOLE_TYPE. Cleanup when debugger works again.
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
@@ -507,6 +494,10 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
     }
 
+    public MakeConfiguration getMakeConfiguration() {
+        return makeConfiguration;
+    }
+    
     /*
      * Sets base directory. Base directory should  always be set and is always absolute.
      * Base directory is what run directory is relative to if it is relative.
@@ -816,98 +807,12 @@ public boolean isSimpleRunCommand() {
         return p;
     }
 
-    public Sheet getSheet(boolean disableConsoleTypeSelection) {
-        return createSheet(disableConsoleTypeSelection);
-    }
-
-    public Sheet getSheet() {
-        return createSheet(false);
-    }
-
-    private Sheet createSheet(boolean disableConsoleTypeSelection) {
-        Sheet sheet = new Sheet();
-        StringNodeProp argumentsNodeprop;
-
-        Sheet.Set set = new Sheet.Set();
-        set.setName("General"); // NOI18N
-        set.setDisplayName(getString("GeneralName"));
-        set.setShortDescription(getString("GeneralTT"));
-
-        String runComboHintSuffix = null;
-
-        ExecutionEnvironment targetEnv = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        if (!isWindows() && HostInfoUtils.isHostInfoAvailable(targetEnv)) {
-            try {
-                String shell = HostInfoUtils.getHostInfo(targetEnv).getShell();
-                if (shell != null) {
-                    shell = CndPathUtilities.getBaseName(shell);
-                    runComboHintSuffix = NbBundle.getMessage(RunProfile.class, "ShellSyntaxSupported", shell); // NOI18N
-                }
-            } catch (IOException ex) {
-            } catch (CancellationException ex) {
-            }
-        }
-
-        String runComboName = getString("RunCommandName"); // NOI18N
-        String runComboHint = getString("RunCommandHint"); // NOI18N
-
-        if (runComboHintSuffix != null) {
-            runComboHint = runComboHint.concat("<br>").concat(runComboHintSuffix); // NOI18N
-        }
-
-        set.put(new ComboStringNodeProp(getRunCommand(), true, runComboName, runComboHint));
-        set.put(new RunDirectoryNodeProp());
-        set.put(argumentsNodeprop = new StringNodeProp(getConfigurationArguments(), "", "Arguments", getString("ArgumentsName"), getString("ArgumentsHint"))); // NOI18N
-        argumentsNodeprop.setHidden(true);
-        set.put(new EnvNodeProp());
-        set.put(new BuildFirstNodeProp());
-        ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, "ConsoleType", //NOI18N
-                getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
-        set.put(consoleTypeNP);
-        final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, "TerminalType", //NOI18N
-                getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
-        set.put(terminalTypeNP);
-        if (disableConsoleTypeSelection) {
-            terminalTypeNP.setCanWrite(false);
-            consoleTypeNP.setCanWrite(false);
-        } else {
-
-            consoleTypeNP.addPropertyChangeListener(new PropertyChangeListener() {
-
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    String value = (String) evt.getNewValue();
-                    updateTerminalTypeState(terminalTypeNP, value);
-                }
-            });
-            // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
-            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[((Integer) consoleTypeNP.getValue())-1]);
-        }
-
-        // TODO: this is a quick and durty "hack".
-        // don't show "remove instrumentation" property in the panel
-        // until we have cnd.tha module
-
-        if (thaSupportEnabled()) {
-            set.put(new IntNodeProp(getRemoveInstrumentation(), true, "RemoveInstrumentation", // NOI18N
-                    getString("RemoveInstrumentation_LBL"), getString("RemoveInstrumentation_HINT"))); // NOI18N
-        }
-
-        sheet.put(set);
-
-        return sheet;
-    }
-
-    private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
-        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL-1].equals(value));
-    }
-
     private static String getString(String s) {
         return NbBundle.getMessage(RunProfile.class, s);
     }
     private static Boolean hasTHAModule = null;
 
-    private static synchronized boolean thaSupportEnabled() {
+    public static synchronized boolean thaSupportEnabled() {
         if (hasTHAModule == null) {
             hasTHAModule = Boolean.FALSE;
 
@@ -955,167 +860,6 @@ public boolean isSimpleRunCommand() {
         arguments.setValue(val);
         if (pcs != null && !CndPathUtilities.sameString(oldArgs, val)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, val);
-        }
-    }
-
-    private class RunDirectoryNodeProp extends PropertySupport<String> {
-
-        public RunDirectoryNodeProp() {
-            super("Run Directory", String.class, getString("RunDirectoryName"), getString("RunDirectoryHint"), true, true); // NOI18N
-        }
-
-        @Override
-        public String getValue() {
-            return getRunDir();
-        }
-
-        @Override
-        public void setValue(String v) {
-            String path = CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = CndPathUtilities.normalizeSlashes(path);
-            setRunDir(path);
-        }
-
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            String seed;
-            String runDir2 = getRunDir();
-            if (runDir2.length() == 0) {
-                runDir2 = "."; // NOI18N
-            }
-            if (CndPathUtilities.isPathAbsolute(runDir2)) {
-                seed = runDir2;
-            } else {
-                seed = getBaseDir() + File.separatorChar + runDir2;
-            }
-            return new DirEditor(seed);
-        }
-    }
-
-    private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
-
-        private PropertyEnv propenv;
-        private final String seed;
-
-        public DirEditor(String seed) {
-            this.seed = seed;
-        }
-
-        @Override
-        public void setAsText(String text) {
-            setRunDir(text);
-        }
-
-        @Override
-        public String getAsText() {
-            return getRunDir();
-        }
-
-        @Override
-        public Object getValue() {
-            return getRunDir();
-        }
-
-        @Override
-        public void setValue(Object v) {
-            setRunDir((String) v);
-        }
-
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-
-        @Override
-        public java.awt.Component getCustomEditor() {
-            FileSystem fs = (makeConfiguration == null) ? CndFileUtils.getLocalFileSystem() : makeConfiguration.getSourceFileSystem();
-            return new DirectoryChooserPanel(seed, this, propenv, fs);
-        }
-
-        @Override
-        public void attachEnv(PropertyEnv propenv) {
-            this.propenv = propenv;
-        }
-    }
-
-    private class BuildFirstNodeProp extends PropertySupport<Boolean> {
-
-        public BuildFirstNodeProp() {
-            super("Build First", Boolean.class, getString("BuildFirstName"), getString("BuildFirstHint"), true, true); // NOI18N
-        }
-
-        @Override
-        public Boolean getValue() {
-            return getBuildFirst();
-        }
-
-        @Override
-        public void setValue(Boolean v) {
-            setBuildFirst((v));
-        }
-    }
-
-    private class EnvNodeProp extends PropertySupport<Env> {
-
-        public EnvNodeProp() {
-            super("Environment", Env.class, getString("EnvironmentName"), getString("EnvironmentHint"), true, true); // NOI18N
-        }
-
-        @Override
-        public Env getValue() {
-            return getEnvironment();
-        }
-
-        @Override
-        public void setValue(Env v) {
-            getEnvironment().assign(v);
-        }
-
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            return new EnvEditor(getEnvironment().clone());
-        }
-
-        @Override
-        public Object getValue(String attributeName) {
-            if (attributeName.equals("canEditAsText")) { // NOI18N
-                return Boolean.FALSE;
-            }
-            return super.getValue(attributeName);
-        }
-    }
-
-    private static class EnvEditor extends PropertyEditorSupport implements ExPropertyEditor {
-
-        private final Env env;
-        private PropertyEnv propenv;
-
-        public EnvEditor(Env env) {
-            this.env = env;
-        }
-
-        @Override
-        public void setAsText(String text) {
-        }
-
-        @Override
-        public String getAsText() {
-            return env.toString();
-        }
-
-        @Override
-        public java.awt.Component getCustomEditor() {
-            return new EnvPanel(env, this, propenv);
-        }
-
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-
-        @Override
-        public void attachEnv(PropertyEnv propenv) {
-            this.propenv = propenv;
         }
     }
 }

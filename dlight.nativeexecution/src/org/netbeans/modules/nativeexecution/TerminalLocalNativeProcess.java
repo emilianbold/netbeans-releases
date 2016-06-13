@@ -75,7 +75,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
+ * A process to be run in *external* terminal
+ * @author akrasny
  */
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
@@ -199,13 +200,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             // setup DISPLAY variable for MacOS...
             if (osFamily == OSFamily.MACOSX) {
                 ProcessBuilder pb1 = new ProcessBuilder(hostInfo.getShell(), "-c", "/bin/echo $DISPLAY"); // NOI18N
-                Process p1 = pb1.start();
-                int status = p1.waitFor();
+                // this is an external terminal process - it's ok to use ProcessUtils.execute here
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(pb1);
                 String display = null;
 
-                if (status == 0) {
-                    display = ProcessUtils.readProcessOutputLine(p1);
-                }
+                if (res.isOK()) {
+                    display = res.getOutputString();
+                } 
 
                 if (display == null || "".equals(display)) { // NOI18N
                     display = ":0.0"; // NOI18N
@@ -241,7 +242,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
             shWriter.close();
 
-            Process terminalProcess = pb.start();
+            Process terminalProcess = ProcessUtils.ignoreProcessOutputAndError(pb.start());
 
             creation_ts = System.nanoTime();
 
@@ -383,6 +384,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 if (result != 0) {
                     String err = ProcessUtils.readProcessErrorLine(termProcess);
+                    if (!err.isEmpty()) { // it is redirected! but just in case let's read both
+                        err = ProcessUtils.readProcessOutputLine(termProcess);
+                    }                    
                     log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
                     log.info(err);
                     throw new IOException(err);

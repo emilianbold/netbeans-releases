@@ -58,7 +58,7 @@ import org.netbeans.spi.debugger.ui.PinWatchUISupport;
  * @author Nikolay Koldunov
  */
 
-public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvider {
+public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvider, PinWatchUISupport.ValueProvider.ValueChangeListener {
     public static final String ID = "NativePinWatchValueProvider";    // NOI18N
     
     private final Map<Watch, ValueChangeListener> valueListeners = new HashMap();
@@ -66,6 +66,7 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
 
     public NativePinWatchValueProvider(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, NativeDebugger.class);
+        NativeDebuggerManager.get().registerPinnedWatchesUpdater(debugger, this);
     }
     
     @Override
@@ -75,8 +76,8 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
 
     @Override
     public String getValue(Watch watch) {
-        for (WatchVariable watchVar : NativeDebuggerManager.get().currentDebugger().getWatches()) {
-            if (watchVar.getNativeWatch().watch() == watch) {
+        for (WatchVariable watchVar : debugger.getWatches()) {
+            if (watchVar.getNativeWatch().watch().getExpression().equals(watch.getExpression())) {
                 Variable v = ((Variable) watchVar);
                 VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
                 return value.toString();
@@ -107,6 +108,14 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
     public void unsetChangeListener(Watch watch) {
         synchronized (valueListeners) {
             valueListeners.remove(watch);
+        }
+    }
+    
+    @Override
+    public void valueChanged(Watch watch) {
+        ValueChangeListener listener = valueListeners.get(watch);
+        if (listener != null) {
+            listener.valueChanged(watch);
         }
     }
     

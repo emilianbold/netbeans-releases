@@ -41,32 +41,11 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.MacroExpandedEditorPanel;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -168,20 +147,6 @@ public class PreBuildConfiguration implements Cloneable {
         return clone;
     }
 
-    public Sheet getSheet() {
-        Sheet sheet = new Sheet();
-        
-        Sheet.Set set = new Sheet.Set();
-        set.setName("PreBuild"); // NOI18N
-        set.setDisplayName(getString("PreBuildTxt"));
-        set.setShortDescription(getString("PreBuildHint"));
-        set.put(new DirStringNodeProp(getPreBuildCommandWorkingDir(), "PreBuildWorkingDirectory", getString("PreBuildWorkingDirectory_LBL"), getString("PreBuildWorkingDirectory_TT"))); // NOI18N
-        set.put(new PreviewStringNodeProp(getPreBuildCommand(), "PreBuildCommandLine", getString("PreBuildCommandLine_LBL"), getString("PreBuildCommandLine_TT"))); // NOI18N
-        set.put(new BooleanNodeProp(getPreBuildFirst(), true, "PreBuildFirst",  getString("PreBuildFirst_LBL"), getString("PreBuildFirst_TT"))); // NOI18N
-        sheet.put(set);
-        return sheet;
-    }
-    
     private ExecutionEnvironment getSourceExecutionEnvironment() {
         ExecutionEnvironment env = null;
         MakeConfiguration mc = this.getMakeConfiguration();
@@ -193,146 +158,4 @@ public class PreBuildConfiguration implements Cloneable {
         }
         return env;
     }
-
-    private class DirStringNodeProp extends StringNodeProp {
-        public DirStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, txt1, txt2, txt3);
-        }
-        
-        @Override
-        public void setValue(String v) {
-            String path = CndPathUtilities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilities.normalizeSlashes(path);
-            super.setValue(path);
-        }
-        
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            return new DirEditor(getAbsPreBuildCommandWorkingDir());
-        }
-    }
-    
-    private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private PropertyEnv propenv;
-        private final String seed;
-        
-        public DirEditor(String seed) {
-            this.seed = seed;
-        }
-        
-        @Override
-        public void setAsText(String text) {
-            getPreBuildCommandWorkingDir().setValue(text);
-        }
-        
-        @Override
-        public String getAsText() {
-            return getPreBuildCommandWorkingDir().getValue();
-        }
-        
-        @Override
-        public Object getValue() {
-            return getPreBuildCommandWorkingDir().getValue();
-        }
-        
-        @Override
-        public void setValue(Object v) {
-            getPreBuildCommandWorkingDir().setValue((String)v);
-        }
-        
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-        
-        @Override
-        public java.awt.Component getCustomEditor() {
-            return createDirPanel(seed, this, propenv);
-        }
-        
-        @Override
-        public void attachEnv(PropertyEnv propenv) {
-            this.propenv = propenv;
-        }
-    }
-
-    private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-        String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
-        String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
-        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
-                JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
-        chooser.setControlButtonsAreShown(false);
-        propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        propenv.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                    File selectedFile= chooser.getSelectedFile();
-                    String path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilities.normalizeSlashes(path);
-                    editor.setValue(path);
-                }
-            }
-        });
-        return chooser;
-    }
-   
-    /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-    private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(PreBuildConfiguration.class);
-        }
-        return bundle.getString(s);
-    }
-    
-    private final class PreviewStringNodeProp extends StringNodeProp {
-        private PreviewStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, txt1, txt2, txt3);
-        }
-
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            Map<String,String> macros = new HashMap<>();
-            CompilerSet cs = makeConfiguration.getCompilerSet().getCompilerSet();
-            if (cs != null) {
-                Tool tool = cs.getTool(PredefinedToolKind.CCompiler);
-                if (tool != null) {
-                    macros.put(PreBuildSupport.C_COMPILER_MACRO, tool.getPath());
-                }
-                tool = cs.getTool(PredefinedToolKind.CCCompiler);
-                if (tool != null) {
-                    macros.put(PreBuildSupport.CPP_COMPILER_MACRO, tool.getPath());
-                }
-            }
-            return new PreviewCommandLinePropEditor(macros);
-        }
-    }
-    
-    private static class PreviewCommandLinePropEditor extends PropertyEditorSupport implements ExPropertyEditor {
-
-        private PropertyEnv env;
-        private final Map<String,String> macros;
-        private PreviewCommandLinePropEditor(Map<String,String> macros) {
-            this.macros = macros;
-        }
-
-        @Override
-        public java.awt.Component getCustomEditor() {
-            MacroExpandedEditorPanel commandLineEditorPanel = new MacroExpandedEditorPanel(this, env, macros);
-            return commandLineEditorPanel;
-        }
-
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-
-        @Override
-        public void attachEnv(PropertyEnv env) {
-            this.env = env;
-        }
-    }
-
 }

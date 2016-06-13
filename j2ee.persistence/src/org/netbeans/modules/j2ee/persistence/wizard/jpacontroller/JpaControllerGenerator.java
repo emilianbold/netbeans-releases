@@ -179,7 +179,9 @@ public class JpaControllerGenerator {
             if (!fileObject.isValid()) {
                 fileObject.getParent().refresh();	//Maybe fo.refresh() is enough
                 fileObject = FileUtil.toFileObject(FileUtil.toFile(fileObject));
-                javaSource = JavaSource.forFileObject(fileObject);
+                if (fileObject != null) {
+                    javaSource = JavaSource.forFileObject(fileObject);
+                }
             } 
         }
         if(javaSource == null){
@@ -237,7 +239,9 @@ public class JpaControllerGenerator {
                 if (!controllerFileObject.isValid()) {
                     controllerFileObject.getParent().refresh();	//Maybe fo.refresh() is enough
                     controllerFileObject = FileUtil.toFileObject(FileUtil.toFile(controllerFileObject));
-                    controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
+                    if (controllerFileObject != null) {
+                        controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
+                    }
                 } 
                 
                 if(controllerJavaSource == null){

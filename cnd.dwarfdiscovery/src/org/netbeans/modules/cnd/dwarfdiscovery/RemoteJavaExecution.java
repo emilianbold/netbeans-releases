@@ -205,7 +205,7 @@ public class RemoteJavaExecution {
         return null;
     }
 
-    
+
     private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         FileObject dwarfDump = copyJar();
         if (dwarfDump == null) {

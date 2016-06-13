@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -67,7 +68,12 @@ public class Project_65_Test extends CndBaseTestCase {
     public Project_65_Test(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
+    }
+
     protected MakeProject openProject(String projectName) throws IOException, Exception, IllegalArgumentException {
         File scriptFile = new File(getTestCaseDataDir(), "pre-process.sh");
         if (scriptFile.exists()) {

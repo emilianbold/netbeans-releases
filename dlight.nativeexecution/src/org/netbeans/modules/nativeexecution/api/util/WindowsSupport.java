@@ -236,23 +236,18 @@ public final class WindowsSupport {
                 return shellPID;
         }
 
-        try {
-            Process p = pb.start();
-            List<String> output = ProcessUtils.readProcessOutput(p);
-            Pattern pat = Pattern.compile("[I]*[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+).*"); // NOI18N
-            for (String s : output) {
-                Matcher m = pat.matcher(s);
-                if (m.matches()) {
-                    Integer pid = Integer.parseInt(m.group(1));
-                    if (pid == shellPID) {
-                        return Integer.parseInt(m.group(4));
-                    }
+        ExitStatus res = ProcessUtils.execute(pb);
+        List<String> output = res.getOutputLines();
+        Pattern pat = Pattern.compile("[I]*[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+)[\t ]*([0-9]+).*"); // NOI18N
+        for (String s : output) {
+            Matcher m = pat.matcher(s);
+            if (m.matches()) {
+                Integer pid = Integer.parseInt(m.group(1));
+                if (pid == shellPID) {
+                    return Integer.parseInt(m.group(4));
                 }
             }
-        } catch (IOException ex) {
-            return shellPID;
         }
-
         return shellPID;
     }
 
@@ -379,9 +374,8 @@ public final class WindowsSupport {
 
             String cygwinVersion = null;
             ProcessBuilder pb = new ProcessBuilder(activeShell.bindir + "\\uname.exe", "-r"); // NOI18N
-            Process process = pb.start();
-            process.waitFor();
-            String output = ProcessUtils.readProcessOutputLine(process);
+            ExitStatus res = ProcessUtils.execute(pb);
+            String output = res.getOutputString();
             Pattern p = Pattern.compile("^([0-9\\.]*).*"); // NOI18N
             Matcher m = p.matcher(output);
             if (m.matches()) {

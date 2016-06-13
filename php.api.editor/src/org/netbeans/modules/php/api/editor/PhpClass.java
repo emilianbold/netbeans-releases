@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.php.api.editor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
@@ -53,10 +50,7 @@ import org.openide.filesystems.FileObject;
  * Class representing a PHP class.
  * @author Tomas Mysik
  */
-public final class PhpClass extends PhpBaseElement {
-
-    private final Collection<Field> fields = new LinkedList<Field>();
-    private final Collection<Method> methods = new LinkedList<Method>();
+public final class PhpClass extends PhpType {
 
     public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         super(name, fullyQualifiedName, description);
@@ -74,82 +68,52 @@ public final class PhpClass extends PhpBaseElement {
         super(name, fullyQualifiedName, offset, description);
     }
 
+    @Override
     public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-        fields.add(new Field(name, fullyQualifiedName, offset, description));
+        super.addField(name, fullyQualifiedName, offset, description);
         return this;
     }
 
+    @Override
     public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addField(name, fullyQualifiedName, offset, null);
     }
 
+    @Override
     public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addField(name, fullyQualifiedName, -1, null);
     }
 
+    @Override
     public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
-    public PhpClass addField(@NonNull String name, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset) {
-        fields.add(new Field(name, type, file, offset));
+    @Override
+    public PhpClass addField(@NonNull String name, @NullAllowed PhpType type, @NullAllowed FileObject file, int offset) {
+        super.addField(name, type, file, offset);
         return this;
     }
 
+    @Override
     public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-        methods.add(new Method(name, fullyQualifiedName, offset, description));
+        super.addMethod(name, fullyQualifiedName, offset, description);
         return this;
     }
 
+    @Override
     public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addMethod(name, fullyQualifiedName, offset, null);
     }
 
+    @Override
     public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addMethod(name, fullyQualifiedName, -1, null);
     }
 
+    @Override
     public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addMethod(name, fullyQualifiedName, -1, description);
     }
 
-    public Collection<Field> getFields() {
-        return new ArrayList<Field>(fields);
-    }
-
-    public Collection<Method> getMethods() {
-        return new ArrayList<Method>(methods);
-    }
-
-    /**
-     * Class representing a PHP class field.
-     * @author Tomas Mysik
-     */
-    public final class Field extends PhpBaseElement {
-        Field(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-            super(name, fullyQualifiedName, offset, description);
-        }
-
-        Field(@NonNull String name, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset) {
-            super(name, null, type, file, offset, null);
-        }
-
-        public PhpClass getPhpClass() {
-            return PhpClass.this;
-        }
-    }
-
-    /**
-     * Class representing a PHP class method.
-     * @author Tomas Mysik
-     */
-    public final class Method extends PhpBaseElement {
-        Method(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-            super(name, fullyQualifiedName, offset, description);
-        }
-
-        public PhpClass getPhpClass() {
-            return PhpClass.this;
-        }
-    }
 }

@@ -22,5 +22,3 @@ class ${name} extends atoum {
     }
 
 }
-
-?>

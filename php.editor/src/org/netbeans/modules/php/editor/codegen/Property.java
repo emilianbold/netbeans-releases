@@ -114,4 +114,10 @@ public class Property {
     public PhpElementKind getKind() {
         return PhpElementKind.FIELD;
     }
+
+    @Override
+    public String toString() {
+        return "Property{" + "name=" + name + ", modifier=" + modifier + ", selected=" + selected + ", type=" + type + '}'; // NOI18N
+    }
+
 }

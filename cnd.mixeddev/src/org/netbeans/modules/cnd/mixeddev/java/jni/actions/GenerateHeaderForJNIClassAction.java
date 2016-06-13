@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.Triple;
@@ -208,7 +209,7 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
                     boolean header = pair.second();
                     if (fileObject != null && fileObject.isValid()) {
                         Folder logicFolder = header ? getRootHeader(configurationDescriptor) : getRootSource(configurationDescriptor);
-                        Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), fileObject.getPath());
+                        Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), fileObject.getPath());
                         logicFolder.addItemAction(item);
                     }
                 }

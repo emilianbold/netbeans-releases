@@ -45,25 +45,18 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOTopComponent;
 import org.netbeans.modules.terminal.api.TerminalContainer;
-import org.netbeans.modules.terminal.api.TabContentProvider;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.windows.IOSelect;
+import org.openide.windows.IOContainer;
 
 /**
  *
@@ -94,10 +87,10 @@ public class SwitchTabAction extends TerminalAction {
 
     @Override
     protected void performAction() {
-        Container container = SwingUtilities.getAncestorOfClass(TabContentProvider.class, getTerminal());
-        if (container != null && container instanceof TabContentProvider) {
-            TabContentProvider tcp = (TabContentProvider) container;
-            List<? extends Component> allTabs = tcp.getAllTabs();
+        Container container = SwingUtilities.getAncestorOfClass(TerminalContainer.class, getTerminal());
+        if (container != null && container instanceof TerminalContainer) {
+            TerminalContainer tc = (TerminalContainer) container;
+            List<? extends Component> allTabs = tc.getAllTabs();
             try {
                 int requested = Integer.parseInt(getEvent().getActionCommand());
                 requested = (requested == 0)
@@ -108,10 +101,11 @@ public class SwitchTabAction extends TerminalAction {
                 }
                 if (allTabs.get(requested) instanceof Terminal) {
                     Terminal terminal = (Terminal) allTabs.get(requested);
-                    tcp.select(terminal);
+                    if (tc instanceof IOContainer.Provider) {
+                        ((IOContainer.Provider) tc).select(terminal);
+                    }
                 }
             } catch (NumberFormatException x) {
-                return;
             }
         }
     }

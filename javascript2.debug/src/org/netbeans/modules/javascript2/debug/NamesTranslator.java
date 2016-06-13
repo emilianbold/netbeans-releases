@@ -42,27 +42,18 @@
 package org.netbeans.modules.javascript2.debug;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.javascript2.debug.spi.SourceElementsQuery;
+import org.netbeans.modules.javascript2.debug.spi.SourceElementsQuery.Var;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Translator of names in a source file, based on a source map.
@@ -152,68 +143,56 @@ public final class NamesTranslator {
             return;
         }
         varTranslationsRegistered = true;
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                public @Override
-                void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result r = resultIterator.getParserResult();
-                    ParserResult pr = (ParserResult) r;
-                    Model model = Model.getModel(pr);
-                    if (model == null) {    // no model, no translation
-                        return ;
-                    }
-                    Collection<? extends JsObject> variables = model.getVariables(offset);
-                    for (JsObject var : variables) {
-                        int voffset = var.getOffset();
-                        Document doc = source.getDocument(true);
-                        int line = LineDocumentUtils.getLineIndex((LineDocument) doc, voffset);
-                        //int column = NbDocument.findLineColumn((StyledDocument) doc, voffset);
-                        int column = voffset - LineDocumentUtils.getLineStart((LineDocument) doc, voffset);
-                        SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
-                        loc = smt.getSourceLocation(loc);
-                        String tname = loc.getName();
-                        if (tname != null) {
-                            String name = var.getName();
-                            directMap.put(name, tname);
-                            reverseMap.put(tname, name);
-                        }
-                    }
+        SourceElementsQuery seq = Lookup.getDefault().lookup(SourceElementsQuery.class);
+        if (seq != null) {
+            Collection<Var> vars = seq.getVarsAt(source, offset);
+            for (Var var : vars) {
+                int voffset = var.getOffset();
+                Document doc = source.getDocument(true);
+                int line;
+                try {
+                    line = LineDocumentUtils.getLineIndex((LineDocument) doc, voffset);
+                } catch (BadLocationException blex) {
+                    continue;
                 }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+                //int column = NbDocument.findLineColumn((StyledDocument) doc, voffset);
+                int column = voffset - LineDocumentUtils.getLineStart((LineDocument) doc, voffset);
+                SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
+                loc = smt.getSourceLocation(loc);
+                String tname = loc.getName();
+                if (tname != null) {
+                    String name = var.getName();
+                    directMap.put(name, tname);
+                    reverseMap.put(tname, name);
+                }
+            }
         }
     }
 
     public synchronized String translateDeclarationNodeName(String defaultName) {
         if (declarationNodeName == null) {
-            final String[] namePtr = {null};
-            try {
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    public @Override
-                    void run(ResultIterator resultIterator) throws Exception {
-                        Parser.Result r = resultIterator.getParserResult();
-                        ParserResult pr = (ParserResult) r;
-                        Model model = Model.getModel(pr);
-                        JsObject declarationObject = model.getDeclarationObject(offset);
-                        Identifier declarationName = declarationObject.getDeclarationName();
-                        int doffset = declarationName.getOffsetRange().getStart();
-                        Document doc = source.getDocument(true);
+            String nodeName;
+            SourceElementsQuery seq = Lookup.getDefault().lookup(SourceElementsQuery.class);
+            if (seq != null) {
+                int doffset = seq.getObjectOffsetAt(source, offset);
+                if (doffset >= 0) {
+                    Document doc = source.getDocument(true);
+                    try {
                         int line = LineDocumentUtils.getLineIndex((LineDocument) doc, doffset);
                         int column = doffset - LineDocumentUtils.getLineStart((LineDocument) doc, doffset);
                         SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
                         loc = smt.getSourceLocation(loc);
-                        namePtr[0] = loc.getName();
+                        nodeName = loc.getName();
+                    } catch (BadLocationException blex) {
+                        nodeName = defaultName;
                     }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (namePtr[0] != null) {
-                declarationNodeName = namePtr[0];
+                } else {
+                    nodeName = defaultName;
+                }
             } else {
-                declarationNodeName = defaultName;
+                nodeName = defaultName;
             }
+            declarationNodeName = nodeName;
         }
         return declarationNodeName;
     }

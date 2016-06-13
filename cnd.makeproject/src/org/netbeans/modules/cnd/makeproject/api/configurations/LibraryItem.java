@@ -51,18 +51,12 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public abstract class LibraryItem implements Cloneable {
     public static final int PROJECT_ITEM = 0;
@@ -73,7 +67,7 @@ public abstract class LibraryItem implements Cloneable {
 
     private int type;
 
-    protected LibraryItem() {
+    private LibraryItem() {
     }
 
     public int getType() {
@@ -85,13 +79,8 @@ public abstract class LibraryItem implements Cloneable {
     }
 
     // Should be overridden
-    public String getToolTip() {
+    public String getDescription() {
 	return "Should be overridden"; // NOI18N
-    }
-
-    // Should be overridden
-    public String getIconName() {
-	return "org/netbeans/modules/cnd/resources/blank.gif"; // NOI18N
     }
 
     // Should be overridden
@@ -165,17 +154,12 @@ public abstract class LibraryItem implements Cloneable {
 	}
 
         @Override
-	public String getToolTip() {
+	public String getDescription() {
             String ret = NbBundle.getMessage(LibraryItem.class, "ProjectTxt", getMakeArtifact().getProjectLocation()); // NOI18N
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
             }
             return ret;
-	}
-
-        @Override
-	public String getIconName() {
-	    return "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
 	}
 
         @Override
@@ -277,7 +261,7 @@ public abstract class LibraryItem implements Cloneable {
 	}
 
         @Override
-	public String getToolTip() {
+	public String getDescription() {
             StringBuilder options = new StringBuilder();
             for (int i = 0; i < libs.length; i++) {
                 if (options.length()>0) {
@@ -286,11 +270,6 @@ public abstract class LibraryItem implements Cloneable {
                 options.append(libs[i]); // NOI18N
             }
 	    return NbBundle.getMessage(LibraryItem.class, "StandardLibraryTxt", getDisplayName(), options.toString()); // NOI18N
-	}
-
-        @Override
-	public String getIconName() {
-	    return "org/netbeans/modules/cnd/resources/stdLibrary.gif"; // NOI18N
 	}
 
         @Override
@@ -354,13 +333,8 @@ public abstract class LibraryItem implements Cloneable {
 	}
 
         @Override
-	public String getToolTip() {
+	public String getDescription() {
 	    return NbBundle.getMessage(LibraryItem.class, "LibraryTxt", getLibName()); // NOI18N
-	}
-
-        @Override
-	public String getIconName() {
-	    return "org/netbeans/modules/cnd/loaders/LibraryIcon.gif"; // NOI18N
 	}
 
         @Override
@@ -413,20 +387,9 @@ public abstract class LibraryItem implements Cloneable {
 	}
 
         @Override
-	public String getToolTip() {
+	public String getDescription() {
 	    return NbBundle.getMessage(LibraryItem.class, "LibraryFileTxt", getPath()); // NOI18N
 	}
-
-        @Override
-        public String getIconName() {
-            if (getPath().endsWith(".so") || getPath().endsWith(".dll") || getPath().endsWith(".dylib")) { // NOI18N
-                return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
-            } else if (getPath().endsWith(".a")) { // NOI18N
-                return "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N
-            } else {
-                return "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
-            }
-        }
 
         @Override
 	public String toString() {
@@ -476,13 +439,8 @@ public abstract class LibraryItem implements Cloneable {
 	}
 
         @Override
-	public String getToolTip() {
+	public String getDescription() {
 	    return NbBundle.getMessage(LibraryItem.class, "LibraryOptionTxt", getLibraryOption()); // NOI18N
-	}
-
-        @Override
-	public String getIconName() {
-	    return "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 	}
 
         @Override

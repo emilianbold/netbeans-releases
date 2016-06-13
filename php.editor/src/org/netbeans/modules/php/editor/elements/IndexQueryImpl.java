@@ -63,7 +63,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpClass.Field;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.AbstractElementQuery;
 import org.netbeans.modules.php.editor.api.AliasedName;
@@ -164,11 +164,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             if (phpBaseElement instanceof PhpVariable) {
                 PhpVariable variable = (PhpVariable) phpBaseElement;
                 extendedQuery.addElement(VariableElementImpl.fromFrameworks(variable, extendedQuery));
-                final PhpClass type = variable.getType();
-                if (type != null) {
-                    final ClassElement classElement = ClassElementImpl.fromFrameworks(type, extendedQuery);
+                final PhpType type = variable.getType();
+                if (type instanceof PhpClass) {
+                    final ClassElement classElement = ClassElementImpl.fromFrameworks((PhpClass) type, extendedQuery);
                     extendedQuery.addElement(classElement);
-                    for (final Field field : type.getFields()) {
+                    for (final PhpType.Field field : type.getFields()) {
                         final FieldElement fieldElement = FieldElementImpl.fromFrameworks(classElement, field, extendedQuery);
                         extendedQuery.addElement(fieldElement);
                     }

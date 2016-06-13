@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.bde.generated;
+package org.netbeans.performance.benchmarks.bde.generated;
 
 public class SimpleNode implements Node {
   protected Node parent;

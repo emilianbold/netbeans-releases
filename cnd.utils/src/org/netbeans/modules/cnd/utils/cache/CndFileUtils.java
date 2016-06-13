@@ -361,7 +361,7 @@ public final class CndFileUtils {
     public static boolean isExistingFile(String filePath) {
         return isExistingFile(getLocalFileSystem(), filePath);
     }
-
+    
     /**
      * Tests whether the file exists and not directory. One of file or filePath
      * must be not null

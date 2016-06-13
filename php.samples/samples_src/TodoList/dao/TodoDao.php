@@ -41,8 +41,19 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Dao;
+
+use \DateTime;
+use \Exception;
+use \PDO;
+use \PDOStatement;
+use \TodoList\Config\Config;
+use \TodoList\Exception\NotFoundException;
+use \TodoList\Mapping\TodoMapper;
+use \TodoList\Model\Todo;
+
 /**
- * DAO for {@link Todo}.
+ * DAO for {@link \TodoList\Model\Todo}.
  * <p>
  * It is also a service, ideally, this class should be divided into DAO and Service.
  */
@@ -62,7 +73,7 @@ final class TodoDao {
      * @return array array of {@link Todo}s
      */
     public function find(TodoSearchCriteria $search = null) {
-        $result = array();
+        $result = [];
         foreach ($this->query($this->getFindSql($search)) as $row) {
             $todo = new Todo();
             TodoMapper::map($todo, $row);
@@ -87,10 +98,10 @@ final class TodoDao {
 
     /**
      * Save {@link Todo}.
-     * @param ToDo $todo {@link Todo} to be saved
+     * @param Todo $todo {@link Todo} to be saved
      * @return Todo saved {@link Todo} instance
      */
-    public function save(ToDo $todo) {
+    public function save(Todo $todo) {
         if ($todo->getId() === null) {
             return $this->insert($todo);
         }
@@ -110,11 +121,11 @@ final class TodoDao {
             WHERE
                 id = :id';
         $statement = $this->getDb()->prepare($sql);
-        $this->executeStatement($statement, array(
+        $this->executeStatement($statement, [
             ':last_modified_on' => self::formatDateTime(new DateTime()),
             ':deleted' => true,
             ':id' => $id,
-        ));
+        ]);
         return $statement->rowCount() == 1;
     }
 
@@ -125,7 +136,7 @@ final class TodoDao {
         if ($this->db !== null) {
             return $this->db;
         }
-        $config = Config::getConfig("db");
+        $config = Config::getConfig('db');
         try {
             $this->db = new PDO($config['dsn'], $config['username'], $config['password']);
         } catch (Exception $ex) {
@@ -211,7 +222,7 @@ final class TodoDao {
     }
 
     private function getParams(Todo $todo) {
-        $params = array(
+        $params = [
             ':id' => $todo->getId(),
             ':priority' => $todo->getPriority(),
             ':created_on' => self::formatDateTime($todo->getCreatedOn()),
@@ -221,8 +232,8 @@ final class TodoDao {
             ':description' => $todo->getDescription(),
             ':comment' => $todo->getComment(),
             ':status' => $todo->getStatus(),
-            ':deleted' => $todo->getDeleted(),
-        );
+            ':deleted' => self::formatBoolean($todo->getDeleted()),
+        ];
         if ($todo->getId()) {
             // unset created date, this one is never updated
             unset($params[':created_on']);
@@ -231,7 +242,9 @@ final class TodoDao {
     }
 
     private function executeStatement(PDOStatement $statement, array $params) {
-        if (!$statement->execute($params)) {
+        // XXX
+        //echo str_replace(array_keys($params), $params, $statement->queryString) . PHP_EOL;
+        if ($statement->execute($params) === false) {
             self::throwDbError($this->getDb()->errorInfo());
         }
     }
@@ -253,7 +266,11 @@ final class TodoDao {
     }
 
     private static function formatDateTime(DateTime $date) {
-        return $date->format(DateTime::ISO8601);
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    private static function formatBoolean($bool) {
+        return $bool ? 1 : 0;
     }
 
 }

@@ -59,7 +59,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.util.Lookup;
 
 /**

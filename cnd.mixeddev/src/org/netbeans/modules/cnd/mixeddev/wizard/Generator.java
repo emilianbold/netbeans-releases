@@ -76,16 +76,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -233,7 +234,7 @@ public class Generator implements PropertyChangeListener {
         prjParams.setHostUID(hostUID);
 
         prjParams.setTemplateParams(new HashMap<String,Object>(wiz.getProperties()));
-        Project createProject = ProjectGenerator.createProject(prjParams);
+        Project createProject = ProjectGenerator.getDefault().createProject(prjParams);
         return createProject;
     }
 
@@ -387,7 +388,7 @@ public class Generator implements PropertyChangeListener {
         newSource = folder.createData(header.getName(), "cpp"); //NOI18N
         buf.append("// Native methods implementation of\n// ").append(fileObject.getPath()).append("\n\n"); //NOI18N
         buf.append("#include \"").append(header.getNameExt()).append("\"\n"); //NOI18N
-        Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());
+        Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());
         sourceFolder.addItemAction(item);
         return newSource;
     }
@@ -418,7 +419,7 @@ public class Generator implements PropertyChangeListener {
             folder = configurationDescriptor.getBaseDirFileObject();
         }
         FileObject newHeader = FileUtil.copyFile(header, folder, header.getName());
-        Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), newHeader.getPath());
+        Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), newHeader.getPath());
         headersFolder.addItemAction(item);
         return newHeader;
     }

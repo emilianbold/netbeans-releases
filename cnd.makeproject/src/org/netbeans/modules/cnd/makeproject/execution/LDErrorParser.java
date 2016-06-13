@@ -47,13 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
@@ -61,12 +58,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.spi.project.ui.CustomizerProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -191,34 +184,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            JButton forbid = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Forbid.text")); // NOI18N
-            JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Close.text")); // NOI18N
-            NotifyDescriptor d = new NotifyDescriptor(
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Explanation.text"), // NOI18N
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveBuildLibrary.Title.text"), // NOI18N
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE,
-                    new JButton[] {forbid, close},
-                    forbid
-            );
-            if (DialogDisplayer.getDefault().notify(d) == forbid) {
-                //Preferences makeProjectPref = NbPreferences.root().node("/org/netbeans/modules/cnd/makeproject"); //NOI18N
-                //if (makeProjectPref != null) {
-                //    makeProjectPref.putBoolean("useBuildTrace", false); //NOI18N
-                //}
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (project != null) {
-                            CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
-                            if (cp instanceof MakeCustomizerProvider) {
-                                ((MakeCustomizerProvider)cp).showCustomizer("CodeAssistance"); // NOI18N
-                            }
-                        }
-                    }
-                });
-            }
+            ConfirmSupport.getForbidBuildAnalyzerFactory().show(project);
         }
 
         @Override
@@ -238,25 +204,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            JButton change = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Forbid.text")); // NOI18N
-            JButton close = new JButton(NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Close.text")); // NOI18N
-            NotifyDescriptor d = new NotifyDescriptor(
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Explanation.text"), // NOI18N
-                    NbBundle.getMessage(LDErrorParser.class, "ResolveRfsLibrary.Title.text"), // NOI18N
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE,
-                    new JButton[] {change, close},
-                    change
-            );
-            if (DialogDisplayer.getDefault().notify(d) == change) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ServerListUI.showServerRecordPropertiesDialog(execEnv);
-                    }
-                });
-            }
+            ConfirmSupport.getResolveRfsLibraryFactory().show(execEnv);
         }
 
         @Override

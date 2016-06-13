@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorCaret-bias">
+            <summary>Position.Bias support added to EditorCaret</summary>
+            <version major="2" minor="14"/>
+            <date day="25" month="5" year="2016"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="yes" />
+            <description>
+                <p>
+                    CaretInfo.getDotBias() and CaretInfo.getMarkBias() added together
+                    with other methods and parameters for bias manipulation to properly handle bidirectional text.
+                </p>
+            </description>
+            <class name="EditorCaret" package="org.netbeans.api.editor.caret"/>
+            <issue number="259023"/>
+        </change>
       <change id="SplitOffsetHighlightsSequence">
           <summary>Renamed ShiftHighlightsSequence to SplitOffsetHighlightsSequence</summary>
           <version major="2" minor="13"/>
@@ -243,8 +258,7 @@ is the proper place.
         or to color extra virtual characters beyond a newline character.
                 </p>
             </description>
-            <class name="ShiftHighlightsSequence" package="org.netbeans.spi.editor.highlighting"/>
-            <issue number="XXX"/>
+            <issue number="257889"/>
         </change>
         <change id="releasable-highlights-container">
             <summary>ReleasableHighlightsContainer added</summary>

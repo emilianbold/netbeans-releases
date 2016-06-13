@@ -176,7 +176,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         controller.addPropertyChangeListener(this);
         
         this.descriptors = descriptors;
-        this.component = new JPanel();
+        this.component = new JPanel() {
+            @Override
+            public void requestFocus() {
+                table.requestFocus();
+            }
+        };
         this.isSaved = isSaved;
         
         initFilters();

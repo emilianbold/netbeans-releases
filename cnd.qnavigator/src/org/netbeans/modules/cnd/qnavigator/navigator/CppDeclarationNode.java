@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
-import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -70,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -86,10 +86,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.spi.editor.AbstractEditorAction;
-import org.openide.awt.Actions;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.CharSequences;
 import org.openide.util.ImageUtilities;
@@ -603,7 +600,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         } else if(CsmKindUtilities.isDeclaration(element)){
             if(CsmKindUtilities.isFunction(element)){
                 node = createDeclaration((CsmOffsetableDeclaration)element,model,isFriend);
-                node.name = CharSequences.create(CsmUtilities.getSignature((CsmFunction)element, true));
+                String abstractDecorator = ""; //NOI18N
+                if (CsmKindUtilities.isMethodDeclaration(element) && ((CsmMethod)element).isAbstract()) {
+                    abstractDecorator = " =0"; //NOI18N
+                }
+                node.name = CharSequences.create(CsmUtilities.getSignature((CsmFunction)element, true)+abstractDecorator);
             } else if(CsmKindUtilities.isFunctionExplicitInstantiation(element)) {
                 return null;
             } else {

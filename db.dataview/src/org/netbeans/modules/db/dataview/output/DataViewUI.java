@@ -83,20 +83,20 @@ import org.openide.util.NbBundle;
  *
  * @author Ahimanikya Satapathy
  */
+@NbBundle.Messages({
+    "LBL_fetched_rows=Fetched Rows:"
+})
 class DataViewUI extends JXPanel {
 
     private JXButton commit;
     private JXButton refreshButton;
     private JXButton truncateButton;
-    private JXButton next;
-    private JXButton last;
-    private JXButton previous;
-    private JXButton first;
+
     private JXButton deleteRow;
     private JXButton insert;
     private JTextField refreshField;
     private JTextField matchBoxField;
-    private JXLabel totalRowsLabel;
+    private JXLabel fetchedRowsLabel;
     private JXLabel limitRow;
     private JXButton[] editButtons = new JXButton[5];
     private DataViewTableUI dataPanel;
@@ -106,13 +106,11 @@ class DataViewUI extends JXPanel {
     private DataViewActionHandler actionHandler;
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
 
-    private static final int MAX_TAB_LENGTH = 25;
-
     private final PropertyChangeListener pageContextListener =
             new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    updateTotalCountLabel();
+                    updateFetchedLabel();
                 }
             };
 
@@ -180,7 +178,7 @@ class DataViewUI extends JXPanel {
 
         dataPanel.setModel(pageContext.getModel());
         pageContext.addPropertyChangeListener(pageContextListener);
-        updateTotalCountLabel();
+        updateFetchedLabel();
     }
 
     void handleColumnUpdated() {
@@ -196,17 +194,10 @@ class DataViewUI extends JXPanel {
         return editButtons;
     }
 
-    final void updateTotalCountLabel() {
+    final void updateFetchedLabel() {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
 
-        if (pageContext.isTotalRowCountAvailable()) {
-            totalRowsLabel.setText(
-                    pageContext.getTotalRows() + "   " + pageContext.pageOf());
-        } else {
-            totalRowsLabel.setText(NbBundle.getMessage(DataViewUI.class,
-                    "LBL_not_available") + " "
-                    + pageContext.pageOf());
-        }
+        fetchedRowsLabel.setText(Integer.toString(pageContext.getModel().getRowCount()));
     }
 
     boolean isCommitEnabled() {
@@ -237,10 +228,6 @@ class DataViewUI extends JXPanel {
         refreshField.setEnabled(false);
         matchBoxField.setEditable(false);
 
-        first.setEnabled(false);
-        previous.setEnabled(false);
-        next.setEnabled(false);
-        last.setEnabled(false);
         deleteRow.setEnabled(false);
         commit.setEnabled(false);
         cancel.setEnabled(false);
@@ -252,12 +239,11 @@ class DataViewUI extends JXPanel {
 
     int getPageSize() {
         int pageSize = pageContext.getPageSize();
-        int totalCount = pageContext.getTotalRows();
         try {
             int count = Integer.parseInt(refreshField.getText().trim());
             return count < 0 ? pageSize : count;
         } catch (NumberFormatException ex) {
-            return totalCount < pageSize ? totalCount : pageSize;
+            return pageSize;
         }
     }
 
@@ -273,28 +259,6 @@ class DataViewUI extends JXPanel {
         matchBoxField.setEditable(true);
         deleteRow.setEnabled(false);
         if (!wasError) {
-            if (pageContext.hasPrevious()) {
-                first.setEnabled(true);
-                previous.setEnabled(true);
-            }
-
-            if (pageContext.hasNext()) {
-                next.setEnabled(true);
-                if (pageContext.getTotalRows() >= 0) {
-                    last.setEnabled(true);
-                }
-            }
-
-            if (pageContext.hasOnePageOnly()) {
-                first.setEnabled(false);
-                previous.setEnabled(false);
-            }
-
-            if (pageContext.isLastPage()) {
-                next.setEnabled(false);
-                last.setEnabled(false);
-            }
-
             // editing controls
             if (! dataPanel.getModel().isEditable()) {
                 commit.setEnabled(false);
@@ -328,6 +292,8 @@ class DataViewUI extends JXPanel {
             dataPanel.revalidate();
             dataPanel.repaint();
         }
+        
+        updateFetchedLabel();
     }
 
     private ActionListener createOutputListener() {
@@ -339,14 +305,14 @@ class DataViewUI extends JXPanel {
                 Object src = e.getSource();
                 if (src.equals(refreshButton)) {
                     actionHandler.refreshActionPerformed();
-                } else if (src.equals(first)) {
-                    actionHandler.firstActionPerformed();
-                } else if (src.equals(last)) {
-                    actionHandler.lastActionPerformed();
-                } else if (src.equals(next)) {
-                    actionHandler.nextActionPerformed();
-                } else if (src.equals(previous)) {
-                    actionHandler.previousActionPerformed();
+//                } else if (src.equals(first)) {
+//                    actionHandler.firstActionPerformed();
+//                } else if (src.equals(last)) {
+//                    actionHandler.lastActionPerformed();
+//                } else if (src.equals(next)) {
+//                    actionHandler.nextActionPerformed();
+//                } else if (src.equals(previous)) {
+//                    actionHandler.previousActionPerformed();
                 } else if (src.equals(refreshField)) {
                     actionHandler.updateActionPerformed();
                 } else if (src.equals(commit)) {
@@ -400,40 +366,6 @@ class DataViewUI extends JXPanel {
 
         toolbar.add(refreshButton);
 
-        // add navigation buttons
-        url = getClass().getResource(imgPrefix + "navigate_beginning.png"); // NOI18N
-        first = new JXButton(new ImageIcon(url));
-        first.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_first"));
-        first.addActionListener(outputListener);
-        first.setEnabled(false);
-        processButton(first);
-        toolbar.add(first);
-
-        url = getClass().getResource(imgPrefix + "navigate_left.png"); // NOI18N
-        previous = new JXButton(new ImageIcon(url));
-        previous.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_previous"));
-        previous.addActionListener(outputListener);
-        previous.setEnabled(false);
-        processButton(previous);
-        toolbar.add(previous);
-
-        url = getClass().getResource(imgPrefix + "navigate_right.png"); // NOI18N
-        next = new JXButton(new ImageIcon(url));
-        next.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_next"));
-        next.addActionListener(outputListener);
-        next.setEnabled(false);
-        processButton(next);
-        toolbar.add(next);
-
-        url = getClass().getResource(imgPrefix + "navigate_end.png"); // NOI18N
-        last = new JXButton(new ImageIcon(url));
-        last.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_last"));
-        last.addActionListener(outputListener);
-        last.setEnabled(false);
-        toolbar.add(last);
-        processButton(last);
-        toolbar.addSeparator(new Dimension(10, 10));
-
         //add limit row label
         limitRow = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_max_rows"));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
@@ -453,12 +385,12 @@ class DataViewUI extends JXPanel {
         toolbar.add(refreshField);
         toolbar.addSeparator(new Dimension(10, 10));
 
-        JXLabel totalRowsNameLabel = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_total_rows"));
-        totalRowsNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DataViewUI.class, "LBL_total_rows"));
-        totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        toolbar.add(totalRowsNameLabel);
-        totalRowsLabel = new JXLabel();
-        toolbar.add(totalRowsLabel);
+        JXLabel fetchedRowsNameLabel = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_fetched_rows"));
+        fetchedRowsNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DataViewUI.class, "LBL_fetched_rows"));
+        fetchedRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        toolbar.add(fetchedRowsNameLabel);
+        fetchedRowsLabel = new JXLabel();
+        toolbar.add(fetchedRowsLabel);
 
         toolbar.addSeparator(new Dimension(10, 10));
     }

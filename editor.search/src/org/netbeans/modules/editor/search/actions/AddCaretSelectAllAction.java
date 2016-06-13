@@ -130,7 +130,7 @@ public class AddCaretSelectAllAction extends AbstractEditorAction {
                                 newCarets.add(startPos);
                             }
 
-                            editorCaret.replaceCarets(newCarets);
+                            editorCaret.replaceCarets(newCarets, null); // TODO handle biases
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);

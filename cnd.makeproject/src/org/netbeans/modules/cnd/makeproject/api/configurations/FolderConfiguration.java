@@ -43,13 +43,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.configurations.FolderXMLCodec;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class FolderConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary  {
 
@@ -220,48 +216,5 @@ public class FolderConfiguration implements ConfigurationAuxObject, Configuratio
     @Override
     public void initialize() {
         // FIXUP: this doesn't make sense...
-    }
-
-    public Sheet getGeneralSheet() {
-        Sheet sheet = new Sheet();
-
-        Sheet.Set set = new Sheet.Set();
-        set.setName("FolderConfiguration"); // NOI18N
-        set.setDisplayName(getString("FolderConfigurationTxt"));
-        set.setShortDescription(getString("FolderConfigurationHint"));
-        set.put(new StringRONodeProp(getString("NameTxt"), folder.getDisplayName()));
-        sheet.put(set);
-
-        return sheet;
-    }
-
-    private static class StringRONodeProp extends PropertySupport<String> {
-
-        private final String value;
-
-        public StringRONodeProp(String name, String value) {
-            super(name, String.class, name, name, true, false);
-            this.value = value;
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public void setValue(String v) {
-        }
-    }
-//    public String toString() {
-//        return getFolder().getPath();
-//    }
-    private static ResourceBundle bundle = null;
-
-    private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(FolderConfiguration.class);
-        }
-        return bundle.getString(s);
     }
 }

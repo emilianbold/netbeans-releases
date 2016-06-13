@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.toolchain;
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 
@@ -50,6 +51,10 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
  * @author Alexander Simon
  */
 public abstract class CompilerFlavor {
+    
+    public static List<CompilerFlavor> getFlavors(int platform) {
+        return CompilerFlavorImpl.getFlavors(platform);
+    }
 
     public static CompilerFlavor getUnknown(int platform) {
         return CompilerFlavorImpl.getUnknown(platform);
@@ -88,8 +93,8 @@ public abstract class CompilerFlavor {
      * @return True if tool chain like to Windows MinGW compilers
      */
     public abstract boolean isMinGWCompiler();
-
     
+
     protected CompilerFlavor() {
         if (!getClass().equals(CompilerFlavorImpl.class)) {
             throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N

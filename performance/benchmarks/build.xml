@@ -48,8 +48,8 @@ made subject to such option by the copyright holder.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="compile">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <target name="compile" depends="grammar">
+        <javac srcdir="src:build/classes-generated" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <fileset dir="../../libs.junit4/external" includes="junit-*.jar"/>
             </classpath>
@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
     <target name="jars" depends="compile">
         <mkdir dir="lib"/>
         <jar jarfile="lib/performance-benchmarks.jar"
-        basedir="src"
+        basedir="build/classes"
         excludes="**/*.java,**/*.jjt,**/*.jj"
         compress="false"/>
     </target>
@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                 <include name="**/*.class"/>
             </fileset>
         </delete>
+        <delete dir="build"/>
         <delete dir="lib"/>
     </target>
   
@@ -81,29 +82,27 @@ made subject to such option by the copyright holder.
         <ant dir="test/perf" antfile="build.xml" />
     </target>
 	  
-    <!-- <target name="grammar" if="${javacchome}"> -->
     <target name="grammar" >
         <mkdir dir="src/org/netbeans/performance/benchmarks/bde/generated"/>
+        <mkdir dir="build"/>
+        <mkdir dir="build/classes"/>
+        <mkdir dir="build/classes-generated"/>
+        <mkdir dir="build/classes-generated/org/netbeans/performance/benchmarks/bde/generated"/>
+        <copy file="../external/javacc-3.2.jar" tofile="build/javacc.jar"/>
 
         <jjtree 
-        javacchome="${javacchome}" 
-        target="src/org/netbeans/performance/benchmarks/bde/BDEGrammar.jjt" 
-        outputdirectory="src/org/netbeans/performance/benchmarks/bde/generated"
+        javacchome="build"
+        target="src/org/netbeans/performance/benchmarks/bde/BDEGrammar.jjt"
+        outputdirectory="build/classes-generated/org/netbeans/performance/benchmarks/bde/generated"
         />
 
         <javacc 
-        javacchome="${javacchome}" 
-        target="src/org/netbeans/performance/benchmarks/bde/generated/BDEGrammar.jj" 
-        outputdirectory="src/org/netbeans/performance/benchmarks/bde/generated"
+        javacchome="build" 
+        target="build/classes-generated/org/netbeans/performance/benchmarks/bde/generated/BDEGrammar.jj" 
+        outputdirectory="build/classes-generated/org/netbeans/performance/benchmarks/bde/generated"
         />
 
-        <copy file="src/org/netbeans/performance/benchmarks/bde/override/SimpleNode.xjava" tofile="src/org/netbeans/performance/bde/generated/SimpleNode.java" overwrite="true" />
-
-        <antcall target="jars"/>
+        <copy file="src/org/netbeans/performance/benchmarks/bde/override/SimpleNode.xjava" tofile="build/classes-generated/org/netbeans/performance/benchmarks/bde/generated/SimpleNode.java" overwrite="true" />
     </target>
 
-    <target name="clean_grammar">
-        <delete dir="src/org/netbeans/performance/benchmarks/bde/generated"/>
-    </target>
-	
 </project>

@@ -11,10 +11,10 @@ class ClassName {}
 
 namespace Omg;
 
-use \Baz\Bat\ClassName as BBC;
+use \Baz\Bat\ClassName;
 use \Fom\Bom\ClassName as FBC;
 
-$a = new BBC();//HERE
-$b = new BBC();
+$a = new FBC();//HERE
+$b = new ClassName();
 $b = new FBC();
 ?>

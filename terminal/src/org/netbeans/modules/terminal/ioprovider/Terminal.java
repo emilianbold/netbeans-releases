@@ -48,6 +48,7 @@ import org.netbeans.modules.terminal.support.OpenInEditorAction;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -70,6 +71,8 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -126,11 +129,13 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.TermAdapter;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.actions.ActionFactory;
 import org.netbeans.modules.terminal.actions.PinTabAction;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
@@ -287,7 +292,7 @@ public final class Terminal extends JComponent {
     /**
      * Adapter to forward Term size change events as property changes.
      */
-    private class MyTermListener extends TermListener {
+    private class MyTermListener implements TermListener {
 
         private final static int MAX_TITLE_LENGTH = 35;
         private final static String PREFIX = "..."; // NOI18N
@@ -380,7 +385,7 @@ public final class Terminal extends JComponent {
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
 
-        term.addListener(new TermListener() {
+        term.addListener(new TermAdapter() {
             @Override
             public void cwdChanged(String aCwd) {
                 cwd = aCwd;
@@ -518,7 +523,7 @@ public final class Terminal extends JComponent {
                         } catch (NumberFormatException x) {
                         }
                     }
-                    OpenInEditorAction.post(FileUtil.toFileObject(new File(filePath)), lineNumber);
+                    OpenInEditorAction.post(filePath, lineNumber);
                 } 
                 else if (userObject instanceof OutputListener) {
                     OutputListener ol = (OutputListener) r.getUserObject();
@@ -681,6 +686,18 @@ public final class Terminal extends JComponent {
 
     public FindState getFindState() {
         return findState;
+    }
+
+    public void activateSearch() {
+        if (findState.isVisible()) {
+            return;
+        }
+        findState.setVisible(true);
+        Container ancestor = SwingUtilities.getAncestorOfClass(TerminalContainer.class, this);
+        if (ancestor != null && ancestor instanceof TerminalContainer) {
+            Task t = new Task.ActivateSearch((TerminalContainer) ancestor, this);
+            t.post();
+        }
     }
 
     public void changeFontSizeBy(final int d) {
@@ -912,7 +929,7 @@ public final class Terminal extends JComponent {
 	Task task = new Task.SetIcon(ioContainer, this, icon);
 	task.post();
     }
-        
+
     private final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/terminal/support/pin.png", false); //NOI18N
 
     public void pin(boolean newState) {
@@ -1056,9 +1073,8 @@ public final class Terminal extends JComponent {
 		    copyAction,
 		    pasteAction,
 		    null,
-		    /*
 		    findAction,
-		    null,*/
+		    null,
 		    wrapAction,
 		    largerFontAction,
 		    smallerFontAction,

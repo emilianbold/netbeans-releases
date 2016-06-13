@@ -43,10 +43,12 @@ package org.netbeans.api.editor.caret;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * A single caret inside {@link EditorCaret} handled internally by EditorCaret.
@@ -75,7 +77,11 @@ final class CaretItem implements Comparable {
     
     private Position dotPos;
 
+    private Position.Bias dotBias;
+
     private Position markPos;
+
+    private Position.Bias markBias;
 
     private Point magicCaretPosition;
     
@@ -96,10 +102,12 @@ final class CaretItem implements Comparable {
      */
     private int statusBits;
 
-    CaretItem(EditorCaret editorCaret, Position dotPos, Position markPos) {
+    CaretItem(EditorCaret editorCaret, Position dotPos, Position.Bias dotBias, Position markPos, Position.Bias markBias) {
         this.editorCaret = editorCaret;
         this.dotPos = dotPos;
+        this.dotBias = dotBias;
         this.markPos = markPos;
+        this.markBias = markBias;
         this.statusBits = UPDATE_CARET_BOUNDS; // Request visual bounds updating automatically
     }
     
@@ -146,6 +154,16 @@ final class CaretItem implements Comparable {
     Position getDotPosition() {
         return dotPos;
     }
+    
+    /**
+     * Get the bias of the dot either forward or backward bias.
+     *
+     * @return either forward or backward bias.
+     */
+    @NonNull
+    Position.Bias getDotBias() {
+        return dotBias;
+    }
 
     /**
      * Return either the same object like {@link #getDotPosition()} if there's
@@ -159,6 +177,16 @@ final class CaretItem implements Comparable {
     @CheckForNull
     Position getMarkPosition() {
         return markPos;
+    }
+
+    /**
+     * Get the bias of the mark either forward or backward bias.
+     *
+     * @return either forward or backward bias.
+     */
+    @NonNull
+    Position.Bias getMarkBias() {
+        return markBias;
     }
 
     int getDot() {
@@ -212,14 +240,21 @@ final class CaretItem implements Comparable {
      *
      * @param newCaretBounds non-null new bounds
      */
-    synchronized Rectangle setCaretBoundsWithRepaint(Rectangle newCaretBounds, JTextComponent c) {
+    synchronized Rectangle setCaretBoundsWithRepaint(Rectangle newCaretBounds, JTextComponent c, String logMessage, int logIndex) {
         Rectangle oldCaretBounds = this.caretBounds;
         boolean repaintOld = (oldCaretBounds != null && (this.statusBits & CARET_PAINTED) != 0);
         this.statusBits &= ~(CARET_PAINTED | UPDATE_CARET_BOUNDS);
+        boolean log = EditorCaret.LOG.isLoggable(Level.FINE);
         if (repaintOld) {
+            if (log) {
+                logRepaint(logMessage + "-setBoundsRepaint-repaintOld", logIndex, oldCaretBounds);
+            }
             c.repaint(oldCaretBounds); // First schedule repaint of the original bounds (even if new bounds will possibly be the same)
         }
         if (!repaintOld || !newCaretBounds.equals(oldCaretBounds)) {
+            if (log) {
+                logRepaint(logMessage + "-setBoundsRepaint-repaintNew", logIndex, newCaretBounds);
+            }
             c.repaint(newCaretBounds);
         }
         this.caretBounds = newCaretBounds;
@@ -239,17 +274,32 @@ final class CaretItem implements Comparable {
         return oldCaretBounds;
     }
     
+    synchronized Rectangle repaint(JTextComponent c, String logMessage, int logIndex) {
+        Rectangle bounds = this.caretBounds;
+        if (bounds != null) {
+            this.statusBits &= ~CARET_PAINTED;
+            if (EditorCaret.LOG.isLoggable(Level.FINE)) {
+                logRepaint(logMessage, logIndex, bounds);
+            }
+            c.repaint(bounds);
+        }
+        return bounds;
+    }
+
     /**
      * Repaint caret bounds if the caret is showing or do nothing
      * @param c
      * @return 
      */
-    synchronized Rectangle repaintIfShowing(JTextComponent c) {
+    synchronized Rectangle repaintIfShowing(JTextComponent c, String logMessage, int logIndex) {
         Rectangle bounds = this.caretBounds;
         if (bounds != null) {
             boolean repaint = (this.statusBits & CARET_PAINTED) != 0;
             if (repaint) {
                 this.statusBits &= ~CARET_PAINTED;
+                if (EditorCaret.LOG.isLoggable(Level.FINE)) {
+                    logRepaint(logMessage + "-repaintIfShowing", logIndex, bounds);
+                }
                 c.repaint(bounds);
             }
         }
@@ -307,25 +357,38 @@ final class CaretItem implements Comparable {
         return getDot() - ((CaretItem)o).getDot();
     }
 
+    void logRepaint(String logMessage, int itemIndex, Rectangle r) {
+        EditorCaret.LOG.fine(logMessage +
+                ((itemIndex != -1) ? ((itemIndex != -2) ? "[" + itemIndex + "]" : "LAST") : "") + // NOI18N
+                ": Rect=" + r2s(r) + ", item=" + this + "\n"); // NOI18N
+    }
+    
+    static String r2s(Rectangle r) {
+        return (r != null) ? "[x=" + r.x + ",y=" + r.y + ",w=" + r.width + ",h=" + r.height + "]" : null;
+    }
+
     @Override
     public synchronized String toString() {
         StringBuilder sb = new StringBuilder(100);
-        sb.append("dotPos=").append(dotPos).append(", markPos=").append(markPos).
-                append(", caretBounds=").append(caretBounds).
-                append(", magicCaretPosition=").append(magicCaretPosition); // NOI18N
+        sb.append("CI@").append(Integer.toHexString(System.identityHashCode(this))); // NOI18N
+        sb.append(", dot=").append(dotPos).append(", mark=").append(markPos); // NOI18N
         if ((statusBits & REMOVED_IN_TRANSACTION) != 0) {
-            sb.append(" REMOVED_IN_TRANSACTION");
+            sb.append(" REMOVED_IN_TRANSACTION"); // NOI18N
         }
         if ((statusBits & INFO_OBSOLETE) != 0) {
-            sb.append(" INFO_OBSOLETE");
+            sb.append(" INFO_OBSOLETE"); // NOI18N
         }
         if ((statusBits & UPDATE_CARET_BOUNDS) != 0) {
-            sb.append(" UPDATE_CARET_BOUNDS");
+            sb.append(" UPDATE_CARET_BOUNDS"); // NOI18N
         }
         if ((statusBits & CARET_PAINTED) != 0) {
-            sb.append(" CARET_PAINTED");
+            sb.append(" CARET_PAINTED"); // NOI18N
         }
         return sb.toString();
+    }
+    
+    public synchronized String toStringDetail() {
+        return toString() + ", bounds=" + r2s(caretBounds) + ", magicCP=" + magicCaretPosition; // NOI18N
     }
 
 }

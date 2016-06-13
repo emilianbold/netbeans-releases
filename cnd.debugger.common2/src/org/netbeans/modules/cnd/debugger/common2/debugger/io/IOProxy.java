@@ -252,13 +252,8 @@ public abstract class IOProxy {
                     }
                 }
                 ProcessBuilder pb = new ProcessBuilder(tool, file.getAbsolutePath()); // NOI18N
-                try {
-                    Process p = pb.start();
-                    // We need to wait for the end of this command, otherwise file may not be initialized
-                    p.waitFor();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                // We need to wait for the end of this command, otherwise file may not be initialized
+                ProcessUtils.execute(pb);
                 return file;
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
@@ -317,7 +312,7 @@ public abstract class IOProxy {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             try {
                 npb.setCommandLine("cat > " + inFilename.get()); // NOI18N
-                return npb.call().getOutputStream();
+                return ProcessUtils.ignoreProcessError(npb.call()).getOutputStream();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -329,7 +324,7 @@ public abstract class IOProxy {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             try {
                 npb.setCommandLine("cat " + outFilename.get()); // NOI18N
-                return npb.call().getInputStream();
+                return ProcessUtils.ignoreProcessError(npb.call()).getInputStream();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

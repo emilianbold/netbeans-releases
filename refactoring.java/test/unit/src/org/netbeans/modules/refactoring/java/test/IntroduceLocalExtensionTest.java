@@ -110,6 +110,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return 1;")
                 .append("\n").append("    }");
                 sb.append("\n").append("")
+                .append("\n").append("    public void setSomeMagicNumber(int number) {")
+                .append("\n").append("        this.someMagicNumber = number;")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")
                 .append("\n").append("     *")
@@ -990,13 +994,6 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.someMagicNumber;")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    /**")
-                .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
-                .append("\n").append("     */")
-                .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
-                .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
-                .append("\n").append("    }");
-                sb1.append("\n").append("")
                 .append("\n").append("    public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
                 .append("\n").append("    @Override public void forEach(Consumer<? super E> cnsmr) {")
@@ -1067,6 +1064,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public int size() {")
                 .append("\n").append("        return delegate.size();")
                 .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    public void setSomeMagicNumber(int number) { delegate.setSomeMagicNumber(number); } ");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")
@@ -1423,13 +1422,6 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public int getSomeMagicNumber() {")
                 .append("\n").append("        return delegate.someMagicNumber;")
                 .append("\n").append("    }");
-                sb1.append("\n").append("")
-                .append("\n").append("    /**")
-                .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
-                .append("\n").append("     */")
-                .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
-                .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
-                .append("\n").append("    }");
                 sb1.append("\n").append("public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
                 .append("\n").append("    @Override public void forEach(Consumer<? super E> cnsmr) {")
@@ -1500,6 +1492,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public int size() {")
                 .append("\n").append("        return delegate.size();")
                 .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    public void setSomeMagicNumber(int number) { delegate.setSomeMagicNumber(number); } ");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")

@@ -60,18 +60,19 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static junit.framework.TestCase.assertNotNull;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeActionProviderImpl;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.cnd.remote.HostValidatorProvider;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -231,7 +232,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
         if (! hosts.contains(execEnv)) {
             ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
-            HostValidatorImpl validator = new HostValidatorImpl(tcm);
+            HostValidator validator = HostValidatorProvider.getInstance(tcm);
             boolean ok = validator.validate(execEnv, true, new PrintWriter(System.out));
             if (ok) {
                 hosts.add(execEnv);
@@ -304,7 +305,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         };
         try {
             ((CndTestIOProvider) iop).addListener(listener);
-            MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+            MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
             makeActionProvider.invokeAction(command, Lookup.EMPTY);
             if (timeout <= 0) {
                 done.await();
@@ -315,7 +316,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
             //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
             RemoteSyncTestSupport.waitWorkerFinished(20);
-            assertTrue("build failed: on " + makeProject.getDevelopmentHostExecutionEnvironment()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+            assertTrue("build failed: on " + makeProject.getDevelopmentHost()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
         } finally {
             ((CndTestIOProvider) iop).removeListener(listener);
         }

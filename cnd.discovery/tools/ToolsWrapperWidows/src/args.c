@@ -49,79 +49,10 @@
 #define FILE_SEPARATOR_CHAR '/'
 #define FILE_SEPARATOR_STRING "/"
 #endif
-
+#define MAGIC "echo magic"
 extern char **environ;
-
-char* getPath() {
-    char** e = environ;
-    while (e) {
-        char *buf = malloc(strlen(*e) + 1);
-        strcpy(buf, *e);
-        char* eq = strchr(buf, '=');
-        if (eq != NULL) {
-            *eq = 0;
-            if (strcasecmp("PATH", buf) == 0) {
-                char* path = getenv(buf);
-                free(buf);
-                return path;
-            }
-        }
-        free(buf);
-        e++;
-    }
-    return NULL;
-}
-
-
-char* getBinaryPath(char* path) {
-    if (path[0] == FILE_SEPARATOR_CHAR) {
-        char *buf = malloc(strlen(path) + 1);
-        strcpy(buf, path);
-        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
-        *key = 0;
-        return buf;
-    } else if (path[1]==':') {
-        char *buf = malloc(strlen(path) + 1);
-        strcpy(buf, path);
-        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
-        if (key == NULL) {
-            free(buf);
-            return NULL;
-        }
-        *key = 0;
-        return buf;
-    } else if (strrchr(path, FILE_SEPARATOR_CHAR) != NULL) {
-        char *buf = malloc(MY_MAX_PATH + 1);
-        getcwd(buf, MY_MAX_PATH);
-        strcat(buf,FILE_SEPARATOR_STRING);
-        strcat(buf,path);
-        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
-        *key = 0;
-        return buf;
-    } else {
-        char* searchPath = getPath();
-        if (searchPath != NULL) {
-            char* filters = strdup(searchPath);
-            char* token;
-            for(token = strtok(filters, PATH_SEPARATOR); token; token = strtok(NULL, PATH_SEPARATOR)) {
-                char *buf = malloc(MY_MAX_PATH + 1);
-                strcpy(buf, token);
-                strcat(buf, FILE_SEPARATOR_STRING);
-                strcat(buf, path);
-                FILE *file = fopen(buf, "r");
-                if (file != NULL) {
-                    char* key = strrchr(buf,  FILE_SEPARATOR_CHAR);
-                    *key = 0;
-                    fclose(file);
-                    return buf;
-                }
-                free(buf);
-            }
-        }
-    }
-    return NULL;
-}
-
+#define COPY(x) x x x x x x x x x x
+char *real_binary = COPY(COPY(MAGIC));
 
 void prependPath(char* path) {
     char** e = environ;
@@ -166,89 +97,28 @@ void prependPath(char* path) {
 }
 
 int main(int argc, char**argv) {
-    const char* key = strrchr(argv[0], FILE_SEPARATOR_CHAR);
-    if (key == NULL) {
-        key = argv[0];
-    } else {
-        key++;
+    char *pattern = MAGIC;
+    char *place = real_binary;
+    int changed = 0;
+    while(*pattern) {
+        if (*place != *pattern) {
+            changed = 1;
+            break;
+        }
+        pattern++;
+        place++;
     }
-#ifdef WINDOWS
-    char* dot = strrchr(key, '.');
-    if (dot != NULL) {
-        char *buf = malloc(strlen(key) + 1);
-        strcpy(buf, key);
-        dot = strrchr(buf, '.');
-        *dot = 0;
-        key = buf;
+    if (!changed) {
+        printf("Real compiler is not set\n");
+        return -1;
     }
-#endif
 
-    char* tool = NULL;
-    char* tool_path = NULL;
-    if (strcmp(key, "cc") == 0 ||
-            strcmp(key, "xgcc") == 0 ||
-            strcmp(key, "clang") == 0 ||
-            strcmp(key, "icc") == 0 ||
-            strcmp(key, "gcc") == 0) {
-        tool_path = getBinaryPath(argv[0]);
-        if (tool_path != NULL) {
-            char *line = malloc(MY_MAX_PATH + 1);
-            strcat(tool_path,"/compiler.properties");
-            FILE* prop = fopen(tool_path, "r");
-            if (prop != NULL) {
-                while (fgets(line, MY_MAX_PATH, prop)) {
-                    if (line[0] == 'C' && line[1] == '=') {
-                        tool = line+2;
-                        char* eol = strrchr(tool, '\n');
-                        if (eol != NULL) {
-                            *eol = 0;
-                        }
-                        break;
-                    }
-                }
-                fclose(prop);
-            }
-        }
-    } else if (strcmp(key, "CC") == 0 ||
-            strcmp(key, "c++") == 0 ||
-            strcmp(key, "clang++") == 0 ||
-            strcmp(key, "icpc") == 0 ||
-            strcmp(key, "cl") == 0 ||
-            strcmp(key, "g++") == 0) {
-        tool_path = getBinaryPath(argv[0]);
-        if (tool_path != NULL) {
-            char *line = malloc(MY_MAX_PATH + 1);
-            strcat(tool_path,FILE_SEPARATOR_STRING);
-            strcat(tool_path,"compiler.properties");
-            FILE* prop = fopen(tool_path, "r");
-            if (prop != NULL) {
-                while (fgets(line, MY_MAX_PATH, prop)) {
-                    if (line[0] == 'C' && line[1] == 'P' && line[2] == 'P' && line[3] == '=') {
-                        tool = line+4;
-                        char* eol = strrchr(tool, '\n');
-                        if (eol != NULL) {
-                            *eol = 0;
-                        }
-                        break;
-                    }
-                }
-                fclose(prop);
-            }
-        }
-    } else {
-        printf("Unsupported %s compiler", key);
-        return -1;
-    }
-    if (tool == NULL) {
-        printf("Set path to %s compiler compiler.properties file in folder %s", key, tool_path);
-        return -1;
-    }
-    argv[0] = tool;
+    argv[0] = real_binary;
     char* log = getenv("__CND_BUILD_LOG__");
     if (log != NULL) {
         FILE* flog = fopen(log, "a");
         if (flog != NULL) {
-            fprintf(flog, "called: %s\n", tool);
+            fprintf(flog, "called: %s\n", real_binary);
             char *buf = malloc(MY_MAX_PATH + 1);
             getcwd(buf, MY_MAX_PATH);
             fprintf(flog, "\t%s\n", buf);
@@ -261,9 +131,9 @@ int main(int argc, char**argv) {
             fclose(flog);
         }
     }
-    prependPath(tool);
+    prependPath(real_binary);
 #ifdef MINGW
-    return spawnv(P_WAIT, tool, argv);
+    return spawnv(P_WAIT, real_binary, argv);
 #else
     pid_t pid;
     int status;

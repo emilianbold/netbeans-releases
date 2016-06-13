@@ -43,6 +43,7 @@
 package org.netbeans.modules.debugger.jpda.truffle.source;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 
@@ -64,11 +65,12 @@ final class SourceFilesCache {
         return DEFAULT;
     }
     
-    public URL getSourceFile(String name, long hash, String content) throws IOException {
+    public URL getSourceFile(String name, long hash, URI uri, String content) throws IOException {
         String path = Long.toHexString(hash) + '/' + name;
         FileObject fo = fs.findResource(path);
         if (fo == null) {
             fo = fs.createFile(path, content);
+            fo.setAttribute(Source.ATTR_URI, uri);
         }
         return fo.toURL();
     }

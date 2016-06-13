@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 @ActionRegistration(displayName = "#CTL_NewTab", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "NewTabAction"), //NOI18N
-    @ActionReference(path = "Shortcuts", name = "CS-T") //NOI18N
+    @ActionReference(path = "Shortcuts", name = "DAS-T") //NOI18N
 })
 public class NewTabAction extends TerminalAction {
 

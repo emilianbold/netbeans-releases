@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.Exceptions;

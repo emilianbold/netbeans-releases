@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.twig.editor.lexer;
@@ -45,6 +45,7 @@ package org.netbeans.modules.php.twig.editor.lexer;
 import java.util.Objects;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.modules.web.common.api.ByteStack;
 
 @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
@@ -76,7 +77,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %{
 
-    private TwigStateStack stack = new TwigStateStack();
+    private ByteStack stack = new ByteStack();
     private LexerInput input;
     private Lexing lexing;
     private boolean probablyInDString;
@@ -107,7 +108,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public static final class LexerState  {
-        final TwigStateStack stack;
+        final ByteStack stack;
         /** the current state of the DFA */
         final int zzState;
         /** the current lexical state */
@@ -116,7 +117,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         private final boolean probablyInDString;
         private final boolean probablyInSString;
 
-        LexerState(TwigStateStack stack, int zzState, int zzLexicalState, Lexing lexing, boolean probablyInDString, boolean probablyInSString) {
+        LexerState(ByteStack stack, int zzState, int zzLexicalState, Lexing lexing, boolean probablyInDString, boolean probablyInSString) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
@@ -169,7 +170,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, lexing, probablyInDString, probablyInSString);
+        return new LexerState(stack.copyOf(), zzState, zzLexicalState, lexing, probablyInDString, probablyInSString);
     }
 
     public void setState(LexerState state) {
@@ -186,11 +187,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     protected void popState() {
-        yybegin(stack.popStack());
+        yybegin(stack.pop());
     }
 
     protected void pushState(final int state) {
-        stack.pushStack(getZZLexicalState());
+        stack.push(getZZLexicalState());
         yybegin(state);
     }
 

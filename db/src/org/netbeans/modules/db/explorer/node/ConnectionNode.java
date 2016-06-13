@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
@@ -82,6 +84,8 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class ConnectionNode extends BaseNode implements PropertyChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(ConnectionNode.class.getName());
     
     private static final String CONNECTEDICONBASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
@@ -193,11 +197,15 @@ public class ConnectionNode extends BaseNode implements PropertyChangeListener {
     }
 
     private void updateLocalProperties() {
+        String displayName = null;
+        
         try {
             clearProperties();
             boolean connected = connection.isConnected();
-
-            addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, connection.getDisplayName());
+            
+            displayName = connection.getDisplayName();
+            
+            addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, displayName);
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
             addProperty(NBDRIVER, NBDRIVERDESC, String.class, !connected, connection.getDriverName());
             addProperty(DRIVER, DRIVERDESC, String.class, !connected, connection.getDriver());
@@ -330,7 +338,7 @@ public class ConnectionNode extends BaseNode implements PropertyChangeListener {
                 addProperty(DefaultAdaptor.PROP_CATALOGS_SEPARATOR, null, String.class, false, md.getCatalogSeparator());
             }
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, "Failed to update properties of ConnectionNode '" + displayName + "'", e);
         }
     }
 

@@ -451,7 +451,8 @@ public final class EditorFindSupport {
         if (eCaret instanceof EditorCaret) {
             EditorCaret caret = (EditorCaret) eCaret;
             try {
-                caret.addCaret(c.getDocument().createPosition(end), c.getDocument().createPosition(start));
+                caret.addCaret(c.getDocument().createPosition(end), Position.Bias.Forward,
+                    c.getDocument().createPosition(start), Position.Bias.Forward);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }

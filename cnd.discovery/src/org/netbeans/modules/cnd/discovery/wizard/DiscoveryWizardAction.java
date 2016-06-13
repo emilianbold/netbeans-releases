@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -114,7 +115,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         wizardDescriptor.setRootFolder(findSourceRoot(project));
         wizardDescriptor.setBuildResult(findBuildResult(project));
         wizardDescriptor.setFileSystem(findBuildResultFileSystem(project));
-        boolean resolveSymbolic = CommonUtilities.resolveSymbolicLinks();
+        boolean resolveSymbolic = MakeProjectOptions.getResolveSymbolicLinks();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (cdp != null && cdp.gotDescriptor()) {
             MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();

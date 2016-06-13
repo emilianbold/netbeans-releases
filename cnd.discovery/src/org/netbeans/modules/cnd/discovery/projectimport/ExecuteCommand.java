@@ -62,11 +62,10 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.*;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
@@ -153,7 +152,7 @@ public class ExecuteCommand {
             }
         }
         Map<String, String> map = new HashMap<>();
-        expandMacros(hostInfo, BuildSupport.MAKE_MACRO, PredefinedToolKind.MakeTool, map, "make"); //NOI18N
+        expandMacros(hostInfo, MakeArtifact.MAKE_MACRO, PredefinedToolKind.MakeTool, map, "make"); //NOI18N
         if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
             buldTraceSupport.modifyEnv(map);
         }

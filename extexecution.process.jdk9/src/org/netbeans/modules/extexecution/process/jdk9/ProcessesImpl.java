@@ -64,28 +64,28 @@ public class ProcessesImpl implements ProcessesImplementation {
 
     private static final Method PROCESS_TO_HANDLE;
 
-    private static final Method PROCESS_HANDLE_ALL_CHILDREN;
+    private static final Method PROCESS_HANDLE_DESCENDANTS;
 
     private static final Method PROCESS_HANDLE_DESTROY;
 
     static {
         Method toHandle = null;
-        Method allChildren = null;
+        Method descendants = null;
         Method destroy = null;
         try {
             toHandle = Process.class.getDeclaredMethod("toHandle", new Class[]{}); // NOI18N
             if (toHandle != null) {
                 Class processHandle = Class.forName("java.lang.ProcessHandle"); // NOI18N
-                allChildren = processHandle.getDeclaredMethod("allChildren", new Class[]{}); // NOI18N
+                descendants = processHandle.getDeclaredMethod("descendants", new Class[]{}); // NOI18N
                 destroy = processHandle.getDeclaredMethod("destroy", new Class[]{}); // NOI18N
             }
         } catch (NoClassDefFoundError | Exception ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
 
-        ENABLED = toHandle != null && allChildren != null && destroy != null;
+        ENABLED = toHandle != null && descendants != null && destroy != null;
         PROCESS_TO_HANDLE = toHandle;
-        PROCESS_HANDLE_ALL_CHILDREN = allChildren;
+        PROCESS_HANDLE_DESCENDANTS = descendants;
         PROCESS_HANDLE_DESTROY = destroy;
     }
 
@@ -97,7 +97,7 @@ public class ProcessesImpl implements ProcessesImplementation {
 
         try {
             Object handle = PROCESS_TO_HANDLE.invoke(process, (Object[]) null);
-            try (Stream s = (Stream) PROCESS_HANDLE_ALL_CHILDREN.invoke(handle, (Object[]) null)) {
+            try (Stream s = (Stream) PROCESS_HANDLE_DESCENDANTS.invoke(handle, (Object[]) null)) {
                 destroy(handle);
                 s.forEach(ch ->  destroy(ch));
             }

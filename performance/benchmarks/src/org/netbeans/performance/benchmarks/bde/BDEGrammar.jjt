@@ -50,8 +50,8 @@ options {
 }
 
 PARSER_BEGIN(BDEParser)
-package org.netbeans.performance.bde.generated;
-import org.netbeans.performance.bde.TestSpecBuilder;
+package org.netbeans.performance.benchmarks.bde.generated;
+import org.netbeans.performance.benchmarks.bde.TestSpecBuilder;
 
 public class BDEParser {
 

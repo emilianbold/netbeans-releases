@@ -42,56 +42,30 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+//import javax.swing.DefaultComboBoxModel;
+//import javax.swing.DefaultListCellRenderer;
+//import javax.swing.JComboBox;
+//import javax.swing.JLabel;
+//import javax.swing.JList;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+//import org.openide.DialogDescriptor;
+//import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class SyncUtils {
+final class SyncUtils {
     
-    public static void arrangeComboBox(JComboBox cbSyncMode, ExecutionEnvironment execEnv) {
-
-        List<RemoteSyncFactory> factories = new ArrayList<>();
-        for (RemoteSyncFactory factory : RemoteSyncFactory.getFactories()) {
-            if (factory.isApplicable(execEnv)) {
-                factories.add(factory);
-            }
-        }
-
-        cbSyncMode.setModel(new DefaultComboBoxModel(factories.toArray()));
-        cbSyncMode.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                RemoteSyncFactory factory = (RemoteSyncFactory) value;
-                if (factory != null) {
-                    label.setText(factory.getDisplayName());
-                    label.setToolTipText(factory.getDescription());
-                }
-                return label;
-            }
-        });
-    }
-
+    
     /*package*/ static boolean isDoubleRemote(ExecutionEnvironment buildEnvironment, FileSystem sourceFileSystem) {
         ExecutionEnvironment sourceExecutionEnvironment = FileSystemProvider.getExecutionEnvironment(sourceFileSystem);
         if (sourceExecutionEnvironment.isRemote()) {
@@ -100,11 +74,7 @@ public class SyncUtils {
         return false;
     }
 
-    static void warnDoubleRemote(ExecutionEnvironment buildEnv, FileSystem sourceFileSystem) {
-        ExecutionEnvironment sourceEnv = FileSystemProvider.getExecutionEnvironment(sourceFileSystem);
-        String message = NbBundle.getMessage(SyncUtils.class, "ErrorDoubleRemote", buildEnv, sourceFileSystem);
-        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(message, DialogDescriptor.ERROR_MESSAGE));
-    }
+  
 
     public static List<File> toFiles(List<FSPath> paths) {
         List<File> l = new ArrayList<>(paths.size());

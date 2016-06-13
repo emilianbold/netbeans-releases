@@ -41,6 +41,8 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList\Dao;
+
 /**
  * Search criteria for {@link TodoDao}.
  * <p>
@@ -59,7 +61,7 @@ final class TodoSearchCriteria {
     }
 
     /**
-     * @return TodoSearchCriteria
+     * @return this
      */
     public function setStatus($status) {
         $this->status = $status;

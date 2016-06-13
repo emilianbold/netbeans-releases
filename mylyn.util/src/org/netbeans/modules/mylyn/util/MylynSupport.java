@@ -878,7 +878,7 @@ public class MylynSupport {
         taskList.notifyElementChanged(task);
     }
 
-    void notifyCredentialsChanged(TaskRepository repository) {
+    public void notifyCredentialsChanged(TaskRepository repository) {
         taskRepositoryManager.notifyRepositorySettingsChanged(repository, new TaskRepositoryDelta(TaskRepositoryDelta.Type.CREDENTIALS));
     }
 }

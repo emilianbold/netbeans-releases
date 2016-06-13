@@ -66,7 +66,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -77,7 +76,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.support.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -99,20 +98,17 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Platform;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -223,15 +219,7 @@ public class ConfigurationMakefileWriter {
             if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 new Exception(msg).printStackTrace(System.err);
             } else {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
-                        DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(msg), title, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
-                        DialogDisplayer.getDefault().notify(nd);
-                    }
-                });
+                ConfirmSupport.getConfirmPlatformMismatchFactory().create(title, msg);
             }
         }
         return ok;
@@ -694,12 +682,12 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
+        bw.write("\t\""+MakeArtifact.MAKE_MACRO+"\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
         bw.write(MakeConfiguration.CND_BUILDDIR_MACRO+"/" + conf.getName() + "/%.o: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
+        bw.write("\t"+MakeArtifact.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -707,7 +695,7 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" " // NOI18N
+        bw.write("\t\""+MakeArtifact.MAKE_MACRO+"\" " // NOI18N
                 + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
                 + output + "\n"); // NOI18N
 
@@ -1538,7 +1526,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
+            bw.write("\t"+MakeArtifact.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);

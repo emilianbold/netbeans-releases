@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 

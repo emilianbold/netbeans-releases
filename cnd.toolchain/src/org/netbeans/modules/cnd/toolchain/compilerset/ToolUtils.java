@@ -311,33 +311,7 @@ public final class ToolUtils {
         return null;
     }
 
-    /** Same as the C library basename function: given a path, return
-     * its filename.
-     */
-    public static String getBaseName(String path) {
-        int sep = path.lastIndexOf('/');
-        if (sep == -1) {
-            sep = path.lastIndexOf('\\');
-        }
-        if (sep != -1) {
-            return path.substring(sep + 1);
-        }
-        return path;
-    }
 
-    public static boolean isPathAbsolute(String path) {
-        if (path == null || path.length() == 0) {
-            return false;
-        } else if (path.charAt(0) == '/') {
-            return true;
-        } else if (path.charAt(0) == '\\') {
-            return true;
-        } else if (path.indexOf(':') > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public static String replaceOddCharacters(String s, char replaceChar) {
         int n = s.length();

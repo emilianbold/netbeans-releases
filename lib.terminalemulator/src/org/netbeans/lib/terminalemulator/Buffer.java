@@ -299,8 +299,7 @@ class Buffer {
     }
 
     public BExtent find_line(BCoord coord) {
-        WordDelineator newLine = new WordDelineator();
-        newLine.setWordDelimiters("\n"); //NOI18N
+        WordDelineator newLine = WordDelineator.createNewlineDelineator();
         return find_word(newLine, coord);
     }
 

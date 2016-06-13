@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<bindings 
+<bindings
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-    xmlns="http://java.sun.com/xml/ns/jaxws">    
+    xmlns="http://java.sun.com/xml/ns/jaxws">
 
     <bindings node="wsdl:definitions" xmlns:jws="http://java.sun.com/xml/ns/javaee">
         <jws:handler-chains>
             <jws:handler-chain>
-                
+
             </jws:handler-chain>
         </jws:handler-chains>
     </bindings>

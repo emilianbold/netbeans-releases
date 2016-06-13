@@ -50,7 +50,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -67,13 +66,12 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -160,7 +158,7 @@ public class ProjectUtilities {
 
                 if (dobj != null) {
                     FileObject fobj = dobj.getPrimaryFile();
-                    Project owner = FileOwnerQuery.getOwner(fobj);
+                    Project owner = ProjectConvertors.getNonConvertorOwner(fobj);
                     ERR.log(Level.FINER, "Found {0} owned by {1} in {2} of {3}", new Object[] {fobj, owner, tc.getName(), tc.getClass()});
 
                     if (listOfProjects.contains(owner)) {
@@ -188,7 +186,7 @@ public class ProjectUtilities {
             if (notifyUI) {
                 for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
                     FileObject fobj = dobj.getPrimaryFile();
-                    Project owner = FileOwnerQuery.getOwner(fobj);
+                    Project owner = ProjectConvertors.getNonConvertorOwner(fobj);
 
                     if (listOfProjects.contains(owner) &&
                         !openFiles.contains(dobj)) {
@@ -602,7 +600,7 @@ public class ProjectUtilities {
             }
             
             //#109676
-            if (FileOwnerQuery.getOwner(fo) != p) {
+            if (ProjectConvertors.getNonConvertorOwner(fo) != p) {
                 ERR.log(Level.FINE, "File {0} doesn''t belong to project at {1}", new Object[] {url, p.getProjectDirectory().getPath()});
                 continue;
             }

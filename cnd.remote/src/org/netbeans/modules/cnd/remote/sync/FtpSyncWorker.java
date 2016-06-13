@@ -52,18 +52,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressHandle;;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteLogger;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import static org.netbeans.modules.cnd.remote.sync.FileState.COPIED;
 import static org.netbeans.modules.cnd.remote.sync.FileState.ERROR;
 import static org.netbeans.modules.cnd.remote.sync.FileState.INITIAL;
 import static org.netbeans.modules.cnd.remote.sync.FileState.TOUCHED;
 import static org.netbeans.modules.cnd.remote.sync.FileState.UNCONTROLLED;
+import org.netbeans.modules.cnd.spi.remote.setup.support.RemoteSyncNotifier;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -754,7 +754,7 @@ import org.openide.util.RequestProcessor;
     public boolean startup(Map<String, String> env2add) {
 
         if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
-            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            RemoteSyncNotifier.getInstance().warnDoubleRemote(executionEnvironment, fileSystem);
             return false;
         }
 
@@ -772,7 +772,7 @@ import org.openide.util.RequestProcessor;
         cancelled = false;
         //String title = NbBundle.getMessage(getClass(), "PROGRESS_UPLOADING", ServerList.get(executionEnvironment).getDisplayName());
         String title = "Uploading to " + ServerList.get(executionEnvironment).getDisplayName(); //NOI18N FIXUP
-        progressHandle = ProgressHandleFactory.createHandle(title, this);
+        progressHandle = ProgressHandle.createHandle(title, this);
         progressHandle.start();
         try {
             if (out != null) {

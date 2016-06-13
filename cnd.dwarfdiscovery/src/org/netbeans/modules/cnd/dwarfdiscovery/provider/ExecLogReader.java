@@ -57,7 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.builds.ImportUtils;
+import org.netbeans.modules.cnd.api.utils.ImportUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;

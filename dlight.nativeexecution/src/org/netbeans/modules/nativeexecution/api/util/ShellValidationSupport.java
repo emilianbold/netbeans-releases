@@ -114,65 +114,58 @@ public final class ShellValidationSupport {
             validationWarnings.add(NbBundle.getMessage(ShellValidationSupport.class, "ShellValidationSupport.ValidationWarning.Cygwin64OnJDK32")); // NOI18N
         }
 
-        try {
-            File mount_util = new File(shell.bindir, "mount.exe"); // NOI18N
-            File cygpath_util = new File(shell.bindir, "cygpath.exe"); // NOI18N
+        File mount_util = new File(shell.bindir, "mount.exe"); // NOI18N
+        File cygpath_util = new File(shell.bindir, "cygpath.exe"); // NOI18N
 
-            if (!mount_util.exists()) {
-                validationErrors.add(loc("ShellValidationSupport.ValidationError.fileNotFound", mount_util.getAbsolutePath())); // NOI18N
-            }
+        if (!mount_util.exists()) {
+            validationErrors.add(loc("ShellValidationSupport.ValidationError.fileNotFound", mount_util.getAbsolutePath())); // NOI18N
+        }
 
-            if (!cygpath_util.exists()) {
-                validationErrors.add(loc("ShellValidationSupport.ValidationError.fileNotFound", cygpath_util.getAbsolutePath())); // NOI18N
-            }
+        if (!cygpath_util.exists()) {
+            validationErrors.add(loc("ShellValidationSupport.ValidationError.fileNotFound", cygpath_util.getAbsolutePath())); // NOI18N
+        }
 
-            ProcessBuilder pb = new ProcessBuilder(mount_util.getAbsolutePath());
-            Process p = pb.start();
-            List<String> output = ProcessUtils.readProcessOutput(p);
-            int res = p.waitFor();
+        ProcessBuilder pb = new ProcessBuilder(mount_util.getAbsolutePath());
+        ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(pb);
+        List<String> output = exitStatus.getOutputLines();
+        if (!exitStatus.isOK()) {
+            validationErrors.add(loc("ShellValidationSupport.ValidationError.validationFailed", shell.bindir.getAbsolutePath())); // NOI18N
+        }
 
-            if (res != 0) {
-                validationErrors.add(loc("ShellValidationSupport.ValidationError.validationFailed", shell.bindir.getAbsolutePath())); // NOI18N
-            }
+        Pattern pattern = Pattern.compile("(.*) on (/.*) type .*"); // NOI18N
 
-            Pattern pattern = Pattern.compile("(.*) on (/.*) type .*"); // NOI18N
+        boolean rootIsMounted = false;
 
-            boolean rootIsMounted = false;
+        for (String line : output) {
+            Matcher m = pattern.matcher(line);
+            if (m.matches()) {
+                String winpath = m.group(1);
+                File winfile = new File(winpath);
+                String cygpath = m.group(2);
 
-            for (String line : output) {
-                Matcher m = pattern.matcher(line);
-                if (m.matches()) {
-                    String winpath = m.group(1);
-                    File winfile = new File(winpath);
-                    String cygpath = m.group(2);
+                if (cygpath.equals("/")) { // NOI18N
+                    rootIsMounted = true;
+                }
 
-                    if (cygpath.equals("/")) { // NOI18N
-                        rootIsMounted = true;
-                    }
+                if (!winfile.exists()) {
+                    validationErrors.add(loc("ShellValidationSupport.ValidationError.absentMountPoint", winpath, cygpath)); // NOI18N
+                    continue;
+                }
 
-                    if (!winfile.exists()) {
-                        validationErrors.add(loc("ShellValidationSupport.ValidationError.absentMountPoint", winpath, cygpath)); // NOI18N
+                if (cygpath.startsWith("/usr")) { // NOI18N
+                    String p1 = (winfile.getParentFile().getAbsolutePath() + '\\').toLowerCase();
+                    String p2 = (shell.bindir.getParentFile().getAbsolutePath() + '\\').toLowerCase();
+
+                    if (!p2.startsWith(p1)) {
+                        validationWarnings.add(loc("ShellValidationSupport.ValidationError.wrongMountPoint", winpath, cygpath)); // NOI18N
                         continue;
-                    }
-
-                    if (cygpath.startsWith("/usr")) { // NOI18N
-                        String p1 = (winfile.getParentFile().getAbsolutePath() + '\\').toLowerCase();
-                        String p2 = (shell.bindir.getParentFile().getAbsolutePath() + '\\').toLowerCase();
-
-                        if (!p2.startsWith(p1)) {
-                            validationWarnings.add(loc("ShellValidationSupport.ValidationError.wrongMountPoint", winpath, cygpath)); // NOI18N
-                            continue;
-                        }
                     }
                 }
             }
+        }
 
-            if (!rootIsMounted) {
-                validationErrors.add(loc("ShellValidationSupport.ValidationError.rootIsNotMounted")); // NOI18N
-            }
-
-        } catch (InterruptedException ex) {
-        } catch (IOException ex) {
+        if (!rootIsMounted) {
+            validationErrors.add(loc("ShellValidationSupport.ValidationError.rootIsNotMounted")); // NOI18N
         }
 
         return new ShellValidationStatus(shell, validationErrors, validationWarnings);

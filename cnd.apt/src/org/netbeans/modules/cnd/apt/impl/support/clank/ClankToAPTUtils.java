@@ -752,13 +752,15 @@ public final class ClankToAPTUtils {
 
             // Annotation for module import translated from #include etc.
             case tok.TokenKind.annot_module_include:
-            /*3.6 NEW*/ case tok.TokenKind.annot_module_begin:
-            /*3.6 NEW*/ case tok.TokenKind.annot_module_end:
+/*3.6 NEW*/ case tok.TokenKind.annot_module_begin:
+/*3.6 NEW*/ case tok.TokenKind.annot_module_end:
             case tok.TokenKind.NUM_TOKENS:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
             //</editor-fold>
         }
-        assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+        assert false : "non converted token [" + clankTokenKind + "] " + Native.$toString(tok.getTokenName(clankTokenKind)) + 
+                " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "] " + // NOI18N
+                (clankTokenKind > 0 ? ("add case after " + Native.$toString(tok.getTokenName((short)(clankTokenKind-1)))) : ""); // NOI18N
         return APTTokenTypes.EOF;
     }
 

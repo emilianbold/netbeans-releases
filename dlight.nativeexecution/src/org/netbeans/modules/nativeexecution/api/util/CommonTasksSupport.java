@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -177,6 +179,8 @@ public final class CommonTasksSupport {
                     throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " count=" + cnt + ": " + err); // NOI18N
                 }
             }
+            
+            Future<List<String>> err = ProcessUtils.readProcessErrorAsync(process);
 
             int start = 0;
             int rest = buffer.length;
@@ -202,8 +206,15 @@ public final class CommonTasksSupport {
             }
 
             if (rc != 0) {
-                String err = ProcessUtils.readProcessErrorLine(process);
-                throw new IOException("Error while reading " + srcFileName + ": " + err); // NOI18N
+                StringBuilder sb = new StringBuilder("Error while reading ").append(srcFileName).append(": "); // NOI18N
+                try {
+                    for (String e : err.get()) {
+                        sb.append(e).append(' '); //it's very unlikely that the message is multy line
+                    }
+                } catch (InterruptedException | ExecutionException ex) {
+                    ex.printStackTrace(System.err);
+                }
+                throw new IOException(sb.toString());
             }
         } catch (IOException ex) {
             if (error != null) {
@@ -381,19 +392,18 @@ public final class CommonTasksSupport {
         public Integer call() throws Exception {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(cmd).setArguments(args);
-            Process p = npb.call();
-
-            int exitStatus = p.waitFor();
-
-            if (exitStatus != 0) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+            if (res.isOK()) {
                 if (error != null) {
-                    ProcessUtils.writeError(error, p);
+                    for (String errLine : res.getErrorLines()) {
+                        error.write(errLine);
+                    }
                 } else {
-                    ProcessUtils.logError(Level.FINE, log, p);
+                    ProcessUtils.logError(Level.FINE, log, res);
                 }
             }
 
-            return exitStatus;
+            return res.exitCode;
         }
     }
 

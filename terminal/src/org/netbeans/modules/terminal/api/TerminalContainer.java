@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.terminal.api;
 
+import java.awt.Component;
+import java.util.List;
 import javax.swing.JComponent;
 
 import org.openide.windows.IOContainer;
@@ -54,7 +56,7 @@ import org.netbeans.modules.terminal.iocontainer.TerminalContainerMuxable;
  * {@link org.openide.windows.IOContainer} of "Terminal"s.
  * <p>
  * Use {@link #create} to get one.
- * <p> 
+ * <p>
  * Recipe for enhancing a <code>TopComponent</code> ...
  * <ul>
  * <li>
@@ -62,53 +64,56 @@ import org.netbeans.modules.terminal.iocontainer.TerminalContainerMuxable;
  * <li>
  * Change it's Layout to be BorderLayout.
  * <li>
- * Optionally have it implement {@link org.netbeans.modules.terminal.api.IOTopComponent}.
+ * Optionally have it implement
+ * {@link org.netbeans.modules.terminal.api.IOTopComponent}.
  * <li>
  * Add the following code to it:
  * <pre>
-    private TerminalContainer tc;
-
-    public IOContainer ioContainer() {
-        return tc.ioContainer();
-    }
-
-    public TopComponent topComponent() {
-        return this;
-    }
-
-    private void initComponents2() {
-        tc = TerminalContainer.create(this, getName());
-        add(tc);
-    }
+ * private TerminalContainer tc;
+ *
+ * public IOContainer ioContainer() {
+ * return tc.ioContainer();
+ * }
+ *
+ * public TopComponent topComponent() {
+ * return this;
+ * }
+ *
+ * private void initComponents2() {
+ * tc = TerminalContainer.create(this, getName());
+ * add(tc);
+ * }
  * </pre>
  * <li>
- * Call <code>initComponents2()</code> at the end of the constructor of
- * your TopComponent.
+ * Call <code>initComponents2()</code> at the end of the constructor of your
+ * TopComponent.
  * <li>
- * Delegate <code>componentActivated()</code> and <code>componentDeactivated()</code>
- * from the <code>TopComponent</code> to the <code>TerminalContainer</code> as follows:
+ * Delegate <code>componentActivated()</code> and
+ * <code>componentDeactivated()</code> from the <code>TopComponent</code> to the
+ * <code>TerminalContainer</code> as follows:
  * <pre>
-    protected void componentActivated() {
-        super.componentActivated();
-        tc.componentActivated();
-    }
-
-    protected void componentDeactivated() {
-        super.componentDeactivated();
-        tc.componentDeactivated();
-    }
+ * protected void componentActivated() {
+ * super.componentActivated();
+ * tc.componentActivated();
+ * }
+ *
+ * protected void componentDeactivated() {
+ * super.componentDeactivated();
+ * tc.componentDeactivated();
+ * }
  * </pre>
  * </ul>
+ *
  * @author ivan
  */
 public abstract class TerminalContainer extends JComponent {
 
     public static TerminalContainer create(TopComponent tc, String name) {
-	return new TerminalContainerTabbed(tc, name);
+        return new TerminalContainerTabbed(tc, name);
     }
 
     public static TerminalContainer createMuxable(TopComponent tc, String name) {
-	return new TerminalContainerMuxable(tc, name);
+        return new TerminalContainerMuxable(tc, name);
     }
 
     public abstract IOContainer ioContainer();
@@ -122,4 +127,14 @@ public abstract class TerminalContainer extends JComponent {
      * Handle delegation from containing TopComponent.
      */
     public abstract void componentDeactivated();
+
+    /**
+     * Activate search bar in component
+     */
+    public abstract void activateSearch(JComponent component);
+
+    /**
+     * @return all active tab components.
+     */
+    public abstract List<? extends Component> getAllTabs();
 }

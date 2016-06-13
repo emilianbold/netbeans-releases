@@ -43,6 +43,8 @@
 package org.netbeans.modules.debugger.jpda.truffle.frames;
 
 import com.sun.jdi.StringReference;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -69,6 +71,7 @@ public class TruffleStackFrame {
     private final int    sourceId;
     private final String sourceName;
     private final String sourcePath;
+    private final URI    sourceURI;
     private final int    sourceLine;
     private final StringReference codeRef;
     private TruffleSlotVariable[] vars;
@@ -117,6 +120,13 @@ public class TruffleStackFrame {
             i2 = frameDefinition.indexOf('\n', i1);
             sourcePath = frameDefinition.substring(i1, i2);
             i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            try {
+                sourceURI = new URI(frameDefinition.substring(i1, i2));
+            } catch (URISyntaxException usex) {
+                throw new IllegalStateException("Bad URI: "+frameDefinition.substring(i1, i2), usex);
+            }
+            i1 = i2 + 1;
             sourceLine = Integer.parseInt(frameDefinition.substring(i1));
         } catch (IndexOutOfBoundsException ioob) {
             throw new IllegalStateException("frameDefinition='"+frameDefinition+"'", ioob);
@@ -157,7 +167,7 @@ public class TruffleStackFrame {
     public SourcePosition getSourcePosition() {
         Source src = Source.getExistingSource(debugger, sourceId);
         if (src == null) {
-            src = Source.getSource(debugger, sourceId, sourceName, sourcePath, codeRef);
+            src = Source.getSource(debugger, sourceId, sourceName, sourcePath, sourceURI, codeRef);
         }
         SourcePosition sp = new SourcePosition(debugger, sourceId, src, sourceLine);
         return sp;

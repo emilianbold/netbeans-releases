@@ -1,10 +1,50 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
 /** general **/
 * {
     margin: 0;
     padding: 0;
 }
 body {
-    background: url(../img/header-bg-left.jpg) repeat-x top #F5F5F5;
     font-family: Tahoma, Geneva, sans-serif;
     font-size: 100%;
     line-height: 1em;
@@ -18,7 +58,7 @@ h2 {
     margin-bottom: 20px;
 }
 h3 {
-    font-size: 1em;
+    font-size: 1.2em;
     color: #4c7cbd;
     margin-bottom: 12px;
 }
@@ -204,15 +244,6 @@ form input.submit {
     width: 100%;
 }
 
-.tail-top-right {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
-    height: 244px;
-    background: url(../img/header-bg-right.jpg) repeat-x right top;
-}
-
 .statuses {
     float: left;
 }
@@ -250,22 +281,12 @@ table.detail td {
     padding: 2px 14px;
 }
 
-.icon {
-    width: 16px;
-    height: 16px;
-    margin: 0px 2px;
-}
-
 .line-hor {
     border-bottom: 1px solid #000;
     margin: 20px 0;
     overflow: hidden;
     font-size: 0;
     line-height: 0;
-}
-
-.title {
-    margin-bottom: 18px;
 }
 
 /** flashes **/
@@ -289,4 +310,39 @@ ul#flashes li {
 }
 .ui-widget button {
     width: 70px;
+}
+
+/** icons **/
+.material-icons {
+    color: #0E1B55;
+    font-size: 18px;
+    margin: 0 4px;
+}
+.material-icons.disabled {
+    color: darkgray;
+}
+.material-icons.error {
+    color: indianred;
+}
+.material-icons.multi {
+    margin: 0;
+}
+.material-icons.logo {
+    margin: 0;
+    font-size: 128px;
+}
+.material-icons.priority {
+    color: gold;
+}
+.material-icons.pending {
+    color: deepskyblue;
+}
+.material-icons.done {
+    color: darkseagreen;
+}
+.material-icons.voided {
+    color: coral;
+}
+.material-icons.new {
+    color: khaki;
 }

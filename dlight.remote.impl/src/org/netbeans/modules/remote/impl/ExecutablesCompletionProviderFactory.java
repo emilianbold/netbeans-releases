@@ -45,8 +45,6 @@ package org.netbeans.modules.remote.impl;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.remote.ui.spi.AutocompletionProviderFactory;
-import org.netbeans.modules.remote.util.ExecSupport;
-import org.netbeans.modules.remote.util.ExecSupport.Status;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -180,9 +179,9 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
                 NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                 npb.setExecutable("/bin/ls").setArguments("-1FL", path); // NOI18N
 
-                Status result = ExecSupport.call(npb);
+                ProcessUtils.ExitStatus result = ProcessUtils.execute(npb);
                 if (result.isOK()) {
-                    for (String s : result.output) {
+                    for (String s : result.getOutputLines()) {
                         if (s.endsWith("*")) { // NOI18N
                             synchronized (executables) {
                                 executables.add(s.substring(0, s.length() - 1));

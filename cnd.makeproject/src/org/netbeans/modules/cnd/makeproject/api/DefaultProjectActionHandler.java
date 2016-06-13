@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -79,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -95,8 +95,6 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -150,9 +148,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 } catch (Throwable th) {
                     try {
                         io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
-                    } catch (IOException ex) {
+                    } catch (Throwable ex) {
+                        ex.printStackTrace(System.err);
                     }
-                    io.getOut().close();
+                    try {
+                        io.getOut().close();
+                    } catch (Throwable ex) {
+                        ex.printStackTrace(System.err);
+                    }
                     listener.executionFinished(-1);
                     throw new RuntimeException(th);
                 }
@@ -210,7 +213,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 } else {
                     errmsg = getString("Err_NoTermFound");
                 }
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                CndNotifier.getDefault().notifyInfo(errmsg);
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 runInExternalTerminal = runInInternalTerminal = false;
             }

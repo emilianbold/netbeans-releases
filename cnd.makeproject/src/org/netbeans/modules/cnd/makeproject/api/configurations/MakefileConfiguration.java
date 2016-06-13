@@ -44,42 +44,12 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class MakefileConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
@@ -89,14 +59,12 @@ public class MakefileConfiguration implements Cloneable {
     private StringConfiguration cleanCommand;
     private StringConfiguration output;
     
-    private static final RequestProcessor RP = new RequestProcessor("MakeConfiguration", 1); // NOI18N
-    
     // Constructors
     public MakefileConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         buildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
-        buildCommand = new StringConfiguration(null, BuildSupport.MAKE_MACRO); // NOI18N
-        cleanCommand = new StringConfiguration(null, BuildSupport.MAKE_MACRO+" clean"); // NOI18N
+        buildCommand = new StringConfiguration(null, MakeArtifact.MAKE_MACRO); // NOI18N
+        cleanCommand = new StringConfiguration(null, MakeArtifact.MAKE_MACRO+" clean"); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
     }
     
@@ -211,106 +179,6 @@ public class MakefileConfiguration implements Cloneable {
         return clone;
     }
 
-    public Sheet getSheet() {
-        Sheet sheet = new Sheet();
-        
-        Sheet.Set set = new Sheet.Set();
-        set.setName("Makefile"); // NOI18N
-        set.setDisplayName(getString("MakefileTxt"));
-        set.setShortDescription(getString("MakefileHint"));
-        set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", getString("WorkingDirectory_LBL"), getString("WorkingDirectory_TT"))); // NOI18N
-        set.put(new StringNodeProp(getBuildCommand(), "BuildCommandLine", getString("BuildCommandLine_LBL"), getString("BuildCommandLine_TT"))); // NOI18N
-        set.put(new StringNodeProp(getCleanCommand(),  "CleanCommandLine", getString("CleanCommandLine_LBL"), getString("CleanCommandLine_TT"))); // NOI18N
-        set.put(new OutputStringNodeProp(getOutput(), "BuildResult", getString("BuildResult_LBL"), getString("BuildResult_TT"))); // NOI18N
-        sheet.put(set);
-        
-        return sheet;
-    }
-    
-    private class DirStringNodeProp extends StringNodeProp {
-        public DirStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, txt1, txt2, txt3);
-        }
-        
-        @Override
-        public void setValue(String v) {
-            String path = CndPathUtilities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilities.normalizeSlashes(path);
-            super.setValue(path);
-        }
-        
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            return new DirEditor(getAbsBuildCommandWorkingDir());
-        }
-    }
-    
-    private class OutputStringNodeProp extends StringNodeProp {
-        public OutputStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, txt1, txt2, txt3);
-        }
-        
-        @Override
-        public void setValue(String v) {
-            String path = CndPathUtilities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilities.normalizeSlashes(path);
-            super.setValue(path);
-        }
-        
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            String seed = getAbsOutput();
-            if (seed.length() == 0) {
-                seed = getMakeConfiguration().getBaseDir();
-            }
-            return new ElfEditor(seed);
-        }
-    }
-    
-    private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private PropertyEnv propenv;
-        private final String seed;
-        
-        public DirEditor(String seed) {
-            this.seed = seed;
-        }
-        
-        @Override
-        public void setAsText(String text) {
-            getBuildCommandWorkingDir().setValue(text);
-        }
-        
-        @Override
-        public String getAsText() {
-            return getBuildCommandWorkingDir().getValue();
-        }
-        
-        @Override
-        public Object getValue() {
-            return getBuildCommandWorkingDir().getValue();
-        }
-        
-        @Override
-        public void setValue(Object v) {
-            getBuildCommandWorkingDir().setValue((String)v);
-        }
-        
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-        
-        @Override
-        public java.awt.Component getCustomEditor() {
-            return createDirPanel(seed, this, propenv);
-        }
-        
-        @Override
-        public void attachEnv(PropertyEnv propenv) {
-            this.propenv = propenv;
-        }
-    }
-
     private ExecutionEnvironment getSourceExecutionEnvironment() {
         ExecutionEnvironment env = null;
         MakeConfiguration mc = this.getMakeConfiguration();
@@ -321,218 +189,5 @@ public class MakefileConfiguration implements Cloneable {
             env = ExecutionEnvironmentFactory.getLocal();
         }
         return env;
-    }
-
-    private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-        String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
-        String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
-        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
-                JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
-        chooser.setControlButtonsAreShown(false);
-        propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        propenv.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                    File selectedFile= chooser.getSelectedFile();
-                    String path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilities.normalizeSlashes(path);
-                    editor.setValue(path);
-                }
-            }
-        });
-        return chooser;
-    }
-   
-    private final class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private PropertyEnv propenv;
-        private final String seed;
-        
-        public ElfEditor(String seed) {
-            this.seed = seed;
-        }
-        
-        @Override
-        public void setAsText(String text) {
-            getOutput().setValue(text);
-        }
-        
-        @Override
-        public String getAsText() {
-            return getOutput().getValue();
-        }
-        
-        @Override
-        public Object getValue() {
-            return getOutput().getValue();
-        }
-        
-        @Override
-        public void setValue(Object v) {
-            getOutput().setValue((String)v);
-        }
-        
-        @Override
-        public boolean supportsCustomEditor() {
-            return true;
-        }
-        
-        @Override
-        public java.awt.Component getCustomEditor() {
-            return createElfPanel(seed, this, propenv);
-        }
-        
-        @Override
-        public void attachEnv(PropertyEnv propenv) {
-            this.propenv = propenv;
-        }
-    }
-
-    private static class ElfChooserInitializer implements Callable<String> {
-
-        private final ExecutionEnvironment execEnv;
-        private final PathMap pathMap;
-        private final String seed;
-        private final List<FileFilter> filters;
-        private final CountDownLatch latch;
-
-        public ElfChooserInitializer(ExecutionEnvironment execEnv, PathMap pathMap, String seed, List<FileFilter> filters, CountDownLatch latch) {
-            this.execEnv = execEnv;
-            this.pathMap = pathMap;
-            this.seed = seed;
-            this.filters = filters;
-            this.latch = latch;
-        }
-
-
-        @Override
-        public String call() throws Exception {
-
-            String realSeed = this.seed;
-
-            try {
-
-                HostInfo hostInfo = null;
-                try {
-                    ConnectionManager.getInstance().connectTo(execEnv);
-                } catch (IOException e) {
-                    e.printStackTrace(System.err);
-                } catch (CancellationException e) {
-                    // never report CancellationException
-                }
-                // even if connectTo failed or was cancelled, host info may present
-                if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
-                    hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                }
-
-                if (pathMap != null && seed != null) {
-                    realSeed = pathMap.getRemotePath(seed, true);
-                }
-                // check file existence
-                FileObject seedFo = FileSystemProvider.getFileObject(execEnv, realSeed);
-                // if it does not exist, let's set the closest existing parent
-                while (seedFo == null && realSeed.length() > 1) {
-                    realSeed = PathUtilities.getDirName(realSeed);
-                    seedFo = FileSystemProvider.getFileObject(execEnv, realSeed);
-                }
-                filters.add(FileFilterFactory.getAllBinaryFileFilter());
-                if (hostInfo != null) {
-                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                        filters.add(FileFilterFactory.getPeExecutableFileFilter());
-                        filters.add(FileFilterFactory.getPeStaticLibraryFileFilter());
-                        filters.add(FileFilterFactory.getPeDynamicLibraryFileFilter());
-                    } else if (hostInfo.getOSFamily() == HostInfo.OSFamily.MACOSX) {
-                        filters.add(FileFilterFactory.getMacOSXExecutableFileFilter());
-                        filters.add(FileFilterFactory.getElfStaticLibraryFileFilter());
-                        filters.add(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
-                    } else {
-                        filters.add(FileFilterFactory.getElfExecutableFileFilter());
-                        filters.add(FileFilterFactory.getElfStaticLibraryFileFilter());
-                        filters.add(FileFilterFactory.getElfDynamicLibraryFileFilter());
-                    }
-                }
-            } finally {
-                latch.countDown();
-            }
-            return realSeed;
-        }
-    }
-
-    private void setElfFilters(final JFileChooser chooser, final List<FileFilter> filters, final CountDownLatch latch) {
-        // to be run in EDT
-        final Runnable setFiltersRunner = new Runnable() {
-            @Override
-            public void run() {
-                for (FileFilter f : filters) {
-                    chooser.addChoosableFileFilter(f);
-                }
-                if (!filters.isEmpty()) {
-                    chooser.setFileFilter(filters.get(0));
-                    //chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-                }
-            }
-        };
-        Runnable waiter = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    latch.await();
-                    SwingUtilities.invokeLater(setFiltersRunner);
-                } catch (InterruptedException ex) {
-                    // don't report interrupted exception
-                }
-            }
-        };
-        RP.post(waiter);
-    }
-
-    private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-        MakeConfiguration mc = this.getMakeConfiguration();
-        final RemoteSyncFactory syncFactory = (mc == null) ? null : mc.getRemoteSyncFactory();
-        final ExecutionEnvironment execEnv =
-                // mc != null is redundant, only to prevent false "null pointer dereference" shown byNetBeans
-                (mc != null && syncFactory != null && syncFactory.isCopying()) ?
-                mc.getDevelopmentHost().getExecutionEnvironment() :
-                getSourceExecutionEnvironment();
-        final PathMap pathMap =
-                (syncFactory != null && syncFactory.isCopying()) ?
-                syncFactory.getPathMap(execEnv) : null;
-        final CountDownLatch latch = new CountDownLatch(1);
-        final List<FileFilter> filters = Collections.synchronizedList(new ArrayList<FileFilter>());
-        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(execEnv,
-                "", "", JFileChooser.FILES_ONLY, null,  //NOI18N
-                new ElfChooserInitializer(execEnv, pathMap, seed, filters, latch),
-                true);
-        chooser.setControlButtonsAreShown(false);
-        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
-        setElfFilters(chooser, filters, latch);
-        propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        propenv.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                File selectedFile = chooser.getSelectedFile();
-                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
-                    String path = selectedFile.getPath();
-                    if (pathMap != null) {
-                        String newPath = pathMap.getTrueLocalPath(path);
-                        path = (newPath == null) ? ("//" + path) : newPath;
-                    }
-                    path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), path); // FIXUP: not always relative path
-                    path = CndPathUtilities.normalizeSlashes(path);
-                    editor.setValue(path);
-                }
-            }
-        });
-        return chooser;
-    }
-   
-    /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-    private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakefileConfiguration.class);
-        }
-        return bundle.getString(s);
     }
 }

@@ -142,6 +142,9 @@ public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
                 locals = new ArrayList<CsmVariable>();
                 CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
+                if (file == null) {
+                    return;
+                }
                 CsmContext context = new CsmContext(file, offset);
                 CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, null);
                 for(CsmDeclaration var : CsmContextUtilities.findFunctionLocalVariables(context)) {

@@ -66,6 +66,7 @@ import org.openide.xml.XMLUtil;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 
 /**
  * Perform a Task on the EDT.
@@ -276,6 +277,21 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	    terminal().closeUnconditionally();
 	    terminal().dispose();
 	}
+    }
+    
+    static class ActivateSearch extends Task {
+        private final TerminalContainer tc;
+
+        public ActivateSearch(TerminalContainer tc, Terminal terminal) {
+            super(terminal);
+            this.tc = tc;
+        }
+
+        @Override
+        protected void perform() {
+            tc.activateSearch(terminal());
+        }
+        
     }
 
     static class UpdateName extends Task {

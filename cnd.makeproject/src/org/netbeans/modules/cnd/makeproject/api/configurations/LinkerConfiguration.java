@@ -43,35 +43,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
@@ -316,7 +298,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         if (cs != null) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
         }
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public String getBasicOptions() {
@@ -353,7 +335,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 }
             }
         }
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     public String getPICOption(CompilerSet cs) {
@@ -379,7 +361,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         }
         LibraryToString libVisitor = new LibraryToString(getMakeConfiguration());
         options += getLibrariesConfiguration().toString(libVisitor) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     // Interface OptionsProvider
@@ -389,125 +371,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         options += getLibraryItems() + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         options += getBasicOptions() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
-    }
-
-    // Sheet
-    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf, boolean isQtMode, boolean inheritablePropertiesOnly) {
-        Sheet sheet = new Sheet();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        LinkerDescriptor linker = null;
-        String linkDriver = null;
-        String[] texts;
-        if (compilerSet != null) {
-            linker = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
-            if (conf.hasCPPFiles(configurationDescriptor)) {
-                AbstractCompiler ccCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                linkDriver = ccCompiler.getName();
-            } else {
-                AbstractCompiler cCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
-                linkDriver = cCompiler.getName();
-            }
-        }
-
-        Sheet.Set set1 = new Sheet.Set();
-        set1.setName("General"); // NOI18N
-        set1.setDisplayName(getString("GeneralTxt"));
-        set1.setShortDescription(getString("GeneralHint"));
-        if (!isQtMode) {
-            if (!inheritablePropertiesOnly) {
-                set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-            }
-            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
-                @Override
-                protected List<String> convertToList(String text) {
-                    return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
-                }
-                @Override
-                protected String convertToString(List<String> list) {
-                    return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
-                }
-            });
-        }
-        if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, true, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
-                @Override
-                protected List<String> convertToList(String text) {
-                    return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
-                }
-                @Override
-                protected String convertToString(List<String> list) {
-                    return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
-                }
-            });
-        }
-        sheet.put(set1);
-        if (!isQtMode) {
-            Sheet.Set set2 = new Sheet.Set();
-            if (!inheritablePropertiesOnly) {
-                set2.setName("Options"); // NOI18N
-                set2.setDisplayName(getString("OptionsTxt"));
-                set2.setShortDescription(getString("OptionsHint"));
-                set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-                if (conf.isDynamicLibraryConfiguration()) {
-                    set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-                    if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                        set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
-                        set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
-                    }
-                }
-                sheet.put(set2);
-            }
-            Sheet.Set set3 = new Sheet.Set();
-            texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")};
-            set3.setName("Input"); // NOI18N
-            set3.setDisplayName(getString("InputTxt"));
-            set3.setShortDescription(getString("InputHint"));
-            set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
-            sheet.put(set3);
-            Sheet.Set set4 = new Sheet.Set();
-            if (!inheritablePropertiesOnly) {
-                set4.setName("Tool"); // NOI18N
-                set4.setDisplayName(getString("ToolTxt1"));
-                set4.setShortDescription(getString("ToolHint1"));
-                if (linkDriver != null) {
-                    set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
-                }
-                sheet.put(set4);
-            }
-        }
-
-        texts = new String[]{getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};
-        Sheet.Set set5 = new Sheet.Set();
-        set5.setName("Libraries"); // NOI18N
-        set5.setDisplayName(getString("LibrariesTxt1"));
-        set5.setShortDescription(getString("LibrariesHint"));
-        set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseFSPath(), texts));
-        set5.put(new IntNodeProp(getLibrariesRunTimeSearchPathKind(), true, "RunTimeSerchPath", getString("RunTimeSerchPathTxt"), getString("RunTimeSerchPathHint"))); // NOI18N
-        set5.put(new BooleanNodeProp(getCopyLibrariesConfiguration(), true, "CopyLibraries", getString("CopyLibrariesTxt"), getString("CopyLibrariesHint")));
-        sheet.put(set5);
-
-        if (!isQtMode) {
-            texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
-            Sheet.Set set6 = new Sheet.Set();
-            set6.setName("CommandLine"); // NOI18N
-            set6.setDisplayName(getString("CommandLineTxt"));
-            set6.setShortDescription(getString("CommandLineHint"));
-            set6.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
-            sheet.put(set6);
-        }
-
-        return sheet;
-    }
-
-    private final class AdditionalDependenciesOptions implements AllOptionsProvider {
-
-        @Override
-        public String getAllOptions(Tool tool) {
-            String options = ""; // NOI18N
-            options += additionalDependencies.getPreDefined();
-            return CppUtils.reformatWhitespaces(options);
-        }
+        return MakeProjectOptionsFormat.reformatWhitespaces(options);
     }
 
     private String getNameassignOption(boolean val) {
@@ -526,7 +390,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         }
     }
 
-    private String getOutputDefault() {
+    public String getOutputDefault() {
         String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
@@ -555,22 +419,6 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             outputName = "lib" + outputName + ".so"; // NOI18N
         }
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N
-    }
-
-    private static class OutputNodeProp extends StringNodeProp {
-
-        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, def, txt1, txt2, txt3);
-        }
-
-        @Override
-        public void setValue(String v) {
-            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-            super.setValue(v);
-        }
     }
 
     /** Look up i18n strings here */

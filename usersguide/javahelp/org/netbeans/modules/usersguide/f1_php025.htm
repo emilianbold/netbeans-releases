@@ -2,87 +2,66 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: PHP: Debugging</title>
+<title>Options Window: PHP: General</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" name="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController"></a></p>
-<div id="NBCSH3661"><!-- infolevel="all" infotype="General" --><a id="sthref480" name="sthref480"></a>
-<h1>Options Window: PHP: Debugging</h1>
+<p>Beta Draft: 2016-05-30</p>
+<p><a id="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" name="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController"></a></p>
+<div id="NBCSH3655"><!-- infolevel="all" infotype="General" --><a id="sthref481" name="sthref481"></a>
+<h1>Options Window: PHP: General</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this tab you can set the following options.</p>
+<p>In this tab you can set the path to the default PHP interpreter and the global Include path.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t26">Element</th>
-<th style="text-align:left" valign="bottom" id="r1c2-t26">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t27">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t27">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r2c1-t26" headers="r1c1-t26">
-<p>Debugger port</p>
+<td style="text-align:left" id="r2c1-t27" headers="r1c1-t27">
+<p>Command Line</p>
 </td>
-<td style="text-align:left" headers="r2c1-t26 r1c2-t26">This is the port that XDebug uses, as set in php.ini. By default it is port 9000. The port number in this dialog must be the same as the debugger port you set in php.ini. You cannot affect the port that XDebug uses in this dialog. You only inform NetBeans IDE of the port that XDebug uses.</td>
+<td style="text-align:left" headers="r2c1-t27 r1c2-t27">If you set a PHP project to run as a command-line script in the project's Run Configuration properties you can use this panel to specify the default PHP interpreter.
+<p>Note that you can override the default path to the PHP interpreter and set an interpreter for an individual project. Note also that a project can have multiple run configurations.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r3c1-t26" headers="r1c1-t26">
-<p>Session ID</p>
+<td style="text-align:left" id="r3c1-t27" headers="r1c1-t27">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;PHP 5 Interpreter</p>
 </td>
-<td style="text-align:left" headers="r3c1-t26 r1c2-t26">Arbitrary name of the debugging session. By default it is <code dir="ltr">netbeans-xdebug</code>. This value is important to note in cases where you have to set the xdebug.idekey property in <code dir="ltr">php.ini</code>, such as some remote debugging scenarios.</td>
+<td style="text-align:left" headers="r3c1-t27 r1c2-t27">The path to the default PHP interpreter. The PHP interpreter is used to execute a PHP script from the command line. Use the Search and Browse buttons to locate the interpreter installation on your local file system.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r4c1-t26" headers="r1c1-t26">
-<p>Stop at First Line</p>
+<td style="text-align:left" id="r4c1-t27" headers="r1c1-t27">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Open result in</p>
 </td>
-<td style="text-align:left" headers="r4c1-t26 r1c2-t26">Tick this option for the debugger session to stop at the first line of code instead of at the first breakpoint. This keeps your screen focused in the IDE instead of switching to a browser window when you launch a debugging session.</td>
+<td style="text-align:left" headers="r4c1-t27 r1c2-t27">Select where to display the results of running a PHP application from the command-line. Select the appropriate box to display the results in the IDE's Output window, a browser, or the editor's main pane.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t26" headers="r1c1-t26">
-<p>Watches and Balloon Evaluation</p>
+<td style="text-align:left" id="r5c1-t27" headers="r1c1-t27">
+<p>Global Include Path</p>
 </td>
-<td style="text-align:left" headers="r5c1-t26 r1c2-t26">Due to a number of bugs, watches and balloon evaluation is disabled by default.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r6c1-t26" headers="r1c1-t26">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Maximum Depth of Structures</p>
-</td>
-<td style="text-align:left" headers="r6c1-t26 r1c2-t26">Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.)</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r7c1-t26" headers="r1c1-t26">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Maximum Number of Children</p>
-</td>
-<td style="text-align:left" headers="r7c1-t26 r1c2-t26">Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r8c1-t26" headers="r1c1-t26">
-<p>Show Requested URLs</p>
-</td>
-<td style="text-align:left" headers="r8c1-t26 r1c2-t26">Opens new Output window during debugging. This Output window is named PHP Requested Urls and it shows currently processed URLs. The URLs are clickable. Click on a URL in the Output window to open the URL in a browser window.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r9c1-t26" headers="r1c1-t26">
-<p>Show Debugger Console</p>
-</td>
-<td style="text-align:left" headers="r9c1-t26 r1c2-t26">Opens new Output window that shows the output of debugged scripts.
-<p>Set <code dir="ltr">output_buffering = Off</code> in your <code dir="ltr">php.ini</code> file. Otherwise there will be a delay in seeing script output in the Output window.</p>
+<td style="text-align:left" headers="r5c1-t27 r1c2-t27">The Global Include Path lists the folders that are included in all PHP projects' include paths.
+<p>You can click Add Folder to browse for a folder to add to the global include path. You can use the Move Up and Move Down buttons to change the order of the folders in the global include path. Higher folders are given priority. If you are using a PHP framework, add that framework's library folder to the global include path.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3670" name="NBCSH3670"></a>
+<a id="NBCSH3660" name="NBCSH3660"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2001">
-<param name="text" value="<html><u>&quot;Debugging PHP Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1534">
+<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -95,7 +74,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2016,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

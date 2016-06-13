@@ -43,22 +43,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguration {
@@ -318,135 +309,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getImportantFlags().assign(conf.getImportantFlags());
     }
 
-    // Sheet
-    protected Sheet.Set getSet(final Project project, final Folder folder, final Item item) {
-        OptionToString visitor = new OptionToString(null, null);
-
-        Sheet.Set set1 = new Sheet.Set();
-        set1.setName("General"); // NOI18N
-        set1.setDisplayName(getString("GeneralTxt"));
-        set1.setShortDescription(getString("GeneralHint"));
-        StringBuilder inheritedValues;
-        {
-            // Include Dirctories
-            inheritedValues = new StringBuilder();
-            List<CCCCompilerConfiguration> list = new ArrayList<>();
-            for(BasicCompilerConfiguration master : getMasters(false)) {
-                list.add((CCCCompilerConfiguration)master);
-                if (!((CCCCompilerConfiguration)master).getInheritIncludes().getValue()) {
-                    break;
-                }
-            }
-            for(int i = list.size() - 1; i >= 0; i--) {
-                inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
-            }
-            set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), 
-                    new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()},
-                    true, false, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
-                private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-I"); //NOI18N
-                @Override
-                protected List<String> convertToList(String text) {
-                    return converter.convertToList(text);
-                }
-                @Override
-                protected String convertToString(List<String> list) {
-                    return converter.convertToString(list);
-                }
-            });
-        } 
-        {
-            // Include Dirctories
-            inheritedValues = new StringBuilder();
-            List<CCCCompilerConfiguration> list = new ArrayList<>();
-            for(BasicCompilerConfiguration master : getMasters(false)) {
-                list.add((CCCCompilerConfiguration)master);
-                if (!((CCCCompilerConfiguration)master).getInheritFiles().getValue()) {
-                    break;
-                }
-            }
-            for(int i = list.size() - 1; i >= 0; i--) {
-                inheritedValues.append(list.get(i).getIncludeFiles().toString(visitor, "\n")); //NOI18N
-            }
-            set1.put(new VectorNodeProp(getIncludeFiles(), getMaster() != null ? getInheritFiles() : null, owner.getBaseFSPath(), 
-                    new String[]{"IncludeFiles", getString("IncludeFilesTxt"), getString("IncludeFilesHint"), inheritedValues.toString()},
-                    true, false, new HelpCtx("AddtlIncludeFiles")){// NOI18N
-                private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-include"); //NOI18N
-                @Override
-                protected List<String> convertToList(String text) {
-                    return converter.convertToList(text);
-                }
-                @Override
-                protected String convertToString(List<String> list) {
-                    return converter.convertToString(list);
-                }
-            });
-        } 
-        {
-            // Preprocessor Macros
-            inheritedValues = new StringBuilder();
-            for(BasicCompilerConfiguration master : getMasters(false)) {
-                inheritedValues.append(((CCCCompilerConfiguration)master).getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
-                if (!((CCCCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
-                    break;
-                }
-            }
-            set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions")){  // NOI18N
-                @Override
-                protected List<String> convertToList(String text) {
-                    return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
-                }
-
-                @Override
-                protected String convertToString(List<String> list) {
-                    return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
-                }
-            });
-        }
-        if (owner.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            // Undefined Macros
-            inheritedValues = new StringBuilder();
-            for(BasicCompilerConfiguration master : getMasters(false)) {
-                inheritedValues.append(((CCCCompilerConfiguration)master).getUndefinedPreprocessorConfiguration().toString(visitor));
-                if (!((CCCCompilerConfiguration)master).getInheritUndefinedPreprocessor().getValue()) {
-                    break;
-                }
-            }
-            set1.put(new StringListNodeProp(getUndefinedPreprocessorConfiguration(),
-                    getMaster() != null ? getInheritUndefinedPreprocessor() : null,
-                    new String[]{"preprocessor-undefined", getString("PreprocessorUndefinedTxt"), getString("PreprocessorUndefinedHint"), getString("PreprocessorUndefinedLbl"), inheritedValues.toString()}, // NOI18N
-                    true, new HelpCtx("preprocessor-undefined")) { // NOI18N
-
-                        @Override
-                        protected List<String> convertToList(String text) {
-                            return TokenizerFactory.UNDEF_CONVERTER.convertToList(text);
-                        }
-
-                        @Override
-                        protected String convertToString(List<String> list) {
-                            return TokenizerFactory.UNDEF_CONVERTER.convertToString(list);
-                        }
-                    });
-        }
-        if (this.getMaster() == null) {            
-            final IntConfiguration configurationType = this.getOwner() == null ? null : this.getOwner().getConfigurationType();
-            if (configurationType == null || (configurationType.getValue() != MakeConfiguration.TYPE_MAKEFILE)) {
-                set1.put(new BooleanNodeProp(getUseLinkerLibraries(), true,
-                        "use-linker-libraries", getString("UseLinkerLibrariesTxt"), getString("UseLinkerLibrariesHint"))); // NOI18N
-            }
-        }
-        return set1;
-    }
-
     private CCCCompilerConfiguration getTopMaster() {
         List<BasicCompilerConfiguration> masters = getMasters(true);
         return (CCCCompilerConfiguration)masters.get(masters.size()-1);
-    }
-
-    // Sheet
-    protected Sheet getSheet(Project project) {
-        Sheet sheet = new Sheet();
-        sheet.put(getSet(project, null, null));
-        return sheet;
     }
 
     /** Look up i18n strings here */
@@ -533,25 +398,6 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             } else {
                 return ""; // NOI18N
             }
-        }
-    }
-    
-    protected static class StringRONodeProp extends PropertySupport<String> {
-
-        private final String value;
-
-        public StringRONodeProp(String name, String description, String value) {
-            super(name, String.class, name, name, true, false);
-            this.value = value;
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public void setValue(String v) {
         }
     }
 }

@@ -41,28 +41,34 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \TodoList\Model\Todo;
+use \TodoList\Util\Utils;
+
 //~ Template for index.php
 // variables:
 //  $template - page to be displayed (included)
 //  $flashes - flash messages
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
     <title>TODO List - sample application for NetBeans IDE</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <meta name="description" content="TODO List - sample application for NetBeans IDE" />
-    <meta name="keywords" content="NetBeans, PHP" />
-    <meta name="author" content="NetBeans PHP team" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" >
+    <meta name="description" content="TODO List - sample application for NetBeans IDE" >
+    <meta name="keywords" content="NetBeans, PHP" >
+    <meta name="author" content="NetBeans PHP team" >
 
-    <link type="text/css" href="css/redmond/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-    <link href="css/style.css" rel="stylesheet" type="text/css" />
-    <link href="css/layout.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/redmond/jquery-ui.css" >
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <link href="css/layout.css" rel="stylesheet" type="text/css" >
 
-    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
 
 </head>
@@ -70,24 +76,32 @@
     <div class="tail-top-right"></div>
     <div id="main">
         <!-- header -->
-        <div id="header"></div>
+        <div id="header">
+            <i class="material-icons logo">assignment</i>
+            <div class="title">
+                <h1>TODO List</h1>
+                <h2>NetBeans PHP Sample Application</h2>
+            </div>
+            <div class="nb">
+                <a href="https://netbeans.org/features/php/" target="_blank" title="NetBeans PHP Support"><img src="img/NB-IDE-logo.png" alt="NetBeans logo"></a>
+            </div>
+        </div>
         <!-- content -->
         <div id="content">
             <div class="wrapper">
                 <div class="col-1">
                     <div class="box">
                         <div class="inner">
-                            <div class="title"><a href="http://netbeans.org/features/php/">NetBeans IDE PHP</a></div>
                             <ul class="list">
                                 <li><span><a href="<?php echo Utils::createLink('home'); ?>">Home</a></span></li>
-                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_PENDING)); ?>"
-                                             ><img src="img/status/PENDING.png" alt="" title="Pending TODOs" class="icon" />Pending TODOs</a></span></li>
-                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_DONE)); ?>"
-                                             ><img src="img/status/DONE.png" alt="" title="Done TODOs" class="icon" />Done TODOs</a></span></li>
-                                <li><span><a href="<?php echo Utils::createLink('list', array('status' => Todo::STATUS_VOIDED)); ?>"
-                                             ><img src="img/status/VOIDED.png" alt="" title="Voided TODOs" class="icon" />Voided TODOs</a></span></li>
-                                <li class="last"><span><a href="<?php echo Utils::createLink('add-edit'); ?>"
-                                             ><img src="img/action/add.png" alt="" title="Add TODO" class="icon" />Add TODO</a></span></li>
+                                <li><span><a href="<?php echo Utils::createLink('list', ['status' => Todo::STATUS_PENDING]); ?>" title="Pending TODOs"
+                                             ><?php echo Utils::iconStatus(Todo::STATUS_PENDING); ?>Pending TODOs</a></span></li>
+                                <li><span><a href="<?php echo Utils::createLink('list', ['status' => Todo::STATUS_DONE]); ?>" title="Done TODOs"
+                                             ><?php echo Utils::iconStatus(Todo::STATUS_DONE); ?>Done TODOs</a></span></li>
+                                <li><span><a href="<?php echo Utils::createLink('list', ['status' => Todo::STATUS_VOIDED]); ?>" title="Voided TODOs"
+                                             ><?php echo Utils::iconStatus(Todo::STATUS_VOIDED); ?>Voided TODOs</a></span></li>
+                                <li class="last"><span><a href="<?php echo Utils::createLink('add-edit'); ?>" title="Add TODO"
+                                             ><i class="material-icons new">insert_invitation</i>Add TODO</a></span></li>
                             </ul>
                         </div>
                     </div>
@@ -110,7 +124,7 @@
         <!-- footer -->
         <div id="footer">
             <div class="indent">
-                <div class="fleft"><a href="https://blogs.oracle.com/netbeansphp/">NetBeans PHP team</a>, 2011 &copy; Copyright Oracle corp., All rights reserved</div>
+                <div class="fleft"><a href="https://blogs.oracle.com/netbeansphp/">NetBeans PHP team</a>, 2016 &copy; Copyright Oracle corp., All rights reserved</div>
             </div>
         </div>
     </div>

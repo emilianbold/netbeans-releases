@@ -41,18 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,7 +57,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     private StringConfiguration tools;
     private BooleanConfiguration includeInCA;
     private StringConfiguration excludeInCA;
-    private static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95:ar:ld"; //NOI18N
+    public static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95:ar:ld"; //NOI18N
     
     // Constructors
     public CodeAssistanceConfiguration(MakeConfiguration makeConfiguration) {
@@ -191,69 +181,6 @@ public class CodeAssistanceConfiguration implements Cloneable {
         return clone;
     }
 
-    // Sheet
-    public Sheet getGeneralSheet(MakeConfiguration conf) {
-        Sheet sheet = new Sheet();
-        Sheet.Set set = new Sheet.Set();
-        set.setName("CodeAssistance"); // NOI18N
-        set.setDisplayName(getString("CodeAssistanceTxt"));
-        set.setShortDescription(getString("CodeAssistanceHint"));
-        set.put(new BooleanNodeProp(getBuildAnalyzer(), true, "BuildAnalyzer", getString("BuildAnalyzerTxt"), getString("BuildAnalyzerHint"))); // NOI18N
-        if (System.getProperty("cnd.buildtrace.tools") != null) {
-            // hide node by default
-            set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
-        }
-        set.put(new StringListNodeProp(getTransientMacros(), null,
-                new String[]{"transient-macros", // NOI18N
-                             getString("TransientMacrosTxt"), // NOI18N
-                             getString("TransientMacrosHint"), // NOI18N
-                             getString("TransientMacrosLbl"), // NOI18N
-                             null}, true, new HelpCtx("transient-macros")){ // NOI18N
-            @Override
-            protected List<String> convertToList(String text) {
-                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
-            }
-
-            @Override
-            protected String convertToString(List<String> list) {
-                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
-            }
-        });
-        set.put(new StringListNodeProp(getEnvironmentVariables(), null,
-                new String[]{"environment-variables", // NOI18N
-                             getString("EnvironmentVariablesTxt"), // NOI18N
-                             getString("EnvironmentVariablesHint"), // NOI18N
-                             getString("EnvironmentVariablesLbl"), // NOI18N
-                             null}, true, new HelpCtx("environment-variables")){ // NOI18N
-            @Override
-            protected List<String> convertToList(String text) {
-                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
-            }
-
-            @Override
-            protected String convertToString(List<String> list) {
-                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
-            }
-        });
-        sheet.put(set);
-        
-        set = new Sheet.Set();
-        set.setName("IncludeInCodeAssistance"); // NOI18N
-        set.setDisplayName(getString("IncludeInCodeAssistanceTxt")); // NOI18N
-        set.setShortDescription(getString("IncludeInCodeAssistanceHint")); // NOI18N
-        set.put(new BooleanNodeProp(getIncludeInCA(), true, "IncludeFlag", getString("IncludeFlagTxt"), getString("IncludeFlagHint"))); // NOI18N
-        set.put(new PatternNodeProp(getExcludeInCA(), "", "ExcludePattern", getString("ExcludePatternTxt"), getString("ExcludePatternHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getResolveSymbolicLinks(), false, "ResolveSymbolicLinks", getString("ResolveSymbolicLinksTxt"), getString("ResolveSymbolicLinksHint"))); // NOI18N
-        sheet.put(set);
-        
-        return sheet;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(CodeAssistanceConfiguration.class, s);
-    }
-
     @Override
     public String toString() {
         return "{buildAnalyzer=" + buildAnalyzer + " tools=" + tools + '}'; // NOI18N
@@ -300,21 +227,4 @@ public class CodeAssistanceConfiguration implements Cloneable {
         return false;
     }
     
-    private static class PatternNodeProp extends StringNodeProp {
-
-        public PatternNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, def, txt1, txt2, txt3);
-        }
-
-        @Override
-        public void setValue(String v) {
-            try {
-                Pattern.compile(v);
-            } catch (Throwable ex) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("InvalidPattern"), NotifyDescriptor.ERROR_MESSAGE));
-            }
-            super.setValue(v);
-        }
-    }
-
 }

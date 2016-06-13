@@ -65,6 +65,11 @@ public class RunCommandTest extends CndBaseTestCase{
         super(testName);
     }
     
+    @Override
+    protected boolean addEditorSupport() {
+        return false;
+    }
+    
     private static File getBaseFolder(){
         String dataPath = System.getProperty("java.io.tmpdir");
         if (!dataPath.endsWith(File.separator)) {

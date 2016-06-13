@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +64,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
@@ -228,14 +228,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     @CheckForNull
     private Project preselectedProject( Lookup context, boolean inProject ) {
-        Project preselectedProject = null;
-
-        // if ( activatedNodes != null && activatedNodes.length != 0 ) {
-
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
-        if ( projects.length > 0 ) {
-            preselectedProject = projects[0];
-        }
+        Project preselectedProject = Arrays.stream(
+                ActionsUtil.getProjectsFromLookup(context, null))
+                .findFirst()
+                .orElse(null);
         //Ignore artificial (ProjectConvertor) projects which do not provide RecommendedTemplates
         if (preselectedProject != null && !isImportant(preselectedProject)) {
             Project p = null;
@@ -267,7 +263,18 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     private static boolean isImportant(@NonNull final Project p) {
-        return !ProjectConvertors.isConvertorProject(p) || p.getLookup().lookup(RecommendedTemplates.class) != null;
+        if (!ProjectConvertors.isConvertorProject(p)) {
+            return true;
+        }
+        final RecommendedTemplates pt = p.getLookup().lookup(RecommendedTemplates.class);
+        if (pt == null) {
+            return false;
+        }
+        final Project rOwner = ProjectConvertors.getNonConvertorOwner(p.getProjectDirectory());
+        final RecommendedTemplates rot = rOwner == null ?
+                null :
+                p.getLookup().lookup(RecommendedTemplates.class);
+        return pt != rot;
     }
 
     private DataFolder preselectedFolder( Lookup context ) {

@@ -81,6 +81,13 @@ public abstract class BuildActionsProvider {
 
         void close();
     }
+
+    public interface EventsProcessor {
+        void submitTask();
+        ProjectActionEvent[] getProjectActionEvents();
+        boolean checkProject(ProjectActionEvent pae);
+    }
+
     /**
      * Implementation of the default BuildActionsProvider
      */

@@ -66,6 +66,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -136,6 +137,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
             static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
+    private static final String APT_SOURCE_OUTPUT = "apSrcOut"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
@@ -170,9 +172,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             if (isAptBuildGeneratedFolder(context.getRootURI(),sourcePath)) {
                 txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
+                JavaIndex.setAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, Boolean.TRUE.toString());
                 JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
+            JavaIndex.setAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, null);
             if (!files.iterator().hasNext() && !context.isAllFilesIndexing()) {
                 boolean success = false;
                 try {
@@ -397,52 +401,48 @@ public class JavaCustomIndexer extends CustomIndexer {
         return fo != null ? new CompileTuple(FileObjects.sourceFileObject(fo, context.getRoot()), indexable) : null;
     }
 
-    private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
+    private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) throws IOException {
         final TransactionContext txCtx =  TransactionContext.get();
         assert txCtx != null;
         final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
         assert fmTx != null;
         final ClassIndexEventsTransaction ciTx = txCtx.get(ClassIndexEventsTransaction.class);
         assert ciTx != null;
+        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
         try {
-            final JavaParsingContext javaContext = new JavaParsingContext(context, true);
-            try {
-                if (javaContext.getClassIndexImpl() == null)
-                    return; //IDE is exiting, indeces are already closed.
-                if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
-                    return; //No java no need to continue
-                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                final Set<File> removedFiles = new HashSet<File> ();
-                for (Indexable i : files) {
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
-                    ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                    javaContext.getCheckSums().remove(i.getURL());
-                }
-                for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
-                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                }
-                try {
-                    javaContext.store();
-                } catch (JavaParsingContext.BrokenIndexException bi) {
-                    JavaIndex.LOG.log(
-                        Level.WARNING,
-                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
-                        new Object[] {
-                            context.getRootURI(),
-                            bi.getMessage()
-                        });
-                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
-                    assert piTx != null;
-                    piTx.setBroken();
-                }
-                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                ciTx.removedTypes(context.getRootURI(), removedTypes);
-            } finally {
-                javaContext.finish();
+            if (javaContext.getClassIndexImpl() == null)
+                return; //IDE is exiting, indeces are already closed.
+            if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
+                return; //No java no need to continue
+            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+            final Set<File> removedFiles = new HashSet<File> ();
+            for (Indexable i : files) {
+                clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
+                javaContext.getCheckSums().remove(i.getURL());
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+            }
+            try {
+                javaContext.store();
+            } catch (JavaParsingContext.BrokenIndexException bi) {
+                JavaIndex.LOG.log(
+                    Level.WARNING,
+                    "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                    new Object[] {
+                        context.getRootURI(),
+                        bi.getMessage()
+                    });
+                final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                assert piTx != null;
+                piTx.setBroken();
+            }
+            ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
+            ciTx.removedTypes(context.getRootURI(), removedTypes);
+        } finally {
+            javaContext.finish();
         }
     }
 
@@ -978,7 +978,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
-            clearFiles(context, deleted);
+            try {
+                if(!Boolean.parseBoolean(JavaIndex.getAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, null))) {
+                    clearFiles(context, deleted);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
 
         @Override
@@ -1253,7 +1259,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             if (root == null) {
                 return vote;
             }
-            if (APTUtils.get(root).verifyAttributes(ctx.getRoot(), false)) {
+            if (Optional.ofNullable(APTUtils.get(root))
+                    .map((apt) -> apt.verifyAttributes(ctx.getRoot(), false))
+                    .orElse(Boolean.FALSE)) {
                 vote = false;
             }
             if (ensureSourcePath(root)) {

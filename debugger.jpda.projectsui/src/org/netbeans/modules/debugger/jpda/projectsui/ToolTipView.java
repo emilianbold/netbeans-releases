@@ -50,16 +50,22 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
@@ -254,6 +260,28 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             l.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             textToolTip = l;
             add(l);
+            InputMap im = new InputMap();
+            im.setParent(getInputMap());
+            setInputMap(WHEN_FOCUSED, im);
+            ActionMap am = new ActionMap();
+            am.setParent(getActionMap());
+            setActionMap(am);
+            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "expand");     // NOI18N
+            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "pin");        // NOI18N
+            if (expandable) {
+                am.put("expand", new AbstractAction() {                         // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        expButton.doClick();
+                    }
+                });
+            }
+            am.put("pin", new AbstractAction() {                                // NOI18N
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SwingUtilities.invokeLater(() -> pinButton.doClick());
+                }
+            });
         }
 
         void addExpansionListener(ActionListener treeExpansionListener) {

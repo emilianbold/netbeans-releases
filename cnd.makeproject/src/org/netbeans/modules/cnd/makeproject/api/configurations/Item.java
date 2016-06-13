@@ -60,14 +60,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
@@ -89,26 +88,61 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
-public final class Item implements NativeFileItem, PropertyChangeListener {
-    private static final Logger LOG = Logger.getLogger("makeproject.folder"); // NOI18N
+public class Item implements NativeFileItem, PropertyChangeListener {
+    
+    public static abstract class  ItemFactory {
+        private static final ItemFactory DEFAULT = new Default();
 
-    private final String path;
-    private Folder folder;
-    private FileObject file = null;
-    private final FileSystem fileSystem;
-    private final String normalizedPath;
-    private DataObject lastDataObject = null;
+        private static ItemFactory defaultFactory;
 
-    public static Item createInBaseDir(FileObject baseDirFileObject, String path) {
-        return new Item(baseDirFileObject, path);
+        protected ItemFactory() {
+        }
+
+        public static ItemFactory getDefault() {
+            if (defaultFactory != null) {
+                return defaultFactory;
+            }
+            defaultFactory = Lookup.getDefault().lookup(ItemFactory.class);
+            return defaultFactory == null ? DEFAULT : defaultFactory;
+        }
+
+        public abstract Item createInBaseDir(FileObject baseDirFileObject, String path);
+        public abstract Item createInFileSystem(FileSystem fileSystem, String path);
+        public abstract Item createDetachedViewItem(FileSystem fileSystem, String path);
+
+        private static final class Default extends ItemFactory {
+
+            @Override
+            public Item createInBaseDir(FileObject baseDirFileObject, String path) {
+                return new Item(baseDirFileObject, path);
+            }
+
+            @Override
+            public Item createInFileSystem(FileSystem fileSystem, String path) {
+                return new Item(fileSystem, path);
+            }
+
+            @Override
+            public Item createDetachedViewItem(FileSystem fileSystem, String path) {
+                CndUtils.assertNonUiThread();
+                Item out = new Item(fileSystem, path);
+                return out;
+            }
+        }    
     }
     
-    private Item(FileObject baseDirFileObject, String path) {
+    protected static final Logger LOG = Logger.getLogger("makeproject.folder"); // NOI18N
+
+    private final String path;
+    protected Folder folder;
+    protected FileObject file = null;
+    protected final FileSystem fileSystem;
+    private final String normalizedPath;
+
+    protected Item(FileObject baseDirFileObject, String path) {
         try {
             this.fileSystem = baseDirFileObject.getFileSystem();
         } catch (FileStateInvalidException ex) {
@@ -119,26 +153,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         this.path = CndPathUtilities.normalizeSlashes(path);
     }
 
-    public static Item createInFileSystem(FileSystem fileSystem, String path) {
-        return new Item(fileSystem, path);
-    }
-
-    public static Item createDetachedViewItem(FileSystem fileSystem, String path) {
-        CndUtils.assertNonUiThread();
-        Item out = new Item(fileSystem, path);
-        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
-        // If we call this method here then result will be calculated and cached. So cached version will be
-        // used in createNodes and won't freeze EDT.
-        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
-        DataObject dobj = out.getDataObject();
-        // detach resources to prevent memory leaks
-        out.detachFrom(dobj);
-        CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
-        return out;
-    }
-
     // XXX:fullRemote deprecate and remove!
-    private Item(FileSystem fileSystem, String path) {
+    protected Item(FileSystem fileSystem, String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
         this.fileSystem = fileSystem; //CndFileUtils.getLocalFileSystem();
@@ -146,7 +162,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         folder = null;
     }
 
-    private void rename(String newname, boolean nameWithoutExtension) {
+    protected void rename(String newname, boolean nameWithoutExtension) {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
         }
@@ -189,7 +205,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         renameTo(newPath);
     }
 
-    private void renameTo(String newPath) {
+    protected void renameTo(String newPath) {
         Folder f = getFolder();
         String oldPath;
         if (normalizedPath != null) {
@@ -197,7 +213,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else {
             oldPath = CndFileUtils.normalizeAbsolutePath(fileSystem, getAbsPath());
         }
-        Item item = f.addItem(new Item(fileSystem, newPath));
+        Item item = f.addItem(ItemFactory.getDefault().createInFileSystem(fileSystem, newPath));
         if (item != null && item.getFolder() != null) {
             if (item.getFolder().isProjectFiles()) {
                 copyItemConfigurations(this, item);
@@ -250,15 +266,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             // store file in field. method getFile() will works after removing item
             ensureFileNotNull();
         }
-        // leave folder if it is remove
-        if (folder == null) { // Item is removed, let's clean up.
-            synchronized (this) {
-                detachFrom(lastDataObject);
-                lastDataObject = null;
-            }
-        } else {
-            this.folder = folder;
-        }
+        this.folder = folder;
     }
 
     @Override
@@ -267,63 +275,14 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             // File has been renamed.
             String newName = (String) evt.getNewValue();
             boolean nameWithoutExtension = true;
-            Object o = evt.getSource();
-            // New name is unpedictable. It can contain or not contain extension.
-            // Detect true name with extension.
-            if (o instanceof DataObject) {
-                FileObject fo = ((DataObject) o).getPrimaryFile();
-                if (fo != null) {
-                    newName = fo.getNameExt();
-                    nameWithoutExtension = false;
-                }
-            }
             rename(newName, nameWithoutExtension);
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             if (!((Boolean) evt.getNewValue())) {
-                // Data object invalid.
-                // It may be renaming.
-                Object o = evt.getSource();
-                if (o instanceof DataObject) {
-                    DataObject dao = ((DataObject) o);
-                    FileObject fo = dao.getPrimaryFile();
-                    if (fo != null && fo.isValid()) {
-                        // Old data object invalid and valid file object.
-                        // Rename and attach new data object.
-                        rename(fo.getNameExt(), false);
-                        DataObject dataObject;
-                        try {
-                            dataObject = DataObject.find(fo);
-                            synchronized (this) {
-                                if (dataObject != lastDataObject) {
-                                    detachFrom(lastDataObject);
-                                    attachTo(dataObject);
-                                }
-                            }
-                        } catch (DataObjectNotFoundException ex) {
-                            LOG.log(Level.FINE, "Can not find data object", ex); //NOI18N
-                        }
-                        return;
-                    }
-                }
                 // File has been deleted.
                 // Refresh folder. See also IZ 87557 and IZ 94935
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {
                     containingFolder.refresh(this);
-                }
-            } else {
-                // Data object valid.
-                // Attach new data object.
-                Object o = evt.getSource();
-                if (o instanceof DataObject) {
-                    DataObject dao = ((DataObject) o);
-                    synchronized (this) {
-                        if (lastDataObject != null) {
-                            detachFrom(lastDataObject);
-                        }
-                        lastDataObject = dao;
-                        attachTo(lastDataObject);
-                    }
                 }
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
@@ -366,7 +325,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return getNormalizedPath();
     }
 
-    private void ensureFileNotNull() {
+    protected void ensureFileNotNull() {
         if (file == null) {
             try {
                 file = CndFileUtils.getCanonicalFileObject(getFileObject());
@@ -462,7 +421,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
      * Returns file object for this item.
      * If not found, returns a honest null, no dummies (InvalidFileObjectSupport.getInvalidFileObject)
      */
-    private FileObject getFileObjectImpl() {
+    protected FileObject getFileObjectImpl() {
         PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT, this);
         FileObject fileObject = null;
         try {
@@ -490,101 +449,27 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         return fileObject;
     }
-    
 
-    public DataObject getDataObject() {
-        synchronized (this) {
-            if (lastDataObject != null && lastDataObject.isValid()) {
-                return lastDataObject;
-            }
-        }
-        DataObject dataObject = null;
-        FileObject fo = getFileObjectImpl();
-        if (fo != null && fo.isValid()) {
-            try {
-                dataObject = DataObject.find(fo);
-            } catch (DataObjectNotFoundException e) {
-                // that's normal, for example, "myfile.xyz" won't have data object
-                // ErrorManager.getDefault().notify(e);
-                LOG.log(Level.FINE, "Can not find data object", e); //NOI18N
-            }
-        }
-        synchronized (this) {
-            if (dataObject != lastDataObject) {
-                // DataObject can change without notification. We need to track this
-                // and properly attach/detach listeners.
-                detachFrom(lastDataObject);
-                attachTo(dataObject);
-            }
-        }
-        return dataObject;
+    public void onOpen() {
     }
     
-    private void attachTo(DataObject dataObject) {
-        if (dataObject != null) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.FINEST, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
-            }
-            dataObject.removePropertyChangeListener(this);
-            dataObject.addPropertyChangeListener(this);
-            NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-            if (set != null) {
-                set.add(this);
-            }
-        }
-        lastDataObject = dataObject;
+    protected void onClose() {
     }
     
-    public final void onOpen() {
-        synchronized (this) {
-            // attach only if was initialized
-            attachTo(lastDataObject);
-        }
-    }
-    
-    private void detachFrom(DataObject dao) {
-        if (dao != null) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.FINEST, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
-            }
-            dao.removePropertyChangeListener(this);
-            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-            if (set != null) {
-                set.remove(this);
-            }
-        }
-    }
-    
-    final void onClose() {
-        synchronized (this) {
-            // detach but leave object reference for further possible reopen
-            detachFrom(lastDataObject);
-        }
-    }
-    
-    public final String getMIMEType() {
-        // use file object of this item
-        return getMIMETypeImpl(this.getDataObject(), this);
-    }
-    
-    private static String getMIMETypeImpl(DataObject dataObject, Item item) {
-        FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
-        if (fobj == null) {
-            fobj = item.getFileObjectImpl();
-        }
+    public String getMIMEType() {
+        FileObject fobj = getFileObjectImpl();
         String mimeType;
         if (fobj == null || ! fobj.isValid()) {
-            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName());
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
         } else {
             mimeType = MIMESupport.getSourceFileMIMEType(fobj);
         }
         return mimeType;
     }
-
-    /*package*/ static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
+    
+    public PredefinedToolKind getDefaultTool() {
         PredefinedToolKind tool;
-        // use mime type of passed data object
-        String mimeType = getMIMETypeImpl(dataObject, item);
+        String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
 //            DataObject dataObject = getDataObject();
 //            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -601,10 +486,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
-            if (fobj == null) {
-                fobj = item.getFileObjectImpl();
-            }
+            FileObject fobj = getFileObjectImpl();
             // Do not use assembler for .il files
             if (fobj != null && "il".equals(fobj.getExt())) { //NOI18N
                 tool = PredefinedToolKind.CustomTool;
@@ -615,11 +497,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             tool = PredefinedToolKind.CustomTool;
         }
         return tool;
-    }
-    
-    public PredefinedToolKind getDefaultTool() {
-        // use data object of this item
-        return getDefaultToolForItem(this.getDataObject(), this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
@@ -1209,6 +1086,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return false;
     }
 
+    protected void onAddedToFolder(Folder folder) {
+    }
+
     private static final class SpiAccessor {
 
         private Collection<? extends UserOptionsProvider> uoProviders;
@@ -1305,7 +1185,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     Exceptions.printStackTrace(ex);
                 }                    
             }
-            BrokenReferencesSupport.addTemporaryEnv(env, envVariables);
+            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
             this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
         }
 

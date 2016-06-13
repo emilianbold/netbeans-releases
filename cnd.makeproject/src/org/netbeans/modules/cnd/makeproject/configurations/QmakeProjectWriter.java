@@ -53,7 +53,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.support.SmartOutputStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;

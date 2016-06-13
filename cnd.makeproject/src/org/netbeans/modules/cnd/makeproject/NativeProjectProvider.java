@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -81,7 +80,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -94,8 +94,6 @@ import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.jumpto.file.FileProvider;
-import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -120,7 +118,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         this.fileSystem = getFileSystem(remoteProject);
         this.projectRoot = getProjectRoot(remoteProject);
         this.projectDescriptorProvider = projectDescriptorProvider;
-        ToolsPanelSupport.addCodeAssistanceChangeListener(this);
+        ToolchainUtilities.addCodeAssistanceChangeListener(this);
     }
 
     @Override
@@ -448,8 +446,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(items, true, true, true);
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
-            MakeLogicalViewProvider.checkForChangedName(proj);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(null, null);
+                viewModel.checkForChangedName();
+            }
             return;
         }
 
@@ -457,9 +458,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())
                 || !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-            MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
+            MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+            if (viewModel != null) {
+                viewModel.checkForChangedViewItemNodes(null, null);
+            }
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-                MakeLogicalViewProvider.checkForChangedName(proj);
+                if (viewModel != null) {
+                    viewModel.checkForChangedName();
+                }
             }
             toolColectionChanged = true;
         }
@@ -491,7 +497,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     // included
                     added.add(items[i]);
                 }
-                MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, items[i]);
+                MakeLogicalViewModel viewModel = getProject().getLookup().lookup(MakeLogicalViewModel.class);
+                if (viewModel != null) {
+                    viewModel.checkForChangedViewItemNodes(null, items[i]);
+                }
                 continue;
             }
 
@@ -828,14 +837,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     /*package*/NativeFileSearch getNativeFileSearch() {
-        NativeFileSearch search = null;
-        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
-            FileProvider provider = fpf.createFileProvider();
-            if (provider instanceof NativeFileSearch) {
-                search = (NativeFileSearch) provider;
-            }
-        }
-        return search;
+        return Lookup.getDefault().lookup(NativeFileSearch.class);
     }
 
     @Override

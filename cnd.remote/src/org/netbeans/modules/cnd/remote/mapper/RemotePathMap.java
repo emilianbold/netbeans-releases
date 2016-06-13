@@ -65,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -265,20 +264,24 @@ public abstract class RemotePathMap extends PathMap {
         if (invalidLocalPaths.isEmpty()) {
             return true;
         } else if (fixMissingPaths) {
-            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+            boolean isFixed = FixRemotePathMapper.getInstance().fixRemotePath(execEnv, invalidLocalPaths);
+            if (!isFixed) {
                 return false;
             }
-            if (EditPathMapDialog.showMe(execEnv, invalidLocalPaths)) {
-                // EditPathMapDialog doesn't perform check
-                for (String lPath : invalidLocalPaths) {
-                    if (!checkRemotePath(lPath)) {
-                        return false;
-                    }
+//            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+//                return false;
+//            }
+//            if (EditPathMapDialog.showMe(execEnv, invalidLocalPaths)) {
+            // EditPathMapDialog doesn't perform check
+            for (String lPath : invalidLocalPaths) {
+                if (!checkRemotePath(lPath)) {
+                    return false;
                 }
-                return true;
-            } else {
-                return false;
             }
+            return true;
+//            } else {
+//                return false;
+//            }
         } else {
             return false;
         }

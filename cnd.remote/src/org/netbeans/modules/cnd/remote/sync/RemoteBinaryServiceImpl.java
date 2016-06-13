@@ -234,10 +234,8 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                         npb.setExecutable("cp").setArguments(remotePath, remoteCopyPath); // NOI18N
-                        Process copyProcess = npb.call();
-                        int copyProcessResult = copyProcess.waitFor();
-
-                        if (copyProcessResult != 0) {
+                        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+                        if (!res.isOK()) {
                             return false;
                         }
 

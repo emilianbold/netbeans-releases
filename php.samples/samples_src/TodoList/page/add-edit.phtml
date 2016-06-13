@@ -41,6 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \TodoList\Model\Todo;
+use \TodoList\Util\Utils;
+use \TodoList\Validation\ValidationError;
+
 //~ Template for add-edit.php
 // variables:
 //  $errors - validation errors
@@ -49,7 +55,7 @@
 
 function error_field($title, array $errors) {
     foreach ($errors as $error) {
-        /* @var $error Error */
+        /* @var $error ValidationError */
         if ($error->getSource() == $title) {
             return ' error-field';
         }
@@ -64,6 +70,7 @@ function error_field($title, array $errors) {
     <?php if ($edit): ?>
         <?php echo Utils::escape($todo->getTitle()); ?>
     <?php else: ?>
+        <i class="material-icons new">insert_invitation</i>
         Add new TODO
     <?php endif; ?>
 </h1>
@@ -71,7 +78,7 @@ function error_field($title, array $errors) {
 <?php if (!empty($errors)): ?>
 <ul class="errors">
     <?php foreach ($errors as $error): ?>
-        <?php /* @var $error Error */ ?>
+        <?php /* @var $error ValidationError */ ?>
         <li><?php echo $error->getMessage(); ?></li>
     <?php endforeach; ?>
 </ul>
@@ -91,21 +98,25 @@ function error_field($title, array $errors) {
             &nbsp;
             <select name="todo[due_on_hour]">
             <?php for ($i = 0; $i < 24; ++$i): ?>
-                <option value="<?php echo $i; ?>"
-                        <?php if ($todo->getDueOn() && $i == $todo->getDueOn()->format('H')): ?>
+                <?php $hour = str_pad($i, 2, '0', STR_PAD_LEFT); ?>
+                <option value="<?php echo $hour; ?>"
+                        <?php if ($todo->getDueOn()
+                                && $hour == $todo->getDueOn()->format('H')): ?>
                             selected="selected"
                         <?php endif; ?>
-                        ><?php echo str_pad($i, 2, '0', STR_PAD_LEFT); ?></option>
+                        ><?php echo $hour; ?></option>
             <?php endfor; ?>
             </select>
             :
             <select name="todo[due_on_minute]">
             <?php for ($i = 0; $i < 60; $i = $i + 15): ?>
-                <option value="<?php echo $i; ?>"
-                        <?php if ($todo->getDueOn() && $i == $todo->getDueOn()->format('i')): ?>
+                <?php $minute = str_pad($i, 2, '0', STR_PAD_LEFT); ?>
+                <option value="<?php echo $minute; ?>"
+                        <?php if ($todo->getDueOn()
+                                && $minute == $todo->getDueOn()->format('i')): ?>
                             selected="selected"
                         <?php endif; ?>
-                        ><?php echo str_pad($i, 2, '0', STR_PAD_LEFT); ?></option>
+                        ><?php echo $minute; ?></option>
             <?php endfor; ?>
             </select>
         </div>

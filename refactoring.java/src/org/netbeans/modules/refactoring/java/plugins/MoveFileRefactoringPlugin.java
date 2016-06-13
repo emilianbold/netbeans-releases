@@ -176,6 +176,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
+    @NbBundle.Messages("ERR_ClasspathNotFound=No classpath defined for {0}.")
     public Problem fastCheckParameters() {
         if (isRenameRefactoring) {
             //folder rename
@@ -202,12 +203,14 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
             try {
                 final URL targetUrl = ((MoveRefactoring)refactoring).getTarget().lookup(URL.class);
                 if(targetUrl != null) {
-                    FileObject rootFO = RefactoringUtils.getRootFileObject(targetUrl);
+                    FileObject rootFO = null;
+                    try {
+                        rootFO = RefactoringUtils.getRootFileObject(targetUrl);
+                    } catch (IllegalArgumentException | IOException ex) {
+                        // target is invalid
+                    }
                     if(rootFO == null || ClassPath.getClassPath(rootFO, ClassPath.SOURCE) == null) {
-                        return new Problem(true, NbBundle.getMessage(
-                        MoveFileRefactoringPlugin.class,
-                        "ERR_ClasspathNotFound",
-                        rootFO));
+                        return new Problem(true, ERR_ClasspathNotFound(rootFO));
                     }
                     for (FileObject f: filesToMove) {
                         if (!RefactoringUtils.isJavaFile(f)) {
