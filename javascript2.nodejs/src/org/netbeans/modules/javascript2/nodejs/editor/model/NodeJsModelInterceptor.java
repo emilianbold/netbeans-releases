@@ -43,9 +43,9 @@
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.model.spi.ModelInterceptor;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsDataProvider;
 import org.openide.filesystems.FileObject;
 
