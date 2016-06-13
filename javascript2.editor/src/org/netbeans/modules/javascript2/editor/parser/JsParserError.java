@@ -51,7 +51,6 @@ public class JsParserError implements FilterableError, Error.Badging {
 
     private final JsErrorManager.SimpleError error;
     private final FileObject file;
-    private final boolean wholeLine;
     private final Severity severity;
     private final Object[] parameters;
     private final boolean showExplorerBadge;
@@ -61,7 +60,7 @@ public class JsParserError implements FilterableError, Error.Badging {
     private final SetFilterAction disableFilter;
 
     public JsParserError(JsErrorManager.SimpleError error, FileObject file,
-            Severity severity, Object[] parameters, boolean wholeLine,
+            Severity severity, Object[] parameters,
             boolean showExplorerBadge, boolean showInEditor,
             Collection<FilterableError.SetFilterAction> enableFilter, FilterableError.SetFilterAction disableFilter) {
 
@@ -69,7 +68,6 @@ public class JsParserError implements FilterableError, Error.Badging {
         this.file = file;
         this.severity = severity;
         this.parameters = parameters != null ? parameters.clone() : new Object[] {};
-        this.wholeLine = wholeLine;
         this.showExplorerBadge = showExplorerBadge;
         this.showInEditor = showInEditor;
         this.disableFilter = disableFilter;
@@ -88,7 +86,7 @@ public class JsParserError implements FilterableError, Error.Badging {
 
     @Override
     public String getKey() {
-        int position = error.getPosition();
+        int position = error.getStartPosition();
         return "[" + position + "," + position + "]-" + error.getMessage();
     }
 
@@ -99,17 +97,17 @@ public class JsParserError implements FilterableError, Error.Badging {
 
     @Override
     public int getStartPosition() {
-        return error.getPosition();
+        return error.getStartPosition();
     }
 
     @Override
     public int getEndPosition() {
-        return error.getPosition() + 1;
+        return error.getEndPosition();
     }
 
     @Override
     public boolean isLineError() {
-        return wholeLine;
+        return error.isLineError();
     }
 
     @Override

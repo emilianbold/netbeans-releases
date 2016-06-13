@@ -1,0 +1,1921 @@
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -1160,7 +1160,7 @@
+                 restoreState(expressionLexer.saveState());
+ 
+                 // scan next middle or tail of the template literal
+-                assert ch0 == '}';
++                //assert ch0 == '}';
+                 type = TEMPLATE_MIDDLE;
+ 
+                 // Skip over rbrace and record beginning of string content.
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -101,14 +101,21 @@
+ import com.oracle.js.parser.ir.DebuggerNode;
+ import com.oracle.js.parser.ir.EmptyNode;
+ import com.oracle.js.parser.ir.ErrorNode;
++import com.oracle.js.parser.ir.ExportClauseNode;
++import com.oracle.js.parser.ir.ExportNode;
++import com.oracle.js.parser.ir.ExportSpecifierNode;
+ import com.oracle.js.parser.ir.Expression;
+ import com.oracle.js.parser.ir.ExpressionList;
+ import com.oracle.js.parser.ir.ExpressionStatement;
+ import com.oracle.js.parser.ir.ForNode;
++import com.oracle.js.parser.ir.FromNode;
+ import com.oracle.js.parser.ir.FunctionNode;
+ import com.oracle.js.parser.ir.FunctionNode.Kind;
+ import com.oracle.js.parser.ir.IdentNode;
+ import com.oracle.js.parser.ir.IfNode;
++import com.oracle.js.parser.ir.ImportClauseNode;
++import com.oracle.js.parser.ir.ImportNode;
++import com.oracle.js.parser.ir.ImportSpecifierNode;
+ import com.oracle.js.parser.ir.IndexNode;
+ import com.oracle.js.parser.ir.JoinPredecessorExpression;
+ import com.oracle.js.parser.ir.LabelNode;
+@@ -118,6 +125,8 @@
+ import com.oracle.js.parser.ir.Module;
+ import com.oracle.js.parser.ir.Module.ExportEntry;
+ import com.oracle.js.parser.ir.Module.ImportEntry;
++import com.oracle.js.parser.ir.NameSpaceImportNode;
++import com.oracle.js.parser.ir.NamedImportsNode;
+ import com.oracle.js.parser.ir.Node;
+ import com.oracle.js.parser.ir.ObjectNode;
+ import com.oracle.js.parser.ir.PropertyKey;
+@@ -580,12 +589,19 @@
+         }
+ 
+         // Block closing brace.
++        int realFinish;
+         if (needsBraces) {
++            expectDontAdvance(RBRACE);
++            // otherwise in case block containing single braced block the inner
++            // block could end somewhere later after comments and spaces
++            realFinish = Token.descPosition(token) + Token.descLength(token);
+             expect(RBRACE);
++        } else {
++            realFinish = finish;
+         }
+ 
+         final int flags = newBlock.getFlags() | (needsBraces ? 0 : Block.IS_SYNTHETIC);
+-        return new Block(blockToken, Math.max(finish, Token.descPosition(blockToken)), flags, newBlock.getStatements());
++        return new Block(blockToken, Math.max(realFinish, Token.descPosition(blockToken)), flags, newBlock.getStatements());
+     }
+ 
+     /**
+@@ -1517,7 +1533,7 @@
+             Expression binding = bindingIdentifierOrPattern(contextString);
+             final boolean isDestructuring = !(binding instanceof IdentNode);
+             if (isDestructuring) {
+-                final int finalVarFlags = varFlags;
++                final int finalVarFlags = varFlags | VarNode.IS_DESTRUCTURING;
+                 verifyDestructuringBindingPattern(binding, new Consumer<IdentNode>() {
+                     public void accept(IdentNode identNode) {
+                         verifyIdent(identNode, contextString);
+@@ -1768,13 +1784,13 @@
+ 
+         ExpressionStatement expressionStatement = null;
+         if (expression != null) {
++            endOfLine();
+             expressionStatement = new ExpressionStatement(expressionLine, expressionToken, finish, expression);
+             appendStatement(expressionStatement);
+         } else {
+             expect(null);
++            endOfLine();
+         }
+-
+-        endOfLine();
+     }
+ 
+     /**
+@@ -2564,7 +2580,7 @@
+                     appendStatement(catchNode);
+                 } finally {
+                     restoreBlock(catchBlock);
+-                    catchBlocks.add(new Block(catchBlock.getToken(), finish, catchBlock.getFlags() | Block.IS_SYNTHETIC, catchBlock.getStatements()));
++                    catchBlocks.add(new Block(catchBlock.getToken(), Math.max(finish, Token.descPosition(catchBlock.getToken())), catchBlock.getFlags() | Block.IS_SYNTHETIC, catchBlock.getStatements()));
+                 }
+ 
+                 // If unconditional catch then should to be the end.
+@@ -3718,6 +3734,7 @@
+         }
+ 
+         if (isStatement) {
++            functionNode.setFlag(FunctionNode.IS_STATEMENT);
+             if (topLevel || useBlockScope() || (!isStrictMode && env.functionDeclarationHoisting && env.functionStatement == ScriptEnvironment.FunctionStatementBehavior.ACCEPT)) {
+                 functionNode.setFlag(FunctionNode.IS_DECLARED);
+             } else if (isStrictMode) {
+@@ -3989,7 +4006,8 @@
+                 ParserContextFunctionNode currentFunction = lc.getCurrentFunction();
+                 if (currentFunction != null) {
+                     // declare function-scope variables for destructuring bindings
+-                    lc.getFunctionBody(currentFunction).appendStatement(new VarNode(paramLine, Token.recast(paramToken, VAR), pattern.getFinish(), identNode, null));
++                    lc.getFunctionBody(currentFunction).appendStatement(
++                            new VarNode(paramLine, Token.recast(paramToken, VAR), pattern.getFinish(), identNode, null).setFlag(VarNode.IS_DESTRUCTURING));
+                     // detect duplicate bounds names in parameter list
+                     currentFunction.addParameterBinding(identNode);
+                     currentFunction.setSimpleParameterList(false);
+@@ -5039,20 +5057,30 @@
+      *     BindingIdentifier
+      */
+     private void importDeclaration() {
++        final long importToken = token;
+         expect(IMPORT);
+         ParserContextModuleNode module = lc.getCurrentModule();
+         if (type == STRING || type == ESCSTRING) {
+             // import ModuleSpecifier ;
+             String moduleSpecifier = (String) getValue();
++            LiteralNode<String> specifier = LiteralNode.newInstance(token, finish, moduleSpecifier);
+             next();
+             module.addModuleRequest(moduleSpecifier);
++            module.addImport(new ImportNode(importToken, Token.descPosition(importToken), finish, specifier));
+         } else {
+             // import ImportClause FromClause ;
+             List<ImportEntry> importEntries;
+-            if (type == MUL) {
+-                importEntries = Collections.singletonList(nameSpaceImport());
++            ImportClauseNode importClause;
++            final long startToken = token;
++            if (type == MUL) {    
++                NameSpaceImportNode namespaceNode = nameSpaceImport();
++                importClause = new ImportClauseNode(startToken, Token.descPosition(startToken), finish, namespaceNode);
++                importEntries = Collections.singletonList(
++                        ImportEntry.importStarAsNameSpaceFrom(namespaceNode.getBindingIdentifier().getName()));
+             } else if (type == LBRACE) {
+-                importEntries = namedImports();
++                NamedImportsNode namedImportsNode = namedImports();
++                importClause = new ImportClauseNode(startToken, Token.descPosition(startToken), finish, namedImportsNode);
++                importEntries = convert(namedImportsNode);
+             } else if (isBindingIdentifier()) {
+                 // ImportedDefaultBinding
+                 IdentNode importedDefaultBinding = bindingIdentifier("ImportedBinding");
+@@ -5060,22 +5088,31 @@
+ 
+                 if (type == COMMARIGHT) {
+                     next();
+-                    importEntries = new ArrayList<>();
+                     if (type == MUL) {
+-                        importEntries.add(nameSpaceImport());
++                        NameSpaceImportNode namespaceNode = nameSpaceImport();
++                        importClause = new ImportClauseNode(startToken, Token.descPosition(startToken), finish, importedDefaultBinding, namespaceNode);
++                        importEntries = new ArrayList<>(2);
++                        importEntries.add(defaultImport);
++                        importEntries.add(ImportEntry.importStarAsNameSpaceFrom(namespaceNode.getBindingIdentifier().getName()));
+                     } else if (type == LBRACE) {
+-                        importEntries.addAll(namedImports());
++                        NamedImportsNode namedImportsNode = namedImports();
++                        importClause = new ImportClauseNode(startToken, Token.descPosition(startToken), finish, importedDefaultBinding, namedImportsNode);
++                        importEntries = convert(namedImportsNode);
++                        importEntries.add(0, defaultImport);
+                     } else {
+                         throw error("expected NameSpaceImport or NamedImports");
+                     }
+                 } else {
++                    importClause = new ImportClauseNode(startToken, Token.descPosition(startToken), finish, importedDefaultBinding);
+                     importEntries = Collections.singletonList(defaultImport);
+                 }
+             } else {
+                 throw error("expected ImportClause or ModuleSpecifier");
+             }
+ 
+-            String moduleSpecifier = fromClause();
++            FromNode fromNode = fromClause();
++            module.addImport(new ImportNode(importToken, Token.descPosition(importToken), finish, importClause, fromNode));
++            String moduleSpecifier = fromNode.getModuleSpecifier().getValue();
+             module.addModuleRequest(moduleSpecifier);
+             for (int i = 0; i < importEntries.size(); i++) {
+                 module.addImportEntry(importEntries.get(i).withFrom(moduleSpecifier));
+@@ -5090,7 +5127,8 @@
+      *
+      * @return imported binding identifier
+      */
+-    private ImportEntry nameSpaceImport() {
++    private NameSpaceImportNode nameSpaceImport() {
++        final long startToken = token;
+         assert type == MUL;
+         next();
+         long asToken = token;
+@@ -5099,7 +5137,7 @@
+             throw error("expected 'as'", asToken);
+         }
+         IdentNode localNameSpace = bindingIdentifier("ImportedBinding");
+-        return ImportEntry.importStarAsNameSpaceFrom(localNameSpace.getName());
++        return new NameSpaceImportNode(startToken, Token.descPosition(startToken), finish, localNameSpace);
+     }
+ 
+     /**
+@@ -5116,10 +5154,11 @@
+      * ImportedBinding :
+      *     BindingIdentifier
+      */
+-    private List<ImportEntry> namedImports() {
++    private NamedImportsNode namedImports() {
++        final long startToken = token;
+         assert type == LBRACE;
+         next();
+-        List<ImportEntry> importEntries = new ArrayList<>();
++        List<ImportSpecifierNode> importSpecifiers = new ArrayList<>();
+         while (type != RBRACE) {
+             boolean bindingIdentifier = isBindingIdentifier();
+             long nameToken = token;
+@@ -5127,11 +5166,13 @@
+             if (type == IDENT && "as".equals(getValue())) {
+                 next();
+                 IdentNode localName = bindingIdentifier("ImportedBinding");
+-                importEntries.add(ImportEntry.importSpecifier(importName.getName(), localName.getName()));
++                importSpecifiers.add(new ImportSpecifierNode(nameToken, Token.descPosition(nameToken), finish, localName, importName));
++                //importEntries.add(ImportEntry.importSpecifier(importName.getName(), localName.getName()));
+             } else if (!bindingIdentifier) {
+                 throw error("expected BindingIdentifier", nameToken);
+             } else {
+-                importEntries.add(ImportEntry.importSpecifier(importName.getName()));
++                importSpecifiers.add(new ImportSpecifierNode(nameToken, Token.descPosition(nameToken), finish, importName, null));
++                //importEntries.add(ImportEntry.importSpecifier(importName.getName()));
+             }
+             if (type == COMMARIGHT) {
+                 next();
+@@ -5140,14 +5181,15 @@
+             }
+         }
+         expect(RBRACE);
+-        return importEntries;
++        return new NamedImportsNode(startToken, Token.descPosition(startToken), finish, importSpecifiers);
+     }
+ 
+     /**
+      * FromClause :
+      *     from ModuleSpecifier
+      */
+-    private String fromClause() {
++    private FromNode fromClause() {
++        int fromStart = start;
+         long fromToken = token;
+         String name = (String) expectValue(IDENT);
+         if (!"from".equals(name)) {
+@@ -5155,8 +5197,9 @@
+         }
+         if (type == STRING || type == ESCSTRING) {
+             String moduleSpecifier = (String) getValue();
++            LiteralNode<String> specifier = LiteralNode.newInstance(token, finish, moduleSpecifier);
+             next();
+-            return moduleSpecifier;
++            return new FromNode(fromToken, fromStart, finish, specifier);
+         } else {
+             throw error(expectMessage(STRING));
+         }
+@@ -5176,26 +5219,34 @@
+      *     export default [lookahead !in {function, class}] AssignmentExpression[In] ;
+      */
+     private void exportDeclaration() {
++        final long exportToken = token;
+         expect(EXPORT);
+         ParserContextModuleNode module = lc.getCurrentModule();
+         switch (type) {
+             case MUL: {
+                 next();
+-                String moduleRequest = fromClause();
++                FromNode from = fromClause();
++                String moduleRequest = from.getModuleSpecifier().getValue();
+                 expect(SEMICOLON);
+                 module.addModuleRequest(moduleRequest);
+                 module.addStarExportEntry(ExportEntry.exportStarFrom(moduleRequest));
++                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, from));
+                 break;
+             }
+             case LBRACE: {
+-                List<ExportEntry> exportEntries = exportClause();
++                ExportClauseNode exportClause = exportClause();
+                 if (type == IDENT && "from".equals(getValue())) {
+-                    String moduleRequest = fromClause();
++                    FromNode from = fromClause();
++                    module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, exportClause, from));
++                    String moduleRequest = from.getModuleSpecifier().getValue();
+                     module.addModuleRequest(moduleRequest);
++                    List<ExportEntry> exportEntries = convert(exportClause);
+                     for (int i = 0; i < exportEntries.size(); i++) {
+                         module.addIndirectExportEntry(exportEntries.get(i).withFrom(moduleRequest));
+                     }
+                 } else {
++                    module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, exportClause));
++                    List<ExportEntry> exportEntries = convert(exportClause);
+                     for (int i = 0; i < exportEntries.size(); i++) {
+                         module.addLocalExportEntry(exportEntries.get(i));
+                     }
+@@ -5227,11 +5278,13 @@
+                         declaration = false;
+                         break;
+                 }
++                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, assignmentExpression, true));
+                 if (ident != null) {
+                     module.addLocalExportEntry(ExportEntry.exportDefault(ident.getName()));
+                 } else {
+                     ident = createIdentNode(Token.recast(rhsToken, IDENT), finish, Module.DEFAULT_EXPORT_BINDING_NAME);
+-                    lc.appendStatementToCurrentNode(new VarNode(lineNumber, Token.recast(rhsToken, LET), finish, ident, assignmentExpression));
++                    lc.appendStatementToCurrentNode(new VarNode(lineNumber, Token.recast(rhsToken, LET), finish, ident, assignmentExpression)
++                            .setFlag(VarNode.IS_EXPORT));
+                     if (!declaration) {
+                         expect(SEMICOLON);
+                     }
+@@ -5246,17 +5299,20 @@
+                 variableStatement(type, true);
+                 for (Statement statement : statements.subList(previousEnd, statements.size())) {
+                     if (statement instanceof VarNode) {
++                        module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, (VarNode) statement));
+                         module.addLocalExportEntry(ExportEntry.exportSpecifier(((VarNode) statement).getName().getName()));
+                     }
+                 }
+                 break;
+             case CLASS: {
+                 ClassNode classDeclaration = classDeclaration(false);
++                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, classDeclaration, false));
+                 module.addLocalExportEntry(ExportEntry.exportSpecifier(classDeclaration.getIdent().getName()));
+                 break;
+             }
+             case FUNCTION: {
+                 FunctionNode functionDeclaration = (FunctionNode) functionExpression(true, true);
++                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, functionDeclaration, false));
+                 module.addLocalExportEntry(ExportEntry.exportSpecifier(functionDeclaration.getIdent().getName()));
+                 break;
+             }
+@@ -5279,18 +5335,22 @@
+      *
+      * @return a list of ExportSpecifiers
+      */
+-    private List<ExportEntry> exportClause() {
++    private ExportClauseNode exportClause() {
++        final long startToken = token;
+         assert type == LBRACE;
+         next();
+-        List<ExportEntry> exports = new ArrayList<>();
++        List<ExportSpecifierNode> exports = new ArrayList<>();
+         while (type != RBRACE) {
++            long nameToken = token;
+             IdentNode localName = getIdentifierName();
+             if (type == IDENT && "as".equals(getValue())) {
+                 next();
+                 IdentNode exportName = getIdentifierName();
+-                exports.add(ExportEntry.exportSpecifier(exportName.getName(), localName.getName()));
++                exports.add(new ExportSpecifierNode(nameToken, Token.descPosition(nameToken), finish, localName, exportName));
++                //exports.add(ExportEntry.exportSpecifier(exportName.getName(), localName.getName()));
+             } else {
+-                exports.add(ExportEntry.exportSpecifier(localName.getName()));
++                exports.add(new ExportSpecifierNode(nameToken, Token.descPosition(nameToken), finish, localName, null));
++                //exports.add(ExportEntry.exportSpecifier(localName.getName()));
+             }
+             if (type == COMMARIGHT) {
+                 next();
+@@ -5299,7 +5359,7 @@
+             }
+         }
+         expect(RBRACE);
+-        return exports;
++        return new ExportClauseNode(startToken, Token.descPosition(startToken), finish, exports);
+     }
+ 
+     @Override
+@@ -5391,4 +5451,28 @@
+     private boolean inGeneratorFunction() {
+         return lc.getCurrentFunction().getKind() == FunctionNode.Kind.GENERATOR;
+     }
++
++    private static List<ImportEntry> convert(NamedImportsNode namedImportsNode) {
++        List<ImportEntry> importEntries = new ArrayList<>(namedImportsNode.getImportSpecifiers().size());
++        for (ImportSpecifierNode s : namedImportsNode.getImportSpecifiers()) {
++            if (s.getIdentifier() != null) {
++                importEntries.add(ImportEntry.importSpecifier(s.getIdentifier().getName(), s.getBindingIdentifier().getName()));
++            } else {
++                importEntries.add(ImportEntry.importSpecifier(s.getBindingIdentifier().getName()));
++            }
++        }
++        return importEntries;
++    }
++
++    private static List<ExportEntry> convert(ExportClauseNode exportClauseNode) {
++        List<ExportEntry> exports = new ArrayList<>(exportClauseNode.getExportSpecifiers().size());
++        for (ExportSpecifierNode s : exportClauseNode.getExportSpecifiers()) {
++            if (s.getExportIdentifier() != null) {
++                exports.add(ExportEntry.exportSpecifier(s.getExportIdentifier().getName(), s.getIdentifier().getName()));
++            } else {
++                exports.add(ExportEntry.exportSpecifier(s.getIdentifier().getName()));
++            }
++        }
++        return exports;
++    }
+ }
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -24,6 +24,8 @@
+  */
+ package com.oracle.js.parser;
+ 
++import com.oracle.js.parser.ir.ExportNode;
++import com.oracle.js.parser.ir.ImportNode;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+@@ -45,6 +47,9 @@
+     private List<ExportEntry> indirectExportEntries = new ArrayList<>();
+     private List<ExportEntry> starExportEntries = new ArrayList<>();
+ 
++    private List<ImportNode> imports = new ArrayList<>();
++    private List<ExportNode> exports = new ArrayList<>();
++
+     /**
+      * Constructor.
+      *
+@@ -63,6 +68,14 @@
+         return name;
+     }
+ 
++    public void addImport(ImportNode importNode) {
++        imports.add(importNode);
++    }
++    
++    public void addExport(ExportNode exportNode) {
++        exports.add(exportNode);
++    }
++    
+     public void addModuleRequest(String moduleRequest) {
+         requestedModules.add(moduleRequest);
+     }
+@@ -84,6 +97,6 @@
+     }
+ 
+     public Module createModule() {
+-        return new Module(requestedModules, importEntries, localExportEntries, indirectExportEntries, starExportEntries);
++        return new Module(requestedModules, importEntries, localExportEntries, indirectExportEntries, starExportEntries, imports, exports);
+     }
+ }
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -58,6 +58,16 @@
+         this.classElements = classElements;
+     }
+ 
++    private ClassNode(final ClassNode classNode, final IdentNode ident, final Expression classHeritage, final PropertyNode constructor,
++                    final List<PropertyNode> classElements) {
++        super(classNode);
++        this.line = classNode.getLineNumber();
++        this.ident = ident;
++        this.classHeritage = classHeritage;
++        this.constructor = constructor;
++        this.classElements = classElements;
++    }
++
+     /**
+      * Class identifier. Optional.
+      */
+@@ -65,6 +75,13 @@
+         return ident;
+     }
+ 
++    private ClassNode setIdent(final IdentNode ident) {
++        if (this.ident == ident) {
++            return this;
++        }
++        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++    }
++
+     /**
+      * The expression of the {@code extends} clause. Optional.
+      */
+@@ -72,6 +89,13 @@
+         return classHeritage;
+     }
+ 
++    private ClassNode setClassHeritage(final Expression classHeritage) {
++        if (this.classHeritage == classHeritage) {
++            return this;
++        }
++        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++    }
++
+     /**
+      * Get the constructor method definition.
+      */
+@@ -79,6 +103,13 @@
+         return constructor;
+     }
+ 
++    private ClassNode setConstructor(final PropertyNode constructor) {
++        if (this.constructor == constructor) {
++            return this;
++        }
++        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++    }
++
+     /**
+      * Get method definitions except the constructor.
+      */
+@@ -86,6 +117,13 @@
+         return Collections.unmodifiableList(classElements);
+     }
+ 
++    private ClassNode setClassElements(final List<PropertyNode> classElements) {
++        if (this.classElements == classElements) {
++            return this;
++        }
++        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++    }
++
+     /**
+      * Returns the line number.
+      */
+@@ -96,7 +134,13 @@
+     @Override
+     public Node accept(final NodeVisitor<? extends LexicalContext> visitor) {
+         if (visitor.enterClassNode(this)) {
+-            return visitor.leaveClassNode(this);
++            IdentNode newIdent = ident == null ? null : (IdentNode) ident.accept(visitor);
++            Expression newClassHeritage = classHeritage == null ? null : (Expression) classHeritage.accept(visitor);
++            PropertyNode newConstructor = constructor == null ? null : (PropertyNode) constructor.accept(visitor);
++            return visitor.leaveClassNode(setIdent(newIdent).
++                    setClassHeritage(newClassHeritage).
++                    setConstructor(newConstructor).
++                    setClassElements(Node.accept(visitor, classElements)));
+         }
+ 
+         return this;
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++import java.util.Collections;
++import java.util.List;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ExportClauseNode extends Node {
++
++    private final List<ExportSpecifierNode> exportSpecifiers;
++
++    public ExportClauseNode(final long token, final int start, final int finish, final List<ExportSpecifierNode> exportSpecifiers) {
++        super(token, start, finish);
++        this.exportSpecifiers = exportSpecifiers;
++    }
++
++    private ExportClauseNode(final ExportClauseNode node, final List<ExportSpecifierNode> exportSpecifiers) {
++        super(node);
++        this.exportSpecifiers = exportSpecifiers;
++    }
++
++    public List<ExportSpecifierNode> getExportSpecifiers() {
++        return Collections.unmodifiableList(exportSpecifiers);
++    }
++
++    public ExportClauseNode setExportSpecifiers(List<ExportSpecifierNode> exportSpecifiers) {
++        if (this.exportSpecifiers == exportSpecifiers) {
++            return this;
++        }
++        return new ExportClauseNode(this, exportSpecifiers);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterExportClauseNode(this)) {
++            return visitor.leaveExportClauseNode(setExportSpecifiers(Node.accept(visitor, exportSpecifiers)));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterExportClauseNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append('{');
++        for (int i = 0; i < exportSpecifiers.size(); i++) {
++            exportSpecifiers.get(i).toString(sb, printType);
++            if (i < exportSpecifiers.size() - 1) {
++                sb.append(", ");
++            }
++        }
++        sb.append('}');
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,186 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ExportNode extends Node {
++
++    private final ExportClauseNode exportClause;
++
++    private final FromNode from;
++
++    private final VarNode var;
++
++    private final Expression expression;
++
++    private final boolean isDefault;
++
++    public ExportNode(final long token, final int start, final int finish, final ExportClauseNode exportClause) {
++        this(token, start, finish, exportClause, null, null, null, false);
++    }
++
++    public ExportNode(final long token, final int start, final int finish, final FromNode from) {
++        this(token, start, finish, null, from, null, null, false);
++    }
++
++    public ExportNode(final long token, final int start, final int finish, final ExportClauseNode exportClause, final FromNode from) {
++        this(token, start, finish, exportClause, from, null, null, false);
++    }
++
++    public ExportNode(final long token, final int start, final int finish, final Expression expression, final boolean isDefault) {
++        this(token, start, finish, null, null, null, expression, isDefault);
++    }
++
++    public ExportNode(final long token, final int start, final int finish, final VarNode var) {
++        this(token, start, finish, null, null, var, null, false);
++    }
++
++    private ExportNode(final long token, final int start, final int finish, final ExportClauseNode exportClause,
++            final FromNode from, final VarNode var, final Expression expression, final boolean isDefault) {
++        super(token, start, finish);
++        this.exportClause = exportClause;
++        this.from = from;
++        this.var = var;
++        this.expression = expression;
++        this.isDefault = isDefault;
++    }
++
++    private ExportNode(final ExportNode node, final ExportClauseNode exportClause,
++            final FromNode from, final VarNode var, final Expression expression) {
++        super(node);
++        this.isDefault = node.isDefault;
++
++        this.exportClause = exportClause;
++        this.from = from;
++        this.var = var;
++        this.expression = expression;
++    }
++
++    public ExportClauseNode getExportClause() {
++        return exportClause;
++    }
++
++    public FromNode getFrom() {
++        return from;
++    }
++
++    public VarNode getVar() {
++        return var;
++    }
++
++    public Expression getExpression() {
++        return expression;
++    }
++
++    public boolean isDefault() {
++        return isDefault;
++    }
++
++    public ExportNode setExportClause(ExportClauseNode exportClause) {
++        if (this.exportClause == exportClause) {
++            return this;
++        }
++        return new ExportNode(this, exportClause, from, var, expression);
++    }
++
++    public ExportNode setFrom(FromNode from) {
++        if (this.from == from) {
++            return this;
++        }
++        return new ExportNode(this, exportClause, from, var, expression);
++    }
++
++    public ExportNode setVar(VarNode var) {
++        if (this.var == var) {
++            return this;
++        }
++        return new ExportNode(this, exportClause, from, var, expression);
++    }
++
++    public ExportNode setExpression(Expression expression) {
++        if (this.expression == expression) {
++            return this;
++        }
++        return new ExportNode(this, exportClause, from, var, expression);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterExportNode(this)) {
++            ExportClauseNode newExportClause = exportClause == null ? null
++                    : (ExportClauseNode) exportClause.accept(visitor);
++            FromNode newFrom = from == null ? null
++                    : (FromNode) from.accept(visitor);
++            VarNode newVar = var == null ? null
++                    : (VarNode) var.accept(visitor);
++            Expression newExpression = expression == null ? null
++                    : (Expression) expression.accept(visitor);
++            return visitor.leaveExportNode(
++                    setExportClause(newExportClause).
++                    setFrom(newFrom).
++                    setVar(newVar).
++                    setExpression(newExpression));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterExportNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append("export ");
++        if (isDefault) {
++            sb.append("default ");
++        }
++        if (expression != null) {
++            expression.toString(sb, printType);
++            if (expression.isAssignment()) {
++                sb.append(';');
++            }
++        } else {
++            if (exportClause == null) {
++                sb.append("* ");
++            } else {
++                exportClause.toString(sb, printType);
++            }
++            if (from != null) {
++                from.toString(sb, printType);
++            }
++            sb.append(';');
++        }
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,101 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ExportSpecifierNode extends Node {
++
++    private final IdentNode identifier;
++
++    private final IdentNode exportIdentifier;
++
++    public ExportSpecifierNode(final long token, final int start, final int finish, final IdentNode identifier, final IdentNode exportIdentifier) {
++        super(token, start, finish);
++        this.identifier = identifier;
++        this.exportIdentifier = exportIdentifier;
++    }
++
++    private ExportSpecifierNode(final ExportSpecifierNode node, final IdentNode identifier, final IdentNode exportIdentifier) {
++        super(node);
++        this.identifier = identifier;
++        this.exportIdentifier = exportIdentifier;
++    }
++
++    public IdentNode getIdentifier() {
++        return identifier;
++    }
++
++    public IdentNode getExportIdentifier() {
++        return exportIdentifier;
++    }
++
++    public ExportSpecifierNode setIdentifier(IdentNode identifier) {
++        if (this.identifier == identifier) {
++            return this;
++        }
++        return new ExportSpecifierNode(this, identifier, exportIdentifier);
++    }
++
++    public ExportSpecifierNode setExportIdentifier(IdentNode exportIdentifier) {
++        if (this.exportIdentifier == exportIdentifier) {
++            return this;
++        }
++        return new ExportSpecifierNode(this, identifier, exportIdentifier);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterExportSpecifierNode(this)) {
++            IdentNode newExportIdentifier = exportIdentifier == null ? null
++                    : (IdentNode) exportIdentifier.accept(visitor);
++            return visitor.leaveExportSpecifierNode(
++                    setIdentifier((IdentNode) identifier.accept(visitor)).setExportIdentifier(newExportIdentifier));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterExportSpecifierNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        if (identifier != null) {
++            identifier.toString(sb, printType);
++            sb.append(" as ");
++        }
++        exportIdentifier.toString(sb, printType);
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,82 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class FromNode extends Node {
++
++    private final LiteralNode<String> moduleSpecifier;
++
++    public FromNode(final long token, final int start, final int finish, final LiteralNode<String> moduleSpecifier) {
++        super(token, start, finish);
++        this.moduleSpecifier = moduleSpecifier;
++    }
++
++    private FromNode(final FromNode node, final LiteralNode<String> moduleSpecifier) {
++        super(node);
++        this.moduleSpecifier = moduleSpecifier;
++    }
++
++    public LiteralNode<String> getModuleSpecifier() {
++        return moduleSpecifier;
++    }
++
++    public FromNode setModuleSpecifier(LiteralNode<String> moduleSpecifier) {
++        if (this.moduleSpecifier == moduleSpecifier) {
++            return this;
++        }
++        return new FromNode(this, moduleSpecifier);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterFromNode(this)) {
++            return visitor.leaveFromNode(
++                    setModuleSpecifier((LiteralNode<String>) moduleSpecifier.accept(visitor)));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterFromNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append("from");
++        sb.append(' ');
++        moduleSpecifier.toString(sb, printType);
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -207,6 +207,9 @@
+     /** Does this function use new.target? */
+     public static final int USES_NEW_TARGET = 1 << 23;
+ 
++    /** Is it a statement? */
++    public static final int IS_STATEMENT = 1 << 24;
++
+     /**
+      * Constructor
+      *
+@@ -314,6 +317,14 @@
+         return Node.accept(visitor, parameters);
+     }
+ 
++    public List<ImportNode> visitImports(final NodeVisitor<? extends LexicalContext> visitor) {
++        return Node.accept(visitor, module.getImports());
++    }
++    
++    public List<ExportNode> visitExports(final NodeVisitor<? extends LexicalContext> visitor) {
++        return Node.accept(visitor, module.getExports());
++    }
++
+     /**
+      * Get the source for this function
+      *
+@@ -737,4 +748,8 @@
+     public Module getModule() {
+         return module;
+     }
++
++    public boolean isStatement() {
++        return getFlag(IS_STATEMENT);
++    }
+ }
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,149 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ImportClauseNode extends Node {
++
++    private final IdentNode defaultBinding;
++
++    private final NameSpaceImportNode nameSpaceImport;
++
++    private final NamedImportsNode namedImports;
++
++    public ImportClauseNode(long token, int start, int finish, final IdentNode defaultBinding) {
++        this(token, start, finish, defaultBinding, null, null);
++    }
++
++    public ImportClauseNode(long token, int start, int finish, final NameSpaceImportNode nameSpaceImport) {
++        this(token, start, finish, null, nameSpaceImport, null);
++    }
++
++    public ImportClauseNode(long token, int start, int finish, final NamedImportsNode namedImportsNode) {
++        this(token, start, finish, null, null, namedImportsNode);
++    }
++
++    public ImportClauseNode(long token, int start, int finish, final IdentNode defaultBinding, final NameSpaceImportNode nameSpaceImport) {
++        this(token, start, finish, defaultBinding, nameSpaceImport, null);
++    }
++
++    public ImportClauseNode(long token, int start, int finish, final IdentNode defaultBinding, final NamedImportsNode namedImports) {
++        this(token, start, finish, defaultBinding, null, namedImports);
++    }
++
++    private ImportClauseNode(long token, int start, int finish, final IdentNode defaultBinding, final NameSpaceImportNode nameSpaceImport, final NamedImportsNode namedImports) {
++        super(token, start, finish);
++        this.defaultBinding = defaultBinding;
++        this.nameSpaceImport = nameSpaceImport;
++        this.namedImports = namedImports;
++    }
++
++    private ImportClauseNode(final ImportClauseNode node, final IdentNode defaultBinding, final NameSpaceImportNode nameSpaceImport, final NamedImportsNode namedImports) {
++        super(node);
++        this.defaultBinding = defaultBinding;
++        this.nameSpaceImport = nameSpaceImport;
++        this.namedImports = namedImports;
++    }
++
++    public IdentNode getDefaultBinding() {
++        return defaultBinding;
++    }
++
++    public NameSpaceImportNode getNameSpaceImport() {
++        return nameSpaceImport;
++    }
++
++    public NamedImportsNode getNamedImports() {
++        return namedImports;
++    }
++
++    public ImportClauseNode setDefaultBinding(IdentNode defaultBinding) {
++        if (this.defaultBinding == defaultBinding) {
++            return this;
++        }
++        return new ImportClauseNode(this, defaultBinding, nameSpaceImport, namedImports);
++    }
++
++    public ImportClauseNode setNameSpaceImport(NameSpaceImportNode nameSpaceImport) {
++        if (this.nameSpaceImport == nameSpaceImport) {
++            return this;
++        }
++        return new ImportClauseNode(this, defaultBinding, nameSpaceImport, namedImports);
++    }
++
++    public ImportClauseNode setNamedImports(NamedImportsNode namedImports) {
++        if (this.namedImports == namedImports) {
++            return this;
++        }
++        return new ImportClauseNode(this, defaultBinding, nameSpaceImport, namedImports);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterImportClauseNode(this)) {
++            IdentNode newDefaultBinding = defaultBinding == null ? null
++                    : (IdentNode) defaultBinding.accept(visitor);
++            NameSpaceImportNode newNameSpaceImport = nameSpaceImport == null ? null
++                    : (NameSpaceImportNode) nameSpaceImport.accept(visitor);
++            NamedImportsNode newNamedImports = namedImports == null ? null
++                    : (NamedImportsNode) namedImports.accept(visitor);
++            return visitor.leaveImportClauseNode(
++                    setDefaultBinding(newDefaultBinding).
++                    setNameSpaceImport(newNameSpaceImport).
++                    setNamedImports(newNamedImports));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterImportClauseNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        if (defaultBinding != null) {
++            defaultBinding.toString(sb, printType);
++            if (nameSpaceImport != null || namedImports != null) {
++                sb.append(',');
++            }
++        }
++
++        if (nameSpaceImport != null) {
++            nameSpaceImport.toString(sb, printType);
++        } else if (namedImports != null) {
++            namedImports.toString(sb, printType);
++        }
++
++    }
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,136 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ImportNode extends Node {
++
++    private final LiteralNode<String> moduleSpecifier;
++
++    private final ImportClauseNode importClause;
++
++    private final FromNode from;
++
++    public ImportNode(final long token, final int start, final int finish, final LiteralNode<String> moduleSpecifier) {
++        this(token, start, finish, moduleSpecifier, null, null);
++    }
++
++    public ImportNode(final long token, final int start, final int finish, final ImportClauseNode importClause, final FromNode from) {
++        this(token, start, finish, null, importClause, from);
++    }
++
++    private ImportNode(final long token, final int start, final int finish, final LiteralNode<String> moduleSpecifier, ImportClauseNode importClause, FromNode from) {
++        super(token, start, finish);
++        this.moduleSpecifier = moduleSpecifier;
++        this.importClause = importClause;
++        this.from = from;
++    }
++
++    private ImportNode(final ImportNode node, final LiteralNode<String> moduleSpecifier, ImportClauseNode importClause, FromNode from) {
++        super(node);
++        this.moduleSpecifier = moduleSpecifier;
++        this.importClause = importClause;
++        this.from = from;
++    }
++
++    public LiteralNode<String> getModuleSpecifier() {
++        return moduleSpecifier;
++    }
++
++    public ImportClauseNode getImportClause() {
++        return importClause;
++    }
++
++    public FromNode getFrom() {
++        return from;
++    }
++
++    public ImportNode setModuleSpecifier(LiteralNode<String> moduleSpecifier) {
++        if (this.moduleSpecifier == moduleSpecifier) {
++            return this;
++        }
++        return new ImportNode(this, moduleSpecifier, importClause, from);
++    }
++
++    public ImportNode setImportClause(ImportClauseNode importClause) {
++        if (this.importClause == importClause) {
++            return this;
++        }
++        return new ImportNode(this, moduleSpecifier, importClause, from);
++    }
++
++    public ImportNode setFrom(FromNode from) {
++        if (this.from == from) {
++            return this;
++        }
++        return new ImportNode(this, moduleSpecifier, importClause, from);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterImportNode(this)) {
++            LiteralNode<String> newModuleSpecifier = moduleSpecifier == null ? null
++                    : (LiteralNode<String>) moduleSpecifier.accept(visitor);
++            ImportClauseNode newImportClause = importClause == null ? null
++                    : (ImportClauseNode) importClause.accept(visitor);
++            FromNode newFrom = from == null ? null
++                    : (FromNode) from.accept(visitor);
++            return visitor.leaveImportNode(
++                    setModuleSpecifier(newModuleSpecifier).
++                    setImportClause(newImportClause).
++                    setFrom(newFrom));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterImportNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append("import");
++        sb.append(' ');
++        if (moduleSpecifier != null) {
++            moduleSpecifier.toString(sb, printType);
++        } else {
++            importClause.toString(sb, printType);
++            sb.append(' ');
++            from.toString(sb, printType);
++        }
++        sb.append(';');
++    }
++
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,101 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class ImportSpecifierNode extends Node {
++
++    private final IdentNode identifier;
++
++    private final IdentNode bindingIdentifier;
++
++    public ImportSpecifierNode(final long token, final int start, final int finish, final IdentNode bindingIdentifier, final IdentNode identifier) {
++        super(token, start, finish);
++        this.identifier = identifier;
++        this.bindingIdentifier = bindingIdentifier;
++    }
++
++    private ImportSpecifierNode(final ImportSpecifierNode node, final IdentNode bindingIdentifier, final IdentNode identifier) {
++        super(node);
++        this.identifier = identifier;
++        this.bindingIdentifier = bindingIdentifier;
++    }
++
++    public IdentNode getIdentifier() {
++        return identifier;
++    }
++
++    public IdentNode getBindingIdentifier() {
++        return bindingIdentifier;
++    }
++
++    public ImportSpecifierNode setIdentifier(IdentNode identifier) {
++        if (this.identifier == identifier) {
++            return this;
++        }
++        return new ImportSpecifierNode(this, identifier, bindingIdentifier);
++    }
++
++    public ImportSpecifierNode setBindingIdentifier(IdentNode bindingIdentifier) {
++        if (this.bindingIdentifier == bindingIdentifier) {
++            return this;
++        }
++        return new ImportSpecifierNode(this, identifier, bindingIdentifier);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterImportSpecifierNode(this)) {
++            IdentNode newIdentifier = identifier == null ? null
++                    : (IdentNode) identifier.accept(visitor);
++            return visitor.leaveImportSpecifierNode(
++                    setBindingIdentifier((IdentNode) bindingIdentifier.accept(visitor)).setIdentifier(newIdentifier));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterImportSpecifierNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        if (identifier != null) {
++            identifier.toString(sb, printType);
++            sb.append(" as ");
++        }
++        bindingIdentifier.toString(sb, printType);
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -151,14 +151,18 @@
+     private final List<ExportEntry> localExportEntries;
+     private final List<ExportEntry> indirectExportEntries;
+     private final List<ExportEntry> starExportEntries;
++    private final List<ImportNode> imports;
++    private final List<ExportNode> exports;
+ 
+     public Module(List<String> requestedModules, List<ImportEntry> importEntries, List<ExportEntry> localExportEntries, List<ExportEntry> indirectExportEntries,
+-                    List<ExportEntry> starExportEntries) {
++                    List<ExportEntry> starExportEntries, List<ImportNode> imports, List<ExportNode> exports) {
+         this.requestedModules = requestedModules;
+         this.importEntries = importEntries;
+         this.localExportEntries = localExportEntries;
+         this.indirectExportEntries = indirectExportEntries;
+         this.starExportEntries = starExportEntries;
++        this.imports = imports;
++        this.exports = exports;
+     }
+ 
+     public List<String> getRequestedModules() {
+@@ -181,9 +185,17 @@
+         return starExportEntries;
+     }
+ 
++    public List<ImportNode> getImports() {
++        return imports;
++    }
++
++    public List<ExportNode> getExports() {
++        return exports;
++    }
++
+     @Override
+     public String toString() {
+         return "Module [requestedModules=" + requestedModules + ", importEntries=" + importEntries + ", localExportEntries=" + localExportEntries + ", indirectExportEntries=" +
+-                        indirectExportEntries + ", starExportEntries=" + starExportEntries + "]";
++                        indirectExportEntries + ", starExportEntries=" + starExportEntries + ", imports=" + imports + ", exports=" + exports + "]";
+     }
+ }
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,82 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class NameSpaceImportNode extends Node {
++
++    private final IdentNode bindingIdentifier;
++
++    public NameSpaceImportNode(final long token, final int start, final int finish, final IdentNode bindingIdentifier) {
++        super(token, start, finish);
++        this.bindingIdentifier = bindingIdentifier;
++    }
++
++    private NameSpaceImportNode(final NameSpaceImportNode node, final IdentNode bindingIdentifier) {
++        super(node);
++        this.bindingIdentifier = bindingIdentifier;
++    }
++
++    public IdentNode getBindingIdentifier() {
++        return bindingIdentifier;
++    }
++
++    public NameSpaceImportNode setBindingIdentifier(IdentNode bindingIdentifier) {
++        if (this.bindingIdentifier == bindingIdentifier) {
++            return this;
++        }
++        return new NameSpaceImportNode(this, bindingIdentifier);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterNameSpaceImportNode(this)) {
++            return visitor.leaveNameSpaceImportNode(
++                    setBindingIdentifier((IdentNode) bindingIdentifier.accept(visitor)));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterNameSpaceImportNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append("* as ");
++        bindingIdentifier.toString(sb, printType);
++    }
++
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++package com.oracle.js.parser.ir;
++
++import com.oracle.js.parser.ir.visitor.NodeVisitor;
++import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++import java.util.Collections;
++import java.util.List;
++
++/**
++ *
++ * @author Petr Hejl
++ */
++public class NamedImportsNode extends Node {
++
++    private final List<ImportSpecifierNode> importSpecifiers;
++
++    public NamedImportsNode(final long token, final int start, final int finish, final List<ImportSpecifierNode> importSpecifiers) {
++        super(token, start, finish);
++        this.importSpecifiers = importSpecifiers;
++    }
++
++    private NamedImportsNode(final NamedImportsNode node, final List<ImportSpecifierNode> importSpecifiers) {
++        super(node);
++        this.importSpecifiers = importSpecifiers;
++    }
++
++    public List<ImportSpecifierNode> getImportSpecifiers() {
++        return Collections.unmodifiableList(importSpecifiers);
++    }
++
++    public NamedImportsNode setImportSpecifiers(List<ImportSpecifierNode> importSpecifiers) {
++        if (this.importSpecifiers == importSpecifiers) {
++            return this;
++        }
++        return new NamedImportsNode(this, importSpecifiers);
++    }
++
++    @Override
++    public Node accept(NodeVisitor<? extends LexicalContext> visitor) {
++        if (visitor.enterNamedImportsNode(this)) {
++            return visitor.leaveNamedImportsNode(setImportSpecifiers(Node.accept(visitor, importSpecifiers)));
++        }
++
++        return this;
++    }
++
++    @Override
++    public <R> R accept(TranslatorNodeVisitor<? extends LexicalContext, R> visitor) {
++        return visitor.enterNamedImportsNode(this);
++    }
++
++    @Override
++    public void toString(StringBuilder sb, boolean printType) {
++        sb.append('{');
++        for (int i = 0; i < importSpecifiers.size(); i++) {
++            importSpecifiers.get(i).toString(sb, printType);
++            if (i < importSpecifiers.size() - 1) {
++                sb.append(", ");
++            }
++        }
++        sb.append('}');
++    }
++
++}
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -60,6 +60,12 @@
+      *  a program node */
+     public static final int IS_LAST_FUNCTION_DECLARATION = 1 << 2;
+ 
++    /** Flag synthetic export var node */
++    public static final int IS_EXPORT = 1 << 3;
++
++    /** Flag synthetic destructuring var node */
++    public static final int IS_DESTRUCTURING = 1 << 4;
++
+     /**
+      * Constructor
+      *
+@@ -288,4 +294,12 @@
+     public boolean isFunctionDeclaration() {
+         return init instanceof FunctionNode && ((FunctionNode)init).isDeclared();
+     }
++
++    public boolean isExport() {
++        return getFlag(IS_EXPORT);
++    }
++
++    public boolean isDestructuring() {
++        return getFlag(IS_DESTRUCTURING);
++    }
+ }
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -38,16 +38,25 @@
+ import com.oracle.js.parser.ir.DebuggerNode;
+ import com.oracle.js.parser.ir.EmptyNode;
+ import com.oracle.js.parser.ir.ErrorNode;
++import com.oracle.js.parser.ir.ExportClauseNode;
++import com.oracle.js.parser.ir.ExportNode;
++import com.oracle.js.parser.ir.ExportSpecifierNode;
+ import com.oracle.js.parser.ir.ExpressionStatement;
+ import com.oracle.js.parser.ir.ForNode;
++import com.oracle.js.parser.ir.FromNode;
+ import com.oracle.js.parser.ir.FunctionNode;
+ import com.oracle.js.parser.ir.IdentNode;
+ import com.oracle.js.parser.ir.IfNode;
++import com.oracle.js.parser.ir.ImportClauseNode;
++import com.oracle.js.parser.ir.ImportNode;
++import com.oracle.js.parser.ir.ImportSpecifierNode;
+ import com.oracle.js.parser.ir.IndexNode;
+ import com.oracle.js.parser.ir.JoinPredecessorExpression;
+ import com.oracle.js.parser.ir.LabelNode;
+ import com.oracle.js.parser.ir.LexicalContext;
+ import com.oracle.js.parser.ir.LiteralNode;
++import com.oracle.js.parser.ir.NameSpaceImportNode;
++import com.oracle.js.parser.ir.NamedImportsNode;
+ import com.oracle.js.parser.ir.Node;
+ import com.oracle.js.parser.ir.ObjectNode;
+ import com.oracle.js.parser.ir.PropertyNode;
+@@ -352,6 +361,30 @@
+         return leaveDefault(errorNode);
+     }
+ 
++    public boolean enterExportClauseNode(final ExportClauseNode exportClauseNode) {
++        return enterDefault(exportClauseNode);
++    }
++
++    public Node leaveExportClauseNode(final ExportClauseNode exportClauseNode) {
++        return leaveDefault(exportClauseNode);
++    }
++
++    public boolean enterExportNode(final ExportNode exportNode) {
++        return enterDefault(exportNode);
++    }
++
++    public Node leaveExportNode(final ExportNode exportNode) {
++        return leaveDefault(exportNode);
++    }
++
++    public boolean enterExportSpecifierNode(final ExportSpecifierNode exportSpecifierNode) {
++        return enterDefault(exportSpecifierNode);
++    }
++
++    public Node leaveExportSpecifierNode(final ExportSpecifierNode exportSpecifierNode) {
++        return leaveDefault(exportSpecifierNode);
++    }
++
+     /**
+      * Callback for entering an ExpressionStatement
+      *
+@@ -412,6 +445,14 @@
+         return leaveDefault(forNode);
+     }
+ 
++    public boolean enterFromNode(final FromNode fromNode) {
++        return enterDefault(fromNode);
++    }
++
++    public Node leaveFromNode(final FromNode fromNode) {
++        return leaveDefault(fromNode);
++    }
++
+     /**
+      * Callback for entering a FunctionNode
+      *
+@@ -472,6 +513,30 @@
+         return leaveDefault(ifNode);
+     }
+ 
++    public boolean enterImportClauseNode(final ImportClauseNode importClauseNode) {
++        return enterDefault(importClauseNode);
++    }
++
++    public Node leaveImportClauseNode(final ImportClauseNode importClauseNode) {
++        return leaveDefault(importClauseNode);
++    }
++
++    public boolean enterImportNode(final ImportNode importNode) {
++        return enterDefault(importNode);
++    }
++
++    public Node leaveImportNode(final ImportNode importNode) {
++        return leaveDefault(importNode);
++    }
++
++    public boolean enterImportSpecifierNode(final ImportSpecifierNode importSpecifierNode) {
++        return enterDefault(importSpecifierNode);
++    }
++
++    public Node leaveImportSpecifierNode(final ImportSpecifierNode importSpecifierNode) {
++        return leaveDefault(importSpecifierNode);
++    }
++
+     /**
+      * Callback for entering an IndexNode
+      *
+@@ -532,6 +597,22 @@
+         return leaveDefault(literalNode);
+     }
+ 
++    public boolean enterNameSpaceImportNode(final NameSpaceImportNode nameSpaceImportNode) {
++        return enterDefault(nameSpaceImportNode);
++    }
++
++    public Node leaveNameSpaceImportNode(final NameSpaceImportNode nameSpaceImportNode) {
++        return leaveDefault(nameSpaceImportNode);
++    }
++
++    public boolean enterNamedImportsNode(final NamedImportsNode namedImportsNode) {
++        return enterDefault(namedImportsNode);
++    }
++
++    public Node leaveNamedImportsNode(final NamedImportsNode namedImportsNode) {
++        return leaveDefault(namedImportsNode);
++    }
++
+     /**
+      * Callback for entering an ObjectNode
+      *
+diff -r 4baa8b862456 -r 1f287f65c0f4 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Mon Jun 13 12:16:30 2016 +0200
+@@ -38,16 +38,25 @@
+ import com.oracle.js.parser.ir.DebuggerNode;
+ import com.oracle.js.parser.ir.EmptyNode;
+ import com.oracle.js.parser.ir.ErrorNode;
++import com.oracle.js.parser.ir.ExportClauseNode;
++import com.oracle.js.parser.ir.ExportNode;
++import com.oracle.js.parser.ir.ExportSpecifierNode;
+ import com.oracle.js.parser.ir.ExpressionStatement;
+ import com.oracle.js.parser.ir.ForNode;
++import com.oracle.js.parser.ir.FromNode;
+ import com.oracle.js.parser.ir.FunctionNode;
+ import com.oracle.js.parser.ir.IdentNode;
+ import com.oracle.js.parser.ir.IfNode;
++import com.oracle.js.parser.ir.ImportClauseNode;
++import com.oracle.js.parser.ir.ImportNode;
++import com.oracle.js.parser.ir.ImportSpecifierNode;
+ import com.oracle.js.parser.ir.IndexNode;
+ import com.oracle.js.parser.ir.JoinPredecessorExpression;
+ import com.oracle.js.parser.ir.LabelNode;
+ import com.oracle.js.parser.ir.LexicalContext;
+ import com.oracle.js.parser.ir.LiteralNode;
++import com.oracle.js.parser.ir.NameSpaceImportNode;
++import com.oracle.js.parser.ir.NamedImportsNode;
+ import com.oracle.js.parser.ir.Node;
+ import com.oracle.js.parser.ir.ObjectNode;
+ import com.oracle.js.parser.ir.PropertyNode;
+@@ -220,6 +229,18 @@
+         return enterDefault(errorNode);
+     }
+ 
++    public R enterExportClauseNode(final ExportClauseNode exportClauseNode) {
++        return enterDefault(exportClauseNode);
++    }
++
++    public R enterExportNode(final ExportNode exportNode) {
++        return enterDefault(exportNode);
++    }
++
++    public R enterExportSpecifierNode(final ExportSpecifierNode exportSpecifierNode) {
++        return enterDefault(exportSpecifierNode);
++    }
++
+     /**
+      * Callback for entering an ExpressionStatement
+      *
+@@ -250,6 +271,10 @@
+         return enterDefault(forNode);
+     }
+ 
++    public R enterFromNode(final FromNode fromNode) {
++        return enterDefault(fromNode);
++    }
++
+     /**
+      * Callback for entering a FunctionNode
+      *
+@@ -280,6 +305,18 @@
+         return enterDefault(ifNode);
+     }
+ 
++    public R enterImportClauseNode(final ImportClauseNode importClauseNode) {
++        return enterDefault(importClauseNode);
++    }
++
++    public R enterImportNode(final ImportNode importNode) {
++        return enterDefault(importNode);
++    }
++
++    public R enterImportSpecifierNode(final ImportSpecifierNode importSpecifierNode) {
++        return enterDefault(importSpecifierNode);
++    }
++
+     /**
+      * Callback for entering an IndexNode
+      *
+@@ -310,6 +347,14 @@
+         return enterDefault(literalNode);
+     }
+ 
++    public R enterNameSpaceImportNode(final NameSpaceImportNode nameSpaceImportNode) {
++        return enterDefault(nameSpaceImportNode);
++    }
++
++    public R enterNamedImportsNode(final NamedImportsNode namedImportsNode) {
++        return enterDefault(namedImportsNode);
++    }
++
+     /**
+      * Callback for entering an ObjectNode
+      *

@@ -51,10 +51,11 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.ParameterFormat;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -147,7 +148,22 @@ public class JsDocumentationCodeCompletion {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
-            tag.formatParameters(formatter);
+            List<ParameterFormat> formats = tag.getParameters();
+            if (formats != null) {
+                for (ParameterFormat f : formats) {
+                    String pre = f.getPre();
+                    if (pre != null) {
+                        formatter.appendText(pre);
+                    }
+                    formatter.parameters(true);
+                    formatter.appendText(f.getParam());
+                    formatter.parameters(false);
+                    String post = f.getPost();
+                    if (post != null) {
+                        formatter.appendText(post);
+                    }
+                }
+            }
             return formatter.getText();
         }
 
