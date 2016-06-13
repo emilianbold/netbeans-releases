@@ -200,7 +200,7 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
                 urls.toArray(new URL[urls.size()]), 
                 getClass().getClassLoader());
         try {
-            agentClassLoader.loadClass("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
+            agentClassLoader.loadClass("org.netbeans.lib.jshell.agent.AgentWorker"); // NOI18N
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(NbJShellAgent.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -270,7 +270,7 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
     public void run() {
         LOG.setLevel(Level.FINE);
         try {
-            workerClass = Class.forName("jdk.internal.jshell.remote.AgentWorker", true, createClassLoader()); //createClassLoader().loadClass("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
+            workerClass = Class.forName("org.netbeans.lib.jshell.agent.AgentWorker", true, createClassLoader()); //createClassLoader().loadClass("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
             workerCtor = workerClass.getConstructor(NbJShellAgent.class, Socket.class);
         } catch (ClassNotFoundException ex) {        
             LOG.log(Level.WARNING, "Could not load worker class: ", ex); // NOI18N

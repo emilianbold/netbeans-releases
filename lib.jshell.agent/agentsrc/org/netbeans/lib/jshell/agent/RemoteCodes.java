@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,27 +23,25 @@
  * questions.
  */
 
-package jdk.internal.jshell.remote;
+package org.netbeans.lib.jshell.agent;
 
 /**
- * The exception thrown on the remote side upon executing a
- * {@link jdk.jshell.Snippet.Status#RECOVERABLE_DEFINED RECOVERABLE_DEFINED}
- * user method. This exception is not seen by the end user nor through the API.
+ * Communication constants shared between the main process and the remote
+ * execution process
  * @author Robert Field
  */
-@SuppressWarnings("serial")             // serialVersionUID intentionally omitted
-public class RemoteResolutionException extends RuntimeException {
+public class RemoteCodes {
+    // Command codes
+    public static final int CMD_EXIT       = 0;
+    public static final int CMD_LOAD       = 1;
+    public static final int CMD_INVOKE     = 3;
+    public static final int CMD_CLASSPATH  = 4;
+    public static final int CMD_VARVALUE   = 5;
 
-    final int id;
-
-    /**
-     * The throw of this exception is generated into the body of a
-     * {@link jdk.jshell.Snippet.Status#RECOVERABLE_DEFINED RECOVERABLE_DEFINED}
-     * method.
-     * @param id An internal identifier of the specific method
-     */
-    public RemoteResolutionException(int id) {
-        super("RemoteResolutionException");
-        this.id = id;
-    }
+    // Return result codes
+    public static final int RESULT_SUCCESS   = 100;
+    public static final int RESULT_FAIL      = 101;
+    public static final int RESULT_EXCEPTION = 102;
+    public static final int RESULT_CORRALLED = 103;
+    public static final int RESULT_KILLED    = 104;
 }

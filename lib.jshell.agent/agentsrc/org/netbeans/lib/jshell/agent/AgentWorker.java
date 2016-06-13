@@ -39,13 +39,15 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package jdk.internal.jshell.remote;
+package org.netbeans.lib.jshell.agent;
 
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Field;
@@ -64,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import static jdk.internal.jshell.remote.RemoteCodes.RESULT_KILLED;
+import static org.netbeans.lib.jshell.agent.RemoteCodes.RESULT_KILLED;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
 /**
@@ -211,7 +213,6 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         command.run();
     }
     
-    @Override
     protected void prepareClassLoader() {
         try {
             ClassLoader current = loaderProvider.call();
@@ -243,12 +244,28 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         this.userExecutor = findExecutor();
     }
     
+    void commandLoop(ObjectInputStream in, OutputStream socketOut) throws IOException {
+//        System.setOut(new PrintStream(new MultiplexingOutputStream("out", socketOut), true));
+//        System.setErr(new PrintStream(new MultiplexingOutputStream("err", socketOut), true));
+        ObjectOutputStream out = new ObjectOutputStream(new MultiplexingOutputStream("command", socketOut));
+        while (true) {
+            int cmd = in.readInt();
+            performCommand(cmd, in, out);
+        }
+    }
+    
     public static void main(String[] args) throws Exception {
         String loopBack = null;
         Socket socket = new Socket(loopBack, Integer.parseInt(args[0]));
         try {
-            (new AgentWorker()).commandLoop(new ObjectInputStream(socket.getInputStream()),
-                    new ObjectOutputStream(socket.getOutputStream()));
+            AgentWorker worker = new AgentWorker();
+            OutputStream socketOut = socket.getOutputStream();
+            System.setOut(new PrintStream(new MultiplexingOutputStream("out", socketOut), true));
+            System.setErr(new PrintStream(new MultiplexingOutputStream("err", socketOut), true));
+            worker.commandLoop(
+                    new ObjectInputStream(socket.getInputStream()),
+                    socketOut
+            );
         } catch (EOFException ex) {
             // ignore, forcible close by the tool
         }
@@ -257,11 +274,11 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     @Override
     public void run() {
         // reset the classloader
-        ObjectOutputStream osm = null;
+        OutputStream osm = null;
         ObjectInputStream ism = null;
         try {
             // will block, but this is necessary so the IDE eventually sets the debuggerKey
-            osm = new ObjectOutputStream(socket.getOutputStream());
+            osm = socket.getOutputStream();
             // will read immediately
             ism = new ObjectInputStream(socket.getInputStream());
             commandLoop(ism, osm);

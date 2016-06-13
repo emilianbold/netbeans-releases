@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package jdk.internal.jshell.remote;
+package org.netbeans.lib.jshell.agent;
 
 import java.io.IOException;
 import java.net.URL;

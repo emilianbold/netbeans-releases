@@ -23,33 +23,42 @@
  * questions.
  */
 
+package org.netbeans.lib.jshell.agent;
 
-package jdk.internal.jshell.remote;
-
-import java.util.regex.Pattern;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.CodeSource;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Communication constants shared between the main process and the remote
- * execution process
+ * Class loader wrapper which caches class files by name until requested.
  * @author Robert Field
  */
-public class RemoteCodes {
-    // Command codes
-    public static final int CMD_EXIT       = 0;
-    public static final int CMD_LOAD       = 1;
-    public static final int CMD_INVOKE     = 3;
-    public static final int CMD_CLASSPATH  = 4;
-    public static final int CMD_VARVALUE   = 5;
+class RemoteClassLoader extends URLClassLoader {
 
-    // Return result codes
-    public static final int RESULT_SUCCESS   = 100;
-    public static final int RESULT_FAIL      = 101;
-    public static final int RESULT_EXCEPTION = 102;
-    public static final int RESULT_CORRALLED = 103;
-    public static final int RESULT_KILLED    = 104;
+    private final Map<String, byte[]> classObjects = new TreeMap<String, byte[]>();
 
-    public static final String DOIT_METHOD_NAME = "do_it$";
-    public static final String replClass = "\\$REPL(?<num>\\d+)[A-Z]*";
-    public static final Pattern prefixPattern = Pattern.compile("(REPL\\.)?" + replClass + "[\\$\\.]?");
+    RemoteClassLoader() {
+        super(new URL[0]);
+    }
+
+    void delare(String name, byte[] bytes) {
+        classObjects.put(name, bytes);
+    }
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        byte[] b = classObjects.get(name);
+        if (b == null) {
+            return super.findClass(name);
+        }
+        return super.defineClass(name, b, 0, b.length, (CodeSource) null);
+    }
+
+    @Override
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
 
 }

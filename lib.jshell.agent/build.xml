@@ -23,7 +23,7 @@
         <jar jarfile="${cluster}/modules/ext/nb-custom-jshell-probe.jar">
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
-                <attribute name="Main-Class" value="jdk.internal.jshell.remote.AgentWorker"/>
+                <attribute name="Main-Class" value="org.netbeans.lib.jshell.agent.AgentWorker"/>
                 <attribute name="Premain-Class" value="org.netbeans.lib.jshell.agent.NbJShellAgent"/>
                 <attribute name="Can-Redefine-Classes" value="true"/>
                 <attribute name="Can-Retransform-Classes" value="true"/>

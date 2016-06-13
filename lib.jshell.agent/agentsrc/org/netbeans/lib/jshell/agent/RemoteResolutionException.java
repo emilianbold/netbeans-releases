@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,42 +23,27 @@
  * questions.
  */
 
-package jdk.internal.jshell.remote;
-
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.CodeSource;
-import java.util.Map;
-import java.util.TreeMap;
+package org.netbeans.lib.jshell.agent;
 
 /**
- * Class loader wrapper which caches class files by name until requested.
+ * The exception thrown on the remote side upon executing a
+ * {@link jdk.jshell.Snippet.Status#RECOVERABLE_DEFINED RECOVERABLE_DEFINED}
+ * user method. This exception is not seen by the end user nor through the API.
  * @author Robert Field
  */
-class RemoteClassLoader extends URLClassLoader {
+@SuppressWarnings("serial")             // serialVersionUID intentionally omitted
+public class RemoteResolutionException extends RuntimeException {
 
-    final Map<String, byte[]> classObjects = new TreeMap<String, byte[]>();
+    final int id;
 
-    RemoteClassLoader() {
-        super(new URL[0]);
+    /**
+     * The throw of this exception is generated into the body of a
+     * {@link jdk.jshell.Snippet.Status#RECOVERABLE_DEFINED RECOVERABLE_DEFINED}
+     * method.
+     * @param id An internal identifier of the specific method
+     */
+    public RemoteResolutionException(int id) {
+        super("RemoteResolutionException");
+        this.id = id;
     }
-
-    void delare(String name, byte[] bytes) {
-        classObjects.put(name, bytes);
-    }
-
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        byte[] b = classObjects.get(name);
-        if (b == null) {
-            return super.findClass(name);
-        }
-        return super.defineClass(name, b, 0, b.length, (CodeSource) null);
-    }
-
-    @Override
-    public void addURL(URL url) {
-        super.addURL(url);
-    }
-
 }
