@@ -5193,6 +5193,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                     }
                     break;
+                case BLOCK:
+                    return null;
             }
             lastTree = tree;
             path = path.getParentPath();
