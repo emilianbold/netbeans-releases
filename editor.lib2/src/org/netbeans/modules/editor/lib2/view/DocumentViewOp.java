@@ -1621,6 +1621,10 @@ public final class DocumentViewOp
                     for (MouseWheelListener listener : mwls) {
                         if (listener instanceof MouseWheelDelegator) {
                             scrollPane.removeMouseWheelListener(listener);
+                            if (delegateListener == null) {
+                                delegateListener = ((MouseWheelDelegator) listener).delegateListener;
+                                scrollPane.addMouseWheelListener(this);
+                            }
                         } else { // Regular listener 
                             // Current patch only assumes one MW listener attached by the UI impl.
                             if (delegateListener == null) {
