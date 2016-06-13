@@ -90,6 +90,8 @@ public class AddCaretSelectNextAction extends AbstractEditorAction {
                 }
                 findSupport.putFindProperties(props);
                 findSupport.find(null, false);
+                props.put(EditorFindSupport.ADD_MULTICARET, Boolean.FALSE);
+                findSupport.putFindProperties(props);
             } else {
                 try {
                     int[] identifierBlock = Utilities.getIdentifierBlock((BaseDocument) target.getDocument(), caret.getDot());

@@ -913,8 +913,9 @@ public final class EditorCaret implements Caret {
         }
         synchronized (listenerList) {
             if (blinkTimer != null) {
-                if (this.visible) {
+                if (this.visible && !visible) {
                     blinkTimer.stop();
+                    setShowing(false);
                 }
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.finer("    " + (visible ? "Starting" : "Stopping") + // NOI18N
@@ -922,6 +923,7 @@ public final class EditorCaret implements Caret {
                 }
                 this.visible = visible;
                 if (visible) {
+                    setShowing(true);
                     blinkTimer.start();
                 } else {
                     blinkTimer.stop();
@@ -966,13 +968,12 @@ public final class EditorCaret implements Caret {
         }
         
         component = c;
-        visible = true;
+        setVisible(c.hasFocus());
         modelChanged(null, c.getDocument());
 
         Boolean b = (Boolean) c.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
         overwriteMode = (b != null) ? b : false;
         updateOverwriteModeLayer(true);
-        setShowing(true);
         
         // Attempt to assign initial bounds - usually here the component
         // is not yet added to the component hierarchy.
@@ -2198,19 +2199,20 @@ public final class EditorCaret implements Caret {
         synchronized (listenerList) {
             if (blinkTimer != null) {
                 blinkTimer.stop();
-                setShowing(true);
                 lastBlinkTime = System.currentTimeMillis();
                 if (visible) {
                     if (LOG.isLoggable(Level.FINER)){
                         LOG.finer("EditorCaret.resetBlink: Reset blinking (caret already visible)" + // NOI18N
                                 " - starting the caret blinking timer: " + dumpVisibility() + '\n'); // NOI18N
                     }
+                    setShowing(true);
                     blinkTimer.start();
                 } else {
                     if (LOG.isLoggable(Level.FINER)){
                         LOG.finer("EditorCaret.resetBlink: Reset blinking (caret not visible)" + // NOI18N
                                 " - caret blinking timer not started: " + dumpVisibility() + '\n'); // NOI18N
                     }
+                    setShowing(false);
                 }
             }
         }
