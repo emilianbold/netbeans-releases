@@ -143,9 +143,16 @@ public class ProjectProblemsProviders {
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final ReferenceHelper referenceHelper,
             @NonNull final PropertyEvaluator evaluator,
+            @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack callback,
             @NonNull final String[] properties,
             @NonNull final String[] platformProperties) {
-        final ReferenceProblemProviderImpl pp = new ReferenceProblemProviderImpl(projectHelper, evaluator, referenceHelper, properties, platformProperties);
+        final ReferenceProblemProviderImpl pp = new ReferenceProblemProviderImpl(
+                projectHelper,
+                evaluator,
+                referenceHelper,
+                callback,
+                properties,
+                platformProperties);
         pp.attachListeners();
         return pp;
     }
@@ -416,9 +423,10 @@ public class ProjectProblemsProviders {
     private static Set<ProjectProblemsProvider.ProjectProblem> getPlatformProblems(
             @NullAllowed final PropertyEvaluator evaluator,
             @NonNull final AntProjectHelper helper,
+            @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack callback,
             @NonNull final String[] platformProperties,
             boolean abortAfterFirstProblem) {
-        final Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        final Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         if (evaluator == null) {
             return set;
         }
@@ -440,7 +448,7 @@ public class ProjectProblemsProviders {
                     ProjectProblemsProvider.ProjectProblem.createError(
                         getDisplayName(RefType.PLATFORM, prop),
                         getDescription(RefType.PLATFORM, prop),
-                        new PlatformResolver(prop, pprop, null, evaluator, helper)));
+                        new PlatformResolver(prop, pprop, null, evaluator, helper, callback)));
             }
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
@@ -658,13 +666,15 @@ public class ProjectProblemsProviders {
         private final String platformType;
         private final PropertyEvaluator eval;
         private final AntProjectHelper helper;
+        private final BrokenReferencesSupport.PlatformUpdatedCallBack callback;
 
         PlatformResolver(
                 @NonNull final String id,
                 @NonNull final String propertyName,
                 @NullAllowed final String platformType,
                 @NonNull final PropertyEvaluator eval,
-                @NonNull final AntProjectHelper helper) {
+                @NonNull final AntProjectHelper helper,
+                @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack callback) {
             super(RefType.PLATFORM, id);
             Parameters.notNull("propertyName", propertyName);   //NOI18N
             Parameters.notNull("eval", eval);   //NOI18N
@@ -673,6 +683,7 @@ public class ProjectProblemsProviders {
             this.platformType = platformType;
             this.eval = eval;
             this.helper = helper;
+            this.callback = callback;
         }
 
         @Override
@@ -690,6 +701,7 @@ public class ProjectProblemsProviders {
                     platformType,
                     eval,
                     helper,
+                    callback,
                     ok);
             final DialogDescriptor dd = new DialogDescriptor(
                     fixPlatform,
@@ -1166,6 +1178,7 @@ public class ProjectProblemsProviders {
         private final AntProjectHelper helper;
         private final PropertyEvaluator eval;
         private final ReferenceHelper refHelper;
+        private final BrokenReferencesSupport.PlatformUpdatedCallBack callback;
         private final String[] refProps;
         private final String[] platformProps;
         //@GuardedBy("this")
@@ -1178,6 +1191,7 @@ public class ProjectProblemsProviders {
                 @NonNull final AntProjectHelper helper,
                 @NonNull final PropertyEvaluator eval,
                 @NonNull final ReferenceHelper refHelper,
+                @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack callback,
                 @NonNull final String[] refProps,
                 @NonNull final String[] platformProps) {
             assert helper != null;
@@ -1188,6 +1202,7 @@ public class ProjectProblemsProviders {
             this.helper = helper;
             this.eval = eval;
             this.refHelper = refHelper;
+            this.callback = callback;
             this.refProps = Arrays.copyOf(refProps, refProps.length);
             this.platformProps = Arrays.copyOf(platformProps, platformProps.length);
             this.currentFiles = new HashSet<>();
@@ -1217,7 +1232,7 @@ public class ProjectProblemsProviders {
                                     final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
                                     final Set<File> allFiles = new HashSet<>();
                                     newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,allFiles,false));
-                                    newProblems.addAll(getPlatformProblems(eval, helper, platformProps,false));
+                                    newProblems.addAll(getPlatformProblems(eval, helper, callback, platformProps,false));
                                     updateFileListeners(allFiles);
                                     return Collections.unmodifiableSet(newProblems);
                                 }
