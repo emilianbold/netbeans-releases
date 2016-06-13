@@ -71,11 +71,13 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -93,6 +95,7 @@ final class FixPlatform extends javax.swing.JPanel {
     private final String requiredPlatformId;
     private final PropertyEvaluator eval;
     private final AntProjectHelper helper;
+    private final BrokenReferencesSupport.PlatformUpdatedCallBack callback;
     private final JButton ok;
 
     /**
@@ -104,6 +107,7 @@ final class FixPlatform extends javax.swing.JPanel {
             @NullAllowed final String platformType,
             @NonNull final PropertyEvaluator eval,
             @NonNull final AntProjectHelper helper,
+            @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack callback,
             @NonNull final JButton ok) {
         Parameters.notNull("propertyName", propertyName);   //NOI18N
         Parameters.notNull("requiredPlatformId", requiredPlatformId);   //NOI18N
@@ -114,6 +118,7 @@ final class FixPlatform extends javax.swing.JPanel {
         this.requiredPlatformId = requiredPlatformId;
         this.eval = eval;
         this.helper = helper;
+        this.callback = callback;
         this.ok = ok;
         initComponents();
         ok.setEnabled(false);
@@ -142,10 +147,14 @@ final class FixPlatform extends javax.swing.JPanel {
                     final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     ep.setProperty(propertName, antName);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    if (callback != null) {
+                        callback.platformPropertyUpdated(selected);
+                    }
                     final Project p = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                     ProjectManager.getDefault().saveProject(p);
                     return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
                 } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                     return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED);
                 }
             });
@@ -205,9 +214,10 @@ final class FixPlatform extends javax.swing.JPanel {
                             .addComponent(jLabel1))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(create)
-                            .addComponent(platforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(create)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(platforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
