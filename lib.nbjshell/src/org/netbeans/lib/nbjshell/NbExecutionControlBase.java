@@ -53,6 +53,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -60,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.JShellException;
 import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.lib.nbjshell.RemoteExecutionSupport.ClassControl;
 import org.netbeans.lib.nbjshell.RemoteExecutionSupport.RemoteEnv;
 
 /**
@@ -246,7 +248,18 @@ public abstract class NbExecutionControlBase<T> implements
                 public ObjectOutput         getRemoteOut() { return out; }
                 public boolean              isClosed() { return true; }
                 public void                 shutdown() {}
-            }, null, null, new Object());
+            }, null, new ClassControl() {
+                @Override
+                public Collection nameToRef(String className) {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public boolean redefineClasses(Map bytes) throws IOException {
+                    return false;
+                }
+                
+            }, new Object());
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
