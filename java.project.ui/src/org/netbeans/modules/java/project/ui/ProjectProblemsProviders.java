@@ -72,13 +72,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -109,6 +109,7 @@ import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -128,6 +129,7 @@ import org.openide.util.WeakListeners;
  */
 public class ProjectProblemsProviders {
 
+    static final String PLAT_PROP_ANT_NAME = "platform.ant.name";             //NOI18N
     private static final Logger LOG = Logger.getLogger(ProjectProblemsProviders.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProjectProblemsProviders.class);
 
@@ -180,6 +182,11 @@ public class ProjectProblemsProviders {
                 evaluator,
                 profileProperty,
                 classPathProperties);
+    }
+
+    @NonNull
+    static Future<ProjectProblemsProvider.Result> future(@NullAllowed final ProjectProblemsProvider.Result result) {
+        return new Done(result);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Helper Methods & Types">
@@ -408,6 +415,7 @@ public class ProjectProblemsProviders {
     @NonNull
     private static Set<ProjectProblemsProvider.ProjectProblem> getPlatformProblems(
             @NullAllowed final PropertyEvaluator evaluator,
+            @NonNull final AntProjectHelper helper,
             @NonNull final String[] platformProperties,
             boolean abortAfterFirstProblem) {
         final Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
@@ -432,7 +440,7 @@ public class ProjectProblemsProviders {
                     ProjectProblemsProvider.ProjectProblem.createError(
                         getDisplayName(RefType.PLATFORM, prop),
                         getDescription(RefType.PLATFORM, prop),
-                        new PlatformResolver(prop)));
+                        new PlatformResolver(prop, pprop, null, evaluator, helper)));
             }
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
@@ -478,7 +486,7 @@ public class ProjectProblemsProviders {
         }
         for (JavaPlatform plat : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
             // XXX: this should be defined as PROPERTY somewhere
-            if (platform.equals(plat.getProperties().get("platform.ant.name")) && // NOI18N
+            if (platform.equals(plat.getProperties().get(PLAT_PROP_ANT_NAME)) &&
                     plat.getInstallFolders().size() > 0) {
                 return true;
             }
@@ -646,16 +654,60 @@ public class ProjectProblemsProviders {
     }
 
     private static class PlatformResolver extends BaseResolver {
+        private final String propertyName;
+        private final String platformType;
+        private final PropertyEvaluator eval;
+        private final AntProjectHelper helper;
 
-        PlatformResolver(@NonNull final String id) {
+        PlatformResolver(
+                @NonNull final String id,
+                @NonNull final String propertyName,
+                @NullAllowed final String platformType,
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final AntProjectHelper helper) {
             super(RefType.PLATFORM, id);
+            Parameters.notNull("propertyName", propertyName);   //NOI18N
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("helper", helper);   //NOI18N
+            this.propertyName = propertyName;
+            this.platformType = platformType;
+            this.eval = eval;
+            this.helper = helper;
         }
 
         @Override
         @NonNull
+        @NbBundle.Messages({
+            "TXT_FixBrokenPlatform=Resolve Broken Platform",
+            "LBL_OK=&OK"
+        })
         public Future<ProjectProblemsProvider.Result> resolve() {
-            PlatformsCustomizer.showCustomizer(null);
-            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
+            final JButton ok = new JButton();
+            Mnemonics.setLocalizedText(ok, LBL_OK());
+            final FixPlatform fixPlatform = new FixPlatform(
+                    propertyName,
+                    id,
+                    platformType,
+                    eval,
+                    helper,
+                    ok);
+            final DialogDescriptor dd = new DialogDescriptor(
+                    fixPlatform,
+                    TXT_FixBrokenPlatform(),
+                    true,
+                    new Object[] {
+                        ok,
+                        DialogDescriptor.CANCEL_OPTION
+                    },
+                    ok,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            if (DialogDisplayer.getDefault().notify(dd) == ok) {
+                return fixPlatform.resolve();
+            } else {
+                return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+            }
         }
 
     }
@@ -965,7 +1017,7 @@ public class ProjectProblemsProviders {
                                     } else {
                                         final JavaPlatform jp = changeVersion.getSelectedPlatform();
                                         if (jp != null) {
-                                            final String antName = jp.getProperties().get("platform.ant.name"); //NOI18N
+                                            final String antName = jp.getProperties().get(PLAT_PROP_ANT_NAME);
                                             if (antName != null) {
                                                 final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                                 props.setProperty(platformProp, antName);
@@ -1165,7 +1217,7 @@ public class ProjectProblemsProviders {
                                     final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
                                     final Set<File> allFiles = new HashSet<>();
                                     newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,allFiles,false));
-                                    newProblems.addAll(getPlatformProblems(eval,platformProps,false));
+                                    newProblems.addAll(getPlatformProblems(eval, helper, platformProps,false));
                                     updateFileListeners(allFiles);
                                     return Collections.unmodifiableSet(newProblems);
                                 }
@@ -1485,7 +1537,7 @@ public class ProjectProblemsProviders {
                     null,
                     new Specification(platformType, null));
             for (JavaPlatform javaPlatform : installedPlatforms) {
-                final String antName = javaPlatform.getProperties().get("platform.ant.name"); //NOI18N
+                final String antName = javaPlatform.getProperties().get(PLAT_PROP_ANT_NAME);
                 if (activePlatformId.equals(antName)) {
                     return javaPlatform;
                 }
