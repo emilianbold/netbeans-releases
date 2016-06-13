@@ -55,7 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
-import jdk.jshell.RemoteJShellService;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;

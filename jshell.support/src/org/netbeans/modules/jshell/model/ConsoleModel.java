@@ -66,7 +66,7 @@ import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
-import jdk.jshell.SnippetWrapping;
+import org.netbeans.lib.nbjshell.SnippetWrapping;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -509,8 +509,10 @@ public class ConsoleModel {
                 int snipPos = 0;
                 for (int i = 0; i < cnt; i++) {
                     String text = newInput.getRangeContents(document, ranges[i]);
-                    SnippetWrapping wr = JShellAccessor.wrapInput(shell, text);
-                    snipPos = registerNewSnippet0(wr, newInput, snipPos);
+                    if (!text.isEmpty()) {
+                        SnippetWrapping wr = JShellAccessor.wrapInput(shell, text);
+                        snipPos = registerNewSnippet0(wr, newInput, snipPos);
+                    }
                 }
             }
             this.newSection = newInput;
@@ -975,19 +977,14 @@ public class ConsoleModel {
 
         switch (stat) {
             case REJECTED: {
-                /*
-                Snippet wrap = JShellAccessor.snippetWrap(shell, snip);
+                SnippetWrapping wrap = JShellAccessor.snippetWrap(shell, snip);
                 // special processing: the rejected snippet may have no wrapping;
                 // in that case, we must create an artificial snippet and register it 
                 // with the new filename.
                 if (executingSection != null) {
-                    List<SnippetEvent> evs = JShellAccessor.createSnippet(shell, snip.source());
-                    if (!evs.isEmpty()) {
-                        registerNewSnippet((ev = evs.get(0)).snippet());
-                    }
+                    registerNewSnippet0(wrap, executingSection, execSnippetOffset);
+                    break;
                 }
-                break;
-                */
                 // fall through - maybe we need to create an additional snippet because
                 // of the snippet key
             }
@@ -1293,6 +1290,10 @@ public class ConsoleModel {
         
         public Snippet.Status getStatus() {
             return wrapping.getStatus();
+        }
+
+        public String getClassName() {
+            return wrapping.getClassName();
         }
     }
     

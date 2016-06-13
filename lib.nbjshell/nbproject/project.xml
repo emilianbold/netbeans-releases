@@ -23,7 +23,10 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>jdk.internal.jshell.jdi</package>
                 <package>jdk.jshell</package>
+                <package>jdk.jshell.spi</package>
+                <package>org.netbeans.lib.nbjshell</package>
             </public-packages>
         </data>
     </configuration>

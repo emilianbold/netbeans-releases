@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package jdk.jshell;
+package org.netbeans.lib.nbjshell;
 
+import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 
@@ -88,4 +89,6 @@ public interface SnippetWrapping {
      * @return position inside the wrapper returned from {@link #getCode}
      */
     public int     getWrappedPosition(int pos);
+    
+    public String  getClassName();
 }

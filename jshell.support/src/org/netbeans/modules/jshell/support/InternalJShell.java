@@ -1266,7 +1266,7 @@ public class InternalJShell {
     }
     //where
     void printUnresolved(UnresolvedReferenceException ex) {
-        MethodSnippet corralled =  ex.getMethodSnippet();
+        DeclarationSnippet corralled =  ex.getSnippet();
         List<Diag> otherErrors = errorsOnly(state.diagnostics(corralled));
         StringBuilder sb = new StringBuilder();
         if (otherErrors.size() > 0) {

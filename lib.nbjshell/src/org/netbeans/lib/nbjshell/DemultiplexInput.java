@@ -39,60 +39,75 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package jdk.jshell;
+package org.netbeans.lib.nbjshell;
 
-import com.sun.tools.javac.jvm.Target;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 
 /**
- * Subclasses JShell and connets certain package-private pro protected
- * services to NetBeans interfaces.
- * 
+ *
  * @author sdedic
  */
-public class EnhancedJShell extends JShell {
-    /**
-     * The remote interface
-     */
-    private final RemoteJShellService execEnv;
+final class DemultiplexInput extends Thread {
     
-    public EnhancedJShell(Builder b, RemoteJShellService env) {
-        super(b);
-        this.execEnv = env;
+    private final DataInputStream delegate;
+    private final PipeInputStream command;
+    private final PrintStream out;
+    private final PrintStream err;
+
+    public DemultiplexInput(InputStream input, PipeInputStream command, PrintStream out, PrintStream err) {
+        super("output reader");
+        this.delegate = new DataInputStream(input);
+        this.command = command;
+        this.out = out;
+        this.err = err;
     }
-    
-    @Override
-    protected ExecutionControl createExecutionControl() {
-        if (execEnv != null) {
-            if (execEnv instanceof JDIRemoteAgent) {
-                ((JDIRemoteAgent)execEnv).init(this);
-            }
-            return new NbExecutionControl(null, execEnv, maps, this);
-        } else {
-            // the backward compatible implementation
-            JDIEnv env = new JDIEnv(this);
-            return new ExecutionControl(env, maps, this);
+
+    public void close() {
+        try {
+            delegate.close();
+        } catch (IOException ex) {
+            // report ?
         }
     }
-    
-    @Override
-    protected List<String> getCompilerOptions() {
-        if (execEnv != null) {
-            String s = execEnv.getTargetSpec();
-            if (s == null) {
-                return super.getCompilerOptions();
+
+    public void run() {
+        try {
+            while (true) {
+                int nameLen = delegate.read();
+                if (nameLen == (-1)) {
+                    break;
+                }
+                byte[] name = new byte[nameLen];
+                DemultiplexInput.this.delegate.readFully(name);
+                int dataLen = delegate.read();
+                byte[] data = new byte[dataLen];
+                DemultiplexInput.this.delegate.readFully(data);
+                switch (new String(name, "UTF-8")) {
+                    case "err":
+                        if (out != null) {
+                            err.write(data);
+                        }
+                        break;
+                    case "out":
+                        if (out != null) {
+                            out.write(data);
+                        }
+                        break;
+                    case "command":
+                        for (byte b : data) {
+                            command.write(Byte.toUnsignedInt(b));
+                        }
+                        break;
+                }
             }
-            List<String> opts = new ArrayList<>();
-            opts.add("-source");
-            opts.add(s);
-            opts.add("-target");
-            opts.add(s);
-            return opts;
-        } else {
-            return super.getCompilerOptions();
+        } catch (IOException ex) {
+            // debug(ex, "Failed reading output");
+        } finally {
+            command.close();
         }
     }
-    
     
 }

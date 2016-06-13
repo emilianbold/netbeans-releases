@@ -116,8 +116,6 @@ public class ConsoleEditor extends CloneableEditor {
         super.componentOpened();
     }
     
-    private volatile JEditorPane pane;
-
     @Override
     protected void componentShowing() {
         super.componentShowing();
@@ -187,7 +185,6 @@ public class ConsoleEditor extends CloneableEditor {
         
         Document d = getEditorPane().getDocument();
         ShellSession s  = ShellSession.get(d);
-        final JShellEnvironment env = ShellRegistry.get().getOwnerEnvironment(s.getConsoleFile());
 
         if (s == null || s == this.session) {
             // some default document, not interesting
@@ -196,6 +193,7 @@ public class ConsoleEditor extends CloneableEditor {
         if (s != this.session && this.session != null) {
             detachFromSession();
         }
+        final JShellEnvironment env = ShellRegistry.get().getOwnerEnvironment(s.getConsoleFile());
         this.session = s;
 
         synchronized (this) {

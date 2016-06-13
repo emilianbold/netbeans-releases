@@ -86,7 +86,7 @@ class ShellDebuggerUtils {
         if (debugger == null) {
             return null;
         }
-        List<JPDAClassType> classes = debugger.getClassesByName("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
+        List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.AgentWorker"); // NOI18N
         if (classes == null || classes.size() != 1) {
             return null;
         }

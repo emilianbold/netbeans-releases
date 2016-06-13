@@ -46,11 +46,13 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Executor;
 import jdk.internal.jshell.remote.RemoteCodes;
-import jdk.jshell.NbExecutionControl;
+import org.netbeans.lib.nbjshell.NbExecutionControl;
+import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.lib.nbjshell.NbExecutionControlBase;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -58,7 +60,7 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author sdedic
  */
-public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, ShellLaunchListener {
+public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implements RemoteJShellAccessor, ShellLaunchListener, NbExecutionControl {
     private final ShellAgent agent;
     
     private boolean added;
@@ -80,13 +82,13 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
     }
 
     @Override
-    public void redefineClasses(Map<Object, byte[]> redefines) throws IOException, IllegalStateException {
+    public boolean redefineClasses(Map<Long, byte[]> redefines) throws IOException, IllegalStateException {
         if (dis == null || dos == null) {
             throw new UnsupportedOperationException("streams not opened");
         }
         dos.writeInt(NbExecutionControl.CMD_REDEFINE);
         dos.writeInt(redefines.size());
-        for (Entry<Object, byte[]> en : redefines.entrySet()) {
+        for (Map.Entry<Long, byte[]> en : redefines.entrySet()) {
             Long l = (Long)en.getKey();
             
             dos.writeLong(l);
@@ -96,7 +98,7 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
         
         int code = dis.readInt();
         if (code == RemoteCodes.RESULT_SUCCESS) {
-            return;
+            return true;
         }
         if (code == RemoteCodes.RESULT_FAIL) {
             String msg = dis.readUTF();
@@ -107,7 +109,19 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
     }
 
     @Override
-    public Object getClassHandle(String className) {
+    protected void shutdown() {
+        requestShutdown();
+        super.shutdown();
+    }
+
+    
+    @Override
+    protected boolean isClosed() {
+        return closed;
+    }
+    
+    @Override
+    public Collection<Long> nameToRef(String className) {
         if (dis == null || dos == null) {
             // no class sent over -> no class ever could be defined.
             return null;
@@ -122,20 +136,23 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
                 return null;
             }
             long l = dis.readLong();
-            return l == -1 ? null : l;
+            return l != -1 ? Collections.singleton(l) : null;
         } catch (IOException ex) {
             return null;
         }
     }
 
     @Override
-    public Executor getCodeExecutor() {
-        return this;
+    public void start(ExecutionEnv ee) throws Exception {
+        getConnection(false);
+        ObjectOutputStream o = getCommandStream();
+        ObjectInputStream i = getResponseStream();
+        init(i, o, ee);
     }
 
     @Override
-    public void waitConnected(long millis) throws IOException {
-        getConnection(false);
+    public void close() {
+        requestShutdown();
     }
 
     /**
@@ -144,7 +161,7 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
      * @throws IllegalStateException 
      */
     @Override
-    public boolean sendStopUserCode() throws IOException {
+    public void stop() {
         int id = this.shellConnection.getRemoteAgentId();
         try (JShellConnection stopConnection = agent.createConnection();
             ObjectInputStream in = new ObjectInputStream(stopConnection.getAgentOutput());
@@ -154,15 +171,9 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
             out.writeInt(NbExecutionControl.CMD_STOP);
             out.writeInt(id);
             out.flush();
-            
             int success = in.readInt();
-            return success == RemoteCodes.RESULT_SUCCESS;
+        } catch (IOException ex) {
         }
-    }
-
-    @Override
-    public String decorateLaunchArgs(String baseArgs) {
-        return baseArgs;
     }
 
     @Override
@@ -195,20 +206,22 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
         }
     }
 
-    @Override
-    public OutputStream getCommandStream() throws IOException {
+    public synchronized ObjectOutputStream getCommandStream() throws IOException {
         if (dos != null) {
             return dos;
         }
         return dos = new ObjectOutputStream(getConnection(true).getAgentInput());
     }
 
-    @Override
-    public InputStream getResponseStream() throws IOException {
+    public synchronized ObjectInputStream getResponseStream() throws IOException {
         if (dis != null) {
             
         }
-        return dis = new ObjectInputStream(getConnection(true).getAgentOutput());
+        return dis = new ObjectInputStream(
+                demultiplexAgentOutput(
+                        getConnection(true).getAgentOutput(),
+                        null, null)
+        );
     }
 
     @Override
@@ -257,11 +270,6 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
             closed = true;
         }
         ShellLaunchManager.getInstance().removeLaunchListener(this);
-    }
-
-    @Override
-    public void execute(Runnable command) {
-        command.run();
     }
 
     @Override

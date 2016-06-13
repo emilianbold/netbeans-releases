@@ -41,13 +41,17 @@
  */
 package jdk.jshell;
 
+import org.netbeans.lib.nbjshell.NbExecutionControl;
+import org.netbeans.lib.nbjshell.SnippetWrapping;
 import com.sun.source.tree.Tree;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.TaskFactory.ParseTask;
 import static jdk.jshell.Util.REPL_DOESNOTMATTER_CLASS_NAME;
+import jdk.jshell.Wrap.CompoundWrap;
 /**
  *
  * @author sdedic
@@ -83,24 +87,6 @@ public class JShellAccessor {
     }
     
     /**
-     * Retrieves key of a snippet
-     * @param snip
-     * @return 
-     */
-    public static Object snippetKey(Snippet snip) {
-        return snip.key();
-    }
-
-    /**
-     * Name of class generated from the snippet
-     * @param snip
-     * @return 
-     */
-    public static String snippetClass(Snippet snip) {
-        return snip.className();
-    }
-    
-    /**
      * Converts position in the original source into position in the wrapped text
      * @param snip snippet which contains the source
      * @param snippetPos index in the original rouce
@@ -109,27 +95,6 @@ public class JShellAccessor {
     public static int getWrappedPosition(Snippet snip, int snippetPos) {
         OuterWrap wrap = snip.outerWrap();
         return wrap == null ? -1 : snip.outerWrap().snippetIndexToWrapIndex(snippetPos);
-    }
-    
-    /**
-     * Attempts to detect the snippet kind for wrapping.
-     * @param state
-     * @param source
-     * @return 
-     */
-    public Tree.Kind snippetKind(JShell state, String source) {
-        String compileSource = Util.trimEnd(new MaskCommentsAndModifiers(source, false).cleared());
-        ParseTask pt = state.taskFactory.new ParseTask(compileSource);
-        if (pt.getDiagnostics().hasOtherThanNotStatementErrors()) {
-            return Tree.Kind.ERRONEOUS;
-        }
-
-        List<? extends Tree> units = pt.units();
-        if (units.isEmpty()) {
-            return null;
-        }
-        Tree unitTree = units.get(0);
-        return unitTree.getKind();
     }
     
     /**
@@ -144,11 +109,7 @@ public class JShellAccessor {
             return new StdWrapper(s);
         }
         String src = s.source();
-        Wrap w = Wrap.methodWrap(src);
-        String imports = state.maps.packageAndImportsExcept(null, null);
-        OuterWrap ow = OuterWrap.wrapInClass(state.maps.packageName(), 
-                REPL_DOESNOTMATTER_CLASS_NAME, imports, src, w);
-        return new ErrWrapper(s, ow, s.kind());
+        return wrapInput(state, src, s);
     }
     
     private static AtomicInteger snippetClassId = new AtomicInteger();
@@ -160,6 +121,13 @@ public class JShellAccessor {
      * @return wrapped source
      */
     public static SnippetWrapping wrapInput(JShell state, String input) {
+        return wrapInput(state, input, null);
+    }
+    
+    public static SnippetWrapping wrapInput(JShell state, String input, Snippet snip) {
+        if (snip != null && input == null) {
+            input = snip.source();
+        }
         //XXX: modifiers/comments!
         String compileSource = new MaskCommentsAndModifiers(input, true).cleared();
         ParseTask pt = state.taskFactory.new ParseTask(compileSource/*, "-XDallowStringFolding=false"*/);
@@ -174,7 +142,7 @@ public class JShellAccessor {
                 
         switch (kind) {
             case IMPORT:
-                w = Wrap.importWrap(compileSource);
+                w = Wrap.simpleWrap(compileSource);
                 snipKind = Snippet.Kind.IMPORT;
                 break;
             case CLASS:
@@ -202,8 +170,9 @@ public class JShellAccessor {
                 break;
         }
         OuterWrap outer;
+        String className = null;
         if (kind == Tree.Kind.IMPORT) {
-            outer = OuterWrap.wrapImport(input, w);
+            outer = state.outerMap.wrapImport(w, null);
         } else {
             int id = snippetClassId.getAndIncrement();
             String idString = Integer.toString(id, Character.MAX_RADIX);
@@ -211,21 +180,35 @@ public class JShellAccessor {
                 idString = "0" + idString;
             }
 
-            String className = REPL_DOESNOTMATTER_CLASS_NAME.replace("00", idString);
-            outer = OuterWrap.wrapInClass(state.maps.packageName(), className, imports, input, w);
+            className = REPL_DOESNOTMATTER_CLASS_NAME.replace("00", idString);
+            // taken from OuterWrapMap.wrappedInClass; method is not public and I need to generate
+            // different names of classes.
+            
+            List<Object> elems = new ArrayList<>(3);
+            elems.add(imports +
+                    "class " + className + " {\n");
+            elems.add(w);
+            elems.add("}\n");
+            CompoundWrap cwr = new Wrap.CompoundWrap(elems.toArray());
+            outer = new OuterWrap(cwr);
+            
         }
-        return new ErrWrapper(null, outer, snipKind);
+        return new ErrWrapper(snip, outer, snipKind, input, className);
     }
     
     private static class ErrWrapper implements SnippetWrapping {
         private final Snippet snippet;
         private final OuterWrap ow;
         private final Snippet.Kind kind;
+        private final String input;
+        private final String className;
         
-        public ErrWrapper(Snippet snippet, OuterWrap ow, Snippet.Kind kind) {
+        public ErrWrapper(Snippet snippet, OuterWrap ow, Snippet.Kind kind, String input, String className) {
             this.snippet = snippet;
             this.ow = ow;
             this.kind = kind;
+            this.input = input;
+            this.className = className;
         }
 
         @Override
@@ -239,7 +222,7 @@ public class JShellAccessor {
         }
         
         public String getSource() {
-            return ow.getUserSource();
+            return input;
         }
 
         @Override
@@ -255,6 +238,15 @@ public class JShellAccessor {
         @Override
         public int getWrappedPosition(int pos) {
             return ow.snippetIndexToWrapIndex(pos);
+        }
+
+        @Override
+        public String getClassName() {
+            if (className != null) {
+                return className;
+            } else {
+                return ow.className();
+            }
         }
     }
 
@@ -292,6 +284,11 @@ public class JShellAccessor {
         @Override
         public int getWrappedPosition(int pos) {
             return snippet.outerWrap().snippetIndexToWrapIndex(pos);
+        }
+
+        @Override
+        public String getClassName() {
+            return snippet.className();
         }
     }
     

@@ -319,9 +319,9 @@ public final class ShellAgent {
     }
     
     public RemoteJShellAccessor createRemoteService() throws IOException {
-        if (closed) {
-            throw new IOException("Closed");
-        }
+//        if (closed) {
+//            throw new IOException("Closed");
+//        }
         JavaPlatform plat = ShellProjectUtils.findPlatform(project);
         String targetSpec = (plat == null || plat == JavaPlatform.getDefault()) ? 
                 null : plat.getSpecification().getVersion().toString();
@@ -331,7 +331,12 @@ public final class ShellAgent {
             }
             return new DebugExecutionEnvironment(this, targetSpec);
         } else {
-            return new RunExecutionEnvironment(this, targetSpec);
+            try {
+                return new RunExecutionEnvironment(this, targetSpec);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return null;
+            }
         }
     }
     

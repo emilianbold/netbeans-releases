@@ -90,7 +90,6 @@ public class SnippetCollector implements SnippetListener {
     public void snippetChange(SnippetEvent ev) {
         Snippet snip = ev.snippet();
         Status stat = ev.status();
-        Object key = JShellAccessor.snippetKey(snip);
         Rng snipRange = getInputRange();
 
         switch (stat) {

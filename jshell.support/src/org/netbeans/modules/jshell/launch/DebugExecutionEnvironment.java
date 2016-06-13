@@ -5,13 +5,23 @@
  */
 package org.netbeans.modules.jshell.launch;
 
+import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.UnaryOperator;
-import jdk.jshell.JDIRemoteAgent;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.lib.nbjshell.NbExecutionControlBase;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -19,15 +29,15 @@ import org.openide.util.NbBundle;
  *
  * @author sdedic
  */
-public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJShellAccessor, ShellLaunchListener {
+public class DebugExecutionEnvironment extends NbExecutionControlBase<ReferenceType> implements RemoteJShellAccessor, ShellLaunchListener {
     private boolean added;
     private volatile JShellConnection shellConnection;
     private boolean closed;
     final ShellAgent agent;
     private String targetSpec;
+    private VirtualMachine vm;
 
     public DebugExecutionEnvironment(ShellAgent agent, String targetSpec) {
-        super(UnaryOperator.identity());
         this.agent = agent;
         this.targetSpec = targetSpec;
     }
@@ -40,6 +50,92 @@ public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJ
     
     public ShellAgent getAgent() {
         return agent;
+    }
+
+    @Override
+    public Collection<ReferenceType> nameToRef(String className) {
+        if (vm == null) {
+            return Collections.emptyList();
+        } else {
+            return vm.classesByName(className);
+        }
+    }
+
+    @Override
+    protected boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    protected void shutdown() {
+        agent.closeConnection(shellConnection);
+    }
+
+    @Override
+    public boolean redefineClasses(Map<ReferenceType, byte[]> toRedefine) throws IOException {
+        if (vm == null) {
+            return false;
+        }
+        vm.redefineClasses(toRedefine);
+        return true;
+    }
+
+    @Override
+    public void start(ExecutionEnv execEnv) throws Exception {
+        JShellConnection c = getConnection(false);
+        VirtualMachine m = c.getVirtualMachine();
+        OutputStream out = c.getAgentInput();
+        InputStream in = c.getAgentOutput();
+        init(in, out, execEnv);
+    }
+
+    @Override
+    public void stop() {
+        synchronized (getLock()) {
+            if (isUserCodeRunning()) {
+                sendStopUserCode();
+            }
+        }
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        closeStreams();
+    }
+    
+    public boolean sendStopUserCode() throws IllegalStateException {
+        vm.suspend();
+        try {
+            ObjectReference myRef = getAgentObjectReference();
+
+            OUTER:
+            for (ThreadReference thread : vm.allThreads()) {
+                // could also tag the thread (e.g. using name), to find it easier
+                AGENT: for (StackFrame frame : thread.frames()) {
+                    String remoteAgentName = "jdk.internal.jshell.remote.RemoteAgent";
+                    if (remoteAgentName.equals(frame.location().declaringType().name()) && "performCommand".equals(frame.location().method().name())) {
+                        ObjectReference thiz = frame.thisObject();
+                        if (myRef != null && myRef != thiz) {
+                            break AGENT;
+                        }
+                        if (((BooleanValue) thiz.getValue(thiz.referenceType().fieldByName("inClientCode"))).value()) {
+                            thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(true));
+                            ObjectReference stopInstance = (ObjectReference) thiz.getValue(thiz.referenceType().fieldByName("stopException"));
+                            vm.resume();
+                            thread.stop(stopInstance);
+                            thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(false));
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (ClassNotLoadedException | IncompatibleThreadStateException | InvalidTypeException ex) {
+            throw new IllegalStateException(ex);
+        } finally {
+            vm.resume();
+        }
+        return false;
     }
 
     @Override
@@ -77,16 +173,6 @@ public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJ
     }
 
     @Override
-    public OutputStream getCommandStream() throws IOException {
-        return getConnection(true).getAgentInput();
-    }
-
-    @Override
-    public InputStream getResponseStream() throws IOException {
-        return getConnection(true).getAgentOutput();
-    }
-
-    @Override
     public synchronized void closeStreams() {
         if (shellConnection == null) {
             return;
@@ -104,14 +190,8 @@ public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJ
         requestShutdown();
     }
 
-    @Override
     protected ObjectReference getAgentObjectReference() {
         return shellConnection.getAgentHandle();
-    }
-
-    @Override
-    protected VirtualMachine acquireVirtualMachine() throws IOException {
-        return getConnection(false).getVirtualMachine();
     }
 
     @Override

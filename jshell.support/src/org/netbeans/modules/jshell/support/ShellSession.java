@@ -82,7 +82,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import jdk.jshell.RemoteJShellService;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
@@ -395,7 +395,7 @@ public class ShellSession {
         boolean editable = editedSnippet >= 0 || snippet.getStatus() == Status.NONEXISTENT;
         String suffix = editedSnippet < 1 ? "" : Integer.toString(editedSnippet);
         return (editable ? EDITED_SNIPPET_CLASS + suffix :  // NOI18N
-                JShellAccessor.snippetClass(snippet.getSnippet())) + ".java"; 
+                snippet.getClassName()) + ".java"; 
     }
     
     /**
@@ -1240,7 +1240,8 @@ public class ShellSession {
     }
     
     public void stopExecutingCode() {
-        if (!model.isExecute()) {
+        JShell shell = this.shell;
+        if (shell == null || !model.isExecute()) {
             return;
         }
         shell.stop();

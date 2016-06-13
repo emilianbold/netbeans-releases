@@ -7,7 +7,7 @@ package org.netbeans.modules.jshell.project;
 
 import org.netbeans.modules.jshell.launch.RemoteJShellAccessor;
 import java.io.IOException;
-import jdk.jshell.RemoteJShellService;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.launch.JShellConnection;

@@ -46,12 +46,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import jdk.jshell.EnhancedJShell;
-import jdk.jshell.JDIRemoteAgent;
-import jdk.jshell.RemoteJShellService;
+import jdk.internal.jshell.jdi.JDIRemoteAgent;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
-import jdk.jshell.NbExecutionControl;
+import org.netbeans.lib.nbjshell.NbExecutionControl;
+import jdk.jshell.spi.ExecutionControl;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +62,7 @@ public class JShellLauncher extends InternalJShell {
 
     private String prefix = "";
     
-    private RemoteJShellService execEnv = null;
+    private ExecutionControl execEnv = null;
 
     /**
      * 
@@ -140,7 +140,10 @@ public class JShellLauncher extends InternalJShell {
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            JShell ret = new EnhancedJShell(createJShell(), execEnv);
+            JShell ret = createJShell().
+                    executionEngine(execEnv).
+                    remoteVMOptions("-classpath", classpath).
+                    build();
             return ret;
         } finally {
             Thread.currentThread().setContextClassLoader(ctxLoader);
