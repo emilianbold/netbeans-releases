@@ -587,14 +587,14 @@ public class EditorPropertySheet extends javax.swing.JPanel
         String suffix;
         switch (language){
             case C:
-                suffix = ".c"; // NOI18N
+                suffix = "_c"; // NOI18N
                 break;
             case HEADER:
-                suffix = ".cpp"; // NOI18N
+                suffix = "_cpp"; // NOI18N
                 break;
             case CPP:
             default:
-                suffix = ".cpp"; // NOI18N
+                suffix = "_cpp"; // NOI18N
                 break;
         }
         if (lastChangedproperty != null) {
@@ -611,27 +611,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
     }
 
     private String loadPreviewExample(String example) {
-        FileObject exampleFile = FileUtil.getConfigFile("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
-        if (exampleFile != null && exampleFile.getSize() > 0) {
-            StringBuilder sb = new StringBuilder((int) exampleFile.getSize());
-            try {
-                InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());
-                char[] buffer = new char[1024];
-                int size;
-                try {
-                    while (0 < (size = is.read(buffer, 0, buffer.length))) {
-                        sb.append(buffer, 0, size);
-                    }
-                } finally {
-                    is.close();
-                }
-            } catch (IOException ioe) {
-                Logger.getLogger(EditorPropertySheet.class.getName()).log(Level.FINE, null, ioe);
-            }
-            return sb.toString();
-        } else {
-            return ""; //NOI18N
-        }
+        return NbBundle.getMessage(EditorPropertySheet.class, example);
     }
 
     private void refreshPreview(JEditorPane pane, Preferences p) {
