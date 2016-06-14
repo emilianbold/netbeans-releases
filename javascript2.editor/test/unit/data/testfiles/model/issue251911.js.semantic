@@ -1,4 +1,4 @@
-var MyLib = new function |>METHOD:MyLib<|() {
+var |>GLOBAL:MyLib<| = new function |>METHOD,UNUSED:MyLib<|() {
     var |>LOCAL_VARIABLE_DECLARATION:_myLib<| = this;
  
     var |>LOCAL_VARIABLE_DECLARATION:TRUE<|   = !0,

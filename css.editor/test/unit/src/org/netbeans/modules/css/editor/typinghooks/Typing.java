@@ -42,16 +42,21 @@
 package org.netbeans.modules.css.editor.typinghooks;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.TestCase;
+import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 /**
@@ -99,20 +104,28 @@ public class Typing {
 
     public void typeChar(final char ch) {
         KeyEvent keyEvent;
+        BaseKit basekit = (BaseKit) pane.getEditorKit();
+        Action a;
         switch (ch) {
             case '\n':
-                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED, EventQueue.getMostRecentEventTime(), 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Enter
+                a = basekit.getActionByName(DefaultEditorKit.insertBreakAction);
+                assertNotNull(a);
+                a.actionPerformed(new ActionEvent(pane, 0, "\n"));
                 break;
             case '\b':
-                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED, EventQueue.getMostRecentEventTime(), 0, KeyEvent.VK_BACK_SPACE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of BackSpace
+                a = basekit.getActionByName(DefaultEditorKit.deletePrevCharAction);
+                assertNotNull(a);
+                a.actionPerformed(new ActionEvent(pane, 0, "\n"));
                 break;
             case '\f':
                 keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED, EventQueue.getMostRecentEventTime(), 0, KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Delete
+                SwingUtilities.processKeyBindings(keyEvent);
                 break;
             default:
                 keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED, EventQueue.getMostRecentEventTime(), 0, KeyEvent.VK_UNDEFINED, ch);
+                SwingUtilities.processKeyBindings(keyEvent);
+
         }
-        SwingUtilities.processKeyBindings(keyEvent);
     }
 
     public void typeText(String text) {
