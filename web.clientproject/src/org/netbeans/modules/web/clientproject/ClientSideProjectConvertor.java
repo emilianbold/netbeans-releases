@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,7 +105,11 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
                 break;
             }
         }
-        assert fileName != null : getChildrenNames(projectDirectory);
+        if (fileName == null) {
+            // #262428
+            LOGGER.log(Level.INFO, "None of {0} found in {1}", new Object[] {Arrays.toString(JSON_FILES), projectDirectory.getNameExt()});
+            return null;
+        }
         if (!StringUtilities.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
@@ -131,17 +136,6 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             LOGGER.log(Level.FINE, jsonFile.getPath(), ex);
         }
         return null;
-    }
-
-    private Object getChildrenNames(FileObject projectDirectory) {
-        StringBuilder sb = new StringBuilder();
-        for (FileObject child : projectDirectory.getChildren()) {
-            if (sb.length() > 0) {
-                sb.append(", "); // NOI18N
-            }
-            sb.append(child.getNameExt());
-        }
-        return sb.toString();
     }
 
     //~ Inner classes
