@@ -893,6 +893,8 @@ class OccurenceBuilder {
             occurences.clear();
             if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
                     Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
+                // we need to build also static methods on parent (syntax is always 'parent::...')
+                buildStaticMethodInvocations(elementInfo, fileScope, cachedOccurences, true);
                 buildMethodInvocations(elementInfo, fileScope, accuracy, cachedOccurences);
                 buildMethodDeclarations(elementInfo, fileScope, cachedOccurences);
                 buildMagicMethodDeclarations(elementInfo, fileScope, cachedOccurences);
@@ -930,7 +932,7 @@ class OccurenceBuilder {
             }
             if (elementInfo.setDeclarations(methods)) {
                 occurences.clear();
-                buildStaticMethodInvocations(elementInfo, fileScope, occurences);
+                buildStaticMethodInvocations(elementInfo, fileScope, occurences, false);
                 buildMethodDeclarations(elementInfo, fileScope, occurences);
             }
         }
@@ -1259,15 +1261,8 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     Expression dispatcher = nodeInfo.getOriginalNode().getDispatcher();
                     if (!CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                        QualifiedName clzName = QualifiedName.create(dispatcher);
                         final Scope scope = entry.getValue().getInScope();
-                        if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                                clzName = QualifiedName.create(((TypeScope) scope).getName());
-                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                                clzName = ((ClassScope) scope).getSuperClassName();
-                            }
-                        }
+                        QualifiedName clzName = resolveClassName(QualifiedName.create(dispatcher), scope);
                         if (clzName != null && clzName.toString().length() > 0) {
                             clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
@@ -1331,7 +1326,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
+    private void buildStaticMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences, boolean onParentOnly) {
         Collection<QualifiedName> matchingTypeNames = new HashSet<>();
         Collection<QualifiedName> notMatchingTypeNames = new HashSet<>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
@@ -1350,14 +1345,14 @@ class OccurenceBuilder {
                     QualifiedName clzName = QualifiedName.create(dispatcher);
                     if (clzName != null) {
                         final Scope scope = entry.getValue().getInScope();
-                        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
-                                clzName = QualifiedName.create(((TypeScope) scope).getName());
-                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                                clzName = ((ClassScope) scope).getSuperClassName();
-                            }
+                        if (onParentOnly
+                                && !isParent(clzName)) {
+                            continue;
                         }
-                        if (clzName != null && clzName.toString().length() > 0 && methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                        clzName = resolveClassName(clzName, scope);
+                        if (clzName != null
+                                && clzName.toString().length() > 0
+                                && methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
                             clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
@@ -1437,14 +1432,7 @@ class OccurenceBuilder {
                     QualifiedName clzName = QualifiedName.create(dispatcher);
                     if (clzName != null) {
                         final TypeScope scope = ModelUtils.getTypeScope(entry.getValue());
-                        if (clzName.getKind().isUnqualified() && scope != null) {
-                            if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                                    || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                                clzName = QualifiedName.create(scope.getName());
-                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                                clzName = ((ClassScope) scope).getSuperClassName();
-                            }
-                        }
+                        clzName = resolveClassName(clzName, scope);
                         if (clzName != null && clzName.toString().length() > 0) {
                             clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
@@ -2076,17 +2064,7 @@ class OccurenceBuilder {
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
         assert clzName != null : elementInfo.getQualifiedName();
         TypeScope scope = ModelUtils.getTypeScope(elementInfo.getScope());
-        if (scope != null
-                && clzName.getKind().isUnqualified()) {
-            final String name = clzName.getName();
-            if (name.equalsIgnoreCase("self") // NOI18N
-                    || name.equalsIgnoreCase("static")) { // NOI18N
-                clzName = scope.getFullyQualifiedName();
-            } else if (name.equalsIgnoreCase("parent") // NOI18N
-                    && scope instanceof ClassScope) {
-                clzName = ((ClassScope) scope).getSuperClassName();
-            }
-        }
+        clzName = resolveClassName(clzName, scope);
         if (clzName != null
                 && clzName.toString().length() > 0) {
             if (!clzName.getKind().isFullyQualified()) {
@@ -2116,6 +2094,36 @@ class OccurenceBuilder {
         }
         return false;
     }
+
+    // #247082 - 'self', '$this' etc. can be used also inside anonymous functions
+    private static QualifiedName resolveClassName(QualifiedName clzName, Scope scope) {
+        if (!clzName.getKind().isUnqualified()) {
+            return clzName;
+        }
+        final String name = clzName.getName();
+        if (name.equalsIgnoreCase("self") // NOI18N
+                || name.equals("static")) {  // NOI18N
+            TypeScope typeScope = ModelUtils.getTypeScope(scope);
+            if (typeScope != null) {
+                clzName = typeScope.getFullyQualifiedName();
+            }
+        } else if (isParent(clzName)) {
+            ClassScope classScope = ModelUtils.getClassScope(scope);
+            if (classScope != null) {
+                clzName = classScope.getSuperClassName();
+            }
+        }
+        return clzName;
+    }
+
+    private static boolean isParent(QualifiedName clzName) {
+        if (!clzName.getKind().isUnqualified()) {
+            return false;
+        }
+        return clzName.getName().equalsIgnoreCase("parent"); // NOI18N
+    }
+
+    //~ Inner classes
 
     private class OccurenceImpl implements Occurence {
         private final OffsetRange occurenceRange;
