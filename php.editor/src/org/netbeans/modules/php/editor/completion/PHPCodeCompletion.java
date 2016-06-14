@@ -951,28 +951,35 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
 
-            Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext = false;
             boolean staticLateBindingContext = false;
+            boolean specialVariable = false;
             switch (varName) {
+                case "$this": // NOI18N
+                    specialVariable = true;
+                    break;
                 case "self": //NOI18N
                     staticContext = true;
                     selfContext = true;
+                    specialVariable = true;
                     break;
                 case "parent": //NOI18N
                     invalidProposalsForClsMembers = Collections.emptyList();
                     staticContext = true;
                     instanceContext = true;
+                    specialVariable = true;
                     break;
                 case "static": //NOI18N
                     staticContext = true;
                     instanceContext = false;
                     staticLateBindingContext = true;
+                    specialVariable = true;
                     break;
                 default:
                     // no-op
             }
 
+            Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor, specialVariable);
             if (types != null) {
                 TypeElement enclosingType = getEnclosingType(request, types);
                 Set<PhpElement> duplicateElementCheck = new HashSet<>();
@@ -1041,7 +1048,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, request.anchor);
         Model model = request.result.getModel();
-        Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+        Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor, false);
         final ElementFilter fieldsFilter = ElementFilter.allOf(
                 ElementFilter.forKind(PhpElementKind.FIELD),
                 ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
