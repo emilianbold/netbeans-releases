@@ -40,10 +40,11 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.projectsui;
+package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import org.netbeans.modules.debugger.ui.views.ToolTipView;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
@@ -56,9 +57,9 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+@DebuggerServiceRegistration(path="ToolTipView",
                              types=ExtendedNodeModelFilter.class,
-                             position=375)
+                             position=10100)
 public class ToolTipNodeModelFilter implements ExtendedNodeModelFilter {
 
     @Override

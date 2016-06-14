@@ -113,4 +113,21 @@ public class ViewFactory {
         return new ViewLifecycle(vml, cmul);
     }
     
+    /**
+     * Create a tooltip with additional actions.
+     * The tooltip can be expandable to a structured tooltip view, or pinnable as a pin watch.
+     * @param toolTipText The text to display as a tooltip
+     * @param expandable Description of an expanded tooltip,
+     *                   or <code>null</code> when the tooltip is not expandable
+     * @param pinnable Description of a pin watch created from this tooltip,
+     *                 or <code>null</code> when the tooltip is not pinnable
+     * @return A tooltip UI to be shown.
+     * @since 2.54
+     */
+    public ToolTipUI createToolTip(String toolTipText,
+                                   ToolTipUI.Expandable expandable,
+                                   ToolTipUI.Pinnable pinnable) {
+        return new ToolTipUI(toolTipText, expandable, pinnable);
+    }
+
 }

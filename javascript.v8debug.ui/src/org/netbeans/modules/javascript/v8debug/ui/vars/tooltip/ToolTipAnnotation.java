@@ -43,8 +43,10 @@
 package org.netbeans.modules.javascript.v8debug.ui.vars.tooltip;
 
 import java.util.concurrent.CancellationException;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8Value;
@@ -61,24 +63,61 @@ import org.openide.util.Pair;
  *
  * @author Martin Entlicher
  */
-public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerTooltipSupport> {
+public class ToolTipAnnotation extends AbstractJSToolTipAnnotation {
 
     @Override
-    protected V8DebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
+    protected void handleToolTipClose(DebuggerEngine engine, final ToolTipSupport tts) {
+        V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
+        if (debugger == null) {
+            return ;
+        }
+        handleToolTipClose(debugger, tts);
+    }
+    
+    public static void handleToolTipClose(V8Debugger debugger, final ToolTipSupport tts) {
+        V8Debugger.Listener listener = new V8Debugger.Listener() {
+            @Override
+            public void notifySuspended(boolean suspended) {
+                if (!suspended) {
+                    doClose();
+                }
+            }
+
+            @Override
+            public void notifyCurrentFrame(CallFrame cf) {
+                doClose();
+            }
+
+            @Override
+            public void notifyFinished() {
+                doClose();
+            }
+            
+            private void doClose() {
+                SwingUtilities.invokeLater(() ->
+                    tts.setToolTipVisible(false)
+                );
+            }
+        };
+        debugger.addListener(listener);
+        tts.addPropertyChangeListener(pl -> {
+            if (ToolTipSupport.PROP_STATUS.equals(pl.getPropertyName()) &&
+                    !tts.isToolTipVisible()) {
+                debugger.removeListener(listener);
+            }
+        });
+    }
+    
+    @Override
+    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine) throws CancellationException {
+        String toolTipText;
+        Variable var = null;
         V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
         if (debugger == null || !debugger.isSuspended()) {
             return null;
         }
-        CallFrame currentFrame = debugger.getCurrentFrame();
-        return new V8DebuggerTooltipSupport(debugger, currentFrame);
-    }
-
-    @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, V8DebuggerTooltipSupport dbg) throws CancellationException {
-        String toolTipText;
-        Variable var = null;
         try {
-            V8Value value = V8Evaluator.evaluate(dbg.getDebugger(), expression);
+            V8Value value = V8Evaluator.evaluate(debugger, expression);
             if (value == null) {
                 throw new CancellationException();
             }

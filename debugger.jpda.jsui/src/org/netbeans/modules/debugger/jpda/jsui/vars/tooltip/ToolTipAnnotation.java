@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.debugger.jpda.jsui.vars.tooltip;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.CancellationException;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -50,6 +53,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
@@ -60,10 +64,35 @@ import org.openide.util.Pair;
  *
  * @author Martin
  */
-public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation<JPDADebuggerTooltipSupport> {
+public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation {
     
     @Override
-    protected JPDADebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
+    protected void handleToolTipClose(DebuggerEngine engine, ToolTipSupport tts) {
+        JPDADebugger d = engine.lookupFirst(null, JPDADebugger.class);
+        if (d == null) {
+            return ;
+        }
+        PropertyChangeListener l = (PropertyChangeEvent evt) -> {
+            int state = ((Integer) evt.getNewValue());
+            if (JPDADebugger.STATE_DISCONNECTED == state ||
+                    JPDADebugger.STATE_RUNNING == state) {
+                SwingUtilities.invokeLater(() ->
+                        tts.setToolTipVisible(false)
+                );
+            }
+        };
+        d.addPropertyChangeListener(JPDADebugger.PROP_STATE, l);
+        tts.addPropertyChangeListener(pl -> {
+            if (ToolTipSupport.PROP_STATUS.equals(pl.getPropertyName()) &&
+                    !tts.isToolTipVisible()) {
+                d.removePropertyChangeListener(JPDADebugger.PROP_STATE, l);
+            }
+        });
+    }
+    
+    @Override
+    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine) throws CancellationException {
+        Session session = engine.lookupFirst(null, Session.class);
         if (engine != session.getEngineForLanguage(JSUtils.JS_STRATUM)) {
             return null;
         }
@@ -75,26 +104,20 @@ public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation<JPDADeb
         if (frame == null) {
             return null;
         }
-        return new JPDADebuggerTooltipSupport(d, frame);
-    }
-
-    @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, JPDADebuggerTooltipSupport dbg) throws CancellationException {
         String toolTipText;
-        CallStackFrame frame = dbg.getFrame();
         JSVariable jsresult = null;
         try {
-            Variable result = DebuggerSupport.evaluate(dbg.getDebugger(), frame, expression);
+            Variable result = DebuggerSupport.evaluate(d, frame, expression);
             if (result == null) {
                 throw new CancellationException();
             }
             if (result instanceof ObjectVariable) {
-                jsresult = JSVariable.createIfScriptObject(dbg.getDebugger(), (ObjectVariable) result, expression);
+                jsresult = JSVariable.createIfScriptObject(d, (ObjectVariable) result, expression);
             }
             if (jsresult != null) {
                 toolTipText = expression + " = " + jsresult.getValue();
             } else {
-                toolTipText = expression + " = " + DebuggerSupport.getVarValue(dbg.getDebugger(), result);
+                toolTipText = expression + " = " + DebuggerSupport.getVarValue(d, result);
             }
         } catch (InvalidExpressionException ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";

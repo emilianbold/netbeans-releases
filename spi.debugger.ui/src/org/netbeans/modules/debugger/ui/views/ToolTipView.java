@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.debug.ui.tooltip;
+package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,157 +50,105 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import static javax.swing.JComponent.WHEN_FOCUSED;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Keymap;
-import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.openide.util.ImageUtilities;
 
-// <RAVE>
-// Implement HelpCtx.Provider interface to provide help ids for help system
-// public class CallStackView extends TopComponent {
-// ====
-final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.Provider {
-// </RAVE>
-    
-    public static final String TOOLTIP_VIEW_NAME = "ToolTipView";
+public final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.Provider {
+
+    public static final String TOOLTIP_VIEW_NAME = "ToolTipView";               // NOI18N
+    private static final String TOOLTIP_HELP_ID = "NetbeansDebuggerToolTipNode";// NOI18N
 
     private static volatile String expression;
     private static volatile Object variable;
 
     private transient JComponent contentComponent;
-    private final DebuggerTooltipSupport dbgts;
-    private final DebuggerStateChangeListener debuggerStateChangeListener;
-    private ToolTipSupport toolTipSupport;
-    private String name; // Store just the name persistently, we'll create the component from that
-    
-    private ToolTipView(DebuggerTooltipSupport dbgts, String expression, Object v, String icon) {
-        this.dbgts = dbgts;
+
+    private ToolTipView(String expression, Object v, String icon) {
         ToolTipView.expression = expression;
         variable = v;
-        this.name = TOOLTIP_VIEW_NAME;
         JComponent c = ViewFactory.getDefault().createViewComponent(
                 icon,
                 ToolTipView.TOOLTIP_VIEW_NAME,
-                "NetbeansDebuggerJSToolTipNode",
+                TOOLTIP_HELP_ID,
                 null);
         setLayout (new BorderLayout ());
         add (c, BorderLayout.CENTER);  //NOI18N
-        debuggerStateChangeListener = new DebuggerStateChangeListener();
-        dbgts.addCloseable(debuggerStateChangeListener);
     }
 
-    static String getExpression() {
+    public static String getExpression() {
         return expression;
     }
 
-    static Object getVariable() {
+    public static Object getVariable() {
         return variable;
     }
 
-    void setToolTipSupport(ToolTipSupport toolTipSupport) {
-        this.toolTipSupport = toolTipSupport;
-    }
-    
-    private void closeToolTip() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    toolTipSupport.setToolTipVisible(false);
-                }
-            });
-        } else {
-            toolTipSupport.setToolTipVisible(false);
-        }
-    }
-    
-    //protected void componentHidden () {
     @Override
     public void removeNotify() {
-        super.removeNotify();//componentHidden ();
+        super.removeNotify();
         variable = null;
-        dbgts.removeCloseable(debuggerStateChangeListener);
     }
-    
+
     // <RAVE>
     // Implement getHelpCtx() with the correct help ID
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("NetbeansDebuggerJSToolTipNode");
+        return new org.openide.util.HelpCtx(TOOLTIP_HELP_ID);
     }
     // </RAVE>
-    
+
     @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-        if (contentComponent == null) return false;
+        if (contentComponent == null) {
+            return false;
+        }
         return contentComponent.requestFocusInWindow ();
     }
 
-    /*
-    public void requestActive() {
-        super.requestActive();
-        if (contentComponent != null) {
-            contentComponent.requestFocusInWindow ();
-        }
-    }
-     */
-
-    /*
-    public String getName () {
-        return NbBundle.getMessage (ToolTipView.class, displayNameResource);
-    }
-    
-    public String getToolTipText () {
-        return NbBundle.getMessage (ToolTipView.class, toolTipResource);// NOI18N
-    }
-     */
-    
-
     /** Creates the view. */
-    public static synchronized ToolTipView createToolTipView(DebuggerTooltipSupport dbg, String expression, Object variable) {
+    public static synchronized ToolTipView createToolTipView(String expression, Object variable) {
         return new ToolTipView(
-                dbg,
                 expression,
                 variable,
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"
         );
     }
-    
-    
-    static ExpandableTooltip createExpandableTooltip(String toolTipText, boolean expandable) {
-        return new ExpandableTooltip(toolTipText, expandable);
-    }
 
-    static class ExpandableTooltip extends JPanel {
+    public static class ExpandableTooltip extends JPanel {
 
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
-        
+
         private JButton expButton;
         private JButton pinButton;
         private JComponent textToolTip;
         private boolean widthCheck = true;
         private boolean sizeSet = false;
 
-        public ExpandableTooltip(String toolTipText, boolean expandable) {
-            Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
-            Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
-            Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
+        public ExpandableTooltip(String toolTipText, boolean expandable, boolean pinnable) {
+            Font font = UIManager.getFont(UI_PREFIX + ".font");                 // NOI18N
+            Color backColor = UIManager.getColor(UI_PREFIX + ".background");    // NOI18N
+            Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground");    // NOI18N
 
             if (backColor != null) {
                 setBackground(backColor);
@@ -212,13 +160,15 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
             ));
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
-            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
-            pinButton.setBorderPainted(false);
-            pinButton.setContentAreaFilled(false);
-            add(pinButton);
+            if (pinnable) {
+                pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
+                pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
+                pinButton.setBorderPainted(false);
+                pinButton.setContentAreaFilled(false);
+                add(pinButton);
+            }
             if (expandable) {
-                Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
+                Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");        // NOI18N
                 expButton = new JButton(expIcon);
                 expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
                 expButton.setBorderPainted(false);
@@ -237,19 +187,46 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
             if (backColor != null) {
                 l.setBackground(backColor);
             }
+            l.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             textToolTip = l;
             add(l);
+            if (expandable || pinnable) {
+                InputMap im = new InputMap();
+                im.setParent(getInputMap());
+                setInputMap(WHEN_FOCUSED, im);
+                ActionMap am = new ActionMap();
+                am.setParent(getActionMap());
+                setActionMap(am);
+                im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "expand"); // NOI18N
+                im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "pin");    // NOI18N
+                if (expandable) {
+                    am.put("expand", new AbstractAction() {                     // NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            expButton.doClick();
+                        }
+                    });
+                }
+                if (pinnable) {
+                    am.put("pin", new AbstractAction() {                        // NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            SwingUtilities.invokeLater(() -> pinButton.doClick());
+                        }
+                    });
+                }
+            }
         }
 
-        void addExpansionListener(ActionListener treeExpansionListener) {
+        public void addExpansionListener(ActionListener treeExpansionListener) {
             expButton.addActionListener(treeExpansionListener);
         }
 
-        void addPinListener(ActionListener treeExpansionListener) {
+        public void addPinListener(ActionListener treeExpansionListener) {
             pinButton.addActionListener(treeExpansionListener);
         }
 
-        void setWidthCheck(boolean widthCheck) {
+        public void setWidthCheck(boolean widthCheck) {
             this.widthCheck = widthCheck;
         }
 
@@ -259,9 +236,11 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
                 // Be big enough initially.
                 return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
             }
-            return super.getPreferredSize();
+            Dimension preferredSize = super.getPreferredSize();
+            // Let the width be as long as it can be
+            return new Dimension(Integer.MAX_VALUE, preferredSize.height);
         }
-        
+
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
@@ -284,7 +263,7 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
             }
             sizeSet = true;
         }
-        
+
         private static JTextArea createMultiLineToolTip(String toolTipText, boolean wrapLines) {
             JTextArea ta = new TextToolTip(wrapLines);
             ta.setText(toolTipText);
@@ -292,16 +271,16 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
         }
 
         private static class TextToolTip extends JTextArea {
-            
+
             private static final String ELIPSIS = "..."; //NOI18N
-            
+
             private final boolean wrapLines;
-            
+
             public TextToolTip(boolean wrapLines) {
                 this.wrapLines = wrapLines;
                 setLineWrap(false); // It's necessary to have a big width of preferred size first.
             }
-            
+
             public @Override void setSize(int width, int height) {
                 Dimension prefSize = getPreferredSize();
                 if (width >= prefSize.width) {
@@ -343,7 +322,7 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
                 }
                 super.setSize(width, height);
             }
-            
+
             @Override
             public void setKeymap(Keymap map) {
                 //#181722: keymaps are shared among components with the same UI
@@ -352,15 +331,6 @@ final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.P
                 super.setKeymap(addKeymap(null, map));
             }
         }
-    }
-    
-    private class DebuggerStateChangeListener implements Closeable {
-
-        @Override
-        public void close() {
-            closeToolTip();
-        }
-        
     }
 
 }

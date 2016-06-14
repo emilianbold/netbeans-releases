@@ -39,59 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.v8debug.ui.vars.tooltip;
+package org.netbeans.modules.debugger.ui.models;
 
-import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
-import org.netbeans.modules.javascript.v8debug.ui.vars.models.VariablesModel;
-import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
-import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.modules.debugger.ui.views.ToolTipView;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
- *
- * @author Martin
+ * Assures that the variable in tooltip is expanded automatically.
+ * 
+ * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/ToolTipView",
-                             types={ TreeModel.class, ExtendedNodeModel.class,
-                                     TableModel.class, TreeExpansionModelFilter.class })
-public class ToolTipModel extends VariablesModel implements TreeExpansionModelFilter {
-    
-    public ToolTipModel(ContextProvider contextProvider) {
-        super(contextProvider);
-    }
-
-    @Override
-    public int getChildrenCount(Object parent) throws UnknownTypeException {
-        if (parent == ROOT) {
-            return 1;
-        } else {
-            return super.getChildrenCount(parent);
-        }
-    }
-
-    @Override
-    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
-        if (parent == ROOT) {
-            Object ttv = AbstractJSToolTipAnnotation.getTooltipVariable();
-            if (ttv != null) {
-                return new Object[] { ttv };
-            } else {
-                return new Object[] { };
-            }
-        } else {
-            return super.getChildren(parent, from, to);
-        }
-    }
+@DebuggerServiceRegistration(path="ToolTipView",
+                             types=TreeExpansionModelFilter.class,
+                             position=10200)
+public class ToolTipExpansionFilter implements TreeExpansionModelFilter {
 
     @Override
     public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
-        if (node == AbstractJSToolTipAnnotation.getTooltipVariable()) {
+        if (node == ToolTipView.getVariable()) {
             return true;
         } else {
             return original.isExpanded(node);
@@ -103,5 +72,11 @@ public class ToolTipModel extends VariablesModel implements TreeExpansionModelFi
 
     @Override
     public void nodeCollapsed(Object node) {}
-    
+
+    @Override
+    public void addModelListener(ModelListener l) {}
+
+    @Override
+    public void removeModelListener(ModelListener l) {}
+
 }
