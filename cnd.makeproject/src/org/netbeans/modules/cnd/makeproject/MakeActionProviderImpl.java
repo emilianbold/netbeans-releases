@@ -1482,7 +1482,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
             //}
             //return false;
         }
-        return false;
+        return true;
     }
     
     private boolean checkItemCompileConfuguration(Item item, MakeConfiguration conf) {

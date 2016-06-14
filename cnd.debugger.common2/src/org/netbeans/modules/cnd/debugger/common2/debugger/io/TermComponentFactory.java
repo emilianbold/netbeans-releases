@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import org.netbeans.modules.terminal.api.IOTopComponent;
+import org.netbeans.modules.terminal.api.ui.IOTopComponent;
 
 /**
  *

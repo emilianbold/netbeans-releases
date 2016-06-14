@@ -157,28 +157,16 @@ public class SelectExecutablePanel extends javax.swing.JPanel implements SelectE
         validateExe();
         progress.setText(NbBundle.getMessage(SelectExecutablePanel.class, "Search_In_Progress")); //NOI18N
         progress.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false)); //NOI18N
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                findAllExecutables(buildWorkingDirFO);
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        progress.setVisible(false);
-                    }
-                });
-            }
+        RP.post(() -> {
+            findAllExecutables(buildWorkingDirFO);
+            SwingUtilities.invokeLater(() -> {
+                progress.setVisible(false);
+            });
         });
-        this.addHierarchyListener(new HierarchyListener() {
-
-            @Override
-            public void hierarchyChanged(HierarchyEvent e) {
-                if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
-                    if (!e.getChanged().isVisible()){
-                        canceled.set(true);
-                    }
+        this.addHierarchyListener((HierarchyEvent e) -> {
+            if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+                if (!e.getChanged().isVisible()){
+                    canceled.set(true);
                 }
             }
         });
@@ -321,28 +309,25 @@ public class SelectExecutablePanel extends javax.swing.JPanel implements SelectE
 
     private void updateList() {
         final List<String> keySet = new ArrayList<>(searchResult.keySet());
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                DefaultListModel model = new DefaultListModel();
-                Object selected = exeList.getSelectedValue();
-                Object first = null;
-                for(String path : keySet) {
-                    if (first == null) {
-                        first = path;
-                    }
-                    model.addElement(path);
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel model = new DefaultListModel();
+            Object selected = exeList.getSelectedValue();
+            Object first = null;
+            for(String path : keySet) {
+                if (first == null) {
+                    first = path;
                 }
-                resetList = true;
-                exeList.setModel(model);
-                if (selected != null) {
-                    exeList.setSelectedValue(selected, true);
-                }
-                resetList = false;
-                if (selected == null) {
-                    if (executableTextField.getText().isEmpty()) {
-                        exeList.setSelectedValue(first, true);
-                    }
+                model.addElement(path);
+            }
+            resetList = true;
+            exeList.setModel(model);
+            if (selected != null) {
+                exeList.setSelectedValue(selected, true);
+            }
+            resetList = false;
+            if (selected == null) {
+                if (executableTextField.getText().isEmpty()) {
+                    exeList.setSelectedValue(first, true);
                 }
             }
         });

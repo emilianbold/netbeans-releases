@@ -82,15 +82,18 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
     /** Perform the action. Tries the performer and then scans the ActionMap
      * of selected topcomponent.
      */
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         // no operation
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         createSubMenu();
         return subMenu;
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         createSubMenu();
         return subMenu;
@@ -125,6 +128,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
             JMenuItem profilesMenuItem = new JMenuItem(NbBundle.getMessage(SetConfigurationAction.class, "LBL_ConfigurationsAction_Name")); // NOI18N
             subMenu.add(profilesMenuItem);
             profilesMenuItem.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed (ActionEvent event) {
                     CommonProjectActions.customizeProjectAction().actionPerformed(new ActionEvent(this, -1, null));
                 }
@@ -136,6 +140,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
     
     // Innerclasses ------------------------------------------------------------
     private static class MenuItemActionListener implements ActionListener {
+        @Override
         public void actionPerformed( ActionEvent e ) {
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();

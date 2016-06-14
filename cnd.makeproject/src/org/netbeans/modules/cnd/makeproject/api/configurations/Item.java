@@ -717,6 +717,27 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return Collections.<FSPath>emptyList();
     }
 
+    private List<String> getCompilerPreprocessorSymbols() {
+        List<String> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
+            return vec;
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return vec;
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                vec.addAll(compiler.getSystemPreprocessorSymbols());
+            }
+        }
+        return vec;
+    }
+    
     @Override
     public List<String> getSystemMacroDefinitions() {
         List<String> vec = new ArrayList<>();
@@ -880,7 +901,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     private void addToMap(Map<String, String> res, List<String> list, boolean override) {
-        for(String macro : list){
+        list.forEach((macro) -> {
             int i = macro.indexOf('=');
             String key;
             String value;
@@ -894,17 +915,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             if (!res.containsKey(key) || override) {
                 res.put(key, value);
             }
-        }
+        });
     }
     
     private void addToList(Map<String, String> res, List<String> list) {
-        for(Map.Entry<String,String> e : res.entrySet()) {
+        res.entrySet().forEach((e) -> {
             if (e.getValue() == null) {
                 list.add(e.getKey());
             } else {
                 list.add(e.getKey()+"="+e.getValue()); //NOI18N
             }
-        }
+        });
     }
 
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
@@ -979,7 +1000,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                     }
                 }
             }
-            if (flavor == LanguageFlavor.UNKNOWN) {
+             if (flavor == LanguageFlavor.UNKNOWN) {
                 if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                     switch (itemConfiguration.getCCompilerConfiguration().getInheritedCStandard()) {
                         case CCompilerConfiguration.STANDARD_C99:
@@ -987,7 +1008,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCompilerConfiguration.STANDARD_C11:
                             return LanguageFlavor.C11;
                         case CCompilerConfiguration.STANDARD_C89:
+                            return LanguageFlavor.C89;
                         case CCompilerConfiguration.STANDARD_DEFAULT:
+                            for(String macro : getCompilerPreprocessorSymbols()) {
+                                if (macro.startsWith("_STDC_C99=")) { //NOI18N
+                                    return LanguageFlavor.C99;
+                                } else if (macro.startsWith("_STDC_C11=")) { //NOI18N
+                                    return LanguageFlavor.C11;
+                                }
+                            }
                             return LanguageFlavor.C89;
                     }
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
@@ -997,7 +1026,22 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
+                            return LanguageFlavor.CPP;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
+                            for(String macro : getCompilerPreprocessorSymbols()) {
+                                if (macro.startsWith("__cplusplus=")) { //NOI18N
+                                    String year = macro.substring(12);
+                                    if (year.compareTo("2010") > 0) { //NOI18N
+                                        if (year.compareTo("2013") > 0) { //NOI18N
+                                            return LanguageFlavor.CPP14;
+                                        } else {
+                                            return LanguageFlavor.CPP11;
+                                        }
+                                    } else {
+                                        return LanguageFlavor.CPP;
+                                    }
+                                }
+                            }
                             return LanguageFlavor.CPP;
                     }
                 }
@@ -1114,9 +1158,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
                 List<IncludePath> res = new ArrayList<>(includes);
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                getUserOptionsProviders().forEach((provider) -> {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
-                }
+                });
                 return res;
             } else {
                 return includes;
@@ -1126,9 +1170,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
                 List<String> res = new ArrayList<>(macros);
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                getUserOptionsProviders().forEach((provider) -> {
                     res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
-                }
+                });
                 return res;
             } else {
                 return macros;

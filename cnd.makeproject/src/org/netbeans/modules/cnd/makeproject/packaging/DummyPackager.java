@@ -62,54 +62,67 @@ public class DummyPackager implements PackagerDescriptor {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(CompilerSet2Configuration.class, "NOT_FOUND", name); // NOI18N // FIXUP: wrong bundle, but cannot change now after freeze
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return new ArrayList<>();
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         return new ArrayList<>();
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return ""; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return true;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return "";  // NOI18N
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "";
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return null;
     }

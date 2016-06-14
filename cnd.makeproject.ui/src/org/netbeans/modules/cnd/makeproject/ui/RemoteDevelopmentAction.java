@@ -105,15 +105,18 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         this.projects = projects;
     }
 
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         // no operation
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         createSubMenu();
         return subMenu;
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         createSubMenu();
         return subMenu;
@@ -177,15 +180,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         subMenu.add(new JSeparator());
         final JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         subMenu.add(managePlatformsItem);
-        managePlatformsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<>();
-                if (ServerListUI.showServerListDialog(selectedEnv)) {
-                    ExecutionEnvironment env = selectedEnv.get();
-                    if (env != null) {
-                        setRemoteDevelopmentHost(managePlatformsItem, env, projectsAndConfs);
-                    }
+        managePlatformsItem.addActionListener((ActionEvent event) -> {
+            AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<>();
+            if (ServerListUI.showServerListDialog(selectedEnv)) {
+                ExecutionEnvironment env = selectedEnv.get();
+                if (env != null) {
+                    setRemoteDevelopmentHost(managePlatformsItem, env, projectsAndConfs);
                 }
             }
         });
@@ -193,10 +193,8 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
     private static void setRemoteDevelopmentHost(final Object source, final ExecutionEnvironment execEnv, final List<Pair<Project, MakeConfiguration>> projectsAndConfs) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable(){
-                public void run() {
-                    _setRemoteDevelopmentHost(source, execEnv, projectsAndConfs);
-                }
+            RP.post(() -> {
+                _setRemoteDevelopmentHost(source, execEnv, projectsAndConfs);
             });
         } else {
             _setRemoteDevelopmentHost(source, execEnv, projectsAndConfs);
@@ -210,9 +208,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 return; //true;
             }
         }
-        for (Pair<Project, MakeConfiguration> pac : projectsAndConfs) {
+        projectsAndConfs.forEach((pac) -> {
             _setRemoteDevelopmentHost(source, pac.second(), execEnv, pac.first());
-        }
+        });
     }
 
     private static void _setRemoteDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
@@ -254,6 +252,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
     private static class MenuItemActionListener implements ActionListener {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof JMenuItem) {
                 JMenuItem jmi = (JMenuItem) e.getSource();

@@ -61,7 +61,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public static final int STANDARD_C99 = 2;
     public static final int STANDARD_C11 = 3;
     public static final int STANDARD_INHERITED = 4;
-    public static final String[] STANDARD_NAMES = {
+    private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_C89"),
         getString("STANDARD_C99"),
@@ -207,9 +207,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         
         StringBuilder options = new StringBuilder();
         options.append(getCFlagsBasic(compiler)).append(" "); // NOI18N
-        for(BasicCompilerConfiguration master : getMasters(true)) {
+        getMasters(true).forEach((master) -> {
             options.append(master.getCommandLineConfiguration().getValue()).append(" "); // NOI18N
-        }
+        });
         options.append(getAllOptions2(compiler)).append(" "); // NOI18N
         return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }

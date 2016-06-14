@@ -56,18 +56,14 @@ public class ConfirmVersionImpl implements ConfirmSupport.ConfirmVersion {
 
         @Override
         public ConfirmSupport.ConfirmVersion create(final String dialogTitle, final String message, String autoConfirmMessage, final Runnable onConfirm) {
-            Runnable warning = new Runnable() {
-
-                @Override
-                public void run() {
-                    NotifyDescriptor nd = new NotifyDescriptor(message,
-                            dialogTitle, NotifyDescriptor.YES_NO_OPTION,
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            null, NotifyDescriptor.YES_OPTION);
-                    Object ret = DialogDisplayer.getDefault().notify(nd);
-                    if (ret == NotifyDescriptor.YES_OPTION) {
-                        onConfirm.run();
-                    }
+            Runnable warning = () -> {
+                NotifyDescriptor nd = new NotifyDescriptor(message,
+                        dialogTitle, NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        null, NotifyDescriptor.YES_OPTION);
+                Object ret = DialogDisplayer.getDefault().notify(nd);
+                if (ret == NotifyDescriptor.YES_OPTION) {
+                    onConfirm.run();
                 }
             };
             SwingUtilities.invokeLater(warning);

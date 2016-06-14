@@ -58,10 +58,11 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MiscUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+//import org.openide.DialogDisplayer;
+//import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public final class SPSRemoteImpl extends SPSCommonImpl {
@@ -185,9 +186,12 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         } finally {
             if (status != 0) {
                 if (!Boolean.getBoolean("nativeexecution.mode.unittest") && !"true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N)
-                    NotifyDescriptor dd =
-                            new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
-                    DialogDisplayer.getDefault().notify(dd);
+                    NativeExecutionUserNotification.getDefault().
+                            notify(NbBundle.getMessage(SPSRemoteImpl.class, 
+                                    "TaskPrivilegesSupport_GrantPrivileges_Failed"));//NOI18N
+//                    NotifyDescriptor dd =
+//                            new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
+//                    DialogDisplayer.getDefault().notify(dd);
                 }
             }
 

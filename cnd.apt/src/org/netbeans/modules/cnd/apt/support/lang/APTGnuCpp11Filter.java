@@ -219,6 +219,15 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
         filter("char16_t", APTTokenTypes.LITERAL_char16_t); // NOI18N
         filter("char32_t", APTTokenTypes.LITERAL_char32_t); // NOI18N
         filter("noexcept", APTTokenTypes.LITERAL_noexcept); // NOI18N
+        if (false) {
+            // DO WE NEED NEW FILTER?
+            // C++ 17
+            filter("concept", APTTokenTypes.LITERAL_concept); // NOI18N
+            filter("requires", APTTokenTypes.LITERAL_requires); // NOI18N
+            filter("co_await", APTTokenTypes.LITERAL_co_await); // NOI18N
+            filter("co_yield", APTTokenTypes.LITERAL_co_yield); // NOI18N
+            filter("co_return", APTTokenTypes.LITERAL_co_return); // NOI18N
+        }
         
         filter("and", APTTokenTypes.AND); // NOI18N
         filter("bitor", APTTokenTypes.BITWISEOR); // NOI18N

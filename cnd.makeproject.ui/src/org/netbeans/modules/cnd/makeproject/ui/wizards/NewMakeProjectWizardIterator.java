@@ -161,12 +161,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (selectModePanel == null) {
             //FileObject fo = (FileObject) wiz.getProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER);
             selectModePanel = createSelectModePanel();
-            selectModePanel.addChangeListener(new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    setupPanelsAndStepsIfNeed();
-                }
+            selectModePanel.addChangeListener((ChangeEvent e) -> {
+                setupPanelsAndStepsIfNeed();
             });
         }
         return selectModePanel;
@@ -246,11 +242,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private SelectHostWizardProvider getSelectHostWizardProvider() {
         if (selectHostWizardProvider == null) {
-            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    fireStateChanged();
-                }
+            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, (ChangeEvent e) -> {
+                fireStateChanged();
             });
         }
         return selectHostWizardProvider;

@@ -73,6 +73,7 @@ public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
     }
     
     class Update implements Runnable {
+        @Override
         public void run() {
             fileTextField.setText(filename);
             fileLabel.setText(fileLabel.getText());

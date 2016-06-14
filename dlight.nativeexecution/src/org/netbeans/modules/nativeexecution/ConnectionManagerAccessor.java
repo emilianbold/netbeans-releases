@@ -47,7 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.spi.support.JSchAccess;
-import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.api.util.Authentication;
 
 public abstract class ConnectionManagerAccessor {
 
