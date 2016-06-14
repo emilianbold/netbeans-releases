@@ -41,19 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.TokenType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import jdk.nashorn.internal.parser.TokenType;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -109,13 +108,13 @@ public class WeirdAssignment extends JsAstRule {
         }
 
         @Override
-        public Node enter(BinaryNode binaryNode) {
-            if (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
+        public boolean enterBinaryNode(BinaryNode binaryNode) {
+            if (binaryNode.isTokenType(TokenType.ASSIGN) && binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
                 hints.add(new Hint(rule, Bundle.JsWeirdAssignmentDN(),
                         context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                         ModelUtils.documentOffsetRange(context.getJsParserResult(), binaryNode.getStart(), binaryNode.getFinish()), null, 500));
             }
-            return super.enter(binaryNode);
+            return super.enterBinaryNode(binaryNode);
         }
     }
 }

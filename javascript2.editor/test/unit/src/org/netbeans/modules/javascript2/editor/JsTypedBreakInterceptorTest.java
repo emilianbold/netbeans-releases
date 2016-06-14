@@ -48,7 +48,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
@@ -132,6 +132,10 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public void testSplitStrings3() throws Exception {
         insertBreak("  x = \"te^st\"", "  x = \"te\\n\\\n^st\"");
+    }
+
+    public void testNoSplitTemplates1() throws Exception {
+        insertBreak("  x = `te^st`", "  x = `te\n^st`");
     }
 
     public void testInsertNewLine1() throws Exception {

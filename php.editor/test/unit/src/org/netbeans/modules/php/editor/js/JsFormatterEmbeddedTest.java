@@ -47,7 +47,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 

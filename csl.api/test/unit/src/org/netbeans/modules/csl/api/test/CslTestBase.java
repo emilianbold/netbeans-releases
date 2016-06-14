@@ -740,7 +740,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         // If both values are true it means the content is the same, but some lines are
         // placed on a different line number in actual and expected content
-        if (noErrorInActual && noErrorInExpected) {
+        if (noErrorInActual && noErrorInExpected && expectedLines.size() == actualLines.size()) {
             for (int lineNumber = 0; lineNumber < expectedLines.size(); lineNumber++) {
                 String expectedLine = expectedLines.get(lineNumber);
                 String actualLine = actualLines.get(lineNumber);

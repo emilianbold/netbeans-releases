@@ -3,4 +3,4 @@ NetBeans.s|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      stuff                           [PUBLIC]   defineMethod.js
-METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     seal(obj): undefined            [PUBLIC,   JS Platform

@@ -1,9 +1,9 @@
 function |>METHOD:initGa<|() {
     var |>LOCAL_VARIABLE_DECLARATION:ugaVarName<| = "ga";
-    var uga = |>GLOBAL:window<|[|>LOCAL_VARIABLE:ugaVarName<|];
+    var |>METHOD:uga<| = |>GLOBAL:window<|[|>LOCAL_VARIABLE:ugaVarName<|];
 
     if( !uga ) {
-        |>METHOD:uga<| = function() {
+        uga = function() {
             uga.|>FIELD:q<|.push(arguments);
         };
         
