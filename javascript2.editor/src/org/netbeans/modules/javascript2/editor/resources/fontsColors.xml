@@ -55,6 +55,10 @@ Contributor(s):
     <fontcolor name="mod-method" foreColor="000000">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="mod-custom1" foreColor="666666">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-custom2" default="keyword"/>
     <fontcolor name="mod-class" foreColor="000000">
         <font style="bold" />
     </fontcolor>

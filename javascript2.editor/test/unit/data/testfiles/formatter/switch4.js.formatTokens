@@ -22,11 +22,9 @@ FormatToken{kind=TEXT, offset=32, text=XXX, id=STRING}
 FormatToken{kind=TEXT, offset=35, text=', id=STRING_END}
 FormatToken{kind=TEXT, offset=36, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=37, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=38, text=       , id=WHITESPACE}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=45, text=case, id=KEYWORD_CASE}
 FormatToken{kind=WHITESPACE, offset=49, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=50, text=', id=STRING_BEGIN}
@@ -34,13 +32,11 @@ FormatToken{kind=TEXT, offset=51, text=THEAD, id=STRING}
 FormatToken{kind=TEXT, offset=56, text=', id=STRING_END}
 FormatToken{kind=TEXT, offset=57, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=58, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=59, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=60, text=    , id=WHITESPACE}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=64, text=default, id=KEYWORD_DEFAULT}
 FormatToken{kind=TEXT, offset=71, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
@@ -98,13 +94,11 @@ FormatToken{kind=TEXT, offset=144, text=XXX, id=STRING}
 FormatToken{kind=TEXT, offset=147, text=', id=STRING_END}
 FormatToken{kind=TEXT, offset=148, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=149, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=150, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=151, text=    , id=WHITESPACE}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=155, text=default, id=KEYWORD_DEFAULT}
 FormatToken{kind=TEXT, offset=162, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}

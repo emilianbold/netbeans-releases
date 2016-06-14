@@ -21,7 +21,7 @@ Backbone       : OBJECT Backbone [ANONYMOUS: false, DECLARED: false - Backbone, 
 define         : FUNCTION define [ANONYMOUS: false, DECLARED: false - define, MODIFIERS: PUBLIC, FUNCTION]
                # PROPERTIES
                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-issue241171_L1 : FUNCTION issue241171_L1 [ANONYMOUS: true, DECLARED: true - issue241171_L1, MODIFIERS: PUBLIC, FUNCTION]
+issue241171L$1 : FUNCTION issue241171L$1 [ANONYMOUS: true, DECLARED: true - issue241171L$1, MODIFIERS: PUBLIC, FUNCTION]
                # RETURN TYPES
                undefined, RESOLVED: true
                # PARAMETERS

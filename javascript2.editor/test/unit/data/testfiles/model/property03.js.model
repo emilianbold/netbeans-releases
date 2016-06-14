@@ -11,7 +11,7 @@ x      : OBJECT x [ANONYMOUS: false, DECLARED: true - x, MODIFIERS: PUBLIC, OBJE
        # PROPERTIES
        parseJson : FUNCTION parseJson [ANONYMOUS: false, DECLARED: true - parseJson, MODIFIERS: PUBLIC, METHOD]
                  # RETURN TYPES
-                 @exp;window@pro;JSON@call;parse, RESOLVED: false
+                 @pro;window@pro;JSON@call;parse, RESOLVED: false
                  # PARAMETERS
                  OBJECT jsonString [ANONYMOUS: false, DECLARED: true - jsonString, MODIFIERS: PUBLIC, PARAMETER]
                  # PROPERTIES

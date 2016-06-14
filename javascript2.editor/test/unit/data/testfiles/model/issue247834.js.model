@@ -13,13 +13,13 @@ define              : FUNCTION define [ANONYMOUS: false, DECLARED: false - defin
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 issue247834Anonym$0 : OBJECT issue247834Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-issue247834_L1      : FUNCTION issue247834_L1 [ANONYMOUS: true, DECLARED: true - issue247834_L1, MODIFIERS: PUBLIC, FUNCTION]
+issue247834L$1      : FUNCTION issue247834L$1 [ANONYMOUS: true, DECLARED: true - issue247834L$1, MODIFIERS: PUBLIC, FUNCTION]
                     # RETURN TYPES
-                    issue247834_L1.Async, RESOLVED: true
+                    issue247834L$1.Async, RESOLVED: true
                     # PROPERTIES
                     Async     : FUNCTION Async [ANONYMOUS: false, DECLARED: true - Async, MODIFIERS: PRIVATE, CONSTRUCTOR]
                               # RETURN TYPES
-                              issue247834_L1.Async, RESOLVED: true
+                              Async, RESOLVED: true
                               # PARAMETERS
                               OBJECT createResult [ANONYMOUS: false, DECLARED: true - createResult, MODIFIERS: PUBLIC, PARAMETER]
                               OBJECT initialResultValue [ANONYMOUS: false, DECLARED: true - initialResultValue, MODIFIERS: PUBLIC, PARAMETER]

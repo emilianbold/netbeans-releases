@@ -38,9 +38,9 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
- */
+ */[LR #2 Start]
 
-[LR #2 Start]var listdirectory = require('./listdirectory');
+var listdirectory = require('./listdirectory');
 var dir = process.argv[2] || getUserHome();
 var extension = process.argv[3];
 
@@ -58,5 +58,5 @@ var extension = process.argv[3];
 
 function getUserHome() {
     return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
-}[LR #2 End]
-[LR #1 End]
+}
+[LR #2 End][LR #1 End]

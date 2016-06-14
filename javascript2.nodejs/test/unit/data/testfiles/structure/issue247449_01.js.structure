@@ -1,3 +1,5 @@
+start:METHOD:[PRIVATE]:ESCAPED{start}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+  config:CLASS:[PRIVATE]:ESCAPED{config}:
 express:VARIABLE:[PRIVATE]:ESCAPED{express}<font color="#999999">ESCAPED{ : }Module express</font>:
 fs:VARIABLE:[PRIVATE]:ESCAPED{fs}<font color="#999999">ESCAPED{ : }Module fs</font>:
 path:VARIABLE:[PRIVATE]:ESCAPED{path}<font color="#999999">ESCAPED{ : }Module path</font>:
@@ -13,7 +15,5 @@ applicationCore:CLASS:[PRIVATE]:ESCAPED{applicationCore}:
   tripPlanner:FIELD:[PUBLIC]:ESCAPED{tripPlanner}<font color="#999999">ESCAPED{ : }Module tripPlanner</font>:
 tripPlanner:VARIABLE:[PRIVATE]:ESCAPED{tripPlanner}<font color="#999999">ESCAPED{ : }Module tripPlanner</font>:
 loadConfig:METHOD:[PRIVATE]:ESCAPED{loadConfig}ESCAPED{(}ESCAPED{filename}ESCAPED{)}:
-start:METHOD:[PRIVATE]:ESCAPED{start}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  config:CLASS:[PRIVATE]:ESCAPED{config}:
 module:CLASS:[PUBLIC]:ESCAPED{module}:
   exports:FIELD:[PUBLIC]:ESCAPED{exports}<font color="#999999">ESCAPED{ : }applicationCore</font>:

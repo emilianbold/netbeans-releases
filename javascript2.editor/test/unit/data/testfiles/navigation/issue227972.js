@@ -34,7 +34,7 @@ b.method();
 //======================================
 
 var NS = {};
-NS.test = function() {
+NS.Test = function() {
 
 	this.method = function() { // navigate from c.method()
 		alert('dosomething');
@@ -46,11 +46,11 @@ NS.test = function() {
 	}
 };
 
-var c = new NS.test();
+var c = new NS.Test();
 // ctrl + click on this will NOT navigate to NS.test.method;
 c.method();
 // Ctrl click on this will navigate to NS.test.method though.
-NS.test.method();
+NS.Test.method();
 
 function MyClass() {}
 MyClass.prototype.f= function() {};
