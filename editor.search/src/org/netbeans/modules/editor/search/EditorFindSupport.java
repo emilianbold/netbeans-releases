@@ -57,8 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -84,6 +82,7 @@ import org.netbeans.modules.editor.lib2.highlighting.Factory;
 import org.netbeans.modules.editor.search.DocumentFinder.FindReplaceResult;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
 * Find management
@@ -165,6 +164,7 @@ public final class EditorFindSupport {
     /** Find properties */
     private Map<String, Object> findProps;
     private WeakReference<JTextComponent> focusedTextComponent;
+    private final RequestProcessor executor = new RequestProcessor(EditorFindSupport.class.getName(), 1);
 
     private final WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer =
         new WeakHashMap<>();
@@ -178,7 +178,7 @@ public final class EditorFindSupport {
 
     private String cachekey = "";
     private int[] cacheContent = new int[0];
-    private static final int TIME_LIMIT = 5;
+    private static final int TIME_LIMIT = 2;
     
     private EditorFindSupport() {
     }
@@ -262,7 +262,6 @@ public final class EditorFindSupport {
 
         final int so = startOffset;
         final int eo = endOffset;
-        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         currentResult = null;
         try {
             executor.submit(new Runnable() {
@@ -287,8 +286,6 @@ public final class EditorFindSupport {
         if (currentResult != null && currentResult.hasErrorMsg()) {
             org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), currentResult.getErrorMsg());
         }
-        executor.shutdown();
-
         cachekey = newCacheKey;
         return Arrays.copyOf(cacheContent, cacheContent.length);
     }
@@ -521,7 +518,6 @@ public final class EditorFindSupport {
             final PlainDocument plainDocument = new PlainDocument();
             plainDocument.insertString(0, text, null);
             findMatches = null;
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             try {
                 executor.submit(new Runnable() {
 
@@ -539,7 +535,6 @@ public final class EditorFindSupport {
                         EditorFindSupport.class, "slow-search"));
                 LOG.log(Level.INFO, ex.getMessage(), ex);
             }
-            executor.shutdown();
             return findMatches != null && findMatches[0] != -1;
         } catch (BadLocationException ex) {
             return false;
@@ -670,7 +665,6 @@ public final class EditorFindSupport {
             }
 
             int retFind[];
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             while (true) {
                 //pos = doc.find(sf, startPos, back ? blockStartPos : blockEndPos);
                 final int off1 = startPos;
@@ -696,13 +690,11 @@ public final class EditorFindSupport {
                     LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
 
-                if (currentResult == null) {
-                    executor.shutdown();
+                if (currentResult == null) {     
                     return null;
                 }
                 
                 if (currentResult.hasErrorMsg()) {
-                    executor.shutdown();
                     return currentResult;
                 }
                 retFind = currentResult.getFoundPositions();
@@ -736,7 +728,6 @@ public final class EditorFindSupport {
                 }
 
             }
-            executor.shutdown();
             if (pos != -1) {
                 int[] ret = new int[3];
                 ret[0] = pos;
