@@ -117,12 +117,24 @@ public class GoToDeclarationTest extends JsTestBase {
         checkDeclaration("testfiles/navigation/issue227972.js", "c.me^thod();", "this.^method = function() { // navigate from c.method()");
     }
     
-    public void testIssue227972_07() throws Exception {
-        checkDeclaration("testfiles/navigation/issue227972.js", "NS.test.met^hod();", "this.^method = function() { // navigate from c.method()");
-    }
+//    public void testIssue227972_07() throws Exception {
+//        checkDeclaration("testfiles/navigation/issue227972.js", "NS.test.met^hod();", "this.^method = function() { // navigate from c.method()");
+//    }
     
     public void testIssue227972_08() throws Exception {
         checkDeclaration("testfiles/navigation/issue227972.js", "this.f^();", "MyClass.prototype.^f= function() {};");
+    }
+    
+    public void testImportedFile_01() throws Exception {
+        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import text from \"expo^rt01\";", "export01.js", 0);
+    }
+    
+    public void testImportedFile_02() throws Exception {
+        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import { text as text2 } from \"./lib/exp^ort02\";", "export02.js", 0);
+    }
+    
+    public void testImportedFile_03() throws Exception {
+        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import { text as text3 } from \"l^ib/export02\";", "export02.js", 0);
     }
     
 }

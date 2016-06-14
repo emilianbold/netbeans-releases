@@ -16,6 +16,15 @@ var engine = {
     }
 }
 
+class Car {
+    constructor(engine) {
+        this.engine = engine;
+    }
+    start() {
+        this.engine.start(throttle => throttle + max);
+    }
+}
+    
 var colors = [0, 1, 2]
 function computeColor(limit) {
     try {

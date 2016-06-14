@@ -49,7 +49,7 @@ import nu.validator.saxtree.TreeParser;
 import nu.validator.spec.Spec;
 import nu.validator.spec.html5.Html5SpecBuilder;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
+import nu.validator.localentities.LocalCacheEntityResolver;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;

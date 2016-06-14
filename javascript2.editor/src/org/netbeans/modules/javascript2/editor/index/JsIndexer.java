@@ -41,24 +41,32 @@
  */
 package org.netbeans.modules.javascript2.editor.index;
 
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser;
+import org.netbeans.modules.javascript2.model.api.Index;
+import static org.netbeans.modules.javascript2.model.api.IndexedElement.ANONYMOUS_POSFIX;
+import static org.netbeans.modules.javascript2.model.api.IndexedElement.OBJECT_POSFIX;
+import static org.netbeans.modules.javascript2.model.api.IndexedElement.PARAMETER_POSTFIX;
+import org.netbeans.modules.javascript2.model.api.JsArray;
+import org.netbeans.modules.javascript2.model.api.JsReference;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -67,7 +75,9 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -76,6 +86,8 @@ import org.openide.util.Parameters;
 public class JsIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
+
+    private static ChangeSupport changeSupport = new ChangeSupport(JsIndexer.class);
 
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
@@ -86,10 +98,11 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         if (!context.checkForEditorModifications()) {
-            JsIndex.changeInIndex();
+            // FIXME
+            //JsIndex.changeInIndex();
         }
         JsParserResult parserResult = (JsParserResult) result;
-        Model model = parserResult.getModel(true);
+        Model model = Model.getModel(parserResult, true);
 
         IndexingSupport support;
         try {
@@ -118,21 +131,126 @@ public class JsIndexer extends EmbeddingIndexer {
         support.addDocument(document);
     }
 
+    protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
+        IndexDocument elementDocument = support.createDocument(indexable);
+        elementDocument.addPair(Index.FIELD_BASE_NAME, object.getName(), true, true);
+        elementDocument.addPair(Index.FIELD_BASE_NAME_INSENSITIVE, object.getName().toLowerCase(), true, false);
+        elementDocument.addPair(Index.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
+                : object.getJSKind() == JsElement.Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
+//        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
+//        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
+        elementDocument.addPair(Index.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
+        elementDocument.addPair(Index.FIELD_FLAG, Integer.toString(IndexedElement.Flag.getFlag(object)), false, true);
+//        StringBuilder sb = new StringBuilder();
+//        for (JsObject property : object.getProperties().values()) {
+//            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+//                sb.append(codeProperty(property)).append("#@#");
+//            }
+//        }
+//        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
+        StringBuilder sb = new StringBuilder();
+        for (TypeUsage type : object.getAssignments()) {
+            sb.append(type.getType());
+            sb.append(":"); //NOI18N
+            sb.append(type.getOffset());
+            sb.append(":"); //NOI18N
+            sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+            sb.append("|");
+        }
+        elementDocument.addPair(Index.FIELD_ASSIGNMENTS, sb.toString(), false, true);
+        
+        if (object.getJSKind().isFunction()) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(Index.FIELD_RETURN_TYPES, sb.toString(), false, true);
+            elementDocument.addPair(Index.FIELD_PARAMETERS, codeParameters(((JsFunction)object).getParameters()), false, true);
+        }
+        
+        if (object instanceof JsArray) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsArray)object).getTypesInArray()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(Index.FIELD_ARRAY_TYPES, sb.toString(), false, true);
+        }
+
+        
+        return elementDocument;
+    }
+    
+    protected static IndexDocument createDocumentForReference(JsReference object, String fqn, IndexingSupport support, Indexable indexable) {
+        IndexDocument elementDocument = support.createDocument(indexable);
+        elementDocument.addPair(Index.FIELD_BASE_NAME, object.getName(), true, true);
+        elementDocument.addPair(Index.FIELD_BASE_NAME_INSENSITIVE, object.getName(), true, false);
+        elementDocument.addPair(Index.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
+                : object.getJSKind() == JsElement.Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
+        elementDocument.addPair(Index.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
+        elementDocument.addPair(Index.FIELD_FLAG, Integer.toString(IndexedElement.Flag.getFlag(object)), false, true);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(object.getOriginal().getFullyQualifiedName());
+        sb.append(":"); //NOI18N
+        sb.append(object.getOffset());
+        sb.append(":"); //NOI18N
+        sb.append("1");  //NOI18N
+        elementDocument.addPair(Index.FIELD_ASSIGNMENTS, sb.toString(), false, true);
+        
+        if (object.getJSKind().isFunction()) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(Index.FIELD_RETURN_TYPES, sb.toString(), false, true);
+            elementDocument.addPair(Index.FIELD_PARAMETERS, codeParameters(((JsFunction)object).getParameters()), false, true);
+        }
+        
+        if (object instanceof JsArray) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsArray)object).getTypesInArray()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(Index.FIELD_ARRAY_TYPES, sb.toString(), false, true);
+        }
+        return elementDocument;
+    }
+
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         if (!isInvisibleFunction(object)) {
             if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
-                IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
+                IndexDocument document = createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
-            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+            if (!(object instanceof JsReference && ModelUtils.isDescendant(object, ((JsReference)object).getOriginal()))) {
                 // look for all other properties. Even if the object doesn't have to be delcared in the file
                 // there can be declared it's properties or methods
                 for (JsObject property : object.getProperties().values()) {
-                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                    if (!(property instanceof JsReference && !((JsReference)property).getOriginal().isAnonymous())) {
                         storeObject(property, fqn + '.' + property.getName(), support, indexable);
                     } else {
-                        IndexDocument document = IndexedElement.createDocumentForReference((JsObjectReference)property, fqn + '.' + property.getName(), support, indexable);
+                        IndexDocument document = createDocumentForReference((JsReference)property, fqn + '.' + property.getName(), support, indexable);
 ////                      IndexDocument document = IndexedElement.createDocument(property, fqn + '.' + property.getName(), support, indexable);
                         support.addDocument(document);
                     }
@@ -170,6 +288,26 @@ public class JsIndexer extends EmbeddingIndexer {
         return false;
     }
 
+    private static String codeParameters(Collection<? extends JsObject> params) {
+        StringBuilder result = new StringBuilder();
+        for (Iterator<? extends JsObject> it = params.iterator(); it.hasNext();) {
+            JsObject parametr = it.next();
+            result.append(parametr.getName());
+            result.append(":");
+            for (Iterator<? extends TypeUsage> itType = parametr.getAssignmentForOffset(parametr.getOffset() + 1).iterator(); itType.hasNext();) {
+                TypeUsage type = itType.next();
+                result.append(type.getType());
+                if (itType.hasNext()) {
+                    result.append("|");
+                }
+            }
+            if (it.hasNext()) {
+                result.append(',');
+            }
+        }
+        return result.toString();
+    }
+
     private void storeUsages(JsObject object, String name, IndexDocument document) {
         StringBuilder sb = new StringBuilder();
         sb.append(object.getName());
@@ -184,7 +322,7 @@ public class JsIndexer extends EmbeddingIndexer {
                 }
             }
         }
-        document.addPair(JsIndex.FIELD_USAGE, sb.toString(), true, true);
+        document.addPair(Index.FIELD_USAGE, sb.toString(), true, true);
         if (object instanceof JsFunction) {
             // store parameters
             for (JsObject parameter : ((JsFunction) object).getParameters()) {
@@ -192,7 +330,7 @@ public class JsIndexer extends EmbeddingIndexer {
             }
         }
         for (JsObject property : object.getProperties().values()) {
-            if (storeUsage(property) && (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous()))) {
+            if (storeUsage(property) && (!(property instanceof JsReference && !((JsReference)property).getOriginal().isAnonymous()))) {
                 storeUsages(property, property.getName(), document);
             }
         }
@@ -306,4 +444,31 @@ public class JsIndexer extends EmbeddingIndexer {
         }
         
     } // End of Factory class
+    
+    @ServiceProvider(service = org.netbeans.modules.javascript2.model.spi.IndexChangeSupport.class)
+    public static final class IndexChangeSupport implements org.netbeans.modules.javascript2.model.spi.IndexChangeSupport {
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
+        public void fireChange() {
+            changeSupport.fireChange();
+        }
+    }
+    
+    @ServiceProvider(service = org.netbeans.modules.javascript2.editor.spi.PostScanProvider.class)
+    public static final class PostScanProvider implements org.netbeans.modules.javascript2.editor.spi.PostScanProvider {
+
+        @Override
+        public void addPostScanTask(Runnable task) {
+            Factory.addPostScanTask(task);
+        }
+    }
 }

@@ -78,4 +78,11 @@ public class JsBracesMatcherTest extends JsTestBase {
         match2("function foo() ^{\nif (true) {\n}\n^}\n}");
     }
 
+    public void testFindMatchingTemplateExp1() throws Exception {
+        match2("`test ^${template^}`");
+    }
+    
+    public void testFindMatchingTemplateExp2() throws Exception {
+        match2("`test ${template `e ^${ inner ^}`}`");
+    }
 }

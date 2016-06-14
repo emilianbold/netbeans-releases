@@ -2,7 +2,7 @@ FUNCTION anonymousFunction [ANONYMOUS: false, DECLARED: true - anonymousFunction
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-anonymousFunction_L44 : FUNCTION anonymousFunction_L44 [ANONYMOUS: true, DECLARED: true - anonymousFunction_L44, MODIFIERS: PUBLIC, FUNCTION]
+anonymousFunctionL$44 : FUNCTION anonymousFunctionL$44 [ANONYMOUS: true, DECLARED: true - anonymousFunctionL$44, MODIFIERS: PUBLIC, FUNCTION]
                       # RETURN TYPES
                       undefined, RESOLVED: true
                       # PROPERTIES

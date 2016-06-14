@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  *

@@ -41,8 +41,20 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.JsObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -52,15 +64,24 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.JsReference;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -81,12 +102,12 @@ public class JsStructureScanner implements StructureScanner {
     }
 
     @Override
-    public List<? extends StructureItem> scan(ParserResult info) {
+    public List<? extends StructureItem> scan(org.netbeans.modules.csl.spi.ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         long start = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Structure scanner started at {0} ms", start);
-        JsParserResult result = (JsParserResult) info;
-        final Model model = result.getModel();
+        ParserResult result = (ParserResult) info;
+        final Model model = Model.getModel(result, false);
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
         final CancelSupport cancel = CancelSupport.getDefault();
@@ -96,7 +117,7 @@ public class JsStructureScanner implements StructureScanner {
         return items;
     }
 
-    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
+    private List<StructureItem> getEmbededItems(ParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
         if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
         }
@@ -135,7 +156,7 @@ public class JsStructureScanner implements StructureScanner {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
-            if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
+            if (!(child instanceof JsReference && ModelUtils.isDescendant(child, ((JsReference)child).getOriginal()))) {
                 children = getEmbededItems(result, child, children, processedObjects, cancel);
             }
             if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
@@ -143,7 +164,7 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
+                    if (function.isDeclared() /*&& (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))*/) {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));                          
                     }
                 }
@@ -158,21 +179,25 @@ public class JsStructureScanner implements StructureScanner {
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
                         || !(jsObject.getParent() instanceof JsFunction)))
-                collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
-            } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
+                    collectedItems.add(new JsSimpleStructureItem(child, children.isEmpty() ? null : children, "prop-", result)); //NOI18N
+            } else if ((child.getJSKind() == JsElement.Kind.VARIABLE || child.getJSKind() == JsElement.Kind.CONSTANT)&& child.isDeclared()
                 && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                     if (children.isEmpty()) {
                         collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
                     } else {
                         collectedItems.add(new JsObjectStructureItem(child, children, result));
                     }
+            } else if ((child.getJSKind() == JsElement.Kind.CLASS && child.isDeclared())) {
+                collectedItems.add(new JsClassStructureItem(child, children, result));
+            } else if (child.getJSKind() == JsElement.Kind.BLOCK) {
+                collectedItems.addAll(children);
             }
          }
         
         if (jsObject instanceof JsFunction) {
             JsFunction jsFunction = (JsFunction)jsObject;
             for (JsObject param: jsFunction.getParameters()) {
-                if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
+                if (hasDeclaredProperty(param) && !(jsObject instanceof JsReference && !((JsReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
                     getEmbededItems(result, param, items, processedObjects, cancel);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
@@ -180,7 +205,7 @@ public class JsStructureScanner implements StructureScanner {
             }
             if (jsFunction.getReturnTypes().size() == 1 && !jsFunction.isAnonymous()) {
                 TypeUsage returnType = jsFunction.getReturnTypes().iterator().next();
-                JsObject returnObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), returnType.getType());
+                JsObject returnObject = ModelUtils.findJsObjectByName(Model.getModel(result, false).getGlobalObject(), returnType.getType());
                 if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                      for (JsObject property: returnObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -190,12 +215,14 @@ public class JsStructureScanner implements StructureScanner {
                 } 
             }
         }
-        
-        if (jsObject.getDeclarationName() != null) {
+        if (jsObject.getJSKind() == JsElement.Kind.BLOCK) {
+            
+        } else if (jsObject.getDeclarationName() != null) {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
-                JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
-                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                JsObject assignedObject = ModelUtils.findJsObjectByName(Model.getModel(result, false).getGlobalObject(), assignmentForOffset.iterator().next().getType());
+                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
+                        && processedObjects.contains(assignedObject.getParent().getFullyQualifiedName())) {
                     for (JsObject property : assignedObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
                         getEmbededItems(result, property, items, processedObjects, cancel);
@@ -261,12 +288,12 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     @Override
-    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+    public Map<String, List<OffsetRange>> folds(org.netbeans.modules.csl.spi.ParserResult info) {
         long start = System.currentTimeMillis(); 
         Map<String, List<OffsetRange>> folds;
         String mimeType = info.getSnapshot().getMimeType();
         if (JsTokenId.isJSONBasedMimeType(mimeType)) {
-            folds = foldsJson(info);
+            folds = foldsJson((ParserResult)info);
         } else {
             folds = new HashMap<String, List<OffsetRange>>();
             TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
@@ -391,10 +418,10 @@ public class JsStructureScanner implements StructureScanner {
         
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
-        final protected JsParserResult parserResult;
+        final protected ParserResult parserResult;
         final private String fqn;
         
-        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, JsParserResult parserResult) {
+        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, ParserResult parserResult) {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
@@ -519,17 +546,66 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
+    private class JsClassStructureItem extends JsStructureItem {
+        
+        public JsClassStructureItem(JsObject elementHandle, List<? extends StructureItem> children, ParserResult parserResult) {
+            super(elementHandle, children, "cl", parserResult); //NOI18N
+        }
+        
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            JsObject clObject = getModelElement();
+            boolean isDeprecated = clObject.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(clObject.getDeclarationName().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
+            JsObject prototype = clObject.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                Collection<? extends TypeUsage> assignments = prototype.getAssignments(); 
+                if (assignments != null && !assignments.isEmpty()) {
+                    // the class extends 
+                    formatter.appendHtml(FONT_GRAY_COLOR);
+                    formatter.appendText(" :: ");   // NOI18N
+                    boolean addComma = false;
+                    for (TypeUsage type : assignments) {
+                        if (addComma) {
+                            formatter.appendText(", "); // NOI18N
+                        } else {
+                            addComma = true;
+                        }
+                        formatter.appendText(type.getType());
+                    }
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+            }
+            return formatter.getText();
+        }
+        
+    }
+    
     private static ImageIcon priviligedIcon = null;
     private static ImageIcon callbackIcon = null;
+    private static ImageIcon publicGenerator = null;
+    private static ImageIcon privateGenerator = null;
+    private static ImageIcon priviligedGenerator = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
         private final List<TypeUsage> resolvedTypes;
 
-        public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+        public JsFunctionStructureItem(
+                JsFunction elementHandle,
+                List<? extends StructureItem> children,
+                ParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
             Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true, false));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes,
+                    Model.getModel(parserResult, false), Index.get(parserResult.getSnapshot().getSource().getFileObject()), false));
         }
 
         public final JsFunction getFunctionScope() {
@@ -594,17 +670,34 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public ImageIcon getCustomIcon() {
-            if (getModifiers().contains(Modifier.PROTECTED)) {
-                if(priviligedIcon == null) {
-                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
-                }
-                return priviligedIcon;
-            }
             if (getFunctionScope().getJSKind() == JsElement.Kind.CALLBACK) {
                 if (callbackIcon == null) {
                     callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
                 }
                 return callbackIcon;
+            } else  if (getFunctionScope().getJSKind() == JsElement.Kind.GENERATOR) {
+                if (getModifiers().contains(Modifier.PUBLIC)) {
+                    if (publicGenerator == null) {
+                        publicGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPublic.png")); //NOI18N
+                    }
+                    return publicGenerator;
+                } else if (getModifiers().contains(Modifier.PRIVATE)) {
+                    if (privateGenerator == null) {
+                        privateGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPrivate.png")); //NOI18N
+                    }
+                    return privateGenerator;
+                } else if (getModifiers().contains(Modifier.PROTECTED)) {
+                    if (priviligedGenerator == null) {
+                        priviligedGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPriviliged.png")); //NOI18N
+                    }
+                    return priviligedGenerator;
+                }
+            }
+            if (getModifiers().contains(Modifier.PROTECTED)) {
+                if(priviligedIcon == null) {
+                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
+                }
+                return priviligedIcon;
             }
             return super.getCustomIcon();
         }
@@ -614,7 +707,7 @@ public class JsStructureScanner implements StructureScanner {
 
     private class JsObjectStructureItem extends JsStructureItem {
 
-        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, ParserResult parserResult) {
             super(elementHandle, children, "ob", parserResult); //NOI18N
         }
 
@@ -634,7 +727,7 @@ public class JsStructureScanner implements StructureScanner {
             if (isDeprecated) {
                 formatter.deprecated(true);
             }
-            formatter.appendText(object.getName());
+            formatter.appendText(object.isAnonymous() ? "{...}" : object.getName()); //NOI18N
             if (isDeprecated) {
                 formatter.deprecated(false);
             }
@@ -648,12 +741,17 @@ public class JsStructureScanner implements StructureScanner {
 
         private final List<TypeUsage> resolvedTypes;
         
-        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, JsParserResult parserResult) {
-            super(elementHandle, null, sortPrefix, parserResult);
+        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, ParserResult parserResult) {
+            this(elementHandle, null, sortPrefix, parserResult);
+        }
+
+        public JsSimpleStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, ParserResult parserResult) {
+            super(elementHandle, children, sortPrefix, parserResult);
             this.object = elementHandle;
 
-            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true, false));
+            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignments();//tForOffset(object.getDeclarationName().getOffsetRange().getEnd());
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset,
+                    Model.getModel(parserResult, false), Index.get(parserResult.getSnapshot().getSource().getFileObject()), false));
         }
 
         

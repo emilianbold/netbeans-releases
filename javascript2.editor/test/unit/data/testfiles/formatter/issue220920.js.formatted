@@ -31,7 +31,8 @@ function parseLinks() {
                 }
 
                 evt.preventDefault();
-            } else if
+            }
+            else if
         }
     });
 }
