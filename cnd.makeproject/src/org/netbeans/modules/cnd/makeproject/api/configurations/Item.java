@@ -717,6 +717,27 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return Collections.<FSPath>emptyList();
     }
 
+    private List<String> getCompilerPreprocessorSymbols() {
+        List<String> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
+            return vec;
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return vec;
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                vec.addAll(compiler.getSystemPreprocessorSymbols());
+            }
+        }
+        return vec;
+    }
+    
     @Override
     public List<String> getSystemMacroDefinitions() {
         List<String> vec = new ArrayList<>();
@@ -989,7 +1010,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCompilerConfiguration.STANDARD_C89:
                             return LanguageFlavor.C89;
                         case CCompilerConfiguration.STANDARD_DEFAULT:
-                            for(String macro : getSystemMacroDefinitions()) {
+                            for(String macro : getCompilerPreprocessorSymbols()) {
                                 if (macro.startsWith("_STDC_C99=")) { //NOI18N
                                     return LanguageFlavor.C99;
                                 } else if (macro.startsWith("_STDC_C11=")) { //NOI18N
@@ -1007,7 +1028,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCCompilerConfiguration.STANDARD_CPP98:
                             return LanguageFlavor.CPP;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
-                            for(String macro : getSystemMacroDefinitions()) {
+                            for(String macro : getCompilerPreprocessorSymbols()) {
                                 if (macro.startsWith("__cplusplus=")) { //NOI18N
                                     String year = macro.substring(12);
                                     if (year.compareTo("2010") > 0) { //NOI18N
