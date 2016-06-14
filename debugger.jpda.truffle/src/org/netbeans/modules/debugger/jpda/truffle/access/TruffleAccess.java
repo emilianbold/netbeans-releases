@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.truffle.access;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InvocationException;
 import com.sun.jdi.LongValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
@@ -82,6 +83,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
+import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
@@ -570,6 +572,7 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static boolean invokeMethodCalls(JPDAThread thread, MethodCallsAccess methodCalls) {
         assert Thread.holdsLock(DEFAULT.methodCallAccessLock);
         boolean invoking = false;
+        InvocationException iex = null;
         try {
             ((JPDAThreadImpl) thread).notifyMethodInvoking();
             invoking = true;
@@ -577,16 +580,23 @@ public class TruffleAccess implements JPDABreakpointListener {
             return true;
         } catch (PropertyVetoException pvex) {
             return false;
+        } catch (InvocationException ex) {
+            iex = ex;
         } finally {
             if (invoking) {
                 ((JPDAThreadImpl) thread).notifyMethodInvokeDone();
             }
         }
+        if (iex != null) {
+            Throwable ex = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) thread).getDebugger()).preload((JPDAThreadImpl) thread);
+            Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Invoking "+methodCalls));
+        }
+        return false;
     }
     
     public static interface MethodCallsAccess {
         
-        void callMethods(JPDAThread thread);
+        void callMethods(JPDAThread thread) throws InvocationException;
         
     }
 }
