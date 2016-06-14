@@ -702,6 +702,7 @@ public final class EditorFindSupport {
                 }
                 
                 if (currentResult.hasErrorMsg()) {
+                    executor.shutdown();
                     return currentResult;
                 }
                 retFind = currentResult.getFoundPositions();
