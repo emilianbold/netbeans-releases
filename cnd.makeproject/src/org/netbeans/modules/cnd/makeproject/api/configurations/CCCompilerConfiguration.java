@@ -60,7 +60,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public static final int STANDARD_CPP11 = 2;
     public static final int STANDARD_CPP14 = 3;
     public static final int STANDARD_INHERITED = 4;
-    public static final String[] STANDARD_NAMES = {
+    private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_CPP98"),
         getString("STANDARD_CPP11"),
@@ -210,9 +210,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         
         StringBuilder options = new StringBuilder();
         options.append(getCCFlagsBasic(compiler)).append(" "); // NOI18N
-        for(BasicCompilerConfiguration master : getMasters(true)) {
+        getMasters(true).forEach((master) -> {
             options.append(master.getCommandLineConfiguration().getValue()).append(" "); // NOI18N
-        }
+        });
         options.append(getAllOptions2(compiler)).append(" "); // NOI18N
         return MakeProjectOptionsFormat.reformatWhitespaces(options.toString());
     }

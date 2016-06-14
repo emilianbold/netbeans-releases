@@ -126,7 +126,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
         }
     }
 
-    private class FileChangeListenerImpl implements FileChangeListener {
+    private static class FileChangeListenerImpl implements FileChangeListener {
 
         private final FileObject projectDir;
 

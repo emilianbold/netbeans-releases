@@ -197,32 +197,18 @@ final class NodeActionFactory {
                 assert false;
                 return;
             }
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
-                    for(final MakeConfigurationDescriptor mcd : projects) {
-                        if (isItem.get()) {
-                            ViewItemNode.getRP().post(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    mcd.save();
-                                }
-                            });
-                        } else {
-                            MakeLogicalViewProvider provider = mcd.getProject().getLookup().lookup(MakeLogicalViewProvider.class);
-                            provider.getAnnotationRP().post(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    mcd.save();
-                                }
-                            });
-                        }
+            SwingUtilities.invokeLater(() -> {
+                a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
+                projects.forEach((mcd) -> {
+                    if (isItem.get()) {
+                        ViewItemNode.getRP().post(() -> {
+                            mcd.save();
+                        });
+                    } else {
+                        MakeLogicalViewProvider provider = mcd.getProject().getLookup().lookup(MakeLogicalViewProvider.class);
+                        provider.getAnnotationRP().post(mcd::save);
                     }
-                }
+                });
             });
         }
 

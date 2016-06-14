@@ -322,6 +322,9 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 .addComponent(compilerCollectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
+        compilerCollectionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ParserSettingsPanel.class, "COMPILERS_TABBEDPANE_AN")); // NOI18N
+        compilerCollectionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParserSettingsPanel.class, "COMPILERS_TABBEDPANE_AD")); // NOI18N
+
         add(collectionPanel, java.awt.BorderLayout.PAGE_START);
 
         tabPanel.setOpaque(false);

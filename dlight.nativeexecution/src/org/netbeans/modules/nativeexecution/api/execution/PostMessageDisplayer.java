@@ -49,7 +49,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer.AbstractDisplayer.Colors;
-import org.netbeans.swing.plaf.LFCustoms;
+//import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColors;
@@ -253,7 +253,7 @@ public interface PostMessageDisplayer {
         protected final String formatTime(long millis) {
             return Default.formatTime(millis);
         }
-
+      
         protected static class Colors {
 
             protected static Color getColorError(InputOutput io) {
@@ -261,7 +261,8 @@ public interface PostMessageDisplayer {
                 if (color == null) {
                     color = UIManager.getColor("nb.output.err.foreground"); // NOI18N
                     if (color == null) {
-                        color = LFCustoms.shiftColor(Color.RED);
+                       // color = LFCustoms.shiftColor(Color.RED);
+                       color = Color.RED;
                     }
                 }
                 return color;

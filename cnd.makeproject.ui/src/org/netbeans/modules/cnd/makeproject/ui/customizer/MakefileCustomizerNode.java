@@ -231,15 +231,12 @@ class MakefileCustomizerNode extends CustomizerNode {
             chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
             chooser.setControlButtonsAreShown(false);
             propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                        File selectedFile= chooser.getSelectedFile();
-                        String path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                        path = CndPathUtilities.normalizeSlashes(path);
-                        editor.setValue(path);
-                    }
+            propenv.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+                    File selectedFile= chooser.getSelectedFile();
+                    String path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilities.normalizeSlashes(path);
+                    editor.setValue(path);
                 }
             });
             return chooser;
@@ -312,20 +309,17 @@ class MakefileCustomizerNode extends CustomizerNode {
             chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
             setElfFilters(chooser, filters, latch);
             propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    File selectedFile = chooser.getSelectedFile();
-                    if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
-                        String path = selectedFile.getPath();
-                        if (pathMap != null) {
-                            String newPath = pathMap.getTrueLocalPath(path);
-                            path = (newPath == null) ? ("//" + path) : newPath;
-                        }
-                        path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), path); // FIXUP: not always relative path
-                        path = CndPathUtilities.normalizeSlashes(path);
-                        editor.setValue(path);
+            propenv.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+                File selectedFile = chooser.getSelectedFile();
+                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
+                    String path = selectedFile.getPath();
+                    if (pathMap != null) {
+                        String newPath = pathMap.getTrueLocalPath(path);
+                        path = (newPath == null) ? ("//" + path) : newPath;
                     }
+                    path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), path); // FIXUP: not always relative path
+                    path = CndPathUtilities.normalizeSlashes(path);
+                    editor.setValue(path);
                 }
             });
             return chooser;
@@ -333,27 +327,21 @@ class MakefileCustomizerNode extends CustomizerNode {
         
         private void setElfFilters(final JFileChooser chooser, final List<FileFilter> filters, final CountDownLatch latch) {
             // to be run in EDT
-            final Runnable setFiltersRunner = new Runnable() {
-                @Override
-                public void run() {
-                    for (FileFilter f : filters) {
-                        chooser.addChoosableFileFilter(f);
-                    }
-                    if (!filters.isEmpty()) {
-                        chooser.setFileFilter(filters.get(0));
-                        //chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-                    }
+            final Runnable setFiltersRunner = () -> {
+                filters.forEach((f) -> {
+                    chooser.addChoosableFileFilter(f);
+                });
+                if (!filters.isEmpty()) {
+                    chooser.setFileFilter(filters.get(0));
+                    //chooser.setFileFilter(chooser.getAcceptAllFileFilter());
                 }
             };
-            Runnable waiter = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        latch.await();
-                        SwingUtilities.invokeLater(setFiltersRunner);
-                    } catch (InterruptedException ex) {
-                        // don't report interrupted exception
-                    }
+            Runnable waiter = () -> {
+                try {
+                    latch.await();
+                    SwingUtilities.invokeLater(setFiltersRunner);
+                } catch (InterruptedException ex) {
+                    // don't report interrupted exception
                 }
             };
             RP.post(waiter);

@@ -260,6 +260,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         ArrayList<Object> ic = new ArrayList<>();
         ic.add(info);
         ic.add(aux);
+        ic.add(spp);
         ic.add(new MakeActionProviderImpl(this));
         //ic.add(new MakeLogicalViewProvider(this));
         //ic.add(BrokenReferencesSupport.createPlatformVersionProblemProvider(this));
@@ -267,9 +268,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         //ic.add(new TemplateAttributesProviderImpl(this));
         //ic.add(new MakeCustomizerProviderImpl(this));
         //ic.add(new CndDocumentCodeStyleProviderImpl());
-        for(MakeProjectLookupProvider p : Lookup.getDefault().lookupAll(MakeProjectLookupProvider.class)) {
+        Lookup.getDefault().lookupAll(MakeProjectLookupProvider.class).forEach((p) -> {
             p.addLookup(this, ic);
-        }
+        });
         ic.add(new MakeArtifactProviderImpl(this));
         ic.add(UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)));
         ic.add(new MakeSharabilityQueryImpl(projectDescriptorProvider, getProjectDirectory()));
@@ -538,9 +539,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
 
     private void addMIMETypeExtensions(Collection<String> extensions, String mime) {
         MIMEExtensions exts = MIMEExtensions.get(mime);
-        for (String ext : extensions) {
+        extensions.forEach((ext) -> {
             exts.addExtension(ext);
-        }
+        });
         CndFileVisibilityQuery.getDefault().stateChanged(null);
     }
 
@@ -630,12 +631,12 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
 
     private boolean saveAdditionalHeaderExtensions(Element data, String key, Set<String> set) {
         StringBuilder buf = new StringBuilder();
-        for (String e : set) {
+        set.forEach((e) -> {
             if (buf.length() > 0) {
                 buf.append(',');
             }
             buf.append(e);
-        }
+        });
         String newText = buf.toString();
         Element element;
         NodeList nodeList = data.getElementsByTagName(key);
@@ -799,6 +800,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return null;
     }
 
+    @Override
     public boolean isProjectFormattingStyle() {
         if (projectFormattingStyle == null) {
             Element data = helper.getPrimaryConfigurationData(true);
@@ -819,6 +821,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return false;
     }
 
+    @Override
     public void setProjectFormattingStyle(boolean isProject) {
         if (projectFormattingStyle != null) {
             projectFormattingStyle.set(isProject);
@@ -869,6 +872,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return null;
     }
     
+    @Override
     public void setProjectFormattingStyle(String mime, CodeStyleWrapper style) {
         if (MIMENames.C_MIME_TYPE.equals(mime)) {
             cFormattingSytle = style;
@@ -879,6 +883,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         }
     }
 
+    @Override
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
@@ -892,6 +897,7 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         return sourceEncoding;
     }
 
+    @Override
     public void setSourceEncoding(String sourceEncoding) {
         this.sourceEncoding = sourceEncoding;
     }
@@ -1239,48 +1245,40 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
 
         /** Return configured project name. */
         private String getNameImpl() {
-            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-
-                @Override
-                public String run() {
-                    Element data = project.helper.getPrimaryConfigurationData(true);
-                    Element nameEl =  getNameElement(data);
-                    if (nameEl != null) {
-                        NodeList nl = nameEl.getChildNodes();
-                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            return ((Text) nl.item(0)).getNodeValue();
-                        }
+            return ProjectManager.mutex().readAccess((Mutex.Action<String>) () -> {
+                Element data = project.helper.getPrimaryConfigurationData(true);
+                Element nameEl =  getNameElement(data);
+                if (nameEl != null) {
+                    NodeList nl = nameEl.getChildNodes();
+                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                        return ((Text) nl.item(0)).getNodeValue();
                     }
-                    FileObject fo = project.getProjectDirectory();
-                    if (fo != null && fo.isValid()) {
-                        return fo.getNameExt();
-                    }
-                    return "???"; // NOI18N
                 }
+                FileObject fo = project.getProjectDirectory();
+                if (fo != null && fo.isValid()) {
+                    return fo.getNameExt();
+                }
+                return "???"; // NOI18N
             });
         }
 
         @Override
         public void setName(final String name) {
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-
-                @Override
-                public Void run() {
-                    Element data = project.helper.getPrimaryConfigurationData(true);
-                    Element nameEl =  getNameElement(data);
-                    if (nameEl != null) {
-                        NodeList deadKids = nameEl.getChildNodes();
-                        while (deadKids.getLength() > 0) {
-                            nameEl.removeChild(deadKids.item(0));
-                        }
-                    } else {
-                        nameEl = data.getOwnerDocument().createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
-                        data.insertBefore(nameEl, data.getChildNodes().item(0));
+            ProjectManager.mutex().writeAccess((Mutex.Action<Void>) () -> {
+                Element data = project.helper.getPrimaryConfigurationData(true);
+                Element nameEl =  getNameElement(data);
+                if (nameEl != null) {
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
                     }
-                    nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                    project.helper.putPrimaryConfigurationData(data, true);
-                    return null;
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
+                    data.insertBefore(nameEl, data.getChildNodes().item(0));
                 }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                project.helper.putPrimaryConfigurationData(data, true);
+                return null;
             });
             // reinit cache
             _getName();
@@ -1374,9 +1372,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
                             if (outputValue.endsWith(".so") || // NOI18N
                                     outputValue.endsWith(".dll") || // NOI18N
                                     outputValue.endsWith(".dylib")) { // NOI18N
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-dynamic.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged-dynamic.png", false); // NOI18N
                             } else if (outputValue.endsWith(".a")) { // NOI18N
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged-static.png", false); // NOI18N
                             } else {
                                 icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             }
@@ -1470,24 +1468,21 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
             // project is in opened state
             openStateAndLock.set(true);
             // post-initialize configurations in external worker
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (openStateAndLock) {
-                        if (!openStateAndLock.get()) {
-                            return;
-                        }
+            RP.post(() -> {
+                synchronized (openStateAndLock) {
+                    if (!openStateAndLock.get()) {
+                        return;
                     }
-                    projectDescriptorProvider.opened();
-                    createLaunchersFileIfNeeded(dir);
-                    synchronized (openStateAndLock) {
-                        if (openStateAndLock.get()) {
-                            if (nativeProject instanceof NativeProjectProvider) {
-                                warmupNativeProject();
-                                NativeProjectRegistry.getDefault().register(nativeProject);
-                            }
-                            registerClassPath(true);
+                }
+                projectDescriptorProvider.opened();
+                createLaunchersFileIfNeeded(dir);
+                synchronized (openStateAndLock) {
+                    if (openStateAndLock.get()) {
+                        if (nativeProject instanceof NativeProjectProvider) {
+                            warmupNativeProject();
+                            NativeProjectRegistry.getDefault().register(nativeProject);
                         }
+                        registerClassPath(true);
                     }
                 }
             });
@@ -1557,9 +1552,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
     }
     
     private void notifyProjectStartActivity() {
-        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
+        Lookup.getDefault().lookupAll(MakeProjectLife.class).forEach((service) -> {
             service.start(this);
-        }
+        });
     }
 
     public boolean isDeleted() {
@@ -1593,23 +1588,20 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
             MakeProjectFileProvider.removeSearchBase(this);
             // project is in closed state
             openStateAndLock.set(false);
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (openStateAndLock) {
-                        if (openStateAndLock.get()) {
-                            return;
-                        }
+            RP.post(() -> {
+                synchronized (openStateAndLock) {
+                    if (openStateAndLock.get()) {
+                        return;
                     }
-                    synchronized (openStateAndLock) {
-                        if (!openStateAndLock.get()) {
-                            if (nativeProject instanceof NativeProjectProvider) {
-                                NativeProjectRegistry.getDefault().unregister(nativeProject, isDeleted());
-                            }
-                            registerClassPath(false);
-                            projectDescriptorProvider.closed();
-                            notifyProjectStopActivity();
+                }
+                synchronized (openStateAndLock) {
+                    if (!openStateAndLock.get()) {
+                        if (nativeProject instanceof NativeProjectProvider) {
+                            NativeProjectRegistry.getDefault().unregister(nativeProject, isDeleted());
                         }
+                        registerClassPath(false);
+                        projectDescriptorProvider.closed();
+                        notifyProjectStopActivity();
                     }
                 }
             });
@@ -1617,9 +1609,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
     }
 
     private void notifyProjectStopActivity() {
-        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
+        Lookup.getDefault().lookupAll(MakeProjectLife.class).forEach((service) -> {
             service.stop(this);
-        }
+        });
     }
 
     public void save() {

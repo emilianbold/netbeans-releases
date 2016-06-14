@@ -99,11 +99,8 @@ class RemoteSyncActions {
     private static final RequestProcessor RP = new RequestProcessor("RemoteSyncActions", 1); // NOI18N
 
     /** A task that activatedNodesCache */
-    private static final RequestProcessor.Task clearCacheTask = RP.create(new Runnable() {
-        @Override
-                public void run() {
-                    activatedNodesCache.set(null);
-                }
+    private static final RequestProcessor.Task clearCacheTask = RP.create(() -> {
+        activatedNodesCache.set(null);
     });
     
     /** prevents instance creation */
@@ -547,9 +544,9 @@ class RemoteSyncActions {
                 files.add(file);
             }
         }
-        for (Folder subfolder : folder.getFolders()) {
+        folder.getFolders().forEach((subfolder) -> {
             gatherFiles(files, subfolder);
-        }
+        });
     }
 
     private static boolean hasRootNode(Node[] activatedNodes) {

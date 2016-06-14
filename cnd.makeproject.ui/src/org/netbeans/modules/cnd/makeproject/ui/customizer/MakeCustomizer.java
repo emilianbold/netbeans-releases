@@ -709,7 +709,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         // See org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator,
         // org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCppUnitIterator
         private void setCppUnitOptions(Configuration cfg, Folder rootFolder) {
-            for (Folder testFolder : rootFolder.getAllTests()) {
+            rootFolder.getAllTests().forEach((testFolder) -> {
                 FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(cfg);
                 LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
                 LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
@@ -721,7 +721,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                 ccCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
                 cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
                 ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
-            }
+            });
         }
 
         @Override
@@ -774,9 +774,9 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         @Override
         public void defaultAction(Configuration o) {
             List<Configuration> confs = getListData();
-            for (Configuration c : confs) {
+            confs.forEach((c) -> {
                 c.setDefault(false);
-            }
+            });
             o.setDefault(true);
         }
 

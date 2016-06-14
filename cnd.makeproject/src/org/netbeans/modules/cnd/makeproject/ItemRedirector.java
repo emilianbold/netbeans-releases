@@ -107,27 +107,24 @@ public class ItemRedirector implements FileObjectRedirector {
     
     public static FileObject resolveSymbolicLink(final FileObject fo) {
         try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<FileObject>() {
-                @Override
-                public FileObject run() throws IOException {
-                    URI uri = fo.toURI();
-                    Path path = Paths.get(uri);
-                    for (int i = 0; i < 5; i++) {
-                        if (Files.isSymbolicLink(path)) {
-                            Path to = Files.readSymbolicLink(path);
-                            if (!to.isAbsolute()) {
-                                to = path.getParent().resolve(to).normalize();
-                            }
-                            if (Files.isRegularFile(to)) {
-                                return FileUtil.toFileObject(to.toFile());
-                            }
-                            path = to;
-                        } else {
-                            return null;
+            return AccessController.doPrivileged((PrivilegedExceptionAction<FileObject>) () -> {
+                URI uri = fo.toURI();
+                Path path = Paths.get(uri);
+                for (int i = 0; i < 5; i++) {
+                    if (Files.isSymbolicLink(path)) {
+                        Path to = Files.readSymbolicLink(path);
+                        if (!to.isAbsolute()) {
+                            to = path.getParent().resolve(to).normalize();
                         }
+                        if (Files.isRegularFile(to)) {
+                            return FileUtil.toFileObject(to.toFile());
+                        }
+                        path = to;
+                    } else {
+                        return null;
                     }
-                    return null;
                 }
+                return null;
             });
         } catch (Exception ex) {
             CndUtils.printStackTraceOnce(ex);

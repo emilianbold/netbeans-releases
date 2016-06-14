@@ -108,39 +108,34 @@ public final class TokenizerFactory {
 
     public static Converter getPathConverter(final Project project, final Folder folder, final Item item, final String flag) {
         return new Converter() {
-            private final PathResolver resolver = new PathResolver(){
-
-                @Override
-                public String resolve(String from) {
-                    if (CndPathUtilities.isPathAbsolute(from)) {
-                        return from;
-                    }
-                    if (project != null) {
-                        return from;
-                    } else if (folder != null) {
-                        if (folder.isDiskFolder()) {
-                            String folderPath = folder.getRootPath();
-                            folder.isDiskFolder();
-                            if (folderPath != null) {
-                                from = folderPath+"/"+from; // NOI18N
-                                if (CndPathUtilities.isPathAbsolute(from)) {
-                                    return CndPathUtilities.toAbsoluteOrRelativePath(folder.getConfigurationDescriptor().getBaseDir(), from);
-                                } else {
-                                    return from;
-                                }
-                            }
-                        } else {
-                            // TODO: can we suggest more useful?
-                            return from;
-                        }
-                    } else if (item != null) {
-                        // TODO: should use compile dir?
-                        from = CndPathUtilities.getDirName(item.getAbsolutePath())+"/"+from; // NOI18N
-                        return CndPathUtilities.toAbsoluteOrRelativePath(item.getFolder().getConfigurationDescriptor().getBaseDir(), from);
-                    }
+            private final PathResolver resolver = (String from) -> {
+                if (CndPathUtilities.isPathAbsolute(from)) {
                     return from;
                 }
-                
+                if (project != null) {
+                    return from;
+                } else if (folder != null) {
+                    if (folder.isDiskFolder()) {
+                        String folderPath = folder.getRootPath();
+                        folder.isDiskFolder();
+                        if (folderPath != null) {
+                            from = folderPath+"/"+from; // NOI18N
+                            if (CndPathUtilities.isPathAbsolute(from)) {
+                                return CndPathUtilities.toAbsoluteOrRelativePath(folder.getConfigurationDescriptor().getBaseDir(), from);
+                            } else {
+                                return from;
+                            }
+                        }
+                    } else {
+                        // TODO: can we suggest more useful?
+                        return from;
+                    }
+                } else if (item != null) {
+                    // TODO: should use compile dir?
+                    from = CndPathUtilities.getDirName(item.getAbsolutePath())+"/"+from; // NOI18N
+                    return CndPathUtilities.toAbsoluteOrRelativePath(item.getFolder().getConfigurationDescriptor().getBaseDir(), from);
+                }
+                return from;                
             };
             @Override
             public String convertToString(List<String> list) {

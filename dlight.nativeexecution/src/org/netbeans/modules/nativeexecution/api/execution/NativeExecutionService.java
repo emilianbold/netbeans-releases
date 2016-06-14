@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -53,26 +54,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
@@ -197,15 +195,15 @@ public final class NativeExecutionService {
                             };
                         }
 
-                        progressHandle = ProgressHandleFactory.createHandle(displayName, c, new AbstractAction() {
+                        progressHandle = ProgressHandle.createHandle(displayName, c);//, new AbstractAction() {
 
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                if (descriptor.inputOutput != null) {
-                                    descriptor.inputOutput.select();
-                                }
-                            }
-                        });
+//                            @Override
+//                            public void actionPerformed(ActionEvent e) {
+//                                if (descriptor.inputOutput != null) {
+//                                    descriptor.inputOutput.select();
+//                                }
+//                            }
+//                        });
                         progressHandle.start();
                     }
 
@@ -216,9 +214,10 @@ public final class NativeExecutionService {
                      * could be 'locked' by previous run... (It is always set to
                      * read-only mode on run finish)
                      */
-                    IOTerm.term(descriptor.inputOutput).setReadOnly(!descriptor.inputVisible);
+                    IOTerm.setReadOnly(descriptor.inputOutput, !descriptor.inputVisible);
+                    //IOTerm.term(descriptor.inputOutput).setReadOnly(!descriptor.inputVisible);
 
-                    PtySupport.connect(descriptor.inputOutput, process);
+                    PtySupport.connect(descriptor.inputOutput, process, new PreExecution());
 
                     /**
                      * We call invokeAndWait here to be sure that connect is
@@ -228,7 +227,15 @@ public final class NativeExecutionService {
                      * queued after that one. So as soon as our is processed we
                      * are sure that connection is done.
                      */
-                    SwingUtilities.invokeAndWait(new PreExecution());
+                    /**
+                     * comment above is true only in case of NetBeans implementation
+                     * As only in NB implementation the task of connecting to the IOTerm 
+                     * is invoked asynchronous in EDT.
+                     * In other case it can be done differently,
+                     * that's why we will use IOTerm itself to provide service for 
+                     * running pre-execution task
+                     */
+                  //  SwingUtilities.invokeAndWait(new PreExecution());
 
                     if (process.getState() == State.ERROR) {
                         out(true, ProcessUtils.readProcessErrorLine(process), "\r"); // NOI18N
@@ -271,7 +278,8 @@ public final class NativeExecutionService {
                                 descriptor.postExecution.run();
                             }
                         } finally {
-                            IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                            IOTerm.setReadOnly(descriptor.inputOutput, true);
+                            //IOTerm.term(descriptor.inputOutput).setReadOnly(true);
                         }
                     }
                 }
@@ -408,12 +416,14 @@ public final class NativeExecutionService {
                         && descriptor.postMessageDisplayer instanceof PostMessageDisplayer2) {
                     PostMessageDisplayer2 pmd = (PostMessageDisplayer2) descriptor.postMessageDisplayer;
                     pmd.outPostMessage(descriptor.inputOutput, process, time);
-                    StatusDisplayer.getDefault().setStatusText(pmd.getPostStatusString(process));
+                    NativeExecutionUserNotification.getDefault().notifyStatus(pmd.getPostStatusString(process));
+                    //StatusDisplayer.getDefault().setStatusText(pmd.getPostStatusString(process));
                 } else {
                     if (descriptor.postMessageDisplayer != null) {
                         String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
                         out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
-                        StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
+                        NativeExecutionUserNotification.getDefault().notifyStatus(descriptor.postMessageDisplayer.getPostStatusString(process));
+                        //StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                     }
                 }
 
@@ -468,18 +478,19 @@ public final class NativeExecutionService {
                 }
             }
             if (descriptor.requestFocus) {
-                Term term = IOTerm.term(descriptor.inputOutput);
-
-                if (term != null) {
-                    JComponent screen = term.getScreen();
-                    if (screen != null) {
-                        screen.requestFocusInWindow();
-                    }
-                } else {
-                    if (descriptor.inputOutput != null) { // avoid random NPE in tests
-                        descriptor.inputOutput.setFocusTaken(true);
-                    }
-                }
+                IOTerm.requestFocus(descriptor.inputOutput);
+//                Term term = IOTerm.term(descriptor.inputOutput);
+//
+//                if (term != null) {
+//                    JComponent screen = term.getScreen();
+//                    if (screen != null) {
+//                        screen.requestFocusInWindow();
+//                    }
+//                } else {
+//                    if (descriptor.inputOutput != null) { // avoid random NPE in tests
+//                        descriptor.inputOutput.setFocusTaken(true);
+//                    }
+//                }
             }
         }
     }

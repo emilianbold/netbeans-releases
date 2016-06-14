@@ -224,9 +224,9 @@ public final class MakePathMatcher  {
         }
         Set<File> roots = new HashSet<>();
         if (base != null) {
-            for (String incl : knownIncludes) {
+            knownIncludes.forEach((incl) -> {
                 roots.add(new File(base, incl.replace('/', File.separatorChar)));
-            }
+            });
         }
         return roots;
     }
