@@ -76,7 +76,6 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
@@ -126,6 +125,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             if (isLowMemory(null)) {
                                 jt = null;
                                 units = null;
+                                jfo2units.clear();
                                 dc.cleanDiagnostics();
                                 freeMemory(false);
                             }
@@ -202,8 +202,10 @@ final class OnePassCompileWorker extends CompileWorker {
         }
 
         CompileTuple active = null;
-        Iterable<? extends Processor> processors = jt != null ? jt.getProcessors() : null;
-        boolean aptEnabled = processors != null && processors.iterator().hasNext();
+        final boolean aptEnabled = Optional.ofNullable(jt)
+                .map((jtask) -> jtask.getProcessors())
+                .map((it) -> it.iterator().hasNext())
+                .orElse(Boolean.FALSE);
         final boolean[] flm = {true};
         try {
             final Queue<Future<Void>> barriers = new ArrayDeque<>();
@@ -217,8 +219,6 @@ final class OnePassCompileWorker extends CompileWorker {
                     continue;
                 }
                 if (isLowMemory(flm)) {
-                    units = null;
-                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 final Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first()));
@@ -258,8 +258,6 @@ final class OnePassCompileWorker extends CompileWorker {
                     }
                 }
                 if (isLowMemory(flm)) {
-                    units = null;
-                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
@@ -267,8 +265,6 @@ final class OnePassCompileWorker extends CompileWorker {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 if (isLowMemory(flm)) {
-                    units = null;
-                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
@@ -343,8 +339,6 @@ final class OnePassCompileWorker extends CompileWorker {
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (isLowMemory(flm)) {
-                units = null;
-                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
