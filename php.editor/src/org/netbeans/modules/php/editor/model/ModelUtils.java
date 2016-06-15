@@ -268,16 +268,14 @@ public final class ModelUtils {
         if (specialVariable) {
             // #247082
             // typically 'self', '$this' etc.; it means that we need to find method scope since these
-            // variables can be used directly in lambda functions
+            // variables can be used in lambda functions directly
             Scope tmpScope = scp;
             while (tmpScope != null) {
                 if (tmpScope instanceof MethodScope) {
+                    scp = (VariableScope) tmpScope;
                     break;
                 }
                 tmpScope = tmpScope.getInScope();
-            }
-            if (tmpScope instanceof VariableScope) {
-                scp = (VariableScope) tmpScope;
             }
         }
         if (scp != null) {

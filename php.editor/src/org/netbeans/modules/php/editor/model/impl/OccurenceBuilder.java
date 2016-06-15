@@ -1261,8 +1261,12 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     Expression dispatcher = nodeInfo.getOriginalNode().getDispatcher();
                     if (!CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                        QualifiedName clzName = QualifiedName.create(dispatcher);
+                        if (clzName == null) {
+                            continue;
+                        }
                         final Scope scope = entry.getValue().getInScope();
-                        QualifiedName clzName = resolveClassName(QualifiedName.create(dispatcher), scope);
+                        clzName = resolveClassName(clzName, scope);
                         if (clzName != null && clzName.toString().length() > 0) {
                             clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
