@@ -634,7 +634,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilities.isPathAbsolute(path)) {
-                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), path);
             } else {
                 newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
@@ -655,7 +655,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilities.isPathAbsolute(path)) {
-                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), path);
             } else {
                 newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
