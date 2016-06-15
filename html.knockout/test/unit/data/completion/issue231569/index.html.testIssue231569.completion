@@ -14,6 +14,7 @@ VARIABLE   $parent                         [PRIVATE]  <font color=#999999>index.
 VARIABLE   $parents: Array                 [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   $root: ko.$bindings             [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   invalid                         [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   <font color=#999999>index.html</font>
 VARIABLE   userNameToAdd                   [PUBLIC]   index.html
 KEYWORD    break                                      null
