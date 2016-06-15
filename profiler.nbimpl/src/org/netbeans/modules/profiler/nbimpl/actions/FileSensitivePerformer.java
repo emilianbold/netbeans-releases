@@ -43,6 +43,7 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.netbeans.spi.project.ActionProvider;
@@ -75,11 +76,8 @@ public class FileSensitivePerformer implements FileActionPerformer {
         try {
             if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
-                if (ppp == null) {
-                    return false;
-                }
-                
-                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file, p, command));
+                return ppp.isProfilingSupported() && ppp.isFileObjectSupported(file) &&
+                       ap.isActionEnabled(command, getContext(file, p, command));
             }
         } catch (IllegalArgumentException e) {
             // command not supported
@@ -97,12 +95,18 @@ public class FileSensitivePerformer implements FileActionPerformer {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 Project p = FileOwnerQuery.getOwner(file);
-                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-                if (ap != null) {
+                
+                ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
+                if (!ppp.checkProjectCanBeProfiled(null)) return; // Project not configured, user notified by ProjectProfilingSupportProvider 
+                JavaProfilerSource src = JavaProfilerSource.createFrom(file);
+                if (ppp.startProfilingSession(file, src == null ? false : src.isTest())) return; // Profiling session started by ProjectProfilingSupportProvider
+                
+//                ActionProvider ap = p.getLookup().lookup(ActionProvider.class); // Let's assume this is handled by enable(FileObject)
+//                if (ap != null) {
                     Lookup context = getContext(file, p, command);
                     ProfilerSession session = ProfilerSession.forContext(context);
                     if (session != null) session.open();
-                }
+//                }
             }
         });
     }
