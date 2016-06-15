@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
-import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
+import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;

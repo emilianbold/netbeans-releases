@@ -238,9 +238,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
-                <package>org.netbeans.modules.cnd.spi.source</package>
                 <package>org.netbeans.modules.cnd.utils.ui</package>
-                <package>org.netbeans.modules.cnd.utils.ui.filters</package>
             </friend-packages>
         </data>
     </configuration>

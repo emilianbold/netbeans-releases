@@ -55,11 +55,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidatorFactory;
 import org.netbeans.modules.cnd.spi.remote.ui.HostSetupWorkerUI;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -106,7 +106,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         worker = panel0.getSelectedWorker();
         //i am not sure what is all his about
         if (HostSetupWorkerUI.class.isAssignableFrom(worker.getClass())) {
-            pList.addAll(((HostSetupWorkerUI)worker).getWizardPanels(new HostValidatorImpl(cacheManager)));
+            pList.addAll(((HostSetupWorkerUI)worker).getWizardPanels(HostValidatorFactory.create(cacheManager)));
         }
 
         WizardDescriptor.Panel<WizardDescriptor>[] result =

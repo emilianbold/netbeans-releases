@@ -925,22 +925,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
                     updateRunProfile(conf.getBaseDir(), conf.getProfile());
                     if (action != null) {
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                action.run(lastSelectedProject);
-                            }
+                        RP.post(() -> {
+                            action.run(lastSelectedProject);
                         });
                     }
                     break;
                 }
             }
         } else {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    createNewProject(action);
-                }
+            RP.post(() -> {
+                createNewProject(action);
             });
         }
     }
@@ -1123,12 +1117,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void fillConfiguration() {
         if (projectAction != null) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    projectAction.run(lastSelectedProject);
-                    projectAction = null;
-                }
+            RP.post(() -> {
+                projectAction.run(lastSelectedProject);
+                projectAction = null;
             });
         }
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);

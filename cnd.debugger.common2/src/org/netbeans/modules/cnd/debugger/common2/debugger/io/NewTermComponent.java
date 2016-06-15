@@ -52,9 +52,8 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.IOSelect;
 
-import org.netbeans.modules.terminal.api.IOTopComponent;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.ui.IOTopComponent;
+import org.netbeans.modules.terminal.api.ui.IOVisibility;
 
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.Term;
@@ -62,6 +61,7 @@ import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.utils.NotifyingInputSteam;
+import org.netbeans.modules.terminal.api.ui.IOTerm;
 /**
  *
  * @author ivan

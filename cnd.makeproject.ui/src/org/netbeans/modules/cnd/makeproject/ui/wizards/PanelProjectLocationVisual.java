@@ -249,9 +249,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         hostComboBox.removeAllItems();
         toolchainComboBox.removeAllItems();
         if (records != null) {
-            for (ServerRecord serverRecord : records) {
+            records.forEach((serverRecord) -> {
                 hostComboBox.addItem(serverRecord);
-            }
+            });
             hostComboBox.setSelectedItem(srToSelect);
             updateToolchains(toolchainComboBox, srToSelect);
             for (int i = 0; i < toolchainComboBox.getModel().getSize(); i++) {
@@ -545,9 +545,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         if (defaultCompilerSet != null) {
             toolchainComboBox.addItem(new ToolCollectionItem(defaultCompilerSet, true));
         }
-        for (CompilerSet compilerSet : csm.getCompilerSets()) {
+        csm.getCompilerSets().forEach((compilerSet) -> {
             toolchainComboBox.addItem(new ToolCollectionItem(compilerSet, false));
-        }
+        });
         if (toolchainComboBox.getModel().getSize() > 0) {
             toolchainComboBox.setSelectedIndex(0);
         }
@@ -855,27 +855,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             final String firstName = MessageFormat.format(formater, new Object[]{baseCount});
             projectNameTextField.setText(firstName);
             projectNameTextField.selectAll();
-            validationRP.post(new Runnable() {
-                @Override
-                public void run() {
-                    int baseCount = 1;
-                    String project = firstName;
-                    while ((project = validFreeProjectName(projectLocationText, fsFileSeparator,
-                            formater, baseCount)) == null) {
-                        baseCount++;
-                    }
-                    settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, baseCount);
-                    //update
-                    if (!project.equals(firstName)) {
-                        final String projectNameRecalculated = project;
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                projectNameTextField.setText(projectNameRecalculated);
-                                projectNameTextField.selectAll();
-                            }
-                        });
-                    }
+            validationRP.post(() -> {
+                int baseCount1 = 1;
+                String project1 = firstName;
+                while ((project1 = validFreeProjectName(projectLocationText, fsFileSeparator, formater, baseCount1)) == null) {
+                    baseCount1++;
+                }
+                settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, baseCount1);
+                //update
+                if (!project1.equals(firstName)) {
+                    final String projectNameRecalculated = project1;
+                    SwingUtilities.invokeLater(() -> {
+                        projectNameTextField.setText(projectNameRecalculated);
+                        projectNameTextField.selectAll();
+                    });
                 }
             });
 
@@ -1250,18 +1243,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             }
             final String makefileNameText = makefileName;
             final long currentEventID = projectParams.eventID;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    //do not set text field if we are already processing next event
-                    if (currentEventID < lastEventID) {
-                        return;
-                    }
-                    makefileTextField.getDocument().removeDocumentListener(WizardValidationWorker.this);
-                    makefileTextField.setText(makefileNameText);
-                    projectParams.setMakefile(makefileNameText);
-                    makefileTextField.getDocument().addDocumentListener(WizardValidationWorker.this);
+            SwingUtilities.invokeLater(() -> {
+                //do not set text field if we are already processing next event
+                if (currentEventID < lastEventID) {
+                    return;
                 }
+                makefileTextField.getDocument().removeDocumentListener(WizardValidationWorker.this);
+                makefileTextField.setText(makefileNameText);
+                projectParams.setMakefile(makefileNameText);
+                makefileTextField.getDocument().addDocumentListener(WizardValidationWorker.this);
             });
 
         }

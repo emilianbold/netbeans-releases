@@ -133,6 +133,7 @@ Contributor(s):
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.dlight.remote.impl</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

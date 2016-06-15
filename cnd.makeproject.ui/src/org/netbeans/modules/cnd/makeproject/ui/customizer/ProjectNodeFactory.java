@@ -297,7 +297,7 @@ public class ProjectNodeFactory {
             }
 
             // Find correct debugger customizer
-            for (CustomizerNode dNode : debuggerNodes) {
+            debuggerNodes.forEach((dNode) -> {
                 if (dNode instanceof DebuggerCustomizerNode) {
                     if (families.contains(((DebuggerCustomizerNode)dNode).getFamily())) {
                         res.add(dNode);
@@ -305,7 +305,7 @@ public class ProjectNodeFactory {
                 } else {
                     res.add(dNode);
                 }
-            }
+            });
         } else if (debuggerNodes.size() == 1) {
             res.addAll(debuggerNodes);
         } else {

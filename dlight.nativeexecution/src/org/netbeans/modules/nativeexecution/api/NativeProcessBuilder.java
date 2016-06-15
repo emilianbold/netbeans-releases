@@ -64,8 +64,7 @@ import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -230,9 +229,11 @@ public final class NativeProcessBuilder implements Callable<Process> {
                             if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                                 System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
                             } else {
-                                DialogDisplayer.getDefault().notify(
-                                        new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
-                                        NotifyDescriptor.WARNING_MESSAGE));
+                                        NativeExecutionUserNotification.getDefault().notify(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                                                NativeExecutionUserNotification.Descriptor.WARNING);                                
+//                                DialogDisplayer.getDefault().notify(
+//                                        new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+//                                        NotifyDescriptor.WARNING_MESSAGE));
                             }
                             canProceed = false;
                         } else {
@@ -242,9 +243,11 @@ public final class NativeProcessBuilder implements Callable<Process> {
                                     if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                                         System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
                                     } else {
-                                        DialogDisplayer.getDefault().notify(
-                                                new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
-                                                NotifyDescriptor.WARNING_MESSAGE));
+                                        NativeExecutionUserNotification.getDefault().notify(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                                NativeExecutionUserNotification.Descriptor.WARNING);
+//                                        DialogDisplayer.getDefault().notify(
+//                                                new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+//                                                NotifyDescriptor.WARNING_MESSAGE));
                                     }
                                     canProceed = false;
                                 } else {

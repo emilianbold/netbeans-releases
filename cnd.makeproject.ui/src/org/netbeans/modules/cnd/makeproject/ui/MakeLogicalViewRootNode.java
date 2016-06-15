@@ -253,20 +253,17 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         this.folder = folder;
         ic.add(folder);
         stateChanged(null);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // to reinvalidate Run/Debug and other toolbar buttons, we use the workaround with selection
-                    // remember selection
-                    Node[] selectedNodes = ProjectTabBridge.getInstance().getExplorerManager().getSelectedNodes();
-                    // clear
-                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(new Node[0]);
-                    // restore
-                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(selectedNodes);
-                } catch (PropertyVetoException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        Runnable runnable = () -> {
+            try {
+                // to reinvalidate Run/Debug and other toolbar buttons, we use the workaround with selection
+                // remember selection
+                Node[] selectedNodes = ProjectTabBridge.getInstance().getExplorerManager().getSelectedNodes();
+                // clear
+                ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(new Node[0]);
+                // restore
+                ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(selectedNodes);
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -504,9 +501,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        for (BrokenIncludes elem : brokenIncludesResult.allInstances()) {
+        brokenIncludesResult.allInstances().forEach((elem) -> {
             elem.addChangeListener(this);
-        }
+        });
     }
 
     private boolean hasBrokenIncludes(Project project) {

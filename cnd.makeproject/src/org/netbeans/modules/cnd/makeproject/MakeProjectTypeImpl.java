@@ -84,14 +84,14 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_CUSTOMIZERID = "activeConfCustomizerid"; // NOI18N
     
-    public static final String TYPE_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png"; // NOI18N
-    public static final String TYPE_DB_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png"; // NOI18N
-    public static final String TYPE_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png"; // NOI18N
-    public static final String TYPE_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png"; // NOI18N
-    public static final String TYPE_QT_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png"; // NOI18N
-    public static final String TYPE_QT_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png"; // NOI18N
-    public static final String TYPE_QT_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png"; // NOI18N
-    public static final String TYPE_MAKEFILE_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"; // NOI18N
+    public static final String TYPE_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed.png"; // NOI18N
+    public static final String TYPE_DB_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-database.png"; // NOI18N
+    public static final String TYPE_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed-dynamic.png"; // NOI18N
+    public static final String TYPE_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed-static.png"; // NOI18N
+    public static final String TYPE_QT_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt.png"; // NOI18N
+    public static final String TYPE_QT_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt-dynamic.png"; // NOI18N
+    public static final String TYPE_QT_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt-static.png"; // NOI18N
+    public static final String TYPE_MAKEFILE_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged.png"; // NOI18N
 
     /**
      * Do nothing, just a service.
@@ -199,6 +199,7 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
      * System fs path for other modules to add make project folders' specific actions
      * @return A path
      */
+    @Override
     public String folderActionsPath() {
         return projectLayerPath() + "/ActionsFolder"; //NOI18N
     }
@@ -207,6 +208,7 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
      * System fs path for other modules to add make project external folders' specific actions
      * @return A path
      */
+    @Override
     public String extFolderActionsPath() {
         return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
     }

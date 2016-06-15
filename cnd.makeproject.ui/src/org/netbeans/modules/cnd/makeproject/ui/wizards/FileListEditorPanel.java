@@ -81,15 +81,11 @@ public class FileListEditorPanel extends javax.swing.JPanel {
         this.env = env;
         this.fileSystem = fileSystem;
         fileList.setModel(new MyModel(data));
-        fileList.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    return;
-                }
-                checkSelection();
+        fileList.addListSelectionListener((ListSelectionEvent e) -> {
+            if (e.getValueIsAdjusting()) {
+                return;
             }
+            checkSelection();
         });
         if (data.size() > 0) {
             fileList.setSelectedIndex(0);
