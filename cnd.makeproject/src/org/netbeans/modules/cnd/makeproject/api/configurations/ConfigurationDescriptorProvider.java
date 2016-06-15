@@ -152,12 +152,7 @@ public abstract class ConfigurationDescriptorProvider {
                         reader.read(projectDescriptor, relativeOffset, interrupter);
                         projectDescriptor.waitInitTask();
                         endModifications(delta, true, LOGGER);
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                fireConfigurationDescriptorLoaded();
-                            }
-                        });
+                        RP.post(this::fireConfigurationDescriptorLoaded);
 
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
@@ -517,12 +512,8 @@ public abstract class ConfigurationDescriptorProvider {
                     hasTried = false;
                 }
             }
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    getConfigurationDescriptor(true);
-                }
+            RP.post(() -> {
+                getConfigurationDescriptor(true);
             });
         }
     }
@@ -590,9 +581,9 @@ public abstract class ConfigurationDescriptorProvider {
         
         private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
             Set<Item> oldSet = new HashSet<>();
-            for (Map.Entry<String, Delta.Pair> entry : oldState.entrySet()) {
+            oldState.entrySet().forEach((entry) -> {
                 oldSet.add(entry.getValue().item);
-            }
+            });
             Item[] newItems = newDescriptor.getProjectItems();
             for (Item item : newItems) {
                 Delta.Pair pair = oldState.get(item.getAbsolutePath());
@@ -619,9 +610,9 @@ public abstract class ConfigurationDescriptorProvider {
                     }
                 }
             }
-            for (Item item : oldSet) {
+            oldSet.forEach((item) -> {
                 deleted.add(item);
-            }
+            });
             oldState.clear();
         }
         

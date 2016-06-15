@@ -133,8 +133,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
-    public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
-    public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
+    public static final String ICON = "org/netbeans/modules/cnd/makeproject/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT = "^(nbproject)$"; // NOI18N
@@ -255,9 +254,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
-        for (Entry<String, Item> entry : projectItems.entrySet()) {
+        projectItems.entrySet().forEach((entry) -> {
             entry.getValue().onClose();
-        }
+        });
         projectItems.clear();
         synchronized (sourceRoots) {
             sourceRoots.clear();
@@ -566,9 +565,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     // External File Items
     public void setExternalFileItems(List<String> items) {
         externalFileItems.reset();
-        for (String s : items) {
+        items.forEach((s) -> {
             externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, s));
-        }
+        });
     }
 
     public void setExternalFileItems(Folder folder) {
@@ -712,12 +711,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(folder, item);
-                }
+            RP.post(() -> {
+                checkForChangedItemsWorker(folder, item);
             });
         } else {
             checkForChangedItemsWorker(folder, item);
@@ -965,12 +960,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(delta);
-                }
+            RP.post(() -> {
+                checkForChangedItemsWorker(delta);
             });
         } else {
             checkForChangedItemsWorker(delta);
@@ -1625,9 +1616,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             if (toBeRemoved.size() > 0) {
-                for (String toRemove : toBeRemoved) {
+                toBeRemoved.forEach((toRemove) -> {
                     sourceRoots.remove(toRemove);
-                }
+                });
             }
             if (addPath) {
                 String usePath;
@@ -1696,9 +1687,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             sourceRoots.clear();
-            for (String l : newList) {
+            newList.forEach((l) -> {
                 addSourceRoot(l);
-            }
+            });
 
             MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
             if (!active.isMakefileConfiguration()) {
@@ -1712,13 +1703,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             List<String> toBeAdded = new ArrayList<>();
             for (String s : sourceRoots) {
                 if (!inList(oldList, s)) {
-                    toBeAdded.add(s);
+                toBeAdded.add(s);
                 }
             }
             List<String> toBeRemoved = new ArrayList<>();
             for (String s : oldList) {
                 if (!inList(sourceRoots, s)) {
-                    toBeRemoved.add(s);
+                toBeRemoved.add(s);
                 }
             }
 
@@ -1757,9 +1748,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void checkForChangedTestRoots(List<String> oldList, List<String> newList) {
         synchronized (testRoots) {
             testRoots.clear();
-            for (String l : newList) {
+            newList.forEach((l) -> {
                 addTestRoot(l);
-            }
+            });
 
             List<String> toBeAdded = new ArrayList<>();
             for (String s : testRoots) {
@@ -1818,9 +1809,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getAbsoluteSourceRoots() {
         List<String> copy = new ArrayList<>();
         synchronized (sourceRoots) {
-            for (String sr : sourceRoots) {
+            sourceRoots.forEach((sr) -> {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, sr));
-            }
+            });
         }
         return copy;
     }
@@ -1831,9 +1822,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getAbsoluteTestRoots() {
         List<String> copy = new ArrayList<>();
         synchronized (testRoots) {
-            for (String s : testRoots) {
+            testRoots.forEach((s) -> {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, s));
-            }
+            });
         }
         return copy;
     }
@@ -1914,12 +1905,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         if (attachListeners) {
             final Folder aSrcRoot = srcRoot;
-            RP_LISTENER.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    aSrcRoot.attachListeners(interrupter);
-                }
+            RP_LISTENER.post(() -> {
+                aSrcRoot.attachListeners(interrupter);
             });
         }
 

@@ -98,7 +98,19 @@ public final class PtySupport {
     public static boolean connect(InputOutput io, NativeProcess process) {
         return IOConnector.getInstance().connect(io, process);
     }
-
+    
+    /**
+     * Connects process' IO streams with the specified InputOutput.
+     * 
+     * @param io - <tt>InputOutput</tt> to connect process' IO with
+     * @param process - the process which should be connected with the io
+     *
+     * @return <tt>true</tt> if operation was successfull. <tt>false</tt> otherwise.
+     */
+    public static boolean connect(InputOutput io, NativeProcess process, Runnable postConnectRunnabel) {
+        return IOConnector.getInstance().connect(io, process, postConnectRunnabel);
+    }    
+    
     /**
      * Connects pty's IO streams (master side) with the specified <tt>InputOutput</tt>.
      * So that IO of the process that will do input/output to the specified pty'

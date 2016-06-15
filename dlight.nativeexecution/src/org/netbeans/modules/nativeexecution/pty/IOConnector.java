@@ -77,8 +77,8 @@ public final class IOConnector {
     public static IOConnector getInstance() {
         return instance;
     }
-
-    public boolean connect(final InputOutput io, final NativeProcess process) {
+    
+    public boolean connect(InputOutput io, NativeProcess process, Runnable postConnectRunnabel) {
         if (!IOTerm.isSupported(io)) {
             return false;
         }
@@ -94,12 +94,15 @@ public final class IOConnector {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        }
-        
+        }        
 
-        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream(), NativeProcessInfo.getCharset(process));
-
+        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), 
+                process.getErrorStream(), NativeProcessInfo.getCharset(process), postConnectRunnabel);
         return true;
+    }
+
+    public boolean connect(final InputOutput io, final NativeProcess process) {
+        return connect(io, process, null);
     }
 
     public boolean connect(final InputOutput io, final Pty pty) {

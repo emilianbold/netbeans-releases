@@ -124,38 +124,36 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
         
         String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
-        handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
-            public @Override void execute() throws Exception {
-                deletePanel.addProgressBar();
-                close(project);
-                
-                if (deletePanel.isDeleteSources()) {
-                    try {
-                        executor.doDeleteProject(project, false, handle);
-                    } catch (IOException x) {
-                        LOG.log(Level.WARNING, null, x);
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notifyLater(nd);
-                    } catch (Exception x) {
-                        LOG.log(Level.WARNING, null, x);
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notifyLater(nd);
-                    }
-                } else {
-                    try {
-                        executor.doDeleteProject(project, true, handle);
-                    } catch (IOException x) {
-                        LOG.log(Level.WARNING, null, x);
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notifyLater(nd);
-                    } catch (Exception x) {
-                        LOG.log(Level.WARNING, null, x);
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notifyLater(nd);
-                    }
+        handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, () -> { // NOI18N
+            deletePanel.addProgressBar();
+            close(project);
+            
+            if (deletePanel.isDeleteSources()) {
+                try {
+                    executor.doDeleteProject(project, false, handle);
+                } catch (IOException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                } catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
                 }
-                deletePanel.removeProgressBar();
+            } else {
+                try {
+                    executor.doDeleteProject(project, true, handle);
+                } catch (IOException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                } catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
             }
+            deletePanel.removeProgressBar();
         });
         
         LOG.log(Level.FINE, "delete done: {0}", displayName);
@@ -180,33 +178,28 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
         //#76559
         handle.start(MAX_WORK);
         
-        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
-            public @Override void execute() throws Exception {
-                final String nueName = panel.getNewName();
-                File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
-                
-                FileObject newTargetFO = FileUtil.toFileObject(newTarget);
-                if (newTargetFO == null) {
-                    newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
-                }
-                final FileObject newTgtFO = newTargetFO;
-                project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public @Override void run() throws IOException {
-                        try {
-                            Project copy = executor.doCopyProject(handle, project, nueName, newTgtFO);
-                            open(copy, false);
-                        } catch (IOException x) {
-                            LOG.log(Level.WARNING, null, x);
-                            NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notifyLater(nd);
-                        } catch (Exception x) {
-                            LOG.log(Level.WARNING, null, x);
-                            NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notifyLater(nd);
-                        }
-                    }
-                });
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, () -> {// NOI18N
+            final String nueName = panel.getNewName();
+            File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
+            FileObject newTargetFO = FileUtil.toFileObject(newTarget);
+            if (newTargetFO == null) {
+                newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
             }
+            final FileObject newTgtFO = newTargetFO;
+            project.getProjectDirectory().getFileSystem().runAtomicAction(() -> {
+                try {
+                    Project copy = executor.doCopyProject(handle, project, nueName, newTgtFO);
+                    open(copy, false);
+                } catch (IOException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                } catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            });
         });
     }
     
@@ -219,31 +212,29 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
         Project main = OpenProjects.getDefault().getMainProject();
         final boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
 
-        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
-            public @Override void execute() throws Exception {
-                close(project);
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, () -> { // NOI18N
+            close(project);
             
-                final String nueFolderName = panel.getProjectFolderName();
-                final String nueProjectName = panel.getNewName();
-                File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
-                
-                FileObject newTargetFO = FileUtil.toFileObject(newTarget);
-                if (newTargetFO == null) {
-                    newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
-                }
-                final FileObject newTgtFO = newTargetFO;
-                try {
-                    Project move = executor.doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, true); // NOI18N
-                    open(move, wasMain);
-                } catch (IOException x) {
-                    LOG.log(Level.WARNING, null, x);
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notifyLater(nd);
-                } catch (Exception x) {
-                    LOG.log(Level.WARNING, null, x);
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notifyLater(nd);
-                }
+            final String nueFolderName = panel.getProjectFolderName();
+            final String nueProjectName = panel.getNewName();
+            File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
+            
+            FileObject newTargetFO = FileUtil.toFileObject(newTarget);
+            if (newTargetFO == null) {
+                newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
+            }
+            final FileObject newTgtFO = newTargetFO;
+            try {
+                Project move = executor.doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, true); // NOI18N
+                open(move, wasMain);
+            } catch (IOException x) {
+                LOG.log(Level.WARNING, null, x);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } catch (Exception x) {
+                LOG.log(Level.WARNING, null, x);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
             }
         });
     }
@@ -259,49 +250,44 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
         Project main = OpenProjects.getDefault().getMainProject();
         final boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
         
-        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
-            public @Override void execute() throws Exception {
-                final String nueName = panel.getNewName();
-                panel.addProgressBar();
-                
-                if (panel.getRenameProjectFolder()) {
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, () -> { // NOI18N
+            final String nueName1 = panel.getNewName();
+            panel.addProgressBar();
+            if (panel.getRenameProjectFolder()) {
+                try {
+                    Project move = executor.doMoveProject(handle, project, nueName1, nueName1, project.getProjectDirectory().getParent(), false); // NOI18N
+                    open(move, wasMain);
+                }catch (IOException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            } else {
+                project.getProjectDirectory().getFileSystem().runAtomicAction(() -> {
                     try {
-                        Project move = executor.doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), false); // NOI18N
-                        open(move, wasMain);
-                    } catch (IOException x) {
+                        if (executor.isOldStyleRename(handle, project, nueName1)) {
+                            close(project);
+                        }
+                        Project rename = executor.doRenameProject(handle, project, nueName1);
+                        if (rename != null) {
+                            open(rename, wasMain);
+                        }
+                    }catch (IOException x) {
                         LOG.log(Level.WARNING, null, x);
                         NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
-                    } catch (Exception x) {
+                    }catch (Exception x) {
                         LOG.log(Level.WARNING, null, x);
                         NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
                     }
-                } else {
-                    project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                        public @Override void run() throws IOException {
-                            try {
-                                if (executor.isOldStyleRename(handle, project, nueName)) {
-                                    close(project);
-                                }
-                                Project rename = executor.doRenameProject(handle, project, nueName);
-                                if (rename != null) {
-                                    open(rename, wasMain);
-                                }
-                            } catch (IOException x) {
-                                LOG.log(Level.WARNING, null, x);
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notifyLater(nd);
-                            } catch (Exception x) {
-                                LOG.log(Level.WARNING, null, x);
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notifyLater(nd);
-                            }
-                        }
-                    });
-		}
-                panel.removeProgressBar();
+                });
             }
+            panel.removeProgressBar();
         });
     }
     
@@ -334,10 +320,8 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
         
         assert panel instanceof InvalidablePanel;
         
-        ((InvalidablePanel) panel).addChangeListener(new ChangeListener() {
-            public @Override void stateChanged(ChangeEvent e) {
-                confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
-            }
+        ((InvalidablePanel) panel).addChangeListener((ChangeEvent e) -> {
+            confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
         });
         
         confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
@@ -374,26 +358,22 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
                         ((Window) findParent).pack();
                     }
                     
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public @Override void run() {
-                            final AtomicReference<Throwable> e = new AtomicReference<>();
-                            try {
-                                executor.execute();
-                            } catch (Throwable ex) {
-                                e.set(ex);
-                                if (ex instanceof ThreadDeath) {
-                                    throw (ThreadDeath)ex;
-                                }
-                            } finally {                            
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public @Override void run() {
-                                        dialog[0].setVisible(false);
-                                        if (e.get() != null) {
-                                            LOG.log(Level.WARNING, null, e.get());
-                                        }
-                                    }
-                                });
+                    RequestProcessor.getDefault().post(() -> {
+                        final AtomicReference<Throwable> ref = new AtomicReference<>();
+                        try {
+                            executor.execute();
+                        } catch (Throwable ex) {
+                            ref.set(ex);
+                            if (ex instanceof ThreadDeath) {
+                                throw (ThreadDeath)ex;
                             }
+                        } finally {
+                            SwingUtilities.invokeLater(() -> {
+                                dialog[0].setVisible(false);
+                                if (ref.get() != null) {
+                                    LOG.log(Level.WARNING, null, ref.get());
+                                }
+                            });
                         }
                     });
                 } else {

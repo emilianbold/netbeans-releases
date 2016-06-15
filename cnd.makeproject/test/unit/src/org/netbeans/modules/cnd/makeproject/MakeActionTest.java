@@ -191,9 +191,9 @@ public class MakeActionTest {
                             map.put(position, file.getNameExt());
                         }
                         if (TRACE) {
-                            for (String step : map.values()) {
+                            map.values().forEach((step) -> {
                                 System.err.println("\t\tStep " + step); // NOI18N
-                            }
+                            });
                         }
                         res.put(subFolder.getNameExt(), map.values().toArray(new String[map.size()]));
                     }

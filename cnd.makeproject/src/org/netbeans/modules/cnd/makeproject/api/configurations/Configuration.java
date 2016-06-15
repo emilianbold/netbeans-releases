@@ -213,9 +213,9 @@ public abstract class Configuration implements ProjectConfiguration {
     public void setAuxObjects(List<ConfigurationAuxObject> v) {
         synchronized (auxObjectsMap) {
             auxObjectsMap.clear();
-            for(ConfigurationAuxObject object : v){
+            v.forEach((object) -> {
                 auxObjectsMap.put(object.getId(),object);
-            }
+            });
         }
     }
 

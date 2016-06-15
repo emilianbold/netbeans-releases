@@ -213,9 +213,9 @@ public final class Env implements Cloneable {
     public Map<String, String> getenvAsMap() {
         Map<String, String> res = new HashMap<>(environ.size());
 
-        for (String[] nameValue : environ) {
+        environ.forEach((nameValue) -> {
             res.put(nameValue[0], nameValue[1]);
-        }
+        });
         return res;
     }
 

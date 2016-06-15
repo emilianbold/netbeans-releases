@@ -354,7 +354,12 @@ tokens {
     LITERAL___is_union="__is_union"; // NOI18N
     LITERAL___underlying_type="__underlying_type"; // NOI18N
     LITERAL___builtin_va_list="__builtin_va_list"; // NOI18N
-
+    
+    LITERAL_concept="concept"; // NOI18N
+    LITERAL_requires="requires"; // NOI18N
+    LITERAL_co_await="co_await"; // NOI18N
+    LITERAL_co_return="co_return"; // NOI18N
+    LITERAL_co_yield="co_yield"; // NOI18N
     LAST_LITERAL_TOKEN;
 
     // Extension points

@@ -188,9 +188,9 @@ public final class NewTestActionFactory {
                     for (DataObject file : files) {
                         Openable open = file.getLookup().lookup(Openable.class);
                         if (open != null) {
-                            open.open();
-                            // org.netbeans.modules.project.ui.actions.NewFile would also select new file in Projects
-                        }
+                        open.open();
+                        // org.netbeans.modules.project.ui.actions.NewFile would also select new file in Projects
+                    }
                     }
                 } // else wizard was canceled
             } catch (IOException x) {
@@ -423,7 +423,7 @@ public final class NewTestActionFactory {
             // Some L&F call this method in constructor.
             // Work around bug #247145
             if (items != null) {
-                for (Action action : items) {
+                items.forEach((action) -> {
                     if (action instanceof Presenter.Popup) {
                         JMenuItem item = ((Presenter.Popup) action).getPopupPresenter();
                         add(item);
@@ -433,7 +433,7 @@ public final class NewTestActionFactory {
                     } else {
                         add(action);
                     }
-                }
+                });
             }
             return super.getPopupMenu();
         }

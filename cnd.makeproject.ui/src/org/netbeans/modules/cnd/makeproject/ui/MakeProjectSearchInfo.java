@@ -95,7 +95,7 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
             if (configurationDescriptor != null) {
                 FileObject baseDirFileObject = configurationDescriptor.getBaseDirFileObject();
                 roots.add(new SearchRoot(baseDirFileObject, null));
-                for (String root : configurationDescriptor.getAbsoluteSourceRoots()) {
+                configurationDescriptor.getAbsoluteSourceRoots().forEach((root) -> {
                     try {
                         FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
                         if (fo != null) {
@@ -103,7 +103,7 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
                         }
                     } catch (FileStateInvalidException ex) {
                     }
-                }
+                });
             }
         }
         return roots;

@@ -180,43 +180,39 @@ public class AddExistingItemAction extends NodeAction {
     }
 
     private void addFilesWorker(final Project project, final MakeConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                boolean notifySources = false;
-                ArrayList<Item> items = new ArrayList<>();
-                ArrayList<String> sourceRoots = new ArrayList<>();
-                for (int i = 0; i < files.length; i++) {
-                    String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDirFileObject(), files[i].getPath(), project);
-                    itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-                    if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
-                        String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                        //return;
-                    } else {
-                        Item item = ItemFactory.getDefault().createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
-                        folder.addItemAction(item);
-                        items.add(item);
-                        if (CndPathUtilities.isPathAbsolute(itemPath)) {
-                            notifySources = true;
-                            String dirName = CndPathUtilities.getDirName(itemPath);
-                            if (!sourceRoots.contains(dirName)) {
-                                sourceRoots.add(dirName);
-                            }
+        RP.post(() -> {
+            boolean notifySources = false;
+            ArrayList<Item> items = new ArrayList<>();
+            ArrayList<String> sourceRoots = new ArrayList<>();
+            for (int i = 0; i < files.length; i++) {
+                String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDirFileObject(), files[i].getPath(), project);
+                itemPath = CndPathUtilities.normalizeSlashes(itemPath);
+                if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
+                    String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                    //return;
+                } else {
+                    Item item = ItemFactory.getDefault().createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
+                    folder.addItemAction(item);
+                    items.add(item);
+                    if (CndPathUtilities.isPathAbsolute(itemPath)) {
+                        notifySources = true;
+                        String dirName = CndPathUtilities.getDirName(itemPath);
+                        if (!sourceRoots.contains(dirName)) {
+                            sourceRoots.add(dirName);
                         }
                     }
                 }
-                if (notifySources && !sourceRoots.isEmpty()) {
-                    for(String root : sourceRoots) {
-                        projectDescriptor.addSourceRoot(root);
-                    }
-                }
-                MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
-                projectDescriptor.save();
-                if (notifySources) {
-                    //((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
-                }
+            }
+            if (notifySources && !sourceRoots.isEmpty()) {
+                sourceRoots.forEach((root) -> {
+                    projectDescriptor.addSourceRoot(root);
+                });
+            }
+            MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+            projectDescriptor.save();
+            if (notifySources) {
+                //((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();
             }
         });
 

@@ -90,6 +90,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         output = new StringConfiguration(null, ""); // NOI18N
         additionalLibs = new VectorConfiguration<>(null);
         dynamicSearch = new VectorConfiguration<>(null);
+
         stripOption = new BooleanConfiguration(false); // NOI18N
         picOption = new BooleanConfiguration(true); // NOI18N
         norunpathOption = new BooleanConfiguration(true); // NOI18N
@@ -101,6 +102,9 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         
         boolean isMac = makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
         copyLibrariesConfiguration = new BooleanConfiguration(isMac);
+        if (isMac) {
+            dynamicSearch.add("."); //NOI18N
+        }
         
         tool = new StringConfiguration(null, ""); // NOI18N
         runTimeSearchPath = new IntConfiguration(null, SEARCH_PATH_RELATIVE_TO_WORKING_DIR, SEARCH_PATH_NAMES, null);

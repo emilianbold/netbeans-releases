@@ -295,12 +295,8 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void setName(final String newName) {
-        provider.getAnnotationRP().post(new Runnable() {
-
-            @Override
-            public void run() {
-                setNameImpl(newName);
-            }
+        provider.getAnnotationRP().post(() -> {
+            setNameImpl(newName);
         });
     }
 
@@ -381,15 +377,11 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-        provider.getAnnotationRP().post(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    destroyImpl();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        provider.getAnnotationRP().post(() -> {
+            try {
+                destroyImpl();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         });
     }

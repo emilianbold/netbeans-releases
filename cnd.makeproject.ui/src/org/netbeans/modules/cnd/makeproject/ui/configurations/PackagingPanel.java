@@ -117,6 +117,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         setPreferredSize(new Dimension(600, 500));
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
@@ -136,9 +137,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             // Copy edited list
             List<PackagerInfoElement> editedList = packagingInfoPanel.getListData();
-            for (PackagerInfoElement elem : editedList) {
+            editedList.forEach((elem) -> {
                 newList.add(elem);
-            }
+            });
             packagingConfiguration.getInfo().setValue(newList);
             // Additional info
             packagingConfiguration.getAdditionalInfo().setValue(packagingAdditionalInfoPanel.getListData());

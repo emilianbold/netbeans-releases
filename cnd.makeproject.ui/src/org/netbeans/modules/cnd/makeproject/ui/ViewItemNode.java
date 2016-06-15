@@ -120,15 +120,12 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         this.item = item;
         setShortDescription(item.getNormalizedPath());
         this.project = project;
-        this.refreshListener = new ProjectNodesRefreshSupport.ProjectNodeRefreshListener() {
-            @Override
-            public void refresh(Project project) {
-                if (getParentNode() == null) {
-                    return;
-                }
-                if (project == ViewItemNode.this.project) {
-                    visualUpdater.postIfNeed();
-                }
+        this.refreshListener = (Project project1) -> {
+            if (getParentNode() == null) {
+                return;
+            }
+            if (project1 == ViewItemNode.this.project) {
+                visualUpdater.postIfNeed();
             }
         };
         ProjectNodesRefreshSupport.addProjectNodeRefreshListener(WeakListeners.create(
@@ -148,12 +145,8 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void setName(final String s) {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                ViewItemNode.super.setName(s.trim()); // IZ #152560
-            }
+        RP.post(() -> {
+            ViewItemNode.super.setName(s.trim()); // IZ #152560
         });
     }
 
@@ -219,16 +212,12 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    ViewItemNode.super.destroy();
-                    folder.removeItemAction(item);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        RP.post(() -> {
+            try {
+                ViewItemNode.super.destroy();
+                folder.removeItemAction(item);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         });
     }
