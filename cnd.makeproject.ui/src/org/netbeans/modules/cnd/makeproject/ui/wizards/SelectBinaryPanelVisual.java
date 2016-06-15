@@ -194,43 +194,44 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         controller.getWizardStorage().validate();
     }
 
-    private void updateRoot(){
+    private void updateRoot() {
         sourcesField.setEnabled(false);
         sourcesButton.setEnabled(false);
         dependeciesComboBox.setEnabled(false);
         viewComboBox.setEnabled(false);
         table.setModel(new DefaultTableModel(0, 0));
-        if (validBinary()) {
-            if (env.isRemote()) {
-                // TODO check java on remote host
-                //controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("ERROR_FIND_PROJECT_CREATOR", env.getDisplayName()));  // NOI18N
-                //return;
-            }
-            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
-            checking.incrementAndGet();
-            validateController();
-            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-            final Map<String, Object> map = new HashMap<>();
-            List<FSPath> binaries = controller.getWizardStorage().getBinaryPath();
-            if (binaries.size() == 1) {
-                WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
-            } else {
-                WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
-                StringBuilder buf = new StringBuilder();
-                for(int i = 1; i < binaries.size(); i++) {
-                    if (buf.length() > 0) {
-                        buf.append(';');
-                    }
-                    buf.append(binaries.get(i).getPath());
+        final String path = ((ExpandableEditableComboBox) binaryField).getText().trim();
+        RP.post(() -> {
+            if (validBinary()) {
+                if (env.isRemote()) {
+                    // TODO check java on remote host
+                    //controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("ERROR_FIND_PROJECT_CREATOR", env.getDisplayName()));  // NOI18N
+                    //return;
                 }
-                WizardConstants.DISCOVERY_LIBRARIES.toMap(map, buf.toString());
-            }
-            WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
-            if (env.isRemote()) {
-                WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
-            }
-            if (extension != null) {
-                RP.post(() -> {
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+                checking.incrementAndGet();
+                validateController();
+                final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                final Map<String, Object> map = new HashMap<>();
+                List<FSPath> binaries = controller.getWizardStorage().getBinaryPath();
+                if (binaries.size() == 1) {
+                    WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
+                } else {
+                    WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
+                    StringBuilder buf = new StringBuilder();
+                    for (int i = 1; i < binaries.size(); i++) {
+                        if (buf.length() > 0) {
+                            buf.append(';');
+                        }
+                        buf.append(binaries.get(i).getPath());
+                    }
+                    WizardConstants.DISCOVERY_LIBRARIES.toMap(map, buf.toString());
+                }
+                WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
+                if (env.isRemote()) {
+                    WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
+                }
+                if (extension != null) {
                     extension.discoverArtifacts(map);
                     List<String> dlls = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES.fromMap(map);
                     String root = WizardConstants.DISCOVERY_ROOT_FOLDER.fromMap(map);
@@ -241,23 +242,22 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     final Map<String, String> resolvedDlls = searchingTable(dlls);
                     updateArtifacts(root, map, resolvedDlls);
                     checkDll(resolvedDlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
-                });
-            }
-        } else {
-            String path = ((ExpandableEditableComboBox)binaryField).getText().trim();
-            if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
-                if (CndPathUtilities.isPathAbsolute(path)) {
-                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-                    if (fo == null || !fo.isValid()) {
-                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                }
+            } else {
+                if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
+                    if (CndPathUtilities.isPathAbsolute(path)) {
+                        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                        if (fo == null || !fo.isValid()) {
+                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                        } else {
+                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                        }
                     } else {
-                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
                     }
-                } else {
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
                 }
             }
-        }
+        });
     }
 
     private void updateArtifacts(final String root, final Map<String, Object> map, final Map<String, String> dlls){
