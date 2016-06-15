@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,82 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.v8debug.ui.vars.tooltip;
+package org.netbeans.modules.debugger.ui.models;
 
-import java.io.Closeable;
-import java.io.IOException;
-import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript2.debug.ui.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.debugger.ui.views.ToolTipView;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin Entlicher
+ * @author martin
  */
-public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
-    
-    private final V8Debugger debugger;
-    private final CallFrame currentFrame;
-    private V8Debugger.Listener closeableListener;
+@DebuggerServiceRegistration(path="ToolTipView",
+                             types=TreeModelFilter.class,
+                             position=10000)
+public class ToolTipTreeModelFilter implements TreeModelFilter {
 
-    public V8DebuggerTooltipSupport(V8Debugger debugger, CallFrame currentFrame) {
-        this.debugger = debugger;
-        this.currentFrame = currentFrame;
-    }
-
-    public V8Debugger getDebugger() {
-        return debugger;
-    }
-
-    public CallFrame getCurrentFrame() {
-        return currentFrame;
+    @Override
+    public Object getRoot(TreeModel original) {
+        return original.getRoot();
     }
 
     @Override
-    public void addCloseable(Closeable closeable) {
-        closeableListener = new TooltipCloseableListener(closeable);
-        debugger.addListener(closeableListener);
-    }
-
-    @Override
-    public void removeCloseable(Closeable closeable) {
-        debugger.removeListener(closeableListener);
-    }
-    
-    private static final class TooltipCloseableListener implements V8Debugger.Listener {
-        
-        private final Closeable closeable;
-        
-        public TooltipCloseableListener(Closeable closeable) {
-            this.closeable = closeable;
-        }
-
-        @Override
-        public void notifySuspended(boolean suspended) {
-            if (!suspended) {
-                doClose();
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent == TreeModel.ROOT) {
+            Object tooltipVar = ToolTipView.getVariable();
+            if (tooltipVar != null) {
+                return new Object[] { tooltipVar };
+            } else {
+                return new Object[] { };
             }
+        } else {
+            return original.getChildren(parent, from, to);
         }
-
-        @Override
-        public void notifyCurrentFrame(CallFrame cf) {
-            doClose();
-        }
-        
-        @Override
-        public void notifyFinished() {
-            doClose();
-        }
-
-        private void doClose() {
-            try {
-                closeable.close();
-            } catch (IOException ex) {}
-        }
-        
     }
-    
+
+    @Override
+    public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+        return original.isLeaf(node);
+    }
+
+    @Override
+    public void addModelListener(ModelListener l) {
+    }
+
+    @Override
+    public void removeModelListener(ModelListener l) {
+    }
+
 }

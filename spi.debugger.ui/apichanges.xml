@@ -248,6 +248,26 @@ made subject to such option by the copyright holder.
         <issue number="251531"/>
     </change>
 
+    <change id="tooltip-ui">
+        <api name="DebuggerCoreSPI"/>
+        <summary>Tooltip view added.</summary>
+        <version major="2" minor="54"/>
+        <date day="14" month="6" year="2016"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" modification="yes" semantic="compatible"/>
+        <description>
+            <p>
+                Tooltip view is added into APIs.
+                It's accessible via <code>createToolTip</code> method in <code>ViewFactory</code>,
+                or <code>AbstractExpandToolTipAction</code>.
+                Default model filters are pre-registered under <code>ToolTipView</code> name
+                and they define the expanded tooltip node.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="ToolTipUI"/>
+        <issue number="262312"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

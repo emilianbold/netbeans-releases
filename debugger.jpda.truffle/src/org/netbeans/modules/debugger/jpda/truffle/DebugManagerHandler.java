@@ -212,7 +212,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     thread.notifyMethodInvokeDone();
                 }
                 if (iextr != null) {
-                    initException(iextr, thread);
+                    iextr.preload(thread);
                     Exceptions.printStackTrace(iextr);
                 }
             }
@@ -243,7 +243,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
             } catch (InvocationException ex) {
                 Exceptions.printStackTrace(ex);
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
-                initException(iextr, t);
+                iextr.preload(t);
                 Exceptions.printStackTrace(iextr);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -302,7 +302,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 ObjectReferenceWrapper.enableCollection(cor);
             }
             if (iextr != null) {
-                initException(iextr, t);
+                iextr.preload(t);
                 Exceptions.printStackTrace(iextr);
             }
         } catch (InternalExceptionWrapper iex) {
@@ -323,17 +323,6 @@ class DebugManagerHandler implements JPDABreakpointListener {
             } catch (Exception ex) {
                 LOG.log(Level.FINE, "", ex);
             }
-        }
-    }
-    
-    private void initException(InvocationExceptionTranslated iextr, JPDAThreadImpl t) {
-        iextr.setPreferredThread(t);
-        iextr.getMessage();
-        iextr.getLocalizedMessage();
-        Throwable cause = iextr.getCause();
-        iextr.getStackTrace();
-        if (cause instanceof InvocationExceptionTranslated) {
-            initException((InvocationExceptionTranslated) cause, t);
         }
     }
     

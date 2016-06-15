@@ -51,6 +51,8 @@ import com.sun.source.util.TreePath;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,6 +103,8 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.debugger.ui.EditorPin;
 import org.netbeans.spi.debugger.ui.PinWatchUISupport;
+import org.netbeans.spi.debugger.ui.ToolTipUI;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -112,6 +116,7 @@ import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
@@ -341,60 +346,22 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                boolean expandable = var != null;
-                final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip, expandable);
-                if (expandable) {
-                    et.addExpansionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
-                            et.removeAll();
-                            et.setWidthCheck(false);
-                            final ToolTipView ttView = ToolTipView.getToolTipView(d, expression, var);
-                            et.add(ttView);
-                            et.revalidate();
-                            et.repaint();
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public @Override void run() {
-                                    EditorUI eui = Utilities.getEditorUI(ep);
-                                    if (eui != null) {
-                                        ttView.setToolTipSupport(eui.getToolTipSupport());
-                                        eui.getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
-                                    } else {
-                                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-                et.addPinListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        EditorUI eui = Utilities.getEditorUI(ep);
-                        Point location = et.getLocation();
-                        location = eui.getStickyWindowSupport().convertPoint(location);
-                        eui.getToolTipSupport().setToolTipVisible(false);
-                        DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
-                        Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
-                        final Watch w = dbMgr.createPinnedWatch(expression, pin);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    PinWatchUISupport.getDefault().pin(w, "org.netbeans.modules.debugger.jpda.PIN_VALUE_PROVIDER"); // NOI18N
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-                    }
-                });
                 EditorUI eui = Utilities.getEditorUI(ep);
-                if (eui != null) {
-                    eui.getToolTipSupport().setToolTip(et);
-                } else {
+                if (eui == null) {
                     firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                    return ;
+                }
+                ToolTipUI.Expandable expandable = (var != null) ?
+                        new ToolTipUI.Expandable(expression, var) :
+                        null;
+                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                        expression,
+                        line.getLineNumber(),
+                        "org.netbeans.modules.debugger.jpda.PIN_VALUE_PROVIDER");   // NOI18N
+                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                ToolTipSupport tts = toolTipUI.show(ep);
+                if (tts != null) {
+                    DebuggerStateChangeListener.attach(d, tts);
                 }
             }
         });

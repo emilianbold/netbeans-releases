@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.debug.ui.tooltip;
+package org.netbeans.spi.debugger.ui;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,32 +52,53 @@ import javax.swing.UIManager;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.modules.debugger.ui.views.ToolTipView;
 
 /**
- *
+ * A base class for an action that shows an expanded tooltip.
+ * It can be used as a
+ * {@link PinWatchUISupport.ValueProvider#getHeadActions(org.netbeans.api.debugger.Watch) head action}
+ * for a pin watch to display the structured value of a watch.
+ * 
+ * @since 2.54
  * @author Martin Entlicher
  */
-public abstract class AbstractExpandTooltipAction extends AbstractAction {
-    
-    private final Icon toExpandIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-    private final Icon toCollapsIcon = UIManager.getIcon ("Tree.expandedIcon");    // NOI18N
+public abstract class AbstractExpandToolTipAction extends AbstractAction {
+
+    private final Icon toExpandIcon = UIManager.getIcon ("Tree.collapsedIcon"); // NOI18N
+    private final Icon toCollapsIcon = UIManager.getIcon ("Tree.expandedIcon"); // NOI18N
     private boolean expanded;
-    
-    protected AbstractExpandTooltipAction() {
+
+    /**
+     * Create a new expand tooltip action.
+     */
+    protected AbstractExpandToolTipAction() {
         putValue(Action.SMALL_ICON, toExpandIcon);
         putValue(Action.LARGE_ICON_KEY, toExpandIcon);
     }
-    
+
+    /**
+     * Open a tooltip view.
+     * Call {@link #openTooltipView(java.lang.String, java.lang.Object)} method
+     * to open the tooltip view.
+     */
     protected abstract void openTooltipView();
-    
-    protected final void openTooltipView(DebuggerTooltipSupport dbg, String expression, Object var) {
-        ToolTipView toolTipView = ToolTipView.createToolTipView(dbg, expression, var);
+
+    /**
+     * Open a tooltip view for the expression and variable the expression evaluates to.
+     * @param expression the tooltip's expression
+     * @param var the evaluated variable
+     * @return An instance of tooltip support that allows to control the display
+     * of the tooltip, or <code>null</code> when it's not possible to show it.
+     * It can be used e.g. to close the tooltip when it's no longer applicable,
+     * when the debugger resumes, etc.
+     */
+    protected final ToolTipSupport openTooltipView(String expression, Object var) {
+        ToolTipView toolTipView = ToolTipView.createToolTipView(expression, var);
         JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
         EditorUI eui = Utilities.getEditorUI(currentEditor);
         if (eui != null) {
             final ToolTipSupport toolTipSupport = eui.getToolTipSupport();
-            toolTipView.setToolTipSupport(toolTipSupport);
             toolTipSupport.setToolTipVisible(true, false);
             toolTipSupport.setToolTip(toolTipView);
             toolTipSupport.addPropertyChangeListener(new PropertyChangeListener() {
@@ -93,10 +114,12 @@ public abstract class AbstractExpandTooltipAction extends AbstractAction {
                     }
                 }
             });
+            return toolTipSupport;
+        } else {
+            return null;
         }
-        
     }
-    
+
     @Override
     public final void actionPerformed(ActionEvent e) {
         expanded = !expanded;
@@ -105,13 +128,13 @@ public abstract class AbstractExpandTooltipAction extends AbstractAction {
             putValue(Action.SMALL_ICON, toCollapsIcon);
             putValue(Action.LARGE_ICON_KEY, toCollapsIcon);
         } else {
-            collapse();
+            hideTooltipView();
             putValue(Action.SMALL_ICON, toExpandIcon);
             putValue(Action.LARGE_ICON_KEY, toExpandIcon);
         }
     }
 
-    private void collapse() {
+    private void hideTooltipView() {
         JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
         EditorUI eui = Utilities.getEditorUI(currentEditor);
         if (eui != null) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.debugger.jpda.projectsui;
 
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.editor.ext.ToolTipSupport;
 
 /**
- * Assures that the variable in tooltip is expanded automatically.
- * 
- * @author Martin Entlicher
+ *
+ * @author martin
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
-                             types=TreeExpansionModelFilter.class,
-                             position=2000)
-public class ToolTipExpansionFilter implements TreeExpansionModelFilter {
+final class DebuggerStateChangeListener implements PropertyChangeListener, Runnable {
+
+    private final ToolTipSupport tts;
+
+    private DebuggerStateChangeListener(ToolTipSupport tts) {
+        this.tts = tts;
+    }
+
+    static void attach(JPDADebugger d, ToolTipSupport tts) {
+        DebuggerStateChangeListener dscl = new DebuggerStateChangeListener(tts);
+        d.addPropertyChangeListener(JPDADebugger.PROP_STATE, dscl);
+        tts.addPropertyChangeListener(propListener -> {
+            if (ToolTipSupport.PROP_STATUS.equals(propListener.getPropertyName()) &&
+                    !tts.isToolTipVisible()) {
+                d.removePropertyChangeListener(JPDADebugger.PROP_STATE, dscl);
+            }
+        });
+    }
 
     @Override
-    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
-        if (node == ToolTipView.getVariable()) {
-            return true;
-        } else {
-            return original.isExpanded(node);
+    public void propertyChange(PropertyChangeEvent evt) {
+        int state = ((Integer) evt.getNewValue());
+        if (JPDADebugger.STATE_DISCONNECTED == state ||
+            JPDADebugger.STATE_RUNNING == state) {
+            SwingUtilities.invokeLater(this);
         }
     }
 
     @Override
-    public void nodeExpanded(Object node) {}
-
-    @Override
-    public void nodeCollapsed(Object node) {}
-
-    @Override
-    public void addModelListener(ModelListener l) {}
-
-    @Override
-    public void removeModelListener(ModelListener l) {}
-    
+    public void run() {
+        tts.setToolTipVisible(false);
+    }
 }

@@ -56,8 +56,6 @@ import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.InvalidObjectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,9 +69,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -85,7 +81,6 @@ import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -137,7 +132,7 @@ public class TruffleBreakpointsHandler {
     /**
      * Call in method invoking
      */
-    public void submitBreakpoints(ClassType accessorClass, JPDAThreadImpl t) {
+    public void submitBreakpoints(ClassType accessorClass, JPDAThreadImpl t) throws InvocationException {
         assert t.isMethodInvoking();
         this.accessorClass = accessorClass;
         List<JSLineBreakpoint> breakpoints;
@@ -186,7 +181,7 @@ public class TruffleBreakpointsHandler {
     }
     
     private ObjectReference setLineBreakpoint(JPDAThreadImpl t, URI uri, int line,
-                                              int ignoreCount, String condition) {
+                                              int ignoreCount, String condition) throws InvocationException {
         assert t.isMethodInvoking();
         ThreadReference tr = t.getThreadReference();
         VirtualMachine vm = tr.virtualMachine();
@@ -217,8 +212,8 @@ public class TruffleBreakpointsHandler {
         } catch (VMDisconnectedExceptionWrapper | InternalExceptionWrapper |
                  ClassNotLoadedException | ClassNotPreparedExceptionWrapper |
                  IncompatibleThreadStateException | InvalidTypeException |
-                 InvocationException | ObjectCollectedExceptionWrapper ex) {
-            LOG.log(Level.CONFIG, "Setting breakpoint to "+uri+":"+line, ex);
+                 ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Setting breakpoint to "+uri+":"+line));
             return null;
         }
     }
@@ -247,7 +242,7 @@ public class TruffleBreakpointsHandler {
                         ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
                 TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                     @Override
-                    public void callMethods(JPDAThread thread) {
+                    public void callMethods(JPDAThread thread) throws InvocationException {
                         ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
                         VirtualMachine vm = tr.virtualMachine();
                         StringReference uriRef = vm.mirrorOf(uri.toString());
@@ -264,10 +259,10 @@ public class TruffleBreakpointsHandler {
                                     ObjectReference.INVOKE_SINGLE_THREADED);
                             bpRef[0] = ret;
                         } catch (InvalidTypeException | ClassNotLoadedException |
-                                 IncompatibleThreadStateException | InvocationException |
+                                 IncompatibleThreadStateException |
                                  InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
                                  ObjectCollectedExceptionWrapper ex) {
-                            Exceptions.printStackTrace(ex);
+                            Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Setting breakpoint to "+uri+":"+line));
                         }
                     }
                 });
@@ -281,7 +276,7 @@ public class TruffleBreakpointsHandler {
         }
     }
     
-    private boolean removeBP(JSLineBreakpoint bp) {
+    private boolean removeBP(final JSLineBreakpoint bp) {
         bp.removePropertyChangeListener(breakpointsChangeListener);
         final ObjectReference bpImpl;
         synchronized (breakpointsMap) {
@@ -301,7 +296,7 @@ public class TruffleBreakpointsHandler {
                     "(Ljava/lang/Object;)V");
             TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                 @Override
-                public void callMethods(JPDAThread thread) {
+                public void callMethods(JPDAThread thread) throws InvocationException {
                     ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
                     List<? extends Value> args = Arrays.asList(new Value[] { bpImpl });
                     try {
@@ -313,7 +308,7 @@ public class TruffleBreakpointsHandler {
                                 ObjectReference.INVOKE_SINGLE_THREADED);
                         successPtr[0] = true;
                     } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException | InvocationException |
+                             IncompatibleThreadStateException |
                              InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
                              ObjectCollectedExceptionWrapper ex) {
                         Exceptions.printStackTrace(ex);
@@ -349,7 +344,7 @@ public class TruffleBreakpointsHandler {
                     method.getMethodSignature());
             TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                 @Override
-                public void callMethods(JPDAThread thread) {
+                public void callMethods(JPDAThread thread) throws InvocationException {
                     ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
                     try {
                         ObjectReferenceWrapper.invokeMethod(
@@ -360,7 +355,7 @@ public class TruffleBreakpointsHandler {
                                 ObjectReference.INVOKE_SINGLE_THREADED);
                         successPtr[0] = true;
                     } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException | InvocationException |
+                             IncompatibleThreadStateException |
                              InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
                              ObjectCollectedExceptionWrapper ex) {
                         Exceptions.printStackTrace(ex);

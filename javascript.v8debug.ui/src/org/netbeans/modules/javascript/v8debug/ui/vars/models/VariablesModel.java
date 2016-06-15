@@ -76,6 +76,7 @@ import org.netbeans.modules.javascript2.debug.NamesTranslator;
 import org.netbeans.modules.javascript2.debug.ui.models.ViewModelSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -92,8 +93,12 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/LocalsView",
-                             types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
+@DebuggerServiceRegistrations({
+  @DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/LocalsView",
+                               types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class }),
+  @DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/ToolTipView",
+                               types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
+})
 public class VariablesModel extends ViewModelSupport implements TreeModel,
                                                                 ExtendedNodeModel,
                                                                 TableModel,

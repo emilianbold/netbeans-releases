@@ -66,6 +66,8 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -187,11 +189,14 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
                                 args,
                                 ObjectReference.INVOKE_SINGLE_THREADED);
                         oneShotBreakpoint = ret;
+                    } catch (InvocationException iex) {
+                        Throwable ex = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger).preload((JPDAThreadImpl) thread);
+                        Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Setting one shot breakpoint to "+path+":"+line));
                     } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException | InvocationException |
+                             IncompatibleThreadStateException |
                              InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
                              ObjectCollectedExceptionWrapper ex) {
-                        Exceptions.printStackTrace(ex);
+                        Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Setting one shot breakpoint to "+path+":"+line));
                     }
                 }
             });
@@ -223,11 +228,14 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
                                 args,
                                 ObjectReference.INVOKE_SINGLE_THREADED);
                         //successPtr[0] = true;
+                    } catch (InvocationException iex) {
+                        Throwable ex = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger).preload((JPDAThreadImpl) thread);
+                        Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Removing one shot breakpoint "+bp));
                     } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException | InvocationException |
+                             IncompatibleThreadStateException |
                              InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
                              ObjectCollectedExceptionWrapper ex) {
-                        Exceptions.printStackTrace(ex);
+                        Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Removing one shot breakpoint "+bp));
                     }
                 }
             });
