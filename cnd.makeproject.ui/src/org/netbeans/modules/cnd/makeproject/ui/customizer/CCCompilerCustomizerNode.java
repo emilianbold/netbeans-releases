@@ -132,7 +132,7 @@ class CCCompilerCustomizerNode extends CustomizerNode {
                     @Override
                     public String getAsText() {
                         if (cconf.getCppStandard().getValue() == STANDARD_INHERITED) {
-                             return NbBundle.getMessage(CCCompilerCustomizerNode.class, "STANDARD_INHERITED_WITH_VALUE", CCCompilerConfiguration.STANDARD_NAMES[cconf.getInheritedCppStandard()]); //NOI18N
+                             return NbBundle.getMessage(CCCompilerCustomizerNode.class, "STANDARD_INHERITED_WITH_VALUE", cconf.getCppStandard().getNames()[cconf.getInheritedCppStandard()]); //NOI18N
                         }
                         return super.getAsText();
                     }

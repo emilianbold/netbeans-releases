@@ -47,8 +47,6 @@ import java.io.OutputStream;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
-import org.netbeans.lib.terminalemulator.Term;
-
 /**
  * Capability of an InputOutput which provides direct access to a Term.
  * @author ivan
@@ -62,7 +60,7 @@ public abstract class IOTerm {
         }
         return null;
     }
-
+    
     /**
      * Checks whether this feature is supported for provided IO
      * @param io IO to check on
@@ -72,18 +70,6 @@ public abstract class IOTerm {
         return find(io) != null;
     }
 
-    /**
-     * Return the underlying Term associatd with this IO.
-     * @param io IO to operate on.
-     * @return underlying Term associatd with io. null if no such Term.
-     */
-    public static Term term(InputOutput io) {
-	IOTerm iot = find(io);
-	if (iot != null)
-	    return iot.term();
-	else
-	    return null;
-    }
 
     /**
      * Connect an I/O stream pair or triple to this Term.
@@ -114,11 +100,27 @@ public abstract class IOTerm {
      *         {@link java.nio.charset.Charset </code>charset<code>}, null for system default
      */
     public static void connect(InputOutput io, OutputStream pin, InputStream pout, InputStream perr, String charset) {
-	IOTerm iot = find(io);
-	if (iot != null)
-	    iot.connect(pin, pout, perr, charset);
-	else
-	    return;
+        connect(io, pin, pout, perr, charset, null);
+    }
+    /**
+     * Connect an I/O stream pair or triple to this Term.
+     *
+     * @param pin Input (and paste operations) to the sub-process.
+     *             this stream.
+     * @param pout Main output from the sub-process. Stuff received via this
+     *             stream will be rendered on the screen.
+     * @param perr Error output from process. May be null if the error stream
+     *		   is already absorbed into 'pout' as the case might be with
+     *             ptys.
+     * @param charset The name of a supported
+     *         {@link java.nio.charset.Charset </code>charset<code>}, null for system default
+     * @param postConnectTask the task to be executed *after* the connection is established
+     */
+    public static void connect(InputOutput io, OutputStream pin, InputStream pout, InputStream perr, String charset, Runnable postConnectTask) {        
+        IOTerm iot = find(io);
+	if (iot != null) {
+	    iot.connect(pin, pout, perr, charset, postConnectTask);
+        }
     }
 
     /**
@@ -139,12 +141,22 @@ public abstract class IOTerm {
     }
 
 
-    /**
-     * Return the underlying Term associatd with this IO.
-     * @return underlying Term associatd with io.
-     */
-    abstract protected Term term();   
-    
+    public static void setReadOnly(InputOutput io, boolean isReadOnly) {
+        IOTerm iot = find(io);
+	if (iot == null) {
+            return;
+        }
+	iot.setReadOnly(isReadOnly);      
+    }
+
+    public static void requestFocus(InputOutput io) {
+        IOTerm iot = find(io);
+	if (iot == null) {
+            return;
+        }
+	iot.requestFocus();
+    }
+
     /**
      * Connect an I/O stream pair or triple to this Term.
      *
@@ -157,8 +169,13 @@ public abstract class IOTerm {
      *             ptys.
      * @param charset The name of a supported
      *         {@link java.nio.charset.Charset </code>charset<code>}, null for system default
+     * @param postConnectTask the task to be executed *after* the connection is established
      */    
-    abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr, String charset);
+    abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr, String charset, Runnable postConnectTask);
 
     abstract protected void disconnect(Runnable continuation);
+    
+    abstract protected void setReadOnly(boolean isReadOnly);
+    
+    abstract protected void requestFocus();
 }

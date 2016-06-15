@@ -327,7 +327,6 @@ Contributor(s):
                 <package>org.netbeans.modules.cnd.api.picklist</package>
                 <package>org.netbeans.modules.cnd.api.utils</package>
                 <package>org.netbeans.modules.cnd.api.xml</package>
-                <package>org.netbeans.modules.cnd.spi</package>
             </friend-packages>
         </data>
     </configuration>

@@ -138,12 +138,7 @@ public final class LaunchersRegistry {
                 }
             }
         }
-        Collections.sort(newLaunchers, new Comparator<Launcher>() {
-            @Override
-            public int compare(Launcher o1, Launcher o2) {
-                return o1.getIndex() - o2.getIndex();
-            }
-        });
+        Collections.sort(newLaunchers, (Launcher o1, Launcher o2) -> o1.getIndex() - o2.getIndex());
         boolean modified = false;
         synchronized (lock) {
             if (!isEqualsLauncers(newLaunchers)) {

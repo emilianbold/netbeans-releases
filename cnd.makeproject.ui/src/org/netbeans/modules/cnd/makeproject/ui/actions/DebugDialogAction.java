@@ -150,12 +150,8 @@ public class DebugDialogAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == debugButton) {
-            runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
-
-                @Override
-                public void run(Project project) {
-                    performDebug(project, runDialogPanel.getExecutablePath() + " " + runDialogPanel.getArguments()); // NOI18N
-                }
+            runDialogPanel.getSelectedProject((Project project) -> {
+                performDebug(project, runDialogPanel.getExecutablePath() + " " + runDialogPanel.getArguments()); // NOI18N
             });
         }
     }

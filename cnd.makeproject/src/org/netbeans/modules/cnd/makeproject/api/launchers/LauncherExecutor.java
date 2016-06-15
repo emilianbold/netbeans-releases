@@ -199,11 +199,11 @@ public final class LauncherExecutor {
         Map<String, String> env = launcher.getEnv();    //Environment
         Env e = new Env();
         if (env != null) {
-            for (String key : env.keySet()) {
+            env.keySet().forEach((key) -> {
                 String value = env.get(key);
                 value = preprocessValueField(value, conf);
                 e.putenv(key, value);
-            }
+            });
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
@@ -238,11 +238,11 @@ public final class LauncherExecutor {
             Map<String, String> env = launcher.getEnv();    //Environment
             Env e = new Env();
             if (env != null) {
-                for (String key : env.keySet()) {
+                env.keySet().forEach((key) -> {
                     String value = env.get(key);
                     value = preprocessValueField(value, conf);
                     e.putenv(key, value);
-                }
+                });
             }
             profile.setEnvironment(e);
             String executable = ""; //NOI18N
@@ -270,17 +270,14 @@ public final class LauncherExecutor {
     }
 
     public void execute(final Project project) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                switch (actionType) {
-                    case BUILD:
-                        onBuild(project);
-                        break;
-                    default:
-                        onDefault(project);
-                        break;
-                }
+        RequestProcessor.getDefault().post(() -> {
+            switch (actionType) {
+                case BUILD:
+                    onBuild(project);
+                    break;
+                default:
+                    onDefault(project);
+                    break;
             }
         });
         UIGesturesSupport.submit(USG_CND_LAUNCHER_EXECUTOR, actionType);
@@ -304,7 +301,7 @@ public final class LauncherExecutor {
             listener.executionFinished(rc);
         }
     }
-    private final class MyType implements Type {
+    private static final class MyType implements Type {
         private final Type delegate;
         private final String name;
         

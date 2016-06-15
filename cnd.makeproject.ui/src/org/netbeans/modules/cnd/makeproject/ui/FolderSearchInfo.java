@@ -125,9 +125,9 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
             }
         }
         List<SearchRoot> res = new ArrayList<>();
-        for (FileObject fo : roots) {
-             res.add(new SearchRoot(fo, null));
-        }
+        roots.forEach((fo) -> {
+            res.add(new SearchRoot(fo, null));
+        });
         return res;
     }
 

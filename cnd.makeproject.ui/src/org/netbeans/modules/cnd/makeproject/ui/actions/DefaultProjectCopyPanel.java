@@ -103,10 +103,12 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -392,10 +394,12 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         return new File(projectLocation.getText());
     }
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         //ignored
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         if (e.getDocument().equals(projectLocation.getDocument())) {
             if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
@@ -407,6 +411,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         validateDialog();
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if (e.getDocument().equals(projectLocation.getDocument())) {
             if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
@@ -429,6 +434,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
     
+    @Override
     public boolean isPanelValid() {
         return " ".equals(errorMessage.getText()) && !invalid; // NOI18N
     }
@@ -458,6 +464,7 @@ public class DefaultProjectCopyPanel extends javax.swing.JPanel implements Docum
         return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), projectFolder.getText(), false);
     }
     
+    @Override
     public void showProgress() {
         projectFolder.setEnabled(false);
         projectLocation.setEnabled(false);

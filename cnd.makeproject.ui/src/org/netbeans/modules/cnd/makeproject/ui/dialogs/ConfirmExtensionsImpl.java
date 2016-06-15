@@ -82,23 +82,18 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
         public ConfirmSupport.MimeExtension create(Set<String> usedExtension, String type) {
             String message = NbBundle.getMessage(ConfirmExtensionsImpl.class,"ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
             StringBuilder extensions = new StringBuilder();
-            for (String ext : usedExtension) {
+            usedExtension.forEach((ext) -> {
                 if (extensions.length() > 0) {
                     extensions.append(',');
                 }
                 extensions.append(ext);
-            }
+            });
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                     MessageFormat.format(message, new Object[]{extensions.toString()}),
                     NbBundle.getMessage(ConfirmExtensionsImpl.class, "ADD_EXTENSION_DIALOG_TITLE" + type + (usedExtension.size() == 1 ? "" : "S")), // NOI18N
                     NotifyDescriptor.YES_NO_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-                return new ConfirmSupport.MimeExtension() {
-                    @Override
-                    public boolean addNewExtension() {
-                        return true;
-                    }
-                };
+                return () -> true;
             }
             return null;
         }
@@ -163,12 +158,12 @@ public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExt
 
     private String extensionText(Set<String> unknown) {
         StringBuilder extensions = new StringBuilder();
-        for (String ext : unknown) {
+        unknown.forEach((ext) -> {
             if (extensions.length() > 0) {
                 extensions.append(','); // NOI18N
             }
             extensions.append(ext);
-        }
+        });
         return extensions.toString();
     }
 

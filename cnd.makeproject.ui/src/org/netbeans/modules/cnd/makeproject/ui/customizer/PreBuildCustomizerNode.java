@@ -198,15 +198,12 @@ public class PreBuildCustomizerNode extends CustomizerNode {
             chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
             chooser.setControlButtonsAreShown(false);
             propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                        File selectedFile= chooser.getSelectedFile();
-                        String path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                        path = CndPathUtilities.normalizeSlashes(path);
-                        editor.setValue(path);
-                    }
+            propenv.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+                if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+                    File selectedFile= chooser.getSelectedFile();
+                    String path = CndPathUtilities.toRelativePath(conf.getMakeConfiguration().getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilities.normalizeSlashes(path);
+                    editor.setValue(path);
                 }
             });
             return chooser;

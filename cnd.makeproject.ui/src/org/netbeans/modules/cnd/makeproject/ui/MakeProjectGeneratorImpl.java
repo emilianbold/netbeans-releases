@@ -330,14 +330,11 @@ public class MakeProjectGeneratorImpl extends ProjectGenerator {
         // manipulation with file content should be postponed
         // project does not yet know about main file and can not provide
         // settings which can affect i.e. formatting of file
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mt.createFromTemplate(pDf, createdMainName, params);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        Runnable runnable = () -> {
+            try {
+                mt.createFromTemplate(pDf, createdMainName, params);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         };
 

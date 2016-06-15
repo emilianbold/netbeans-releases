@@ -298,9 +298,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         // Fire NativeProject change event
         if (!actualList.isEmpty()) {
-            for (NativeProjectItemsListener listener : getListenersCopy()) {
+            getListenersCopy().forEach((listener) -> {
                 listener.filesAdded(actualList);
-            }
+            });
         }
     }
 
@@ -311,25 +311,25 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         // Fire NativeProject change event
         if (!nativeFileItems.isEmpty()) {
-            for (NativeProjectItemsListener listener : getListenersCopy()) {
+            getListenersCopy().forEach((listener) -> {
                 listener.filesRemoved(nativeFileItems);
-            }
+            });
         }
     }
 
     @Override
     public void fireFileRenamed(String oldPath, NativeFileItem newNativeFileIetm) {
-        for (NativeProjectItemsListener listener : getListenersCopy()) {
+        getListenersCopy().forEach((listener) -> {
             listener.fileRenamed(oldPath, newNativeFileIetm);
-        }
+        });
     }
 
     @Override
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems) {
         //System.out.println("fireFilesPropertiesChanged " + fileItems);
-        for (NativeProjectItemsListener listener : getListenersCopy()) {
+        getListenersCopy().forEach((listener) -> {
             listener.filesPropertiesChanged(fileItems);
-        }
+        });
     }
 
     @Override
@@ -338,9 +338,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             new Exception().printStackTrace(System.err);
             System.out.println("fireFilesPropertiesChanged "); // NOI18N
         }
-        for (NativeProjectItemsListener listener : getListenersCopy()) {
+        getListenersCopy().forEach((listener) -> {
             listener.filesPropertiesChanged(this);
-        }
+        });
     }
 
     private final AtomicBoolean fileOperationsProgress = new AtomicBoolean(false);
@@ -351,9 +351,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             System.out.println("fireFileOperationsStarted " + fileOperationsProgress); // NOI18N
         }
         if (fileOperationsProgress.compareAndSet(false, true)) {
-            for (NativeProjectItemsListener listener : getListenersCopy()) {
+            getListenersCopy().forEach((listener) -> {
                 listener.fileOperationsStarted(this);
-            }
+            });
         }
     }
 
@@ -364,9 +364,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             System.out.println("fireFileOperationsFinished " + fileOperationsProgress); // NOI18N
         }
         if (fileOperationsProgress.compareAndSet(true, false)) {
-            for (NativeProjectItemsListener listener : getListenersCopy()) {
+            getListenersCopy().forEach((listener) -> {
                 listener.fileOperationsFinished(this);
-            }
+            });
         }
     }
 
@@ -374,9 +374,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("fireProjectDeleted "); // NOI18N
         }
-        for (NativeProjectItemsListener listener : getListenersCopy()) {
+        getListenersCopy().forEach((listener) -> {
             listener.projectDeleted(this);
-        }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -402,12 +402,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             new Exception().printStackTrace(System.err);
         }
         if (SwingUtilities.isEventDispatchThread()) {
-            RPCC.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkConfigurationChangedWorker(oldConf, newConf);
-                }
+            RPCC.post(() -> {
+                checkConfigurationChangedWorker(oldConf, newConf);
             });
         } else {
             checkConfigurationChangedWorker(oldConf, newConf);

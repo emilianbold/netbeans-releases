@@ -105,9 +105,9 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
             }
             String customizerId = projectDescriptor.getActiveConfiguration() == null ? null
                     : projectDescriptor.getActiveConfiguration().getCustomizerId();
-            for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)) {
+            Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class).forEach((f) -> {
                 f.write(projectDirectory);
-            }      
+            });      
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {

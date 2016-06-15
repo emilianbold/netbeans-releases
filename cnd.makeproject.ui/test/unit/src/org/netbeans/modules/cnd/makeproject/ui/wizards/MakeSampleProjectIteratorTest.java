@@ -118,7 +118,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             if (set.getName().equals("Cygwin_4.x")) {
                 CygwinSet = set;
             }
-            if (set.getName().equals("Cygwin") &&  CygwinSet == null) {
+            if (set.getName().equals("Cygwin") && CygwinSet == null) {
                 CygwinSet = set;
             }
         }
@@ -240,22 +240,19 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
         final AtomicReference<IOException> exRef = new AtomicReference<>();
         final AtomicReference<Set<DataObject>> setRef = new AtomicReference<>();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
-                TemplateWizard wiz = new TemplateWizard();
-                wiz.setTemplate(templateDO);
-                projectCreator.initialize(wiz);
-                WizardConstants.PROPERTY_NAME.put(wiz, destdir.getName());
-                ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-                WizardConstants.PROPERTY_PROJECT_FOLDER.put(wiz, 
+        SwingUtilities.invokeAndWait(() -> {
+            MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
+            TemplateWizard wiz = new TemplateWizard();
+            wiz.setTemplate(templateDO);
+            projectCreator.initialize(wiz);
+            WizardConstants.PROPERTY_NAME.put(wiz, destdir.getName());
+            ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+            WizardConstants.PROPERTY_PROJECT_FOLDER.put(wiz, 
                     new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
-                try {
-                    setRef.set(projectCreator.instantiate());
-                } catch (IOException ex) {
-                    exRef.set(ex);
-                }
+            try {
+                setRef.set(projectCreator.instantiate());
+            } catch (IOException ex) {
+                exRef.set(ex);
             }
         });
         if (exRef.get() != null) {
@@ -308,30 +305,27 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         final StringBuilder buf = new StringBuilder();
-        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
-            @Override
-            public void linePrinted(String line) {
-                if(line != null) {
-                    buf.append(line).append('\n');
-                    if (line.trim().startsWith(successLine)) {
-                        build_rc.set(0);
-                        done.countDown();
-                    }
-                    else if (line.trim().startsWith(failureLine)) {
-                        // message is:
-                        // BUILD FAILED (exit value 1, total time: 326ms)
-                        int rc = -1;
-                        String[] tokens = line.split("[ ,]");
-                        if (tokens.length > 4) {
-                            try {
-                                rc = Integer.parseInt(tokens[4]);
-                            } catch(NumberFormatException nfe) {
-                                nfe.printStackTrace(System.err);
-                            }
+        ((CndTestIOProvider) iop).addListener((String line) -> {
+            if(line != null) {
+                buf.append(line).append('\n');
+                if (line.trim().startsWith(successLine)) {
+                    build_rc.set(0);
+                    done.countDown();
+                }
+                else if (line.trim().startsWith(failureLine)) {
+                    // message is:
+                    // BUILD FAILED (exit value 1, total time: 326ms)
+                    int rc = -1;
+                    String[] tokens = line.split("[ ,]");
+                    if (tokens.length > 4) {
+                        try {
+                            rc = Integer.parseInt(tokens[4]);
+                        } catch(NumberFormatException nfe) {
+                            nfe.printStackTrace(System.err);
                         }
-                        build_rc.set(rc);
-                        done.countDown();
                     }
+                    build_rc.set(rc);
+                    done.countDown();
                 }
             }
         });

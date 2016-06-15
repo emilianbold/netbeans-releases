@@ -350,13 +350,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 final ArrayList<PackagerFileElement> listToAdd = new ArrayList<>();
                 addFilesFromDirectory(listToAdd, dir, dir, progressPanel);
 
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        addObjectsAction(listToAdd);
-                        progressDialog.setVisible(false);
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    addObjectsAction(listToAdd);
+                    progressDialog.setVisible(false);
                 });
             }
         }

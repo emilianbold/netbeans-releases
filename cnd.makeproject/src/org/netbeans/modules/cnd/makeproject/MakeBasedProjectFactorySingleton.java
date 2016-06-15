@@ -235,9 +235,9 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             sBuff.append(project.getClass().getName()).append('\n'); // NOI18N
             sBuff.append("argument project: ").append(project).append(" => ").append(project.hashCode()).append('\n'); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
-            for (Project prj : project2Helper.keySet()) {
+            project2Helper.keySet().forEach((prj) -> {
                 sBuff.append("    project: ").append(prj).append(" => ").append(prj.hashCode()).append('\n'); // NOI18N
-            }
+            });
             // Happens occasionally, no clue why. Maybe someone saving project before ctor has finished?
             LOG.warning(sBuff.toString());
             return;

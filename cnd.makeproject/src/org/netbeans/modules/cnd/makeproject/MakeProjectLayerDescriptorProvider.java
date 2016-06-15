@@ -148,7 +148,7 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
         }
         if (!map.isEmpty()) {
             List<URI> res = new ArrayList<>();
-            for (String uriString : map.values()) {
+            map.values().forEach((uriString) -> {
                 try {
                     URI uri = new URI(uriString);
                     String scheme = uri.getScheme();
@@ -177,8 +177,7 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
-
-            }
+            });
             return res;
         }
         return Collections.<URI>emptyList();

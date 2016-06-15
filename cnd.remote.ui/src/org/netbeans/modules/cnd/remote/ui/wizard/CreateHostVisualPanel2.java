@@ -42,13 +42,11 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,11 +59,12 @@ import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETU
 import org.netbeans.modules.cnd.remote.server.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.remote.ui.setup.TextComponentWriter;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidatorFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
-import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.nativeexecution.api.ui.util.NativeExecutionUIUtils;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.ui.util.ValidatablePanelListener;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -88,7 +87,7 @@ import org.openide.util.RequestProcessor;
         
         textLoginName.setText(System.getProperty("user.name"));
 
-        configurationPanel = ConnectionManager.getInstance().getConfigurationPanel(null);
+        configurationPanel = NativeExecutionUIUtils.getConfigurationPanel(null);
         configurationPanel.addValidationListener(cfgListener);
 
         authPanel.add(configurationPanel, BorderLayout.CENTER);
@@ -344,7 +343,7 @@ import org.openide.util.RequestProcessor;
 
                 try {
                     StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "hostValidator.validate"); //NOI18N
-                    hostValidator = new HostValidatorImpl(data.getCacheManager());
+                    hostValidator = HostValidatorFactory.create(data.getCacheManager());
                     FileSystemProvider.setAccessCheckType(env, cbACL.isSelected()
                             ? FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST);                    
                     if (hostValidator.validate(env, data.getSearchTools(), new TextComponentWriter(tpOutput))) {
