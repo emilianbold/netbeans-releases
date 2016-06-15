@@ -61,6 +61,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import javax.lang.model.element.Name;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
@@ -358,6 +359,7 @@ abstract class BaseTask extends UserTask {
             Tree lambdaBody = ((LambdaExpressionTree) tree).getBody();
             Scope scope = null;
             TreePath blockPath = path.getParentPath();
+            int bodyPos = 0;
             while (blockPath != null) {
                 if (blockPath.getLeaf().getKind() == Tree.Kind.BLOCK) {
                     if (blockPath.getParentPath().getLeaf().getKind() == Tree.Kind.METHOD
@@ -372,9 +374,29 @@ abstract class BaseTask extends UserTask {
                             return null;
                         }
                         sourcePositions = new SourcePositionsImpl(block, sourcePositions, sp[0], blockPos, -1);
-                        scope = controller.getTrees().getScope(blockPath);
                         path = tu.getPathElementOfKind(Tree.Kind.LAMBDA_EXPRESSION, tu.pathFor(new TreePath(blockPath.getParentPath(), block), offset, sourcePositions));
                         lambdaBody = ((LambdaExpressionTree) path.getLeaf()).getBody();
+                        bodyPos = (int) sourcePositions.getStartPosition(root, lambdaBody);
+                        if (bodyPos >= offset) {
+                            TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                            ts.move(offset);
+                            while (ts.movePrevious()) {
+                                switch (ts.token().id()) {
+                                    case WHITESPACE:
+                                    case LINE_COMMENT:
+                                    case BLOCK_COMMENT:
+                                    case JAVADOC_COMMENT:
+                                        break;
+                                    case ARROW:
+                                        scope = controller.getTrees().getScope(blockPath);
+                                        scope = tu.reattributeTreeTo(block, scope, lambdaBody);
+                                        return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                                    default:
+                                        return null;
+                                }
+                            }
+                        }
+                        scope = controller.getTrees().getScope(blockPath);
                         scope = tu.reattributeTreeTo(block, scope, lambdaBody);
                         break;
                     }
@@ -383,22 +405,22 @@ abstract class BaseTask extends UserTask {
             }
             if (scope == null) {
                 scope = controller.getTrees().getScope(new TreePath(path, lambdaBody));
-            }
-            final int bodyPos = (int) sourcePositions.getStartPosition(root, lambdaBody);
-            if (bodyPos >= offset) {
-                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                ts.move(offset);
-                while (ts.movePrevious()) {
-                    switch (ts.token().id()) {
-                        case WHITESPACE:
-                        case LINE_COMMENT:
-                        case BLOCK_COMMENT:
-                        case JAVADOC_COMMENT:
-                            break;
-                        case ARROW:
-                            return new Env(offset, prefix, controller, path, sourcePositions, scope);
-                        default:
-                            return null;
+                bodyPos = (int) sourcePositions.getStartPosition(root, lambdaBody);
+                if (bodyPos >= offset) {
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                    ts.move(offset);
+                    while (ts.movePrevious()) {
+                        switch (ts.token().id()) {
+                            case WHITESPACE:
+                            case LINE_COMMENT:
+                            case BLOCK_COMMENT:
+                            case JAVADOC_COMMENT:
+                                break;
+                            case ARROW:
+                                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                            default:
+                                return null;
+                        }
                     }
                 }
             }
@@ -631,7 +653,7 @@ abstract class BaseTask extends UserTask {
         private final SourcePositions sourcePositions;
         private Scope scope;
         private ReferencesCount referencesCount;
-        private Collection<? extends Element> refs = null;
+        private Map<Name, Element> refs = null;
         private boolean afterExtends = false;
         private boolean insideNew = false;
         private boolean insideForEachExpression = false;
@@ -696,9 +718,12 @@ abstract class BaseTask extends UserTask {
             return referencesCount;
         }
 
-        public Collection<? extends Element> getForwardReferences() {
+        public Map<Name, ? extends Element> getForwardReferences() {
             if (refs == null) {
-                refs = SourceUtils.getForwardReferences(path, offset, sourcePositions, controller.getTrees());
+                refs = new HashMap<>();
+                for (Element ref : SourceUtils.getForwardReferences(path, offset, sourcePositions, controller.getTrees())) {
+                    refs.put(ref.getSimpleName(), ref);
+                }
             }
             return refs;
         }

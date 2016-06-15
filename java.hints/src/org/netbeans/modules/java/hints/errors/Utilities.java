@@ -152,6 +152,7 @@ import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.ArgumentAttr;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -1846,6 +1847,8 @@ public class Utilities {
                 }
             }            
         };
+        ArgumentAttr argumentAttr = ArgumentAttr.instance(jti.getContext());
+        ArgumentAttr.LocalCacheContext cacheContext = argumentAttr.withLocalCacheContext();
         try {
             enter.shadowTypeEnvs(true);
             Attr attr = Attr.instance(jti.getContext());
@@ -1855,6 +1858,7 @@ public class Utilities {
             }
             return attr.attribStat((JCTree) tree,env);
         } finally {
+            cacheContext.leave();
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
             enter.shadowTypeEnvs(false);
