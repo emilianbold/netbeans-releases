@@ -75,7 +75,6 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         initComponents();
         updateReferencesCheckBox.setVisible(showUpdateReferences);
         nameField.setEnabled(editable);
-        nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -123,8 +122,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }
 
     @Override
-    public void requestFocus() {
-        nameField.requestFocus();
+    public boolean requestFocusInWindow() {
+        if (nameField.isEnabled()) {
+            nameField.requestFocusInWindow();
+        }
+        return true;
     }
 
     /** This method is called from within the constructor to
@@ -152,7 +154,6 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NewName")); // NOI18N
 
         nameField.setText(oldName);
-        nameField.selectAll();
 
         jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -263,6 +264,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/php/rename/Bundle"); // NOI18N
         nameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_nameField")); // NOI18N
+        nameField.selectAll();
         textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
     }// </editor-fold>//GEN-END:initComponents
 
