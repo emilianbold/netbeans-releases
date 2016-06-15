@@ -70,6 +70,9 @@ final class SourceFilesCache {
         FileObject fo = fs.findResource(path);
         if (fo == null) {
             fo = fs.createFile(path, content);
+            if (fo == null) {
+                throw new IllegalArgumentException("Not able to create file with name '"+name+"'. Path = "+path);
+            }
             fo.setAttribute(Source.ATTR_URI, uri);
         }
         return fo.toURL();
