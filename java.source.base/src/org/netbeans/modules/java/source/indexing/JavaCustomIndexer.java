@@ -48,6 +48,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,12 +76,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.management.MBeanServer;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -136,6 +141,7 @@ import org.openide.util.Lookup;
 public class JavaCustomIndexer extends CustomIndexer {
 
             static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
+    private static final String DUMP_ON_LOW_MEM = System.getProperty(JavaCustomIndexer.class.getName() + ".dump.on.low.mem");    //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final String APT_SOURCE_OUTPUT = "apSrcOut"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
@@ -256,6 +262,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             if (compileResult == null || context.isCancelled()) {
                                 return; // cancelled, IDE is sutting down
                             }
+                            if (compileResult.lowMemory) {
+                                w.freeMemory(false);
+                            }
                             if (compileResult.success) {
                                 break;
                             }
@@ -276,7 +285,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                     }
                     finished = compileResult.success;
-                    
+
                     if (compileResult.lowMemory) {
                         final String rootName = FileUtil.getFileDisplayName(context.getRoot());
                         JavaIndex.LOG.log(
@@ -287,8 +296,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (uip != null) {
                             uip.notifyLowMemory(rootName);
                         }
+                        if (DUMP_ON_LOW_MEM != null) {
+                            final File heapDump = dumpHeap(DUMP_ON_LOW_MEM);
+                            if (heapDump != null) {
+                                JavaIndex.LOG.log(
+                                    Level.INFO,
+                                    "Heap dump generated into: {0}.",     //NOI18N
+                                    heapDump.getAbsolutePath());
+                            } else {
+                                JavaIndex.LOG.log(
+                                    Level.WARNING,
+                                    "Cannot generate heap dump.");     //NOI18N
+                            }
+                        }
                     }
-                    
                 } finally {
                     try {
                         javaContext.finish();
@@ -1159,6 +1180,46 @@ public class JavaCustomIndexer extends CustomIndexer {
             "compiler.warn.diamond.redundant.args", 
             "compiler.warn.diamond.redundant.args.1",
             "compiler.note.potential.lambda.found"));
+
+    @CheckForNull
+    private static File dumpHeap(@NonNull final String path) {
+        try {
+            if (heapDumper == null) {
+                final Class<?> clz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");   //NOI18N
+                final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+                final Object bean = ManagementFactory.newPlatformMXBeanProxy(
+                    server,
+                    "com.sun.management:type=HotSpotDiagnostic",    //NOI18N
+                    clz);
+                final Method m = clz.getDeclaredMethod("dumpHeap", String.class, Boolean.TYPE);
+                heapDumper = Pair.of(bean,m);
+            }
+            final File folder = new File(path);
+            final File[] children = folder.listFiles();
+            if (children != null) {
+                final String namePattern = "heapdump_"; //NOI18N
+                final Set<String> names = Arrays.stream(children)
+                        .map((f) -> f.getName())
+                        .filter((n) -> n.startsWith(namePattern))
+                        .collect(Collectors.toSet());
+                int index = 1;
+                while (true) {
+                    if (!names.contains(namePattern + index)) {
+                        break;
+                    }
+                    index++;
+                }
+                final File file = new File(folder, namePattern + index);
+                heapDumper.second().invoke(heapDumper.first(), file.getAbsolutePath(), true);
+                return file;
+            }
+        } catch (Exception e) {
+            //pass
+        }
+        return null;
+    }
+
+    private static Pair<Object,Method> heapDumper;
 
     private static class FilterOutJDK7AndLaterWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
         @Override public int compareTo(Diagnostic<? extends JavaFileObject> o) {
