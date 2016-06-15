@@ -1342,6 +1342,42 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "foo()::myStatic2()::myStati^c2();", "    public static function ^myStatic2() { // UVS1");
     }
 
+    public void testIssue247082_01() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::PAREN^T_CONST . PHP_EOL;", "    const ^PARENT_CONST = 'PARENT_CONST';");
+    }
+
+    public void testIssue247082_02() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::$paren^tFieldStatic . PHP_EOL;", "    public static $^parentFieldStatic = 'parentFieldStatic';");
+    }
+
+    public void testIssue247082_03() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::parent^TestInstance() . PHP_EOL;", "    public function ^parentTestInstance() {");
+    }
+
+    public void testIssue247082_04() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::parentTes^tStatic() . PHP_EOL;", "    public static function ^parentTestStatic() {");
+    }
+
+    public void testIssue247082_05() throws Exception {
+        checkDeclaration(getTestPath(), "            echo $this->myFieldI^nstance . PHP_EOL;", "    public $^myFieldInstance = 'myFieldInstance';");
+    }
+
+    public void testIssue247082_06() throws Exception {
+        checkDeclaration(getTestPath(), "            echo $this->myTest^Instance() . PHP_EOL;", "    public function ^myTestInstance() {");
+    }
+
+    public void testIssue247082_07() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::MY_C^ONST . PHP_EOL;", "    const ^MY_CONST = 'MY_CONST';");
+    }
+
+    public void testIssue247082_08() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::$myFieldS^tatic . PHP_EOL;", "    public static $^myFieldStatic = 'myFieldStatic';");
+    }
+
+    public void testIssue247082_09() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::myTe^stStatic() . PHP_EOL;", "    public static function ^myTestStatic() {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

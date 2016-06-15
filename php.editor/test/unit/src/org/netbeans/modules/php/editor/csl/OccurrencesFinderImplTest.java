@@ -1771,6 +1771,78 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "UVS3::myStatic3()->my2()::myStatic1()->my^1();", true);
     }
 
+    public void testIssue247082_01() throws Exception {
+        checkOccurrences(getTestPath(), "    const PARE^NT_CONST = 'PARENT_CONST';", true);
+    }
+
+    public void testIssue247082_02() throws Exception {
+        checkOccurrences(getTestPath(), "            echo parent::PAR^ENT_CONST . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_03() throws Exception {
+        checkOccurrences(getTestPath(), "    public static $parentF^ieldStatic = 'parentFieldStatic';", true);
+    }
+
+    public void testIssue247082_04() throws Exception {
+        checkOccurrences(getTestPath(), "            echo parent::$parentFi^eldStatic . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_05() throws Exception {
+        checkOccurrences(getTestPath(), "    public function parentTe^stInstance() {", true);
+    }
+
+    public void testIssue247082_06() throws Exception {
+        checkOccurrences(getTestPath(), "            echo parent::parentTe^stInstance() . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_07() throws Exception {
+        checkOccurrences(getTestPath(), "    public static function parentT^estStatic() {", true);
+    }
+
+    public void testIssue247082_08() throws Exception {
+        checkOccurrences(getTestPath(), "            echo parent::parentTes^tStatic() . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_09() throws Exception {
+        checkOccurrences(getTestPath(), "    const MY_CO^NST = 'MY_CONST';", true);
+    }
+
+    public void testIssue247082_10() throws Exception {
+        checkOccurrences(getTestPath(), "            echo self::MY_C^ONST . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_11() throws Exception {
+        checkOccurrences(getTestPath(), "    public static $myField^Static = 'myFieldStatic';", true);
+    }
+
+    public void testIssue247082_12() throws Exception {
+        checkOccurrences(getTestPath(), "            echo self::$myFiel^dStatic . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_13() throws Exception {
+        checkOccurrences(getTestPath(), "    public $myFieldIn^stance = 'myFieldInstance';", true);
+    }
+
+    public void testIssue247082_14() throws Exception {
+        checkOccurrences(getTestPath(), "            echo $this->myFie^ldInstance . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_15() throws Exception {
+        checkOccurrences(getTestPath(), "    public function myTestIns^tance() {", true);
+    }
+
+    public void testIssue247082_16() throws Exception {
+        checkOccurrences(getTestPath(), "            echo $this->myTest^Instance() . PHP_EOL;", true);
+    }
+
+    public void testIssue247082_17() throws Exception {
+        checkOccurrences(getTestPath(), "    public static function myTestSt^atic() {", true);
+    }
+
+    public void testIssue247082_18() throws Exception {
+        checkOccurrences(getTestPath(), "            echo self::myTest^Static() . PHP_EOL;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
