@@ -97,7 +97,7 @@ public class FileSensitivePerformer implements FileActionPerformer {
                 Project p = FileOwnerQuery.getOwner(file);
                 
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(p);
-                if (!ppp.checkProjectCanBeProfiled(null)) return; // Project not configured, user notified by ProjectProfilingSupportProvider 
+                if (!ppp.checkProjectCanBeProfiled(file)) return; // Project not configured, user notified by ProjectProfilingSupportProvider 
                 JavaProfilerSource src = JavaProfilerSource.createFrom(file);
                 if (ppp.startProfilingSession(file, src == null ? false : src.isTest())) return; // Profiling session started by ProjectProfilingSupportProvider
                 
