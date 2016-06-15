@@ -1166,14 +1166,6 @@ public class SourceUtils {
         
         while(path != null) {
             switch(path.getLeaf().getKind()) {
-                case BLOCK:
-                    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
-                        break;
-                case ANNOTATION_TYPE:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                    return refs;
                 case VARIABLE:
                     el = trees.getElement(path);
                     if (el != null) {
@@ -1192,7 +1184,7 @@ public class SourceUtils {
                             }
                         }
                     }
-                    return refs;
+                    break;
                 case ENHANCED_FOR_LOOP:
                     EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
                     if (sourcePositions.getEndPosition(path.getCompilationUnit(), efl.getExpression()) >= pos) {

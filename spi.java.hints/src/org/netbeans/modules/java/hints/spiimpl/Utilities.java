@@ -76,6 +76,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.ArgumentAttr;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -657,6 +658,8 @@ public class Utilities {
         resolve.disableAccessibilityChecks();
         Enter enter = Enter.instance(jti.getContext());
         enter.shadowTypeEnvs(true);
+        ArgumentAttr argumentAttr = ArgumentAttr.instance(jti.getContext());
+        ArgumentAttr.LocalCacheContext cacheContext = argumentAttr.withLocalCacheContext();
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -664,6 +667,7 @@ public class Utilities {
                 return attr.attribExpr((JCTree) tree,env, Type.noType);
             return attr.attribStat((JCTree) tree,env);
         } finally {
+            cacheContext.leave();
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
             resolve.restoreAccessbilityChecks();
