@@ -961,7 +961,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         } else {
             makefileName += ".mk"; // NOI18N
         }
-        return makefileName;
+        return makefileName.replace(' ', '_'); // NOI18N
     }
 
     public static File getCanonicalFile(File file) {
