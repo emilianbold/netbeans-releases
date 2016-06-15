@@ -197,7 +197,7 @@ public enum JsTokenId implements TokenId {
     RESERVED_PUBLIC("public", "reserved"), // NOI18N
     RESERVED_STATIC("static", "reserved"), // NOI18N
     
-    RESERVED_AWAIT("await", "reserved"),
+    RESERVED_AWAIT("await", "reserved"), //NOI18N
     
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
