@@ -96,5 +96,16 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_VOID.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_WHILE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_WITH.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        
+        // keywords added with ESCMA SCript 6
+        KEYWORDS.put(JsTokenId.RESERVED_LET.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_CLASS.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_CONST.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_EXTENDS.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_EXPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_IMPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_SUPER.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_YIELD.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_WITH.fixedText(), CompletionType.ENDS_WITH_SPACE);
     }
 }
