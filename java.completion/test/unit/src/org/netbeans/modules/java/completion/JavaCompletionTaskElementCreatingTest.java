@@ -104,11 +104,11 @@ public class JavaCompletionTaskElementCreatingTest extends CompletionTestBase {
     }
     
     public void testOverrideTypedException1() throws Exception {
-        performTest("OverrideTypedException", 209, "tes", "OverrideTypedException1.pass");
+        performTest("OverrideTypedException", 209, "tes", "OverrideTypedException.pass");
     }
     
     public void testOverrideTypedException2() throws Exception {
-        performTest("OverrideTypedException", 305, "tes", "OverrideTypedException2.pass");
+        performTest("OverrideTypedException", 305, "tes", "OverrideTypedException.pass");
     }
     
     public void testOverrideInInnerClass() throws Exception {

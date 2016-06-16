@@ -413,15 +413,15 @@ public class JavaCompletionTaskAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingForVarTypeAndSpace() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "for (int ", "i.pass");
+        performTest("SimpleMethodBodyStart", 98, "for (int ", "intVarName.pass");
     }
     
     public void testAfterTypingForVarTypeAndSpace() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "for (int ", "i.pass");
+        performTest("SimpleEmptyMethodBody", 98, "for (int ", "intVarName.pass");
     }
     
     public void testAfterForVarTypeAndSpace() throws Exception {
-        performTest("For", 107, null, "i.pass");
+        performTest("For", 107, null, "intVarName.pass");
     }
     
     public void testEmptyFileAfterTypingForVarAndSpace() throws Exception {
