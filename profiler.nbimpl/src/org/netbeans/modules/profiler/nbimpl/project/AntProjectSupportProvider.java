@@ -39,8 +39,11 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.spi.project;
+package org.netbeans.modules.profiler.nbimpl.project;
 
+import java.util.Map;
+import java.util.Properties;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,8 +67,16 @@ public abstract class AntProjectSupportProvider {
      */
     public abstract FileObject getProjectBuildScript(String buildFileName);
     
+    /**
+     * Configures profiling properties passed to the Ant environment.
+     * 
+     * @param props properties
+     * @param profiledClassFile profiled file or null for profiling the entire project
+     */
+    public abstract void configurePropertiesForProfiling(Map<String, String> props, FileObject profiledClassFile);
     
-    public static class Basic extends AntProjectSupportProvider {
+    
+    static class Basic extends AntProjectSupportProvider {
         
         @Override
         public FileObject getProjectBuildScript() {
@@ -75,6 +86,50 @@ public abstract class AntProjectSupportProvider {
         @Override
         public FileObject getProjectBuildScript(String buildFileName) {
             return null;
+        }
+        
+        @Override
+        public void configurePropertiesForProfiling(Map<String, String> props, FileObject profiledClassFile) {
+        }
+        
+    }
+    
+    
+    public static abstract class Abstract extends AntProjectSupportProvider {
+        
+        private final Project project;
+    
+        @Override
+        public FileObject getProjectBuildScript() {
+            FileObject buildFile = null;
+
+            Properties props = org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities.getProjectProperties(getProject());
+            String buildFileName = props != null ? props.getProperty("buildfile") : null; // NOI18N
+            if (buildFileName != null) {
+                buildFile = getProjectBuildScript(buildFileName);
+            }
+            if (buildFile == null) {
+                buildFile = getProjectBuildScript("build.xml"); //NOI18N
+            }
+            return buildFile;
+        }
+
+        @Override
+        public FileObject getProjectBuildScript(String buildFileName) {
+            return getProject().getProjectDirectory().getFileObject(buildFileName);
+        }
+        
+        @Override
+        public void configurePropertiesForProfiling(Map<String, String> props, FileObject profiledClassFile) {
+        }
+
+        protected final Project getProject() {
+            return project;
+        }
+
+
+        protected Abstract(Project project) {
+            this.project = project;
         }
         
     }
