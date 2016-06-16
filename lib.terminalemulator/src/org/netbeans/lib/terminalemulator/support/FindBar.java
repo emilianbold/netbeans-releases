@@ -272,6 +272,10 @@ public final class FindBar extends JPanel {
         }
     }
 
+    public void requestTextFocus() {
+        findText.requestFocus();
+    }
+
     /**
      * Get the FindState for this panel.
      * @return the FindState.
