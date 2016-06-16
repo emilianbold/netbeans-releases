@@ -85,6 +85,9 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
     private static final RequestProcessor METADATA_MODEL_RP =
             new RequestProcessor("JavaEEWSOpenHook.WS_REQUEST_PROCESSOR"); //NOI18N
 
+    private static final RequestProcessor PROJECT_UPDATE_RP =
+            new RequestProcessor("JavaEEWSOpenHook.WS_PROJECT_UPDATE"); //NOI18N
+
     private final Project prj;
     public JavaEEWSOpenHook(Project prj) {
         this.prj = prj;
@@ -281,16 +284,22 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                     }
                 }
                 if (needToSave) {
-                    ProjectManager.mutex().writeAccess(new Runnable() {
-
+                    PROJECT_UPDATE_RP.post(new Runnable() {
+                        @Override
                         public void run() {
-                            try {
-                                jaxWsModel.write();
-                            } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            }
+                            ProjectManager.mutex().writeAccess(new Runnable() {
+
+                                public void run() {
+                                    try {
+                                        jaxWsModel.write();
+                                    } catch (IOException ex) {
+                                        ErrorManager.getDefault().notify(ex);
+                                    }
+                                }
+                            });
                         }
                     });
+
                 }
             }
         }
