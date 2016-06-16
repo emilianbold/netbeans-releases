@@ -41,9 +41,23 @@
  */
 package org.netbeans.modules.javascript2.editor.embedding;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.Document;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider.EmbeddingPosition;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
@@ -172,6 +186,112 @@ public class JsEmbeddingProviderTest extends JsTestBase {
         assertEquals(1, embeddings.size());
         assertEquals(text.indexOf("    "), embeddings.get(0).getOffset());
         assertEquals(4, embeddings.get(0).getLength());
+    }
+    
+    /*
+     * Tests conversion of the generic templating mark "@@@"
+     * to its JS counterpart.
+     */
+    public void testConvertGenericMarksToJSMark() {
+        assertEmbedding("<script>hello @@@ word</script>",
+                "hello __UNKNOWN__ word\n");
+
+        //this needs some more "fine tuning" :-)
+        //so far works only if the pattern is surrounded by sg.
+
+//        assertEmbedding("<script>x@@@</script>",
+//                "x__UNKNOWN__\n");
+//        
+//        assertEmbedding("<script>@@@x</script>",
+//                "__UNKNOWN__x\n");
+//        
+//        assertEmbedding("<script>@@@</script>",
+//                "__UNKNOWN__\n");
+
+//        assertEmbedding("<div onclick=\"@@@\">",
+//                "");
+
+        assertEmbedding("<div onclick=\"a@@@b\">",
+                "(function(){\n"
+                + "a__UNKNOWN__b;\n"
+                + "});\n"
+                + "");
+
+    }
+    
+    public void testOnClick() throws ParseException {
+        assertEmbedding("<div onclick='alert()'/>",
+                "(function(){\n"
+                + "alert();\n"
+                + "});\n"
+                + "");
+    }
+
+    public void testCustomJSEmbeddingOnAttributeValue() {
+        assertEmbedding("<div controller='MyController'/>",
+                "(function(){\n"
+                + "MyController;\n"
+                + "});\n"
+                + "");
+    }
+    
+    private void assertEmbedding(String code, String expectedJsVirtualSource) {
+        assertEmbedding(getDocument(code, "text/html"), expectedJsVirtualSource);
+    }
+
+    public static void assertEmbedding(Document doc, String expectedJsVirtualSource) {
+        try {
+            Source source = Source.create(doc);
+            final AtomicReference<String> jsCodeRef = new AtomicReference<>();
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ResultIterator jsRi = WebUtils.getResultIterator(resultIterator, "text/javascript");
+                    if (jsRi != null) {
+                        jsCodeRef.set(jsRi.getSnapshot().getText().toString());
+                    } else {
+                        //no js embedded code
+                    }
+                }
+            });
+            String jsCode = jsCodeRef.get();
+            if (expectedJsVirtualSource != null) {
+                assertNotNull(jsCode);
+                assertEquals(expectedJsVirtualSource, jsCode);
+            } else {
+                //expected no embedded js code
+                assertNull(jsCode);
+            }
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+    public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {
+
+        @Override
+        public String getOpenDelimiter() {
+            return "{{";
+        }
+
+        @Override
+        public String getCloseDelimiter() {
+            return "}}";
+        }
+
+        @Override
+        public String getContentMimeType() {
+            return "text/javascript";
+        }
+
+        @Override
+        public String createAttributeEmbedding(String elementName, String attributeName) {
+            if ("controller".equals(attributeName)) {
+                return "text/javascript";
+            }
+            return null;
+        }
     }
 
 }
