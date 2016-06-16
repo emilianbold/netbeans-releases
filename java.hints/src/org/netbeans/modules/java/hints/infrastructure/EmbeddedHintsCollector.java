@@ -101,25 +101,24 @@ public class EmbeddedHintsCollector extends IndexingAwareParserResultTask<Parser
     @Override
     public void run(Parser.Result result, SchedulerEvent event) {
         cancelled = false;
-        if (result.getSnapshot().getMimePath().size() > 1) {
+        final Snapshot mySnapshot = result.getSnapshot();
+        if (mySnapshot.getMimePath().size() > 1) {
             // I do not want the inner mimetype
             return;
         }
-        if (result.getSnapshot().getMimeType().equals("text/x-java")) {
+        if (mySnapshot.getMimeType().equals("text/x-java")) {
             // ignore toplevel java
             return;
         }
-        
         try {
             synchronized (hints) {
                 for (Snapshot snap : hints.keySet()) {
-                    if (snap.getSource().equals(result.getSnapshot().getSource())) {
+                    if (snap.getSource().equals(mySnapshot.getSource())) {
                         collectResult(snap);
                     }
                 }
             }
             if (cancelled) {
-                hints.clear();
                 return;
             }
             if (allHints != null) {

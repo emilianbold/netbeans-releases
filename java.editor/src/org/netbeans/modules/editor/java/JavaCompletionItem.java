@@ -1124,12 +1124,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         partialMatch = true;
                                     }
                                 }
+                                int o = offset;
                                 if (template.length() == 0 && (addSimpleName || enclName == null)) {
                                     ClassItem.super.substituteText(c, offset, length, elem.getSimpleName(), toAdd);
                                     if (insideNew && (toAdd == null || toAdd.length() == 0)) {
                                         Completion.get().showCompletion();
                                     }
                                 } else {
+                                    Document d = c.getDocument();
+                                    Position p = d.createPosition(offset);
                                     StringBuilder sb = new StringBuilder();
                                     if (addSimpleName || enclName == null) {
                                         sb.append(elem.getSimpleName());
@@ -1160,10 +1163,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     if (partialMatch) {
                                         template.append(toAdd);
                                     }
-                                    ClassItem.super.substituteText(c, offset, length, null, null);
+                                    if (p != null) {
+                                        o = p.getOffset();
+                                    }
+                                    ClassItem.super.substituteText(c, o, length, null, null);
                                 }
                                 if (autoImportEnclosingType && elem != null) {
-                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(o));
                                     AutoImport.resolveImport(controller, tp, elem.getEnclosingElement().asType());
                                 }
                             }

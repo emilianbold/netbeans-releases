@@ -48,6 +48,7 @@ import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
@@ -55,6 +56,7 @@ import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Creates embeddings for the given session/model/snapshot.
@@ -91,7 +93,7 @@ final class EmbeddingProcessor {
         return embeddings;
     }
     
-    private void defineEmbedding(SnippetHandle info, Rng posInfo) {
+    private void defineEmbedding(SnippetHandle info, Rng posInfo, boolean lastSnippet) {
         String contents = info.getWrappedCode();
         String source = info.getSource();
         int s = 0;
@@ -123,8 +125,8 @@ final class EmbeddingProcessor {
         
         String prologText = contents.substring(0, ts);
         
-        if (precedingImports.length() > 0) {
-            int indexOfClass = prologText.indexOf("class REPL");
+        if (info.getKind() != Snippet.Kind.IMPORT && precedingImports.length() > 0) {
+            int indexOfClass = prologText.indexOf("class $JShell$");
             if (indexOfClass > 0) {
                 prologText = prologText.substring(0, indexOfClass) +
                         precedingImports.toString() +
@@ -193,7 +195,7 @@ final class EmbeddingProcessor {
             }
             int fragStart = r.start;
             int fragLen = r.len();
-            if (activeInput == section && i == fragments.length - 1) {
+            if (activeInput == section && lastSnippet && i == fragments.length - 1) {
                 fragLen = snapshot.getText().length() - fragStart;
             }
             if (lengthMismatch && (sourcePos <= endSourceDeclPos && sourcePos + fragLen >= endSourceDeclPos)) {
@@ -224,6 +226,7 @@ final class EmbeddingProcessor {
      * @param section 
      */
     private void processSection(ConsoleSection section) {
+        this.precedingImports = new StringBuilder();
         this.section = section;
         this.snippetIndex = 0;
         List<SnippetHandle> snippets = model.getSnippets(section);
@@ -240,8 +243,8 @@ final class EmbeddingProcessor {
                 if (!text.endsWith(";")) {
                     precedingImports.append(";");
                 }
-            }
-            defineEmbedding(s, ranges[index++]);
+            } 
+            defineEmbedding(s, ranges[index++], index == snippets.size());
         }
     }
 }
