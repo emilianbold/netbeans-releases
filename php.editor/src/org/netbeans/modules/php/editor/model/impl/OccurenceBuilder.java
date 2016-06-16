@@ -691,32 +691,48 @@ class OccurenceBuilder {
                 case IFACE:
                 case CLASS_INSTANCE_CREATION:
                 case CLASS:
-                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null
-                            ? VariousUtils.getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
-                            : elementInfo.getQualifiedName();
-                    final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
-                    if (elementInfo.setDeclarations(types)) {
-                        buildClassNames(elementInfo, fileScope, cachedOccurences);
-                        buildClassIDs(elementInfo, fileScope, cachedOccurences);
-                        buildClassDeclarations(elementInfo, fileScope, cachedOccurences);
-                        buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
-                        buildInterfaceIDs(elementInfo, fileScope, cachedOccurences);
-                        buildInterfaceDeclarations(elementInfo, fileScope, cachedOccurences);
-                        buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
-                        buildMagicMethodDeclarationReturnType(elementInfo, fileScope, cachedOccurences);
-                    }
-                    break;
                 case TRAIT:
-                    final QualifiedName traitQualifiedName = elementInfo.getNodeInfo() != null
+                    final QualifiedName qualifiedName = elementInfo.getNodeInfo() != null
                             ? VariousUtils.getFullyQualifiedName(
                                     elementInfo.getNodeInfo().getQualifiedName(),
                                     elementInfo.getNodeInfo().getOriginalNode().getStartOffset(),
                                     elementInfo.getScope())
                             : elementInfo.getQualifiedName();
-                    final Set<TypeElement> traitTypes = index.getTypes(NameKind.exact(traitQualifiedName));
-                    if (elementInfo.setDeclarations(traitTypes)) {
-                        buildTraitDeclarations(elementInfo, fileScope, cachedOccurences);
-                        buildTraitIDs(elementInfo, fileScope, cachedOccurences);
+                    final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
+                    if (elementInfo.setDeclarations(types)) {
+                        boolean isClass = false;
+                        boolean isInterface = false;
+                        boolean isTrait = false;
+                        for (TypeElement type : types) {
+                            if (type.isClass()) {
+                                isClass = true;
+                            } else if (type.isInterface()) {
+                                isInterface = true;
+                            } else if (type.isTrait()) {
+                                isTrait = true;
+                            } else {
+                                assert false : "Unknown type: " + type;
+                            }
+                        }
+                        if (isClass) {
+                            buildClassNames(elementInfo, fileScope, cachedOccurences);
+                            buildClassIDs(elementInfo, fileScope, cachedOccurences);
+                            buildClassDeclarations(elementInfo, fileScope, cachedOccurences);
+                            buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
+                        }
+                        if (isInterface) {
+                            buildInterfaceIDs(elementInfo, fileScope, cachedOccurences);
+                            buildInterfaceDeclarations(elementInfo, fileScope, cachedOccurences);
+                        }
+                        if (isTrait) {
+                            buildTraitDeclarations(elementInfo, fileScope, cachedOccurences);
+                            buildTraitIDs(elementInfo, fileScope, cachedOccurences);
+                        }
+                        if (isClass
+                                || isInterface) {
+                            buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
+                            buildMagicMethodDeclarationReturnType(elementInfo, fileScope, cachedOccurences);
+                        }
                     }
                     break;
                 case METHOD:

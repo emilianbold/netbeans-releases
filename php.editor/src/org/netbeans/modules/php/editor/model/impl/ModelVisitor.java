@@ -56,7 +56,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
@@ -1523,6 +1522,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 break;
             case TYPE:
                 occurencesBuilder.prepare(Kind.CLASS, name, currentScope);
+                occurencesBuilder.prepare(Kind.IFACE, name, currentScope);
+                occurencesBuilder.prepare(Kind.TRAIT, name, currentScope);
                 break;
             default:
                 assert false : "Unknown type: " + type;
