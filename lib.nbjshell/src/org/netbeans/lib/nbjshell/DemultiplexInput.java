@@ -68,6 +68,7 @@ final class DemultiplexInput extends Thread {
     public void close() {
         try {
             delegate.close();
+            command.close();
         } catch (IOException ex) {
             // report ?
         }
