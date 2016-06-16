@@ -80,22 +80,6 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 + "");
     }
 
-    public void testOnClick() throws ParseException {
-        assertEmbedding("<div onclick='alert()'/>",
-                "(function(){\n"
-                + "alert();\n"
-                + "});\n"
-                + "");
-    }
-
-    public void testCustomJSEmbeddingOnAttributeValue() {
-        assertEmbedding("<div controller='MyController'/>",
-                "(function(){\n"
-                + "MyController;\n"
-                + "});\n"
-                + "");
-    }
-
     public void testCustomEL() {
         //the default JsEmbeddingProvider creates no virtual js embedding
         //at the place of the expression language. The js source is provided
@@ -125,64 +109,6 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 + "      window.alert(\"Hello World!\");\n"
                 + "   \n"
                 + " \n");
-    }
-
-    /*
-     * Tests conversion of the generic templating mark "@@@"
-     * to its JS counterpart.
-     */
-    public void testConvertGenericMarksToJSMark() {
-        assertEmbedding("<script>hello @@@ word</script>",
-                "hello __UNKNOWN__ word\n");
-
-        //this needs some more "fine tuning" :-)
-        //so far works only if the pattern is surrounded by sg.
-
-//        assertEmbedding("<script>x@@@</script>",
-//                "x__UNKNOWN__\n");
-//        
-//        assertEmbedding("<script>@@@x</script>",
-//                "__UNKNOWN__x\n");
-//        
-//        assertEmbedding("<script>@@@</script>",
-//                "__UNKNOWN__\n");
-
-//        assertEmbedding("<div onclick=\"@@@\">",
-//                "");
-
-        assertEmbedding("<div onclick=\"a@@@b\">",
-                "(function(){\n"
-                + "a__UNKNOWN__b;\n"
-                + "});\n"
-                + "");
-
-    }
-
-    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-    public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {
-
-        @Override
-        public String getOpenDelimiter() {
-            return "{{";
-        }
-
-        @Override
-        public String getCloseDelimiter() {
-            return "}}";
-        }
-
-        @Override
-        public String getContentMimeType() {
-            return "text/javascript";
-        }
-
-        @Override
-        public String createAttributeEmbedding(String elementName, String attributeName) {
-            if ("controller".equals(attributeName)) {
-                return "text/javascript";
-            }
-            return null;
-        }
     }
 
     private void assertEmbedding(String code, String expectedJsVirtualSource) {

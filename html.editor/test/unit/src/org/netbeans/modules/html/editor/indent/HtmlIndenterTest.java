@@ -181,10 +181,6 @@ public class HtmlIndenterTest extends TestBase2 {
             "<!DOCTYP html>", null);
     }
 
-    public void testFormattingHTML() throws Exception {
-        reformatFileContents("testfiles/simple.html",new IndentPrefs(4,4));
-    }
-
     public void testFormattingHTML01() throws Exception {
         reformatFileContents("testfiles/simple01.html",new IndentPrefs(4,4));
     }
