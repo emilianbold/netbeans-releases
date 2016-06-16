@@ -40,7 +40,8 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ */
+/*
  * LinkCreateProvider.java
  *
  * Created on January 29, 2007, 12:55 PM
