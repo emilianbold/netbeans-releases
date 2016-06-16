@@ -117,15 +117,15 @@ public class JavaCompletionTask15FeaturesTest extends CompletionTestBase {
     }
 
     public void testEmptyFileAfterTypingExtendsAndSpaceInFirstTypeParam() throws Exception {
-        performTest("GenericsStart", 32, "<X extends ", "javaLangContent.pass");
+        performTest("GenericsStart", 32, "<X extends ", "javaLangContentAndTestClass.pass");
     }
     
     public void testAfterTypingExtendsAndSpaceInFirstTypeParam() throws Exception {
-        performTest("GenericsNoTypeParams", 32, "<X extends ", "javaLangContent.pass");
+        performTest("GenericsNoTypeParams", 32, "<X extends ", "javaLangContentAndTestClass.pass");
     }
     
     public void testAfterExtendsAndSpaceInFirstTypeParam() throws Exception {
-        performTest("Generics", 43, null, "javaLangContent.pass");
+        performTest("Generics", 43, null, "javaLangContentAndTestClass.pass");
     }
 
     public void testEmptyFileAfterTypingBoundedFirstTypeParamAndSpace() throws Exception {

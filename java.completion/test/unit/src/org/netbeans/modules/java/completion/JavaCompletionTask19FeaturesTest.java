@@ -70,15 +70,15 @@ public class JavaCompletionTask19FeaturesTest extends CompletionTestBase {
     }
 
     public void testEmptyFileTypingExistingVarResouce() throws Exception {
-        performTest("SimpleTWRStart", 139, "try (f", "resourcesAndAutoCloseablesStartingWithF.pass", "1.9");
+        performTest("SimpleTWRStart", 139, "try (f", "finalKeyword.pass", "1.9");
     }
 
     public void testTypingExistingVarResouce() throws Exception {
-        performTest("SimpleTWRNoRes", 144, "f", "resourcesAndAutoCloseablesStartingWithF.pass", "1.9");
+        performTest("SimpleTWRNoRes", 144, "f", "finalKeyword.pass", "1.9");
     }
 
     public void testOnExistingVarResouce() throws Exception {
-        performTest("SimpleTWR", 173, null, "resourcesAndAutoCloseablesStartingWithF.pass", "1.9");
+        performTest("SimpleTWR", 173, null, "finalKeyword.pass", "1.9");
     }
 
     public void testEmptyFileAfterTypingExistingVarResouce() throws Exception {
