@@ -66,6 +66,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -1636,7 +1637,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     VariableElement ve = getElementHandle().resolve(controller);
                                     if (ve != null) {
                                         TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
-                                        AutoImport.resolveImport(controller, tp, ve.getEnclosingElement().asType());
+                                        TypeMirror toImport = ve.getEnclosingElement().asType();
+                                        if (isInherited) {
+                                            toImport = typeToImport(controller, tp, toImport);
+                                        }
+                                        AutoImport.resolveImport(controller, tp, toImport);
                                     }
                                 }
                             });
@@ -1972,7 +1977,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     ExecutableElement ee = getElementHandle().resolve(controller);
                                     if (ee != null) {
                                         TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
-                                        AutoImport.resolveImport(controller, tp, ee.getEnclosingElement().asType());
+                                        TypeMirror toImport = ee.getEnclosingElement().asType();
+                                        if (isInherited) {
+                                            toImport = typeToImport(controller, tp, toImport);
+                                        }
+                                        AutoImport.resolveImport(controller, tp, toImport);
                                     }
                                 }
                             });
@@ -4496,7 +4505,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         sb.append("\"} = "); //NOI18N
         return sb;
     }
-
+    
     private static String adjustName(String name) {
         if (name == null) {
             return null;
@@ -4541,7 +4550,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return result.toString();
         }
     }
-    
+
+    private static TypeMirror typeToImport(CompilationInfo info, TreePath tp, TypeMirror origin) {
+        if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree mst = (MemberSelectTree) tp.getLeaf();
+            if (mst.getExpression().getKind() == Tree.Kind.IDENTIFIER) {
+                ClassIndex index = info.getClasspathInfo().getClassIndex();
+                Types types = info.getTypes();
+                Trees trees = info.getTrees();
+                Scope scope = trees.getScope(tp);
+                for (ElementHandle<TypeElement> teHandle : index.getDeclaredTypes(((IdentifierTree)mst.getExpression()).getName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                    TypeElement te = teHandle.resolve(info);
+                    if (te != null && trees.isAccessible(scope, te)) {
+                        TypeMirror toImport = te.asType();
+                        if (types.isSubtype(toImport, origin)) {
+                            return toImport;
+                        }
+                    }
+                }
+            }
+        }
+        return origin;
+    }
+
     static class MemberDesc {
         private final ElementKind kind;
         private final String name;

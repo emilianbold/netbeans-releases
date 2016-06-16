@@ -1,6 +1,5 @@
 final
 AutoCloseable
-BufferedWriter
 FileWriter
 com
 java

@@ -1255,15 +1255,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         } else if (last.getKind() == Tree.Kind.TRY) {
             if (((TryTree) last).getFinallyBlock() == null) {
-                addKeyword(env, CATCH_KEYWORD, null, false);
-                addKeyword(env, FINALLY_KEYWORD, null, false);
+                addKeyword(env, CATCH_KEYWORD, null, true);
+                addKeyword(env, FINALLY_KEYWORD, null, true);
                 if (((TryTree) last).getCatches().isEmpty() && ((TryTree) last).getResources().isEmpty()) {
                     return;
                 }
             }
         } else if (last.getKind() == Tree.Kind.IF) {
             if (((IfTree) last).getElseStatement() == null) {
-                addKeyword(env, ELSE_KEYWORD, null, false);
+                addKeyword(env, ELSE_KEYWORD, null, true);
             }
         }
         localResult(env);
@@ -1818,7 +1818,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
         TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, env.getPath().getLeaf(), env.getOffset());
         if (last != null && (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.SEMICOLON)) {
             addKeyword(env, FINAL_KEYWORD, SPACE, false);
-            addKeyword(env, NEW_KEYWORD, SPACE, false);
             if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_9) >= 0) {
                 addEffectivelyFinalAutoCloseables(env);
             }
@@ -4724,6 +4723,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     }
                     return ret;
                 case TRY:
+                    TryTree tt = (TryTree) tree;
+                    BlockTree tryBlock = tt.getBlock();
+                    SourcePositions sourcePositions = env.getSourcePositions();
+                    if (tryBlock != null && sourcePositions.getStartPosition(env.getRoot(), tryBlock) <= offset) {
+                        return null;
+                    }
                     TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
                     return te != null ? Collections.singleton(controller.getTypes().getDeclaredType(te)) : null;
                 case IF:
@@ -4747,7 +4752,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                         return cond == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
                     }
-                    SourcePositions sourcePositions = env.getSourcePositions();
+                    sourcePositions = env.getSourcePositions();
                     CompilationUnitTree root = env.getRoot();
                     if (cond != null && sourcePositions.getEndPosition(root, cond) < offset) {
                         return null;

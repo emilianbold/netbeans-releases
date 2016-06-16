@@ -63,7 +63,6 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.Exceptions;
@@ -179,7 +178,7 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
                 final Position from = doc.createPosition(Utilities.getRowStart(doc, offset));
                 final Position to = doc.createPosition(Utilities.getRowEnd(doc, offset));
 
-                SwingUtilities.invokeLater(new Runnable() {
+                Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         final Indent indent = Indent.get(doc);
@@ -199,7 +198,12 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
                             indent.unlock();
                         }
                     }
-                });
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    r.run();
+                } else {
+                    SwingUtilities.invokeLater(r);
+                }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -1843,6 +1843,22 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "            echo self::myTest^Static() . PHP_EOL;", true);
     }
 
+    public void testIssue262438_00() throws Exception {
+        checkOccurrences(getTestPath(), "interface MyIf^ace {", true);
+    }
+
+    public void testIssue262438_01() throws Exception {
+        checkOccurrences(getTestPath(), "use MyVendor\\PackageTwo\\MyT^rait;", true);
+    }
+
+    public void testIssue262438_02() throws Exception {
+        checkOccurrences(getTestPath(), "    use MyTr^ait;", true);
+    }
+
+    public void testIssue262438_03() throws Exception {
+        checkOccurrences(getTestPath(), "trait MyTr^ait {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

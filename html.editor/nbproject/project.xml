@@ -447,9 +447,6 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.libs.nashorn</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -499,10 +496,6 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.parser</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
-                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -566,7 +559,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html.custom</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
-                <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
