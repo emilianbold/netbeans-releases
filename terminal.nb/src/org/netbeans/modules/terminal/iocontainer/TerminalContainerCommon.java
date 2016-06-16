@@ -395,6 +395,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
                 // OLD TerminalContainerImpl.super.remove(findBar);
                 componentRemove(findBar);
                 validate();
+                requestFocus();
             }
         });
 
@@ -537,6 +538,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
         
         attrs.findState = ((Terminal) comp).getFindState();
         setFindBar(attrs.findState);
+        findBar.requestTextFocus();
     }
 
     private void updateBars(JComponent comp) {

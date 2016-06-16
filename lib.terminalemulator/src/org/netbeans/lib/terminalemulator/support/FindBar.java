@@ -53,10 +53,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -107,11 +109,7 @@ public final class FindBar extends JPanel {
     private final class CloseAction extends AbstractAction {
 
         public CloseAction() {
-            super();
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W,
-                                                           InputEvent.CTRL_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-            putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_close.png")));
+            super(Catalog.get("CTL_Close"), new ImageIcon(FindBar.class.getResource("find_close.png")));
         }
 
 	@Override
@@ -126,11 +124,7 @@ public final class FindBar extends JPanel {
     private final class NextAction extends AbstractAction {
 
         public NextAction() {
-            super(Catalog.get("CTL_Next"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_N,
-                                                           InputEvent.ALT_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-            putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_next.png")));
+            super(Catalog.get("CTL_Next"), new ImageIcon(FindBar.class.getResource("find_next.png")));	// NOI18N
         }
 
 	@Override
@@ -145,11 +139,7 @@ public final class FindBar extends JPanel {
     private final class PrevAction extends AbstractAction {
 
         public PrevAction() {
-            super(Catalog.get("CTL_Previous"));		// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_P,
-                                                           InputEvent.ALT_MASK);
-            putValue(ACCELERATOR_KEY, accelerator);
-            putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_previous.png")));
+            super(Catalog.get("CTL_Previous"), new ImageIcon(FindBar.class.getResource("find_previous.png"))); // NOI18N
         }
 
 	@Override
@@ -224,6 +214,20 @@ public final class FindBar extends JPanel {
         JButton closeButton = new JButton(closeAction);
         adjustButton(closeButton);
 
+        InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), getName(prevAction));
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), getName(nextAction));
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), getName(closeAction));
+
+
+        ActionMap actionMap = getActionMap();
+        actionMap.put(prevAction.getValue(Action.NAME), prevAction);
+        actionMap.put(nextAction.getValue(Action.NAME), nextAction);
+        actionMap.put(closeAction.getValue(Action.NAME), closeAction);
+
+        findText.getActionMap().put(nextAction.getValue(Action.NAME), nextAction);
+        findText.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), getName(nextAction));
+
         errorLabel = new JLabel();
 
         add(Box.createRigidArea(new Dimension(5, 0)));
@@ -235,6 +239,15 @@ public final class FindBar extends JPanel {
         add(errorLabel);
         add(Box.createHorizontalGlue());
         add(closeButton);
+    }
+
+    private static String getName(Action a) {
+        Object name = a.getValue(Action.NAME);
+        if (name instanceof String) {
+            return (String) name;
+        } else {
+            return "null"; // NOI18N
+        }
     }
 
     /**
