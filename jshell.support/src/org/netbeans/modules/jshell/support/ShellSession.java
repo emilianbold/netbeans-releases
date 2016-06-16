@@ -367,8 +367,6 @@ public class ShellSession {
         }
     }
     
-    private Map<Snippet, Document>  snippetSources = new HashMap<>();
-    
     /**
      * Creates a snippet file. If the `editedSnippetIndex' is not >= 0, it generates
      * a file NOT seen by repository updater; if the edited section contains multiple

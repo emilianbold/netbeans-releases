@@ -145,9 +145,11 @@ public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implem
     @Override
     public void start(ExecutionEnv ee) throws Exception {
         getConnection(false);
-        ObjectOutputStream o = getCommandStream();
-        ObjectInputStream i = getResponseStream();
+        OutputStream o = getConnection(true).getAgentInput();
+        InputStream i = getConnection(true).getAgentOutput();
         init(i, o, ee);
+        dis = getRemoteIn();
+        dos = getRemoteOut();
     }
 
     @Override
@@ -204,24 +206,6 @@ public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implem
             StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ErrorConnectingToAgent(ex.getLocalizedMessage()), 100);
             throw ex;
         }
-    }
-
-    public synchronized ObjectOutputStream getCommandStream() throws IOException {
-        if (dos != null) {
-            return dos;
-        }
-        return dos = new ObjectOutputStream(getConnection(true).getAgentInput());
-    }
-
-    public synchronized ObjectInputStream getResponseStream() throws IOException {
-        if (dis != null) {
-            
-        }
-        return dis = new ObjectInputStream(
-                demultiplexAgentOutput(
-                        getConnection(true).getAgentOutput(),
-                        null, null)
-        );
     }
 
     @Override
