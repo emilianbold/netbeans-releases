@@ -245,9 +245,12 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     }
     
     void commandLoop(ObjectInputStream in, OutputStream socketOut) throws IOException {
-//        System.setOut(new PrintStream(new MultiplexingOutputStream("out", socketOut), true));
-//        System.setErr(new PrintStream(new MultiplexingOutputStream("err", socketOut), true));
-        ObjectOutputStream out = new ObjectOutputStream(new MultiplexingOutputStream("command", socketOut));
+        LOG.fine("Creating multiplexing stream");
+        OutputStream osm = new MultiplexingOutputStream("command", socketOut);
+        LOG.fine("Object stream over multiplexer");
+        ObjectOutputStream out = new ObjectOutputStream(osm);
+        out.flush();
+        LOG.fine("Object stream created");
         while (true) {
             int cmd = in.readInt();
             prepareClassLoader();
@@ -278,10 +281,13 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         OutputStream osm = null;
         ObjectInputStream ism = null;
         try {
+            LOG.fine("Opening output stream to master");
             // will block, but this is necessary so the IDE eventually sets the debuggerKey
             osm = socket.getOutputStream();
             // will read immediately
+            LOG.fine("Opening input stream from master");
             ism = new ObjectInputStream(socket.getInputStream());
+            LOG.fine("I/O streams opened, starting command loop");
             commandLoop(ism, osm);
         } catch (EOFException ex) {
             // expected.
