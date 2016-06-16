@@ -39,15 +39,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -74,10 +78,10 @@ import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankFileInfoQuerySupport
 import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.text.NbDocument;
 import org.openide.util.Pair;
 
 /**
@@ -321,7 +325,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     @Override
-    public List<CsmReference> getMacroUsages(CsmFile file, final Interrupter interrupter) {
+    public List<CsmReference> getMacroUsages(CsmFile file, Document doc, final Interrupter interrupter) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
@@ -344,6 +348,15 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
                             // cache only if calc wasn't interrupted
                             if (!interrupter.cancelled()) {
+                                if (!out.isEmpty()) {
+                                    if (doc != null) {
+                                        List<CsmReference> wrapper = new ArrayList<>(out.size());
+                                        for(CsmReference ref : out) {
+                                            wrapper.add(new ProxyReference(ref, doc));
+                                        }
+                                        out = wrapper;
+                                    }
+                                }
                                 fileImpl.setLastMacroUsages(out);
                             }
                         }
@@ -683,5 +696,98 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             return ((FileImpl)file).getLineColumn(offset);
         }
         return new int[]{0, 0};
-    }        
+    }
+    
+    private static final class ProxyReference implements CsmReference {
+        private final CsmReference delegate;
+        private javax.swing.text.Position startPosition;
+        private javax.swing.text.Position endPosition;
+        
+        private ProxyReference(CsmReference delegate, Document doc) {
+            this.delegate = delegate;
+            try {
+                startPosition = NbDocument.createPosition(doc, delegate.getStartOffset(), javax.swing.text.Position.Bias.Forward);
+                endPosition = NbDocument.createPosition(doc, delegate.getEndOffset(), javax.swing.text.Position.Bias.Backward);
+            } catch (BadLocationException ex) {
+            }
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return delegate.getKind();
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return delegate.getReferencedObject();
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return delegate.getOwner();
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return delegate.getClosestTopLevelObject();
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return delegate.getContainingFile();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return getStartPosition().getOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return getEndPosition().getOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            return new ProxyPosition(startPosition, delegate.getStartPosition());
+        }
+
+        @Override
+        public Position getEndPosition() {
+            return new ProxyPosition(endPosition, delegate.getEndPosition());
+        }
+
+        @Override
+        public CharSequence getText() {
+            return delegate.getText();
+        }
+    }
+    
+    private static final class ProxyPosition implements CsmOffsetable.Position {
+        private final javax.swing.text.Position position;
+        private final CsmOffsetable.Position owner;
+        private ProxyPosition(javax.swing.text.Position delegate, CsmOffsetable.Position owner) {
+            this.position = delegate;
+            this.owner = owner;
+        }
+
+        @Override
+        public int getOffset() {
+            if (position != null) {
+                return position.getOffset();
+            } else {
+                return owner.getOffset();
+            }
+        }
+
+        @Override
+        public int getLine() {
+            return owner.getLine();
+        }
+
+        @Override
+        public int getColumn() {
+            return owner.getColumn();
+        }
+    }
 }
