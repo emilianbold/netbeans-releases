@@ -75,6 +75,7 @@ import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.api.PhpVersion;
@@ -254,6 +255,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             return CodeCompletionResult.NONE;
         }
 
+        if (CancelSupport.getDefault().isCancelled()) {
+            return CodeCompletionResult.NONE;
+        }
+
         // TODO: separate the code that uses informatiom from lexer
         // and avoid running the index/ast analysis under read lock
         // in order to improve responsiveness
@@ -273,6 +278,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         if (fileObject == null) {
+            return CodeCompletionResult.NONE;
+        }
+
+        if (CancelSupport.getDefault().isCancelled()) {
             return CodeCompletionResult.NONE;
         }
 
@@ -313,8 +322,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         request.info = info;
         request.prefix = prefix;
         request.index = ElementQueryFactory.getIndexQuery(info);
-
         request.currentlyEditedFileURL = fileObject.toURL().toString();
+
+        if (CancelSupport.getDefault().isCancelled()) {
+            return CodeCompletionResult.NONE;
+        }
+
         CodeStyle codeStyle;
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
@@ -322,11 +335,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 autoCompleteKeywords(completionResult, request, Arrays.asList("array")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request, null, true);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return CodeCompletionResult.NONE;
+                }
                 final ElementFilter forName = ElementFilter.forName(nameKindPrefix);
                 final Model model = request.result.getModel();
                 final Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
                 Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix, aliasedNames, Trait.ALIAS);
                 for (ConstantElement constant : forName.filter(constants)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
                 }
                 final EnclosingClass enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
@@ -340,9 +359,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 }
                 break;
             case NAMESPACE_KEYWORD:
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return CodeCompletionResult.NONE;
+                }
                 Set<NamespaceElement> namespaces = request.index.getNamespaces(
                         NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
                 for (NamespaceElement namespace : namespaces) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.QUALIFIED));
                 }
                 break;
@@ -498,6 +523,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 assert false : context;
         }
 
+        if (CancelSupport.getDefault().isCancelled()) {
+            return CodeCompletionResult.NONE;
+        }
+
         if (LOGGER.isLoggable(Level.FINE)) {
             long time = System.currentTimeMillis() - startTime;
             LOGGER.fine(String.format("complete() took %d ms, result contains %d items", time, completionResult.getItems().size()));
@@ -529,6 +558,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         EnclosingClass enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
         if (enclosingClass != null) {
             List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
@@ -541,11 +573,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                         ElementFilter.forFiles(fileObject), ElementFilter.allOf(superTypeIndices));
                 Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(fullyQualifiedClassName)));
                 for (ClassElement classElement : classes) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     ElementFilter methodFilter = ElementFilter.allOf(
                             ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix))));
                     Set<MethodElement> accessibleMethods = methodFilter.filter(request.index.getAccessibleMethods(classElement, classElement));
                     for (MethodElement method : accessibleMethods) {
+                        if (CancelSupport.getDefault().isCancelled()) {
+                            return;
+                        }
                         if (!method.isFinal()) {
                             completionResult.add(PHPCompletionItem.MethodDeclarationItem.forMethodName(method, request));
                         }
@@ -570,6 +608,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
      * @param request
      */
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         // At first find all classes that match the prefix
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
@@ -577,7 +618,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         Model model = request.result.getModel();
         Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
-
         if (!classes.isEmpty()) {
             completionResult.setFilterable(false);
         }
@@ -593,6 +633,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             }
         } else {
             for (ClassElement clazz : classes) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 if (!clazz.isAbstract()
                         && !clazz.isAnonymous()) {
                     // check whether the prefix is exactly the class
@@ -614,22 +657,34 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteConstructors(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request, final Model model, final NameKind query) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
         Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
         for (MethodElement constructor : constructors) {
             for (final PHPCompletionItem.NewClassItem newClassItem : PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 completionResult.add(newClassItem);
             }
         }
     }
 
     private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, boolean withConstructors) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         final Set<ClassElement> classes = request.index.getClasses(nameQuery);
         final Model model = request.result.getModel();
         final Set<QualifiedName> constructorClassNames = new HashSet<>();
         for (ClassElement classElement : classes) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (isExceptionClass(classElement)) {
                 completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
                 if (withConstructors) {
@@ -640,6 +695,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             if (classElement.getSuperClassName() != null) {
                 Set<ClassElement> inheritedClasses = request.index.getInheritedClasses(classElement);
                 for (ClassElement inheritedClass : inheritedClasses) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     if (isExceptionClass(inheritedClass)) {
                         completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
                         if (withConstructors) {
@@ -651,6 +709,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             }
         }
         for (QualifiedName qualifiedName : constructorClassNames) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             autoCompleteConstructors(completionResult, request, model, NameKind.exact(qualifiedName));
         }
     }
@@ -666,6 +727,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request, boolean endWithDoubleColon, QualifiedNameKind kind) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
@@ -676,6 +740,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!clazz.isAnonymous()) {
                 completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
             }
@@ -687,6 +754,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
@@ -698,6 +768,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
 
         for (InterfaceElement iface : interfaces) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
         }
     }
@@ -707,19 +780,31 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteAfterUseTrait(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request, final QualifiedNameKind kind) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
                 NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.FULLYQUALIFIED));
         }
         final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
         for (TraitElement trait : request.index.getTraits(nameQuery)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.TraitItem(trait, request));
         }
     }
 
     private void autoCompleteGroupUse(UseType useType, PHPCompletionResult completionResult, CompletionRequest request) {
         assert request.extraPrefix != null;
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         request.insertOnlyMethodsName = true;
         // we will "complete" FQN so handle search prefix as well
         if (!request.extraPrefix.startsWith("\\")) { // NOI18N
@@ -729,26 +814,41 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
                 NameKind.caseInsensitivePrefix(QualifiedName.create(prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.FULLYQUALIFIED));
         }
         final NameKind nameQuery = NameKind.caseInsensitivePrefix(prefix);
         switch (useType) {
             case TYPE:
                 for (ClassElement clazz : request.index.getClasses(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, QualifiedNameKind.FULLYQUALIFIED));
                 }
                 for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, QualifiedNameKind.FULLYQUALIFIED, false));
                 }
                 break;
             case CONST:
                 for (ConstantElement constant : request.index.getConstants(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.ConstantItem(constant, request, QualifiedNameKind.FULLYQUALIFIED));
                 }
                 break;
             case FUNCTION:
                 for (FunctionElement function : request.index.getFunctions(nameQuery)) {
                     for (PHPCompletionItem.FunctionElementItem item : PHPCompletionItem.FunctionElementItem.getItems(function, request, QualifiedNameKind.FULLYQUALIFIED)) {
+                        if (CancelSupport.getDefault().isCancelled()) {
+                            return;
+                        }
                         completionResult.add(item);
                     }
                 }
@@ -763,23 +863,38 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request,
             QualifiedNameKind kind) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
                 NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
         final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
         switch (useType) {
             case TYPE:
                 for (ClassElement clazz : request.index.getClasses(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, kind));
                 }
                 for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
                 }
                 break;
             case CONST:
                 for (ConstantElement constant : request.index.getConstants(nameQuery)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
                 }
                 break;
@@ -787,6 +902,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 for (FunctionElement function : request.index.getFunctions(nameQuery)) {
                     List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
                     for (PHPCompletionItem.FunctionElementItem item : items) {
+                        if (CancelSupport.getDefault().isCancelled()) {
+                            return;
+                        }
                         completionResult.add(item);
                     }
                 }
@@ -801,6 +919,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             PHPCompletionItem.CompletionRequest request,
             QualifiedNameKind kind,
             boolean endWithDoubleColon) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         if (request.prefix.trim().length() > 0) {
             autoCompleteClassNames(completionResult, request, endWithDoubleColon, kind);
             autoCompleteInterfaceNames(completionResult, request, kind);
@@ -809,6 +930,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
             Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames, Trait.ALIAS);
             for (PhpElement element : allTopLevel) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 if (element instanceof ClassElement) {
                     ClassElement classElement = (ClassElement) element;
                     if (!classElement.isAnonymous()) {
@@ -823,6 +947,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteKeywords(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request, List<String> keywordList) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         for (String keyword : keywordList) {
             if (keyword.startsWith(request.prefix)) {
                 completionResult.add(new PHPCompletionItem.KeywordItem(keyword, request));
@@ -838,11 +965,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         Model model = request.result.getModel();
         Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.caseInsensitivePrefix(prefix),
                 ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
         for (NamespaceElement namespace : namespaces) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
     }
@@ -856,6 +989,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             int caretOffset,
             final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence(PHPTokenId.language());
         assert tokenSequence != null;
@@ -890,17 +1026,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                             ElementFilter.forFiles(fileObject), ElementFilter.allOf(superTypeIndices));
                     Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(fullyQualifiedClassName)));
                     for (ClassElement classElement : classes) {
+                        if (CancelSupport.getDefault().isCancelled()) {
+                            return;
+                        }
                         ElementFilter methodFilter = ElementFilter.allOf(
                                 ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
                                 ElementFilter.forName(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix))));
                         Set<MethodElement> accessibleMethods = methodFilter.filter(request.index.getAccessibleMethods(classElement, classElement));
                         for (MethodElement method : accessibleMethods) {
+                            if (CancelSupport.getDefault().isCancelled()) {
+                                return;
+                            }
                             if (!method.isFinal()) {
                                 completionResult.add(PHPCompletionItem.MethodDeclarationItem.getDeclarationItem(method, request));
                             }
                         }
                         Set<MethodElement> magicMethods = methodFilter.filter(request.index.getAccessibleMagicMethods(classElement));
                         for (MethodElement magicMethod : magicMethods) {
+                            if (CancelSupport.getDefault().isCancelled()) {
+                                return;
+                            }
                             if (magicMethod != null) {
                                 completionResult.add(PHPCompletionItem.MethodDeclarationItem.getDeclarationItem(magicMethod, request));
                             }
@@ -924,6 +1069,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request,
             boolean staticContext) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         // TODO: remove duplicate/redundant code from here
 
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
@@ -984,6 +1132,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 TypeElement enclosingType = getEnclosingType(request, types);
                 Set<PhpElement> duplicateElementCheck = new HashSet<>();
                 for (TypeScope typeScope : types) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     final StaticOrInstanceMembersFilter staticFlagFilter =
                             new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext, staticLateBindingContext);
 
@@ -1003,11 +1154,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             ElementFilter.forInstanceOf(TypeConstantElement.class));
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
+                        if (CancelSupport.getDefault().isCancelled()) {
+                            return;
+                        }
                         if (duplicateElementCheck.add(phpElement)) {
                             if (methodsFilter.isAccepted(phpElement)) {
                                 MethodElement method = (MethodElement) phpElement;
                                 List<MethodElementItem> items = PHPCompletionItem.MethodElementItem.getItems(method, request);
                                 for (MethodElementItem methodItem : items) {
+                                    if (CancelSupport.getDefault().isCancelled()) {
+                                        return;
+                                    }
                                     completionResult.add(methodItem);
                                 }
                             } else if (fieldsFilter.isAccepted(phpElement)) {
@@ -1025,6 +1182,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                         boolean isVariableAccess = isVariableAccess(varName);
                         Set<TypeConstantElement> magicConstants = constantsFilter.filter(request.index.getAccessibleMagicConstants(typeScope));
                         for (TypeConstantElement magicConstant : magicConstants) {
+                            if (CancelSupport.getDefault().isCancelled()) {
+                                return;
+                            }
                             if (magicConstant != null) {
                                 // $instance::class is invalid
                                 if ("class".equals(magicConstant.getName()) && isVariableAccess) { // NOI18N
@@ -1045,6 +1205,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteClassFields(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, request.anchor);
         Model model = request.result.getModel();
@@ -1056,7 +1219,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         if (types != null) {
             TypeElement enclosingType = getEnclosingType(request, types);
             for (TypeScope typeScope : types) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     if (fieldsFilter.isAccepted(phpElement)) {
                         FieldElement field = (FieldElement) phpElement;
                         FieldItem fieldItem = PHPCompletionItem.FieldItem.getItem(field, request);
@@ -1151,6 +1320,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteExpression(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         // KEYWORDS
         for (String keyword : PHP_KEYWORDS.keySet()) {
             if (startsWith(keyword, request.prefix)) {
@@ -1187,6 +1359,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
 
         for (final PhpElement element : request.index.getTopLevelElements(prefix, aliasedNames, Trait.ALIAS)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (element instanceof FunctionElement) {
                 for (final PHPCompletionItem.FunctionElementItem functionItem
                         : PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
@@ -1225,9 +1400,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private void autoCompleteGlobals(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         if (OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL)) {
             final CaseInsensitivePrefix prefix = NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix));
             for (VariableElement variableElement : request.index.getTopLevelVariables(prefix)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 completionResult.add(new PHPCompletionItem.VariableItem(variableElement, request));
             }
         }
@@ -1238,6 +1419,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
      * index
      */
     private Collection<CompletionProposal> getVariableProposals(final CompletionRequest request, Set<VariableElement> globalVariables) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return Collections.emptyList();
+        }
         final Map<String, CompletionProposal> proposals = new LinkedHashMap<>();
         Model model = request.result.getModel();
         VariableScope variableScope = model.getVariableScope(request.anchor);
@@ -1250,6 +1434,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 }
 
                 for (final VariableElement globalVariable : globalVariables) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return Collections.emptyList();
+                    }
                     proposals.put(globalVariable.getName(), new PHPCompletionItem.VariableItem(globalVariable, request));
                 }
             }
@@ -1257,6 +1444,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     nameKind, request.prefix);
             final int caretOffset = request.anchor + request.prefix.length();
             for (VariableName varName : declaredVariables) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return Collections.emptyList();
+                }
                 final FileObject realFileObject = varName.getRealFileObject();
                 if (realFileObject != null || varName.getNameRange().getEnd() < caretOffset) {
                     final String name = varName.getName();
