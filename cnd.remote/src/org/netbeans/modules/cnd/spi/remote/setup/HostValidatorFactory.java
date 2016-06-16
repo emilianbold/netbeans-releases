@@ -47,6 +47,12 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
  *
  * @author masha
  */
-public interface HostValidatorFactory {
-    public HostValidator create (ToolsCacheManager cacheManager);
+public final class HostValidatorFactory {
+
+    private HostValidatorFactory() {
+    }
+    
+    public static HostValidator create (ToolsCacheManager cacheManager) {
+        return new HostValidatorImpl(cacheManager);
+    }
 }

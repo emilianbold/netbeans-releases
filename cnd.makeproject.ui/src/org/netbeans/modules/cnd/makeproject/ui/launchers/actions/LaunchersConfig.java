@@ -77,9 +77,9 @@ public class LaunchersConfig {
 
     public List<LauncherConfig> getLaunchers() {
         ArrayList<LauncherConfig> res = new ArrayList<>();
-        for(Map.Entry<Integer, LauncherConfig> e : map.entrySet()) {
+        map.entrySet().forEach((e) -> {
             res.add(e.getValue().clone());
-        }
+        });
         return res;
     }
 
@@ -613,6 +613,7 @@ public class LaunchersConfig {
             return res;
         }
         
+        @Override
         public LauncherConfig clone() {
             LauncherConfig res = new LauncherConfig(id, pub);
             res.command = this.command;

@@ -41,23 +41,19 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JButton;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
-import org.netbeans.modules.nativeexecution.support.ui.ShellValidationStatusPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;;
+//import org.netbeans.modules.dlight.nativeexecution.ui.ShellValidationStatusPanel;
+//import org.openide.DialogDescriptor;
+//import org.openide.DialogDisplayer;
+//import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -66,7 +62,7 @@ import org.openide.util.NbPreferences;
  * @author ak119685
  */
 public final class ShellValidationSupport {
-
+    
     protected final static ShellValidationStatus NOSHELL = new ShellValidationStatus(null, Arrays.asList("No shell"), null); // NOI18N
     protected final static ShellValidationStatus VALID = new ShellValidationStatus(null, null, null);
 
@@ -180,9 +176,11 @@ public final class ShellValidationSupport {
             if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                 System.err.println(loc("ShellValidationSupport.ValidationError.NoShell"));
             } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        loc("ShellValidationSupport.ValidationError.NoShell"), // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE));
+                NativeExecutionUserNotification.getDefault().notify(loc("ShellValidationSupport.ValidationError.NoShell"), // NOI18N
+                        NativeExecutionUserNotification.Descriptor.ERROR);
+//                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+//                        loc("ShellValidationSupport.ValidationError.NoShell"), // NOI18N
+//                        NotifyDescriptor.ERROR_MESSAGE));
             }
             return false;
         }
@@ -207,47 +205,50 @@ public final class ShellValidationSupport {
                 System.err.println(error);
             }
             System.err.println(footer);
-            response = DialogDescriptor.YES_OPTION;
+            return true;
         } else {
-            final ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
-
-            final JButton noButton = new JButton("No"); // NOI18N
-            errorPanel.setActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    noButton.setEnabled(!errorPanel.isRememberDecision());
-                }
-            });
-
-            DialogDescriptor dd = new DialogDescriptor(errorPanel,
-                    loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"), // NOI18N
-                    true,
-                    new Object[]{DialogDescriptor.YES_OPTION, noButton},
-                    noButton,
-                    DialogDescriptor.DEFAULT_ALIGN, null, null);
-
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-            
-            try {
-                dialog.setVisible(true);
-            } catch (Throwable th) {
-                if (!(th.getCause() instanceof InterruptedException)) {
-                    throw new RuntimeException(th);
-                }
-                dd.setValue(DialogDescriptor.CANCEL_OPTION);
-            } finally {
-                dialog.dispose();
-            }
-
-            response = dd.getValue();
-
-            if (response == DialogDescriptor.YES_OPTION && errorPanel.isRememberDecision()) {
-                NbPreferences.forModule(WindowsSupport.class).put(key, "yes"); // NOI18N
-            }
+            return NativeExecutionUserNotification.getDefault().confirmShellStatusValiation(
+                    loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"),//NOI18N
+                    header, footer, status.shell);
+//            final ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
+//
+//            final JButton noButton = new JButton("No"); // NOI18N
+//            errorPanel.setActionListener(new ActionListener() {
+//
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    noButton.setEnabled(!errorPanel.isRememberDecision());
+//                }
+//            });
+//
+//            DialogDescriptor dd = new DialogDescriptor(errorPanel,
+//                    loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"), // NOI18N
+//                    true,
+//                    new Object[]{DialogDescriptor.YES_OPTION, noButton},
+//                    noButton,
+//                    DialogDescriptor.DEFAULT_ALIGN, null, null);
+//
+//            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+//            
+//            try {
+//                dialog.setVisible(true);
+//            } catch (Throwable th) {
+//                if (!(th.getCause() instanceof InterruptedException)) {
+//                    throw new RuntimeException(th);
+//                }
+//                dd.setValue(DialogDescriptor.CANCEL_OPTION);
+//            } finally {
+//                dialog.dispose();
+//            }
+//
+//            response = dd.getValue();
+//
+//            if (response == DialogDescriptor.YES_OPTION && errorPanel.isRememberDecision()) {
+//                NbPreferences.forModule(WindowsSupport.class).put(key, "yes"); // NOI18N
+//            }
         }
 
-        return (response == DialogDescriptor.YES_OPTION);
+       // return (response == DialogDescriptor.YES_OPTION);
     }
 
     public static class ShellValidationStatus {
@@ -287,5 +288,5 @@ public final class ShellValidationSupport {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(ShellValidationSupport.class, key, params);
-    }
+    }    
 }

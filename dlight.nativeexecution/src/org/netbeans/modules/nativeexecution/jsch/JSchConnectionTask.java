@@ -55,10 +55,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask.Problem;
-import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.spi.JSchAuthenticationSelection;
+import org.netbeans.modules.nativeexecution.api.util.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.ui.AuthTypeSelectorDlg;
+//import org.netbeans.modules.dlight.nativeexecution.ui.AuthTypeSelectorDlg;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -170,10 +171,11 @@ public final class JSchConnectionTask implements Cancellable {
         Authentication auth = Authentication.getFor(env);
 
         if (!auth.isDefined()) {
-            AuthTypeSelectorDlg dlg = new AuthTypeSelectorDlg();
-            if (!dlg.initAuthentication(auth)) {
-                return false;
-            }
+            return JSchAuthenticationSelection.find().initAuthentication(auth);
+//            AuthTypeSelectorDlg dlg = new AuthTypeSelectorDlg();
+//            if (!dlg.initAuthentication(auth)) {
+//                return false;
+//            }
         } else {
             auth.apply();
         }

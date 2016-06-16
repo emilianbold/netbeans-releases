@@ -147,12 +147,8 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         if (SwingUtilities.isEventDispatchThread()) {
             fireChangeEvent();
         } else {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    fireChangeEvent();
-                }
+            SwingUtilities.invokeLater(() -> {
+                fireChangeEvent();
             });
         }
     }

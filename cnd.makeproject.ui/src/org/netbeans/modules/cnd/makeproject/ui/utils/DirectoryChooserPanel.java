@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -75,11 +76,11 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     private final boolean addPathPanel;
     private final BooleanConfiguration inheritValues;
     private final PropertyEditorSupport editor;
-    private final boolean onlyFolders;
+    private final int onlyFolders;
     private final HelpCtx helpCtx;
 
     public DirectoryChooserPanel(FSPath baseDir, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, 
-            String inheritText, PropertyEditorSupport editor, PropertyEnv env, boolean onlyFolders, HelpCtx helpCtx) {
+            String inheritText, PropertyEditorSupport editor, PropertyEnv env, int onlyFolders, HelpCtx helpCtx) {
         this.baseDir = baseDir;
         this.addPathPanel = addPathPanel;
         this.inheritValues = inheritValues;
@@ -241,14 +242,19 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 seed = baseDir.getPath();
             }
             JFileChooser fileChooser;
-            if (DirectoryChooserPanel.this.onlyFolders) {
+            if (DirectoryChooserPanel.this.onlyFolders == JFileChooser.DIRECTORIES_ONLY) {
                 fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"),
                         JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-            } else {
+            } else if (DirectoryChooserPanel.this.onlyFolders == JFileChooser.FILES_AND_DIRECTORIES) {
                 fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("ADD_DIRECTORY_OR_FILE_DIALOG_TITLE"), getString("ADD_DIRECTORY_OR_FILE_BUTTON_TXT"),
                         JFileChooser.FILES_AND_DIRECTORIES, null, seed, true);
                 fileChooser.addChoosableFileFilter(FileFilterFactory.getHeaderSourceFileFilter());
                 fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
+            } else if (DirectoryChooserPanel.this.onlyFolders == JFileChooser.FILES_ONLY) {
+                fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("ADD_FILE_DIALOG_TITLE"), getString("ADD_FILE_BUTTON_TXT"),
+                        JFileChooser.FILES_ONLY, new FileFilter[]{FileFilterFactory.getHeaderSourceFileFilter()}, seed, true);
+            } else {
+                throw new IllegalArgumentException("unsupported mode"); //NOI18N
             }
             PathPanel pathPanel = null;
             if (addPathPanel) {

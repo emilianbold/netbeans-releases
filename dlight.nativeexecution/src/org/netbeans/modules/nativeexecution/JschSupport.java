@@ -51,7 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.api.util.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**

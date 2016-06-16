@@ -164,53 +164,37 @@ public class RunDialogAction extends NodeAction {
     private void perform(final RunDialogPanel runDialogPanel, final boolean isRun) {
         if (WindowManager.getDefault().getRegistry().getOpened().isEmpty()){
             // It seems action was invoked from command line
-            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-
-                @Override
-                public void run() {
-                    RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            runDialogPanel.getSelectedProject(null);
-                        }
-                    });
-                }
+            WindowManager.getDefault().invokeWhenUIReady(() -> {
+                RP.post(() -> {
+                    runDialogPanel.getSelectedProject(null);
+                });
             });
             return;
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (running.get()) {
-                    return;
+        SwingUtilities.invokeLater(() -> {
+            if (running.get()) {
+                return;
+            }
+            running.set(true);
+            try {
+                DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                        runDialogPanel,
+                        isRun ? getString("RunDialogTitle") : getString("CreateDialogTitle"),// NOI18N
+                        true,
+                        options,
+                        runButton,
+                        DialogDescriptor.BOTTOM_ALIGN,
+                        null,
+                        null);
+                Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
+                if (ret == runButton) {
+                    runDialogPanel.getSelectedProject((Project project) -> {
+                        performRun(project, runDialogPanel.getExecutablePath(), isRun);
+                    });
                 }
-                running.set(true);
-                try {
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                            runDialogPanel,
-                            isRun ? getString("RunDialogTitle") : getString("CreateDialogTitle"),// NOI18N
-                            true,
-                            options,
-                            runButton,
-                            DialogDescriptor.BOTTOM_ALIGN,
-                            null,
-                            null);
-                    Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
-                    if (ret == runButton) {
-                        runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
-
-                            @Override
-                            public void run(Project project) {
-                                performRun(project, runDialogPanel.getExecutablePath(), isRun);
-                            }
-                        });
-                    }
-                } finally {
-                    running.set(false);
-                }
+            } finally {
+                running.set(false);
             }
         });
         

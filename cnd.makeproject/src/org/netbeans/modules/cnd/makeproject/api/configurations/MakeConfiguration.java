@@ -1064,7 +1064,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
                     subProjectOutputLocations.add(outputLocation);
                 } else {
                     subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
-                } // NOI18N
+                }
             }
         }
         return subProjectOutputLocations;
@@ -1095,7 +1095,11 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         if (!CndPathUtilities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilities.normalizeSlashes(output);
+            boolean isNetworkPath = output.startsWith("//");
             output = CndPathUtilities.normalizeUnixPath(output);
+            if (isNetworkPath && !output.startsWith("//")) {
+                output = "/"+output; // NOI18N
+            }
         }
         return expandMacros(output);
     }

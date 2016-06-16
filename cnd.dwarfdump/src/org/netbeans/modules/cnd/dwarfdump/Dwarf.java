@@ -349,6 +349,7 @@ public class Dwarf {
         }
 
         private void advanceArchive() throws IOException {
+            boolean once = true;
             while (true) {
                 if (currentDwarf != null) {
                     toDispose.remove(currentDwarf.magic);
@@ -362,6 +363,17 @@ public class Dwarf {
                         String fileFinder = fileFinder(Dwarf.this.fileName, member);
                         if (fileFinder != null && new File(fileFinder).exists()) {
                             member = fileFinder;
+                        } else {
+                            archiveIndex++;
+                            if (once) {
+                                if (fileFinder != null) {
+                                    LOG.log(Level.INFO, "File "+Dwarf.this.fileName+" Member "+member+" (and guess "+fileFinder+") does not exists.");
+                                } else {
+                                    LOG.log(Level.INFO, "File "+Dwarf.this.fileName+" Member "+member+" does not exists.");
+                                }
+                                once = false;
+                            }
+                            continue;
                         }
                     }
                     archiveIndex++;
@@ -373,7 +385,10 @@ public class Dwarf {
                             continue;
                         }
                     } catch (IOException ex) {
-                        LOG.log(Level.INFO, "File "+Dwarf.this.fileName+" Member "+member, ex);
+                        if (once) {
+                            LOG.log(Level.INFO, "File "+Dwarf.this.fileName+" Member "+member, ex);
+                            once = false;
+                        }
                         continue;
                     }
                     break;

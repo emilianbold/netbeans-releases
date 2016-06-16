@@ -317,9 +317,9 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         private MyDefaultListModel(Project project, List<MakeArtifact> artifacts, int  def) {
             this.project = project;
             this.def = def;
-            for (MakeArtifact a : artifacts) {
+            artifacts.forEach((a) -> {
                 addElement(a);
-            }            
+            });            
         }
 
         private Project getProject() {

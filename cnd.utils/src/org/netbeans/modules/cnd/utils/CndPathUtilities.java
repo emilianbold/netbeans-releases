@@ -702,7 +702,10 @@ public class CndPathUtilities {
         String absPrefix = null;
 
         if (isPathAbsolute(path)) {
-            if (path.charAt(0) == '/') {
+            if (path.length() >= 2 && path.charAt(0) == '/' && path.charAt(1) == '/') {
+                absPrefix = "//"; // NOI18N
+                path = path.substring(2);
+            } else if (path.charAt(0) == '/') {
                 absPrefix = "/"; // NOI18N
                 path = path.substring(1);
             } else if (path.charAt(1) == ':') {

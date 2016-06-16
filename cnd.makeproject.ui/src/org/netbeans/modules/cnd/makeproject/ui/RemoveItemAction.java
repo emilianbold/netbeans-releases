@@ -57,14 +57,17 @@ import org.openide.util.actions.NodeAction;
 
 public class RemoveItemAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes)  {
 	return true;
     }
 
+    @Override
     public String getName() {
 	return NbBundle.getBundle(getClass()).getString("CTL_RemoveItemActionName"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];

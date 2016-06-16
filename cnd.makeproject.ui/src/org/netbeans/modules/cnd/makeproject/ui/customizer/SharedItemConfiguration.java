@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
             res = ProxyItemConfiguration.proxyFactory(configuration, item);
             if (res != null) {
                 itemConfigurations.put(configuration, res);
-                ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
+                /*ItemConfiguration old = (ItemConfiguration)*/ configuration.removeAuxObject(res);
                 configuration.addAuxObject(res);
             }
         }
