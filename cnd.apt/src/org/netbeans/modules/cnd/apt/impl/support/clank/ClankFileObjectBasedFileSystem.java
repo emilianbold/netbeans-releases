@@ -254,9 +254,19 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
                 type = file_type.type_unknown;
             }
             //= fo.isFolder() ? fs.file_type.directory_file : fs.file_type.;
-            Status st = new Status(name, name, uid, time, user, group, fo.getSize(), type, permissions);
+            Status st = new Status(name, uid, time, user, group, fo.getSize(), type, permissions);
             return new ErrorOr<Status>(st);
         }
+    }
+
+    @Override
+    public std_errors.error_code setCurrentWorkingDirectory(Twine Path) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ErrorOr<std.string> getCurrentWorkingDirectory() {
+        throw new UnsupportedOperationException();
     }
 
     private class ClankFileObjectBasedFile extends org.clang.basic.vfs.File {
@@ -287,7 +297,8 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         }
 
         @Override
-        public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name) {
+        public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(/*const*/ Twine /*&*/ Name, long/*int64_t*/ FileSize/*= -1*/, 
+           boolean RequiresNullTerminator/*= true*/, boolean IsVolatile/*= false*/) {
             long time = TRACE_TIME ? System.currentTimeMillis() : 0;
             ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> buf;
             if (CndUtils.isDebugMode()) {
@@ -315,28 +326,8 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         }
 
         @Override
-        public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name, long FileSize) {
-            return getBuffer(Name);
-        }
-
-        @Override
-        public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name, long FileSize, boolean RequiresNullTerminator) {
-            return getBuffer(Name);
-        }
-
-        @Override
-        public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name, long FileSize, boolean RequiresNullTerminator, boolean IsVolatile) {
-            return getBuffer(Name);
-        }
-
-        @Override
         public std_errors.error_code close() {
-            return new std.error_code();
-        }
-
-        @Override
-        public void setName(StringRef Name) {
-            new UnsupportedOperationException("Not supported").printStackTrace(System.err); //NOI18N
+            return std.error_code.success();
         }
     }
 

@@ -62,7 +62,6 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
@@ -293,7 +292,7 @@ public final class ReferencesSupport {
 
             // fast check, if possible
             // macros have max priority in file
-            List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
+            List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, doc, Interrupter.DUMMY);
             CsmObject csmItem = findMacro(macroUsages, offset);
             if (csmItem != null) {
                 return csmItem;

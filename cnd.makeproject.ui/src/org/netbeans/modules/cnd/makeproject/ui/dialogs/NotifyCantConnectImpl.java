@@ -54,13 +54,9 @@ public class NotifyCantConnectImpl {
 
         @Override
         public void showErrorLater(final String dialogTitle, final String message) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                            message, dialogTitle, JOptionPane.ERROR_MESSAGE);
-                }
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                        message, dialogTitle, JOptionPane.ERROR_MESSAGE);
             });
         }
         

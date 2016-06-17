@@ -50,12 +50,12 @@ import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import static org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile.CONSOLE_TYPE_EXTERNAL;
-import static org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile.consoleTypeNames;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.StringNodeProp;
@@ -127,7 +127,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
         return NbBundle.getBundle(RunProfileNodeProvider.class).getString(s);
     }
     
-    private static Sheet getSheet(boolean disableConsoleTypeSelection, RunProfile run) {
+    private static Sheet getSheet(boolean disableConsoleTypeSelection, final RunProfile run) {
         Sheet sheet = new Sheet();
         StringNodeProp argumentsNodeprop;
 
@@ -175,16 +175,12 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
             consoleTypeNP.setCanWrite(false);
         } else {
 
-            consoleTypeNP.addPropertyChangeListener(new PropertyChangeListener() {
-
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    String value = (String) evt.getNewValue();
-                    updateTerminalTypeState(terminalTypeNP, value);
-                }
+            consoleTypeNP.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+                String value = (String) evt.getNewValue();
+                updateTerminalTypeState(terminalTypeNP, value, run.getConsoleType());
             });
             // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
-            updateTerminalTypeState(terminalTypeNP, run.consoleTypeNames[((Integer) consoleTypeNP.getValue())-1]);
+            updateTerminalTypeState(terminalTypeNP, run.getConsoleType().getNames()[((Integer) consoleTypeNP.getValue())-1], run.getConsoleType());
         }
 
         // TODO: this is a quick and durty "hack".
@@ -201,8 +197,8 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
         return sheet;
     }
     
-    private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
-        terminalTypeNP.setCanWrite(consoleTypeNames[CONSOLE_TYPE_EXTERNAL-1].equals(value));
+    private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value, IntConfiguration consoles) {
+        terminalTypeNP.setCanWrite(consoles.getNames()[CONSOLE_TYPE_EXTERNAL-1].equals(value));
     }
 
     private static class RunDirectoryNodeProp extends PropertySupport<String> {

@@ -73,15 +73,11 @@ public class ForbidBuildAnalyzerImpl {
                 //if (makeProjectPref != null) {
                 //    makeProjectPref.putBoolean("useBuildTrace", false); //NOI18N
                 //}
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (project != null) {
-                            CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
-                            if (cp instanceof MakeCustomizerProvider) {
-                                ((MakeCustomizerProvider)cp).showCustomizer("CodeAssistance"); // NOI18N
-                            }
+                SwingUtilities.invokeLater(() -> {
+                    if (project != null) {
+                        CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
+                        if (cp instanceof MakeCustomizerProvider) {
+                            ((MakeCustomizerProvider)cp).showCustomizer("CodeAssistance"); // NOI18N
                         }
                     }
                 });

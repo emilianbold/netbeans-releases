@@ -99,12 +99,16 @@ public class WorkingCopyInfo {
         // this should return alwaus the same instance, so the cache can be implemented as a weak map.
         VCSFileProxy repositoryRootSingleInstance = Mercurial.getInstance().getRepositoryRoot(repositoryRoot);
         if (repositoryRoot.equals(repositoryRootSingleInstance)) {
+            boolean refresh = false;
             synchronized (cache) {
                 info = cache.get(repositoryRootSingleInstance);
                 if (info == null) {
                     cache.put(repositoryRootSingleInstance, info = new WorkingCopyInfo(repositoryRootSingleInstance));
-                    info.refresh();
+                    refresh = true;
                 }
+            }
+            if (refresh) {
+                info.refresh();
             }
         }
         return info;

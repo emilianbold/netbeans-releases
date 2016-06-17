@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import org.clang.basic.tok;
 import org.clank.support.Native;
+import org.clank.support.Unsigned;
 import org.junit.Assert;
 import org.junit.Test;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
@@ -55,7 +56,7 @@ public class ClankToAPTTest {
     
     @Test
     public void testTokenKindsConversion() {
-        for (short clankTokenKind = tok.TokenKind.comment; clankTokenKind <= tok.TokenKind.kw___unknown_anytype; clankTokenKind++) {
+        for (/*ushort*/char clankTokenKind = tok.TokenKind.comment; clankTokenKind <= tok.TokenKind.kw___unknown_anytype; clankTokenKind++) {
             if (clankTokenKind == tok.TokenKind.hashat ||
                 clankTokenKind == tok.TokenKind.greatergreatergreater ||
                 clankTokenKind == tok.TokenKind.lesslessless) {
@@ -67,8 +68,9 @@ public class ClankToAPTTest {
         }
     }
     
-    static void assertSpellings(int aptTokenType, int clankKind) {
-        CharSequence tokenSimpleSpelling = Native.$toString(tok.getPunctuatorSpelling((short)clankKind));
+    static void assertSpellings(int aptTokenType, /*ushort*/char clankKind) {
+        assert clankKind >= 0 : "must be positive " + clankKind;
+        CharSequence tokenSimpleSpelling = Native.$toString(tok.getPunctuatorSpelling(clankKind));
         boolean lwToken = APTLiteConstTextToken.isLiteConstTextType(aptTokenType); 
         assert (tokenSimpleSpelling != null) == lwToken : aptTokenType + " vs. " + tokenSimpleSpelling + ":" + clankKind;
         if (lwToken) {

@@ -79,10 +79,12 @@ public class StringNodeProp extends PropertySupport<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return stringConfiguration.getValueDef(def);
     }
 
+    @Override
     public void setValue(String v) {
         stringConfiguration.setValue(v);
     }

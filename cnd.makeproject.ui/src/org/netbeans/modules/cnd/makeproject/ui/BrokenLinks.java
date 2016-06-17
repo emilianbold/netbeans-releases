@@ -104,26 +104,20 @@ public class BrokenLinks {
 
         @Override
         public Runnable resolve() {
-            return new Runnable() {
-
-                @Override
-                public void run() {
-                    MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
-                    if (cp == null) {
-                        return;
-                    }
-                    cp.showCustomizer("Build"); // NOI18N
+            return () -> {
+                MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
+                if (cp == null) {
+                    return;
                 }
+                cp.showCustomizer("Build"); // NOI18N
             };
         }
     }
     
     private static final class AddToolCollection implements Solution {
-        private final Project project;
         private final String name;
         
-        private AddToolCollection(Project project, String name) {
-            this.project = project;
+        private AddToolCollection(String name) {
             this.name = name;
         }
 
@@ -134,12 +128,8 @@ public class BrokenLinks {
 
         @Override
         public Runnable resolve() {
-            return new Runnable() {
-
-                @Override
-                public void run() {
-                    OptionsDisplayer.getDefault().open("CPlusPlus/ToolsTab"); // NOI18N
-                }
+            return () -> {
+                OptionsDisplayer.getDefault().open("CPlusPlus/ToolsTab"); // NOI18N
             };
         }
     }
@@ -151,7 +141,7 @@ public class BrokenLinks {
         private BrokenToolCollection(Project project, String name) {
             this.name = name;
             solutions.add(new ChangeProjectProperties(project, name));
-            solutions.add(new AddToolCollection(project, name));
+            solutions.add(new AddToolCollection(name));
         }
 
         @Override

@@ -143,9 +143,9 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
                     if (HostInfoUtils.isHostInfoAvailable(env)) {
                         PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
                         TreeMap<String, PackageConfiguration> map = new TreeMap<>();
-                        for(PackageConfiguration conf : pkgConfig.getAvaliablePkgConfigs()) {
+                        pkgConfig.getAvaliablePkgConfigs().forEach((conf) -> {
                             map.put(conf.getName(), conf);
-                        }
+                        });
                         avaliablePkgConfigs.clear();
                         avaliablePkgConfigs.addAll(map.values());
                         SwingUtilities.invokeLater(this);
@@ -162,13 +162,13 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
     private void updateModel() {
         String pattern = filter.getText().trim().toLowerCase(Locale.getDefault());
         final List<PackageConfiguration> res = new ArrayList<>();
-        for(PackageConfiguration conf : avaliablePkgConfigs) {
+        avaliablePkgConfigs.forEach((conf) -> {
             if (conf.getName().toLowerCase(Locale.getDefault()).contains(pattern)){
                 res.add(conf);
             } else if (conf.getDisplayName().toLowerCase(Locale.getDefault()).contains(pattern)){
                 res.add(conf);
             }
-        }
+        });
         list.setModel(new AbstractListModel() {
             @Override
             public int getSize() {

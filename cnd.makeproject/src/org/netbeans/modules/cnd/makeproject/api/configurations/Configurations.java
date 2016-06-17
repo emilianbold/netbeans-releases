@@ -111,9 +111,9 @@ public final class Configurations {
 //            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
 //            pcs.firePropertyChange(PROP_DEFAULT, null, null);
 //        }
-        for (NamedRunnable task : toRun) {
+        toRun.forEach((task) -> {
             runOnProjectReadiness(task, false);
-        }
+        });
         return this;
     }
 
@@ -313,9 +313,9 @@ public final class Configurations {
             }
             def = configurations.get(index);
             if (def != null) {
-                for (Configuration c : configurations) {
+                configurations.forEach((c) -> {
                     c.setDefault(false);
-                }
+                });
                 def.setDefault(true);
             }
         } finally {
@@ -326,22 +326,14 @@ public final class Configurations {
     }
 
     public void fireChangedActiveConfiguration(final Configuration oldActive, final Configuration newActive) {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, oldActive, newActive);
-            }
+        RP.post(() -> {
+            pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, oldActive, newActive);
         });
     }
 
     public void fireChangedConfigurations(final Configuration[] oldConf, final Configuration[] newConf) {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, oldConf, newConf);
-            }
+        RP.post(() -> {
+            pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, oldConf, newConf);
         });
     }
 

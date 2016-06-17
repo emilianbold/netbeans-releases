@@ -327,7 +327,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         if (fc.isMultiSelectionEnabled()) {
             setFileName(getStringOfFileNames(fc.getSelectedFiles()));
         } else {
-            setFileName(getStringOfFileName(fc.getSelectedFile()));
+            setFileName(getStringOfFileName(fc.getSelectedFile(), true));
         }
 
         if(fc.getControlButtonsAreShown()) {
@@ -1521,7 +1521,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
 
-    private String getStringOfFileName(File file) {
+    private String getStringOfFileName(File file, boolean singleSelection) {
         if (file == null) {
             return null;
         } else {
@@ -1532,8 +1532,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 } else {
                     return file.getPath();
                 }
-            } else {
+            } else if (singleSelection) {
                 return file.getName();
+            } else {
+                return file.getPath();
             }
         }
     }
@@ -1547,7 +1549,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             if (files.length > 1) {
                 buf.append("\"");//NOI18N
             }
-            buf.append(getStringOfFileName(files[i]));
+            buf.append(getStringOfFileName(files[i], files.length <= 1));
             if (files.length > 1) {
                 buf.append("\"");//NOI18N
             }
@@ -1564,7 +1566,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 && ((fc.isFileSelectionEnabled() && !f.isDirectory())
                 || (f.isDirectory() && fc.isDirectorySelectionEnabled()))) {
 
-            setFileName(getStringOfFileName(f));
+            setFileName(getStringOfFileName(f, true));
         }
     }
 
@@ -1594,7 +1596,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             }
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
                 if (fsv.isFileSystem(currentDirectory)) {
-                    setFileName(getStringOfFileName(fc.getSelectedFile() == null ? currentDirectory : fc.getSelectedFile()));
+                    setFileName(getStringOfFileName(fc.getSelectedFile() == null ? currentDirectory : fc.getSelectedFile(), true));
                 } else {
                     setFileName(null);
                 }
@@ -2604,7 +2606,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         public void editingStopped(ChangeEvent e) {
             FileNode node = (FileNode) tree.getLastSelectedPathComponent();
             if (node != null) {
-                setFileName(getStringOfFileName(node.getFile()));
+                setFileName(getStringOfFileName(node.getFile(), true));
             }
         }
 

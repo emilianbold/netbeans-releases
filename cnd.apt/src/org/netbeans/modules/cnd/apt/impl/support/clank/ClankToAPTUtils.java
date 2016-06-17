@@ -65,7 +65,7 @@ public final class ClankToAPTUtils {
     private ClankToAPTUtils() {
     }
 
-    static int convertClankToAPTTokenKind(short clankTokenKind) {
+    static int convertClankToAPTTokenKind(/*ushort*/char clankTokenKind) {
         switch (clankTokenKind) {
             //<editor-fold defaultstate="collapsed" desc="long cases">
             // These define members of the tok::* namespace.
@@ -428,6 +428,16 @@ public final class ClankToAPTUtils {
                 return APTTokenTypes.LITERAL_static_assert;
             case tok.TokenKind.kw_thread_local:
                 return APTTokenTypes.LITERAL_thread_local;
+/*3.8 NEW*/ case tok.TokenKind.kw_concept:
+                return APTTokenTypes.LITERAL_concept;
+/*3.8 NEW*/ case tok.TokenKind.kw_requires:
+                return APTTokenTypes.LITERAL_requires;
+/*3.8 NEW*/ case tok.TokenKind.kw_co_await:
+                return APTTokenTypes.LITERAL_co_await;
+/*3.8 NEW*/ case tok.TokenKind.kw_co_return:
+                return APTTokenTypes.LITERAL_co_return;
+/*3.8 NEW*/ case tok.TokenKind.kw_co_yield:
+                return APTTokenTypes.LITERAL_co_yield;
 
             // GNU Extensions (in impl-reserved namespace)
             case tok.TokenKind.kw__Decimal32:
@@ -466,6 +476,8 @@ public final class ClankToAPTUtils {
                 return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCTION__;
             case tok.TokenKind.kw___PRETTY_FUNCTION__:
                 return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___PRETTY_FUNCTION__;
+/*3.8 NEW*/ case tok.TokenKind.kw___auto_type:
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___auto_type;
 
             // GNU Extensions (outside impl-reserved namespace)
             case tok.TokenKind.kw_typeof:
@@ -598,6 +610,8 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___read_write:
             case tok.TokenKind.kw___builtin_astype:
             case tok.TokenKind.kw_vec_step:
+/*3.8 NEW*/ case tok.TokenKind.kw___builtin_omp_required_simd_align:
+/*3.8 NEW*/ case tok.TokenKind.kw_pipe:
             /* REMOVED in 3.6
             case tok.TokenKind.kw_image1d_t:
             case tok.TokenKind.kw_image1d_array_t:
@@ -624,6 +638,12 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___bridge_transfer:
             case tok.TokenKind.kw___bridge_retained:
             case tok.TokenKind.kw___bridge_retain:
+/*3.8 NEW*/ case tok.TokenKind.kw___covariant:
+/*3.8 NEW*/ case tok.TokenKind.kw___contravariant:
+/*3.8 NEW*/ case tok.TokenKind.kw___kindof:
+/*3.8 NEW*/ case tok.TokenKind.kw__Nonnull:
+/*3.8 NEW*/ case tok.TokenKind.kw__Nullable:
+/*3.8 NEW*/ case tok.TokenKind.kw__Null_unspecified:
 
             // Microsoft extensions which should be disabled in strict conformance mode
             case tok.TokenKind.kw___ptr64:
@@ -758,9 +778,9 @@ public final class ClankToAPTUtils {
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
             //</editor-fold>
         }
-        assert false : "non converted token [" + clankTokenKind + "] " + Native.$toString(tok.getTokenName(clankTokenKind)) + 
+        assert false : "non converted token [" + (int)clankTokenKind + "] " + Native.$toString(tok.getTokenName(clankTokenKind)) + 
                 " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "] " + // NOI18N
-                (clankTokenKind > 0 ? ("add case after " + Native.$toString(tok.getTokenName((short)(clankTokenKind-1)))) : ""); // NOI18N
+                (clankTokenKind > 0 ? ("add case after " + Native.$toString(tok.getTokenName((char)(clankTokenKind-1)))) : ""); // NOI18N
         return APTTokenTypes.EOF;
     }
 

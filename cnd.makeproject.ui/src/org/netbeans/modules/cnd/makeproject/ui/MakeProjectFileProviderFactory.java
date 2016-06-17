@@ -331,7 +331,7 @@ public class MakeProjectFileProviderFactory extends MakeProjectFileProvider impl
         
         @Override
         public final Icon getProjectIcon() {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/makeProject.gif", true); // NOI18N
         }       
         
         @Override

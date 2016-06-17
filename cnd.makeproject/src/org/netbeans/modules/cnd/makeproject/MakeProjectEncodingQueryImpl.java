@@ -65,6 +65,7 @@ public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
         this.project = project;
     }
     
+    @Override
     public Charset getEncoding(FileObject file) {
         assert file != null;
         
