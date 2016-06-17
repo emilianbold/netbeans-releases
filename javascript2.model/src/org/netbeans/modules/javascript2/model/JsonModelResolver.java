@@ -135,7 +135,9 @@ public final class JsonModelResolver extends JsonBaseVisitor<Boolean> implements
                         file == null ? null : FileUtil.getFileDisplayName(file));
             }
         }
-        parseTree.accept(this);
+        if (parseTree != null) {
+            parseTree.accept(this);
+        }
     }
 
     @Override

@@ -140,8 +140,12 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
             return null;
         }
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
-        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
-        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
+        Collection<FilterableError.SetFilterAction> enableFilterAction = file != null
+                ? ParsingErrorFilter.getEnableFilterAction(file)
+                : Collections.emptyList();
+        FilterableError.SetFilterAction disableFilterAction = file != null
+                ? ParsingErrorFilter.getDisableFilterAction(file)
+                : null;
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
@@ -159,8 +163,12 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
             return null;
         }
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
-        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
-        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
+        Collection<FilterableError.SetFilterAction> enableFilterAction = file != null
+                ? ParsingErrorFilter.getEnableFilterAction(file)
+                : Collections.emptyList();
+        FilterableError.SetFilterAction disableFilterAction = file != null
+                ? ParsingErrorFilter.getDisableFilterAction(file)
+                : null;
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && error.message.contains("Expected ;")) { // NOI18N
@@ -239,8 +247,12 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
         // basically we are solwing showExplorerBadge attribute here
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
-        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
-        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
+        Collection<FilterableError.SetFilterAction> enableFilterAction = file != null
+                ? ParsingErrorFilter.getEnableFilterAction(file)
+                : Collections.emptyList();
+        FilterableError.SetFilterAction disableFilterAction = file != null
+                ? ParsingErrorFilter.getDisableFilterAction(file)
+                : null;
         
         if (snapshot != null && BaseParserResult.isEmbedded(snapshot)) {
             int nextCorrect = -1;
