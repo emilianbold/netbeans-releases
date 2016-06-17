@@ -156,11 +156,13 @@ public final class OptionsFilter {
         @Override
         public synchronized void addTreeModelListener(TreeModelListener l) {
             listeners.add(l);
+            delegate.addTreeModelListener(l);
         }
 
         @Override
         public synchronized void removeTreeModelListener(TreeModelListener l) {
             listeners.remove(l);
+            delegate.removeTreeModelListener(l);
         }
 
         private synchronized Iterable<? extends TreeModelListener> getListeners() {
@@ -271,17 +273,14 @@ public final class OptionsFilter {
 
         @Override
         public void treeNodesInserted(TreeModelEvent e) {
-            throw new UnsupportedOperationException("Currently not supported.");
         }
 
         @Override
         public void treeNodesRemoved(TreeModelEvent e) {
-            throw new UnsupportedOperationException("Currently not supported.");
         }
 
         @Override
         public void treeStructureChanged(TreeModelEvent e) {
-            throw new UnsupportedOperationException("Currently not supported.");
         }
 
     }
