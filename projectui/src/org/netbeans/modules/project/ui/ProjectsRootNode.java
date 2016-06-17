@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,6 +109,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -286,7 +288,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         private final java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
-        int type;
+        final int type;
         
         public ProjectChildren( int type ) {
             this.type = type;            
@@ -337,14 +339,28 @@ public class ProjectsRootNode extends AbstractNode {
             boolean[] projectInLookup = new boolean[1];
             projectInLookup[0] = true;
                         
-            if ( type == PHYSICAL_VIEW ) {
-                Sources sources = ProjectUtils.getSources( project );
+            if (type == PHYSICAL_VIEW) {
+                final Sources sources = p.data.second().first();
+                final SourceGroup[] groups = p.data.second().second();
                 sources.removeChangeListener( this );
                 sources.addChangeListener( this );
                 sources2projects.put( sources, new WeakReference<Project>( project ) );
-                origNodes = PhysicalView.createNodesForProject( project );
+                final List<Node> nodes = new ArrayList<>(groups.length);
+                for (SourceGroup group : groups) {
+                    final Node n = PhysicalView.createNodeForSourceGroup(group, project);
+                    if (n != null) {
+                        nodes.add(n);
+                    }
+                }
+                origNodes = nodes.toArray(new Node[nodes.size()]);
             } else {
-                origNodes = new Node[] { logicalViewForProject(project, projectInLookup) };
+                assert type == LOGICAL_VIEW;
+                origNodes = new Node[] {
+                    logicalViewForProject(
+                            project,
+                            p.data,
+                            projectInLookup)
+                };
             }
 
             Node[] badgedNodes = new Node[ origNodes.length ];
@@ -366,34 +382,44 @@ public class ProjectsRootNode extends AbstractNode {
             return badgedNodes;
         }        
         
-        final Node logicalViewForProject(Project project, boolean[] projectInLookup) {
-            Node node;
-            
-            LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
-            
-            if ( lvp == null ) {
-                LOG.warning("Warning - project of " + project.getClass() + " in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
-                Sources sources = ProjectUtils.getSources(project);
+        @NonNull
+        final Node logicalViewForProject(
+                @NonNull final Project project,
+                final Union2<LogicalViewProvider,org.openide.util.Pair<Sources,SourceGroup[]>> data,
+                final boolean[] projectInLookup) {
+            Node node;            
+            if (!data.hasFirst()) {
+                LOG.log(
+                        Level.WARNING,
+                        "Warning - project of {0} in {1} failed to supply a LogicalViewProvider in its lookup",  // NOI18N
+                        new Object[]{
+                            project.getClass(),
+                            FileUtil.getFileDisplayName(project.getProjectDirectory())
+                        });
+                final Sources sources = data.second().first();
+                final SourceGroup[] groups = data.second().second();
                 sources.removeChangeListener(this);
                 sources.addChangeListener(this);
-                Node[] physical = PhysicalView.createNodesForProject(project);
-                if (physical.length > 0) {
-                    node = physical[0];
+                if (groups.length > 0) {
+                    node = PhysicalView.createNodeForSourceGroup(groups[0], project);
                 } else {
                     node = Node.EMPTY;
                 }
             } else {
+                final LogicalViewProvider lvp = data.first();
                 node = lvp.createLogicalView();
                 if (!project.equals(node.getLookup().lookup(Project.class))) {
                     // Various actions, badging, etc. are not going to work.
-                    LOG.warning("Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
+                    LOG.log(
+                            Level.WARNING,
+                            "Warning - project {0} failed to supply itself in the lookup of the root node of its own logical view",  // NOI18N
+                            ProjectUtils.getInformation(project).getName());
                     //#114664
                     if (projectInLookup != null) {
                         projectInLookup[0] = false;
                     }
                 }
-            }
-                        
+            }                        
             node.addNodeListener(WeakListeners.create(NodeListener.class, this, node));
             return node;
         }
@@ -449,7 +475,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         final void refresh(Project p) {
-            refreshKey(new Pair(p));
+            refreshKey(new Pair(p, type));
         }
                                 
         // Own methods ---------------------------------------------------------
@@ -458,14 +484,10 @@ public class ProjectsRootNode extends AbstractNode {
             List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
             Collections.sort(projects, OpenProjectList.projectByDisplayName());
             
-            List<Pair> dirs = Arrays.asList( new Pair[projects.size()] );
-            
-            for (int i = 0; i < projects.size(); i++) {
-                Project project = projects.get(i);
-                dirs.set(i, new Pair(project));
+            final List<Pair> dirs = new ArrayList<>(projects.size());
+            for (Project project : projects) {
+                dirs.add(new Pair(project, type));
             }
-
-            
             return dirs;
         }
         
@@ -474,12 +496,18 @@ public class ProjectsRootNode extends AbstractNode {
          * the nodes.
          */
         static final class Pair extends Object {
-            public Project project;
-            public final FileObject fo;
+            Project project;
+            final FileObject fo;
+            private final int type;
+            private Union2<LogicalViewProvider,org.openide.util.Pair<Sources,SourceGroup[]>> data;
 
-            public Pair(Project project) {
+            public Pair(
+                    final Project project,
+                    final int type) {
                 this.project = project;
                 this.fo = project.getProjectDirectory();
+                this.type = type;
+                this.data = createData(project, type);
             }
 
             @Override
@@ -502,6 +530,30 @@ public class ProjectsRootNode extends AbstractNode {
                 int hash = 7;
                 hash = 53 * hash + (this.fo != null ? this.fo.hashCode() : 0);
                 return hash;
+            }
+
+            private void update(@NonNull final Project project) {
+                assert project != null;
+                this.project = project;
+                this.data = createData(project, type);
+            }
+
+            private static Union2<LogicalViewProvider,org.openide.util.Pair<Sources,SourceGroup[]>> createData(
+                    final Project p,
+                    final int type) {
+                switch (type) {
+                    case LOGICAL_VIEW:
+                        final LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+                        if (lvp != null) {
+                            return Union2.createFirst(lvp);
+                        }
+                    case PHYSICAL_VIEW:
+                        final Sources s = ProjectUtils.getSources(p);
+                        final SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);                
+                        return Union2.createSecond(org.openide.util.Pair.of(s, groups));
+                    default:
+                        throw new IllegalArgumentException(Integer.toString(type));
+                }
             }
         }
                                                 
@@ -629,13 +681,18 @@ public class ProjectsRootNode extends AbstractNode {
             if (newProj != null && newProj.getProjectDirectory().equals(fo)) {
                 Node n = null;
                 if (logicalView) {
-                    n = ch.logicalViewForProject(newProj, null);
+                    n = ch.logicalViewForProject(
+                            newProj,
+                            ProjectChildren.Pair.createData(
+                                    newProj,
+                                    logicalView ? LOGICAL_VIEW : PHYSICAL_VIEW),
+                            null);
                     OpenProjectList.log(Level.FINER, "logical view {0}", n);
                 } else {
                     Node[] arr = PhysicalView.createNodesForProject(newProj);
                     OpenProjectList.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
                     if (arr.length > 1) {
-                        pair.project = newProj;
+                        pair.update(newProj);
                         OpenProjectList.log(Level.FINER, "refreshing for {0}", newProj);
                         ch.refresh(newProj);
                         OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);

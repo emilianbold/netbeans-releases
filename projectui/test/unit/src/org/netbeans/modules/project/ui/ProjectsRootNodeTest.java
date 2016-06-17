@@ -299,7 +299,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
         Project prj = ProjectManager.getDefault().findProject(root);
         assertNotNull(prj);
         System.setProperty("test.nodelay", "true");
-        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj),
+        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj, ProjectsRootNode.LOGICAL_VIEW),
                 new AbstractNode(Children.LEAF, Lookups.singleton(prj)) {
                     public @Override String getDisplayName() {return "Prj";}
                     public @Override String getHtmlDisplayName() {return "Prj";}
@@ -386,7 +386,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
         ProjectIconAnnotatorImpl annotator = new ProjectIconAnnotatorImpl();
         MockLookup.setInstances(annotator);
         System.setProperty("test.nodelay", "true");
-        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj),
+        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj, ProjectsRootNode.LOGICAL_VIEW),
                 new AbstractNode(Children.LEAF, Lookups.singleton(prj)), true);
         assertEquals(icon3, node.getIcon(BeanInfo.ICON_COLOR_16x16));
         assertEquals(icon2, node.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
@@ -422,7 +422,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
         final LazyProject lp = new LazyProject(d.toURL(), "p", new ExtIcon());
         Children ch = new ProjectsRootNode.ProjectChildren(ProjectsRootNode.PHYSICAL_VIEW) {
             public @Override void addNotify() {
-                setKeys(Collections.singleton(new ProjectsRootNode.ProjectChildren.Pair(lp)));
+                setKeys(Collections.singleton(new ProjectsRootNode.ProjectChildren.Pair(lp, ProjectsRootNode.PHYSICAL_VIEW)));
             }
         };
         ProjectsRootNode.checkNoLazyNode(ch);
