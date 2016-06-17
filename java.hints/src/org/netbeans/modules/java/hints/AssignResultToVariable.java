@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
@@ -179,15 +180,19 @@ public class AssignResultToVariable extends AbstractHint {
             if (!error && (elem == null || (elem.getKind() != ElementKind.METHOD && elem.getKind() != ElementKind.CONSTRUCTOR))) {
                 return null;
             }
-            
-            TypeMirror type = info.getTrees().getTypeMirror(treePath);
+            TypeMirror base = info.getTrees().getTypeMirror(treePath);
+            TypeMirror type = Utilities.resolveTypeForDeclaration(
+                    info, base
+            );
             
             // could use Utilities.isValidType, but NOT_ACCEPTABLE_TYPE_KINDS does the check as well
             if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                 return null;
             }
             
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getFileObject(), info.getDocument(), TreePathHandle.create(treePath, info)));
+            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+                    info.getFileObject(), info.getDocument(), TreePathHandle.create(treePath, info),
+                    TypeMirrorHandle.create(type)));
             String description = NbBundle.getMessage(AssignResultToVariable.class, "HINT_AssignResultToVariable");
             
             return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, fixes, info.getFileObject(), offset, offset));
@@ -324,11 +329,13 @@ public class AssignResultToVariable extends AbstractHint {
         private Document doc;
         private TreePathHandle tph;
         private Position pos;
+        private TypeMirrorHandle typeHandle;
         
-        public FixImpl(FileObject file, Document doc, TreePathHandle tph) {
+        public FixImpl(FileObject file, Document doc, TreePathHandle tph, TypeMirrorHandle typeHandle) {
             this.file = file;
             this.doc = doc;
             this.tph = tph;
+            this.typeHandle = typeHandle;
         }
 
         public String getText() {
@@ -367,7 +374,7 @@ public class AssignResultToVariable extends AbstractHint {
                             return ;
                         }
                         
-                        TypeMirror type = copy.getTrees().getTypeMirror(tp);
+                        TypeMirror type = typeHandle.resolve(copy);
                         if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                             return;
                         }
@@ -385,7 +392,7 @@ public class AssignResultToVariable extends AbstractHint {
                             identifier = nct.getIdentifier();
                         }
 
-                        type = Utilities.resolveCapturedType(copy, type);
+                        type = Utilities.resolveTypeForDeclaration(copy, type);
                         
                         TreeMaker make = copy.getTreeMaker();
                         

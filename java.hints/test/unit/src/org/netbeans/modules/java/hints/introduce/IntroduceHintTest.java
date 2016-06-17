@@ -1227,7 +1227,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "}\n",
                        "package test; public class Test { public static void test() { t(name()); } private static void t(Runnable r) {} private static Runnable name() { return new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } } ",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
-                       4, 3);
+                       5, 3);
     }
 
 //    public void testIntroduceMethodTooManyExceptions() throws Exception {

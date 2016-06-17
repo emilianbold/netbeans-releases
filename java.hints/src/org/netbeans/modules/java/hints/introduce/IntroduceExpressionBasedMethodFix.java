@@ -235,7 +235,7 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 if (expression == null || returnType == null) {
                     return; //TODO...
                 }
-                returnType = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(copy, returnType));
+                returnType = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(copy, returnType));
                 final TreeMaker make = copy.getTreeMaker();
                 Tree returnTypeTree = make.Type(returnType);
                 List<VariableElement> parameters = IntroduceHint.resolveVariables(copy, IntroduceExpressionBasedMethodFix.this.parameters);

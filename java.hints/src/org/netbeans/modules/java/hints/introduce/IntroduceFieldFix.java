@@ -314,7 +314,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
             if (tm == null) {
                 return; //TODO...
             }
-            tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
+            tm = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(parameter, tm));
             TreePath pathToClass = findTargetClass(parameter, resolved);
             if (pathToClass == null) {
                 return; //TODO...

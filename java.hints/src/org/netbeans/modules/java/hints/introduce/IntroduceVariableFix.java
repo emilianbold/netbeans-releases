@@ -179,7 +179,7 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                 if (tm == null) {
                     return; //TODO...
                 }
-                tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
+                tm = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(parameter, tm));
                 if (!Utilities.isValidType(tm)) {
                     return; // TODO... 
                 }

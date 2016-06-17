@@ -125,7 +125,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR || targetType.getKind() == TypeKind.NONE || targetType.getKind() == TypeKind.NULL) return null;
 
-        return Utilities.resolveCapturedType(info, targetType);
+        return Utilities.resolveTypeForDeclaration(info, targetType);
     }
 
     @Override

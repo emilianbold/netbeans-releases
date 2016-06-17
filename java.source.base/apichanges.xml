@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="TypeUtilities.getDenotableType">
+        <api name="javasource_base"/>
+        <summary>Provide type suitable for declaration in source</summary>
+        <version major="1" minor="2.17"/>
+       <date day="16" month="5" year="2016"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Support method which allows to infer a type suitable for use in symbol
+            declaration in the source was added.
+        </description>
+        <class name="TypeUtilities" package="org.netbeans.api.java.source"/>
+        <issue number="262073"/>
+    </change>
     <change id="utilities.findVisibleElements">
         <api name="javasource_base"/>
         <summary>List elements with their definining Scope</summary>

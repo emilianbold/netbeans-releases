@@ -317,6 +317,27 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
              "    }\n" +
              "}").replaceAll("\\s+", " "));
     }
+    
+    public void testInferBounds258167() throws Exception {
+        performFixTest("test/Test.java",
+            "package test;\n" +
+            "import java.util.Map;\n" +
+            "public class Test {\n" +
+            "    void test(Map<? extends String, ? extends Number> map) {\n"
+                + "        map.entr|ySet();//assign return value to a new variable here\n"
+                + "    }\n"
+                + "}",                       
+            "4:16-4:16:hint:Assign Return Value To New Variable",
+            "FixImpl",
+            ("package test;\n" +
+            "import java.util.Map;\n" +
+            "import java.util.Set;\n" +
+            "public class Test {\n" +
+            "    void test(Map<? extends String, ? extends Number> map) {\n"
+                + "   Set<? extends Map.Entry<? extends String, ? extends Number>> entrySet = map.entrySet(); //assign return value to a new variable here\n"
+                + "    }\n"
+                + "}").replaceAll("\\s+", " "));
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
         while (path != null && !new AssignResultToVariable().getTreeKinds().contains(path.getLeaf().getKind()))
