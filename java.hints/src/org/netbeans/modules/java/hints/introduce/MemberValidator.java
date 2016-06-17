@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.karma.options;
+package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.modules.web.common.api.ValidationResult;
-import org.netbeans.modules.web.common.ui.api.ExternalExecutableValidator;
-import org.openide.util.NbBundle;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
 
-public final class KarmaOptionsValidator {
-
-    public static final String KARMA_PATH = "karma.path"; // NOI18N
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    public KarmaOptionsValidator validate() {
-        return KarmaOptionsValidator.this.validateKarma();
-    }
-
-    public KarmaOptionsValidator validateKarma() {
-        return validateKarma(KarmaOptions.getInstance().getKarma());
-    }
-
-    @NbBundle.Messages("KarmaOptionsValidator.karma.name=Karma")
-    public KarmaOptionsValidator validateKarma(String karma) {
-        String warning = ExternalExecutableValidator.validateCommand(karma, Bundle.KarmaOptionsValidator_karma_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message(KARMA_PATH, warning));
-        }
-        return this;
-    }
-
-    public ValidationResult getResult() {
-        return result;
-    }
-
+/**
+ *
+ * @author sdedic
+ */
+public interface MemberValidator {
+    /**
+     * Validates whether that the entered name is correct, and that it does
+     * not conflict with other members of the target.
+     * <p/>
+     * If the declaration overrides other accessible one, the method may return 
+     * minimum access modifiers; UI will restrict the choice.
+     * <p/>
+     * The Validator should issue an information message in that case.
+     * 
+     * @param target the target type
+     * @param n the requested name
+     * @return minimum access modifiers
+     */
+    public MemberSearchResult validateName(TreePathHandle target, String n);
 }

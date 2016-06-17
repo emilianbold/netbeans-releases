@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +59,8 @@ import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -119,26 +122,38 @@ public class PhysicalView {
     
     public static Node[] createNodesForProject( Project p ) {
         Sources s = ProjectUtils.getSources(p);
-        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
-                
-        FileObject projectDirectory = p.getProjectDirectory();
-        ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        
+        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);                
+        final List<Node> nodesList = new ArrayList<>( groups.length );        
         for (SourceGroup group : groups) {
-            if ("sharedlibraries".equals(group.getName())) { //NOI18N
-                //HACK - ignore shared libs group in UI, it's only useful for version control commits.
-                continue;
+            final Node n = createNodeForSourceGroup(group, p);
+            if (n != null) {
+                nodesList.add(n);
             }
-            FileObject rootFolder = group.getRootFolder();
-            if (!rootFolder.isValid() || !rootFolder.isFolder()) {
-                continue;
-            }
-            nodesList.add(new ProjectIconNode(new GroupNode(p, group, projectDirectory.equals(rootFolder) || FileUtil.isParentOf(rootFolder, projectDirectory), DataFolder.findFolder(rootFolder)), true));
         }
-        
         Node nodes[] = new Node[ nodesList.size() ];
         nodesList.toArray( nodes );
         return nodes;
+    }
+    
+    @CheckForNull
+    static Node createNodeForSourceGroup(
+            @NonNull final SourceGroup group,
+            @NonNull final Project project) {
+        if ("sharedlibraries".equals(group.getName())) { //NOI18N
+            //HACK - ignore shared libs group in UI, it's only useful for version control commits.
+            return null;
+        }
+        final FileObject rootFolder = group.getRootFolder();
+        if (!rootFolder.isValid() || !rootFolder.isFolder()) {
+            return null;
+        }
+        final FileObject projectDirectory = project.getProjectDirectory();
+        return new ProjectIconNode(new GroupNode(
+                project,
+                group,
+                projectDirectory.equals(rootFolder) || FileUtil.isParentOf(rootFolder, projectDirectory),
+                DataFolder.findFolder(rootFolder)),
+                true);
     }
    
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {

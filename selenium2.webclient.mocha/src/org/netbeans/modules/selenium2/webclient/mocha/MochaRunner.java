@@ -73,8 +73,8 @@ import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumP
 import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferencesValidator;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;

@@ -45,8 +45,8 @@ import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutableValidator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 

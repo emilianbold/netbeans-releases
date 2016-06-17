@@ -215,7 +215,7 @@ public final class AddCast implements ErrorRule<Void> {
                                     /*#85346: cast hint should not be proposed for error types:*/
                                     && foundTM.getKind() != TypeKind.ERROR
                                     && expectedType.getKind() != TypeKind.ERROR) {
-                                targetType.add(org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, expectedType));
+                                targetType.add(org.netbeans.modules.java.hints.errors.Utilities.resolveTypeForDeclaration(info, expectedType));
                                 typeTree[0] = expectedTree;
                                 expression[0] = found;
                                 leaf[0] = scope;

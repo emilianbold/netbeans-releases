@@ -228,7 +228,7 @@ public class TooStrongCast {
                     continue;
                 }
             }
-            filteredTypes.add(Utilities.resolveCapturedType(info, tm));
+            filteredTypes.add(Utilities.resolveTypeForDeclaration(info, tm));
         }
         if (filteredTypes.isEmpty()) {
             return null;

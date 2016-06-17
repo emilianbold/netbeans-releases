@@ -140,11 +140,7 @@ public final class ChangeType implements ErrorRule<Void> {
             }
 
             if (expected != null && resolved != null) {
-                if (resolved.getKind() == TypeKind.ERROR) {
-                    resolved = info.getTrees().getOriginalType((ErrorType) resolved);
-                }
-
-                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, resolved);
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveTypeForDeclaration(info, resolved);
 
                 if (resolved == null || resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.NONE ||resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
                 } else if (resolved.getKind() != TypeKind.ERROR &&

@@ -72,8 +72,8 @@ import org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelControl
 import org.netbeans.modules.javascript.bower.util.BowerUtils;
 import org.netbeans.modules.javascript.bower.util.FileUtils;
 import org.netbeans.modules.javascript.bower.util.StringUtils;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,7 +85,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Customization of Make project shows dialog
  */
-public class MakeCustomizerProviderImpl implements MakeCustomizerProvider {
+public class MakeCustomizerProviderImpl implements MakeCustomizerProvider, CustomizerProvider {
     
     @ServiceProvider(service = MakeProjectLookupProvider.class)
     public static class MakeCustomizerProviderFactory implements MakeProjectLookupProvider {

@@ -161,6 +161,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.Log;
 import java.net.URI;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.UnionType;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -407,7 +408,7 @@ public class Utilities {
         if (designedType == null) {
             return null;
         }
-        return resolveCapturedType(info, designedType);
+        return resolveTypeForDeclaration(info, designedType);
     }
 
     public static String getName(TypeMirror tm) {
@@ -554,9 +555,26 @@ public class Utilities {
         }
     }
     
+    public static TypeMirror resolveTypeForDeclaration(CompilationInfo info, TypeMirror tm) {
+        // TODO: should I convert the anonymous types to something more referenceable ?
+        TypeMirror captureResolved = resolveCapturedType(info, tm);
+        if (captureResolved == null) {
+            return null;
+        }
+        TypeMirror m = info.getTypeUtilities().getDenotableType(tm);
+        if (isValidType(m) || !isValidType(captureResolved)) {
+            return m;
+        } else {
+            return captureResolved;
+        }
+    }
+    
     public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
         if (tm == null) {
             return tm;
+        }
+        if (tm.getKind() == TypeKind.ERROR) {
+            tm = info.getTrees().getOriginalType((ErrorType) tm);
         }
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         if (type == null) {
@@ -1097,7 +1115,7 @@ public class Utilities {
                 return null;
             }
             
-            tm = resolveCapturedType(info, tm);
+            tm = resolveTypeForDeclaration(info, tm);
 
             if (!verifyTypeVarAccessible(method, tm, usedLocalTypeVariables, target)) return null;
 

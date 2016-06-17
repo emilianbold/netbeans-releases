@@ -43,10 +43,8 @@ package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -59,7 +57,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -245,8 +242,8 @@ public class InstanceRefFinder extends TreePathScanner {
         }
         switch (pt.getNestingKind()) {
             case ANONYMOUS:
-                // anonymous class can be moved, but they contain an implicit instance of this
-                addRequiredInstance(findEnclosingType(pt));
+                // the anonymous class itself may not need an enclosing instance, if its
+                // contents do not reference anything from the instance.
                 break;
                 
             case LOCAL:
