@@ -53,6 +53,7 @@ import javax.lang.model.type.TypeKind;
 import javax.swing.JButton;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -89,7 +90,7 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
     public String getText() {
         return NbBundle.getMessage(IntroduceConstantFix.class, "FIX_IntroduceConstant");
     }
-
+    
     /**
      * Creates an 'introduce constant' fix.
      *
@@ -121,7 +122,11 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
             varName = Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), proposed, cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix());
         }
         ClassTree clazz = (ClassTree)constantTarget.getLeaf();
-        IntroduceConstantFix fix = new IntroduceConstantFix(h, info.getJavaSource(), varName, numDuplicates, offset);
+        Element el = info.getTrees().getElement(constantTarget);
+        if (el == null || !(el.getKind().isClass() || el.getKind().isInterface())) {
+            return null;
+        }
+        IntroduceConstantFix fix = new IntroduceConstantFix(h, info.getJavaSource(), varName, numDuplicates, offset, TreePathHandle.create(constantTarget, info));
         fix.setTargetIsInterface(clazz.getKind() == Tree.Kind.INTERFACE);
         return fix;
     }
@@ -152,8 +157,8 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
         }
     }
 
-    public IntroduceConstantFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int offset) {
-        super(handle, js, guessedName, numDuplicates, null, true, true, offset, true);
+    public IntroduceConstantFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int offset, TreePathHandle target) {
+        super(handle, js, guessedName, numDuplicates, null, true, true, offset, true, target);
     }
 
     @Override

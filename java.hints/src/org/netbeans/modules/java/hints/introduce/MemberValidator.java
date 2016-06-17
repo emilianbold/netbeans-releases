@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.java.hints.errors.Utilities;
 
 /**
- * Refactored from IntroduceFix originally by lahvac
  *
  * @author sdedic
  */
-public final class TargetDescription {
-    public final String displayName;
-    public final ElementHandle<TypeElement> type;
-    public final boolean allowForDuplicates;
-    public final boolean anonymous;
-    public final boolean iface;
-    public final boolean canStatic;
-    public final TreePathHandle pathHandle;
-
-    private TargetDescription(String displayName, ElementHandle<TypeElement> type, TreePathHandle pathHandle, boolean allowForDuplicates, boolean anonymous, boolean iface, boolean canStatic) {
-        this.displayName = displayName;
-        this.type = type;
-        this.allowForDuplicates = allowForDuplicates;
-        this.anonymous = anonymous;
-        this.iface = iface;
-        this.canStatic = canStatic;
-        this.pathHandle = pathHandle;
-    }
-
-    public static TargetDescription create(CompilationInfo info, TypeElement type, TreePath path, boolean allowForDuplicates, boolean iface) {
-        boolean canStatic = true;
-        if (iface) {
-            // interface cannot have static methods
-            canStatic = false;
-        } else {
-            if (type.getNestingKind() == NestingKind.ANONYMOUS || 
-                type.getNestingKind() == NestingKind.LOCAL ||
-                (type.getNestingKind() != NestingKind.TOP_LEVEL && !type.getModifiers().contains(Modifier.STATIC))) {
-                canStatic = false;
-            }
-        }
-        return new TargetDescription(Utilities.target2String(type), 
-                ElementHandle.create(type), 
-                TreePathHandle.create(path, info),
-                allowForDuplicates, 
-                type.getSimpleName().length() == 0, iface, canStatic);
-    }
-
-    public String toDebugString() {
-        return type.getBinaryName() + ":" + (allowForDuplicates ? "D" : "") + (anonymous ? "A" : "");
-    }
-    
+public interface MemberValidator {
+    /**
+     * Validates whether that the entered name is correct, and that it does
+     * not conflict with other members of the target.
+     * <p/>
+     * If the declaration overrides other accessible one, the method may return 
+     * minimum access modifiers; UI will restrict the choice.
+     * <p/>
+     * The Validator should issue an information message in that case.
+     * 
+     * @param target the target type
+     * @param n the requested name
+     * @return minimum access modifiers
+     */
+    public MemberSearchResult validateName(TreePathHandle target, String n);
 }

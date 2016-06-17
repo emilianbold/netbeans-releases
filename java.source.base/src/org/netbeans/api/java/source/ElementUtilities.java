@@ -71,10 +71,12 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.DocEnv;
+import java.util.ArrayDeque;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,6 +86,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -109,6 +112,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -318,6 +322,119 @@ public final class ElementUtilities {
             }
         }
         return members;
+    }
+    
+    /**
+     * Finds symbols which satisfy the acceptor visible in the passed scope. The method returns a Map keyed by the
+     * found Elements. Each Element is mapped to the closest Scope which introduced the Element. For example, a field declared
+     * by an outer class will map to that outer class' scope. An accessible field inherited from outer class' superclass
+     * will <b>also</b> map to the outer class' scope. The caller can then determine, based on {@link Element#getEnclosingElement()} and
+     * the mapped Scope whether the symbol is directly declared, or inherited. Non-member symbols (variables, parameters, try resources, ...) 
+     * map to Scope of their defining Method.
+     * <p/>
+     * If an Element from outer Scope is hidden by a similar Element
+     * in inner scope, only the Element visible to the passed Scope is returned. For example, if both the starting (inner) class and its outer class
+     * define method m(), only InnerClass.m() will be returned.
+     * <p/>
+     * Note that {@link Scope#getEnclosingMethod()} returns non-null even for class scopes of local or anonymous classes; check both {@link Scope#getEnclosingClass()}
+     * and {@link Scope#getEnclosingMethod()} and their relationship to get the appropriate Element associated with the Scope.
+     * 
+     * @param scope the initial search scope
+     * @param acceptor the element filter.
+     * @return Mapping of visible and accessible Elements to their defining {@link Scope}s (which introduced them).
+     * @see Scope
+     * @since 2.16
+     */
+    public @NonNull Map<? extends Element, Scope> findElementsAndOrigins(@NonNull Scope scope, ElementAcceptor acceptor) {
+        Parameters.notNull("scope", scope); // NOI18N
+        final Map<Element, Scope> result = new HashMap<>();
+
+        if (acceptor == null) {
+            acceptor = ALL_ACCEPTOR;
+        }
+        Map<String, List<Element>> members = null;
+        Elements elements = JavacElements.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
+        TypeElement cls;
+        Deque<Scope>  outerScopes = new ArrayDeque();
+        Deque<Map>  visibleEls = new ArrayDeque();
+        Element current = null;
+        
+        while (scope != null) {
+            cls = scope.getEnclosingClass();
+            Element e = null;
+            if (cls != null) {
+                ExecutableElement ee = scope.getEnclosingMethod();
+                if (ee != null && ee.getEnclosingElement() != cls) {
+                    e = ee;
+                } else {
+                    e = cls;
+                }
+            }
+            if (e != current) {
+                // push at the scope entry
+                members = new HashMap<>();
+                outerScopes.push(scope);
+                visibleEls.push(members);
+                current = e;
+            }
+            if (cls != null) {
+                for (Element local : scope.getLocalElements()) {
+                    if (acceptor == null || acceptor.accept(local, null)) {
+                        addIfNotHidden(local, members, local.getSimpleName().toString(), elements, types);
+                    }
+                }
+                TypeMirror type = cls.asType();
+                for (Element member : elements.getAllMembers(cls)) {
+                    if (acceptor == null || acceptor.accept(member, type)) {
+                        addIfNotHidden(member, members, member.getSimpleName().toString(), elements, types);
+                    }
+                }
+            } else {
+                for (Element local : scope.getLocalElements()) {
+                    if (!local.getKind().isClass() && !local.getKind().isInterface() &&
+                        (acceptor == null || local.getEnclosingElement() != null && acceptor.accept(local, local.getEnclosingElement().asType()))) {
+                        addIfNotHidden(local, members, local.getSimpleName().toString(), elements, types);
+                    }
+                }
+            }
+            scope = scope.getEnclosingScope();
+        }
+        
+        while (!outerScopes.isEmpty()) {
+            Scope x = outerScopes.pop();
+            Collection<List<Element>> vals = (Collection<List<Element>>)visibleEls.pop().values();
+            for (List<Element> col : vals) {
+                for (Element e : col) {
+                    result.put(e, x);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static final ElementAcceptor ALL_ACCEPTOR = new ElementAcceptor() {
+        @Override
+        public boolean accept(Element e, TypeMirror type) {
+            return true;
+        }
+    };
+    
+    private void addIfNotHidden(Element local, Map<String, List<Element>> members, String name, Elements elements, Types types) {
+        List<Element> namedMembers = members.get(name);
+        if (namedMembers != null) {
+            // PENDING: isHidden will not report variables, which are effectively hidden by anonymous or local class' variables.
+            // there is no way how to denote such hidden local variable/paremeter from the inner class, so such vars should
+            // not be reported.
+            if (isHidden(local, namedMembers, elements, types)) {
+                return;
+            }
+        } else {
+            namedMembers = new ArrayList<>();
+            members.put(name, namedMembers);
+        }
+        namedMembers.add(local);
     }
     
     /**Return members declared in the given scope.
