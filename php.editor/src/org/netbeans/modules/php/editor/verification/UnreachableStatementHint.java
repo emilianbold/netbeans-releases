@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -89,14 +89,14 @@ public class UnreachableStatementHint extends HintRule {
     private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
-        private final Stack<CheckedBlock> blocks;
+        private final ArrayDeque<CheckedBlock> blocks;
         private final List<CheckedBlock> processedBlocks;
         private final List<Hint> hints;
 
         public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            blocks = new Stack<>();
+            blocks = new ArrayDeque<>();
             processedBlocks = new ArrayList<>();
             hints = new ArrayList<>();
         }
@@ -235,7 +235,7 @@ public class UnreachableStatementHint extends HintRule {
         }
 
         private void processLastStatement(Statement node) {
-            if (!blocks.empty()) {
+            if (!blocks.isEmpty()) {
                 CheckedBlock lastCheckedBlock = blocks.peek();
                 lastCheckedBlock.setLastStatement(node);
             }
@@ -243,7 +243,7 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void scan(ASTNode node) {
-            if (!blocks.empty()) {
+            if (!blocks.isEmpty()) {
                 CheckedBlock lastCheckedBlock = blocks.peek();
                 if (lastCheckedBlock.hasLastStatement() && lastCheckedBlock.getUnreachableStatement() == null) {
                     lastCheckedBlock.setUnreachableStatement(node);

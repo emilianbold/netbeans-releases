@@ -41,20 +41,20 @@
  */
 package org.netbeans.modules.php.editor.codegen;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -122,11 +122,11 @@ public class SemiAttribute extends DefaultVisitor {
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV"); //NOI18N
 
     public DefinitionScope global;
-    private Stack<DefinitionScope> scopes = new Stack<>();
+    private ArrayDeque<DefinitionScope> scopes = new ArrayDeque<>();
     private Map<ASTNode, AttributedElement> node2Element = new HashMap<>();
     private int offset;
     private ParserResult info;
-    private Stack<ASTNode> nodes = new Stack<>();
+    private ArrayDeque<ASTNode> nodes = new ArrayDeque<>();
 
     public SemiAttribute(ParserResult info) {
         this(info, -1);
@@ -535,9 +535,11 @@ public class SemiAttribute extends DefaultVisitor {
 
     private ClassElementAttribute getCurrentClassElement() {
         ClassElementAttribute c = null;
-        for (int i = scopes.size() - 1; i >= 0; i--) {
-            DefinitionScope scope = scopes.get(i);
-            if (scope != null && scope.enclosingClass != null) {
+        Iterator<DefinitionScope> elements = scopes.descendingIterator();
+        while (elements.hasNext()) {
+            DefinitionScope scope = elements.next();
+            if (scope != null
+                    && scope.enclosingClass != null) {
                 c = scope.enclosingClass;
                 break;
             }
@@ -662,9 +664,9 @@ public class SemiAttribute extends DefaultVisitor {
 
     private String getContextClassName() {
         String contextClassName = null;
-        Enumeration<DefinitionScope> elements = scopes.elements();
-        while (elements.hasMoreElements()) {
-            DefinitionScope nextElement = elements.nextElement();
+        Iterator<DefinitionScope> elements = scopes.descendingIterator();
+        while (elements.hasNext()) {
+            DefinitionScope nextElement = elements.next();
             if (nextElement.enclosingClass != null) {
                 contextClassName = nextElement.enclosingClass.getName();
             }
@@ -674,9 +676,9 @@ public class SemiAttribute extends DefaultVisitor {
 
     private String getContextSuperClassName() {
         String contextClassName = null;
-        Enumeration<DefinitionScope> elements = scopes.elements();
-        while (elements.hasMoreElements()) {
-            DefinitionScope nextElement = elements.nextElement();
+        Iterator<DefinitionScope> elements = scopes.descendingIterator();
+        while (elements.hasNext()) {
+            DefinitionScope nextElement = elements.next();
             if (nextElement.enclosingClass != null && nextElement.enclosingClass.superClass != null) {
                 contextClassName = nextElement.enclosingClass.superClass.getName();
             }
