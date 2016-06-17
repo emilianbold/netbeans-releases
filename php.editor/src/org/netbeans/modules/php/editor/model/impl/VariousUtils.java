@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -209,7 +210,7 @@ public final class VariousUtils {
     }
 
     static String extractTypeFroVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
-        Stack<VariableBase> stack = new Stack<>();
+        ArrayDeque<VariableBase> stack = new ArrayDeque<>();
         String typeName = null;
         createVariableBaseChain(varBase, stack);
         while (!stack.isEmpty() && stack.peek() != null) {
@@ -703,10 +704,10 @@ public final class VariousUtils {
         return result;
     }
 
-    public static Stack<? extends ModelElement> getElements(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
-        Stack<ModelElement> emptyStack = new Stack<>();
-        Stack<ModelElement> retval = new Stack<>();
-        Stack<Collection<? extends TypeScope>> stack = new Stack<>();
+    public static ArrayDeque<? extends ModelElement> getElements(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
+        ArrayDeque<ModelElement> emptyStack = new ArrayDeque<>();
+        ArrayDeque<ModelElement> retval = new ArrayDeque<>();
+        ArrayDeque<Collection<? extends TypeScope>> stack = new ArrayDeque<>();
 
         TypeScope type;
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
@@ -888,7 +889,7 @@ public final class VariousUtils {
         return retval;
     }
 
-    private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {
+    private static void createVariableBaseChain(VariableBase node, ArrayDeque<VariableBase> stack) {
         stack.push(node);
         if (node instanceof MethodInvocation) {
             createVariableBaseChain(((MethodInvocation) node).getDispatcher(), stack);

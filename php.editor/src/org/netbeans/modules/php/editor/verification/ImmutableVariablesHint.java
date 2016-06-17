@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -127,7 +127,7 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
-        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final ArrayDeque<ASTNode> parentNodes = new ArrayDeque<>();
         private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<>();
         private final List<Hint> hints = new ArrayList<>();
         private boolean variableAssignment;

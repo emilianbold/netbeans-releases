@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -146,7 +146,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
     private final class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
-        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final ArrayDeque<ASTNode> parentNodes = new ArrayDeque<>();
         private final Map<ASTNode, List<Variable>> initializedVariablesAll = new HashMap<>();
         private final Map<ASTNode, List<Variable>> uninitializedVariablesAll = new HashMap<>();
         private final List<Hint> hints = new ArrayList<>();

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -184,7 +185,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
 
                             @Override
                             public Set<Modifier> getModifiers() {
-                                return null;
+                                return Collections.emptySet();
                             }
 
                             @Override
