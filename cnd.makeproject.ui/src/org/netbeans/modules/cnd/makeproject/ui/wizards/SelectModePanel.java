@@ -141,23 +141,14 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     private void addListeners(){
-        ((ExpandableEditableComboBox)sourceFolder).addChangeListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refreshInstruction(true);
-            }
+        ((ExpandableEditableComboBox)sourceFolder).addChangeListener((ActionEvent e) -> {
+            refreshInstruction(true);
         });
-        simpleMode.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refreshInstruction(false);
-            }
+        simpleMode.addActionListener((ActionEvent e) -> {
+            refreshInstruction(false);
         });
-        advancedMode.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refreshInstruction(false);
-            }
+        advancedMode.addActionListener((ActionEvent e) -> {
+            refreshInstruction(false);
         });
         //refreshInstruction();
     }
@@ -711,31 +702,22 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
                 if (tool == null || tool.isEmpty()) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
+                    SwingUtilities.invokeLater(() -> {
                         org.openide.awt.Mnemonics.setLocalizedText(simpleMode, NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonText")); // NOI18N
                         instructions.setText(NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionText")); // NOI18N
-                        }
                     });
                 } else {
                     final String message1 = NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonSpecifiedText", tool); // NOI18N
                     final String message2 = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionSpecifiedText", toolsInfo);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            org.openide.awt.Mnemonics.setLocalizedText(simpleMode, message1);
-                            instructions.setText(message2);
-                        }
+                    SwingUtilities.invokeLater(() -> {
+                        org.openide.awt.Mnemonics.setLocalizedText(simpleMode, message1);
+                        instructions.setText(message2);
                     });
                 }
             } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        org.openide.awt.Mnemonics.setLocalizedText(simpleMode, NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonText")); // NOI18N
-                        instructions.setText(NbBundle.getMessage(SelectModePanel.class, "SelectModeAdvancedInstructionText")); // NOI18N
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    org.openide.awt.Mnemonics.setLocalizedText(simpleMode, NbBundle.getMessage(SelectModePanel.class, "SimpleModeButtonText")); // NOI18N
+                    instructions.setText(NbBundle.getMessage(SelectModePanel.class, "SelectModeAdvancedInstructionText")); // NOI18N
                 });
             }
         }

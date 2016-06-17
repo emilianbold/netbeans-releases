@@ -190,12 +190,12 @@ public class VectorConfiguration<E> implements Cloneable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (E e : value) {
+        value.forEach((e) -> {
             if (sb.length() > 0) {
                 sb.append(',');
             }
             sb.append(e);
-        }
+        });
         return "{value=[" + sb + "] dirty=" + dirty +'}'; // NOI18N
     }
 }

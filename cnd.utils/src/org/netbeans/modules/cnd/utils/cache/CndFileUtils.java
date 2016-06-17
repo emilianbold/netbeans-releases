@@ -825,17 +825,22 @@ public final class CndFileUtils {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            clearCachesAboutFile(fe);
+            final FSPath file = FSPath.toFSPath(fe.getFile());
+            cleanCachesImpl(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            final FSPath parent = clearCachesAboutFile(fe);
+            final FSPath newFile = FSPath.toFSPath(fe.getFile());
+            cleanCachesImpl(newFile);
+            
+            final FSPath parent = newFile.getParent();
             // update info about old file as well
             if (parent != null) {
                 final String ext = fe.getExt();
                 final String oldName = (ext.length() == 0) ? fe.getName() : (fe.getName() + "." + ext); // NOI18N
-                clearCachesAboutFile(parent.getChild(oldName), false);
+                final FSPath oldFile = parent.getChild(oldName);
+                cleanCachesImpl(oldFile);
             }
         }
 
@@ -847,22 +852,6 @@ public final class CndFileUtils {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // no update
-        }
-
-        private FSPath clearCachesAboutFile(FileEvent fe) {
-            return clearCachesAboutFile(FSPath.toFSPath(fe.getFile()), false);
-        }
-        
-        private FSPath clearCachesAboutFile(FSPath f, boolean withParent) {
-            cleanCachesImpl(f);
-            if (withParent) {
-                FSPath parent = f.getParent();
-                if (parent != null) {
-                    cleanCachesImpl(parent);
-                }
-                return parent;
-            }
-            return null;
         }
         
         private String checkSeparators(FileObject fo) {
@@ -903,6 +892,7 @@ public final class CndFileUtils {
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("clean cache for %s->%s\n", absPath, removed);
             }
+            foCache.get(fsPath.getFileSystem()).remove(fsPath.getPath());
             invalidateFile(fsPath.getFileSystem(), file, absPath);
         }
     }

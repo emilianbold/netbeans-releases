@@ -44,10 +44,7 @@ package org.netbeans.modules.nativeexecution.support;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import org.openide.awt.NotificationDisplayer;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -76,14 +73,15 @@ public class MiscUtils {
             return;
         }
         wasShown = true;
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
-        longText = "<html>" + longText + "</html>"; // NOI18N
-        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
+        NativeExecutionUserNotification.getDefault().showErrorNotification(title, shortText, longText);
+//        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
+//        longText = "<html>" + longText + "</html>"; // NOI18N
+//        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
     
-    public static JComponent getNotificationLabel(String text) {
-        return new JLabel(text);
-    }
+//    public static JComponent getNotificationLabel(String text) {
+//        return new JLabel(text);
+//    }
     
     /**
      * If an sftp exception occurs, a question arises, whether we should call ChannelSftp.quit().

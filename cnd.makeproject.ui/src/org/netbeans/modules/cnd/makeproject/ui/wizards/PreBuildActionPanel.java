@@ -103,9 +103,9 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                 update(e);
             }
         };
-        for(ScriptTypeItem item : ScriptTypeItem.items) {
+        ScriptTypeItem.items.forEach((item) -> {
             scriptTypeComboBox.addItem(item);
-        }
+        });
         
         // init focus
         runConfigureCheckBox.requestFocus();
@@ -768,12 +768,8 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                     }
                 } else if (customCommandRadioButton.isSelected()) {
                     if (customCommandTextField.getText().trim().isEmpty()) {
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                commandTextArea.setText("");
-                            }
+                        SwingUtilities.invokeLater(() -> {
+                            commandTextArea.setText("");
                         });
                         String msg = NbBundle.getMessage(BuildActionsPanel.class, "CUSTOM_COMMAND_EMPTY"); // NOI18N
                         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
@@ -790,32 +786,29 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
             final String finalConfigureArgumentsTextField = newConfigureArgumentsTextField;
             final String finalConfigureRunFolderTextField = newConfigureRunFolderTextField;
             final String finalCommandText = newCommandText;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (startCount < generation.get()) {
-                        return;
-                    }                
-                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-                    try {
-                        removeDocumentLiseners();
-                        if (finalConfigureRunFolderTextField != null && !configureRunFolderTextField.getText().equals(finalConfigureArgumentsTextField)) {
-                            configureRunFolderTextField.setText(finalConfigureRunFolderTextField);
-                        }
-                        if (finalConfigureNameTextField != null && !configureNameTextField.getText().equals(finalConfigureNameTextField)) {
-                            configureNameTextField.setText(finalConfigureNameTextField);
-                        }
-                        if (finalConfigureArgumentsTextField != null && !configureArgumentsTextField.getText().equals(finalConfigureArgumentsTextField)) {
-                            configureArgumentsTextField.setText(finalConfigureArgumentsTextField);
-                        }
-                        if (finalCommandText != null && !commandTextArea.getText().equals(finalCommandText)) {
-                            commandTextArea.setText(finalCommandText);
-                        }
-                    } finally {
-                        addDocumentLiseners();
-                    }
-                    controller.stateChanged(null);
+            SwingUtilities.invokeLater(() -> {
+                if (startCount < generation.get()) {
+                    return;
                 }
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+                try {
+                    removeDocumentLiseners();
+                    if (finalConfigureRunFolderTextField != null && !configureRunFolderTextField.getText().equals(finalConfigureArgumentsTextField)) {
+                        configureRunFolderTextField.setText(finalConfigureRunFolderTextField);
+                    }
+                    if (finalConfigureNameTextField != null && !configureNameTextField.getText().equals(finalConfigureNameTextField)) {
+                        configureNameTextField.setText(finalConfigureNameTextField);
+                    }
+                    if (finalConfigureArgumentsTextField != null && !configureArgumentsTextField.getText().equals(finalConfigureArgumentsTextField)) {
+                        configureArgumentsTextField.setText(finalConfigureArgumentsTextField);
+                    }
+                    if (finalCommandText != null && !commandTextArea.getText().equals(finalCommandText)) {
+                        commandTextArea.setText(finalCommandText);
+                    }
+                } finally {
+                    addDocumentLiseners();
+                }
+                controller.stateChanged(null);
             });
         }
     }
@@ -824,9 +817,9 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         static final List<ScriptTypeItem> items;
         static {
             items = new ArrayList<>();
-            for (PreBuildArtifactProvider provider : PreBuildSupport.getPreBuildProviders()) {
+            PreBuildSupport.getPreBuildProviders().forEach((provider) -> {
                 items.add(new ScriptTypeItem(provider));
-            }
+            });
         }
         
         private final PreBuildArtifactProvider provider;

@@ -210,13 +210,7 @@ public final class OutputUtils {
         io.select();
         if (IOTerm.isSupported(io)) {
             // XXX is there a better way ?
-            final Term term = IOTerm.term(io);
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    term.requestFocusInWindow();
-                }
-            });
+             IOTerm.requestFocus(io);            
         }
     }
 

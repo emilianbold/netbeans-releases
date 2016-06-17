@@ -194,16 +194,16 @@ public class MakeCustomizerProviderImpl implements MakeCustomizerProvider {
         String dialogTitle;
         if (items != null && !items.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            for (Item i : items) {
+            items.forEach((i) -> {
                 sb.append(i.getName()).append(", "); //NOI18N
-            }
+            });
             String name = sb.toString().substring(0, sb.length() - 2);
             dialogTitle = NbBundle.getMessage(MakeCustomizerProviderImpl.class, "LBL_File_Customizer_Title", name); // NOI18N 
         } else if (folders != null && !folders.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            for (Folder f : folders) {
+            folders.forEach((f) -> {
                 sb.append(f.getName()).append(", "); //NOI18N
-            }
+            });
             String name = sb.toString().substring(0, sb.length() - 2);
             dialogTitle = NbBundle.getMessage(MakeCustomizerProviderImpl.class, "LBL_Folder_Customizer_Title", name); // NOI18N 
         } else {
@@ -275,89 +275,86 @@ public class MakeCustomizerProviderImpl implements MakeCustomizerProvider {
             if (currentCommand.equals(COMMAND_OK) || currentCommand.equals(COMMAND_APPLY)) {
                 makeCustomizer.save();
                 //non UI actions such as as update of MakeConfiguration accessing filesystem should be invoked from non EDT
-                RP_SAVE.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        int previousVersion = projectDescriptor.getVersion();
-                        int currentVersion = ConfigurationDescriptor.CURRENT_VERSION;
-                        if (previousVersion < currentVersion) {
-                            // Check
-                            boolean issueRequiredProjectBuildWarning = false;
-                            if (previousVersion < 76) {
-                                for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
-                                    MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
-                                    if (!makeConfiguration.isMakefileConfiguration()) {
-                                        continue;
-                                    }
-                                    List<ProjectItem> projectLinkItems = makeConfiguration.getRequiredProjectsConfiguration().getValue();
-                                    for (ProjectItem projectItem : projectLinkItems) {
-                                        if (projectItem.getMakeArtifact().getBuild()) {
-                                            issueRequiredProjectBuildWarning = true;
-                                            break;
-                                        }
+                RP_SAVE.post(() -> {
+                    int previousVersion = projectDescriptor.getVersion();
+                    int currentVersion = ConfigurationDescriptor.CURRENT_VERSION;
+                    if (previousVersion < currentVersion) {
+                        // Check
+                        boolean issueRequiredProjectBuildWarning = false;
+                        if (previousVersion < 76) {
+                            for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
+                                MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
+                                if (!makeConfiguration.isMakefileConfiguration()) {
+                                    continue;
+                                }
+                                List<ProjectItem> projectLinkItems = makeConfiguration.getRequiredProjectsConfiguration().getValue();
+                                for (ProjectItem projectItem : projectLinkItems) {
+                                    if (projectItem.getMakeArtifact().getBuild()) {
+                                        issueRequiredProjectBuildWarning = true;
+                                        break;
                                     }
                                 }
                             }
-
-                            String txt;
-
-                            if (issueRequiredProjectBuildWarning) {
-                                txt = getString("UPGRADE_RQ_TXT");
-                            } else {
-                                txt = getString("UPGRADE_TXT");
-                            }
-                            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-                            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                                return;
-                            }
-                            projectDescriptor.setVersion(currentVersion);
                         }
-                            ConfigurationDescriptorProvider.SnapShot delta = null;
-                            if (folders == null && items == null) { // project
-                                ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                                delta = (Delta) cdp.startModifications();
-                            }
-                            List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
-                            List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
-                            List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
-                            List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
-                            Configuration oldActive = projectDescriptor.getConfs().getActive();
-                            if (oldActive != null) {
-                                oldActive = oldActive.cloneConf();
-                            }
-                            Configuration[] oldConf = projectDescriptor.getConfs().toArray();
-                            Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
-                            Configuration[] newConf = clonedProjectdescriptor.getConfs().toArray();
-
-                            projectDescriptor.assign(clonedProjectdescriptor);
-                            projectDescriptor.getConfs().fireChangedConfigurations(oldConf, newConf);
-                            projectDescriptor.setModified();
-                            projectDescriptor.save(); // IZ 133606
-
-                            // IZ#179995
-                            MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
-                            if (query != null) {
-                                query.update();
-                            }
-                            if (folders == null && items == null) { // project
-                                ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                                cdp.endModifications(delta, true, null);
-                            } else {
-                                if (folders != null) {
-                                    for (Folder folder : folders) {
-                                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, null);
-                                    } 
-                                }
-                                if (items != null) {
-                                    for (Item item : items) {
-                                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, null, item);
-                                    }
-                                }
-                            }
-                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
-                            ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
-                            ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
+                        
+                        String txt;
+                        
+                        if (issueRequiredProjectBuildWarning) {
+                            txt = getString("UPGRADE_RQ_TXT");
+                        } else {
+                            txt = getString("UPGRADE_TXT");
+                        }
+                        NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+                        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                            return;
+                        }
+                        projectDescriptor.setVersion(currentVersion);
                     }
+                    ConfigurationDescriptorProvider.SnapShot delta = null;
+                    if (folders == null && items == null) { // project
+                        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        delta = (Delta) cdp.startModifications();
+                    }
+                    List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
+                    List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                    List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                    List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
+                    Configuration oldActive = projectDescriptor.getConfs().getActive();
+                    if (oldActive != null) {
+                        oldActive = oldActive.cloneConf();
+                    }
+                    Configuration[] oldConf = projectDescriptor.getConfs().toArray();
+                    Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
+                    Configuration[] newConf = clonedProjectdescriptor.getConfs().toArray();
+                    
+                    projectDescriptor.assign(clonedProjectdescriptor);
+                    projectDescriptor.getConfs().fireChangedConfigurations(oldConf, newConf);
+                    projectDescriptor.setModified();
+                    projectDescriptor.save(); // IZ 133606
+                    
+                    // IZ#179995
+                    MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
+                    if (query != null) {
+                        query.update();
+                    }
+                    if (folders == null && items == null) { // project
+                        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        cdp.endModifications(delta, true, null);
+                    } else {
+                        if (folders != null) {
+                            folders.forEach((folder) -> {
+                                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, null);
+                            });
+                        }
+                        if (items != null) {
+                            items.forEach((item) -> {
+                                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, null, item);
+                            });
+                        }
+                    }
+                    ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                    ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
+                    ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
                 });
 
             }

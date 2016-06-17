@@ -57,14 +57,10 @@ public class ConfirmPlatformMismatchImpl implements ConfirmPlatformMismatch {
 
         @Override
         public ConfirmPlatformMismatch create(final String dialogTitle, final String message) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
-                    DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(message), dialogTitle, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
-                    DialogDisplayer.getDefault().notify(nd);
-                }
+            SwingUtilities.invokeLater(() -> {
+                Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
+                DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(message), dialogTitle, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
+                DialogDisplayer.getDefault().notify(nd);
             });
             return null;
         }

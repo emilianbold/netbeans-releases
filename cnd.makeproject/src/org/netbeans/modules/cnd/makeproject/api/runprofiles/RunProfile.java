@@ -116,7 +116,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
     public static final int CONSOLE_TYPE_INTERNAL = 3;
-    public static final String[] consoleTypeNames = {
+    private static final String[] consoleTypeNames = {
         //getString("ConsoleType_Default"), // NOI18N // Carefull: names no longer match CONSOLE_TYPE. Cleanup when debugger works again.
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
@@ -341,19 +341,15 @@ public final class RunProfile implements ConfigurationAuxObject {
             final String[] patharray = new String[1];
             patharray[0] = null;
 
-            Thread thread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
-
-                    while (st.hasMoreTokens()) {
-                        String dir = st.nextToken();
-                        File file = new File(dir, term);
-                        if (file.exists()) {
-                            patharray[0] = file.getAbsolutePath();
-                            break;
-                        }
+            Thread thread = new Thread(() -> {
+                StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
+                
+                while (st.hasMoreTokens()) {
+                    String dir = st.nextToken();
+                    File file = new File(dir, term);
+                    if (file.exists()) {
+                        patharray[0] = file.getAbsolutePath();
+                        break;
                     }
                 }
             });

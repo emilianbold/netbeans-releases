@@ -64,20 +64,16 @@ public interface MakeCommandFlagsProviderFactory {
 
         @Override
         public MakeCommandFlagsProvider createProvider() {
-            return new MakeCommandFlagsProvider() {
-
-                @Override
-                public boolean flagValue(String commandID, Lookup context, Project project, MakeConfiguration conf, String flag, boolean defaultFlagValue) {
-                    if (MakeCommandFlagsProvider.PRE_BUILD_FIRST.equals(flag)) {//NOI18N
-                        return conf.getPreBuildConfiguration().getPreBuildFirst().getValue();
-                    } else if (MakeCommandFlagsProvider.BUILD_FIRST.equals(flag)) {//NOI18N
-                        RunProfile profile = conf.getProfile();
-                        if (profile != null) {
-                            return profile.getBuildFirst();
-                        }
+            return (String commandID, Lookup context, Project project, MakeConfiguration conf, String flag, boolean defaultFlagValue) -> {
+                if (MakeCommandFlagsProvider.PRE_BUILD_FIRST.equals(flag)) {//NOI18N
+                    return conf.getPreBuildConfiguration().getPreBuildFirst().getValue();
+                } else if (MakeCommandFlagsProvider.BUILD_FIRST.equals(flag)) {//NOI18N
+                    RunProfile profile = conf.getProfile();
+                    if (profile != null) {
+                        return profile.getBuildFirst();
                     }
-                    return defaultFlagValue;
                 }
+                return defaultFlagValue;
             };
         }
     };

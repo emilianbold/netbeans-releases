@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.Authentication;
 
 /**
  *
@@ -79,5 +79,9 @@ public final class AuthenticationUtils {
         } else {
             return null;
         }
+    }
+    
+    public static void changeAuth(ExecutionEnvironment env, Authentication auth) {
+        ConnectionManagerAccessor.getDefault().changeAuth(env, auth);
     }
 }

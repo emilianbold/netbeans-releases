@@ -115,19 +115,16 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
         setMinimumSize(new Dimension(400, 200));
         initComponents();
-        addHierarchyListener(new HierarchyListener() {
-            @Override
-            public void hierarchyChanged(HierarchyEvent e) {
-                if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
-                    if (!e.getChanged().isVisible()){
-                        if (standAloneDialog) {
-                            panelPreferences.putInt("dialogSizeW", getSize().width); // NOI18N
-                            panelPreferences.putInt("dialogSizeH", getSize().height); // NOI18N
-                        }
-                        if (selectedConfiguration != null) {
-                            int index = launchers.indexOf(selectedConfiguration);
-                            panelPreferences.putInt("lastSelecion", index); // NOI18N
-                        }
+        addHierarchyListener((HierarchyEvent e) -> {
+            if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+                if (!e.getChanged().isVisible()){
+                    if (standAloneDialog) {
+                        panelPreferences.putInt("dialogSizeW", getSize().width); // NOI18N
+                        panelPreferences.putInt("dialogSizeH", getSize().height); // NOI18N
+                    }
+                    if (selectedConfiguration != null) {
+                        int index = launchers.indexOf(selectedConfiguration);
+                        panelPreferences.putInt("lastSelecion", index); // NOI18N
                     }
                 }
             }
@@ -137,12 +134,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 	envVarTable = new JTable(envVarModel);
 	envVarModel.setTable(envVarTable);
 	envVarScrollPane.setViewportView(envVarTable);
-        envVarTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                validateEnvButtons(e);
-            }
-        });
+        envVarTable.getSelectionModel().addListSelectionListener(this::validateEnvButtons);
 
         manager.addPropertyChangeListener(listener);
         instance = new LaunchersConfig(project);
@@ -154,12 +146,9 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         tree.setRootVisible(false);
         LauncersListPanel.add(tree, BorderLayout.CENTER);
         update();
-        final ActionListener actionListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!resetFields) {
-                    updateListViewItem();
-                }
+        final ActionListener actionListener = (ActionEvent e) -> {
+            if (!resetFields) {
+                updateListViewItem();
             }
         };
         publicCheckBox.addActionListener(actionListener);
@@ -721,24 +710,21 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             } catch (PropertyVetoException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            SwingUtilities.invokeLater(new Runnable(){
-                @Override
-                public void run() {
-                    Node[] nodes = manager.getRootContext().getChildren().getNodes();
-                    int i = 0;
-                    Node nodeToSelect = null;
-                    for (; i < nodes.length; i++) {
-                        if (nodes[i].getLookup().lookup(LauncherConfig.class) == current) {
-                            nodeToSelect = nodes[i];
-                            break;
-                        }
+            SwingUtilities.invokeLater(() -> {
+                Node[] nodes1 = manager.getRootContext().getChildren().getNodes();
+                int i = 0;
+                Node nodeToSelect = null;
+                for (; i < nodes1.length; i++) {
+                    if (nodes1[i].getLookup().lookup(LauncherConfig.class) == current) {
+                        nodeToSelect = nodes1[i];
+                        break;
                     }
-                    if (nodeToSelect != null){
-                        try {
-                            manager.setSelectedNodes(new Node[]{nodeToSelect});
-                        } catch (PropertyVetoException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                }
+                if (nodeToSelect != null){
+                    try {
+                        manager.setSelectedNodes(new Node[]{nodeToSelect});
+                    } catch (PropertyVetoException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });
@@ -776,24 +762,21 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             } catch (PropertyVetoException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            SwingUtilities.invokeLater(new Runnable(){
-                @Override
-                public void run() {
-                    Node[] nodes = manager.getRootContext().getChildren().getNodes();
-                    int i = 0;
-                    Node nodeToSelect = null;
-                    for (; i < nodes.length; i++) {
-                        if (nodes[i].getLookup().lookup(LauncherConfig.class) == current) {
-                            nodeToSelect = nodes[i];
-                            break;
-                        }
+            SwingUtilities.invokeLater(() -> {
+                Node[] nodes1 = manager.getRootContext().getChildren().getNodes();
+                int i = 0;
+                Node nodeToSelect = null;
+                for (; i < nodes1.length; i++) {
+                    if (nodes1[i].getLookup().lookup(LauncherConfig.class) == current) {
+                        nodeToSelect = nodes1[i];
+                        break;
                     }
-                    if (nodeToSelect != null){
-                        try {
-                            manager.setSelectedNodes(new Node[]{nodeToSelect});
-                        } catch (PropertyVetoException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                }
+                if (nodeToSelect != null){
+                    try {
+                        manager.setSelectedNodes(new Node[]{nodeToSelect});
+                    } catch (PropertyVetoException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });
@@ -804,12 +787,6 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         if (perm[0] == 0 && perm[1] == 1) {
             updateSelectedConfiguration();
             Node[] selectedNodes = manager.getSelectedNodes();
-            final LaunchersConfig.LauncherConfig current;
-            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
-                current = ((LauncherNode) selectedNodes[0]).getConfiguration();
-            } else {
-                current = null;
-            }
             ArrayList<LaunchersConfig.LauncherConfig> copy = new ArrayList<>(launchers);
             for (int i = 0; i < perm.length; i++) {
                 launchers.set(perm[i], copy.get(i));

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -87,7 +88,7 @@ public class CCCCompilerCustomizerNode {
             }
             set1.put(new VectorNodeProp(cconf.getIncludeDirectories(), cconf.getMaster() != null ? cconf.getInheritIncludes() : null, cconf.getOwner().getBaseFSPath(), 
                     new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()},
-                    true, false, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
+                    true, JFileChooser.DIRECTORIES_ONLY, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
                 private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-I"); //NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
@@ -114,7 +115,7 @@ public class CCCCompilerCustomizerNode {
             }
             set1.put(new VectorNodeProp(cconf.getIncludeFiles(), cconf.getMaster() != null ? cconf.getInheritFiles() : null, cconf.getOwner().getBaseFSPath(), 
                     new String[]{"IncludeFiles", getString("IncludeFilesTxt"), getString("IncludeFilesHint"), inheritedValues.toString()},
-                    true, false, new HelpCtx("AddtlIncludeFiles")){// NOI18N
+                    true, JFileChooser.FILES_ONLY, new HelpCtx("AddtlIncludeFiles")){// NOI18N
                 private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-include"); //NOI18N
                 @Override
                 protected List<String> convertToList(String text) {

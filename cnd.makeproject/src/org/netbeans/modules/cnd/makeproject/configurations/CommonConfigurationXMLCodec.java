@@ -650,18 +650,15 @@ public abstract class CommonConfigurationXMLCodec
                 });
             }
             xes.elementClose(DICTIONARY_ELEMENTS);
-            res = new Dictionaries() {
-                @Override
-                public String getId(String dictionaryID, String value) {
-                    String id = null;
-                    if ("flags".equals(dictionaryID)) { // NOI18N
-                        int i = d.indexOf(value);
-                        if ( i>=0 ) {
-                            return ""+i;  // NOI18N
-                        }
+            res = (String dictionaryID, String value) -> {
+                String id = null;
+                if ("flags".equals(dictionaryID)) { // NOI18N
+                    int i = d.indexOf(value);
+                    if ( i>=0 ) {
+                        return ""+i;  // NOI18N
                     }
-                    return id;
                 }
+                return id;
             };
         }
         return res;
@@ -724,9 +721,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (qmake.getCustomDefs().getModified()) {
             xes.elementOpen(QT_DEFS_LIST_ELEMENT);
-            for (String line : qmake.getCustomDefs().getValue()) {
+            qmake.getCustomDefs().getValue().forEach((line) -> {
                 xes.element(LIST_ELEMENT, line);
-            }
+            });
             xes.elementClose(QT_DEFS_LIST_ELEMENT);
         }
         xes.elementClose(QT_ELEMENT);
@@ -1389,7 +1386,7 @@ public abstract class CommonConfigurationXMLCodec
     public static void writeLibrariesConfiguration(XMLEncoderStream xes, LibrariesConfiguration librariesConfiguration) {
         xes.elementOpen(LINKER_LIB_ITEMS_ELEMENT);
         List<LibraryItem> libraryItems = librariesConfiguration.getValue();
-        for (LibraryItem item : libraryItems) {
+        libraryItems.forEach((item) -> {
             if (item instanceof LibraryItem.ProjectItem) {
                 xes.elementOpen(LINKER_LIB_PROJECT_ITEM_ELEMENT);
                 writeMakeArtifact(xes, ((LibraryItem.ProjectItem) item).getMakeArtifact());
@@ -1403,7 +1400,7 @@ public abstract class CommonConfigurationXMLCodec
             } else if (item instanceof LibraryItem.OptionItem) {
                 xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) item).getLibraryOption());
             }
-        }
+        });
         xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
     }
 
@@ -1411,9 +1408,9 @@ public abstract class CommonConfigurationXMLCodec
         List<LibraryItem.ProjectItem> projectItems = requiredProjectsConfiguration.getValue();
         if (!projectItems.isEmpty()) {
             xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
-            for (LibraryItem.ProjectItem item : projectItems) {
+            projectItems.forEach((item) -> {
                 writeMakeArtifact(xes, item.getMakeArtifact());
-            }
+            });
             xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
         }
     }
@@ -1441,7 +1438,7 @@ public abstract class CommonConfigurationXMLCodec
         }
         xes.elementOpen(PACK_FILES_LIST_ELEMENT);
         List<PackagerFileElement> filesList = packagingConfiguration.getFiles().getValue();
-        for (PackagerFileElement elem : filesList) {
+        filesList.forEach((elem) -> {
             xes.element(PACK_FILE_LIST_ELEMENT,
                     new AttrValuePair[]{
                         new AttrValuePair(TYPE_ATTR, "" + elem.getType().toString()), // NOI18N
@@ -1451,20 +1448,20 @@ public abstract class CommonConfigurationXMLCodec
                         new AttrValuePair(OWNER_ATTR, "" + elem.getOwner()), // NOI18N
                         new AttrValuePair(GROUP_ATTR, "" + elem.getGroup()), // NOI18N
                     });
-        }
+        });
         xes.elementClose(PACK_FILES_LIST_ELEMENT);
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
-            for (PackagerInfoElement elem : infoList) {
+            infoList.forEach((elem) -> {
                 xes.element(PACK_INFO_LIST_ELEMENT,
                         new AttrValuePair[]{
                             new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
                             new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
                             new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
                         });
-            }
+            });
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
             if (!packagingConfiguration.getAdditionalInfo().getValue().isEmpty()) {
                 writeList(xes, PACK_ADDITIONAL_INFOS_LIST_ELEMENT, packagingConfiguration.getAdditionalInfo().getValue());
@@ -1581,9 +1578,9 @@ public abstract class CommonConfigurationXMLCodec
             return;
         }
         xes.elementOpen(tag);
-        for (String entry : list) {
+        list.forEach((entry) -> {
             xes.element(listTag, conv.convert(entry));
-        }
+        });
         xes.elementClose(tag);
     }
 
@@ -1626,13 +1623,7 @@ public abstract class CommonConfigurationXMLCodec
         public String convert(String orig);
     }
     
-    private static final StringConverter EMPTY_CONVERTER = new StringConverter() {
-
-        @Override
-        public String convert(String orig) {
-            return orig;
-        }
-    };    
+    private static final StringConverter EMPTY_CONVERTER = (String orig) -> orig;    
 
     private static final class IncludeConverterImpl implements StringConverter {
 
@@ -1653,18 +1644,18 @@ public abstract class CommonConfigurationXMLCodec
                 // don't report CancellationException
             }
             if (!environment.isEmpty()) {
-                for (String envVariableName : caConf.getEnvironmentVariables().getValue()) {
+                caConf.getEnvironmentVariables().getValue().forEach((envVariableName) -> {
                     String toReplace = environment.get(envVariableName);
                     // for now we support abs paths replacements
-                    if (toReplace != null && !toReplace.isEmpty() && 
-                        CndPathUtilities.isPathAbsolute(toReplace)) { 
+                    if (toReplace != null && !toReplace.isEmpty() &&
+                            CndPathUtilities.isPathAbsolute(toReplace)) { 
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
                         toReplace = toReplace.replace('\\', '/');
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
                     } else {
                         System.err.println("env Variable " + envVariableName + " with unexpected value: " + toReplace);
                     }
-                }
+                });
             }
         }
         
@@ -1690,7 +1681,7 @@ public abstract class CommonConfigurationXMLCodec
         private final Map<String, String> replacements = new HashMap<>();
 
         public MacroConverterImpl(CodeAssistanceConfiguration caConf) {
-            for (String macroWithDefaultValue : caConf.getTransientMacros().getValue()) {
+            caConf.getTransientMacros().getValue().forEach((macroWithDefaultValue) -> {
                 int idx = macroWithDefaultValue.indexOf('=');
                 if (idx < 0) {
                     System.err.println("macro without default value " + macroWithDefaultValue);
@@ -1698,7 +1689,7 @@ public abstract class CommonConfigurationXMLCodec
                     String prefix = macroWithDefaultValue.substring(0, idx);
                     replacements.put(prefix, macroWithDefaultValue);
                 }
-            }
+            });
         }
 
         @Override

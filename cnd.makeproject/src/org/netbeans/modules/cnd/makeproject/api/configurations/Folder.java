@@ -378,20 +378,9 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (!UNCHANGED_PROJECT_MODE) {
                     Callable<Boolean> stopper = null;
                     if (interrupter != null) {
-                        stopper = new Callable<Boolean>() {
-
-                            @Override
-                            public Boolean call() throws Exception {
-                                return interrupter.cancelled();
-                            }
-                        };
+                        stopper = interrupter::cancelled;
                     }
-                    FileFilter filter = new FileFilter() {
-                        @Override
-                        public boolean accept(File folderFile) {
-                            return !getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile) && VisibilityQuery.getDefault().isVisible(folderFile);
-                        }
-                    };
+                    FileFilter filter = (File folderFile) -> !getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile) && VisibilityQuery.getDefault().isVisible(folderFile);
                     FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath, filter, stopper);
                 }
                 listenerAttached = true;
@@ -1031,9 +1020,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     private boolean removeFolderImpl(Folder folder, boolean setModified, boolean requestForCompleteRemove) {
         boolean ret = false;
         if (folder != null) {
-            for (Folder f : folder.getAllFolders(false)) {
+            folder.getAllFolders(false).forEach((f) -> {
                 MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), f, null);
-            }
+            });
             MakeProjectFileProvider.updateSearchBase(configurationDescriptor.getProject(), folder, null);
             if (folder.isDiskFolder()) {
                 folder.detachListener();
@@ -1472,9 +1461,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
-                    for (Folder folder : getFolders()) {
+                    getFolders().forEach((folder) -> {
                         folder.fileDataCreated(fe);
-                    }
+                    });
                     return;
                 }
                 aParent = aParent.getParent();
@@ -1507,9 +1496,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
-                    for (Folder folder : getFolders()) {
+                    getFolders().forEach((folder) -> {
                         folder.fileFolderCreated(fe);
-                    }
+                    });
                     return;
                 }
                 aParent = aParent.getParent();
@@ -1553,9 +1542,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
-                    for (Folder folder : getFolders()) {
+                    getFolders().forEach((folder) -> {
                         folder.fileDeleted(fe);
-                    }
+                    });
                     return;
                 }
                 aParent = aParent.getParent();
@@ -1585,9 +1574,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
-                    for (Folder folder : getFolders()) {
+                    getFolders().forEach((folder) -> {
                         folder.fileRenamed(fe);
-                    }
+                    });
                 }
                 aParent = aParent.getParent();
             }

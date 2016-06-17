@@ -92,7 +92,7 @@ class ClankToAPTToken implements APTToken {
             if (token.isAnnotation() && (token.getAnnotationValue() instanceof FileInfoCallback.MacroExpansionInfo)) {
                 info = (FileInfoCallback.MacroExpansionInfo)token.getAnnotationValue();
             }
-            int rawLocation = token.getRawLocation();
+            int rawLocation = token.$getLocation();
             int offset;
             // is the token real macro expansion?
             boolean isFromRealMacro = (info == null) && SourceLocation.isMacroID(rawLocation);
@@ -105,7 +105,7 @@ class ClankToAPTToken implements APTToken {
                 // duing macro expansion
                 converted = ClankToAPTToken.convertAnnotation(PP, token, info, needLineColumns);
                 lastExpandedStartOffset = info.getStartOffset();
-                lastExpansionRange = info.getRawExpansionRange();
+                lastExpansionRange = info.$getExpansionRange();
                 lastEndOffsetToken = (APTCommentToken)converted;
                 endOffsetToken = lastEndOffsetToken;
                 needToWrapAsMacro = true;
@@ -169,7 +169,7 @@ class ClankToAPTToken implements APTToken {
         int tokenColumn = FAKE_COLUMN;
         if (needLineColumns) {
             SourceManager SM = PP.getSourceManager();
-            long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
+            long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.$getLocation());
             tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
             tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
         }
@@ -190,7 +190,7 @@ class ClankToAPTToken implements APTToken {
             int tokenColumn = FAKE_COLUMN;
             if (needLineColumns) {
                 SourceManager SM = PP.getSourceManager();
-                long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
+                long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.$getLocation());
                 tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
                 tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
             }

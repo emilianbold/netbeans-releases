@@ -270,7 +270,7 @@ public class RemoteFileChooserUtil {
                     String conf = path + "/nbproject/configurations.xml"; // NOI18N
                     File configuration = chooser.getFileSystemView().createFileObject(conf);
                     if (configuration.exists()) {
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/resources/makeProject.gif", true); // NOI18N
                     }
                 }
             }

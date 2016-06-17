@@ -124,6 +124,7 @@ public class IntNodeProp extends Node.Property {
         return !intConfiguration.getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return canWrite;
     }
@@ -132,6 +133,7 @@ public class IntNodeProp extends Node.Property {
         this.canWrite = canWrite;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
