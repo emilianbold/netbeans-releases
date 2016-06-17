@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript.karma.options;
 
-import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutableValidator;
 import org.openide.util.NbBundle;
 
 public final class KarmaOptionsValidator {

@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -96,7 +96,7 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
     private static class CheckVisitor extends DefaultVisitor {
         private final List<Error> errors = new ArrayList<>();
-        private final Stack<ASTNode> parent = new Stack<>();
+        private final ArrayDeque<ASTNode> parent = new ArrayDeque<>();
         private final FileObject fileObject;
 
         public CheckVisitor(FileObject fileObject) {
@@ -146,7 +146,8 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ConstantDeclaration node) {
-            if (!parent.empty() && parent.peek() instanceof TypeDeclaration) {
+            if (!parent.isEmpty()
+                    && parent.peek() instanceof TypeDeclaration) {
                 return;
             }
             createError(node);

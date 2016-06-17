@@ -57,7 +57,8 @@ public class AutoConfirmImpl implements AutoConfirm {
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(message,
                     dialogTitle,
                     NotifyDescriptor.YES_NO_OPTION);
-            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+            Object notify = DialogDisplayer.getDefault().notify(d);
+            if (notify == NotifyDescriptor.YES_OPTION) {
                 return new AutoConfirmImpl();
             }
             return null;

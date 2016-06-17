@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.api;
+package org.netbeans.modules.web.common.ui.api;
 
 import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;

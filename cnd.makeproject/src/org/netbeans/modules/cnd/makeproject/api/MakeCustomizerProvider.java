@@ -42,14 +42,17 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.awt.event.ActionListener;
-import org.netbeans.spi.project.ui.CustomizerProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface MakeCustomizerProvider extends CustomizerProvider {
+public interface MakeCustomizerProvider {
+    // from org.netbeans.spi.project.ui.CustomizerProvider
+    void showCustomizer();
+
     void showCustomizer(String category);
+
     void addActionListener(ActionListener cl);
 
     void removeActionListener(ActionListener cl);

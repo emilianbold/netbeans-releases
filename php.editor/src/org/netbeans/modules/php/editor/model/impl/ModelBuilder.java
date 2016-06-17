@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
@@ -85,14 +85,14 @@ class ModelBuilder {
     private final NamespaceScopeImpl defaultNamespaceScope;
     private final Object currentScopeLock = new Object();
     // @GuardedBy("currentScopeLock")
-    private final Stack<ScopeImpl> currentScope;
+    private final ArrayDeque<ScopeImpl> currentScope;
     private final Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
     private NamespaceScopeImpl namespaceScope;
     private Program program;
 
     ModelBuilder(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
-        this.currentScope = new Stack<>();
+        this.currentScope = new ArrayDeque<>();
         this.vars = new HashMap<>();
         setCurrentScope(fileScope);
         defaultNamespaceScope = new NamespaceScopeImpl(fileScope);
@@ -177,7 +177,7 @@ class ModelBuilder {
 
     void reset() {
         synchronized (currentScopeLock) {
-            if (!currentScope.empty()) {
+            if (!currentScope.isEmpty()) {
                 ScopeImpl createdScope = currentScope.peek();
                 if (createdScope instanceof NamespaceScopeImpl) {
                     namespaceScope = defaultNamespaceScope;
@@ -206,7 +206,7 @@ class ModelBuilder {
                 namespaceScope = (NamespaceScopeImpl) scope;
             }
             synchronized (currentScopeLock) {
-                currentScope.add(0, (ScopeImpl) scope);
+                currentScope.addLast((ScopeImpl) scope);
             }
             scope = scope.getInScope();
         }
@@ -240,7 +240,7 @@ class ModelBuilder {
             namespaceScope = (NamespaceScopeImpl) scope;
         }
         synchronized (currentScopeLock) {
-            this.currentScope.push(scope);
+            currentScope.push(scope);
         }
     }
 
