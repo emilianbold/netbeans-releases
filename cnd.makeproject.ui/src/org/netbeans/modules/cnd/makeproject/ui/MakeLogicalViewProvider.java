@@ -108,6 +108,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
     private final RequestProcessor annotationRP;
     private final MakeProject project;
     private MakeLogicalViewRootNode projectRootNode;
+    private final Object lock = new Object();
     private boolean checkVersion = true;
 
     public MakeLogicalViewProvider(MakeProject project) {
@@ -131,12 +132,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
             if (configurationDescriptor == null) {
                 return new MakeLogicalViewRootNodeBroken(project);
             } else {
-                createRoot(configurationDescriptor);
-                return projectRootNode;
+                synchronized(lock) {
+                    if (projectRootNode == null) {
+                        createRoot(configurationDescriptor);
+                    }
+                    return projectRootNode;
+                }
             }
         } else {
-            createLoadingRoot();
-            return projectRootNode;
+            synchronized(lock) {
+                if (projectRootNode == null) {
+                    createLoadingRoot();
+                }
+                return projectRootNode;
+            }
         }
     }
     

@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -146,13 +147,13 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
-        if (gotMakeConfigurationDescriptor()) {
+        //if (gotMakeConfigurationDescriptor()) {
             ProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
             if (confProvider != null){                
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
                 confProviderListenerAttached = true;
             }
-        }
+        //}
 
         stateChangedTask = provider.getAnnotationRP().create(new StateChangeRunnableImpl(), true);
     }
@@ -355,6 +356,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             fireNameChange(null, null);
         } else if (ProjectInformation.PROP_ICON.equals(prop)) {
             fireIconChange();
+        } else if (ConfigurationDescriptorProvider.PROP_CONFIGURATIONS_LOADED.equals(prop)) {
+            reInit(getMakeConfigurationDescriptor());
         } else if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(prop)) {
             stateChanged(null) ;
         }

@@ -128,7 +128,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.58.11</specification-version>
+                        <specification-version>2.58.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
