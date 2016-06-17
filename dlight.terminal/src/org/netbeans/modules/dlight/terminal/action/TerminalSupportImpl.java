@@ -75,8 +75,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.ui.IOVisibility;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
 import org.openide.DialogDisplayer;
@@ -94,7 +93,7 @@ import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import static org.netbeans.lib.terminalemulator.Term.ExternalCommandsConstants.*;
-import org.netbeans.modules.terminal.api.IOConnect;
+import org.netbeans.modules.terminal.api.ui.IOTerm;
 
 /**
  *

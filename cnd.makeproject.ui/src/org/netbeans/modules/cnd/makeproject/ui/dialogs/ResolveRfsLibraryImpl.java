@@ -69,12 +69,8 @@ public class ResolveRfsLibraryImpl {
                     change
             );
             if (DialogDisplayer.getDefault().notify(d) == change) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ServerListUI.showServerRecordPropertiesDialog(execEnv);
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    ServerListUI.showServerRecordPropertiesDialog(execEnv);
                 });
             }
         }

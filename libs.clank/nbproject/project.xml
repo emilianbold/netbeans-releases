@@ -53,6 +53,8 @@ made subject to such option by the copyright holder.
                 <package>org.clang.arcmigrate</package>
                 <package>org.clang.ast</package>
                 <package>org.clang.basic</package>
+                <package>org.clang.basic.java</package>
+                <package>org.clang.basic.llvm</package>
                 <package>org.clang.basic.spi</package>
                 <package>org.clang.basic.target</package>
                 <package>org.clang.basic.vfs</package>

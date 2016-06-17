@@ -112,16 +112,12 @@ final class ViewFolderPasteType  extends PasteType {
 
     @Override
     public Transferable paste() throws IOException {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    pasteImpl();
-                    provider.getMakeConfigurationDescriptor().save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        RP.post(() -> {
+            try {
+                pasteImpl();
+                provider.getMakeConfigurationDescriptor().save();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         });
         return null;

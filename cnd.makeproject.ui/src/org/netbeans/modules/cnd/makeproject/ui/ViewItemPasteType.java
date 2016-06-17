@@ -106,24 +106,20 @@ final class ViewItemPasteType extends PasteType {
 
     @Override
     public Transferable paste() throws IOException {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    pasteImpl();
-                } catch (IOException ex) {
-                    String message = null;
-                    if (type == DnDConstants.ACTION_MOVE) {
-                        message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_move", fromItem.getAbsPath()); //NOI18N
-                    } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
-                        message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_copy", fromItem.getAbsPath()); //NOI18N
-                    }
-                    if (message != null) {
-                        StatusDisplayer.getDefault().setStatusText(message);
-                    }
-                    ex.printStackTrace(System.err);
+        RP.post(() -> {
+            try {
+                pasteImpl();
+            } catch (IOException ex) {
+                String message = null;
+                if (type == DnDConstants.ACTION_MOVE) {
+                    message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_move", fromItem.getAbsPath()); //NOI18N
+                } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
+                    message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_copy", fromItem.getAbsPath()); //NOI18N
                 }
+                if (message != null) {
+                    StatusDisplayer.getDefault().setStatusText(message);
+                }
+                ex.printStackTrace(System.err);
             }
         });
         return null;

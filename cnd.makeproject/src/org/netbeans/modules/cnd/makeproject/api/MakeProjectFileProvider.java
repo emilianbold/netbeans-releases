@@ -200,9 +200,9 @@ public class MakeProjectFileProvider {
                                             fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
                                         }
                                         res = new ArrayList<>(list.size());
-                                        for(CharSequence absPath : list) {
+                                        list.forEach((absPath) -> {
                                             res.add(new FSPath(fileSystem, absPath.toString()));
-                                        }
+                                        });
                                         return res;
                                     }
                                 }

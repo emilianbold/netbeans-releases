@@ -104,12 +104,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         encoding.setModel(ProjectCustomizer.encodingModel(originalEncoding));
         encoding.setRenderer(ProjectCustomizer.encodingRenderer());
 
-        encoding.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                handleEncodingChange();
-            }
+        encoding.addActionListener((ActionEvent arg0) -> {
+            handleEncodingChange();
         });
     }
 

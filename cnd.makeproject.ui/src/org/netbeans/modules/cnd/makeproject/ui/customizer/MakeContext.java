@@ -169,9 +169,9 @@ public class MakeContext {
     }
 
     public void save() {
-        for(Savable listener : listeners) {
+        listeners.forEach((listener) -> {
             listener.save();
-        }
+        });
     }
 
     public boolean isCompilerConfiguration(){

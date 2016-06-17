@@ -63,11 +63,11 @@ abstract public class VectorNodeProp extends PropertySupport<List> {
     private final FSPath baseDir;
     private final String[] texts;
     private final boolean addPathPanel;
-    private final boolean onlyFolder;
+    private final int onlyFolder;
     private final HelpCtx helpCtx;
 
     public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, FSPath baseDir, 
-            String[] texts, boolean addPathPanel, boolean onlyFolder, HelpCtx helpCtx) {
+            String[] texts, boolean addPathPanel, int onlyFolder, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;

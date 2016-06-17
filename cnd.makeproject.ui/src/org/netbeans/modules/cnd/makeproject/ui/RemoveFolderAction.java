@@ -56,10 +56,12 @@ import org.openide.util.actions.NodeAction;
 
 public class RemoveFolderAction extends NodeAction {
 
+    @Override
     public String getName() {
         return NbBundle.getBundle(getClass()).getString("CTL_RemoveFolderActionName"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
@@ -84,10 +86,12 @@ public class RemoveFolderAction extends NodeAction {
         }
     }
 
+    @Override
     public boolean enable(Node[] activatedNodes) {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

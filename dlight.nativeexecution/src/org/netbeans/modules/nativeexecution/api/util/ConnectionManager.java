@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+//import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -68,14 +69,15 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
 import org.netbeans.modules.nativeexecution.spi.support.JSchAccess;
-import org.netbeans.modules.nativeexecution.support.Authentication;
-import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
+import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
+;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
+//import org.openide.awt.StatusDisplayer;
+//import org.openide.DialogDisplayer;
+//import org.openide.NotifyDescriptor;
+//import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -163,19 +165,21 @@ public final class ConnectionManager {
         DEFAULT_CC = new ConnectionContinuation() {
             @Override
             public void connectionEstablished(ExecutionEnvironment env) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.established", env.getDisplayName())); // NOI18N
+                NativeExecutionUserNotification.getDefault().notifyStatus(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.established", env.getDisplayName())); // NOI18N
+//                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.established", env.getDisplayName())); // NOI18N
             }
 
             @Override
             public void connectionCancelled(ExecutionEnvironment env) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.cancelled", env.getDisplayName())); // NOI18N
+                NativeExecutionUserNotification.getDefault().notifyStatus(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.cancelled", env.getDisplayName())); // NOI18N
             }
 
             @Override
             public void connectionFailed(ExecutionEnvironment env, IOException ex) {
                 String message = NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.failed", env.getDisplayName(), ex.getLocalizedMessage()); // NOI18N
-                StatusDisplayer.getDefault().setStatusText(message);
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                NativeExecutionUserNotification.getDefault().notifyStatus(message);
+                NativeExecutionUserNotification.getDefault().notify(message, NativeExecutionUserNotification.Descriptor.ERROR);
+               // DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
         };
 
@@ -575,9 +579,6 @@ public final class ConnectionManager {
         }
     }
 
-    public ValidateablePanel getConfigurationPanel(ExecutionEnvironment env) {
-        return new HostConfigurationPanel(env);
-    }
 
     /**
      * Do clean up for the env. Any stored settings will be removed

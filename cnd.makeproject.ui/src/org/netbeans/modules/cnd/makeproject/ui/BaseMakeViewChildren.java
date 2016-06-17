@@ -101,12 +101,8 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 resetKeys(Collections.singleton(getWaitNode()));
                 provider.getAnnotationRP().post(getAddNotifyRunnable(), WAIT_DELAY);
             } else {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        addNotify();
-                    }
+                SwingUtilities.invokeLater(() -> {
+                    addNotify();
                 });
             }
         }
@@ -117,21 +113,18 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     }
     
     private Runnable getAddNotifyRunnable() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (isRoot() && folder == null) {
-                    MakeConfigurationDescriptor mcd = provider.getMakeConfigurationDescriptor();
-                    if (mcd != null) {
-                        folder = mcd.getLogicalFolders();
-                        onFolderChange(folder);
-                    }
+        return () -> {
+            if (isRoot() && folder == null) {
+                MakeConfigurationDescriptor mcd = provider.getMakeConfigurationDescriptor();
+                if (mcd != null) {
+                    folder = mcd.getLogicalFolders();
+                    onFolderChange(folder);
                 }
-                if (folder != null) { // normally it shouldn't happen, but might happen if the project metadata is broken
-                    folder.addChangeListener(BaseMakeViewChildren.this);
-                    if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
-                        resetKeys(getKeys(null));
-                    }
+            }
+            if (folder != null) { // normally it shouldn't happen, but might happen if the project metadata is broken
+                folder.addChangeListener(BaseMakeViewChildren.this);
+                if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
+                    resetKeys(getKeys(null));
                 }
             }
         };
@@ -168,12 +161,8 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 if (e.getSource() == item) {
                     // refreshItem() acquires Children.MUTEX; make sure
                     // it's not under ProjectManager.mutex() (IZ#175996)
-                    Runnable todo = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            refreshItem(item);
-                        }
+                    Runnable todo = () -> {
+                        refreshItem(item);
                     };
                     provider.getAnnotationRP().post(todo);
                     break;
