@@ -43,8 +43,14 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.CapturedType;
+import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.model.JavacTypes;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -162,6 +168,99 @@ public final class TypeUtilities {
         opt.addAll(Arrays.asList(options));
         return new TypeNameVisitor(opt.contains(TypeNameOptions.PRINT_AS_VARARG)).visit(type, opt.contains(TypeNameOptions.PRINT_FQN)).toString();
     }
+
+    /**
+     * Returns a TypeMirror which can be represented in a source as a type declarator. The returned TypeMirror,
+     * if not erroneous, can be used as type of a variable or a method's return type. The method will attempt to
+     * infer proper wildcards or bounds.
+     * <p/>
+     * If the type could be represented in source, the method returns a type of {@link TypeKind#ERROR}.
+     * 
+     * @param type the type to be polished
+     * @return the representable type or an error type
+     * @since 2.17
+     */
+    public TypeMirror getDenotableType(TypeMirror type) {
+        Types types = Types.instance(info.impl.getJavacTask().getContext());
+        if (type == null) {
+            return types.createErrorType(
+                    (Type)JavacTypes.instance(info.impl.getJavacTask().getContext()).getNoType(TypeKind.NONE)
+            );
+        }
+        Type inType = (Type)type;
+        TypeKind tk = type.getKind();
+        if (tk == TypeKind.ERROR) {
+            inType = (Type)info.getTrees().getOriginalType((ErrorType)type);
+        } else if (tk == TypeKind.NONE || tk == TypeKind.OTHER) {
+            return types.createErrorType(inType);
+        }
+        Type t = types.upward(inType, types.captures(inType));
+        if (!t.isErroneous()) {
+            if (!checkDenotable(t)) {
+                return types.createErrorType(t);
+            }
+        }
+        if (t.hasTag(TypeTag.BOT)) {
+            return types.createErrorType(t);
+        } else {
+            return t;
+        }
+    }
+    
+    boolean checkDenotable(Type t) {
+        return denotableChecker.visit(t, null);
+    }
+        // where
+
+    /** diamondTypeChecker: A type visitor that descends down the given type looking for non-denotable
+     *  types. The visit methods return false as soon as a non-denotable type is encountered and true
+     *  otherwise.
+     */
+    private static final Types.SimpleVisitor<Boolean, Void> denotableChecker = new Types.SimpleVisitor<Boolean, Void>() {
+        @Override
+        public Boolean visitType(Type t, Void s) {
+            return true;
+        }
+        @Override
+        public Boolean visitClassType(ClassType t, Void s) {
+            if (t.isUnion() || t.isIntersection()) {
+                return false;
+            }
+            for (Type targ : t.allparams()) {
+                if (!visit(targ, s)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitTypeVar(TypeVar t, Void s) {
+            /* Any type variable mentioned in the inferred type must have been declared as a type parameter
+              (i.e cannot have been produced by inference (18.4))
+            */
+            return (t.tsym.flags() & Flags.SYNTHETIC) == 0;
+        }
+
+        @Override
+        public Boolean visitCapturedType(CapturedType t, Void s) {
+            /* Any type variable mentioned in the inferred type must have been declared as a type parameter
+              (i.e cannot have been produced by capture conversion (5.1.10))
+            */
+            return false;
+        }
+
+
+        @Override
+        public Boolean visitArrayType(Type.ArrayType t, Void s) {
+            return visit(t.elemtype, s);
+        }
+
+        @Override
+        public Boolean visitWildcardType(Type.WildcardType t, Void s) {
+            return visit(t.type, s);
+        }
+    };
 
     /**Options for the {@link #getTypeName(javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.TypeUtilities.TypeNameOptions[]) } method.
      * @since 0.62
