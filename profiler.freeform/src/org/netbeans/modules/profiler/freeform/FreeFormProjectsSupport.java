@@ -41,29 +41,16 @@
  */
 package org.netbeans.modules.profiler.freeform;
 
-import java.awt.Dialog;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.JButton;
-import org.apache.tools.ant.module.api.support.AntScriptUtils;
-import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -88,6 +75,8 @@ public final class FreeFormProjectsSupport {
                 .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
 
         profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER);
+        
+        // TODO: shouldn't the user select the profiler target here? See revision 208377.
 
         if (profileTarget != null) {
             profilerFragment.setAttribute(PROFILE_TARGET_ATTRIBUTE, profileTarget);
@@ -97,8 +86,7 @@ public final class FreeFormProjectsSupport {
             profilerFragment.setAttribute(PROFILE_SINGLE_TARGET_ATTRIBUTE, profileSingleTarget);
         }
 
-        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment,
-                false);
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment, false);
 
         try {
             ProjectManager.getDefault().saveProject(project);

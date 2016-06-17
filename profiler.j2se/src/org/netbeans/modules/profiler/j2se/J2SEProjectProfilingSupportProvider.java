@@ -45,13 +45,9 @@ package org.netbeans.modules.profiler.j2se;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
-import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import java.io.*;
-import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -61,8 +57,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.profiler.api.JavaPlatform;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -104,7 +98,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-    String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
+//    String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +109,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         }
         return super.isFileObjectSupported(fo);
     }
-
+    
     @Override
     public JavaPlatform resolveProjectJavaPlatform() {
         PropertyEvaluator props = getProjectProperties(getProject());
@@ -131,102 +125,38 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         return JavaPlatform.getJavaPlatformById(platformName);
     }
 
-    @Override
-    public boolean checkProjectCanBeProfiled(final FileObject profiledClassFile) {
-        if (profiledClassFile == null) {
-            Project p = getProject();
-            final PropertyEvaluator pp = getProjectProperties(p);
-            String profiledClass = pp.getProperty("main.class"); // NOI18N
+////    @Override
+////    public boolean checkProjectCanBeProfiled(final FileObject profiledClassFile) {
+////        if (profiledClassFile == null) {
+////            Project p = getProject();
+////            final PropertyEvaluator pp = getProjectProperties(p);
+////            String profiledClass = pp.getProperty("main.class"); // NOI18N
+////
+////            if ((profiledClass == null) || "".equals(profiledClass)
+////                    || (ProfilerTypeUtils.resolveClass(profiledClass, p) == null)) { // NOI18N
+////                mainClassSetManually = ProjectUtilities.selectMainClass(p, null, ProjectUtilities.getProjectName(p),
+////                                                                        -1);
+////
+////                //        Profiler.getDefault().displayError("No class to profile. To set up main class for a Project, go to \n" +
+////                //            "Project | Properties and select the main class in the Running Project section.");
+////                if (mainClassSetManually == null) {
+////                    return false;
+////                }
+////            }
+////
+////            // the following code to check the main class is way too slow to perform here
+////            /*      if (profiledClass != null && !"".equals(profiledClass)) {
+////               final FileObject fo = SourceUtilities.findFileForClass(new String[] { profiledClass, "" }, true);
+////               if (fo == null) res = false;
+////               else res = (SourceUtilities.hasMainMethod(fo) || SourceUtilities.isApplet(fo));
+////               } */
+////            return true;
+////        } else {
+////            return isFileObjectSupported(profiledClassFile);
+////        }
+////    }
 
-            if ((profiledClass == null) || "".equals(profiledClass)
-                    || (ProfilerTypeUtils.resolveClass(profiledClass, p) == null)) { // NOI18N
-                mainClassSetManually = ProjectUtilities.selectMainClass(p, null, ProjectUtilities.getProjectName(p),
-                                                                        -1);
-
-                //        Profiler.getDefault().displayError("No class to profile. To set up main class for a Project, go to \n" +
-                //            "Project | Properties and select the main class in the Running Project section.");
-                if (mainClassSetManually == null) {
-                    return false;
-                }
-            }
-
-            // the following code to check the main class is way too slow to perform here
-            /*      if (profiledClass != null && !"".equals(profiledClass)) {
-               final FileObject fo = SourceUtilities.findFileForClass(new String[] { profiledClass, "" }, true);
-               if (fo == null) res = false;
-               else res = (SourceUtilities.hasMainMethod(fo) || SourceUtilities.isApplet(fo));
-               } */
-            return true;
-        } else {
-            return isFileObjectSupported(profiledClassFile);
-        }
-    }
-
-    @Override
-    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
-        if (profiledClassFile == null) {
-            if (mainClassSetManually != null) {
-                props.put("main.class", mainClassSetManually); // NOI18N
-                mainClassSetManually = null;
-            }
-        } else {
-            // In case the class to profile is explicitely selected (profile-single)
-            // 1. specify profiled class name
-            
-            // FIXME
-            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-            if (src != null) {
-                Project project = getProject();
-                if (src.isApplet()) {
-                    String jvmargs = props.get("run.jvmargs"); // NOI18N
-
-                    URL url = null;
-
-                    // do this only when security policy is not set manually
-                    if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) { //NOI18N
-
-                        PropertyEvaluator projectProps = getProjectProperties(project);
-                        String buildDirProp = projectProps.getProperty("build.dir"); //NOI18N
-                                                                                     // TODO [M9] what if buildDirProp is null?
-
-                        FileObject buildFolder = ProjectUtilities.getOrCreateBuildFolder(project, buildDirProp);
-
-                        AppletSupport.generateSecurityPolicy(project.getProjectDirectory(), buildFolder);
-
-                        if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                            props.put("run.jvmargs",
-                                              "-Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath() + File.separator
-                                              + "applet.policy"); //NOI18N
-                        } else {
-                            props.put("run.jvmargs",
-                                              jvmargs + " -Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath()
-                                              + File.separator + "applet.policy"); //NOI18N
-                        }
-                    }
-
-                    if (profiledClassFile.existsExt("html") || profiledClassFile.existsExt("HTML")) { //NOI18N
-                        url = ProjectUtilities.copyAppletHTML(project, getProjectProperties(project), profiledClassFile, "html"); //NOI18N
-                    } else {
-                        url = ProjectUtilities.generateAppletHTML(project, getProjectProperties(project), profiledClassFile);
-                    }
-
-                    if (url == null) {
-                        return; // TODO: fail?
-                    }
-
-                    props.put("applet.url", url.toString()); // NOI18N
-                } else {
-                    final String profiledClass = src.getTopLevelClass().getQualifiedName();
-                    props.put("profile.class", profiledClass); //NOI18N
-                }
-
-                // 2. include it in javac.includes so that the compile-single picks it up
-                final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
-                                                                                         profiledClassFile), profiledClassFile);
-                props.put("javac.includes", clazz); //NOI18N
-            }
-        }
-    }
+    
 
     @Override
     public void setupProjectSessionSettings(SessionSettings ss) {
@@ -254,12 +184,12 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
     
     protected void setMainClass(final PropertyEvaluator pp, SessionSettings ss) {
-        if (mainClassSetManually == null) {
+////        if (mainClassSetManually == null) {
             String mainClass = pp.getProperty("main.class"); // NOI18N
             ss.setMainClass((mainClass != null) ? mainClass : ""); // NOI18N
-        } else {
-            ss.setMainClass(mainClassSetManually);
-        }
+////        } else {
+////            ss.setMainClass(mainClassSetManually);
+////        }
     }
     
     private static String getRemotePlatformHost(JavaPlatform platform) {
@@ -273,22 +203,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         return null;
     }
 
-    @Override
-    public boolean supportsSettingsOverride() {
-        return true; // supported for J2SE project
-    }
-
-    @Override
-    public boolean supportsUnintegrate() {
-        return true;
-    }
-
-    @Override
-    public void unintegrateProfiler() {
-        ProjectUtilities.unintegrateProfiler(getProject());
-    }
-
-    PropertyEvaluator getProjectProperties(final Project project) {
+    static PropertyEvaluator getProjectProperties(final Project project) {
         final Properties privateProps = new Properties();
         final Properties projectProps = new Properties();
         final Properties userPropsProps = new Properties();
