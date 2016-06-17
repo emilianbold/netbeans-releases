@@ -218,7 +218,7 @@ public class JsConventionRule extends JsAstRule {
                     // don't display hints for error tokens. 
                     return;
                 }
-                if (id == JsTokenId.STRING_END && ts.moveNext()) {
+                if ((id == JsTokenId.STRING_END || id == JsTokenId.TEMPLATE_END) && ts.moveNext()) {
                     id = ts.token().id();
                 }
                 if (id == JsTokenId.EOL) {

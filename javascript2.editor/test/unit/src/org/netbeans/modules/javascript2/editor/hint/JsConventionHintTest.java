@@ -140,6 +140,10 @@ public class JsConventionHintTest extends HintTestBase {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue228217.js", null);
     }
     
+    public void testSemicolonIssue262468() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue262468.js", null);
+    }
+
     public void testObjectTrailingComma01() throws Exception {
         checkHints(this, new ObjectTrailingComma(), "testfiles/hints/objectTrailingComma.js", null);
     }
