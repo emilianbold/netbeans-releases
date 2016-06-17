@@ -27,10 +27,9 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="errLabel" alignment="0" pref="483" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblAccess" min="-2" max="-2" attributes="0"/>
@@ -50,16 +49,22 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="declareFinal" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="replaceAll" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="lblInitializeIn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="initConstructors" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="initField" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="initMethod" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="declareFinal" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="replaceAll" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="lblInitializeIn" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="initConstructors" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="initField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="initMethod" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="checkRefactorExisting" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -97,9 +102,9 @@
                       <Component id="initConstructors" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="18" max="32767" attributes="0"/>
-              <Component id="errLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="checkRefactorExisting" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -359,13 +364,16 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="errLabel">
+    <Component class="javax.swing.JCheckBox" name="checkRefactorExisting">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel1"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/hints/introduce/Bundle.properties" key="IntroduceFieldPanel.checkRefactorExisting.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createErrorLabel()"/>
-      </AuxValues>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkRefactorExistingActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

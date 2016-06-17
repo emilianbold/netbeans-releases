@@ -68,10 +68,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
@@ -97,6 +99,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
     private final boolean statik;
     private final boolean allowFinalInCurrentMethod;
     private final boolean permitDuplicates;
+    private final TreePathHandle targetHandle;
     
     /**
      * Initializes the fix
@@ -110,18 +113,19 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
      * @param offset caret offset
      */
     public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, 
-            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset) {
-        this(handle, js, guessedName, numDuplicates, initilizeIn, statik, allowFinalInCurrentMethod, offset, false);
+            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset, TreePathHandle target) {
+        this(handle, js, guessedName, numDuplicates, initilizeIn, statik, allowFinalInCurrentMethod, offset, false, target);
     }
     
     public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, 
-            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset, boolean allowDuplicates) {
+            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset, boolean allowDuplicates, TreePathHandle target) {
         super(js, handle, numDuplicates, offset);
         this.guessedName = guessedName;
         this.initilizeIn = initilizeIn;
         this.statik = statik;
         this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
         this.permitDuplicates = allowDuplicates;
+        this.targetHandle = target;
     }
     
     public String getText() {
@@ -160,15 +164,22 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
         btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_Cancel"));
         IntroduceFieldPanel panel = createPanel(btnOk);
+        FieldValidator fv = new FieldValidator(js, null);
         if (targetIsInterface) {
             panel.setAllowAccess(false);
         }
         DialogDescriptor dd = new DialogDescriptor(panel, getCaption(), true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        panel.setNotifier(dd.createNotificationLineSupport());
+        panel.setTarget(targetHandle);
+        panel.setValidator(fv);
+
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
         js.runModificationTask(new Worker(panel.getFieldName(), permitDuplicates && panel.isReplaceAll(),
-                panel.isDeclareFinal(), panel.getAccess(), panel.getInitializeIn())).commit();
+                panel.isDeclareFinal(), panel.getAccess(), panel.getInitializeIn(), 
+                fv.getLastResult(),
+                panel.isRefactorExisting())).commit();
         return null;
     }
     
@@ -182,18 +193,22 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         final boolean declareFinal;
         final Set<Modifier> access;
         final int initializeIn;
+        final boolean refactorExisting;
+        final MemberSearchResult searchResult;
 
         private ClassTree nueClass;
         private TreePath toRemoveFromParent;
         private boolean variableRewrite;
         private boolean expressionStatementRewrite;
 
-        public Worker(String name, boolean replaceAll, boolean declareFinal, Set<Modifier> access, int initializeIn) {
+        public Worker(String name, boolean replaceAll, boolean declareFinal, Set<Modifier> access, int initializeIn, MemberSearchResult searchResult, boolean refactorExisting) {
             this.name = name;
             this.replaceAll = replaceAll;
             this.declareFinal = declareFinal;
             this.access = access;
             this.initializeIn = initializeIn;
+            this.refactorExisting = refactorExisting;
+            this.searchResult = searchResult;
         }
 
         private boolean initializeFromMethod(WorkingCopy parameter, TreePath resolved, 
@@ -299,7 +314,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
             if (tm == null) {
                 return; //TODO...
             }
-            tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
+            tm = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(parameter, tm));
             TreePath pathToClass = findTargetClass(parameter, resolved);
             if (pathToClass == null) {
                 return; //TODO...
@@ -386,6 +401,10 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
             }
             if (toRemoveFromParent != null) {
                 IntroduceHint.removeFromParent(parameter, toRemoveFromParent);
+            }
+            if (refactorExisting) {
+                new ReferenceTransformer(parameter, ElementKind.FIELD, searchResult, name, 
+                    parameter.getTrees().getElement(pathToClass)).scan(pathToClass, null);
             }
             parameter.rewrite(pathToClass.getLeaf(), nueClass);
         }

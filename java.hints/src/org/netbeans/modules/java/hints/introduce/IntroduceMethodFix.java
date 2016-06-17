@@ -52,12 +52,14 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,22 +75,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.JButton;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -105,6 +108,8 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
@@ -219,7 +224,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         List<TypeMirrorHandle> additionaLocalTypes = new LinkedList<TypeMirrorHandle>();
         List<String> additionaLocalNames = new LinkedList<String>();
         for (VariableElement ve : additionalLocalVariables) {
-            TypeMirror vt = Utilities.resolveCapturedType(info, ve.asType());
+            TypeMirror vt = Utilities.resolveTypeForDeclaration(info, ve.asType());
             additionaLocalTypes.add(TypeMirrorHandle.create(vt));
             additionaLocalNames.add(ve.getSimpleName().toString());
         }
@@ -269,7 +274,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         int duplicatesCount = duplicates.size();
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
-            returnType = Utilities.resolveCapturedType(info, result.asType());
+            returnType = Utilities.resolveTypeForDeclaration(info, result.asType());
             returnAssignTo = TreePathHandle.create(info.getTrees().getPath(result), info);
             declareVariableForReturnValue = scanner.selectionLocalVariables.contains(result);
         } else {
@@ -294,36 +299,11 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
         AtomicBoolean allIfaces = new AtomicBoolean();
-        Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>();
         List<TargetDescription> viableTargets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel, allIfaces);
         IntroduceMethodFix imf = null;
         if (viableTargets != null && !viableTargets.isEmpty()) {
-            for (TargetDescription target : viableTargets) {
-                if (target.type == null) {
-                    continue;
-                }
-                final TypeElement resolvedType = target.type.resolve(info);
-                if (resolvedType == null) {
-                    continue;
-                }
-                Set<String> cNames = new HashSet<>();
-                outer: for (ExecutableElement ee : ElementFilter.methodsIn(resolvedType.getEnclosedElements())) {
-                    List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
-                    if (pTypes.size() == paramsVariables.size()) {
-                        Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
-                        Iterator<VariableElement> pVarsIt = paramsVariables.iterator();
-                        while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
-                            if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
-                                continue outer;
-                            }
-                        }
-                        cNames.add(ee.getSimpleName().toString());
-                    }
-                }
-                targets.put(target, cNames);
-            }
             imf = new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
-                    duplicatesCount, scanner.getUsedTypeVars(), end, targets);
+                    duplicatesCount, scanner.getUsedTypeVars(), end, viableTargets);
             imf.setTargetIsInterface(allIfaces.get());
         }
         return imf;
@@ -434,9 +414,9 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
     private final int from;
     private final int to;
     private final List<TreePathHandle> typeVars;
-    private final Map<TargetDescription, Set<String>> targets;
+    private final Collection<TargetDescription> targets;
 
-    public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars, int offset, Map<TargetDescription, Set<String>> targets) {
+    public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars, int offset, Collection<TargetDescription> targets) {
         super(js, parentBlock, duplicatesCount, offset);
         this.parameters = parameters;
         this.additionalLocalTypes = additionalLocalTypes;
@@ -465,17 +445,22 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
         IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets, targetIsInterface); //NOI18N
-        panel.setOkButton(btnOk);
         String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        NotificationLineSupport notifier = dd.createNotificationLineSupport();
+        MethodValidator val = new MethodValidator(js, parameters, returnType);
+        panel.setNotifier(notifier);
+        panel.setValidator(val);
+        panel.setOkButton(btnOk);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
+        boolean redoReferences =  panel.isRefactorExisting();
         final String name = panel.getMethodName();
         final Set<Modifier> access = panel.getAccess();
         final boolean replaceOther = panel.getReplaceOther();
         final TargetDescription target = panel.getSelectedTarget();
-        js.runModificationTask(new TaskImpl(access, name, target, replaceOther)).commit();
+        js.runModificationTask(new TaskImpl(access, name, target, replaceOther, val.getResult(), redoReferences)).commit();
         return null;
     }
     
@@ -545,12 +530,18 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         List<TreePath> resolvedExits;
         
         TreePath pathToClass;
+        
+        MemberSearchResult searchResult;
+        
+        boolean redoReferences;
 
-        public TaskImpl(Set<Modifier> access, String name, TargetDescription target, boolean replaceOther) {
+        public TaskImpl(Set<Modifier> access, String name, TargetDescription target, boolean replaceOther, MemberSearchResult searchResult, boolean redoReferences) {
             this.access = access;
             this.name = name;
             this.target = target;
             this.replaceOther = replaceOther;
+            this.searchResult = searchResult;
+            this.redoReferences = redoReferences;
         }
 
         private void generateMethodContents(List<StatementTree> methodStatements) {
@@ -821,6 +812,25 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
                 return;
             }
             final Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>(); 
+
+            InstanceRefFinder finder = new InstanceRefFinder(copy, firstStatement);
+            for (TreePath stp : statementPaths) {
+                finder.process(stp);
+            }
+            if (finder.containsLocalReferences()) {
+                NotifyDescriptor dd = new NotifyDescriptor.Message(Bundle.MSG_ExpressionContainsLocalReferences(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(dd);
+                return;
+            }
+            TypeElement targetType = target.type.resolve(copy);
+            pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+            if (pathToClass == null) {
+                pathToClass = TreeUtils.findClass(firstStatement);
+            }
+            assert pathToClass != null;
+
+            boolean referencesInstances = finder.containsInstanceReferences();
+            boolean isStatic = IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstStatement);
             
             // generate new version of the statement list, with the method invocation.
             List<StatementTree> nueStatements = new LinkedList<StatementTree>();
@@ -829,14 +839,6 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             nueStatements.addAll(statements.subList(to + 1, statements.size()));
             IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
             addReplacement(firstStatement.getParentPath().getLeaf(), from, to);
-            TypeElement targetType = target.type.resolve(copy);
-            pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
-            if (pathToClass == null) {
-                pathToClass = TreeUtils.findClass(firstStatement);
-            }
-            assert pathToClass != null;
-            
-            boolean isStatic = IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstStatement);
             if (replaceOther) {
                 //handle duplicates
                 Document doc = copy.getDocument();
@@ -895,9 +897,18 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
                 IntroduceHint.introduceBag(doc).clear();
                 //handle duplicates end
             }
+            isStatic &= !referencesInstances & target.canStatic;
             MethodTree method = createMethodDefinition(isStatic);
             ClassTree nueClass = IntroduceHint.INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree) pathToClass.getLeaf(), method, offset);
             copy.rewrite(pathToClass.getLeaf(), nueClass);
+            
+            if (redoReferences) {
+                new ReferenceTransformer(
+                    copy, ElementKind.METHOD, 
+                    searchResult,
+                    name, 
+                    targetType).scan(pathToClass, null);
+            }
         }
     }
 }

@@ -358,7 +358,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "}\n",
                        "package test; public class Test { public static void test() { Runnable name = new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; t(name); } private static void t(Runnable r) {} } ",
                        new DialogDisplayerImpl("name", true, false, true),
-                       4, 0);
+                       5, 0);
     }
 
     public void testSwitchCase219714() throws Exception {
@@ -773,7 +773,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { private static Runnable runnable; public static void test() { t(runnable); } private static void t(Runnable r) {} public Test() { runnable = new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } }",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet
                 .<Modifier>of(Modifier.PRIVATE), false, true),
-                       4, 1);
+                       5, 2);
     }
 
     public void testCorrectMethodSelection1() throws Exception {
@@ -1227,7 +1227,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "}\n",
                        "package test; public class Test { public static void test() { t(name()); } private static void t(Runnable r) {} private static Runnable name() { return new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } } ",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
-                       4, 2);
+                       5, 3);
     }
 
 //    public void testIntroduceMethodTooManyExceptions() throws Exception {

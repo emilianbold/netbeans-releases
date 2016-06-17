@@ -32,8 +32,7 @@ package org.netbeans.modules.java.hints.introduce;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
@@ -42,15 +41,26 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class IntroduceMethodPanel extends CommonMembersPanel {
+@NbBundle.Messages({
+    "ERR_MethodExistsOrConflict=A conflicting method already exists in the target class, or its supertypes",
+    "INFO_MethodWillShadow=The method will shadow an existing one.",
+    "WARN_OverridesRestrictedAccess=The method will override a method from supertype",
+    "ERR_MethodNameEmpty=The method name is empty",
+    "ERR_InvalidMethodName=The method name is not a Java identifier"
+}) 
+public class IntroduceMethodPanel extends CommonMembersPanel implements ChangeListener {
     
     public static final int INIT_METHOD = 1;
     public static final int INIT_FIELD = 2;
@@ -67,20 +77,22 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
      * True, if the target is an interface.
      */
     private boolean targetInterface;    
-    private final Map<TargetDescription, Set<String>> targets2conflictingNames;
+    private NameChangeSupport changeSupport;
+    private NotificationLineSupport notifier;
     
-    public IntroduceMethodPanel(String name, int duplicatesCount, Map<TargetDescription, Set<String>> targets2conflictingNames, boolean targetInterface) {
-        super(targets2conflictingNames.keySet());
+    public IntroduceMethodPanel(String name, int duplicatesCount, Collection<TargetDescription> targets, boolean targetInterface) {
+        super(targets);
         initComponents();
         
         this.targetInterface = targetInterface;
-        this.targets2conflictingNames = targets2conflictingNames;
         this.name.setText(name);
         if ( name != null && name.trim().length() > 0 ) {
             this.name.setCaretPosition(name.length());
             this.name.setSelectionStart(0);
             this.name.setSelectionEnd(name.length());
         }
+        this.changeSupport = new MethodNameSupport(this.name);
+        this.changeSupport.setChangeListener(this);
         
         Preferences pref = getPreferences();
         
@@ -112,15 +124,96 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
             duplicates.setSelected(true); //from pref
             duplicates.setText(duplicates.getText() + " (" + duplicatesCount + ")");
         }
-
         initialize(target, duplicates);
-        
+        updateTargetChange();
         target.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 updateTargetChange();
             }
         });
+    }
+
+    public void setNotifier(NotificationLineSupport notifier) {
+        this.notifier = notifier;
+    }
+
+    private class MethodNameSupport extends NameChangeSupport {
+        public MethodNameSupport(JTextField control) {
+            super(control);
+        }
+
+        @Override
+        protected void notifyNameError(String msg) {
+            notifier.setErrorMessage(msg);
+        }
+
+        @Override
+        protected boolean updateUI(MemberSearchResult result) {
+            if (result == null) {
+                notifier.clearMessages();
+                return true;
+            }
+            if (result.getConflicting() != null) {
+                notifier.setErrorMessage(Bundle.ERR_MethodExistsOrConflict());
+            } else if (result.getRequiredModifier() != null) {
+                notifier.setWarningMessage(Bundle.WARN_OverridesRestrictedAccess());
+            } else if (result.getShadowed() != null) {
+                notifier.setInformationMessage(Bundle.INFO_MethodWillShadow());
+            } else {
+                notifier.clearMessages();
+            }
+            return result.getConflicting() == null;
+        }
+    }
+    
+    public void setValidator(MemberValidator validator) {
+        changeSupport.setValidator(validator);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        Modifier mustMod = changeSupport.getMinAccess();
+        if (changeSupport.isValid()) {
+            if (mustMod == null) {
+                if (accessPublic.isVisible()) {
+                    accessPublic.setEnabled(true);
+                }
+                if (accessProtected.isVisible()) {
+                    accessProtected.setEnabled(true);
+                }
+                if (accessPrivate.isVisible()) {
+                    accessPrivate.setEnabled(true);
+                }
+                if (accessDefault.isVisible()) {
+                    accessDefault.setEnabled(true);
+                }
+                checkRefactorExisting.setEnabled(false);
+                checkRefactorExisting.setSelected(false);
+            } else {
+                switch (mustMod) {
+                    case PUBLIC:
+                        accessProtected.setEnabled(false);
+                        accessPrivate.setEnabled(false);
+                        accessDefault.setEnabled(false);
+                        break;
+                    case DEFAULT:
+                        accessProtected.setEnabled(false);
+                        accessDefault.setEnabled(false);
+                        accessPrivate.setEnabled(false);
+                        break;
+
+                    case PROTECTED:
+                        accessDefault.setEnabled(false);
+                        accessPrivate.setEnabled(false);
+                        break;
+                }
+                checkRefactorExisting.setEnabled(true);
+                checkRefactorExisting.setSelected(refactorExisting);
+            }
+            updateAccessSelection();
+        }
+        btnOk.setEnabled(changeSupport.isValid());
     }
     
     private void updateTargetChange() {
@@ -131,6 +224,7 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         }
         TargetDescription desc = (TargetDescription)target.getModel().getSelectedItem();
         updateAccessVisible(!desc.iface);
+        changeSupport.setTarget(desc.pathHandle);
     }
     
     private void updateAccessVisible(boolean v) {
@@ -139,6 +233,31 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         accessDefault.setVisible(v);
         accessPrivate.setVisible(v);
         accessProtected.setVisible(v);
+        updateAccessSelection();
+    }
+    
+    private boolean isAvailable(JComponent c) {
+        return c.isVisible() && c.isEnabled();
+    }
+    
+    private void updateAccessSelection() {
+        boolean check = accessPrivate.isSelected();
+        if (isAvailable(accessPrivate)) {
+            return;
+        }
+        check |= accessProtected.isSelected();
+        if (isAvailable(accessProtected)) {
+            accessProtected.setSelected(check);
+            return;
+        }
+        check |= accessDefault.isSelected();
+        if (isAvailable(accessDefault)) {
+            accessDefault.setSelected(check);
+            return;
+        }
+        if (check) {
+            accessPublic.setSelected(true);
+        }
     }
     
     private Preferences getPreferences() {
@@ -147,39 +266,11 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     
     public void setOkButton( JButton btn ) {
         this.btnOk = btn;
-        btnOk.setEnabled(((ErrorLabel)errorLabel).isInputTextValid());
+        btnOk.setEnabled(changeSupport.isValid());
     }
     
-    private JLabel createErrorLabel() {
-        ErrorLabel.Validator validator = new ErrorLabel.Validator() {
-
-            public String validate(String text) {
-                if( null == text 
-                    || text.length() == 0 ) return "";
-                if (!Utilities.isJavaIdentifier(text))
-                    return getDefaultErrorMessage( text );
-                Set<String> blackList = targets2conflictingNames.get((TargetDescription)target.getModel().getSelectedItem());
-                if (blackList != null && blackList.contains(text))
-                    return getConflictErrorMessage(text);
-                return null;
-            }
-        };
-        
-        final ErrorLabel eLabel = new ErrorLabel( name.getDocument(), validator );
-        eLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled(eLabel.isInputTextValid());
-            }
-        });
-        return eLabel;
-    }
-    
-    String getDefaultErrorMessage( String inputText ) {
-        return "'" + inputText +"' is not a valid identifier";
-    }
-    
-    String getConflictErrorMessage( String inputText ) {
-        return "'" + inputText +"' method already exists";
+    public boolean isRefactorExisting() {
+        return checkRefactorExisting.isEnabled() && checkRefactorExisting.isVisible() && checkRefactorExisting.isSelected();
     }
     
     /** This method is called from within the constructor to
@@ -199,10 +290,10 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         accessProtected = new javax.swing.JRadioButton();
         accessDefault = new javax.swing.JRadioButton();
         accessPrivate = new javax.swing.JRadioButton();
-        errorLabel = createErrorLabel();
         duplicates = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         target = new javax.swing.JComboBox();
+        checkRefactorExisting = new javax.swing.JCheckBox();
 
         lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceMethodPanel.class).getString("LBL_Name")); // NOI18N
@@ -241,6 +332,15 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         target.setModel(new DefaultComboBoxModel());
         target.setRenderer(new TargetsRendererImpl());
 
+        checkRefactorExisting.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(checkRefactorExisting, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "IntroduceMethodPanel.checkRefactorExisting.text")); // NOI18N
+        checkRefactorExisting.setEnabled(false);
+        checkRefactorExisting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkRefactorExistingActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -263,14 +363,15 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
                                 .addComponent(accessDefault)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(accessPrivate))))
-                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(duplicates)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(target, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(target, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkRefactorExisting)
+                            .addComponent(duplicates))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -293,9 +394,9 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(target, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                .addComponent(errorLabel)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(checkRefactorExisting)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         name.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AN_IntrMethod_Name")); // NOI18N
@@ -307,7 +408,14 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Dialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void checkRefactorExistingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkRefactorExistingActionPerformed
+        if (checkRefactorExisting.isEnabled()) {
+            refactorExisting = checkRefactorExisting.isSelected();
+        }
+    }//GEN-LAST:event_checkRefactorExistingActionPerformed
     
+    private boolean refactorExisting = true; // PENDING: perhaps save default value in Preferences ?
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton accessDefault;
@@ -315,8 +423,8 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     private javax.swing.JRadioButton accessPrivate;
     private javax.swing.JRadioButton accessProtected;
     private javax.swing.JRadioButton accessPublic;
+    private javax.swing.JCheckBox checkRefactorExisting;
     private javax.swing.JCheckBox duplicates;
-    private javax.swing.JLabel errorLabel;
     private javax.swing.ButtonGroup initilizeIn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblAccess;
