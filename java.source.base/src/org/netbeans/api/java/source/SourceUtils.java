@@ -1045,20 +1045,16 @@ public class SourceUtils {
      * class names. 
      */
     private static Object getSourceFileNames (String classFileName) {
-        int max = classFileName.length() - 1;
-        int index = classFileName.indexOf('$');
+        int index = classFileName.lastIndexOf('$');
         if (index == -1) {
             return classFileName;
         }
         List<String> ll = new ArrayList<>(3);
-        do {
-            ll.add(classFileName.substring(0, index));
-            if (index >= max) {
-                break;
-            }
-            index = classFileName.indexOf('$', index + 1);
-        } while (index >= 0);
         ll.add(classFileName);
+        while (index >= 0) {
+            ll.add(classFileName.substring(0, index));
+            index = classFileName.lastIndexOf('$', index - 1);
+        }
         return ll;
     }
         
