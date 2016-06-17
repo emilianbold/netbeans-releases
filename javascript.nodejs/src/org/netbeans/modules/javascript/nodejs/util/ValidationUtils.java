@@ -44,8 +44,8 @@ package org.netbeans.modules.javascript.nodejs.util;
 import java.io.File;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSourceRoots;
-import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutableValidator;
 import org.openide.util.NbBundle;
 
 public final class ValidationUtils {

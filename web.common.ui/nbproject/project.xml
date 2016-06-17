@@ -54,6 +54,33 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.47</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.48</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -135,6 +162,14 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>9.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -252,10 +287,17 @@ Contributor(s):
                 <friend>org.netbeans.modules.css.prep</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.javascript.bower</friend>
+                <friend>org.netbeans.modules.javascript.grunt</friend>
+                <friend>org.netbeans.modules.javascript.gulp</friend>
+                <friend>org.netbeans.modules.javascript.karma</friend>
+                <friend>org.netbeans.modules.javascript.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>

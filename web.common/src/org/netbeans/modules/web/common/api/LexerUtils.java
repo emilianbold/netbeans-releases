@@ -46,12 +46,12 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -73,7 +73,7 @@ public class LexerUtils {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                BaseDocument nbdoc = (BaseDocument) doc;
+                AtomicLockDocument nbdoc = (AtomicLockDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
                     @Override
                     public void run() {
