@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,10 +35,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Oracle
- * Portions Copyrighted 2013 markiewb@netbeans.org
+ * Contributor(s): markiewb@netbeans.org
  */
 package org.netbeans.modules.debugger.jpda.projectsui;
 

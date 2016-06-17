@@ -114,7 +114,11 @@ public final class SourceURLMapper extends URLMapper {
         if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
             return null;
         }
-        Matcher m = HOST.matcher(url.getHost());
+        String host = url.getHost();
+        if (host == null) {
+            return null;
+        }
+        Matcher m = HOST.matcher(host);
         if (!m.matches()) {
             return null;
         }

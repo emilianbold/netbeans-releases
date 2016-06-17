@@ -30,7 +30,8 @@ import org.openide.nodes.Node;
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
+ */
+/*
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */

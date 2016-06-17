@@ -1526,7 +1526,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 occurencesBuilder.prepare(Kind.TRAIT, name, currentScope);
                 break;
             default:
-                assert false : "Unknown type: " + type;
+                assert false : "Unknown type: " + realType;
         }
         if (singleUseStatementPart.getAlias() != null) {
             occurencesBuilder.prepare(Kind.USE_ALIAS, singleUseStatementPart.getAlias(), currentScope);
