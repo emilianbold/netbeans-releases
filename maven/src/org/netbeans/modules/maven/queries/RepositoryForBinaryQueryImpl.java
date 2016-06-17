@@ -599,13 +599,15 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         if (binaryFile == null || !binaryFile.exists() || !binaryFile.isFile()) {
             return null;
         }        
-        List<Coordinates> toRet = coorCache.get(binaryFile);
-        if(toRet == null && !coorCache.containsKey(binaryFile)) {
-            toRet = getJarMetadataCoordinates(binaryFile);                            
-            FileUtil.addFileChangeListener(binaryChangeListener, binaryFile);
-            coorCache.put(binaryFile, toRet);
-        } 
-        return toRet;
+        synchronized (coorCache) {
+            List<Coordinates> toRet = coorCache.get(binaryFile);
+            if(toRet == null && !coorCache.containsKey(binaryFile)) {
+                toRet = getJarMetadataCoordinates(binaryFile);                            
+                FileUtil.addFileChangeListener(binaryChangeListener, binaryFile);
+                coorCache.put(binaryFile, toRet);
+            } 
+            return toRet;
+        }
     }
     
     public static List<Coordinates> getJarMetadataCoordinates(File binaryFile) {
