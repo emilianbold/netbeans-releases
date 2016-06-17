@@ -126,45 +126,31 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
             }
         });
         
-        rbGlobal.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                txtProject.setEnabled(false);
-                epLicense.setEditable(false);
-                btnProject.setEnabled(false);
-                comGlobal.setEnabled(true);
-                LicenseHeadersPanel.this.category.setErrorMessage(null);
-                epLicense.getDocument().removeDocumentListener(editorListener);
-                LicenseHeadersPanel.this.handler.setProjectLicenseContent(null);
-                setTextToGlobalLicense();
-                LicenseHeadersPanel.this.handler.setProjectLicenseLocation(null);
-            }
+        rbGlobal.addActionListener((ActionEvent e) -> {
+            txtProject.setEnabled(false);
+            epLicense.setEditable(false);
+            btnProject.setEnabled(false);
+            comGlobal.setEnabled(true);
+            LicenseHeadersPanel.this.category.setErrorMessage(null);
+            epLicense.getDocument().removeDocumentListener(editorListener);
+            LicenseHeadersPanel.this.handler.setProjectLicenseContent(null);
+            setTextToGlobalLicense();
+            LicenseHeadersPanel.this.handler.setProjectLicenseLocation(null);
         });
-        rbProject.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                txtProject.setEnabled(true);
-                epLicense.setEditable(true);
-                btnProject.setEnabled(true);
-                comGlobal.setEnabled(false);
-                epLicense.getDocument().addDocumentListener(editorListener);
-                
-                LicenseHeadersPanel.this.handler.setProjectLicenseLocation(txtProject.getText().trim());
-                setTextToProjectLicense();
-            }
-
+        rbProject.addActionListener((ActionEvent e) -> {
+            txtProject.setEnabled(true);
+            epLicense.setEditable(true);
+            btnProject.setEnabled(true);
+            comGlobal.setEnabled(false);
+            epLicense.getDocument().addDocumentListener(editorListener);
+            
+            LicenseHeadersPanel.this.handler.setProjectLicenseLocation(txtProject.getText().trim());
+            setTextToProjectLicense();
         });
-        comGlobal.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                setTextToGlobalLicense();
-                GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
-                LicenseHeadersPanel.this.handler.setGlobalLicenseName(item.getName());
-            }
-
+        comGlobal.addActionListener((ActionEvent e) -> {
+            setTextToGlobalLicense();
+            GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
+            LicenseHeadersPanel.this.handler.setGlobalLicenseName(item.getName());
         });
         FileObject root = FileUtil.getConfigFile(TEMPLATES_LICENSES_PATH);
         fslistener = new FileChangeAdapter() {

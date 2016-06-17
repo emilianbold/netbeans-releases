@@ -50,7 +50,7 @@ import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
+import org.netbeans.modules.terminal.spi.ui.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.OpenInEditorAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

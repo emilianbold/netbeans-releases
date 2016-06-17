@@ -41,19 +41,6 @@ Contributor(s):
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="OptionsDialog">
-        <folder name="CPlusPlus">
-            <folder name="FormatterPreviewExamples">
-                <attr name="position" intvalue="2000"/>
-                <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
-                <file name="SAMPLE_Spaces.c" url="resources/cplusplus/SAMPLE_Spaces.c"/>
-                <file name="SAMPLE_BlankLines.cpp" url="resources/cplusplus/SAMPLE_BlankLines.cpp"/>
-                <file name="SAMPLE_BlankLines.c" url="resources/cplusplus/SAMPLE_BlankLines.c"/>
-                <file name="SAMPLE_AlignBraces.cpp" url="resources/cplusplus/SAMPLE_AlignBraces.cpp"/>
-                <file name="SAMPLE_AlignBraces.c" url="resources/cplusplus/SAMPLE_AlignBraces.c"/>
-                <file name="SAMPLE_TabsIndents.cpp" url="resources/cplusplus/SAMPLE_TabsIndents.cpp"/>
-                <file name="SAMPLE_TabsIndents.c" url="resources/cplusplus/SAMPLE_TabsIndents.c"/>
-            </folder>
-        </folder>
         <folder name="Editor">
             <folder name="Formatting">
                 <attr name="position" intvalue="0"/>

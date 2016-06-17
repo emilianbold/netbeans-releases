@@ -350,43 +350,39 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         assert Thread.holdsLock(modifiedMetadataPaths);
         final FileLock[] _lock = new FileLock[1];
         _lock[0] = null;
-        runSaveAA(new AtomicAction() {
-
-            @Override
-            public void run() throws IOException {
-                // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                final byte[] data = convertLineSeparator(baos, path);
-                final FileObject xml = FileUtil.createData(dir, path);
+        runSaveAA(() -> {
+            // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+            final byte[] data = convertLineSeparator(baos, path);
+            final FileObject xml = FileUtil.createData(dir, path);
+            try {
                 try {
-                    try {
-                        _lock[0] = xml.lock(); // unlocked by {@link #save}
-                    } catch (IOException ex) {
-                         LOG.log(Level.INFO, "Cannot save project metadata "+dir.getPath()+"/"+path, ex); //NOI18N
-                         return;
-                    }
-                    OutputStream os = SmartOutputStream.getSmartOutputStream(xml, _lock[0]);
-                    try {
-                        os.write(data);
-                    } finally {
-                        os.close();
-                    }
-                } catch (UserQuestionException uqe) { // #46089
-                    ErrorManager.getDefault().notify(uqe);
-                    // Revert the save.
-                    if (path.equals(PROJECT_XML_PATH)) {
-                        synchronized (modifiedMetadataPaths) {
-                            projectXmlValid = false;
-                        }
-                    } else {
-                        assert path.equals(PRIVATE_XML_PATH) : path;
-                        synchronized (modifiedMetadataPaths) {
-                            privateXmlValid = false;
-                        }
-                    }
-                    fireExternalChange(path);
+                    _lock[0] = xml.lock(); // unlocked by {@link #save}
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Cannot save project metadata "+dir.getPath()+"/"+path, ex); //NOI18N
+                    return;
                 }
+                OutputStream os = SmartOutputStream.getSmartOutputStream(xml, _lock[0]);
+                try {
+                    os.write(data);
+                } finally {
+                    os.close();
+                }
+            } catch (UserQuestionException uqe) { // #46089
+                ErrorManager.getDefault().notify(uqe);
+                // Revert the save.
+                if (path.equals(PROJECT_XML_PATH)) {
+                    synchronized (modifiedMetadataPaths) {
+                        projectXmlValid = false;
+                    }
+                } else {
+                    assert path.equals(PRIVATE_XML_PATH) : path;
+                    synchronized (modifiedMetadataPaths) {
+                        privateXmlValid = false;
+                    }
+                }
+                fireExternalChange(path);
             }
         });
         return _lock[0];
@@ -488,24 +484,20 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
         final MakeProjectEvent ev = new MakeProjectEvent(this, path, expected);
         final boolean xml = path.equals(PROJECT_XML_PATH) || path.equals(PRIVATE_XML_PATH);
-        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-
-            @Override
-            public Void run() {
-                for (MakeProjectListener l : _listeners) {
-                    try {
-                        if (xml) {
-                            l.configurationXmlChanged(ev);
-                        } else {
-                            l.propertiesChanged(ev);
-                        }
-                    } catch (RuntimeException e) {
-                        // Don't prevent other listeners from being notified.
-                        ErrorManager.getDefault().notify(e);
+        ProjectManager.mutex().readAccess((Mutex.Action<Void>) () -> {
+            for (MakeProjectListener l : _listeners) {
+                try {
+                    if (xml) {
+                        l.configurationXmlChanged(ev);
+                    } else {
+                        l.propertiesChanged(ev);
                     }
+                } catch (RuntimeException e) {
+                    // Don't prevent other listeners from being notified.
+                    ErrorManager.getDefault().notify(e);
                 }
-                return null;
             }
+            return null;
         });
     }
 
@@ -632,9 +624,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
             }
         } finally {
             // #57791: release locks outside synchronized block.
-            for (FileLock lock : locks) {
+            locks.forEach((lock) -> {
                 lock.releaseLock();
-            }
+            });
         }
     }
 
@@ -657,18 +649,14 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         assert name.indexOf(':') == -1;
         final String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
         assert namespace != null && namespace.length() > 0;
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
-
-            @Override
-            public Element run() {
-                synchronized (modifiedMetadataPaths) {
-                    Element el = getConfigurationFragment(name, namespace, shared);
-                    if (el != null) {
-                        return el;
-                    } else {
-                        // No such data, corrupt file.
-                        return cloneSafely(getConfigurationXml(shared).createElementNS(namespace, name));
-                    }
+        return ProjectManager.mutex().readAccess((Mutex.Action<Element>) () -> {
+            synchronized (modifiedMetadataPaths) {
+                Element el = getConfigurationFragment(name, namespace, shared);
+                if (el != null) {
+                    return el;
+                } else {
+                    // No such data, corrupt file.
+                    return cloneSafely(getConfigurationXml(shared).createElementNS(namespace, name));
                 }
             }
         });
@@ -730,9 +718,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                 l = new ArrayList<>(changedFileObjects);
                 changedFileObjects.clear();
             }
-            for (FileObject fo : l) {
+            l.forEach((fo) -> {
                 changeImpl(fo);
-            }
+            });
         }
 
         private void changeImpl(FileObject f) {
@@ -799,18 +787,14 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * @return (a clone of) the named configuration fragment, or null if it does not exist
      */
     Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
-
-            @Override
-            public Element run() {
-                synchronized (modifiedMetadataPaths) {
-                    Element root = getConfigurationDataRoot(shared);
-                    Element data = XMLUtil.findElement(root, elementName, namespace);
-                    if (data != null) {
-                        return cloneSafely(data);
-                    } else {
-                        return null;
-                    }
+        return ProjectManager.mutex().readAccess((Mutex.Action<Element>) () -> {
+            synchronized (modifiedMetadataPaths) {
+                Element root = getConfigurationDataRoot(shared);
+                Element data = XMLUtil.findElement(root, elementName, namespace);
+                if (data != null) {
+                    return cloneSafely(data);
+                } else {
+                    return null;
                 }
             }
         });
@@ -840,39 +824,35 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * @param shared to use project.xml vs. private.xml
      */
     void putConfigurationFragment(final Element fragment, final boolean shared) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-
-            @Override
-            public Void run() {
-                synchronized (modifiedMetadataPaths) {
-                    Element root = getConfigurationDataRoot(shared);
-                    Element existing = XMLUtil.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
-                    // XXX first compare to existing and return if the same
-                    if (existing != null) {
-                        root.removeChild(existing);
-                    }
-                    // the children are alphabetize: find correct place to insert new node
-                    Node ref = null;
-                    NodeList list = root.getChildNodes();
-                    for (int i = 0; i < list.getLength(); i++) {
-                        Node node = list.item(i);
-                        if (node.getNodeType() != Node.ELEMENT_NODE) {
-                            continue;
-                        }
-                        int comparison = node.getNodeName().compareTo(fragment.getNodeName());
-                        if (comparison == 0) {
-                            comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
-                        }
-                        if (comparison > 0) {
-                            ref = node;
-                            break;
-                        }
-                    }
-                    root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
-                    modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+        ProjectManager.mutex().writeAccess((Mutex.Action<Void>) () -> {
+            synchronized (modifiedMetadataPaths) {
+                Element root = getConfigurationDataRoot(shared);
+                Element existing = XMLUtil.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                // XXX first compare to existing and return if the same
+                if (existing != null) {
+                    root.removeChild(existing);
                 }
-                return null;
+                // the children are alphabetize: find correct place to insert new node
+                Node ref = null;
+                NodeList list = root.getChildNodes();
+                for (int i = 0; i < list.getLength(); i++) {
+                    Node node = list.item(i);
+                    if (node.getNodeType() != Node.ELEMENT_NODE) {
+                        continue;
+                    }
+                    int comparison = node.getNodeName().compareTo(fragment.getNodeName());
+                    if (comparison == 0) {
+                        comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
+                    }
+                    if (comparison > 0) {
+                        ref = node;
+                        break;
+                    }
+                }
+                root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
+                modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
             }
+            return null;
         });
     }
 
@@ -884,20 +864,16 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * @return true if anything was actually removed
      */
     boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
-        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
-
-            @Override
-            public Boolean run() {
-                synchronized (modifiedMetadataPaths) {
-                    Element root = getConfigurationDataRoot(shared);
-                    Element data = XMLUtil.findElement(root, elementName, namespace);
-                    if (data != null) {
-                        root.removeChild(data);
-                        modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
-                        return true;
-                    } else {
-                        return false;
-                    }
+        return ProjectManager.mutex().writeAccess((Mutex.Action<Boolean>) () -> {
+            synchronized (modifiedMetadataPaths) {
+                Element root = getConfigurationDataRoot(shared);
+                Element data = XMLUtil.findElement(root, elementName, namespace);
+                if (data != null) {
+                    root.removeChild(data);
+                    modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+                    return true;
+                } else {
+                    return false;
                 }
             }
         });

@@ -59,7 +59,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
-import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
+import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.openide.util.NbBundle;
 
 /**

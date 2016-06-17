@@ -68,10 +68,12 @@ public class BooleanReverseNodeProp extends PropertySupport<Boolean> {
         }
     }
 
+    @Override
     public Boolean getValue() {
         return !booleanConfiguration.getValue();
     }
 
+    @Override
     public void setValue(Boolean v) {
         booleanConfiguration.setValue(!v);
     }

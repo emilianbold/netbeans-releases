@@ -53,14 +53,17 @@ import org.openide.util.actions.CallableSystemAction;
 /**
   */
 public class ConfigurationManagerAction extends CallableSystemAction {
+    @Override
     public void performAction() {
 	CommonProjectActions.customizeProjectAction().actionPerformed(null);
     }
 
+    @Override
     public String getName() {
 	return getString("ConfigurationManagerAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }

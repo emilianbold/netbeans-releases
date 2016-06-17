@@ -64,10 +64,12 @@ public class NewFolderAction extends NodeAction {
         //putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
     }
     
+    @Override
     public String getName() {
 	return NbBundle.getBundle(getClass()).getString("CTL_NewFolderAction"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
 	Node n = activatedNodes[0];
 	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
@@ -100,6 +102,7 @@ public class NewFolderAction extends NodeAction {
 	MakeLogicalViewProvider.setVisible(project, newFolder); 
     }
 
+    @Override
     public boolean enable(Node[] activatedNodes) {
 	if (activatedNodes.length != 1) {
 	    return false;
@@ -118,6 +121,7 @@ public class NewFolderAction extends NodeAction {
 	return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }

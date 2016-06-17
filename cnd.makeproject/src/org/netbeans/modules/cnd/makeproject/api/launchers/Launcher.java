@@ -170,6 +170,7 @@ public final class Launcher {
         return false;
     }
 
+    @Override
     public int hashCode() {
         assert false : "hashCode is not designed";
         return 17;

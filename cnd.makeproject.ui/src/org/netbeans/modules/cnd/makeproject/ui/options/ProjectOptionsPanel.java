@@ -88,12 +88,8 @@ public class ProjectOptionsPanel extends JPanel {
         Color c = getBackground();
         Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
         filePathTxt.setBackground(cc);
-        filePathcomboBox.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                changed = areMakeOptionsChanged();
-            }
+        filePathcomboBox.addActionListener((ActionEvent e) -> {
+            changed = areMakeOptionsChanged();
         });
         makeOptionsTextField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -121,10 +117,10 @@ public class ProjectOptionsPanel extends JPanel {
             filePathcomboBox.addItem(pathMode);
         }
         filePathcomboBox.setSelectedItem(MakeProjectOptions.getPathMode());
-        for(JCheckBox cb : checkBoxes) {
+        checkBoxes.forEach((cb) -> {
             NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
             cb.setSelected(NamedOption.getAccessor().getBoolean(entry.getName()));
-        }
+        });
 
         changed = false;
     }
@@ -133,10 +129,10 @@ public class ProjectOptionsPanel extends JPanel {
     public void applyChanges() {
         MakeProjectOptions.setMakeOptions(makeOptionsTextField.getText());
         MakeProjectOptions.setPathMode((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
-        for(JCheckBox cb : checkBoxes) {
+        checkBoxes.forEach((cb) -> {
             NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
             NamedOption.getAccessor().setBoolean(entry.getName(), cb.isSelected());
-        }
+        });
 
         changed = false;
     }
@@ -196,12 +192,8 @@ public class ProjectOptionsPanel extends JPanel {
             gridBagConstraints.anchor = GridBagConstraints.WEST;
             gridBagConstraints.insets = new Insets(0, 6, 6, 6);
             add(wrapper, gridBagConstraints);
-            wrapper.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    changed = areMakeOptionsChanged();
-                }
+            wrapper.addActionListener((ActionEvent e) -> {
+                changed = areMakeOptionsChanged();
             });
         }
         gridBagConstraints = new GridBagConstraints();

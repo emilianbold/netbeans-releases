@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -148,7 +149,8 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
             if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(lc.getOutput(), lc.getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
-            set1.put(new VectorNodeProp(lc.getAdditionalLibs(), null, lc.getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(lc.getAdditionalLibs(), null, lc.getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")},
+                    true, JFileChooser.DIRECTORIES_ONLY, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
@@ -160,7 +162,8 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
             });
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(lc.getDynamicSearch(), null, lc.getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, true, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(lc.getDynamicSearch(), null, lc.getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")},
+                    false, JFileChooser.DIRECTORIES_ONLY, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);

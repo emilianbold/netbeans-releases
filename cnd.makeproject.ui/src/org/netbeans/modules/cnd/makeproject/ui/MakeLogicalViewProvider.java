@@ -385,31 +385,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
     }
 
     public static void setVisible(final Project project, final Item[] items) {
-        final Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                        List<Node> nodes = new ArrayList<>();
-                        for (int i = 0; i < items.length; i++) {
-                            Node root = findProjectNode(rootNode, project);
-
-                            if (root != null) {
-                                nodes.add(findItemNode(root, items[i]));
-                            }
-                        }
-                        try {
-                            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
-                        } catch (Exception e) {
-                            // skip
-                        }
+        final Runnable runnable = () -> {
+            SwingUtilities.invokeLater(() -> {
+                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                List<Node> nodes = new ArrayList<>();
+                for (int i = 0; i < items.length; i++) {
+                    Node root = findProjectNode(rootNode, project);
+                    
+                    if (root != null) {
+                        nodes.add(findItemNode(root, items[i]));
                     }
-                });
-            }
+                }
+                try {
+                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
+                } catch (Exception e) {
+                    // skip
+                }
+            });
         };
         // See IZ223587. The intention is to guarantee that the selection logic
         // is executed after update loop is performed.
@@ -430,16 +422,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
         if (CndUtils.isStandalone()) {
             return;
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                Node root = findProjectNode(rootNode, project);
-                if (root != null) {
-                    ProjectInformation pi = ProjectUtils.getInformation(project);
-                    if (pi != null) { // node will check whether it equals...
-                        root.setDisplayName(pi.getDisplayName());
-                    }
+        SwingUtilities.invokeLater(() -> {
+            Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+            Node root = findProjectNode(rootNode, project);
+            if (root != null) {
+                ProjectInformation pi = ProjectUtils.getInformation(project);
+                if (pi != null) { // node will check whether it equals...
+                    root.setDisplayName(pi.getDisplayName());
                 }
             }
         });
@@ -504,11 +493,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
         } else {
             final Node[] root = new Node[1];
             try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        root[0] = getRootNode();
-                    }
+                SwingUtilities.invokeAndWait(() -> {
+                    root[0] = getRootNode();
                 });
             } catch (InterruptedException ex) {
                 // skip
