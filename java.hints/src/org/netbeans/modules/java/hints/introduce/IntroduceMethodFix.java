@@ -224,7 +224,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         List<TypeMirrorHandle> additionaLocalTypes = new LinkedList<TypeMirrorHandle>();
         List<String> additionaLocalNames = new LinkedList<String>();
         for (VariableElement ve : additionalLocalVariables) {
-            TypeMirror vt = Utilities.resolveCapturedType(info, ve.asType());
+            TypeMirror vt = Utilities.resolveTypeForDeclaration(info, ve.asType());
             additionaLocalTypes.add(TypeMirrorHandle.create(vt));
             additionaLocalNames.add(ve.getSimpleName().toString());
         }
@@ -274,7 +274,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         int duplicatesCount = duplicates.size();
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
-            returnType = Utilities.resolveCapturedType(info, result.asType());
+            returnType = Utilities.resolveTypeForDeclaration(info, result.asType());
             returnAssignTo = TreePathHandle.create(info.getTrees().getPath(result), info);
             declareVariableForReturnValue = scanner.selectionLocalVariables.contains(result);
         } else {

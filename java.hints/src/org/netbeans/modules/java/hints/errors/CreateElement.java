@@ -369,7 +369,7 @@ public final class CreateElement implements ErrorRule<Void> {
             int i = 0;
             for (Iterator<TypeMirror> it = types.iterator(); it.hasNext(); ) {
                 final TypeMirror t = it.next();
-                final TypeMirror resolved = Utilities.resolveCapturedType(info, t);
+                final TypeMirror resolved = Utilities.resolveTypeForDeclaration(info, t);
                 if (resolved != t) {
                     if (resolvedTypes == null) {
                         resolvedTypes = new ArrayList(types);
@@ -513,7 +513,7 @@ public final class CreateElement implements ErrorRule<Void> {
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror returnType = returnTypes != null ? Utilities.resolveCapturedType(info, returnTypes.get(0)) : null;
+        TypeMirror returnType = returnTypes != null ? Utilities.resolveTypeForDeclaration(info, returnTypes.get(0)) : null;
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
         if (returnType != null && Utilities.containsErrorsRecursively(returnType)) {
