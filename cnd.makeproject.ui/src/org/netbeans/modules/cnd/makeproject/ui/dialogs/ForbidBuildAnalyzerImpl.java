@@ -44,7 +44,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ForbidBuildAnalyzerFactory;
-import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -75,8 +74,8 @@ public class ForbidBuildAnalyzerImpl {
                 //}
                 SwingUtilities.invokeLater(() -> {
                     if (project != null) {
-                        CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
-                        if (cp instanceof MakeCustomizerProvider) {
+                        MakeCustomizerProvider cp = project.getLookup().lookup( MakeCustomizerProvider.class );
+                        if (cp != null) {
                             ((MakeCustomizerProvider)cp).showCustomizer("CodeAssistance"); // NOI18N
                         }
                     }
