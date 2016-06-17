@@ -102,13 +102,13 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public boolean isFileObjectSupported(FileObject fo) {
-        if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
-            return false; // NOI18N
-        }
-        return super.isFileObjectSupported(fo);
-    }
+//    @Override
+//    public boolean isFileObjectSupported(FileObject fo) {
+//        if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
+//            return false; // NOI18N
+//        }
+//        return super.isFileObjectSupported(fo);
+//    }
     
     @Override
     public JavaPlatform resolveProjectJavaPlatform() {

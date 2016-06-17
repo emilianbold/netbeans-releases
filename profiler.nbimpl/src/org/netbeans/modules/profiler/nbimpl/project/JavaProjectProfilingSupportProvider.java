@@ -72,9 +72,7 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
     
     @Override
     public boolean isFileObjectSupported(FileObject file) {
-        // FIXME
-        JavaProfilerSource src = JavaProfilerSource.createFrom(file);
-        return src != null && src.isRunnable();
+        return file.hasExt("java"); // NOI18N
     }
     
     @Override
@@ -90,6 +88,22 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
             ss.setJavaVersionString(platform.getPlatformJDKVersion());
             ss.setJavaExecutable(platform.getPlatformJavaFile());
         }
+    }
+    
+    @Override
+    @NbBundle.Messages({
+        "NoMainMethodMsg=Class \"{0}\" does not have a main method."
+    })
+    public boolean checkProjectCanBeProfiled(FileObject file) {
+        if (file != null) {
+            JavaProfilerSource src = JavaProfilerSource.createFrom(file);
+            if (src != null && !src.isRunnable()) {
+                ProfilerDialogs.displayInfo(Bundle.NoMainMethodMsg(src.getTopLevelClass().getQualifiedName()));
+                return false;
+            }
+            if (!isFileObjectSupported(file)) return false;
+        }
+        return super.checkProjectCanBeProfiled(file);
     }
 
     @Override
