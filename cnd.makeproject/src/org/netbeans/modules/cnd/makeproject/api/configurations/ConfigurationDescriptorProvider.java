@@ -77,6 +77,8 @@ import org.openide.util.RequestProcessor;
 public abstract class ConfigurationDescriptorProvider {
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
     
+    public static final String PROP_CONFIGURATIONS_LOADED = "loadedConfigurations"; // NOI18N
+     
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N

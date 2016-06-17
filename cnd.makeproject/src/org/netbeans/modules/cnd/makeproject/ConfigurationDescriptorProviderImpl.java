@@ -85,6 +85,7 @@ public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptor
         MakeConfigurationDescriptor makeConfigurationDescriptor = getConfigurationDescriptorImpl();
         
         if (makeConfigurationDescriptor.getState() != ConfigurationDescriptor.State.BROKEN) {  // IZ 122372 // IZ 182321
+            pcs.firePropertyChange(ConfigurationDescriptorProvider.PROP_CONFIGURATIONS_LOADED, null, makeConfigurationDescriptor);
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, makeConfigurationDescriptor.getConfs().getConfigurations());
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, makeConfigurationDescriptor.getConfs().getActive());
         } else {
