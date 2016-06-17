@@ -59,8 +59,8 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
