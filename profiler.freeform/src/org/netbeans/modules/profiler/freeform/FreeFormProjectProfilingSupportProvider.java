@@ -42,15 +42,12 @@
  */
 package org.netbeans.modules.profiler.freeform;
 
-import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.profiler.api.JavaPlatform;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -69,43 +66,21 @@ public final class FreeFormProjectProfilingSupportProvider extends JavaProjectPr
     private static final String NBJDK_ACTIVE = "nbjdk.active"; // NOI18N
 
     @Override
-    public boolean checkProjectIsModifiedForProfiler() {
+    public boolean checkProjectCanBeProfiled(final FileObject profiledClassFile) {
         Project project = getProject();
         Element e = ProjectUtils.getAuxiliaryConfiguration(project).getConfigurationFragment("data", // NOI18N
-                ProjectUtilities.PROFILER_NAME_SPACE,
-                false);
+                ProjectUtilities.PROFILER_NAME_SPACE, false);
 
         if (e != null) {
             final String profileTarget = e.getAttribute(FreeFormProjectsSupport.PROFILE_TARGET_ATTRIBUTE);
             final String profileSingleTarget = e.getAttribute(FreeFormProjectsSupport.PROFILE_SINGLE_TARGET_ATTRIBUTE);
-
-            if (((profileTarget != null) || (profileSingleTarget != null))) {
-                return true; // already setup for profiling, nothing more to be done
-            }
+            
+            if (profileTarget == null && profileSingleTarget == null) return false;
         } else {
-            FreeFormProjectsSupport.saveProfilerConfig(project, null, null);
+            if (!FreeFormProjectsSupport.saveProfilerConfig(project, null, null)) return false;
         }
 
-        return true;
-    }
-
-    @Override
-    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
-        if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
-            // 1. specify profiled class name
-
-            //FIXME 
-            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-            if (src != null) {
-                final String profiledClass = src.getTopLevelClass().getQualifiedName();
-                props.put("profile.class", profiledClass); //NOI18N
-
-                // 2. include it in javac.includes so that the compile-single picks it up
-                final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(getProject()),
-                        profiledClassFile), profiledClassFile);
-                props.put("javac.includes", clazz); //NOI18N
-            }
-        }
+        return super.checkProjectCanBeProfiled(profiledClassFile);
     }
 
     @Override
