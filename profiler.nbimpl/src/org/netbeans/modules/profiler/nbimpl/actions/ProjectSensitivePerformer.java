@@ -81,7 +81,6 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
         try {
             if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
-                if (ppp == null) return false;
                 return ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
@@ -94,7 +93,7 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
         if (project == null) return false;
         
         ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
-        return ppp == null ? false : ppp.isAttachSupported();
+        return ppp.isAttachSupported();
     }
     
     @Override
@@ -107,19 +106,23 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     public void perform(final Project project) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                ProfilerSession session = null;
+                ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
+                if (!ppp.checkProjectCanBeProfiled(null)) return; // Project not configured, user notified by ProjectProfilingSupportProvider 
+                if (ppp.startProfilingSession(null, false)) return; // Profiling session started by ProjectProfilingSupportProvider
+                
+                ProfilerSession session;
         
                 Lookup projectLookup = project.getLookup();
                 if (attach) {
                     Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project));
                     session = ProfilerSession.forContext(context);
                 } else {
-                    ActionProvider ap = projectLookup.lookup(ActionProvider.class);
-                    if (ap != null) {
+//                    ActionProvider ap = projectLookup.lookup(ActionProvider.class); // Let's assume this is handled by enable(Project)
+//                    if (ap != null) {
                         ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
                         Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
                         session = ProfilerSession.forContext(context);
-                    }
+//                    }
                 }
 
                 if (session != null) {
