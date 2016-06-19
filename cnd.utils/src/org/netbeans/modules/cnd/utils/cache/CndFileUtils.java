@@ -193,14 +193,7 @@ public final class CndFileUtils {
     
     public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
         CndUtils.assertTrueInConsole(absolutePath != null, "null path ", fs);
-        ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
-        if (map == null) {
-            map = new ConcurrentHashMap<CharSequence, FileObject>();
-            ConcurrentHashMap<CharSequence, FileObject> old = foCache.putIfAbsent(fs, map);
-            if (old != null) {
-                map = old;
-            }
-        }
+        ConcurrentHashMap<CharSequence, FileObject> map = getFSFileObjectCache(fs);
         FileObject res = map.get(absolutePath);
         if (res == null || !res.isValid()) {
             res = toFileObjectImpl(fs, absolutePath);
@@ -209,6 +202,18 @@ public final class CndFileUtils {
             }
         }
         return res;
+    }
+
+    private static ConcurrentHashMap<CharSequence, FileObject> getFSFileObjectCache(FileSystem fs) {
+        ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
+        if (map == null) {
+            map = new ConcurrentHashMap<CharSequence, FileObject>();
+            ConcurrentHashMap<CharSequence, FileObject> old = foCache.putIfAbsent(fs, map);
+            if (old != null) {
+                map = old;
+            }
+        }
+        return map;
     }
     
     private static FileObject toFileObjectImpl(FileSystem fs, CharSequence absolutePath) {
@@ -892,7 +897,7 @@ public final class CndFileUtils {
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("clean cache for %s->%s\n", absPath, removed);
             }
-            foCache.get(fsPath.getFileSystem()).remove(fsPath.getPath());
+            getFSFileObjectCache(fsPath.getFileSystem()).remove(fsPath.getPath());
             invalidateFile(fsPath.getFileSystem(), file, absPath);
         }
     }
