@@ -1032,8 +1032,13 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             }
         }
         if (newIdentifier != null) {
+//            if (fn.getKind() == FunctionNode.Kind.ARROW) {
+//                jsFunction.getParent().getProperties().remove(jsFunction.getName());
+//                jsFunction.getParent().addProperty(newIdentifier.getName(), jsFunction);
+//            }
             jsFunction.setDeclarationName(newIdentifier);
             jsFunction.addOccurrence(newIdentifier.getOffsetRange());
+            
         }
     }
     
@@ -1151,7 +1156,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 // var f1 = function () {}
                 // var f1 = function f1() {}
                 parent.getProperties().remove(modelBuilder.getFunctionName(fn));
-                parent.addProperty(fn.getIdent().getName(), jsFunction);
+                parent.addProperty(varNode.getName().getName(), jsFunction);
             }
         } else if (lastVisited instanceof BinaryNode) {
             // case like A.f1 = function () {}
