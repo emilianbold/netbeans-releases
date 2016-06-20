@@ -55,9 +55,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -109,6 +107,9 @@ public class ConnectAction extends CookieAction {
             return;
         }
         Database model = activatedNodes[0].getCookie(Database.class);
+        if(model == null) {
+            return;
+        }
         DatabaseServer server = model.getServer();
         
         final String dbname = model.getDbName();
