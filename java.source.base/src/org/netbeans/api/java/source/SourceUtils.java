@@ -544,7 +544,7 @@ public class SourceUtils {
                             if (match != null) {
                                 FileObject ownerRoot = sourcePath.entries().isEmpty() ? root : sourcePath.findOwnerRoot(match);
                                 FQN2Files fQN2Files = ownerRoot != null ? FQN2Files.forRoot(ownerRoot.toURL()) : null;
-                                if (fQN2Files == null || !fQN2Files.check(signature[0], match)) {
+                                if (fQN2Files == null || !fQN2Files.check(signature[0], match.toURL())) {
                                     return match;
                                 }
                             }
