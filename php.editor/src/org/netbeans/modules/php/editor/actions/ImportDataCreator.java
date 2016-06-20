@@ -149,16 +149,15 @@ public class ImportDataCreator {
 
     private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
         Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
-        possibleTypes.addAll(phpIndex.getClasses(NameKind.prefix(typeName)));
-        possibleTypes.addAll(phpIndex.getInterfaces(NameKind.prefix(typeName)));
+        NameKind nameKind = NameKind.prefix(typeName);
+        possibleTypes.addAll(phpIndex.getClasses(nameKind));
+        possibleTypes.addAll(phpIndex.getInterfaces(nameKind));
         if (options.getPhpVersion().compareTo(PhpVersion.PHP_54) >= 0) {
-            possibleTypes.addAll(phpIndex.getTraits(NameKind.prefix(typeName)));
+            possibleTypes.addAll(phpIndex.getTraits(nameKind));
         }
         if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
-            Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
-            Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
-            possibleTypes.addAll(possibleFunctions);
-            possibleTypes.addAll(possibleConstants);
+            possibleTypes.addAll(phpIndex.getFunctions(nameKind));
+            possibleTypes.addAll(phpIndex.getConstants(nameKind));
         }
         return possibleTypes;
     }
@@ -254,13 +253,23 @@ public class ImportDataCreator {
 
         @Override
         public void insertData(ImportData data) {
-            FullyQualifiedElement fqElement = ModelUtils.getFirst(filteredExactUnqualifiedNames);
+            FullyQualifiedElement fqElement = findBestElement();
             assert fqElement != null;
             String itemVariantReplaceName = options.preferFullyQualifiedNames()
                     ? fqElement.getFullyQualifiedName().toString()
                     : fqElement.getName();
             ItemVariant replaceItemVariant = new ItemVariant(itemVariantReplaceName, ItemVariant.UsagePolicy.CAN_BE_USED);
             data.addJustToReplace(new DataItem(fqName, Collections.singletonList(replaceItemVariant), replaceItemVariant, usedNames.get(fqName)));
+        }
+
+        private FullyQualifiedElement findBestElement() {
+            String fullName = '\\' + fqName; // NOI18N
+            for (FullyQualifiedElement element : filteredExactUnqualifiedNames) {
+                if (fullName.equals(element.getFullyQualifiedName().toString())) {
+                    return element;
+                }
+            }
+            return ModelUtils.getFirst(filteredExactUnqualifiedNames);
         }
     }
 
