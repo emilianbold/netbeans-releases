@@ -1833,6 +1833,8 @@ public class ModelUtils {
         String fqn = type.getType();
         if (fqn.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
             fqn = fqn.substring(SemiTypeResolverVisitor.ST_EXP.length());
+        } else if (fqn.startsWith(SemiTypeResolverVisitor.ST_PRO)) {
+            fqn = fqn.substring(SemiTypeResolverVisitor.ST_PRO.length());
         }
         if (fqn.contains(SemiTypeResolverVisitor.ST_PRO)) {
             fqn = fqn.replace(SemiTypeResolverVisitor.ST_PRO, ".");     //NOI18N
