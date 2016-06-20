@@ -542,14 +542,4 @@ Contributor(s):
         </folder>
     </folder>
 
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-make">
-                <file name="LanguageConfig.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.MakefileLanguageConfig"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>
