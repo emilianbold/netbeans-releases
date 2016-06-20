@@ -2199,6 +2199,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/strangeMethodName.js", "dependencies[\"jqu^ery1.6+\"]();", true);
     }
     
+    public void testIssue262469_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue262469.js", "test(servi^ce);", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

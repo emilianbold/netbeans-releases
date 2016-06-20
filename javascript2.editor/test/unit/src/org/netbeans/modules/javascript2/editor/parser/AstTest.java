@@ -2880,6 +2880,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/coloring/czechChars.js");
     }
     
+    public void testIssue262469() throws Exception {
+        checkAstResult("testfiles/markoccurences/issue262469.js");
+    }
+    
 //    public void testModelClass01() throws Exception {
 //        checkAstResult("testfiles/model/class/class01.js");
 //    }
