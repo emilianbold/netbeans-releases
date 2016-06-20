@@ -490,7 +490,7 @@ class ShLexer implements Lexer<ShTokenId> {
 
     private static enum State {
         OTHER,
-        AFTER_DOLLAR,
+        AFTER_DOLLAR_BRACE,
         AFTER_SEPARATOR,
         FOR,
         FOR_ID,
@@ -534,15 +534,27 @@ class ShLexer implements Lexer<ShTokenId> {
             case '.':
             case '`':
             case '%':
-            case '$':
-                if (i == '$') {
-                    state = State.AFTER_DOLLAR;
+                if ((i == '@' || i == '*') && state == State.AFTER_DOLLAR_BRACE) {
+                    // expected # or ## next
                 } else if (i == ';' || ((state == State.AFTER_SEPARATOR) && (i == '@' || i == '+' || i == '-'))) {
                     state = State.AFTER_SEPARATOR;
                 } else {
                     state = State.OTHER;
                 }
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+            case '$':
+                i = input.read();
+                if (i == '{') {
+                    state = State.AFTER_DOLLAR_BRACE;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else if (i == '#') {
+                    state = State.OTHER;
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                } else {
+                    state = State.OTHER;
+                    input.backup(1);
+                    return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+                }
             case '&':
                 i = input.read();
                 if(i == '&') {
@@ -592,8 +604,7 @@ class ShLexer implements Lexer<ShTokenId> {
                 }
                 return info.tokenFactory ().createToken (ShTokenId.WHITESPACE);
             case '#':
-                if (state ==State.AFTER_DOLLAR) {
-                    state = State.OTHER;
+                if (state == State.AFTER_DOLLAR_BRACE) {
                     return info.tokenFactory().createToken(ShTokenId.OPERATOR);
                 } else {
                     do {
@@ -703,6 +714,11 @@ class ShLexer implements Lexer<ShTokenId> {
                         if(idstr.equals("in")) { // NOI18N
                             return info.tokenFactory().createToken(ShTokenId.KEYWORD);
                         }
+                    } else if (state == State.AFTER_DOLLAR_BRACE) {
+                        // keep state
+                        // shell script parameter expansion syntax:
+                        // ${parameter#word}
+                        // ${parameter##word}
                     } else {
                         state = State.OTHER;
                     }
