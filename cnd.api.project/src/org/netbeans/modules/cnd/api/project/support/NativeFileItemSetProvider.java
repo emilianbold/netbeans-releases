@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.api.project.support;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = CndCookieProvider.class)
 public final class NativeFileItemSetProvider extends CndCookieProvider {
-
+    
     @Override
     public void addLookup(InstanceContentOwner icOwner) {
         icOwner.getInstanceContent().add(new NativeFileItemSetImpl());
@@ -64,6 +66,7 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
     private static final class NativeFileItemSetImpl implements NativeFileItemSet {
 
         private /*WeakReference<NativeFileItem> or WeakSet<NativeFileItem>*/Object singleItemOrItems;
+        private /*WeakReference<PropertyChangeListener> or WeakSet<PropertyChangeListener>*/Object singleListenerOrListeners;
 
         @Override
         public synchronized Collection<NativeFileItem> getItems() {
@@ -94,24 +97,30 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             if (item == null) {
                 return;
             }
-            if (singleItemOrItems == null) {
-                singleItemOrItems = new WeakReference<>(item);
-            } else if (singleItemOrItems instanceof WeakReference) {
-                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
-                NativeFileItem first = singleItem.get();
-                if (first == null) {
-                    singleItemOrItems = new WeakReference<>(item);
-                    return;
-                } else if (item.equals(first)) {
-                    return;
+            try {
+                synchronized(this) {
+                    if (singleItemOrItems == null) {
+                        singleItemOrItems = new WeakReference<>(item);
+                    } else if (singleItemOrItems instanceof WeakReference) {
+                        WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                        NativeFileItem first = singleItem.get();
+                        if (first == null) {
+                            singleItemOrItems = new WeakReference<>(item);
+                            return;
+                        } else if (item.equals(first)) {
+                            return;
+                        }
+                        WeakSet<NativeFileItem> items = new WeakSet<>(2);
+                        items.add(first);
+                        items.add(item);
+                        singleItemOrItems = items;
+                    } else  if (singleItemOrItems instanceof WeakSet) {
+                        WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                        items.add(item);
+                    }
                 }
-                WeakSet<NativeFileItem> items = new WeakSet<>(2);
-                items.add(first);
-                items.add(item);
-                singleItemOrItems = items;
-            } else  if (singleItemOrItems instanceof WeakSet) {
-                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
-                items.add(item);
+            } finally {
+                firePropertyChanged();
             }
         }
 
@@ -120,16 +129,19 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             if (item == null) {
                 return;
             }
-            if (singleItemOrItems instanceof WeakReference) {
-                WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
-                NativeFileItem first = singleItem.get();
-                if (item.equals(first)) {
-                    singleItemOrItems = null;
+            synchronized(this) {
+                if (singleItemOrItems instanceof WeakReference) {
+                    WeakReference<NativeFileItem> singleItem = (WeakReference<NativeFileItem>) singleItemOrItems;
+                    NativeFileItem first = singleItem.get();
+                    if (item.equals(first)) {
+                        singleItemOrItems = null;
+                    }
+                } else  if (singleItemOrItems instanceof WeakSet) {
+                    WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
+                    items.remove(item);
                 }
-            } else  if (singleItemOrItems instanceof WeakSet) {
-                WeakSet<NativeFileItem> items = (WeakSet<NativeFileItem>) singleItemOrItems;
-                items.remove(item);
             }
+            firePropertyChanged();
         }
 
         @Override
@@ -142,6 +154,72 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
                 return items.isEmpty();
             }
             return true;
+        }
+
+        @Override
+        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (singleListenerOrListeners == null) {
+                singleListenerOrListeners = new WeakReference<>(listener);
+            } else if (singleListenerOrListeners instanceof WeakReference) {
+                WeakReference<PropertyChangeListener> singleListener = (WeakReference<PropertyChangeListener>) singleListenerOrListeners;
+                PropertyChangeListener first = singleListener.get();
+                if (first == null) {
+                    singleListenerOrListeners = new WeakReference<>(listener);
+                    return;
+                } else if (listener.equals(first)) {
+                    return;
+                }
+                WeakSet<PropertyChangeListener> listeners = new WeakSet<>(2);
+                listeners.add(first);
+                listeners.add(listener);
+                singleListenerOrListeners = listeners;
+            } else  if (singleListenerOrListeners instanceof WeakSet) {
+                WeakSet<PropertyChangeListener> listeners = (WeakSet<PropertyChangeListener>) singleListenerOrListeners;
+                listeners.add(listener);
+            }
+        }
+
+        @Override
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+            if (listener == null) {
+                return;
+            }
+            if (singleListenerOrListeners instanceof WeakReference) {
+                WeakReference<PropertyChangeListener> singleListener = (WeakReference<PropertyChangeListener>) singleListenerOrListeners;
+                PropertyChangeListener first = singleListener.get();
+                if (listener.equals(first)) {
+                    singleListenerOrListeners = null;
+                }
+            } else  if (singleListenerOrListeners instanceof WeakSet) {
+                WeakSet<PropertyChangeListener> listeners = (WeakSet<PropertyChangeListener>) singleListenerOrListeners;
+                listeners.remove(listener);
+            }
+        }
+
+        private void firePropertyChanged() {
+            ArrayList<PropertyChangeListener> res = new ArrayList<>();
+            synchronized(this) {
+                if (singleListenerOrListeners instanceof WeakReference) {
+                    WeakReference<PropertyChangeListener> singleListener = (WeakReference<PropertyChangeListener>) singleListenerOrListeners;
+                    PropertyChangeListener first = singleListener.get();
+                    if (first != null) {
+                        res.add(first);
+                    }
+                } else  if (singleListenerOrListeners instanceof WeakSet) {
+                    WeakSet<PropertyChangeListener> listeners = (WeakSet<PropertyChangeListener>) singleListenerOrListeners;
+                    for(PropertyChangeListener l : listeners) {
+                        if (l != null) {
+                            res.add(l);
+                        }
+                    }
+                }
+            }
+            if (!res.isEmpty()) {
+                Collection<NativeFileItem> items = getItems();
+                for(PropertyChangeListener l : res) {
+                   l.propertyChange(new PropertyChangeEvent(this, PROPERTY_ITEMS_CHANGED, null, items));
+                }
+            }
         }
     }
 }
