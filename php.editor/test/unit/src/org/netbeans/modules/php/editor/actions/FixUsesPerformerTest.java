@@ -321,6 +321,18 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
+    public void testIssue249140_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, true);
+        performTest("$d = d($someVar);^", selections, false, options);
+    }
+
+    public void testIssue249140_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, true);
+        performTest("$f = f($someVar);^", selections, false, options);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 

@@ -564,7 +564,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         "Err_CannotLoad=Cannot display Artifact's dependency tree.",
         "LBL_Loading=Loading and constructing graph (this may take a while)."
     })
-    private void createScene() {
+    private void createScene() {      
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
         Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
@@ -574,6 +574,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             return;
         }
         everDisplayed = true;
+        highlightV = null;
         setPaneText(LBL_Loading(), true);
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
