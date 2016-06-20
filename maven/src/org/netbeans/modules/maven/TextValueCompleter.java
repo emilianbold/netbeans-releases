@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -63,6 +64,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -149,17 +151,17 @@ public class TextValueCompleter implements DocumentListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (popup == null) {
-                    buildAndShowPopup();
+                    buildAndShowPopup(0);
                 }
                 completionList.setSelectedIndex(Math.min(completionList.getSelectedIndex() + 1, completionList.getModel().getSize()));
-                completionList.ensureIndexIsVisible(completionList.getSelectedIndex());
+                completionList.ensureIndexIsVisible(completionList.getSelectedIndex());                            
             }
         });
         field.getActionMap().put(ACTION_LISTUP,  new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (popup == null) {
-                    buildAndShowPopup();
+                    buildAndShowPopup(0);
                 }
                 completionList.setSelectedIndex(Math.max(completionList.getSelectedIndex() - 1, 0));
                 completionList.ensureIndexIsVisible(completionList.getSelectedIndex());
@@ -227,6 +229,7 @@ public class TextValueCompleter implements DocumentListener {
         }
     }
 
+    
     @NbBundle.Messages("PARTIAL_RESULT=<Result is incomplete, some indices are processed>")
     private void buildPopup() {
         pattern = Pattern.compile(getCompletionPrefix() + ".+"); //NOI18N
@@ -239,7 +242,7 @@ public class TextValueCompleter implements DocumentListener {
                     completionListModel.add(entryindex,
                             completion);
                 }
-                    entryindex++;
+                entryindex++;
             } else {
                 completionListModel.removeElement(completion);
             }
@@ -346,9 +349,29 @@ public class TextValueCompleter implements DocumentListener {
         }
     }
     
+    private class BuildTimer extends Timer {
+        private static final int DEFAULT_DELAY = 400;
+        public BuildTimer() {
+            super(DEFAULT_DELAY, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    buildPopup();
+                    showPopup();
+                }
+            });
+            setRepeats(false);
+        }
+    };
+    
+    private final BuildTimer buildTimer = new BuildTimer();
+    
     private void buildAndShowPopup() {
-        buildPopup();
-        showPopup();
+        buildAndShowPopup(BuildTimer.DEFAULT_DELAY);
+    }
+    
+    private void buildAndShowPopup(int delay) {
+        buildTimer.setInitialDelay(delay);
+        buildTimer.restart();
     }
     
     // DocumentListener implementation
