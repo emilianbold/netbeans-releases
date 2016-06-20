@@ -623,7 +623,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             @NonNull final WizardDescriptor wd) {
         final Object scriptObject = wd.getProperty(RemotePlatformIt.PROP_BUILDSCRIPT);
         File buildScript = scriptObject != null ? (File) scriptObject : null;
-        if (buildScript == null) {
+        if (buildScript == null || !buildScript.exists()) {
             buildScript = RemotePlatformProbe.createBuildScript();
             wd.putProperty(RemotePlatformIt.PROP_BUILDSCRIPT, buildScript);
         }

@@ -200,6 +200,7 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
     }
 
     private static final Pattern TITLE = Pattern.compile("<title>(.*)</title>");//NOI18N
+    private static final int MAX_NUM_BYTES_TO_READ = 10 * 1024;
     private static String readTitle(URL url) {
         ByteArrayOutputStream baos = null;
         InputStream ins = null;
@@ -224,9 +225,11 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
             ins = c.getInputStream();
 
             int read;
-
-            while ((read = ins.read()) != (-1)) {
+            
+            int numBytesRead = 0;
+            while ((read = ins.read()) != (-1) && numBytesRead < MAX_NUM_BYTES_TO_READ) {
                 baos.write(read);
+                numBytesRead++;
             }
 
             ins.close();
