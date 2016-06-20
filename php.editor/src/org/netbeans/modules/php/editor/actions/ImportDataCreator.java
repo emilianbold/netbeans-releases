@@ -149,16 +149,15 @@ public class ImportDataCreator {
 
     private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
         Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
-        possibleTypes.addAll(phpIndex.getClasses(NameKind.prefix(typeName)));
-        possibleTypes.addAll(phpIndex.getInterfaces(NameKind.prefix(typeName)));
+        NameKind nameKind = NameKind.prefix(typeName);
+        possibleTypes.addAll(phpIndex.getClasses(nameKind));
+        possibleTypes.addAll(phpIndex.getInterfaces(nameKind));
         if (options.getPhpVersion().compareTo(PhpVersion.PHP_54) >= 0) {
-            possibleTypes.addAll(phpIndex.getTraits(NameKind.prefix(typeName)));
+            possibleTypes.addAll(phpIndex.getTraits(nameKind));
         }
         if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
-            Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
-            Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
-            possibleTypes.addAll(possibleFunctions);
-            possibleTypes.addAll(possibleConstants);
+            possibleTypes.addAll(phpIndex.getFunctions(nameKind));
+            possibleTypes.addAll(phpIndex.getConstants(nameKind));
         }
         return possibleTypes;
     }
