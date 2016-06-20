@@ -528,7 +528,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
+                if (!javaContext.getFQNs().check(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[][] patterns = new String[][]{
@@ -557,6 +557,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     if (children != null) {
                         for (File f : children) {
                             String className = FileObjects.getBinaryName(f, classFolder);
+                            javaContext.getFQNs().remove(className, relURLPair.second());
                             toDelete.add(Pair.<String, String>of(className, null));
                             removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                             removedFiles.add(f);
