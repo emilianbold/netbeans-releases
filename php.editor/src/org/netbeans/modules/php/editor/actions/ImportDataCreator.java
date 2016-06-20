@@ -254,13 +254,23 @@ public class ImportDataCreator {
 
         @Override
         public void insertData(ImportData data) {
-            FullyQualifiedElement fqElement = ModelUtils.getFirst(filteredExactUnqualifiedNames);
+            FullyQualifiedElement fqElement = findBestElement();
             assert fqElement != null;
             String itemVariantReplaceName = options.preferFullyQualifiedNames()
                     ? fqElement.getFullyQualifiedName().toString()
                     : fqElement.getName();
             ItemVariant replaceItemVariant = new ItemVariant(itemVariantReplaceName, ItemVariant.UsagePolicy.CAN_BE_USED);
             data.addJustToReplace(new DataItem(fqName, Collections.singletonList(replaceItemVariant), replaceItemVariant, usedNames.get(fqName)));
+        }
+
+        private FullyQualifiedElement findBestElement() {
+            String fullName = '\\' + fqName; // NOI18N
+            for (FullyQualifiedElement element : filteredExactUnqualifiedNames) {
+                if (fullName.equals(element.getFullyQualifiedName().toString())) {
+                    return element;
+                }
+            }
+            return ModelUtils.getFirst(filteredExactUnqualifiedNames);
         }
     }
 
