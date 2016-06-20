@@ -49,23 +49,17 @@ import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
-import org.w3c.dom.Element;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.xml.XMLUtil;
 
 
 /**
@@ -89,9 +83,6 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
     private static final String NBMODULE_PROJECT_NAMESPACE_3 = "http://www.netbeans.org/ns/nb-module-project/3"; // NOI18N
     private static final String NBMODULE_SUITE_PROJECT_NAMESPACE = "http://www.netbeans.org/ns/nb-module-suite-project/1"; // NOI18N
     // -----
-
-    private static final String TEST_TYPE_UNIT = "unit"; // NOI18N
-    private static final String TEST_TYPE_QA_FUNCTIONAL = "qa-functional"; // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -167,25 +158,6 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
         return null;
     }
 
-    private static String getTestType(FileObject testFile) {
-        String testPath = testFile.getPath();
-        if (testPath.contains(TEST_TYPE_QA_FUNCTIONAL)) return TEST_TYPE_QA_FUNCTIONAL;
-        else return TEST_TYPE_UNIT;
-    }
-
-    @Override
-    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
-        // FIXME
-        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-        if (src != null) {
-            final String profiledClass = src.getTopLevelClass().getQualifiedName();
-            props.put("profile.class", profiledClass); //NOI18N
-            // Set for all cases (incl. Profile Project, Profile File) but should only
-            // be taken into account when profiling single test
-            props.put("test.type", getTestType(profiledClassFile)); //NOI18N
-        }
-    }
-
     @Override
     public void setupProjectSessionSettings(SessionSettings ss) {
         JavaPlatform platform = getProjectJavaPlatform();
@@ -197,38 +169,38 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
     
     
     
-    /**
-     * Returns true if the provided Project is a NB source module, false otherwise.
-     * 
-     * @param project Project to be checked.
-     * @return true if the provided Project is a NB source module, false otherwise.
-     */
-    private boolean isNbSourceModule(Project project) {
-        // Resolve project.xml
-        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-        
-        // Guess the namespace
-        String namespace = NBMODULE_PROJECT_NAMESPACE_3;
-        // Try to resolve nb-module-project/3 (current version in NB sources)
-        Element e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
-        // Not a nb-module-project/3, can still be nb-module-project/2 or a suite
-        if (e == null) {
-            // Try to resolve nb-module-project/2 (just for compatibility)
-            namespace = NBMODULE_PROJECT_NAMESPACE_2;
-            e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
-            // Project is a NB module suite - not a NB source module
-            if (e == null) return false;
-        }
-        
-        // Module is a NB module suite component, not a NB source module
-        if (XMLUtil.findElement(e, "suite-component", namespace) != null) return false; // NOI18N
-        
-        // Module is a NB module suite component, not a NB source module
-        if (XMLUtil.findElement(e, "standalone", namespace) != null) return false; // NOI18N
-        
-        // Module is a NB source module (neither suite component nor standalone)
-        return true;
-    }
+////    /**
+////     * Returns true if the provided Project is a NB source module, false otherwise.
+////     * 
+////     * @param project Project to be checked.
+////     * @return true if the provided Project is a NB source module, false otherwise.
+////     */
+////    private boolean isNbSourceModule(Project project) {
+////        // Resolve project.xml
+////        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+////        
+////        // Guess the namespace
+////        String namespace = NBMODULE_PROJECT_NAMESPACE_3;
+////        // Try to resolve nb-module-project/3 (current version in NB sources)
+////        Element e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
+////        // Not a nb-module-project/3, can still be nb-module-project/2 or a suite
+////        if (e == null) {
+////            // Try to resolve nb-module-project/2 (just for compatibility)
+////            namespace = NBMODULE_PROJECT_NAMESPACE_2;
+////            e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
+////            // Project is a NB module suite - not a NB source module
+////            if (e == null) return false;
+////        }
+////        
+////        // Module is a NB module suite component, not a NB source module
+////        if (XMLUtil.findElement(e, "suite-component", namespace) != null) return false; // NOI18N
+////        
+////        // Module is a NB module suite component, not a NB source module
+////        if (XMLUtil.findElement(e, "standalone", namespace) != null) return false; // NOI18N
+////        
+////        // Module is a NB source module (neither suite component nor standalone)
+////        return true;
+////    }
     
     
     public NbModuleProjectProfilingSupportProvider(Project project) {
