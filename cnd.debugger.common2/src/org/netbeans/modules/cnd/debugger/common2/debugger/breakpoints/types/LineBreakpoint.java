@@ -223,6 +223,10 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	setLineNumber(lineNumber);
         this.fs = fs;
     }
+    
+    public void setFilesystem(FileSystem fs) {
+        this.fs = fs;
+    }
 
     @Override
     protected final String getSummary() {
