@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -95,17 +96,21 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (language != CppTokenId.languageCpp() && language != CppTokenId.languageC() && language != CppTokenId.languageHeader()) {
             return;
         }
+        FileObject primaryFile = dob.getPrimaryFile();
         // fast check using NativeFileItemSet
         NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
-        if (nfis != null && !nfis.isEmpty()) {
+        if (nfis != null) {
             for (NativeFileItem nativeFileItem : nfis.getItems()) {
                 doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nativeFileItem));
                 setLanguage(nativeFileItem, doc);
                 rebuildTH(doc);
                 return;
             }
+            if (primaryFile != null) {
+                doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, primaryFile, nfis));
+                return;
+            }
         }
-        FileObject primaryFile = dob.getPrimaryFile();
         if (primaryFile == null) {
             return;
         }
@@ -310,7 +315,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         private final Reference<StyledDocument> docRef;
         private final String path;
         private final FileObject fo;
-        private final Reference<NativeProject> prjRef;
+        private Reference<NativeProject> prjRef;
+        private Reference<NativeFileItemSet> nfisRef;
         private LanguageFlavor languageFlavor;
 
         public ListenerImpl(StyledDocument doc, DataObject dob, NativeFileItem nativeFileItem) {
@@ -319,6 +325,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             this.path = nativeFileItem.getAbsolutePath();
             NativeProject nativeProject = nativeFileItem.getNativeProject();
             this.prjRef = new WeakReference<NativeProject>(nativeProject);
+            this.nfisRef = new WeakReference<NativeFileItemSet>(null);
             this.languageFlavor = getLanguageFlavor(nativeFileItem);
             if (nativeProject != null) {
                 nativeProject.addProjectItemsListener(ListenerImpl.this);
@@ -329,12 +336,24 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
         }
 
+        public ListenerImpl(StyledDocument doc, DataObject dob, FileObject primaryFile, NativeFileItemSet nfis) {
+            this.docRef = new WeakReference<StyledDocument>(doc);
+            this.fo = primaryFile;
+            this.path = primaryFile.getPath();
+            this.prjRef = new WeakReference<NativeProject>(null);
+            this.nfisRef = new WeakReference<NativeFileItemSet>(nfis);
+            EditorRegistry.addPropertyChangeListener(ListenerImpl.this);
+            nfis.addPropertyChangeListener(ListenerImpl.this);
+            if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
+        }
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (TRACE) System.err.println(path + " propertyChange Listener " + System.identityHashCode(this));
             StyledDocument doc = docRef.get();
             NativeProject project = prjRef.get();
-            if (doc == null || project == null) {
+            NativeFileItemSet nfis = nfisRef.get();
+            if (doc == null || (project == null && nfis == null)) {
                 unregister();
                 return;
             }
@@ -347,6 +366,25 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 if (oldValue != null && doc.equals(oldValue.getDocument())) {
                     unregister();
                 }
+            } else if (NativeFileItemSet.PROPERTY_ITEMS_CHANGED.equals(evt.getPropertyName())) {
+                Collection<NativeFileItem> items = (Collection<NativeFileItem>) evt.getNewValue();
+                if (items != null) {
+                    for(NativeFileItem item : items) {
+                        if (nfis != null) {
+                            nfis.removePropertyChangeListener(this);
+                        }
+                        this.nfisRef = new WeakReference<NativeFileItemSet>(null);
+                        NativeProject nativeProject = item.getNativeProject();
+                        this.prjRef = new WeakReference<NativeProject>(nativeProject);
+                        if (nativeProject != null) {
+                            nativeProject.addProjectItemsListener(ListenerImpl.this);
+                        } else {
+                            System.err.println("no native project for " + item); 
+                        }
+                        filePropertiesChanged(item);
+                        return;
+                    }
+                }
             }
         }
 
@@ -356,6 +394,10 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             NativeProject nativeProject = this.prjRef.get();
             if (nativeProject != null) {
                 nativeProject.removeProjectItemsListener(this);
+            }
+            NativeFileItemSet nfis = nfisRef.get();
+            if (nfis != null) {
+                nfis.removePropertyChangeListener(this);
             }
             StyledDocument doc = docRef.get();
             if (doc != null) {
@@ -377,7 +419,13 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 }
                 if (TRACE) System.err.println(path + " Item Listener " + System.identityHashCode(this));
                 LanguageFlavor newFlavor = getLanguageFlavor(fileItem);
-                if (!languageFlavor.equals(newFlavor)) {
+                if (languageFlavor == null) {
+                    if (newFlavor != null) {
+                        setLanguage(fileItem, doc);
+                        languageFlavor = newFlavor;
+                        rebuildTH(doc);
+                    }
+                } else if (!languageFlavor.equals(newFlavor)) {
                     setLanguage(fileItem, doc);
                     languageFlavor = newFlavor;
                     rebuildTH(doc);

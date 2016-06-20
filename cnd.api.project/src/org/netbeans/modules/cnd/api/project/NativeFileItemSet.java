@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
@@ -51,9 +52,13 @@ import java.util.Collection;
  * @author Vladimir Voskresensky
  */
 public interface NativeFileItemSet {
+    public static final String PROPERTY_ITEMS_CHANGED = "nativeFileItemSetChanged"; //NOI18N
+
     Collection<NativeFileItem> getItems();
     void add(NativeFileItem item);
     void remove(NativeFileItem item);
     boolean isEmpty();
+    void addPropertyChangeListener(PropertyChangeListener listener);
+    void removePropertyChangeListener(PropertyChangeListener listener);
 }
 
