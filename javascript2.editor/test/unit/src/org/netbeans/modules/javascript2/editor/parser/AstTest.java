@@ -1542,6 +1542,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-default-array.js");
     }
 
+    public void testExportDefaultArrayNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-default-array-no-semicolon.js");
+    }
+
     public void testExportDefaultClass() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-default-class.js");
     }
@@ -1570,6 +1574,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-default-value.js");
     }
 
+    public void testExportDefaultValueNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-default-value-no-semicolon.js");
+    }
+
     public void testExportFromBatch() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-from-batch.js");
     }
@@ -1592,6 +1600,10 @@ public class AstTest extends CslTestBase {
 
     public void testExportFromSpecifier() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-from-specifier.js");
+    }
+
+    public void testExportFromSpecifierNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/export-declaration/export-from-specifier-no-semicolon.js");
     }
 
     public void testExportFromSpecifiers() throws Exception {
@@ -1987,8 +1999,16 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-default-as.js");
     }
 
+    public void testImportDefaultAsNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-default-as-no-semicolon.js");
+    }
+
     public void testImportDefault() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-default.js");
+    }
+
+    public void testImportDefaultNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-default-no-semicolon.js");
     }
 
     public void testImportJquery() throws Exception {
@@ -1997,6 +2017,10 @@ public class AstTest extends CslTestBase {
 
     public void testImportModule() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-module.js");
+    }
+
+    public void testImportModuleNoSemicolon() throws Exception {
+        checkAstResult("testfiles/ecmascript6/parser/ES6/import-declaration/import-module-no-semicolon.js");
     }
 
     public void testImportNamedAsSpecifier() throws Exception {
