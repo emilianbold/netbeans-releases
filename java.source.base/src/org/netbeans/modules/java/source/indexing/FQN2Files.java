@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.indexing;
 
 import com.sun.tools.javac.api.DuplicateClassChecker;
+import com.sun.tools.javac.code.Symbol;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -55,8 +56,10 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementScanner9;
 import javax.tools.JavaFileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -83,13 +86,20 @@ public final class FQN2Files implements DuplicateClassChecker {
     }
 
     public void set(final Iterable<? extends TypeElement> topLevelElements, final URL file) {
-        for (TypeElement element : topLevelElements) {
-            String fqn = element.getQualifiedName().toString();
-            String value = props.getProperty(fqn);
-            if (value == null) {
-                props.setProperty(fqn, file.toExternalForm());
+        new ElementScanner9() {
+            @Override
+            public Object visitType(TypeElement e, Object p) {
+                String fqn = e instanceof Symbol.TypeSymbol
+                        ? ((Symbol.TypeSymbol)e).flatName().toString()
+                        : e.getQualifiedName().toString();
+                String value = props.getProperty(fqn);
+                if (value == null) {
+                    props.setProperty(fqn, file.toExternalForm());
+                }
+                return super.visitType(e, p);
             }
-        }
+            
+        }.scan(topLevelElements, null);
     }
 
     public boolean remove(final String fqn, final URL file) {
@@ -133,8 +143,8 @@ public final class FQN2Files implements DuplicateClassChecker {
         }
     }
 
-    public boolean check(final String fqn, final FileObject fo) {
+    public boolean check(final String fqn, final URL url) {
         String value = props.getProperty(fqn);
-        return value != null && !value.equals(fo.toURL().toExternalForm());
+        return value != null && !value.equals(url.toExternalForm());
     }
 }
