@@ -1164,7 +1164,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                             openThread.first().getId(),
                             Thread.currentThread(),
                             Thread.currentThread().getId()),
-                        openThread.second().second());
+                        openThread.second() != null ?
+                                openThread.second().second() :
+                                null);
                     throw e;
                 }
             }
