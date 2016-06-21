@@ -70,7 +70,6 @@ import org.netbeans.modules.javascript2.model.api.JsFunction;
 import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.api.Occurrence;
-import org.netbeans.modules.javascript2.model.api.OccurrencesSupport;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -125,7 +124,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         Model model = Model.getModel(jsResult, false);
         model.resolve();
         
-        OccurrencesSupport os = model.getOccurrencesSupport();
+        OccurrencesSupport os = new OccurrencesSupport(model);
         Occurrence occurrence = os.getOccurrence(offset);
         if (occurrence != null) {
             JsObject object = occurrence.getDeclarations().iterator().next();

@@ -59,7 +59,6 @@ import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.JsReference;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.api.Occurrence;
-import org.netbeans.modules.javascript2.model.api.OccurrencesSupport;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
@@ -159,7 +158,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
     public static Set<OffsetRange> findOccurrenceRanges(JsParserResult result, int caretPosition) {
         Set<OffsetRange> offsets = new HashSet<OffsetRange>();
         Model model = Model.getModel(result, false);
-        OccurrencesSupport os = model.getOccurrencesSupport();
+        OccurrencesSupport os = new OccurrencesSupport(model);
         Occurrence occurrence = os.getOccurrence(caretPosition);
         if (occurrence != null) {
 
