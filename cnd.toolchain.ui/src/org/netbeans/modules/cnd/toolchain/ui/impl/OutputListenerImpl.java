@@ -89,14 +89,17 @@ public final class OutputListenerImpl extends OutputListenerExt {
         this.ioPos = ioPos;
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public FileObject getFile() {
         return file;
     }

@@ -234,25 +234,19 @@ final class RootsListener {
     private void safeAddFileChangeListener(
             @NonNull final FileChangeListener listener,
             @NonNull final File path) {
-        performSave(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
+        performSave(() -> {
                 FileUtil.addFileChangeListener(listener, path);
                 return null;
-            }
-        });
+            });
     }
 
     private static void safeRemoveFileChangeListener(
             @NonNull final FileChangeListener listener,
             @NonNull final File path) {
-        performSave(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
+        performSave(() -> {
                 FileUtil.removeFileChangeListener(listener, path);
                 return null;
-            }
-        });
+            });
     }
 
     private void safeAddRecursiveListener(
@@ -262,33 +256,22 @@ final class RootsListener {
         if (USE_RECURSIVE_LISTENERS) {
             final FileFilter filter = entry == null?
                 null:
-                new FileFilter() {
-                    @Override
-                    public boolean accept(@NonNull final File pathname) {
-                        try {
-                            return entry.includes(BaseUtilities.toURI(pathname).toURL());
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                            return true;
-                        }
+                (pathname) -> {
+                    try {
+                        return entry.includes(BaseUtilities.toURI(pathname).toURL());
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return true;
                     }
                 };
-            performAsync(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
+            performAsync(() -> {
                     FileUtil.addRecursiveListener(
                         listener,
                         path,
                         filter,
-                        new Callable<Boolean>() {
-                            @Override
-                            public Boolean call() throws Exception {
-                                return !listens;
-                            }
-                        });
+                        () -> !listens);
                     return null;
-                }
-            });
+                });
         }
     }
 
@@ -296,24 +279,16 @@ final class RootsListener {
             @NonNull final FileChangeListener listener,
             @NonNull final File path) {
         if (USE_RECURSIVE_LISTENERS) {
-            performAsync(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
+            performAsync(() -> {
                     FileUtil.removeRecursiveListener(listener, path);
                     return null;
-                }
-            });
+                });
         }
     }
 
     private static <T> void performAsync(@NonNull final Callable<T> action) {
         if (useAsyncListneres) {
-            RP.execute(new Runnable() {
-                @Override
-                public void run() {
-                    performSave(action);
-                }
-            });
+            RP.execute(() -> performSave(action));
         } else {
             performSave(action);
         }

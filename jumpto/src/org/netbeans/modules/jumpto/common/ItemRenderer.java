@@ -208,7 +208,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         c.gridwidth = 1;
         c.gridheight = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.1;
+        c.weightx = 1;
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets (0,0,0,7);
         rendererComponent.add( jlOwner, c);

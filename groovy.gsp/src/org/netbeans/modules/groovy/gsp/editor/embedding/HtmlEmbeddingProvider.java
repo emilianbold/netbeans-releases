@@ -88,7 +88,9 @@ public class HtmlEmbeddingProvider extends EmbeddingProvider {
                     }
             }
         }
-        return Collections.singletonList(Embedding.create(embeddings));
+        return embeddings.isEmpty() ?
+                Collections.<Embedding>emptyList() :
+                Collections.singletonList(Embedding.create(embeddings));
     }
 
     private TokenSequence<GspTokenId> getTokenSequence(Snapshot snapshot) {
