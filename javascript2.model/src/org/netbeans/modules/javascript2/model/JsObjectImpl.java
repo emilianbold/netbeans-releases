@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.model;
 
+import org.netbeans.modules.javascript2.model.api.Occurrence;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -251,7 +252,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 //        if (!isThere) {
 //            occurrences.add(new OccurrenceImpl(offsetRange, this));
 //        }
-        OccurrenceImpl occurrence = new OccurrenceImpl(offsetRange, this);
+        Occurrence occurrence = new Occurrence(offsetRange, this);
         if (!occurrences.contains(occurrence)) {
             occurrences.add(occurrence);
         }
@@ -270,7 +271,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public void addAssignment(TypeUsage typeName, int offset) {
-        if (Type.UNDEFINED.equals(typeName.getType()) && assignments.size() > 0) {
+        if (typeName == null || (Type.UNDEFINED.equals(typeName.getType()) && assignments.size() > 0)) {
             // don't add undefined type, if there are already some types
             return;
         }
