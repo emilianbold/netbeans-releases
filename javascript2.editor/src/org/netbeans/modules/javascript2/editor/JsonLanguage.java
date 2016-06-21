@@ -66,6 +66,13 @@ import org.openide.windows.TopComponent;
 @LanguageRegistration(mimeType="text/x-json", useMultiview = true) //NOI18N
 @PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
 public class JsonLanguage extends DefaultLanguageConfig {
+    
+    private static final boolean NAVIGATOR = Boolean.valueOf(
+            System.getProperty(String.format("%s.navigator", JsonLanguage.class.getSimpleName()),   //NOI18N
+                    Boolean.TRUE.toString()));
+    private static final boolean FINDER = Boolean.valueOf(
+            System.getProperty(String.format("%s.finder", JsonLanguage.class.getSimpleName()),      //NOI18N
+                    Boolean.TRUE.toString()));
 
     //~ Inner classes
 
@@ -110,12 +117,14 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean hasStructureScanner() {
-        return true;
+        return NAVIGATOR;
     }
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new JsStructureScanner(JsTokenId.jsonLanguage());
+        return NAVIGATOR ?
+                new JsStructureScanner(JsTokenId.jsonLanguage()) :
+                null;
     }
 
 //    @Override
@@ -131,12 +140,14 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean hasOccurrencesFinder() {
-        return true;
+        return FINDER;
     }
 
     @Override
     public OccurrencesFinder getOccurrencesFinder() {
-        return new JsonOccurrencesFinder();
+        return FINDER ?
+                new JsonOccurrencesFinder() :
+                null;
     }
 
     @Override
