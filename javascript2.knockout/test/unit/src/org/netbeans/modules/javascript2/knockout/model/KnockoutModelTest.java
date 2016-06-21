@@ -52,6 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.model.api.IndexedElement;
@@ -180,6 +182,11 @@ public class KnockoutModelTest extends ModelTestBase {
         checkModel("testfiles/model/issue233001.js");
     }
 
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JsTestBase.TestJsLanguage();
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

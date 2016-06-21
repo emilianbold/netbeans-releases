@@ -43,9 +43,14 @@ package org.netbeans.modules.javascript2.model;
 
 import java.io.StringWriter;
 import java.util.Collections;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
+import java.util.Set;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.model.api.Model;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -56,14 +61,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class ModelTestBase extends JsTestBase {
+public class ModelTestBase extends CslTestBase {
     
     public ModelTestBase(String testName) {
         super(testName);
     }
 
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception {        
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         super.setUp();
     }
 
@@ -93,11 +99,42 @@ public class ModelTestBase extends JsTestBase {
         
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
+                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                 Model model = Model.getModel(parameter, false);
                 globals[0] = model;
             }
         });        
         return globals[0];
+    }
+    
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+    
+    @Override
+    protected String getPreferredMimeType() {
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new DefaultLanguageConfig() {
+            @Override
+            public Language getLexerLanguage() {
+                return JsTokenId.javascriptLanguage();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "Model";
+            }
+
+            @Override
+            public Set<String> getSourcePathIds() {
+                return Collections.emptySet();
+            }       
+        };
     }
 }
