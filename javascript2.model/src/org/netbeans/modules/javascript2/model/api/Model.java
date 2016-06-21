@@ -84,7 +84,6 @@ import org.netbeans.modules.javascript2.model.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.model.ModelExtender;
 import org.netbeans.modules.javascript2.model.OccurrenceBuilder;
 import org.netbeans.modules.javascript2.model.ParameterObject;
-import org.netbeans.modules.javascript2.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.model.spi.ModelContainer;
 import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.netbeans.modules.javascript2.model.ModelResolver;
@@ -104,7 +103,7 @@ public final class Model {
 
     private static final AtomicBoolean assertFired = new AtomicBoolean(false);
     
-    private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
 
     private static final Comparator<Map.Entry<String, ? extends JsObject>> PROPERTIES_COMPARATOR = new Comparator<Map.Entry<String, ? extends JsObject>>() {
 
@@ -145,8 +144,6 @@ public final class Model {
 
     private final ParserResult parserResult;
 
-    private final OccurrencesSupport occurrencesSupport;
-
     private final OccurrenceBuilder occurrenceBuilder;
     
     private ModelResolver visitor;
@@ -160,7 +157,6 @@ public final class Model {
 
     private Model(ParserResult parserResult) {
         this.parserResult = parserResult;
-        this.occurrencesSupport = new OccurrencesSupport(this);
         this.occurrenceBuilder = new OccurrenceBuilder(parserResult);
         this.resolveWithObjects = false;
         this.returnTypesFromFrameworks = new HashMap<String, Map<Integer, List<TypeUsage>>>();
@@ -517,10 +513,6 @@ public final class Model {
         if (resolveWithObjects) {
             getModelVisitor();
         }
-    }
-
-    public OccurrencesSupport getOccurrencesSupport() {
-        return occurrencesSupport;
     }
 
     public Collection<? extends JsObject> getVariables(int offset) {

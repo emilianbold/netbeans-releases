@@ -39,27 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.model.api;
+package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.model.JsObjectReference;
-import org.netbeans.modules.javascript2.model.OccurrenceImpl;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.JsReference;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
 
 /**
  *
  * @author Petr Pisl
  */
 public class OccurrencesSupport {
+
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
     
     private final Model model;
-    
 
     public OccurrencesSupport(Model model) {
         this.model = model;
     }
-    
     
     public Occurrence getOccurrence(int offset) {
         Occurrence result;
@@ -93,9 +97,9 @@ public class OccurrencesSupport {
                     return result;
                 }
             }
-            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+            if (!(object instanceof JsReference && ModelUtils.isDescendant(object, ((JsReference)object).getOriginal()))) {
                 for(JsObject property: object.getProperties().values()) {
-                    if (!(property instanceof JsObjectReference && !((JsObjectReference)property).getOriginal().isAnonymous())) {
+                    if (!(property instanceof JsReference && !((JsReference)property).getOriginal().isAnonymous())) {
                         result = findOccurrence(property, offset);
                         if (result != null) {
                             break;
@@ -124,23 +128,23 @@ public class OccurrencesSupport {
                 propertyName = propertyName.substring(propertyName.lastIndexOf(' ') + 1);
                 JsObject property = object.getParent().getProperty(propertyName);
                 if (property != null) {
-                    return new OccurrenceImpl(property.getDeclarationName().getOffsetRange(), property); 
+                    return new Occurrence(property.getDeclarationName().getOffsetRange(), property); 
                 }
             } 
 
-            result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
+            result = new Occurrence(object.getDeclarationName().getOffsetRange(), object);
         }
         if (result == null && (kind.isFunction() || kind == JsElement.Kind.CATCH_BLOCK)) {
              for(JsObject param : ((JsFunction)object).getParameters()) {
                  if (param.getDeclarationName().getOffsetRange().containsInclusive(offset)) {
-                     result = new OccurrenceImpl(param.getDeclarationName().getOffsetRange(), object);
+                     result = new Occurrence(param.getDeclarationName().getOffsetRange(), object);
                      return result;
                 }
             }
         }
         if (result == null) {
             for(JsObject property: object.getProperties().values()) {
-                if (!(property instanceof JsObjectReference)) {
+                if (!(property instanceof JsReference)) {
                     result = findDeclaration(property, offset);
                     if (result != null) {
                         break;
