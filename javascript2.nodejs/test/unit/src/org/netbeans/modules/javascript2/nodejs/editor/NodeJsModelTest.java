@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.nodejs.editor;
 
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
 
 /**
  *

@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.JsObjectImpl;
 import org.netbeans.modules.javascript2.model.ModelElementFactoryAccessor;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
 import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.openide.filesystems.FileObject;
 
