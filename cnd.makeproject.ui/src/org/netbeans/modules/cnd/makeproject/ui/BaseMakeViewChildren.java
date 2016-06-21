@@ -68,6 +68,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
 
     private Folder folder;
     protected final MakeLogicalViewProvider provider;
+    private final Object lock = new Object();
 
     public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         this.folder = folder;
@@ -108,8 +109,10 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         }
     }
 
-    private synchronized void resetKeys(Collection<?> keysSet) {
-        setKeys(keysSet);
+    private void resetKeys(Collection<?> keysSet) {
+        synchronized(lock) {
+            setKeys(keysSet);
+        }
     }
     
     private Runnable getAddNotifyRunnable() {
