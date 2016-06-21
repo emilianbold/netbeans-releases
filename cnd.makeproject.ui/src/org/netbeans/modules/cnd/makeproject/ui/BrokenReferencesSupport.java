@@ -133,6 +133,18 @@ public final class BrokenReferencesSupport {
         return "";
     }
 
+    public static String getActiveConfigurationPlatfoirmName(ConfigurationDescriptorProvider projectDescriptorProvider) {
+        if (projectDescriptorProvider.gotDescriptor()) {
+            Configuration[] confs = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
+            for (Configuration cf : confs) {
+                if (cf.isDefault()) {
+                    return ((MakeConfiguration)cf).getDevelopmentHost().getBuildPlatformConfiguration().getName();
+                }
+            }
+        }
+        return "";
+    }
+
     private static boolean isIncorectVersion(@NonNull final MakeProject project) {
         MakeLogicalViewProvider view = project.getLookup().lookup(MakeLogicalViewProvider.class);
         return view.isIncorectVersion();
@@ -154,12 +166,14 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getPlatformProblems(@NonNull final MakeProject project) {
-        if (BrokenReferencesSupport.isIncorrectPlatform(project.getLookup().lookup(ConfigurationDescriptorProvider.class))) {
-            String name = BrokenReferencesSupport.getActiveConfigurationName(project.getLookup().lookup(ConfigurationDescriptorProvider.class));
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (BrokenReferencesSupport.isIncorrectPlatform(cdp)) {
+            String name = BrokenReferencesSupport.getActiveConfigurationName(cdp);
+            String platform = BrokenReferencesSupport.getActiveConfigurationPlatfoirmName(cdp);
             final ProjectProblemsProvider.ProjectProblem error =
                     ProjectProblemsProvider.ProjectProblem.createError(
                     NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_name"), //NOI18N
-                    NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_description", name), //NOI18N
+                    NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_description", name, platform), //NOI18N
                     new PlatformResolverImpl(project));
             return Collections.singleton(error);
         }
@@ -386,16 +400,19 @@ public final class BrokenReferencesSupport {
     
     private static class PlatformResolverImpl extends BaseProjectProblemResolver {
         private final String name;
+        private final String platform;
 
         public PlatformResolverImpl(MakeProject project) {
             super(project);
-            name = BrokenReferencesSupport.getActiveConfigurationName(project.getLookup().lookup(ConfigurationDescriptorProvider.class));
+            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            name = BrokenReferencesSupport.getActiveConfigurationName(cdp);
+            platform = BrokenReferencesSupport.getActiveConfigurationPlatfoirmName(cdp);
         }
 
         @Override
         public Future<ProjectProblemsProvider.Result> resolve() {
             String title = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix_title"); //NOI18N
-            String message = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix", name); //NOI18N
+            String message = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix", name, platform); //NOI18N
             NotifyDescriptor nd = new NotifyDescriptor(message,
                     title, NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,

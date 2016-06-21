@@ -376,11 +376,9 @@ public final class CompilationInfoImpl {
                 setPhase(phase);
                 if (currentPhase == JavaSource.Phase.MODIFIED)
                     getJavacTask().parse(); // Ensure proper javac initialization
-                currentPhase = phase;
             }
-            return currentPhase;
-        }
-        else {
+            return phase;
+        } else {
             JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
