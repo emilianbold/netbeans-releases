@@ -215,6 +215,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 rootSymbol = parser.parse();
             }
         }
+        // #262380 - prevent OOME
+        scanner = null;
+        parser = null;
         if (rootSymbol != null) {
             Program program = null;
             if (rootSymbol.value instanceof Program) {
@@ -244,14 +247,21 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 if (ok) {
                     phpParserResult = new PHPParseResult(context.getSnapshot(), program);
                 } else {
+                    // #262380 - prevent OOME
+                    rootSymbol = null;
+                    statements = null;
                     phpParserResult = sanitize(context, sanitizing, errorHandler);
                 }
             } else {
+                // #262380 - prevent OOME
                 LOGGER.log(Level.FINE, "The parser value is not a Program: {0}", rootSymbol.value);
+                rootSymbol = null;
                 phpParserResult = sanitize(context, sanitizing, errorHandler);
             }
             if (isParsingWithoutSanitization(sanitizing)) {
                 phpParserResult.setErrors(errorHandler.displaySyntaxErrors(program));
+                // #262380 - prevent OOME
+                program = null;
             }
         } else { // there was no rootElement
             phpParserResult = sanitize(context, sanitizing, errorHandler);
