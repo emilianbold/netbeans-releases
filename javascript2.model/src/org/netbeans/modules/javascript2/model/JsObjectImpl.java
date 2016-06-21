@@ -270,7 +270,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public void addAssignment(TypeUsage typeName, int offset) {
-        if (Type.UNDEFINED.equals(typeName.getType()) && assignments.size() > 0) {
+        if (typeName == null || (Type.UNDEFINED.equals(typeName.getType()) && assignments.size() > 0)) {
             // don't add undefined type, if there are already some types
             return;
         }
