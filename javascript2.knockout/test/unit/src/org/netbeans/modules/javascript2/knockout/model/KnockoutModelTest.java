@@ -52,6 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.model.api.IndexedElement;
@@ -61,7 +63,7 @@ import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.JsFunctionImpl;
 import org.netbeans.modules.javascript2.model.JsFunctionReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
 import org.netbeans.modules.javascript2.model.api.Index;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -180,6 +182,11 @@ public class KnockoutModelTest extends ModelTestBase {
         checkModel("testfiles/model/issue233001.js");
     }
 
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JsTestBase.TestJsLanguage();
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
