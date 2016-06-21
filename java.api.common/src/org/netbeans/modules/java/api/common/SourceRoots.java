@@ -208,6 +208,11 @@ public final class SourceRoots extends Roots {
 
     @Override
     public String[] getRootProperties() {
+        synchronized (this) {
+            if (sourceRootProperties != null) {
+                return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
+            }
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             @Override
             public String[] run() {
@@ -226,6 +231,11 @@ public final class SourceRoots extends Roots {
      * @return an array of {@link FileObject}s.
      */
     public FileObject[] getRoots() {
+        synchronized (this) {
+            if (sourceRoots != null && validFiles(sourceRoots)) {
+                return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
+            }
+        }
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
             @Override
                 public FileObject[] run() {

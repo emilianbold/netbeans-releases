@@ -154,6 +154,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
         final String tmpDir = getValue(properties, "tmp.dir", String.class);  //NOI18N
+        final Boolean javaFailOnError = getValue(properties, "java.failonerror", Boolean.class);    //NOI18N
         if (workDir == null) {
             Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_WORK_DIR, toRun);
             Project project = FileOwnerQuery.getOwner(toRun);
@@ -269,6 +270,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         if (toRun == null) {
             // #152881 - pass arguments only if not run single
             setProperty(antProps, "application.args", toOneLine(args));
+        }
+        if (javaFailOnError != null) {
+            setProperty(antProps, "java.failonerror", javaFailOnError.toString());  //NOI18N
         }
         {
             FileObject source = toRun;

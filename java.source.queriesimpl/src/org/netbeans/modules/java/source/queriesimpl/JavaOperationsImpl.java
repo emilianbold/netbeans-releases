@@ -54,6 +54,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -96,7 +97,12 @@ class JavaOperationsImpl<T> implements ModelOperations {
     @NonNull
     public Collection<? extends String> getTopLevelClasses() throws QueryException {
         try {
-            control.toPhase(Phase.ELEMENTS_RESOLVED);
+            if (control.toPhase(Phase.ELEMENTS_RESOLVED) != Phase.ELEMENTS_RESOLVED) {
+                throw new QueryException("Cannot resolve file: " +  //NOI18N
+                        Optional.ofNullable(control.getFileObject())
+                        .map((fo) -> FileUtil.getFileDisplayName(fo))
+                        .orElse("<unkown>"));   //NOI18N
+            }
         } catch (IOException ioe) {
             throw new QueryException(ioe);
         }
@@ -316,7 +322,12 @@ class JavaOperationsImpl<T> implements ModelOperations {
         @NonNull final String newName)  throws QueryException {
         final WorkingCopy wcopy = (WorkingCopy) control;
         try {
-            control.toPhase(Phase.RESOLVED);
+            if (control.toPhase(Phase.RESOLVED) != Phase.RESOLVED) {
+                throw new QueryException("Cannot resolve file: " +  //NOI18N
+                        Optional.ofNullable(control.getFileObject())
+                        .map((fo) -> FileUtil.getFileDisplayName(fo))
+                        .orElse("<unkown>"));   //NOI18N
+            }
         } catch (IOException ioe) {
             throw new QueryException(ioe);
         }
@@ -396,7 +407,12 @@ class JavaOperationsImpl<T> implements ModelOperations {
         });
         final WorkingCopy wcopy = (WorkingCopy) control;
         try {
-            control.toPhase(Phase.RESOLVED);
+            if (control.toPhase(Phase.RESOLVED) != Phase.RESOLVED) {
+                throw new QueryException("Cannot resolve file: " +  //NOI18N
+                        Optional.ofNullable(control.getFileObject())
+                        .map((fo) -> FileUtil.getFileDisplayName(fo))
+                        .orElse("<unkown>"));   //NOI18N
+            }
         } catch (IOException ioe) {
             throw new QueryException(ioe);
         }
@@ -500,7 +516,12 @@ nextM:  for (ExecutableElement me : ElementFilter.methodsIn(te.getEnclosedElemen
     private TypeElement findClass(
             @NonNull final String clz) throws QueryException {
         try {
-            control.toPhase(Phase.ELEMENTS_RESOLVED);
+            if (control.toPhase(Phase.ELEMENTS_RESOLVED) != Phase.ELEMENTS_RESOLVED) {
+                throw new QueryException("Cannot resolve file: " +  //NOI18N
+                        Optional.ofNullable(control.getFileObject())
+                        .map((fo) -> FileUtil.getFileDisplayName(fo))
+                        .orElse("<unkown>"));   //NOI18N
+            }
         } catch (IOException ioe) {
             throw new QueryException(ioe);
         }
@@ -510,7 +531,12 @@ nextM:  for (ExecutableElement me : ElementFilter.methodsIn(te.getEnclosedElemen
     private TreePath findClassInCompilationUnit(
             @NonNull final String clz) throws QueryException {
         try {
-            control.toPhase(Phase.ELEMENTS_RESOLVED);
+            if (control.toPhase(Phase.ELEMENTS_RESOLVED) != Phase.ELEMENTS_RESOLVED) {
+                throw new QueryException("Cannot resolve file: " +  //NOI18N
+                        Optional.ofNullable(control.getFileObject())
+                        .map((fo) -> FileUtil.getFileDisplayName(fo))
+                        .orElse("<unkown>"));   //NOI18N
+            }
         } catch (IOException ioe) {
             throw new QueryException(ioe);
         }
