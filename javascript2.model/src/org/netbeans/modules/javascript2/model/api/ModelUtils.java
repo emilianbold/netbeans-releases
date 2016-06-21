@@ -106,6 +106,9 @@ public class ModelUtils {
     private static String GLOBAL_DIRECTIVE = "global"; //NOI18N
     
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
+        if (fqName == null || fqName.isEmpty()) {
+            return null;
+        }
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
