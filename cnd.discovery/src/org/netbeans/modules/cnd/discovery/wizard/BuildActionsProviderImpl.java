@@ -80,11 +80,11 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
         //return Collections.<Action>emptyList();
         List<BuildAction> res = new ArrayList<>();
-        if (events != null && events.length == 2) {
-            if (events[0].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
-                events[1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
-                events[1].getConfiguration() != null &&
-                events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+        if (events != null &&events.length >= 2) {
+            if (events[events.length-2].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
+                events[events.length-1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
+                events[events.length-1].getConfiguration() != null &&
+                events[events.length-1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
             }
         }
@@ -117,7 +117,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         @Override
         public void executionStarted(int pid) {
             setEnabled(false);
-            if (step == 1) {
+            if (step == events.length - 1) {
                 try {
                     File file = File.createTempFile("build", ".log"); // NOI18N
                     file.deleteOnExit();
@@ -131,14 +131,14 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                     bw = null;
                     Exceptions.printStackTrace(ex);
                 }
-            } else if (step == 0) {
+            } else if (step == events.length - 2) {
                 execLog = null;
             }
         }
 
         @Override
         public void executionFinished(int rc) {
-            if (step == 1 && rc == 0 && execLog != null && execLog.getBuildLog() != null) {
+            if (step == events.length - 1 && rc == 0 && execLog != null && execLog.getBuildLog() != null) {
                 setEnabled(true);
             }
         }
