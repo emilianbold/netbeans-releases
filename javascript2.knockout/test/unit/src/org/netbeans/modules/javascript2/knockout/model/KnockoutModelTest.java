@@ -61,7 +61,7 @@ import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.JsFunctionImpl;
 import org.netbeans.modules.javascript2.model.JsFunctionReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
 import org.netbeans.modules.javascript2.model.api.Index;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;

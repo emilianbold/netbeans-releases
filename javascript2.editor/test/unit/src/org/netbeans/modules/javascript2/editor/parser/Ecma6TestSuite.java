@@ -46,8 +46,7 @@ import org.junit.runners.Suite;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionES6Test;
 import org.netbeans.modules.javascript2.editor.JsSemanticAnalyzerTest;
 import org.netbeans.modules.javascript2.editor.JsStructureScannerTest;
-import org.netbeans.modules.javascript2.editor.model.impl.MarkOccurrenceTest;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTest;
+import org.netbeans.modules.javascript2.editor.navigation.MarkOccurrenceTest;
 
 /**
  *
@@ -59,7 +58,6 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelTest;
     MarkOccurrenceTest.class,
     JsSemanticAnalyzerTest.class,
     JsStructureScannerTest.class,
-    ModelTest.class,
     JsCodeCompletionES6Test.class   
 })
 public class Ecma6TestSuite {
