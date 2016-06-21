@@ -97,7 +97,13 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
                     if (pub == NOT_OSGIJAR) {
                         return null;
                     }
-                    return check(pub, FileUtil.getRelativePath(jarRoot, pkg).replace("/", "."));
+                    String relPath = FileUtil.getRelativePath(jarRoot, pkg);
+                    assert relPath != null : "null path for : " + jarRoot + ", " + pkg;
+                    if(relPath == null) {
+                        LOG.log(Level.WARNING, "null path for : {0}, {1}", new Object[]{jarRoot, pkg});
+                        return Boolean.FALSE;
+                    }
+                    return check(pub, relPath.replace("/", "."));
                 }
             }
             FileObject manifest = jarRoot.getFileObject("META-INF/MANIFEST.MF");
@@ -118,7 +124,13 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
                         synchronized (publicCache) {
                             publicCache.put(jarRoot, pub);
                         }
-                        return check(pub, FileUtil.getRelativePath(jarRoot, pkg).replace("/", "."));
+                        String relPath = FileUtil.getRelativePath(jarRoot, pkg);
+                        assert relPath != null : "null path for : " + jarRoot + ", " + pkg;
+                        if(relPath == null) {
+                            LOG.log(Level.WARNING, "null path for : {0}, {1}", new Object[]{jarRoot, pkg});
+                            return Boolean.FALSE;
+                        }
+                        return check(pub, relPath.replace("/", "."));
                     } else {
                         notOSGi = mf.getMainAttributes().getValue(OSGiConstants.BUNDLE_SYMBOLIC_NAME) == null;
                     }

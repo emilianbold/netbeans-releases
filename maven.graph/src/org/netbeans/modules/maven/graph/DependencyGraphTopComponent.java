@@ -75,6 +75,7 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -182,7 +183,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             private void reset() {
                 ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
                 if (avf != null) {
-                    Lookup l = avf.createLookup(p);
+                    Lookup l = null;
+                    try {
+                        avf.createLookup(p);
+                    } catch (InvalidArtifactRTException e) {
+                        // issue #258898 
+                        LOG.log(Level.WARNING, "problems while creating lookup for {"  + p + "} : " + e.getMessage(), e);
+                    }
                     if (l != null) {
                         setLookups(l);
                     } else {

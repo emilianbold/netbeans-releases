@@ -1838,7 +1838,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             if (!options.contains(Options.ALL_COMPLETION)) {
                 TreeUtilities tu = controller.getTreeUtilities();
                 TreePath tryPath = tu.getPathElementOfKind(Tree.Kind.TRY, path);
-                Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath);
+                Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath != null ? tryPath : path.getParentPath());
                 Elements elements = controller.getElements();
                 for (TypeMirror ex : exs) {
                     if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
