@@ -1464,6 +1464,10 @@ public class AstTest extends CslTestBase {
     public void testClass28() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/class/class28.js");
     }
+    
+    public void testClassProperty1() throws Exception {
+        checkAstResult("testfiles/parser/classProperty1.js");
+    }
 
     public void testDefaultParameterValue01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/default-parameter-value/default-parameter-value01.js");
