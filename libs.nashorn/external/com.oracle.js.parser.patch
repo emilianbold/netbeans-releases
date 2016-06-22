@@ -1,6 +1,19 @@
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java	Wed Jun 22 10:35:11 2016 +0200
+@@ -88,6 +88,9 @@
+     /** Is this parser running under strong mode? */
+     protected boolean isStrongMode;
+ 
++    /** Is this parser parsing module? */
++    protected boolean isModule;
++
+     /** What should line numbers be counted from? */
+     protected final int lineOffset;
+ 
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -1160,7 +1160,7 @@
                  restoreState(expressionLexer.saveState());
  
@@ -10,9 +23,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                  type = TEMPLATE_MIDDLE;
  
                  // Skip over rbrace and record beginning of string content.
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -101,14 +101,21 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;
@@ -65,7 +78,17 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -1517,7 +1533,7 @@
+@@ -1442,6 +1458,9 @@
+             if (tokenType != IDENT && tokenType.getKind() != TokenKind.FUTURESTRICT) {
+                 throw error(expectMessage(IDENT));
+             }
++            if (isModule && "await".equals(ident.getName())) {
++                throw error(AbstractParser.message("strict.name", ident.getName(), contextString), ident.getToken());
++            }
+         }
+     }
+ 
+@@ -1517,7 +1536,7 @@
              Expression binding = bindingIdentifierOrPattern(contextString);
              final boolean isDestructuring = !(binding instanceof IdentNode);
              if (isDestructuring) {
@@ -74,7 +97,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                  verifyDestructuringBindingPattern(binding, new Consumer<IdentNode>() {
                      public void accept(IdentNode identNode) {
                          verifyIdent(identNode, contextString);
-@@ -1768,13 +1784,13 @@
+@@ -1768,13 +1787,13 @@
  
          ExpressionStatement expressionStatement = null;
          if (expression != null) {
@@ -90,7 +113,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -2564,7 +2580,7 @@
+@@ -2564,7 +2583,7 @@
                      appendStatement(catchNode);
                  } finally {
                      restoreBlock(catchBlock);
@@ -99,7 +122,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                  }
  
                  // If unconditional catch then should to be the end.
-@@ -3718,6 +3734,7 @@
+@@ -3718,6 +3737,7 @@
          }
  
          if (isStatement) {
@@ -107,7 +130,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
              if (topLevel || useBlockScope() || (!isStrictMode && env.functionDeclarationHoisting && env.functionStatement == ScriptEnvironment.FunctionStatementBehavior.ACCEPT)) {
                  functionNode.setFlag(FunctionNode.IS_DECLARED);
              } else if (isStrictMode) {
-@@ -3989,7 +4006,8 @@
+@@ -3989,7 +4009,8 @@
                  ParserContextFunctionNode currentFunction = lc.getCurrentFunction();
                  if (currentFunction != null) {
                      // declare function-scope variables for destructuring bindings
@@ -117,7 +140,26 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                      // detect duplicate bounds names in parameter list
                      currentFunction.addParameterBinding(identNode);
                      currentFunction.setSimpleParameterList(false);
-@@ -5039,20 +5057,30 @@
+@@ -4941,8 +4962,10 @@
+      */
+     private FunctionNode module(final String moduleName) {
+         boolean oldStrictMode = isStrictMode;
++        boolean oldModule = isModule;
+         try {
+             isStrictMode = true; // Module code is always strict mode code. (ES6 10.2.1)
++            isModule = true;
+ 
+             // Make a pseudo-token for the script holding its start and length.
+             int functionStart = Math.min(Token.descPosition(Token.withDelimiter(token)), finish);
+@@ -4980,6 +5003,7 @@
+             script.setModule(module.createModule());
+             return createFunctionNode(script, functionToken, ident, Collections.<IdentNode>emptyList(), FunctionNode.Kind.MODULE, functionLine, programBody);
+         } finally {
++            isModule = oldModule;
+             isStrictMode = oldStrictMode;
+         }
+     }
+@@ -5039,20 +5063,30 @@
       *     BindingIdentifier
       */
      private void importDeclaration() {
@@ -151,7 +193,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
              } else if (isBindingIdentifier()) {
                  // ImportedDefaultBinding
                  IdentNode importedDefaultBinding = bindingIdentifier("ImportedBinding");
-@@ -5060,28 +5088,37 @@
+@@ -5060,28 +5094,37 @@
  
                  if (type == COMMARIGHT) {
                      next();
@@ -194,7 +236,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -5090,7 +5127,8 @@
+@@ -5090,7 +5133,8 @@
       *
       * @return imported binding identifier
       */
@@ -204,7 +246,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
          assert type == MUL;
          next();
          long asToken = token;
-@@ -5099,7 +5137,7 @@
+@@ -5099,7 +5143,7 @@
              throw error("expected 'as'", asToken);
          }
          IdentNode localNameSpace = bindingIdentifier("ImportedBinding");
@@ -213,7 +255,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -5116,10 +5154,11 @@
+@@ -5116,10 +5160,11 @@
       * ImportedBinding :
       *     BindingIdentifier
       */
@@ -227,7 +269,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
          while (type != RBRACE) {
              boolean bindingIdentifier = isBindingIdentifier();
              long nameToken = token;
-@@ -5127,11 +5166,13 @@
+@@ -5127,11 +5172,13 @@
              if (type == IDENT && "as".equals(getValue())) {
                  next();
                  IdentNode localName = bindingIdentifier("ImportedBinding");
@@ -243,7 +285,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
              }
              if (type == COMMARIGHT) {
                  next();
-@@ -5140,14 +5181,15 @@
+@@ -5140,14 +5187,15 @@
              }
          }
          expect(RBRACE);
@@ -261,7 +303,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
          long fromToken = token;
          String name = (String) expectValue(IDENT);
          if (!"from".equals(name)) {
-@@ -5155,8 +5197,9 @@
+@@ -5155,8 +5203,9 @@
          }
          if (type == STRING || type == ESCSTRING) {
              String moduleSpecifier = (String) getValue();
@@ -272,7 +314,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
          } else {
              throw error(expectMessage(STRING));
          }
-@@ -5176,31 +5219,39 @@
+@@ -5176,31 +5225,39 @@
       *     export default [lookahead !in {function, class}] AssignmentExpression[In] ;
       */
      private void exportDeclaration() {
@@ -317,7 +359,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                  break;
              }
              case DEFAULT:
-@@ -5227,13 +5278,15 @@
+@@ -5227,13 +5284,15 @@
                          declaration = false;
                          break;
                  }
@@ -335,7 +377,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                      }
                      module.addLocalExportEntry(ExportEntry.exportDefault());
                  }
-@@ -5246,17 +5299,20 @@
+@@ -5246,17 +5305,20 @@
                  variableStatement(type, true);
                  for (Statement statement : statements.subList(previousEnd, statements.size())) {
                      if (statement instanceof VarNode) {
@@ -356,7 +398,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
                  module.addLocalExportEntry(ExportEntry.exportSpecifier(functionDeclaration.getIdent().getName()));
                  break;
              }
-@@ -5279,18 +5335,22 @@
+@@ -5279,18 +5341,22 @@
       *
       * @return a list of ExportSpecifiers
       */
@@ -368,8 +410,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 -        List<ExportEntry> exports = new ArrayList<>();
 +        List<ExportSpecifierNode> exports = new ArrayList<>();
          while (type != RBRACE) {
+-            IdentNode localName = getIdentifierName();
 +            long nameToken = token;
-             IdentNode localName = getIdentifierName();
++            IdentNode localName = bindingIdentifier("ExportedBinding");
              if (type == IDENT && "as".equals(getValue())) {
                  next();
                  IdentNode exportName = getIdentifierName();
@@ -383,7 +426,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
              }
              if (type == COMMARIGHT) {
                  next();
-@@ -5299,7 +5359,7 @@
+@@ -5299,7 +5365,7 @@
              }
          }
          expect(RBRACE);
@@ -392,7 +435,7 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      @Override
-@@ -5391,4 +5451,28 @@
+@@ -5391,4 +5457,28 @@
      private boolean inGeneratorFunction() {
          return lc.getCurrentFunction().getKind() == FunctionNode.Kind.GENERATOR;
      }
@@ -421,9 +464,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +        return exports;
 +    }
  }
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -24,6 +24,8 @@
   */
  package com.oracle.js.parser;
@@ -466,9 +509,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +        return new Module(requestedModules, importEntries, localExportEntries, indirectExportEntries, starExportEntries, imports, exports);
      }
  }
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -58,6 +58,16 @@
          this.classElements = classElements;
      }
@@ -557,9 +600,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
          }
  
          return this;
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -649,9 +692,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,186 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -839,9 +882,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,101 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -944,9 +987,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,82 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1030,9 +1073,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -207,6 +207,9 @@
      /** Does this function use new.target? */
      public static final int USES_NEW_TARGET = 1 << 23;
@@ -1067,9 +1110,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +        return getFlag(IS_STATEMENT);
 +    }
  }
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,149 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1220,9 +1263,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +    }
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,136 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1360,9 +1403,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,101 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1465,9 +1508,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -151,14 +151,18 @@
      private final List<ExportEntry> localExportEntries;
      private final List<ExportEntry> indirectExportEntries;
@@ -1507,9 +1550,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +                        indirectExportEntries + ", starExportEntries=" + starExportEntries + ", imports=" + imports + ", exports=" + exports + "]";
      }
  }
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,82 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1593,9 +1636,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1685,9 +1728,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -60,6 +60,12 @@
       *  a program node */
      public static final int IS_LAST_FUNCTION_DECLARATION = 1 << 2;
@@ -1714,9 +1757,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
 +        return getFlag(IS_DESTRUCTURING);
 +    }
  }
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -38,16 +38,25 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;
@@ -1843,9 +1886,9 @@ diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/j
      /**
       * Callback for entering an ObjectNode
       *
-diff -r 4baa8b862456 -r b64f9757bd49 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java
+diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Tue Jun 21 13:21:22 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Wed Jun 22 10:35:11 2016 +0200
 @@ -38,16 +38,25 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;
