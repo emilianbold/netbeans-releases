@@ -55,6 +55,8 @@ public class JsParser extends SanitizingParser<JsParserResult> {
     private static String SINGLETON_FUNCTION_END = "})();"; // NOI18N
     private static String SHEBANG_START = "#!"; //NOI18N
     private static String NODE = "node"; //NOI18N
+    private static String IMPORT = "import "; //NOI18N
+    private static String EXPORT = "export "; //NOI18N
     
     public JsParser() {
         super(JsTokenId.javascriptLanguage());
@@ -87,7 +89,7 @@ public class JsParser extends SanitizingParser<JsParserResult> {
             for (int i = 0; i < index; i++) {
                 sb.insert(i, ' ');
             }
-             if (isNodeSource(text.substring(0, index))) {
+             if (isNodeSource(text.substring(0, index), text)) {
                 // we are expecting a node file like #!/usr/bin/env node
                 // such files are in runtime wrapped with a function, so the files
                 // can contain a return statements in global context.
@@ -132,7 +134,30 @@ public class JsParser extends SanitizingParser<JsParserResult> {
         return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
     
-    private boolean isNodeSource(String firstLine) {
-        return firstLine.startsWith(SHEBANG_START) && firstLine.indexOf(NODE) > -1 && SINGLETON_FUNCTION_START.length() < firstLine.length();
+    private boolean isNodeSource(String firstLine, String text) {
+        boolean hasCorretSheBang = firstLine.startsWith(SHEBANG_START) && firstLine.indexOf(NODE) > -1 && SINGLETON_FUNCTION_START.length() < firstLine.length();
+        if (hasCorretSheBang) {
+            int lineOffsetBegin = firstLine.length() + 1;
+            int lineOffsetEnd = text.indexOf('\n', lineOffsetBegin);
+            while (lineOffsetEnd > lineOffsetBegin) {
+                String line = text.substring(lineOffsetBegin, lineOffsetEnd).trim();
+                if (line.startsWith(IMPORT) || line.startsWith(EXPORT)) {
+                    // if contains import or exports, it's module
+                    hasCorretSheBang = false;
+                    break;
+                }
+                if (line.isEmpty() || line.startsWith("//") || line.startsWith("*") || line.startsWith("/*")) { //NOI18N
+                    // skip lines with comments and emppty lines
+                    lineOffsetBegin = lineOffsetEnd + 1;
+                    lineOffsetEnd = text.indexOf('\n', lineOffsetBegin);
+                } else {
+                    // there is no import or export expression -> it can be wrapped
+                    break;
+                }
+            }
+            
+        }
+        
+        return hasCorretSheBang;
     }
 }
