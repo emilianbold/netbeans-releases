@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat
 public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements Cloneable {
 
     // Constructors
-    public FortranCompilerConfiguration(String baseDir, FortranCompilerConfiguration master) {
-        super(baseDir, master);
+    public FortranCompilerConfiguration(String baseDir, FortranCompilerConfiguration master, MakeConfiguration owner) {
+        super(baseDir, master, owner);
     }
 
     // Clone and assign
@@ -63,7 +63,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
     @Override
     public FortranCompilerConfiguration clone() {
-        FortranCompilerConfiguration clone = new FortranCompilerConfiguration(getBaseDir(), (FortranCompilerConfiguration) getMaster());
+        FortranCompilerConfiguration clone = new FortranCompilerConfiguration(getBaseDir(), (FortranCompilerConfiguration) getMaster(), getOwner());
         // BasicCompilerConfiguration
         clone.setDevelopmentMode(getDevelopmentMode().clone());
         clone.setWarningLevel(getWarningLevel().clone());

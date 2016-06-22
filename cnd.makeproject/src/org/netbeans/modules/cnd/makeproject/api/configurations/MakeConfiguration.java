@@ -99,23 +99,23 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public static final String CND_OUTPUT_PATH_MACRO = "${OUTPUT_PATH}"; // NOI18N
     public static final String PROJECTDIR_MACRO = "${PROJECT_DIR}"; // NOI18N
     // Project Types
-    private static String[] TYPE_NAMES_UNMANAGED = {
+    private static final String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
     };
-    private static String[] TYPE_NAMES_MANAGED = {
+    private static final String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),};
-    private static String[] TYPE_NAMES_MANAGED_DB = {
+    private static final String[] TYPE_NAMES_MANAGED_DB = {
         getString("DBApplicationName")
     };
-    private static String[] TYPE_NAMES_MANAGED_QT = {
+    private static final String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
     };
     
-    private static String[] TYPE_NAMES_CUSTOM = {
+    private static final String[] TYPE_NAMES_CUSTOM = {
         "CUSTOM"                                        // <=== FIXUP // NOI18N
     };
     public static final int TYPE_MAKEFILE = 0;
@@ -206,8 +206,8 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         }
         cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         ccCompilerConfiguration = new CCCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
-        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
-        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
+        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);

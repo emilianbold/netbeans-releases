@@ -44,13 +44,11 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
-import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary {
 
@@ -305,7 +303,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
         if (getTool() == PredefinedToolKind.FortranCompiler) {
             if (lastConfiguration == null) {
-                lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
+                lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration(), (MakeConfiguration) configuration);
             }
             assert lastConfiguration instanceof FortranCompilerConfiguration;
             return  (FortranCompilerConfiguration) lastConfiguration;
@@ -321,7 +319,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
         if (getTool() == PredefinedToolKind.Assembler) {
             if (lastConfiguration == null) {
-                lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
+                lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration(), (MakeConfiguration) configuration);
             }
             assert lastConfiguration instanceof AssemblerConfiguration;
             return  (AssemblerConfiguration) lastConfiguration;

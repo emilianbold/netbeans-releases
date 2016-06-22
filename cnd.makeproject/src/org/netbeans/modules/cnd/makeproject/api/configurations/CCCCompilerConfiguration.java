@@ -47,6 +47,8 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import static org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration.UNSUPPORTED_INT_CONFIGURATION;
+import static org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration.UNSUPPORTED_STRING_CONFIGURATION;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -67,8 +69,6 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getString("ClassicIostreamsTxt"),
         getString("BinaryStandardTxt"),
         getString("ConformingStandardTxt"),};
-    private static final String[] LIBRARY_LEVEL_OPTIONS = null;
-    private IntConfiguration libraryLevel;
     public static final int STANDARDS_OLD = 0;
     public static final int STANDARDS_LEGACY = 1;
     public static final int STANDARDS_DEFAULT = 2;
@@ -78,8 +78,6 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getString("LegacyTxt"),
         getString("DefaultTxt"),
         getString("ModernTxt"),};
-    private static final String[] STANDARD_OPTIONS = null;
-    private IntConfiguration standardsEvolution;
     public static final int LANGUAGE_EXT_NONE = 0;
     public static final int LANGUAGE_EXT_DEFAULT = 1;
     public static final int LANGUAGE_EXT_ALL = 2;
@@ -87,38 +85,35 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getString("NoneTxt"),
         getString("DefaultTxt"),
         getString("AllTxt"),};
-    private static final String[] LANGUAGE_EXT_OPTIONS = null;
-    private IntConfiguration languageExt;
     private VectorConfiguration<String> includeDirectories;
-    private BooleanConfiguration inheritIncludes;
+    private static final int inheritIncludes = 0;
     private VectorConfiguration<String> includeFiles;
-    private BooleanConfiguration inheritFiles;
+    private static final int inheritFiles = 1;
     private VectorConfiguration<String> preprocessorConfiguration;
     private VectorConfiguration<String> preprocessorUndefinedConfiguration;
-    private BooleanConfiguration inheritPreprocessor;
-    private BooleanConfiguration inheritUndefinedPreprocessor;
-    private BooleanConfiguration useLinkerPkgConfigLibraries;
-    private StringConfiguration importantFlags;
-    private MakeConfiguration owner;
-
+    private static final int inheritPreprocessor = 3;
+    private static final int inheritUndefinedPreprocessor = 4;
+    private static final int useLinkerPkgConfigLibraries = 5;
+    private int booleanFlags = 0;
+    private final CppConfigurationContainer cppContainer;
+    
     // Constructors
     protected CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master, MakeConfiguration owner) {
-        super(baseDir, master);
-        assert owner != null;
-        this.owner = owner;
-        libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
-        standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
-        languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
+        super(baseDir, master, owner);
+        if (!owner.isMakefileConfiguration()) {
+            cppContainer = new ManagedCppConfigurationContainer(master);
+        } else {
+            cppContainer = new UnmanagedCppConfigurationContainer();
+        }
         includeDirectories = new VectorConfiguration<>(master != null ? master.getIncludeDirectories() : null);
-        inheritIncludes = new BooleanConfiguration(true);
+        set(inheritIncludes, new BooleanConfiguration(true));
         includeFiles = new VectorConfiguration<>(master != null ? master.getIncludeFiles() : null);
-        inheritFiles = new BooleanConfiguration(true);
+        set(inheritFiles, new BooleanConfiguration(true));
         preprocessorConfiguration = new VectorConfiguration<>(master != null ? master.getPreprocessorConfiguration() : null);
+        set(inheritPreprocessor, new BooleanConfiguration(true));
         preprocessorUndefinedConfiguration = new VectorConfiguration<>(master != null ? master.getUndefinedPreprocessorConfiguration() : null);
-        inheritPreprocessor = new BooleanConfiguration(true);
-        inheritUndefinedPreprocessor = new BooleanConfiguration(true);
-        useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
-        importantFlags = new StringConfiguration(null, "");
+        set(inheritUndefinedPreprocessor, new BooleanConfiguration(true));
+        set(useLinkerPkgConfigLibraries, new BooleanConfiguration(true));
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -131,60 +126,44 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     @Override
     public boolean getModified() {
-        boolean modifiedFlags = importantFlags.getValue() != null && !importantFlags.getValue().isEmpty();
         return super.getModified() ||
-                libraryLevel.getModified() ||
-                standardsEvolution.getModified() ||
-                languageExt.getModified() ||
+                cppContainer.getModified() ||
                 includeDirectories.getModified() ||
-                inheritIncludes.getModified() ||
+                get(inheritIncludes).getModified() ||
                 includeFiles.getModified() ||
-                inheritFiles.getModified() ||
+                get(inheritFiles).getModified() ||
                 preprocessorConfiguration.getModified() ||
-                inheritPreprocessor.getModified() ||
+                get(inheritPreprocessor).getModified() ||
                 preprocessorUndefinedConfiguration.getModified() ||
-                inheritUndefinedPreprocessor.getModified() ||
-                useLinkerPkgConfigLibraries.getModified() ||
-                modifiedFlags;
-    }
-
-    protected final String[] getLibraryLevelOptions() {
-        return LIBRARY_LEVEL_OPTIONS;
-    }
-
-    protected final String[] getStandardsEvolutionOptions() {
-        return STANDARD_OPTIONS;
-    }
-
-    protected final String[] getLanguageExtOptions() {
-        return LANGUAGE_EXT_OPTIONS;
+                get(inheritUndefinedPreprocessor).getModified() ||
+                get(useLinkerPkgConfigLibraries).getModified();
     }
 
     // Library Level
     public void setLibraryLevel(IntConfiguration libraryLevel) {
-        this.libraryLevel = libraryLevel;
+        cppContainer.setLibraryLevel(libraryLevel);
     }
 
     public IntConfiguration getLibraryLevel() {
-        return libraryLevel;
+        return cppContainer.getLibraryLevel();
     }
 
     // Standards Evolution
     public void setStandardsEvolution(IntConfiguration standardsEvolution) {
-        this.standardsEvolution = standardsEvolution;
+        cppContainer.setStandardsEvolution(standardsEvolution);
     }
 
     public IntConfiguration getStandardsEvolution() {
-        return standardsEvolution;
+        return cppContainer.getStandardsEvolution();
     }
 
     // languageExt
     public void setLanguageExt(IntConfiguration languageExt) {
-        this.languageExt = languageExt;
+        cppContainer.setLanguageExt(languageExt);
     }
 
     public IntConfiguration getLanguageExt() {
-        return languageExt;
+        return cppContainer.getLanguageExt();
     }
 
     // Include Directories
@@ -198,11 +177,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     // Inherit Include Directories
     public BooleanConfiguration getInheritIncludes() {
-        return inheritIncludes;
+        return get(inheritIncludes);
     }
 
     public void setInheritIncludes(BooleanConfiguration inheritIncludes) {
-        this.inheritIncludes = inheritIncludes;
+        set(CCCCompilerConfiguration.inheritIncludes, inheritIncludes);
     }
 
     // Include Files
@@ -216,11 +195,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     // Inherit Include Files
     public BooleanConfiguration getInheritFiles() {
-        return inheritFiles;
+        return get(inheritFiles);
     }
 
     public void setInheritFiles(BooleanConfiguration inheritFiles) {
-        this.inheritFiles = inheritFiles;
+        set(CCCCompilerConfiguration.inheritFiles, inheritFiles);
     }
 
     // Preprocessor
@@ -243,52 +222,38 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     // Inherit Include Directories
     public BooleanConfiguration getInheritPreprocessor() {
-        return inheritPreprocessor;
+        return get(inheritPreprocessor);
     }
 
     public void setInheritPreprocessor(BooleanConfiguration inheritPreprocessor) {
-        this.inheritPreprocessor = inheritPreprocessor;
+        set(CCCCompilerConfiguration.inheritPreprocessor, inheritPreprocessor);
     }
 
     public BooleanConfiguration getInheritUndefinedPreprocessor() {
-        return inheritUndefinedPreprocessor;
+        return get(inheritUndefinedPreprocessor);
     }
 
     public void setInheritUndefinedPreprocessor(BooleanConfiguration inheritUndefinedPreprocessor) {
-        this.inheritUndefinedPreprocessor = inheritUndefinedPreprocessor;
+        set(CCCCompilerConfiguration.inheritUndefinedPreprocessor, inheritUndefinedPreprocessor);
     }
 
     // Linker libraries
     public BooleanConfiguration getUseLinkerLibraries() {
-        return useLinkerPkgConfigLibraries;
+        return get(useLinkerPkgConfigLibraries);
     }
 
     public void setUseLinkerLibraries(BooleanConfiguration useLinkerPkgConfigLibraries) {
-        this.useLinkerPkgConfigLibraries = useLinkerPkgConfigLibraries;
+        set(CCCCompilerConfiguration.useLinkerPkgConfigLibraries, useLinkerPkgConfigLibraries);
     }
 
     public StringConfiguration getImportantFlags() {
-        return importantFlags;
+        return cppContainer.getImportantFlags();
     }
     
     public void setImportantFlags(StringConfiguration importantFlags) {
-        this.importantFlags = importantFlags;
+        cppContainer.setImportantFlags(importantFlags);
     }
     
-    /**
-     * @return the owner
-     */
-    public MakeConfiguration getOwner() {
-        return owner;
-    }
-
-    /**
-     * @param owner the owner to set
-     */
-    public void setOwner(MakeConfiguration owner) {
-        this.owner = owner;
-    }
-
     // Clone and assign
     protected void assign(CCCCompilerConfiguration conf) {
         // BasicCompilerConfiguration
@@ -377,6 +342,130 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         return ""; //broken tool collection
     }
 
+    private static final int DEFAULT_INDEX = 0;
+    private static final int DIRTY_INDEX = 1;
+    private static final int MODIFIED_INDEX = 2;
+    private static final int VALUE_INDEX = 3;
+    private static final int BOOLEAN_SIZE = 4;
+    private void set(int i, BooleanConfiguration b) {
+        if (b.getDefault()) {
+            booleanFlags |= 1<<(i*BOOLEAN_SIZE+DEFAULT_INDEX);
+        } else {
+            booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+DEFAULT_INDEX));
+        }
+        if (b.getDirty()) {
+            booleanFlags |= 1<<(i*BOOLEAN_SIZE+DIRTY_INDEX);
+        } else {
+            booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+DIRTY_INDEX));
+        }
+        if (b.getModified()) {
+            booleanFlags |= 1<<(i*BOOLEAN_SIZE+MODIFIED_INDEX);
+        } else {
+            booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+MODIFIED_INDEX));
+        }
+        if (b.getValue()) {
+            booleanFlags |= 1<<(i*BOOLEAN_SIZE+VALUE_INDEX);
+        } else {
+            booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+VALUE_INDEX));
+        }
+    }
+    
+    private BooleanConfiguration get(final int i) {
+        return new BooleanConfiguration() {
+            @Override
+            public void setValue(boolean b) {
+                if (b) {
+                    booleanFlags |= 1<<(i*BOOLEAN_SIZE+VALUE_INDEX);
+                } else {
+                    booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+VALUE_INDEX));
+                }
+                setModified(b != getDefault());
+            }
+
+            @Override
+            public boolean getValue() {
+                return (booleanFlags & 1<<(i*BOOLEAN_SIZE+VALUE_INDEX)) != 0;
+            }
+
+            @Override
+            public void setModified(boolean b) {
+                if (b) {
+                    booleanFlags |= 1<<(i*BOOLEAN_SIZE+MODIFIED_INDEX);
+                } else {
+                    booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+MODIFIED_INDEX));
+                }                
+            }
+
+            @Override
+            public boolean getModified() {
+                return (booleanFlags & 1<<(i*BOOLEAN_SIZE+MODIFIED_INDEX)) != 0;
+            }
+
+            @Override
+            public void setDirty(boolean dirty) {
+                if (dirty) {
+                    booleanFlags |= 1<<(i*BOOLEAN_SIZE+DIRTY_INDEX);
+                } else {
+                    booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+DIRTY_INDEX));
+                }
+            }
+
+            @Override
+            public boolean getDirty() {
+                return (booleanFlags & 1<<(i*BOOLEAN_SIZE+DIRTY_INDEX)) != 0;
+            }
+
+            @Override
+            public boolean getDefault() {
+                return (booleanFlags & 1<<(i*BOOLEAN_SIZE+DEFAULT_INDEX)) != 0;
+            }
+
+            @Override
+            public void setDefault(boolean b) {
+                if (b) {
+                    booleanFlags |= 1<<(i*BOOLEAN_SIZE+DEFAULT_INDEX);
+                } else {
+                    booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+DEFAULT_INDEX));
+                }
+                setModified( getValue() != b);
+            }
+
+            @Override
+            public final void reset() {
+                if (getDefault()) {
+                    booleanFlags |= 1<<(i*BOOLEAN_SIZE+VALUE_INDEX);
+                } else {
+                    booleanFlags &= ~(1<<(i*BOOLEAN_SIZE+VALUE_INDEX));
+                }
+                setModified(false);
+            }
+
+            // Clone and Assign
+            @Override
+            public void assign(BooleanConfiguration conf) {
+                boolean dirty = getDirty();
+                dirty |= conf.getValue() ^ getValue();
+                setDirty(dirty);
+                setValue(conf.getValue());
+                setModified(conf.getModified());
+            }
+
+            @Override
+            @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
+            public BooleanConfiguration clone() {
+                BooleanConfiguration clone = new BooleanConfiguration(getDefault());
+                clone.setValue(getValue());
+                clone.setModified(getModified());
+                return clone;
+            }
+
+            @Override
+            public String toString() {
+                return "{value=" + getValue() + " modified=" + getModified() + " dirty=" + getDirty() +  '}'; // NOI18N
+            }
+        };
+    }
+
     public static class OptionToString implements VectorConfiguration.ToString<String> {
 
         private final CompilerSet compilerSet;
@@ -398,6 +487,126 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             } else {
                 return ""; // NOI18N
             }
+        }
+    }
+    
+    private static interface CppConfigurationContainer {
+        void setLibraryLevel(IntConfiguration libraryLevel);
+        IntConfiguration getLibraryLevel();
+        void setStandardsEvolution(IntConfiguration standardsEvolution);
+        IntConfiguration getStandardsEvolution();
+        void setLanguageExt(IntConfiguration languageExt);
+        IntConfiguration getLanguageExt();
+        void setImportantFlags(StringConfiguration importantFlags);
+        StringConfiguration getImportantFlags();
+        boolean getModified();        
+    }
+    
+    private static final class ManagedCppConfigurationContainer implements CppConfigurationContainer {
+        private IntConfiguration libraryLevel;
+        private IntConfiguration standardsEvolution;
+        private IntConfiguration languageExt;
+        
+        private ManagedCppConfigurationContainer(CCCCompilerConfiguration master) {
+            libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, null);
+            standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, null);
+            languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, null);
+        }
+        
+        @Override
+        public void setLibraryLevel(IntConfiguration libraryLevel) {
+            this.libraryLevel = libraryLevel;
+        }
+
+        @Override
+        public IntConfiguration getLibraryLevel() {
+            return libraryLevel;
+        }
+
+        @Override
+        public void setStandardsEvolution(IntConfiguration standardsEvolution) {
+            this.standardsEvolution = standardsEvolution;
+        }
+
+        @Override
+        public IntConfiguration getStandardsEvolution() {
+            return standardsEvolution;
+        }
+
+        @Override
+        public void setLanguageExt(IntConfiguration languageExt) {
+            this.languageExt = languageExt;
+        }
+
+        @Override
+        public IntConfiguration getLanguageExt() {
+            return languageExt;
+        }
+        
+        @Override
+        public void setImportantFlags(StringConfiguration importantFlags) {
+        }
+
+        @Override
+        public StringConfiguration getImportantFlags() {
+            return UNSUPPORTED_STRING_CONFIGURATION;
+        }
+
+        @Override
+        public boolean getModified() {
+            return libraryLevel.getModified() ||
+                    standardsEvolution.getModified() ||
+                    languageExt.getModified();
+        }
+
+    }
+    private static final class UnmanagedCppConfigurationContainer implements CppConfigurationContainer {
+        private StringConfiguration importantFlags;
+
+        private UnmanagedCppConfigurationContainer() {
+            importantFlags = new StringConfiguration(null, "");
+        }
+        
+        @Override
+        public void setLibraryLevel(IntConfiguration libraryLevel) {
+        }
+
+        @Override
+        public IntConfiguration getLibraryLevel() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setStandardsEvolution(IntConfiguration standardsEvolution) {
+        }
+
+        @Override
+        public IntConfiguration getStandardsEvolution() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setLanguageExt(IntConfiguration languageExt) {
+        }
+
+        @Override
+        public IntConfiguration getLanguageExt() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+        
+        @Override
+        public void setImportantFlags(StringConfiguration importantFlags) {
+            this.importantFlags = importantFlags;
+        }
+
+        @Override
+        public StringConfiguration getImportantFlags() {
+            return importantFlags;
+        }
+
+        @Override
+        public boolean getModified() {
+            return importantFlags.getValue() != null && !importantFlags.getValue().isEmpty();
         }
     }
 }

@@ -84,7 +84,7 @@ public class OptionsConfiguration implements Cloneable {
     public String getDefault() {
 	return ""; // NOI18N
     }
-    public final void optionsReset() {
+    public void optionsReset() {
 	commandLine = getDefault();
 	commandLineModified = false;
     }

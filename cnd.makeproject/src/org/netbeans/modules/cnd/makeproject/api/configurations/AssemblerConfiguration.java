@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat
 public class AssemblerConfiguration extends BasicCompilerConfiguration implements Cloneable {
     // Constructors
 
-    public AssemblerConfiguration(String baseDir, AssemblerConfiguration master) {
-        super(baseDir, master);
+    public AssemblerConfiguration(String baseDir, AssemblerConfiguration master, MakeConfiguration owner) {
+        super(baseDir, master, owner);
     }
 
     // Clone and assign
@@ -62,7 +62,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
 
     @Override
     public AssemblerConfiguration clone() {
-        AssemblerConfiguration clone = new AssemblerConfiguration(getBaseDir(), (AssemblerConfiguration) getMaster());
+        AssemblerConfiguration clone = new AssemblerConfiguration(getBaseDir(), (AssemblerConfiguration) getMaster(), getOwner());
         // BasicCompilerConfiguration
         clone.setDevelopmentMode(getDevelopmentMode().clone());
         clone.setWarningLevel(getWarningLevel().clone());
