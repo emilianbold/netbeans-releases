@@ -90,8 +90,8 @@ public class PreconditionsChecker {
         if (forLoop.getKind() == Tree.Kind.ENHANCED_FOR_LOOP) {
             this.isForLoop = true;
             this.workingCopy = workingCopy;
-            this.hasUncaughtException = !workingCopy.getTreeUtilities()
-                    .getUncaughtExceptions(TreePath.getPath(workingCopy.getCompilationUnit(), forLoop)).isEmpty();
+            this.hasUncaughtException = workingCopy.getTreeUtilities()
+                    .getUncaughtExceptions(TreePath.getPath(workingCopy.getCompilationUnit(), forLoop)).stream().anyMatch(this::filterCheckedExceptions);
             this.innerVariables = this.getInnerVariables(forLoop, workingCopy.getTrees());
             this.visitor = new ForLoopTreeVisitor(this.innerVariables, workingCopy, new TreePath(workingCopy.getCompilationUnit()), (EnhancedForLoopTree) forLoop);
             this.isIterable = this.isIterbale(((EnhancedForLoopTree) forLoop).getExpression());
@@ -429,4 +429,16 @@ public class PreconditionsChecker {
             }
         }
     };
+    
+    private boolean filterCheckedExceptions(TypeMirror ex) {
+        TypeElement el = workingCopy.getElements().getTypeElement("java.lang.RuntimeException"); // NOI18N
+        if (el == null) {
+            return true;
+        }
+        if (workingCopy.getTypes().isSubtype(ex, el.asType())) {
+            return false;
+        }
+        el = workingCopy.getElements().getTypeElement("java.lang.Error"); // NOI18N
+        return el == null || !workingCopy.getTypes().isSubtype(ex, el.asType()); 
+    }
 }
