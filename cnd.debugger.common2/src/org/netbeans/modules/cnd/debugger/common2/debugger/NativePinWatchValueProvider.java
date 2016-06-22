@@ -41,16 +41,13 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.common2.values.VariableValue;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.AbstractExpandToolTipAction;
 import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 
 /**
@@ -119,7 +116,7 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
         }
     }
     
-    private static class ExpandAction extends AbstractAction {
+    private static class ExpandAction extends AbstractExpandToolTipAction {
 
         private final NativeDebugger debugger;
         private final Watch watch;
@@ -127,13 +124,10 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
         ExpandAction(NativeDebugger debugger, Watch watch) {
             this.debugger = debugger;
             this.watch = watch;
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            putValue(Action.SMALL_ICON, expIcon);
-            putValue(Action.LARGE_ICON_KEY, expIcon);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        protected void openTooltipView() {
             debugger.evaluateInOutline(watch.getExpression());
         }
     }
