@@ -212,7 +212,6 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = true;
-        expectedTime = 200;
         doMeasurement();
     }
 
@@ -221,7 +220,6 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = false;
-        expectedTime = 200;
         doMeasurement();
     }
 
