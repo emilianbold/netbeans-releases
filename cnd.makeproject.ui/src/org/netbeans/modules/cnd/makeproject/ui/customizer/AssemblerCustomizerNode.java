@@ -68,21 +68,24 @@ class AssemblerCustomizerNode extends CustomizerNode {
 
     @Override
     public Sheet[] getSheets(Configuration configuration) {
-        SharedItemConfiguration[] itemConfigurations = getContext().getItems();
-        List<Sheet> out = new ArrayList<>();
-        if (itemConfigurations != null) {
-            for (SharedItemConfiguration cfg : itemConfigurations) {
-                if (cfg != null) {
-                    ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
-                    if (itemConfiguration != null) {
-                        out.add(getGeneralSheet((MakeConfiguration) configuration, itemConfiguration.getAssemblerConfiguration()));
+        if (((MakeConfiguration)configuration).isCompileConfiguration()) {
+            SharedItemConfiguration[] itemConfigurations = getContext().getItems();
+            List<Sheet> out = new ArrayList<>();
+            if (itemConfigurations != null) {
+                for (SharedItemConfiguration cfg : itemConfigurations) {
+                    if (cfg != null) {
+                        ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                        if (itemConfiguration != null) {
+                            out.add(getGeneralSheet((MakeConfiguration) configuration, itemConfiguration.getAssemblerConfiguration()));
+                        }
                     }
                 }
+            } else {
+                out.add(getGeneralSheet((MakeConfiguration) configuration, ((MakeConfiguration) configuration).getAssemblerConfiguration()));
             }
-        } else {
-            out.add(getGeneralSheet((MakeConfiguration) configuration, ((MakeConfiguration) configuration).getAssemblerConfiguration()));
+            return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
         }
-        return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
+        return null;
     }
 
     @Override

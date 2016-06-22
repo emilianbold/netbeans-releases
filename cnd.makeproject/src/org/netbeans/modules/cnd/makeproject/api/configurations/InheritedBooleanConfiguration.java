@@ -55,6 +55,9 @@ public class InheritedBooleanConfiguration extends BooleanConfiguration implemen
         this.master = master;
     }
 
+    protected InheritedBooleanConfiguration() {
+    }
+
     protected BooleanConfiguration getMaster() {
         return master;
     }

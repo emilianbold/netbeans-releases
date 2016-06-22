@@ -69,20 +69,22 @@ class FortranCompilerCustomizerNode extends CustomizerNode {
 
     @Override
     public Sheet[] getSheets(Configuration configuration) {
-        switch (getContext().getKind()) {
-            case Item:
-                SharedItemConfiguration[] sharedConfigurations = getContext().getItems();
-                List<Sheet> out = new ArrayList<>();
-                for (SharedItemConfiguration cfg : sharedConfigurations) {
-                    ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
-                    if (itemConfiguration != null) {
-                        out.add(getGeneralSheet((MakeConfiguration) configuration, itemConfiguration.getFortranCompilerConfiguration()));
+        if (((MakeConfiguration)configuration).isCompileConfiguration()) {
+            switch (getContext().getKind()) {
+                case Item:
+                    SharedItemConfiguration[] sharedConfigurations = getContext().getItems();
+                    List<Sheet> out = new ArrayList<>();
+                    for (SharedItemConfiguration cfg : sharedConfigurations) {
+                        ItemConfiguration itemConfiguration = cfg.getItemConfiguration(configuration);
+                        if (itemConfiguration != null) {
+                            out.add(getGeneralSheet((MakeConfiguration) configuration, itemConfiguration.getFortranCompilerConfiguration()));
+                        }
                     }
-                }
-                return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
-            case Project:
-                Sheet generalSheet = getGeneralSheet((MakeConfiguration) configuration, ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
-                return new Sheet[]{generalSheet};
+                    return out.isEmpty() ? null : out.toArray(new Sheet[out.size()]);
+                case Project:
+                    Sheet generalSheet = getGeneralSheet((MakeConfiguration) configuration, ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
+                    return new Sheet[]{generalSheet};
+            }
         }
         return null;
     }

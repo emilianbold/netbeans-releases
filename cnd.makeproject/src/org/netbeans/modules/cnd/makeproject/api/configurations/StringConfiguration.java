@@ -58,6 +58,9 @@ public class StringConfiguration implements Cloneable {
         reset();
     }
 
+    protected StringConfiguration() {
+    }
+
     public void setMaster(StringConfiguration master) {
         this.master = master;
     }
@@ -107,7 +110,7 @@ public class StringConfiguration implements Cloneable {
         return ret.toString();
     }
 
-    public final void setModified(boolean b) {
+    public void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -119,7 +122,7 @@ public class StringConfiguration implements Cloneable {
         return def;
     }
 
-    public final void reset() {
+    public void reset() {
         value = getDefault();
         setModified(false);
     }
