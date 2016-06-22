@@ -162,9 +162,9 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
     private final Color bgColorGreener;
     private final Color bgColorDarkerGreener;
     private final JList jList;
+    private final ButtonModel caseSensitive;
+    private final ButtonModel colorPrefered;
 
-    private boolean caseSensitive;
-    private boolean colorPrefered;
     private Class<T> clzCache;
 
     private ItemRenderer(
@@ -177,8 +177,8 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
         jList = list;
-        this.caseSensitive = caseSensitive.isSelected();
-        this.colorPrefered = colorPrefered != null && colorPrefered.isSelected();
+        this.caseSensitive = caseSensitive;
+        this.colorPrefered = colorPrefered;
         this.convertor = convertor;
         final HighlightingSettings hs = HighlightingSettings.getDefault();
         highlightMode = hs.getMode();
@@ -259,20 +259,6 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                                 Math.abs(bgColorDarker.getRed() - 35),
                                 Math.min(255, bgColorDarker.getGreen() + 5 ),
                                 Math.abs(bgColorDarker.getBlue() - 35) );
-        caseSensitive.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ItemRenderer.this.caseSensitive = ((ButtonModel)e.getSource()).isSelected();
-            }
-        });
-        if (colorPrefered != null) {
-            colorPrefered.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ItemRenderer.this.colorPrefered = ((ButtonModel)e.getSource()).isSelected();
-                }
-            });
-        }
     }
 
     @NonNull
@@ -312,7 +298,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                     formattedName = highlight(
                             convertor.getName(item),
                             convertor.getHighlightText(item),
-                            caseSensitive,
+                            caseSensitive.isSelected(),
                             isSelected? fgSelectionColor : fgColor);
                 } else {
                     formattedName = convertor.getName(item);
@@ -322,7 +308,9 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                 setProjectName(jlPrj, convertor.getProjectName(item));
                 jlPrj.setIcon(convertor.getProjectIcon(item));
                 if (!isSelected) {
-                    final boolean cprj = convertor.isFromCurrentProject(item) && colorPrefered;
+                    final boolean cprj = colorPrefered != null &&
+                            colorPrefered.isSelected() &&
+                            convertor.isFromCurrentProject(item);
                     final Color bgc =  index % 2 == 0 ?
                         (cprj ? bgColorGreener : bgColor ) :
                         (cprj ? bgColorDarkerGreener : bgColorDarker );
