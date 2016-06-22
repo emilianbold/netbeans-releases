@@ -145,8 +145,8 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
     private static final String SAMPLE_ITEM_ICON = "org/netbeans/modules/jumpto/type/sample.png";
     private static final int DARKER_COLOR_COMPONENT = 15;
     private static final int LIGHTER_COLOR_COMPONENT = 80;
-    private final HighlightStrategy highlightStrategy;
-
+    private final HighlightingSettings.Mode highlightMode;
+    private final HighlightingNameFormatter nameFormater;
     private final String mainProjectName = EntityComparator.getMainProjectName();
     private final Convertor<T> convertor;
     private final MyPanel<T> rendererComponent;
@@ -162,9 +162,9 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
     private final Color bgColorGreener;
     private final Color bgColorDarkerGreener;
     private final JList jList;
+    private final ButtonModel caseSensitive;
+    private final ButtonModel colorPrefered;
 
-    private boolean caseSensitive;
-    private boolean colorPrefered;
     private Class<T> clzCache;
 
     private ItemRenderer(
@@ -177,12 +177,14 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
         jList = list;
-        this.caseSensitive = caseSensitive.isSelected();
-        this.colorPrefered = colorPrefered != null && colorPrefered.isSelected();
+        this.caseSensitive = caseSensitive;
+        this.colorPrefered = colorPrefered;
         this.convertor = convertor;
-        this.highlightStrategy = createHighlightStrategy(separatorPattern);
-        this.jlName = this.highlightStrategy.createNameLabel();
-        highlightStrategy.resetNameLabel(jlName, jList.getFont());
+        final HighlightingSettings hs = HighlightingSettings.getDefault();
+        highlightMode = hs.getMode();
+        nameFormater = createNameFormatter(hs.getType(), separatorPattern);
+        this.jlName = new JLabel();
+        resetNameLabel();
         Container container = list.getParent();
         if ( container instanceof JViewport ) {
             ((JViewport)container).addChangeListener(this);
@@ -257,20 +259,6 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                                 Math.abs(bgColorDarker.getRed() - 35),
                                 Math.min(255, bgColorDarker.getGreen() + 5 ),
                                 Math.abs(bgColorDarker.getBlue() - 35) );
-        caseSensitive.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ItemRenderer.this.caseSensitive = ((ButtonModel)e.getSource()).isSelected();
-            }
-        });
-        if (colorPrefered != null) {
-            colorPrefered.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ItemRenderer.this.colorPrefered = ((ButtonModel)e.getSource()).isSelected();
-                }
-            });
-        }
     }
 
     @NonNull
@@ -289,7 +277,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
             rendererComponent.setPreferredSize(size);
-            highlightStrategy.resetNameLabel(jlName, jList.getFont());
+            resetNameLabel();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlOwner.setForeground(fgSelectionColor);
@@ -306,21 +294,23 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
             if (item != null) {
                 jlName.setIcon(convertor.getItemIcon(item));
                 final String formattedName;
-                if (highlightStrategy.shouldHighlight(isSelected)) {
-                    formattedName = highlightStrategy.highlight(
+                if (shouldHighlight(isSelected)) {
+                    formattedName = highlight(
                             convertor.getName(item),
                             convertor.getHighlightText(item),
-                            caseSensitive,
+                            caseSensitive.isSelected(),
                             isSelected? fgSelectionColor : fgColor);
                 } else {
-                    formattedName = highlightStrategy.plain(convertor.getName(item));
+                    formattedName = convertor.getName(item);
                 }
                 jlName.setText(formattedName);
                 jlOwner.setText(convertor.getOwnerName(item));
                 setProjectName(jlPrj, convertor.getProjectName(item));
                 jlPrj.setIcon(convertor.getProjectIcon(item));
                 if (!isSelected) {
-                    final boolean cprj = convertor.isFromCurrentProject(item) && colorPrefered;
+                    final boolean cprj = colorPrefered != null &&
+                            colorPrefered.isSelected() &&
+                            convertor.isFromCurrentProject(item);
                     final Color bgc =  index % 2 == 0 ?
                         (cprj ? bgColorGreener : bgColor ) :
                         (cprj ? bgColorDarkerGreener : bgColorDarker );
@@ -411,158 +401,71 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
 	}
     }
 
-    @NonNull
-    private HighlightStrategy createHighlightStrategy(@NullAllowed final String separatorPattern) {
-        final HighlightingSettings hs = HighlightingSettings.getDefault();
-        final HighlightingSettings.Mode mode = hs.getMode();
-        final HighlightingSettings.Type type = hs.getType();
-        switch (type) {
-            case BACKGROUND:
-                return new Background(mode, separatorPattern);
-            case BOLD:
-                return new Bold(mode, separatorPattern);
+    private void resetNameLabel() {
+        final Font font = jList.getFont();
+        jlName.setFont(font);
+        jlName.setOpaque(false);
+    }
+    
+    private boolean shouldHighlight(final boolean selectedItem) {
+        switch (highlightMode) {
+            case NONE:
+                return false;
+            case ACTIVE:
+                return selectedItem;
+            case ALL:
+                return true;
             default:
-                throw new IllegalStateException(String.valueOf(type));
+                throw new IllegalArgumentException(String.valueOf(selectedItem));
         }
     }
-
-    private static abstract class HighlightStrategy {
-        private final HighlightingSettings.Mode mode;
-
-        HighlightStrategy(@NonNull final HighlightingSettings.Mode mode) {
-            assert mode != null;
-            this.mode = mode;
-        }
-
-        final boolean shouldHighlight(boolean selectedItem) {
-            switch (mode) {
-                case NONE:
-                    return false;
-                case ACTIVE:
-                    return selectedItem;
-                case ALL:
-                    return true;
-                default:
-                    throw new IllegalArgumentException(String.valueOf(selectedItem));
-            }
-        }
-
-        @NonNull
-        String plain (@NonNull final String text) {
-            return text;
-        }
-
-        @NonNull
-        abstract  JLabel createNameLabel();
-        @NonNull
-        abstract void resetNameLabel(@NonNull JLabel nameLabel, @NonNull Font font);
-        @NonNull
-        abstract String highlight(@NonNull String name, @NonNull String highlightText, boolean caseSensitive, Color color);
-    }
-
-    private static class Bold extends HighlightStrategy {
-
-        private final HighlightingNameFormatter nameFormater;
-
-        Bold(
-                @NonNull final HighlightingSettings.Mode mode,
-                @NullAllowed final String separatorPattern) {
-            super(mode);
-            nameFormater = HighlightingNameFormatter.Builder.create().
-                    setCamelCaseSeparator(separatorPattern).
-                    buildBoldFormatter();
-        }
-
-        @NonNull
-        @Override
-        public JLabel createNameLabel() {
-            return HtmlRenderer.createLabel();
-        }
-
-        @Override
-        public void resetNameLabel(
-                @NonNull final JLabel nameLabel,
-                @NonNull final Font font) {
-            ((HtmlRenderer.Renderer)nameLabel).reset();
-            nameLabel.setFont(font);
-            nameLabel.setOpaque(false);
-            ((HtmlRenderer.Renderer)nameLabel).setHtml(true);
-            ((HtmlRenderer.Renderer)nameLabel).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
-        }
-
-        @Override
-        public String highlight(
-                @NonNull final String name,
-                @NonNull final String highlightText,
-                final boolean caseSensitive,
-                @NonNull final Color color) {
-            return nameFormater.formatName(
+    
+    @NonNull
+    private String highlight(
+            @NonNull final String name,
+            @NonNull final String highlightText,
+            final boolean caseSensitive,
+            @NonNull final Color color) {
+        return new StringBuilder("<html><nobr>").   //NOI18N
+                append(nameFormater.formatName(
                         UiUtils.htmlize(name),
                         UiUtils.htmlize(highlightText),
                         caseSensitive,
-                        color);
-        }
-
-        @Override
-        @NonNull
-        String plain(@NonNull final String text) {
-            return UiUtils.htmlize(text);
-        }
+                        color)).
+                append("</nobr>").  //NOI18N
+                toString();
     }
-
-    private static class Background extends HighlightStrategy {
-
-        private final HighlightingNameFormatter nameFormater;
-
-        Background(
-                @NonNull final HighlightingSettings.Mode mode,
-                @NullAllowed final String separatorPattern) {
-            super(mode);
-            Color back = new Color(236,235,163);
-            Color front = Color.BLACK;
-            final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-            if (colors != null) {
-                final AttributeSet attrs = colors.getFontColors("mark-occurrences");  //NOI18N
-                if (attrs != null) {
-                    Object o = attrs.getAttribute(StyleConstants.Background);
-                    if (o instanceof Color) {
-                        back = (Color) o;
-                    }
-                    o = attrs.getAttribute(StyleConstants.Foreground);
-                    if (o instanceof Color) {
-                        front = (Color) o;
+    
+    private static HighlightingNameFormatter createNameFormatter(
+            @NonNull final HighlightingSettings.Type type,
+            @NonNull final String separatorPattern) {
+        switch (type) {
+            case BACKGROUND:
+                Color back = new Color(236,235,163);
+                Color front = Color.BLACK;
+                final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+                if (colors != null) {
+                    final AttributeSet attrs = colors.getFontColors("mark-occurrences");  //NOI18N
+                    if (attrs != null) {
+                        Object o = attrs.getAttribute(StyleConstants.Background);
+                        if (o instanceof Color) {
+                            back = (Color) o;
+                        }
+                        o = attrs.getAttribute(StyleConstants.Foreground);
+                        if (o instanceof Color) {
+                            front = (Color) o;
+                        }
                     }
                 }
-            }
-            nameFormater = HighlightingNameFormatter.Builder.create().
+                return HighlightingNameFormatter.Builder.create().
+                        setCamelCaseSeparator(separatorPattern).
+                        buildColorFormatter(back, front);
+            case BOLD:
+                return HighlightingNameFormatter.Builder.create().
                     setCamelCaseSeparator(separatorPattern).
-                    buildColorFormatter(back, front);
-        }
-
-        @NonNull
-        @Override
-        public JLabel createNameLabel() {
-            return new JLabel();
-        }
-
-        @Override
-        public void resetNameLabel(
-                @NonNull final JLabel nameLabel,
-                @NonNull final Font font) {
-            nameLabel.setFont(font);
-            nameLabel.setOpaque(false);
-        }
-
-        @Override
-        public String highlight(String name, String highlightText, boolean caseSensitive, Color color) {
-            return new StringBuilder("<html><nobr>").   //NOI18N
-                    append(nameFormater.formatName(
-                            UiUtils.htmlize(name),
-                            UiUtils.htmlize(highlightText),
-                            caseSensitive,
-                            color)).
-                    append("</nobr>").  //NOI18N
-                    toString();
+                    buildBoldFormatter();
+            default:
+                throw new IllegalStateException(String.valueOf(type));
         }
     }
 }
