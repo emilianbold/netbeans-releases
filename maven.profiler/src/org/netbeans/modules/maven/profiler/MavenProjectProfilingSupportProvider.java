@@ -80,11 +80,6 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
         NbMavenProject mproject = getProject().getLookup().lookup(NbMavenProject.class);
         return mproject == null ? false : supportedPTypes.contains(mproject.getPackagingType());
     }
-
-    @Override
-    public boolean checkProjectIsModifiedForProfiler() {
-        return true;
-    }
         
     public MavenProjectProfilingSupportProvider(Project project) {
         super(project);
