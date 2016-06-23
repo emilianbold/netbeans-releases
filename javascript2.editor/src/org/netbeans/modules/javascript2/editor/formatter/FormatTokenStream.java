@@ -105,6 +105,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_NOT_EQUALS_EXACTLY:
                 case OPERATOR_AND:
                 case OPERATOR_OR:
+                case OPERATOR_EXPONENTIATION:
                 case OPERATOR_MULTIPLICATION:
                 case OPERATOR_DIVISION:
                 case OPERATOR_BITWISE_AND:
@@ -125,6 +126,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_ASSIGNMENT:
                 case OPERATOR_PLUS_ASSIGNMENT:
                 case OPERATOR_MINUS_ASSIGNMENT:
+                case OPERATOR_EXPONENTIATION_ASSIGNMENT:
                 case OPERATOR_MULTIPLICATION_ASSIGNMENT:
                 case OPERATOR_DIVISION_ASSIGNMENT:
                 case OPERATOR_BITWISE_AND_ASSIGNMENT:

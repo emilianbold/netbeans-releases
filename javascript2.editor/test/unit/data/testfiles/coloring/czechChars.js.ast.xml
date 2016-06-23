@@ -49,6 +49,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Zavřít' start='76' end='82'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='prevText' start='93' end='115'>
                     <!-- PropertyNode Key -->
@@ -58,6 +59,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='&#x3c;Dříve' start='104' end='115'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='nextText' start='126' end='150'>
                     <!-- PropertyNode Key -->
@@ -67,6 +69,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Později&#x3e;' start='137' end='150'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='currentText' start='161' end='179'>
                     <!-- PropertyNode Key -->
@@ -76,6 +79,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Nyní' start='175' end='179'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='hourText' start='190' end='206'>
                     <!-- PropertyNode Key -->
@@ -85,6 +89,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Hodiny' start='200' end='206'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='minuteText' start='217' end='235'>
                     <!-- PropertyNode Key -->
@@ -94,6 +99,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Minuty' start='229' end='235'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='secondText' start='246' end='265'>
                     <!-- PropertyNode Key -->
@@ -103,6 +109,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Vteřiny' start='258' end='265'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='monthNames' start='276' end='408'>
                     <!-- PropertyNode Key -->
@@ -125,6 +132,7 @@
                       <StringLiteralNode value='listopad' start='387' end='395'/>
                       <StringLiteralNode value='prosinec' start='398' end='406'/>
                     </ArrayLiteralNode>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='monthNamesShort' start='418' end='521'>
                     <!-- PropertyNode Key -->
@@ -147,6 +155,7 @@
                       <StringLiteralNode value='lis' start='510' end='513'/>
                       <StringLiteralNode value='pro' start='516' end='519'/>
                     </ArrayLiteralNode>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='dayNames' start='531' end='611'>
                     <!-- PropertyNode Key -->
@@ -164,6 +173,7 @@
                       <StringLiteralNode value='pátek' start='594' end='599'/>
                       <StringLiteralNode value='sobota' start='603' end='609'/>
                     </ArrayLiteralNode>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='dayNamesShort' start='621' end='678'>
                     <!-- PropertyNode Key -->
@@ -181,6 +191,7 @@
                       <StringLiteralNode value='pá' start='668' end='670'/>
                       <StringLiteralNode value='so' start='674' end='676'/>
                     </ArrayLiteralNode>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='dayNamesMin' start='688' end='737'>
                     <!-- PropertyNode Key -->
@@ -198,6 +209,7 @@
                       <StringLiteralNode value='pá' start='728' end='730'/>
                       <StringLiteralNode value='so' start='733' end='735'/>
                     </ArrayLiteralNode>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='weekHeader' start='747' end='763'>
                     <!-- PropertyNode Key -->
@@ -207,6 +219,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='Týd' start='760' end='763'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='dateFormat' start='774' end='795'>
                     <!-- PropertyNode Key -->
@@ -216,6 +229,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='dd.mm.yy' start='787' end='795'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='firstDay' start='806' end='817'>
                     <!-- PropertyNode Key -->
@@ -225,6 +239,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <NumberLiteralNode value='1' start='816' end='817'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='isRTL' start='827' end='839'>
                     <!-- PropertyNode Key -->
@@ -234,6 +249,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <BooleanLiteralNode value='false' start='834' end='839'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='showMonthAfterYear' start='849' end='874'>
                     <!-- PropertyNode Key -->
@@ -243,6 +259,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <BooleanLiteralNode value='false' start='869' end='874'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                   <PropertyNode name='yearSuffix' start='884' end='897'>
                     <!-- PropertyNode Key -->
@@ -252,6 +269,7 @@
                     </IdentNode>
                     <!-- PropertyNode Value -->
                     <StringLiteralNode value='' start='897' end='897'/>
+                    <!-- PropertyNode Decorators -->
                   </PropertyNode>
                 </ObjectNode>
               </BinaryNode>

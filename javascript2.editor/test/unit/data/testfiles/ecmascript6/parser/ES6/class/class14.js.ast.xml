@@ -36,6 +36,7 @@
               <!-- Block Statements -->
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
         <PropertyNode name='a' start='16' end='23'>
@@ -56,7 +57,9 @@
               <!-- Block Statements -->
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
+        <!-- ClassNode Decorators -->
       </ClassNode>
     </VarNode>
   </Block>
