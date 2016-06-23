@@ -324,6 +324,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/expression/equality/equality04.js");
     }
 
+    public void testExponentiation() throws Exception {
+        checkAstResult("testfiles/parser/exponentiation.js");
+    }
+
     public void testGrouping01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/grouping/grouping01.js");
     }
