@@ -41,34 +41,70 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 
 
 public class JSPreferences {
-    private static final String JS_VERSION_5 = "ECMAScript 5.1"; // NOI18N
-    private static final String JS_VERSION_6 = "ECMAScript 6"; // NOI18N
-    private static final String DEFAULT_JS_VERSION = JS_VERSION_6;
+    
+    public enum JSVersion {
+
+        ECMA5("ECMAScript 5.1"),
+        ECMA6("ECMAScript 6");
+//        ECMA7("ECMAScript 7");
+        
+        private final String displayName;
+
+        private JSVersion(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+        
+        @CheckForNull
+        public static JSVersion fromString(String str) {
+            if (str == null) {
+                return null;
+            }
+            for (JSVersion v : EnumSet.allOf(JSVersion.class)) {
+                if (str.equals(v.name()) || str.equals(v.getDisplayName())) {
+                    return v;
+                }
+            }
+            return null;
+        }
+    }
+    
+    private static final JSVersion DEFAULT_JS_VERSION = JSVersion.ECMA6;
     private static final String JS_PREF_TAG = "jsversion"; // NOI18N
 
-    public static List<String> getECMAScriptAvailableVersions() {
-        return Arrays.asList(JS_VERSION_5, JS_VERSION_6);
+    public static List<JSVersion> getECMAScriptAvailableVersions() {
+        return new ArrayList<>(EnumSet.allOf(JSVersion.class));
     }
 
-    public static String getECMAScriptVersion(Project project) {
+    public static JSVersion getECMAScriptVersion(Project project) {
         if (project != null) {
-            return getPreferences(project).get(JS_PREF_TAG, DEFAULT_JS_VERSION);
+            String strValue = getPreferences(project).get(JS_PREF_TAG, null);
+            JSVersion version = JSVersion.fromString(strValue);
+            if (version == null) {
+                version = DEFAULT_JS_VERSION;
+            }
+            return version;
         }
         return DEFAULT_JS_VERSION;
     }
 
-    public static void putECMAScriptVersion(Project project, String version) {
+    public static void putECMAScriptVersion(Project project, JSVersion version) {
         if (project != null) {
             if (!version.equals(DEFAULT_JS_VERSION)) {
-                getPreferences(project).put(JS_PREF_TAG, version);
+                getPreferences(project).put(JS_PREF_TAG, version.toString());
             } else {
                 getPreferences(project).remove(JS_PREF_TAG);
             }
@@ -79,8 +115,12 @@ public class JSPreferences {
         return ProjectUtils.getPreferences(project, JSPreferences.class, true);
     }
 
-    public static boolean isECMAScript5(Project project) {
-        return JS_VERSION_5.equals(getECMAScriptVersion(project));
+    public static boolean isPreECMAScript6(Project project) {
+        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA6.ordinal();
     }
+    
+//    public static boolean isPreECMAScript7(Project project) {
+//        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA7.ordinal();
+//    }
     
 }

@@ -106,7 +106,6 @@ public class JsConventionRule extends JsAstRule {
         Rule objectTrailingComma = null;
         Rule arrayTrailingComma = null;
         if (conventionHints != null) {
-            boolean ecma5 = JSPreferences.isECMAScript5(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()));
             for (AstRule astRule : conventionHints) {
                 if (manager.isEnabled(astRule)) {
                     if (astRule instanceof BetterConditionHint) {
