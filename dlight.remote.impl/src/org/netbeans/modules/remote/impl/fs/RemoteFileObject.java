@@ -409,6 +409,10 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     }
 
     public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
+        // surprisingly there are some clients that do this
+        if (relativePath.equals(".")) { //NOI18N
+            return this;
+        }
         return getImplementor().getFileObject(relativePath, antiLoop);
     }
 
