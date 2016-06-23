@@ -55,8 +55,8 @@ public class JSPreferences {
     public enum JSVersion {
 
         ECMA5("ECMAScript 5.1"),
-        ECMA6("ECMAScript 6");
-//        ECMA7("ECMAScript 7");
+        ECMA6("ECMAScript 6"),
+        ECMA7("ECMAScript 7");
         
         private final String displayName;
 
@@ -119,8 +119,8 @@ public class JSPreferences {
         return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA6.ordinal();
     }
     
-//    public static boolean isPreECMAScript7(Project project) {
-//        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA7.ordinal();
-//    }
+    public static boolean isPreECMAScript7(Project project) {
+        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA7.ordinal();
+    }
     
 }
