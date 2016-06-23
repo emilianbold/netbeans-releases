@@ -60,7 +60,7 @@ import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
-public class ECMA6InECMA5 extends JsAstRule {
+public class Ecma6Rule extends EcmaLevelRule {
 
     private static final List<JsTokenId> ECMA6LIST = Arrays.asList(
             JsTokenId.KEYWORD_CLASS,
@@ -81,7 +81,7 @@ public class ECMA6InECMA5 extends JsAstRule {
 
     @Override
     void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
-        if (JSPreferences.isECMAScript5(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
+        if (JSPreferences.isPreECMAScript6(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
             Snapshot snapshot = context.getJsParserResult().getSnapshot();
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, context.lexOffset);
             OffsetRange returnOffsetRange;
@@ -98,7 +98,7 @@ public class ECMA6InECMA5 extends JsAstRule {
     }
 
     private void addHint(JsHintsProvider.JsRuleContext context, List<Hint> hints, int offset, String name, OffsetRange range) throws BadLocationException {
-        hints.add(new Hint(this, Bundle.ECMA6InECMA5Desc(),
+        hints.add(new Hint(this, Bundle.Ecma6Desc(),
                 context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                 ModelUtils.documentOffsetRange(context.getJsParserResult(),
                         range.getStart(), range.getEnd()), null, 600));
@@ -111,22 +111,19 @@ public class ECMA6InECMA5 extends JsAstRule {
 
     @Override
     public String getId() {
-        return "ecma6inecma5.hint";
+        return "ecma6.hint";
     }
 
-    @NbBundle.Messages({
-        "ECMA6InECMA5Desc=ECMA6 syntax in ECMA5",
-        "ECMA6InECMA5DisplayName=ECMA6 syntax in ECMA5"})
+    @NbBundle.Messages("Ecma6Desc=ECMA6 feature used in pre-ECMA6 source")
     @Override
     public String getDescription() {
-        return Bundle.ECMA6InECMA5Desc();
+        return Bundle.Ecma6Desc();
     }
 
+    @NbBundle.Messages("Ecma6DisplayName=ECMA6 feature used")
     @Override
     public String getDisplayName() {
-        return Bundle.ECMA6InECMA5DisplayName();
+        return Bundle.Ecma6DisplayName();
     }
-    
-    
 
 }

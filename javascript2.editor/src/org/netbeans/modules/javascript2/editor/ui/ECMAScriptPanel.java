@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.ui;
 
+import java.util.Objects;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -69,10 +70,10 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
     private void initData() {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (String version: JSPreferences.getECMAScriptAvailableVersions()) {
-            model.addElement(version);
+        for (JSPreferences.JSVersion version: JSPreferences.getECMAScriptAvailableVersions()) {
+            model.addElement(new DisplayVersion(version));
         }
-        model.setSelectedItem(JSPreferences.getECMAScriptVersion(project));
+        model.setSelectedItem(new DisplayVersion(JSPreferences.getECMAScriptVersion(project)));
         cbVersion.setModel(model);
         allowJsonComments.setSelected(JsonPreferences.forProject(project).isCommentSupported());
         category.setStoreListener((e) -> save());
@@ -90,13 +91,13 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
         lVersion = new javax.swing.JLabel();
         allowJsonComments = new javax.swing.JCheckBox();
 
-        cbVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbVersion.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbVersionItemStateChanged(evt);
             }
         });
 
+        lVersion.setLabelFor(cbVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lVersion, org.openide.util.NbBundle.getMessage(ECMAScriptPanel.class, "ECMAScriptPanel.lVersion.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(allowJsonComments, org.openide.util.NbBundle.getMessage(ECMAScriptPanel.class, "ECMAScriptPanel.allowJsonComments.text")); // NOI18N
@@ -161,7 +162,50 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
     }
 
     public void save() {
-        JSPreferences.putECMAScriptVersion(project, (String)cbVersion.getSelectedItem());
+        JSPreferences.putECMAScriptVersion(project, ((DisplayVersion) cbVersion.getSelectedItem()).getVersion());
         JsonPreferences.forProject(project).setCommentSupported(allowJsonComments.isSelected());
+    }
+
+    private static class DisplayVersion {
+
+        private final JSPreferences.JSVersion version;
+
+        public DisplayVersion(JSPreferences.JSVersion version) {
+            this.version = version;
+        }
+
+        public JSPreferences.JSVersion getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            return version.getDisplayName();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + Objects.hashCode(this.version);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DisplayVersion other = (DisplayVersion) obj;
+            if (this.version != other.version) {
+                return false;
+            }
+            return true;
+        }
     }
 }
