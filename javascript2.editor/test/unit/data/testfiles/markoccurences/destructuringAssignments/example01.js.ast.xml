@@ -60,6 +60,7 @@
                     <!-- BinaryNode rhs -->
                     <StringLiteralNode value='big' start='31' end='34'/>
                   </BinaryNode>
+                  <!-- PropertyNode Decorators -->
                 </PropertyNode>
                 <PropertyNode name='cords' start='37' end='65'>
                   <!-- PropertyNode Key -->
@@ -85,6 +86,7 @@
                         </IdentNode>
                         <!-- PropertyNode Value -->
                         <NumberLiteralNode value='0' start='50' end='51'/>
+                        <!-- PropertyNode Decorators -->
                       </PropertyNode>
                       <PropertyNode name='y' start='53' end='57'>
                         <!-- PropertyNode Key -->
@@ -94,6 +96,7 @@
                         </IdentNode>
                         <!-- PropertyNode Value -->
                         <NumberLiteralNode value='0' start='56' end='57'/>
+                        <!-- PropertyNode Decorators -->
                       </PropertyNode>
                       <PropertyNode name='z' start='60' end='64'>
                         <!-- PropertyNode Key -->
@@ -103,9 +106,11 @@
                         </IdentNode>
                         <!-- PropertyNode Value -->
                         <NumberLiteralNode value='0' start='63' end='64'/>
+                        <!-- PropertyNode Decorators -->
                       </PropertyNode>
                     </ObjectNode>
                   </BinaryNode>
+                  <!-- PropertyNode Decorators -->
                 </PropertyNode>
                 <PropertyNode name='radius' start='67' end='78'>
                   <!-- PropertyNode Key -->
@@ -123,6 +128,7 @@
                     <!-- BinaryNode rhs -->
                     <NumberLiteralNode value='25' start='76' end='78'/>
                   </BinaryNode>
+                  <!-- PropertyNode Decorators -->
                 </PropertyNode>
               </ObjectNode>
               <!-- BinaryNode rhs -->
@@ -244,6 +250,7 @@
                 </IdentNode>
                 <!-- PropertyNode Value -->
                 <NumberLiteralNode value='18' start='263' end='265'/>
+                <!-- PropertyNode Decorators -->
               </PropertyNode>
               <PropertyNode name='y' start='267' end='272'>
                 <!-- PropertyNode Key -->
@@ -253,8 +260,10 @@
                 </IdentNode>
                 <!-- PropertyNode Value -->
                 <NumberLiteralNode value='30' start='270' end='272'/>
+                <!-- PropertyNode Decorators -->
               </PropertyNode>
             </ObjectNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
           <PropertyNode name='radius' start='278' end='288'>
             <!-- PropertyNode Key -->
@@ -264,6 +273,7 @@
             </IdentNode>
             <!-- PropertyNode Value -->
             <NumberLiteralNode value='30' start='286' end='288'/>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- CallNode Function -->
@@ -285,6 +295,7 @@
             </IdentNode>
             <!-- PropertyNode Value -->
             <StringLiteralNode value='small' start='323' end='328'/>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
           <PropertyNode name='cords' start='331' end='352'>
             <!-- PropertyNode Key -->
@@ -306,6 +317,7 @@
                   <!-- UnaryNode Expression -->
                   <NumberLiteralNode value='5' start='343' end='344'/>
                 </UnaryNode>
+                <!-- PropertyNode Decorators -->
               </PropertyNode>
               <PropertyNode name='y' start='346' end='351'>
                 <!-- PropertyNode Key -->
@@ -318,8 +330,10 @@
                   <!-- UnaryNode Expression -->
                   <NumberLiteralNode value='5' start='350' end='351'/>
                 </UnaryNode>
+                <!-- PropertyNode Decorators -->
               </PropertyNode>
             </ObjectNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
           <PropertyNode name='radius' start='354' end='364'>
             <!-- PropertyNode Key -->
@@ -329,6 +343,7 @@
             </IdentNode>
             <!-- PropertyNode Value -->
             <NumberLiteralNode value='5' start='363' end='364'/>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- CallNode Function -->

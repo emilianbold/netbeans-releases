@@ -1784,6 +1784,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/class6.js");
     }
     
+    public void testClassProperty1() throws Exception {
+        reformatFileContents("testfiles/formatter/classProperty1.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testClassProperty1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/classProperty1.js");
+    }
+    
     public void testArrow1() throws Exception {
         reformatFileContents("testfiles/formatter/arrow1.js",new IndentPrefs(4, 4));
     }

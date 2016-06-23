@@ -18,12 +18,14 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <NullLiteralNode start='14' end='18'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='__proto__' start='21' end='37'>
           <!-- PropertyNode Key -->
           <StringLiteralNode value='__proto__' start='21' end='30'/>
           <!-- PropertyNode Value -->
           <NullLiteralNode start='33' end='37'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </ExpressionStatement>
