@@ -7,6 +7,9 @@ package org.netbeans.modules.java.module.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -14,7 +17,9 @@ import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -25,6 +30,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.java.graph.DependencyGraphScene;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -62,6 +68,12 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private EditorToolbar toolbar;
     private DependencyGraphScene scene;
 
+    private Timer timer = new Timer(500, new ActionListener() {
+        @Override public void actionPerformed(ActionEvent arg0) {
+            checkFindValue();
+        }
+    });
+        
     /**
      * Creates new form GraphTopComponent
      */
@@ -75,6 +87,22 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+        timer.setDelay(500);
+        timer.setRepeats(false);
+        txtFind.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent arg0) {
+                timer.restart();
+            }
+
+            @Override public void removeUpdate(DocumentEvent arg0) {
+                timer.restart();
+            }
+
+            @Override public void changedUpdate(DocumentEvent arg0) {
+                timer.restart();
+            }
+        });
+        
     }
 
     @Override
@@ -94,12 +122,12 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             toolbar.add(zoomIn);
             toolbar.addSeparator(space);
             toolbar.add(zoomOut);
-//            toolbar.addSeparator(space);
-//            toolbar.add(lblFind);
-//            toolbar.add(txtFind);
-//            toolbar.addSeparator(space);
-//            toolbar.add(lblPath);
-//            toolbar.add(maxPathSpinner);
+            toolbar.addSeparator(space);
+            toolbar.add(lblFind);
+            toolbar.add(txtFind);
+            toolbar.addSeparator(space);
+            toolbar.add(lblPath);
+            toolbar.add(maxPathSpinner);
 //            toolbar.addSeparator(space);
 //            toolbar.add(lblScopes);
 //            toolbar.add(comScopes);
@@ -184,6 +212,10 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         jToolBar1 = new javax.swing.JToolBar();
         zoomIn = new javax.swing.JButton();
         zoomOut = new javax.swing.JButton();
+        lblFind = new javax.swing.JLabel();
+        txtFind = new javax.swing.JTextField();
+        lblPath = new javax.swing.JLabel();
+        maxPathSpinner = new javax.swing.JSpinner();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -218,6 +250,29 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
 
         jPanel1.add(jToolBar1);
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.lblFind.text")); // NOI18N
+        jPanel1.add(lblFind);
+
+        txtFind.setMaximumSize(new java.awt.Dimension(200, 22));
+        txtFind.setMinimumSize(new java.awt.Dimension(50, 19));
+        txtFind.setPreferredSize(new java.awt.Dimension(150, 22));
+        txtFind.setFont(new Font("Arial", java.awt.Font.PLAIN, 11));
+        jPanel1.add(txtFind);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblPath, org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.lblPath.text")); // NOI18N
+        lblPath.setToolTipText(org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.lblPath.toolTipText")); // NOI18N
+        jPanel1.add(lblPath);
+
+        maxPathSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 5, 1));
+        maxPathSpinner.setToolTipText(org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.maxPathSpinner.toolTipText")); // NOI18N
+        maxPathSpinner.setRequestFocusEnabled(false);
+        maxPathSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                maxPathSpinnerStateChanged(evt);
+            }
+        });
+        jPanel1.add(maxPathSpinner);
+
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -243,13 +298,29 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         }
     }//GEN-LAST:event_zoomOut
 
+    private void maxPathSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_maxPathSpinnerStateChanged
+        scene.highlightDepth(getSelectedDepth());
+    }//GEN-LAST:event_maxPathSpinnerStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel lblFind;
+    private javax.swing.JLabel lblPath;
+    private javax.swing.JSpinner maxPathSpinner;
+    private javax.swing.JTextField txtFind;
     private javax.swing.JButton zoomIn;
     private javax.swing.JButton zoomOut;
     // End of variables declaration//GEN-END:variables
 
+    private void checkFindValue() {
+        String val = txtFind.getText().trim();
+        if ("".equals(val)) { //NOI18N
+            val = null;
+        }
+        scene.setSearchString(val);
+    }
+    
     @NbBundle.Messages({
         "TXT_ComputingDependencies=Computing Dependencies...",
         "TXT_RefreshingDependencies=Refreshing Dependencies..."
@@ -277,14 +348,13 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private void displayScene(
             @NonNull final Collection<? extends ModuleNode> nodes,
             @NonNull final Collection<? extends DependencyEdge> edges) {
-        scene = new DependencyGraphScene(this);
-        nodes.stream().forEach(scene::addNode);
-        edges.stream()
-                .forEach((e)->{
-                    scene.addEdge(e);
-                    scene.setEdgeSource(e, e.getSource());
-                    scene.setEdgeTarget(e, e.getTarget());
+        
+        scene = new DependencyGraphScene(null, null, GraphTopComponent.this::getSelectedDepth, null, null);
+        nodes.stream().forEach((n)-> {
+            scene.addGraphNodeImpl(n);
         });
+        edges.stream().forEach((e)-> scene.addEdge(e.getSource(), e.getTarget()));
+        scene.calculatePrimaryPathsAndLevels();       
         JComponent sceneView = scene.getView();
         if (sceneView == null) {
             sceneView = scene.createView();
@@ -294,15 +364,15 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         pane.setViewportView(sceneView);
         scene.setSurroundingScrollPane(pane);
         scene.initialLayout();
-        scene.setSelectedObjects(Collections.singleton(scene.getRootNode()));
-//        if (scene.getMaxNodeDepth() > 1) {
-//            lblPath.setVisible(true);
-//            ((SpinnerNumberModel)maxPathSpinner.getModel()).
-//                    setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
-//            maxPathSpinner.setEnabled(true);
-//            maxPathSpinner.setVisible(true);
-//        }
-//        depthHighlight();
+        scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+        if (scene.getMaxNodeDepth() > 1) {
+            lblPath.setVisible(true);
+            ((SpinnerNumberModel)maxPathSpinner.getModel()).
+                    setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
+            maxPathSpinner.setEnabled(true);
+            maxPathSpinner.setVisible(true);
+        }
+        scene.highlightDepth(getSelectedDepth());
         enableControls(true);
     }
 
@@ -329,6 +399,10 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         }
     }
 
+    private int getSelectedDepth() {
+        return ((SpinnerNumberModel)maxPathSpinner.getModel()).getNumber().intValue();
+    }
+    
     private static class ChangeSupport extends FileChangeAdapter implements PropertyChangeListener, DocumentListener {
 
         private final Runnable resetAction;

@@ -46,70 +46,76 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.modules.java.graph.GraphEdge;
+import org.netbeans.modules.java.graph.GraphNode;
+import org.netbeans.modules.java.graph.DependencyGraphScene;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
+import org.netbeans.modules.java.graph.GraphNodeVisitor;
 
 /**
  *
  * @author mkleint
  */
-class GraphConstructor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
+public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
+    private final DependencyGraphScene scene;
+    private final MavenProject proj;
+    
+    private MavenDependencyNode root;
+    private final Stack<MavenDependencyNode> path;
 //    private Stack<ArtifactGraphNode> graphPath;
-    private Map<String, ArtifactGraphNode> cache;
-    private List<ArtifactGraphEdge> edges;
+    final Map<String, GraphNode<MavenDependencyNode>> cache;
+    private final List<GraphEdge<MavenDependencyNode>> edges;
 
-    GraphConstructor(DependencyGraphScene scene) {
+    public GraphConstructor(DependencyGraphScene scene, MavenProject proj) {
         this.scene = scene;
-        path = new Stack<DependencyNode>();
+        this.proj = proj;
+        path = new Stack<>();
 //        graphPath = new Stack<ArtifactGraphNode>();
-        cache = new HashMap<String, ArtifactGraphNode>();
-        edges = new ArrayList<ArtifactGraphEdge>();
+        cache = new HashMap<>();
+        edges = new ArrayList<>();
     }
 
-    @Override public boolean visit(DependencyNode node) {
+    @Override public boolean visit(MavenDependencyNode node) {
         if (root == null) {
             root = node;
         }
-        ArtifactGraphNode grNode;
+        GraphNode<MavenDependencyNode> grNode;
         boolean primary = false;
-        grNode = cache.get(node.getArtifact().getDependencyConflictId());
+        grNode = cache.get(node.getDependencyConflictId());
         if (node.getState() == DependencyNode.INCLUDED) {
             if (grNode == null) {
-                grNode = new ArtifactGraphNode(node);
-                cache.put(node.getArtifact().getDependencyConflictId(), grNode);
+                grNode = new GraphNode(node);
+                cache.put(node.getDependencyConflictId(), grNode);
             } else {
-                grNode.setArtifact(node);
+                grNode.setImpl(node);
             }
             grNode.setPrimaryLevel(path.size());
             primary = true;
         } else {
             if (grNode == null) {
-                grNode = new ArtifactGraphNode(node);
-                Artifact a = node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact() : node.getArtifact();
-                cache.put(a.getDependencyConflictId(), grNode);
+                grNode = new GraphNode(node);
+                String conflictId = node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedDependencyConflictId() : node.getDependencyConflictId();
+                cache.put(conflictId, grNode);
             }
             grNode.addDuplicateOrConflict(node);
         }
 
         if (!path.empty()) {
-            DependencyNode parent = path.peek();
-            ArtifactGraphEdge ed = new ArtifactGraphEdge(parent, node);
-            ed.setLevel(path.size() - 1);
+            GraphNodeImplementation parent = path.peek();
+            GraphEdge ed = new GraphEdge(parent, node);
             ed.setPrimaryPath(primary);
             edges.add(ed);
         }
 
-        if (node != root && grNode.getArtifact() != null) {
-            grNode.setManagedState(
-                    obtainManagedState(grNode.getArtifact().getArtifact(), scene));
+        if (node != root && grNode.getImpl() != null) {
+            grNode.setManagedState(obtainManagedState(grNode.getImpl()));
         }
 
         path.push(node);
@@ -118,50 +124,50 @@ class GraphConstructor implements DependencyNodeVisitor {
         return true;
     }
 
-    @Override public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(MavenDependencyNode node) {
         path.pop();
 //        graphPath.pop();
         if (root == node) {
             //add all nodes and edges now
-            ArtifactGraphNode rootNode = cache.get(node.getArtifact().getDependencyConflictId());
+            GraphNode rootNode = cache.get(node.getDependencyConflictId());
             //root needs to go first..
             scene.addNode(rootNode);
-            for (ArtifactGraphNode nd : cache.values()) {
+            for (GraphNode nd : cache.values()) {
                 if (nd != rootNode) {
                     scene.addNode(nd);
                 }
             }
-            for (ArtifactGraphEdge ed : edges) {
+            for (GraphEdge<MavenDependencyNode> ed : edges) {
                 scene.addEdge(ed);
-                ArtifactGraphNode grNode = cache.get(ed.getTarget().getArtifact().getDependencyConflictId());
+                GraphNode grNode = cache.get(ed.getTarget().getDependencyConflictId());
                 if (grNode == null) { //FOR conflicting nodes..
-                    grNode = cache.get(ed.getTarget().getRelatedArtifact().getDependencyConflictId());
+                    grNode = cache.get(ed.getTarget().getRelatedDependencyConflictId());
                 }
                 scene.setEdgeTarget(ed, grNode);
-                ArtifactGraphNode parentGrNode = cache.get(ed.getSource().getArtifact().getDependencyConflictId());
+                GraphNode parentGrNode = cache.get(ed.getSource().getDependencyConflictId());
                 scene.setEdgeSource(ed, parentGrNode);
             }
         }
         return true;
     }
 
-    private static int obtainManagedState (Artifact artifact, DependencyGraphScene scene) {
-        MavenProject proj = scene.getMavenProject();
+    private int obtainManagedState(MavenDependencyNode dependencyNode) {        
         if (proj == null) {
-            return ArtifactGraphNode.UNMANAGED;
+            return GraphNode.UNMANAGED;
         }
 
         DependencyManagement dm = proj.getDependencyManagement();
         if (dm == null) {
-            return ArtifactGraphNode.UNMANAGED;
+            return GraphNode.UNMANAGED;
         }
 
         @SuppressWarnings("unchecked")
         List<Dependency> deps = dm.getDependencies();
         if (deps == null) {
-            return ArtifactGraphNode.UNMANAGED;
+            return GraphNode.UNMANAGED;
         }
 
+        Artifact artifact = dependencyNode.getArtifact();
         String id = artifact.getArtifactId();
         String groupId = artifact.getGroupId();
         String version = artifact.getVersion();
@@ -169,13 +175,13 @@ class GraphConstructor implements DependencyNodeVisitor {
         for (Dependency dep : deps) {
             if (id.equals(dep.getArtifactId()) && groupId.equals(dep.getGroupId())) {
                 if (!version.equals(dep.getVersion())) {
-                    return ArtifactGraphNode.OVERRIDES_MANAGED;
+                    return GraphNode.OVERRIDES_MANAGED;
                 } else {
-                    return ArtifactGraphNode.MANAGED;
+                    return GraphNode.MANAGED;
                 }
             }
         }
 
-        return ArtifactGraphNode.UNMANAGED;
+        return GraphNode.UNMANAGED;
     }
 }

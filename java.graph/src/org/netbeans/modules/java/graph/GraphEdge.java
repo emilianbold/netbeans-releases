@@ -37,57 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
-import java.util.Stack;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
 /**
  *
- * @author mkleint
+ * @author Milos Kleint
+ * @param <I>
  */
-class SearchVisitor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
-    private String searchTerm;
+public final class GraphEdge<I extends GraphNodeImplementation> {
+    private final String toString;
+    private final I source;
+    private final I target;
+    private boolean primary;
 
-    SearchVisitor(DependencyGraphScene scene) {
-        this.scene = scene;
-        path = new Stack<DependencyNode>();
+    /** 
+     * Creates a new instance of GraphEdge
+     * @param source
+     * @param target 
+     */
+    public GraphEdge(I source, I target) {
+        toString = source.getQualifiedName() + "--" + target.getQualifiedName(); //NOI18N
+        this.target = target;
+        this.source = source;
+    }
+    
+    @Override
+    public String toString() {
+        return toString;
     }
 
-    void setSearchString(String search) {
-        searchTerm = search;
+    public void setPrimaryPath(boolean primary) {
+        this.primary = primary;
     }
 
-
-    @Override public boolean visit(DependencyNode node) {
-        if (root == null) {
-            root = node;
-        }
-        if (node.getState() == DependencyNode.INCLUDED) {
-            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
-            if (grNode == null) {
-                return false;
-            }
-            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            aw.highlightText(searchTerm);
-            path.push(node);
-            return true;
-        } else {
-            return false;
-        }
+    public boolean isPrimary() {
+        return primary;
     }
 
-    @Override public boolean endVisit(DependencyNode node) {
-        if (node.getState() == DependencyNode.INCLUDED) {
-            path.pop();
-        }
-        return true;
+    public I getSource() {
+        return source;
     }
+
+    public I getTarget() {
+        return target;
+    }
+
 }
