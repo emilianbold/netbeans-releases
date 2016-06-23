@@ -1539,9 +1539,15 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         };
         if (inNode.isModule() && inNode.getModule().getExports() != null) {
             for(ExportNode export :inNode.getModule().getExports()) {
-                if (!export.isDefault() || export.getExpression() instanceof ClassNode) {
+                if (!export.isDefault()) {
                     // don't go through the default export node, it appears also as *default* varible node
                     export.accept(visitor); 
+                } else {
+                    Expression expression = export.getExpression();
+                    if ((expression instanceof ClassNode && ((ClassNode)expression).getIdent() != null)
+                            || (expression instanceof FunctionNode && ((FunctionNode)expression).getIdent() != null)) {
+                        export.accept(visitor); 
+                    }
                 }
             }
         }
