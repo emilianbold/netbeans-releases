@@ -713,6 +713,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             // The PolygonOther is available just for the inside the class. 
             className = ModelElementFactory.create(parserResult, varNode.getName());
             refName = ModelElementFactory.create(parserResult, cnIdent);
+        } else if (varNode == null && cnIdent != null) {
+            className = ModelElementFactory.create(parserResult, cnIdent);
         }
         
         if (className != null) {
@@ -881,7 +883,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 }
             }
         }
-        if (expression != null && !exportNode.isDefault()) {
+        if (expression != null) {
             expression.accept(this);
         }
         return false;
@@ -1540,6 +1542,12 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 if (!export.isDefault()) {
                     // don't go through the default export node, it appears also as *default* varible node
                     export.accept(visitor); 
+                } else {
+                    Expression expression = export.getExpression();
+                    if ((expression instanceof ClassNode && ((ClassNode)expression).getIdent() != null)
+                            || (expression instanceof FunctionNode && ((FunctionNode)expression).getIdent() != null)) {
+                        export.accept(visitor); 
+                    }
                 }
             }
         }
