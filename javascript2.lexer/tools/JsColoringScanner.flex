@@ -436,6 +436,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "--"                           { return JsTokenId.OPERATOR_DECREMENT; }
   "+"                            { return JsTokenId.OPERATOR_PLUS; }
   "-"                            { return JsTokenId.OPERATOR_MINUS; }
+  "**"                           { return JsTokenId.OPERATOR_EXPONENTIATION; }
   "*"                            { return JsTokenId.OPERATOR_MULTIPLICATION; }
   "&"                            { return JsTokenId.OPERATOR_BITWISE_AND; }
   "|"                            { return JsTokenId.OPERATOR_BITWISE_OR; }
@@ -446,6 +447,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   ">>>"                          { return JsTokenId.OPERATOR_RIGHT_SHIFT; }
   "+="                           { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT; }
   "-="                           { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT; }
+  "**="                          { return JsTokenId.OPERATOR_EXPONENTIATION_ASSIGNMENT; }
   "*="                           { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
   "&="                           { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
   "|="                           { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }

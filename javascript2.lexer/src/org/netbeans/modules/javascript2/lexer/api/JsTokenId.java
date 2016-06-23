@@ -130,6 +130,7 @@ public enum JsTokenId implements TokenId {
     OPERATOR_DECREMENT("--", "operator"), // NOI18N
     OPERATOR_PLUS("+", "operator"), // NOI18N
     OPERATOR_MINUS("-", "operator"), // NOI18N
+    OPERATOR_EXPONENTIATION("**", "operator"), // NOI18N
     OPERATOR_MULTIPLICATION("*", "operator"), // NOI18N
     OPERATOR_DIVISION("/", "operator"), // NOI18N
     OPERATOR_BITWISE_AND("&", "operator"), // NOI18N
@@ -141,6 +142,7 @@ public enum JsTokenId implements TokenId {
     OPERATOR_RIGHT_SHIFT(">>>", "operator"), // NOI18N
     OPERATOR_PLUS_ASSIGNMENT("+=", "operator"), // NOI18N
     OPERATOR_MINUS_ASSIGNMENT("-=", "operator"), // NOI18N
+    OPERATOR_EXPONENTIATION_ASSIGNMENT("**=", "operator"), // NOI18N
     OPERATOR_MULTIPLICATION_ASSIGNMENT("*=", "operator"), // NOI18N
     OPERATOR_DIVISION_ASSIGNMENT("/=", "operator"), // NOI18N
     OPERATOR_BITWISE_AND_ASSIGNMENT("&=", "operator"), // NOI18N
