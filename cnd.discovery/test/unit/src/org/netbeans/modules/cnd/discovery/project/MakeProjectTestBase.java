@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
@@ -171,6 +172,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.shutdown();
         RepositoryTestUtils.deleteDefaultCacheLocation();
+        TextIndexStorageManager.shutdown();
     }
 
     protected File detectConfigure(String path){
