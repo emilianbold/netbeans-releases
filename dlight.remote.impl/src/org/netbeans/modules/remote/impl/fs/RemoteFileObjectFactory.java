@@ -310,7 +310,7 @@ public class RemoteFileObjectFactory {
     }
 
     private void reportUnexpectedPrevFileObject(RemoteFileObjectBase prevFieObject, String expected) {
-        if (RemoteLogger.isLoggable(Level.INFO)) {
+        if (RemoteLogger.isLoggable(Level.FINE)) {
             RemoteLogger.info(new Exception(String.format("Unexpected file object in cache, found %s, expected %s: %s", //NOI18N
                     (expected == null) ? "null" : prevFieObject.getClass().getSimpleName(), // NOI18N
                     expected, prevFieObject))); //NOI18N
