@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -693,7 +694,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             if (type != CLASSPATH) {                
                 final FileObject fo = URLMapper.findFileObject(FileUtil.urlForArchiveOrDir(file));
                 if (fo != null) {
-                    final Collection<FileObject> result = Collections.synchronizedSet(new HashSet<FileObject>());
+                    final Collection<FileObject> result = Collections.synchronizedCollection(new ArrayList<FileObject>());
                     if (type == SOURCES) {
                         final FileObject root = JavadocAndSourceRootDetection.findSourceRoot(fo);
                         if (root != null) {
@@ -718,11 +719,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                         ProgressUtils.showProgressDialogAndRun(task, Bundle.TXT_JavadocSearch(file.getAbsolutePath()), false);
                     }
                     if (!result.isEmpty()) {
-                        final Collection<URL> urls = new ArrayList<>(result.size());
-                        for (FileObject root : result) {
-                            urls.add(root.toURL());
-                        }
-                        return urls;
+                        return result.stream()
+                                .map(FileObject::toURL)
+                                .collect(Collectors.toList());
                     }                    
                 }
             }
