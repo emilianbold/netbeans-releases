@@ -2832,15 +2832,18 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
             }
             String propertyName = accessNode.getProperty();
+            // there is a problem in the parser. When there is a line comment after access node, then the finish of access node is finish of the line comment
+            int propertyOffsetStart = accessNode.getBase().getFinish() + 1;
+            int propertyOffsetEnd = propertyOffsetStart + propertyName.length();
             if (property != null) {
-                OffsetRange range = new OffsetRange(accessNode.getFinish() - propertyName.length(), accessNode.getFinish());
+                OffsetRange range = new OffsetRange(propertyOffsetStart, propertyOffsetEnd);
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
                     property.setDeclarationName(new Identifier(property.getName(), range));
                 }
                 property.addOccurrence(range);
             } else {
-                name = ModelElementFactory.create(parserResult, propertyName, accessNode.getFinish() - propertyName.length(), accessNode.getFinish());
+                name = ModelElementFactory.create(parserResult, propertyName, propertyOffsetStart, propertyOffsetEnd);
                 if (name != null) {
                     if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
                         CallNode cNode = (CallNode)getPath().get(pathSize - 2);
