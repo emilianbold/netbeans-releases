@@ -108,7 +108,8 @@ final class DependencyCalculator {
                     boolean unseen;
                     ModuleNode n = mods.get(name);
                     if(n == null) {
-                        n = mods.put(name, new ModuleNode(name));
+                        n = new ModuleNode(name);
+                        mods.put(name, n);
                         unseen = true;
                     } else {
                         unseen = false;
