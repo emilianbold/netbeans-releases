@@ -485,6 +485,10 @@ public class JavaTypeProvider implements TypeProvider {
                 valid = true;
             } else if (c == '.') {  //NOI18N
                 sb.append(".*\\."); //NOI18N
+            } else if (c == '*') {  //NOI18N
+                sb.append(".*");    //NOI18N
+            } else if (c == '?') {  //NOI18N
+                sb.append(".?");    //NOI18N
             }
         }
         final Pattern p;

@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -276,8 +277,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         final boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
-
-        if ( text.length() == 0 || !Utils.isValidInput(text)) {
+        if ( text.isEmpty() || !Utils.isValidInput(text)) {
             currentSearch.filter(
                     SearchType.EXACT_NAME,
                     text,
@@ -286,14 +286,15 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         }
 
-        nameKind = Utils.getSearchType(text, exact, panel.isCaseSensitive(), null, null);
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text);
+        String name = nameAndScope.first();        
+        nameKind = Utils.getSearchType(name, exact, panel.isCaseSensitive(), null, null);
         if (nameKind == SearchType.REGEXP || nameKind == SearchType.CASE_INSENSITIVE_REGEXP) {
-            text = Utils.removeNonNeededWildCards(text);
+            name = Utils.removeNonNeededWildCards(name);
         }
-
-        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
-        final String name = nameAndScope.first();
-        final String scope = nameAndScope.second();
+        final String scope = Optional.ofNullable(nameAndScope.second())
+                .map(Utils::removeNonNeededWildCards)
+                .orElse(null);
         if (name.isEmpty() && scope == null) {
             //Empty name, wait for next char
             currentSearch.resetFilter();
