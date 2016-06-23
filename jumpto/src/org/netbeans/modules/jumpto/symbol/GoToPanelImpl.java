@@ -187,8 +187,8 @@ class GoToPanelImpl extends javax.swing.JPanel implements GoToPanel {
             @NonNull final ListModel model,
             final boolean finished) {
         assert SwingUtilities.isEventDispatchThread();
+        matchesList.setModel(model);
         if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
-            matchesList.setModel(model);
             matchesList.setSelectedIndex(0);
             setListPanelContent(null,false);
             if ( time != -1 ) {

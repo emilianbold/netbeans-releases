@@ -56,6 +56,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
@@ -78,6 +79,7 @@ public class MavenProjectPropsImpl {
     private final AuxiliaryConfiguration aux;
     private boolean sharedChanged;
     private final NbMavenProjectImpl nbprji;
+    private Mutex mutex;
 
     MavenProjectPropsImpl(AuxiliaryConfiguration aux, NbMavenProjectImpl pr) {
         this.aux = aux;
@@ -93,12 +95,13 @@ public class MavenProjectPropsImpl {
     }
 
     public synchronized String get(String key, boolean shared, boolean usePom) {
-                TreeMap<String, String> props = readProperties(getAuxConf(), shared);
-                //TODO optimize
-                String ret =  props.get(key);
-                if (ret != null) {
-                    return ret;
-                }
+        return getMutex().readAccess((Mutex.Action<String>) () -> {
+            TreeMap<String, String> props = readProperties(getAuxConf(), shared);
+            //TODO optimize
+            String ret =  props.get(key);
+            if (ret != null) {
+                return ret;
+            }
             if (shared && usePom) {
                 String val = nbprji.getOriginalMavenProject().getProperties().getProperty(key);
                 if (val != null) {
@@ -106,16 +109,21 @@ public class MavenProjectPropsImpl {
                 }
             }
             return null;
+        });                       
     }
 
     public synchronized void put(String key, String value, boolean shared) {
+        getMutex().writeAccess((Mutex.Action<Void>) () -> {
             if (shared) {
                 //TODO put props to project.. shall we actually do it here?
             }
-                writeAuxiliaryData(getAuxConf(), key, value, shared);
-            }
+            writeAuxiliaryData(getAuxConf(), key, value, shared);
+            return null;
+        });
+    }
 
     public synchronized Iterable<String> listKeys(boolean shared) {
+        return getMutex().readAccess((Mutex.Action<Iterable<String>>) () -> {
             TreeMap<String, String> props = readProperties(getAuxConf(), shared);
             if (shared) {
                 Properties mvnprops =  nbprji.getOriginalMavenProject().getProperties();
@@ -124,6 +132,7 @@ public class MavenProjectPropsImpl {
                 }
             }
             return props.keySet();
+        });    
     }
 
     private void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value, boolean shared) {
@@ -221,6 +230,12 @@ public class MavenProjectPropsImpl {
         return readProperties(getAuxConf(), shared);
     }
 
+    private synchronized Mutex getMutex() {
+        if(mutex == null) {
+            mutex = new Mutex();
+        }
+        return mutex;
+    }
 
     static class Merger implements LookupMerger<AuxiliaryProperties> {
         private final MavenProjectPropsImpl primary;

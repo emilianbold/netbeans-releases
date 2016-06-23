@@ -45,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.netbeans.api.project.Project;
@@ -109,6 +111,27 @@ public class MakeProjectFileProvider {
         }
     }
 
+    /**
+     * Get set of non cnd files for project folder
+     * 
+     * @param project
+     * @param folder
+     * @return 
+     */
+    public static Set<CharSequence> getSearchBase(Project project, Folder folder) {
+        Set<CharSequence> result = new HashSet<>();
+        ConcurrentMap<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
+        if (projectSearchBase != null) {
+            List<CharSequence> list = projectSearchBase.get(folder);
+            if (list != null) {
+                synchronized(list) {
+                    result.addAll(list);
+                }
+            }
+        }
+        return result;
+    }
+    
     /**
      * Remove project files search base
      *

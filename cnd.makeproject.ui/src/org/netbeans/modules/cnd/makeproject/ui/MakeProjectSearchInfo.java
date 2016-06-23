@@ -76,7 +76,7 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
         }
     }
     
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
 
     private MakeProjectSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.projectDescriptorProvider = projectDescriptorProvider;
@@ -126,7 +126,7 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
                     }
                 }
                 addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_FOLDER), matcher);
-                addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), matcher);
+                //addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), matcher);
                 return res.iterator();
             }
         }
@@ -144,6 +144,8 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
                 }
                 if (f.isData() && matcher.pathMatches(f)) {
                     res.add(f);
+                } else if (f.isFolder()) {
+                    addFolder(res, f, matcher);
                 }
             }
         }

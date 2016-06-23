@@ -70,8 +70,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -259,7 +261,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                         }
                     } else {
                         if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                            otherFileList.add(CharSequences.create(files[i].getNameExt()));
+                            otherFileList.add(FilePathCache.getManager().getString(CharSequences.create(files[i].getPath())));
                             continue;
                         }
                     }
@@ -750,7 +752,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (setModified) {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
-                    CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
+                    CharSequence itemPath = FilePathCache.getManager().getString(CharSequences.create(item.getAbsolutePath()));
                     MakeProjectFileProvider.addToSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
@@ -985,7 +987,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (setModified) {
                 final Project project = configurationDescriptor.getProject();
                 if (project != null) {
-                    CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
+                    CharSequence itemPath = FilePathCache.getManager().getString(CharSequences.create(item.getAbsolutePath()));
                     MakeProjectFileProvider.removeFromSearchBase(project, this, itemPath);
                 }
                 configurationDescriptor.setModified();
@@ -1296,6 +1298,16 @@ public class Folder implements FileChangeListener, ChangeListener {
                     }
                 } else if (item instanceof Folder) {
                     ((Folder) item).getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
+                }
+            }
+            if (!projectFilesOnly) {
+                Set<CharSequence> searchBase = MakeProjectFileProvider.getSearchBase(getProject(), this);
+                for(CharSequence path : searchBase) {
+                    FSPath fsPath = new FSPath(configurationDescriptor.getBaseDirFileSystem(), path.toString());
+                    FileObject fo = fsPath.getFileObject();
+                    if (fo != null && (matcher == null || matcher.pathMatches(fo))) {
+                        files.add(fo);
+                    }
                 }
             }
         }
