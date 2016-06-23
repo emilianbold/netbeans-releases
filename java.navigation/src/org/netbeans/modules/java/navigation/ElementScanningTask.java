@@ -224,7 +224,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         for( Element m : members ) {
             if( canceled.get() )
                 return;
-            
+            if (m.getKind() == ElementKind.STATIC_INIT) {
+                continue;
+            }            
             Description d = element2description(m, e, parentDescription.isInherited, info, pos, fqn);
             if( null != d ) {
                 if (!parentDescription.subs.add( d )) {
