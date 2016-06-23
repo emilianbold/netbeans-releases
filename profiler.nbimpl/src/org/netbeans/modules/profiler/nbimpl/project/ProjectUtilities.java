@@ -88,8 +88,6 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.project.AntProjectSupport;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
 import org.netbeans.modules.profiler.utils.MainClassWarning;
