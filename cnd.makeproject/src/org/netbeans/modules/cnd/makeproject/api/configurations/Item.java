@@ -75,7 +75,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -88,6 +90,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -136,11 +139,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     protected static final Logger LOG = Logger.getLogger("makeproject.folder"); // NOI18N
 
-    private final String path;
+    private final CharSequence path;
     protected Folder folder;
     protected FileObject file = null;
     protected final FileSystem fileSystem;
-    private final String normalizedPath;
+    private final CharSequence normalizedPath;
 
     protected Item(FileObject baseDirFileObject, String path) {
         try {
@@ -149,14 +152,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             throw new IllegalStateException(ex);
         }
         String absPath = CndPathUtilities.toAbsolutePath(baseDirFileObject, path);
-        this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
-        this.path = CndPathUtilities.normalizeSlashes(path);
+        this.normalizedPath = FilePathCache.getManager().getString(CharSequences.create(FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem)));
+        this.path = FilePathCache.getManager().getString(CharSequences.create(CndPathUtilities.normalizeSlashes(path)));
     }
 
     // XXX:fullRemote deprecate and remove!
     protected Item(FileSystem fileSystem, String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
-        this.path = path;
+        this.path = FilePathCache.getManager().getString(CharSequences.create(path));
         this.fileSystem = fileSystem; //CndFileUtils.getLocalFileSystem();
         this.normalizedPath = null;
         folder = null;
@@ -166,28 +169,28 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
         }
-        if (path.equals(newname)) {
+        if (CharSequenceUtils.contentEquals(path, newname)) {
             return;
         }
 
         // Rename name in path
-        int indexName = path.lastIndexOf('/');
+        int indexName = CharSequenceUtils.lastIndexOf(path,'/');
         if (indexName < 0) {
             indexName = 0;
         } else {
             indexName++;
         }
 
-        int indexDot = path.lastIndexOf('.');
+        int indexDot = CharSequenceUtils.lastIndexOf(path,'.');
         if (indexDot < indexName || !nameWithoutExtension) {
             indexDot = -1;
         }
 
         String oldname;
         if (indexDot >= 0) {
-            oldname = path.substring(indexName, indexDot);
+            oldname = path.toString().substring(indexName, indexDot);
         } else {
-            oldname = path.substring(indexName);
+            oldname = path.toString().substring(indexName);
         }
         if (oldname.equals(newname)) {
             return;
@@ -195,11 +198,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
         String newPath = ""; // NOI18N
         if (indexName > 0) {
-            newPath = path.substring(0, indexName);
+            newPath = path.toString().substring(0, indexName);
         }
         newPath += newname;
         if (indexDot >= 0) {
-            newPath += path.substring(indexDot);
+            newPath += path.toString().substring(indexDot);
         }
         // Remove old item and insert new with new name
         renameTo(newPath);
@@ -209,7 +212,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         Folder f = getFolder();
         String oldPath;
         if (normalizedPath != null) {
-            oldPath = normalizedPath;
+            oldPath = normalizedPath.toString();
         } else {
             oldPath = CndFileUtils.normalizeAbsolutePath(fileSystem, getAbsPath());
         }
@@ -224,7 +227,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public String getPath() {
-        return path;
+        return path.toString();
     }
 
     @Override
@@ -239,7 +242,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public String getName() {
-        return CndPathUtilities.getBaseName(path);
+        return CndPathUtilities.getBaseName(path.toString());
     }
 
     public String getPath(boolean norm) {
@@ -310,7 +313,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String getNormalizedPath() {
         synchronized (this) {
             if (normalizedPath != null) {
-                return normalizedPath;
+                return normalizedPath.toString();
             }
         }
         String absPath = getAbsPath();
@@ -411,7 +414,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public FileObject getFileObject() {
         FileObject fo = getFileObjectImpl();
         if (fo == null) {
-            String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
+            String p = (normalizedPath != null) ? normalizedPath.toString() : getAbsPath();
             return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, p);
         }
         return fo;
@@ -427,7 +430,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         try {
             performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
             if (normalizedPath != null) {
-                fileObject = fileSystem.findResource(normalizedPath);
+                fileObject = fileSystem.findResource(normalizedPath.toString());
             } else {
                 Folder f = getFolder();
                 if (f == null) {
@@ -1117,7 +1120,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     @Override
     public String toString() {
-        return path;
+        return path.toString();
     }
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
 
