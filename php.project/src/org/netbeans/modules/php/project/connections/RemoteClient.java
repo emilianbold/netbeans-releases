@@ -69,6 +69,7 @@ import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.connections.transfer.LocalTransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.openide.DialogDisplayer;
@@ -863,7 +864,9 @@ public final class RemoteClient implements Cancellable {
 
     private TmpLocalFile createTmpLocalFile(TransferFile file) {
         final long size = file.getSize();
-        if (size <= MAX_FILE_SIZE_FOR_MEMORY) {
+        if (size <= MAX_FILE_SIZE_FOR_MEMORY
+                && !(file instanceof LocalTransferFile)) { // #258947
+            // #258947: happens for the locally _selected_ files (their transfer files are "backed" by local files, not remote files)
             return TmpLocalFile.inMemory((int) size);
         }
         return TmpLocalFile.onDisk();
