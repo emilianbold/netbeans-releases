@@ -40,29 +40,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import javax.swing.UIManager;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
-import static org.netbeans.modules.maven.graph.Bundle.*;
+import static org.netbeans.modules.java.graph.Bundle.TIP_Primary;
+import static org.netbeans.modules.java.graph.Bundle.TIP_Secondary;
+import static org.netbeans.modules.java.graph.Bundle.TIP_VersionConflict;
+import static org.netbeans.modules.java.graph.Bundle.TIP_VersionWarning;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_CONFLICT;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_NO_CONFLICT;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_POTENTIAL_CONFLICT;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author mkleint
  */
-public class EdgeWidget extends ConnectionWidget {
+class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
     public static final int DISABLED = 0;
     public static final int GRAYED = 1;
     public static final int REGULAR = 2;
@@ -71,7 +75,7 @@ public class EdgeWidget extends ConnectionWidget {
 
     private static float[] hsbVals = new float[3];
 
-    private ArtifactGraphEdge edge;
+    private GraphEdge<I> edge;
     private int state = REGULAR;
     private boolean isConflict;
     private int edgeConflictType;
@@ -80,29 +84,35 @@ public class EdgeWidget extends ConnectionWidget {
     private Widget versionW;
     private Stroke origStroke;
 
-    public EdgeWidget(DependencyGraphScene scene, ArtifactGraphEdge edge) {
+    EdgeWidget(DependencyGraphScene<I> scene, GraphEdge<I> edge) {
         super(scene);
         this.edge = edge;
         origStroke = getStroke();
         setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
-        isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
-        edgeConflictType = getConflictType();
+        
+        if(scene.supportsVersions()) {
+            isConflict = scene.isConflict(edge.getTarget());
+            edgeConflictType = getConflictType();
 
-        updateVersionW(isConflict);
+            updateVersionW(isConflict);
+        }
     }
-
+       
     private void updateVersionW (boolean isConflict) {
-        DependencyGraphScene scene = (DependencyGraphScene)getScene();
-        ArtifactGraphNode targetNode = scene.getGraphNodeRepresentant(edge.getTarget());
+        DependencyGraphScene<I> scene = getDependencyGraphScene();
+        assert scene.supportsVersions();
+        
+        GraphNode<I> targetNode = scene.getGraphNodeRepresentant(edge.getTarget());
         if (targetNode == null) {
             return;
         }
-        int includedConflictType = targetNode.getConflictType();
+        
+        int includedConflictType = targetNode.getConflictType(scene::isConflict, scene::compareVersions);
 
         if (versionW == null) {
-            if (isConflict || includedConflictType != ArtifactGraphNode.NO_CONFLICT) {
+            if (isConflict || includedConflictType != VERSION_NO_CONFLICT) {
                 versionW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-                conflictVersion = new LabelWidget(scene, edge.getTarget().getArtifact().getVersion());
+                conflictVersion = new LabelWidget(scene, scene.getVersion(edge.getTarget()));
                 if (isConflict) {
                     Color c = getConflictColor(edgeConflictType);
                     if (c != null) {
@@ -114,7 +124,7 @@ public class EdgeWidget extends ConnectionWidget {
                 setConstraint(versionW, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT, 0.5f);
             }
         } else {
-            if (!isConflict && includedConflictType == ArtifactGraphNode.NO_CONFLICT) {
+            if (!isConflict && includedConflictType == VERSION_NO_CONFLICT) {
                 if (versionW.getParentWidget() == this) {
                     removeChild(versionW);
                 } // else already removed??
@@ -130,21 +140,28 @@ public class EdgeWidget extends ConnectionWidget {
     /**
      * readable widgets are calculated  based on scene zoom factor when zoom factor changes, the readable scope should too
      */
-    void updateReadableZoom() {
+    public void updateReadableZoom() {
         if (state == HIGHLIGHTED || state == HIGHLIGHTED_PRIMARY) {
             updateAppearance(false);
         }
     }
 
-    void modelChanged () {
-        edgeConflictType = getConflictType();
-        isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
-        // correction if some graph editing(fixing) was done
-        if (isConflict && edgeConflictType == ArtifactGraphNode.NO_CONFLICT) {
-            isConflict = false;
+    private DependencyGraphScene<I> getDependencyGraphScene() {
+        return (DependencyGraphScene<I>)getScene();
+    }
+    
+    public void modelChanged () {
+        DependencyGraphScene scene = getDependencyGraphScene();
+        if(scene.supportsVersions()) {
+            edgeConflictType = getConflictType();
+            isConflict = scene.isConflict(edge.getTarget());
+            // correction if some graph editing(fixing) was done
+            if (isConflict && edgeConflictType == VERSION_NO_CONFLICT) {
+                isConflict = false;
+            }
+
+            updateVersionW(isConflict);
         }
-        
-        updateVersionW(isConflict);
         updateAppearance(((DependencyGraphScene)getScene()).isAnimated());
     }
 
@@ -190,16 +207,17 @@ public class EdgeWidget extends ConnectionWidget {
         if (state != DISABLED) {
             StringBuilder sb = new StringBuilder("<html>");
             if (isConflict) {
-                DependencyGraphScene grScene = (DependencyGraphScene)getScene();
-                DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
-                        edge.getTarget()).getArtifact();
-                if (includedDepN == null) {
+                DependencyGraphScene grScene = getDependencyGraphScene();
+                assert grScene.supportsVersions();
+                GraphNodeImplementation included = grScene.getGraphNodeRepresentant(
+                        edge.getTarget()).getImpl();
+                if (included == null) {
                     return;
                 }
-                DependencyNode parent = includedDepN.getParent();
-                String version = includedDepN.getArtifact().getVersion();
-                String requester = parent != null ? parent.getArtifact().getArtifactId() : "???";
-                String confText = edgeConflictType == ArtifactGraphNode.CONFLICT ? TIP_VersionConflict(version, requester) : TIP_VersionWarning(version, requester);
+                String version = grScene.getVersion(included);
+                GraphNodeImplementation parent = included.getParent();
+                String requester = parent != null ? parent.getName() : "???";
+                String confText = edgeConflictType == VERSION_CONFLICT ? TIP_VersionConflict(version, requester) : TIP_VersionWarning(version, requester);
                 conflictVersion.setToolTipText(confText);
                 sb.append(confText);
                 sb.append("<br>");
@@ -221,7 +239,7 @@ public class EdgeWidget extends ConnectionWidget {
             conflictVersion.setForeground(c);
             Font origF = getScene().getDefaultFont();
             conflictVersion.setFont(state == HIGHLIGHTED || state == HIGHLIGHTED_PRIMARY
-                    ? ArtifactWidget.getReadable(getScene(), origF) : origF);
+                    ? NodeWidget.getReadable(getScene(), origF) : origF);
         }
 
         setVisible(state != DISABLED);
@@ -237,21 +255,23 @@ public class EdgeWidget extends ConnectionWidget {
     }
 
     private int getConflictType () {
-        ArtifactGraphNode included = ((DependencyGraphScene)getScene()).getGraphNodeRepresentant(edge.getTarget());
+        GraphNode<I> included = ((DependencyGraphScene)getScene()).getGraphNodeRepresentant(edge.getTarget());
         if (included == null) {
-            return ArtifactGraphNode.NO_CONFLICT;
+            return VERSION_NO_CONFLICT;
         }
-        DefaultArtifactVersion edgeV = new DefaultArtifactVersion(edge.getTarget().getArtifact().getVersion());
-        DefaultArtifactVersion includedV = new DefaultArtifactVersion(included.getArtifact().getArtifact().getVersion());
-        int ret = edgeV.compareTo(includedV);
-        return ret > 0 ? ArtifactGraphNode.CONFLICT : ret < 0 ?
-            ArtifactGraphNode.POTENTIAL_CONFLICT : ArtifactGraphNode.NO_CONFLICT;
+        DependencyGraphScene<I> scene = getDependencyGraphScene();
+        int ret = scene.compareVersions(edge.getTarget(), included.getImpl());
+                                return ret > 0 ? 
+                                        VERSION_CONFLICT : 
+                                        ret < 0 ?
+                                            VERSION_POTENTIAL_CONFLICT : 
+                                            VERSION_NO_CONFLICT;        
     }
 
     private static Color getConflictColor (int conflictType) {
-        return conflictType == ArtifactGraphNode.CONFLICT ? ArtifactWidget.CONFLICT
-                : conflictType == ArtifactGraphNode.POTENTIAL_CONFLICT
-                ? ArtifactWidget.WARNING : null;
+        return conflictType == VERSION_CONFLICT ? NodeWidget.CONFLICT
+                : conflictType == VERSION_POTENTIAL_CONFLICT
+                ? NodeWidget.WARNING : null;
     }
 
     /** Derives color from specified with saturation multiplied by given ratio.

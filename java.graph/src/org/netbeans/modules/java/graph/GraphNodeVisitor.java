@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.graph;
 
-package org.netbeans.modules.maven.graph;
-
-import org.apache.maven.shared.dependency.tree.DependencyNode;
+import java.util.List;
 
 /**
  *
- * @author Milos Kleint
+ * @author Tomas Stupka
+ * @param <I>
  */
-public class ArtifactGraphEdge {
-    private String edge;
-    private int level = 0;
-    private DependencyNode source;
-    private DependencyNode target;
-    private boolean primary;
-
-    /** Creates a new instance of ArtifactGraphEdge */
-    public ArtifactGraphEdge(DependencyNode source, DependencyNode target) {
-        edge = source.getArtifact().getId() + "--" + target.getArtifact().getId(); //NOI18N
-        this.target = target;
-        this.source = source;
-    }
+public interface GraphNodeVisitor<I extends GraphNodeImplementation> {
+    boolean visit(I dn);
+    boolean endVisit(I dn);
     
-    @Override
-    public String toString() {
-        return edge;
-    }
-    
-    public void setLevel(int lvl) {
-        level = lvl;
-    }
-    
-    public int getLevel() {
-        return level;
-    }
-
-    public void setPrimaryPath(boolean primary) {
-        this.primary = primary;
-    }
-
-    public boolean isPrimary() {
-        return primary;
-    }
-
-    public DependencyNode getSource() {
-        return source;
-    }
-
-    public DependencyNode getTarget() {
-        return target;
-    }
-
+    default boolean accept(I d) {
+        if(visit(d)) {
+            List<I> chs = d.getChildren();
+            if(chs != null) {
+                for (I ch : chs) {
+                    if(!accept(ch)){
+                        break;
+                    }                    
+                }
+            }
+        }
+        return endVisit(d);
+    }    
 }

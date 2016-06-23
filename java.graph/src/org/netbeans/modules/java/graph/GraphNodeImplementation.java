@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.graph;
 
-package org.netbeans.modules.maven.graph;
-
-import java.awt.Image;
-import java.io.Serializable;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.maven.graph.DependencyGraphTopComponent;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.netbeans.modules.maven.spi.IconResources;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
+import java.util.List;
 
 /**
  *
- * @author mkleint
+ * @author Tomas Stupka
  */
-public class GraphMD implements MultiViewDescription, Serializable {
-
-    private final Lookup lookup;
-
-    GraphMD(Lookup lkp) {
-        lookup = lkp;
-    }
-
-
-    @Override public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
-    }
-
-    @Override public String getDisplayName() {
-        return Bundle.TAB_Graph();
-    }
-
-    @Override public Image getIcon() {
-        return ImageUtilities.loadImage(IconResources.ICON_DEPENDENCY_JAR, true);
-    }
-
-    @Override public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override public String preferredID() {
-        return ArtifactViewer.HINT_GRAPH;
-    }
-
-    @Override public MultiViewElement createElement() {
-        return new DependencyGraphTopComponent(lookup);
-    }
-
-    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        @Override public MultiViewDescription createPanel(Lookup content) {
-            return new GraphMD(content);
-        }
-    }
-
+public interface GraphNodeImplementation {
+    
+    String getName();
+    
+    String getQualifiedName();
+    
+    String getTooltipText();
+    
+    <I extends GraphNodeImplementation> List<I> getChildren();
+    
+    <I extends GraphNodeImplementation> I getParent();
+    
 }

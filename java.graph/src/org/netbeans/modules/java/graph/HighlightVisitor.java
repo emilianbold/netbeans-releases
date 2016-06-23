@@ -40,47 +40,88 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
-import org.netbeans.modules.java.graph.DependencyGraphScene;
-import org.netbeans.modules.java.graph.GraphNodeImplementation;
-import org.netbeans.modules.java.graph.GraphNodeVisitor;
 
 /**
  *
  * @author mkleint
  */
-public class ScopesVisitor implements GraphNodeVisitor<MavenDependencyNode> {
+class HighlightVisitor implements GraphNodeVisitor {
     private final DependencyGraphScene scene;
-    private GraphNodeImplementation root;
     private final Stack<GraphNodeImplementation> path;
-    private final List<String> scopes;
+    private GraphNodeImplementation root;
+    private int max = Integer.MAX_VALUE;
 
-    public ScopesVisitor(DependencyGraphScene scene, List<String> scopes) {
+    private final Map<GraphNodeImplementation, Integer> node2Path;
+    
+    HighlightVisitor(DependencyGraphScene scene) {
         this.scene = scene;
-        path = new Stack<>();
-        this.scopes = scopes;
+        path = new Stack<>(); 
+        node2Path = new HashMap<>();
     }
 
-    @Override public boolean visit(MavenDependencyNode node) {
+    public void setMaxDepth(int max) {
+        this.max = max;
+        node2Path.clear();
+    }
+
+    @Override public boolean visit(GraphNodeImplementation node) {
         if (root == null) {
             root = node;
         }
-        if (scene.isIncluded(node)) {
-            node.hightlightScopes(scopes);
+        if (scene.isIncluded(node) && acceptDepth(node)) {
             path.push(node);
+            node2Path.put(node, path.size());
+            
+            GraphNode grNode = scene.getGraphNodeRepresentant(node);
+            if (grNode == null) {
+                return false;
+            }
+            NodeWidget nw = (NodeWidget) scene.findWidget(grNode);
+            Collection<GraphEdge> edges = scene.findNodeEdges(grNode, true, true);
+            nw.setReadable(false);
+            if (path.size() > max) {
+                nw.setPaintState(EdgeWidget.GRAYED);
+                for (GraphEdge e : edges) {
+                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
+                    ew.setState(EdgeWidget.GRAYED);
+                }
+            } else {
+                nw.setPaintState(EdgeWidget.REGULAR);
+                for (GraphEdge e : edges) {
+                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
+                    ew.setState(EdgeWidget.REGULAR);
+                }
+            }
             return true;
         } else {
             return false;
         }
     }
 
-    @Override public boolean endVisit(MavenDependencyNode node) {
-        if (scene.isIncluded(node)) {
+    @Override public boolean endVisit(GraphNodeImplementation node) {
+        if (path.peek() == node) {
             path.pop();
         }
         return true;
     }
+
+    /**
+     * accept only nodes with path shorter as the one already visited
+     * @param node
+     * @return 
+     */
+    private boolean acceptDepth(GraphNodeImplementation node) {
+        Integer d = node2Path.get(node);
+        if(d == null) {
+            return true;
+        }
+        return path.size() < d;
+    }
+
 }
