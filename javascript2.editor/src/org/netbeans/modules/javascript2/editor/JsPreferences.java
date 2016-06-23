@@ -50,7 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 
 
-public class JSPreferences {
+public class JsPreferences {
     
     public enum JSVersion {
 
@@ -112,7 +112,7 @@ public class JSPreferences {
     }
     
     private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, JSPreferences.class, true);
+        return ProjectUtils.getPreferences(project, JsPreferences.class, true);
     }
 
     public static boolean isPreECMAScript6(Project project) {
