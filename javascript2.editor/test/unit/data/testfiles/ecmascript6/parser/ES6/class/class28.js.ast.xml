@@ -59,6 +59,7 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
         <PropertyNode name='speak' start='84' end='145'>
@@ -101,7 +102,9 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
+        <!-- ClassNode Decorators -->
       </ClassNode>
     </VarNode>
     <VarNode name='Dog' start='149' end='158'>
@@ -160,6 +163,7 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
         <PropertyNode name='speak' start='178' end='231'>
@@ -202,7 +206,9 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
+        <!-- ClassNode Decorators -->
       </ClassNode>
     </VarNode>
     <VarNode name='animal' start='240' end='268'>

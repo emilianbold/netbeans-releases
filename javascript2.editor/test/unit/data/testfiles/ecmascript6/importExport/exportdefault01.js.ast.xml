@@ -42,6 +42,7 @@
               <name>computed</name>
             </IdentNode>
           </CallNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='compute' start='117' end='130'>
           <!-- PropertyNode Key -->
@@ -60,6 +61,7 @@
               <!-- Block Statements -->
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
       <!-- CallNode Function -->
@@ -125,6 +127,7 @@
                 <name>computed</name>
               </IdentNode>
             </CallNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
           <PropertyNode name='compute' start='117' end='130'>
             <!-- PropertyNode Key -->
@@ -143,6 +146,7 @@
                 <!-- Block Statements -->
               </Block>
             </FunctionNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- CallNode Function -->

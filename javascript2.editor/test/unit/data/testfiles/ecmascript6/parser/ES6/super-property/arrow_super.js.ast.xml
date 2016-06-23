@@ -64,8 +64,10 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
+        <!-- ClassNode Decorators -->
       </ClassNode>
     </VarNode>
   </Block>

@@ -59,9 +59,8 @@ public class AstTest extends CslTestBase {
     public AstTest(String testName) {
         super(testName);
     }
-    
-    
-        public void testAdditive01() throws Exception {
+
+    public void testAdditive01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/additive/additive01.js");
     }
 
@@ -253,6 +252,34 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/expression/binary/logical06.js");
     }
 
+    public void testDecorators01() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators1.js");
+    }
+
+    public void testDecorators02() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators2.js");
+    }
+
+    public void testDecorators03() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators3.js");
+    }
+
+    public void testDecorators04() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators4.js");
+    }
+
+    public void testDecorators05() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators5.js");
+    }
+
+    public void testDecorators06() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators6.js");
+    }
+    
+    public void testDecorators07() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators7.js");
+    }
+    
     public void testComplexExpression01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/complex/complex01.js");
     }

@@ -455,6 +455,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   ">>="                          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
   ">>>="                         { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
   "=>"                           { return JsTokenId.OPERATOR_ARROW; }
+  "@"                            { return JsTokenId.OPERATOR_AT; }
 
   /* string literal */
   \"                             {

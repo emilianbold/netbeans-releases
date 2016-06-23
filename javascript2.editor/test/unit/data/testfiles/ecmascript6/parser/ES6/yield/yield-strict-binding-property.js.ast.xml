@@ -28,6 +28,7 @@
             <IdentNode start='27' end='28'>
               <name>x</name>
             </IdentNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- BinaryNode rhs -->

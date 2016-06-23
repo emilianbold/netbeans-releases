@@ -26,6 +26,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <NumberLiteralNode value='10' start='22' end='24'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='prop2' start='30' end='45'>
           <!-- PropertyNode Key -->
@@ -35,6 +36,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <StringLiteralNode value='string' start='39' end='45'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='method1' start='52' end='90'>
           <!-- PropertyNode Key -->
@@ -52,6 +54,7 @@
               <!-- Block Statements -->
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='config' start='96' end='163'>
           <!-- PropertyNode Key -->
@@ -71,6 +74,7 @@
               <!-- PropertyNode Value -->
               <ArrayLiteralNode start='129' end='131'>
               </ArrayLiteralNode>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
             <PropertyNode name='configProp2' start='141' end='157'>
               <!-- PropertyNode Key -->
@@ -80,8 +84,10 @@
               </IdentNode>
               <!-- PropertyNode Value -->
               <NumberLiteralNode value='20' start='155' end='157'/>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
           </ObjectNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </VarNode>
