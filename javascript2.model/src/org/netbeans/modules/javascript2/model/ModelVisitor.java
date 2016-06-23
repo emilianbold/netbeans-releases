@@ -2033,6 +2033,17 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     public boolean enterPropertyNode(PropertyNode propertyNode) {
         final Expression key = propertyNode.getKey();
         final Expression value = propertyNode.getValue();
+        List<Expression> decorators = propertyNode.getDecorators();
+        if (decorators != null && !decorators.isEmpty()) {
+            for (Expression decorator : decorators) {
+                if (decorator instanceof IdentNode) {
+                    // in such case, this is probaly a function
+                    addOccurence((IdentNode)decorator, false, true);
+                } else {
+                    decorator.accept(this);
+                }
+            }
+        }
         if ((key instanceof IdentNode || key instanceof LiteralNode)
                 && !(value instanceof ObjectNode
                 || value instanceof FunctionNode)
