@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +77,7 @@ import org.openide.util.Parameters;
  */
 public class JavadocAndSourceRootDetection {
 
-    private static final int JAVADOC_TRAVERSE_DEEPTH = 5;
+    private static final int JAVADOC_TRAVERSE_DEEPTH = 7;
     private static final int SRC_TRAVERSE_DEEPTH = 50;
 
     private static final Logger LOG = Logger.getLogger(JavadocAndSourceRootDetection.class.getName());
@@ -125,7 +126,11 @@ public class JavadocAndSourceRootDetection {
         if (!baseFolder.isFolder()) {
             throw new IllegalArgumentException ("baseFolder must be folder: " + baseFolder);    //NOI18N
         }
-        final Set<FileObject> result = new HashSet<>();
+        final Set<FileObject> result = new TreeSet<>((f1,f2) -> {
+            final String f1p = FileUtil.getRelativePath(baseFolder, f1);
+            final String f2p = FileUtil.getRelativePath(baseFolder, f2);
+            return f1p.compareTo(f2p);
+        });
         findAllJavadocRoots(
             baseFolder,
             result,
