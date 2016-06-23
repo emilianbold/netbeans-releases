@@ -50,7 +50,7 @@ import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 /**
  * {@link TransferFile Transfer file} implementation for {@link File local file}.
  */
-final class LocalTransferFile extends TransferFile {
+public final class LocalTransferFile extends TransferFile {
 
     private static final Logger LOGGER = Logger.getLogger(LocalTransferFile.class.getName());
 

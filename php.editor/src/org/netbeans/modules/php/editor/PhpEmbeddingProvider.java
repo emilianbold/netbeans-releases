@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -56,6 +57,9 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.GSFPHPParser;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Provides model for html code.
@@ -71,6 +75,16 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        if (!GSFPHPParser.PARSE_BIG_FILES) {
+            FileObject fileObject = snapshot.getSource().getFileObject();
+            long textSize = getTextSize(fileObject, snapshot);
+            if (textSize > GSFPHPParser.BIG_FILE_SIZE) {
+                LOGGER.log(Level.INFO, "Parsing of big file cancelled. Size: {0} Name: {1}",
+                        new Object[] {textSize, fileObject != null ? FileUtil.getFileDisplayName(fileObject) : "<no file>"});
+                return Collections.emptyList();
+            }
+        }
+
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<PHPTokenId> sequence = th.tokenSequence(PHPTokenId.language());
 
@@ -145,6 +159,13 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
     @Override
     public void cancel() {
         //do nothing
+    }
+
+    private long getTextSize(@NullAllowed FileObject fileObject, Snapshot snapshot) {
+        if (fileObject != null) {
+            return fileObject.getSize();
+        }
+        return snapshot.getText().length();
     }
 
     public static final class Factory extends TaskFactory {
