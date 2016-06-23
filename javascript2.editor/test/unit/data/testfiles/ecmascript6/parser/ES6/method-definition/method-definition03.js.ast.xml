@@ -30,6 +30,7 @@
                 <!-- Block Statements -->
               </Block>
             </FunctionNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
       </BinaryNode>

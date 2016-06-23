@@ -22,6 +22,7 @@
             <ObjectNode start='7' end='9'>
               <!-- ObjectNode Elements -->
             </ObjectNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- BinaryNode rhs -->
