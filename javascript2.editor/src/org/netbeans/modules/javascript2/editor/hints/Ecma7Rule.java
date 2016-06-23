@@ -57,7 +57,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JSPreferences;
+import org.netbeans.modules.javascript2.editor.JsPreferences;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -71,7 +71,7 @@ public class Ecma7Rule extends EcmaLevelRule {
 
     @Override
     void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
-        if (JSPreferences.isPreECMAScript7(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
+        if (JsPreferences.isPreECMAScript7(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
             Ecma7Visitor visitor = new Ecma7Visitor();
             visitor.process(context, hints);
         }
@@ -179,7 +179,7 @@ public class Ecma7Rule extends EcmaLevelRule {
 
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
-                JSPreferences.putECMAScriptVersion(p, JSPreferences.JSVersion.ECMA7);
+                JsPreferences.putECMAScriptVersion(p, JsPreferences.JSVersion.ECMA7);
             }
 
             refresh(fo);
