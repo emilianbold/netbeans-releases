@@ -268,7 +268,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     @Override
-    protected void shutdown(boolean clearCache) {
+    public void shutdown(boolean clearCache) {
         super.shutdown(clearCache); 
         states.clear();
     }
