@@ -146,7 +146,7 @@ public class HighlightingNameFormatter {
         //highlight the marked chars via  tags
         StringBuilder formattedTypeName = new StringBuilder();
         int i = 0;
-        while (i < name.toCharArray().length) {
+        while (i < name.length()) {
 
             boolean isMarked = bitSet.get(i);
 
