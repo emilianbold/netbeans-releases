@@ -24,6 +24,8 @@ METHOD     link(url: String): String       [PUBLIC]   JS Platform
 METHOD     localeCompare(compareString: S  [PUBLIC]   JS Platform
 METHOD     match(regexp: RegExp): Array    [PUBLIC]   JS Platform
 METHOD     normalize(): String             [PUBLIC]   JS Platform
+METHOD     padEnd(maxLength: Number): Str  [PUBLIC]   JS Platform
+METHOD     padStart(maxLength: Number): S  [PUBLIC]   JS Platform
 METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   JS Platform
 METHOD     repeat(count: Number): String   [PUBLIC]   JS Platform
 METHOD     replace(regexp, newSubStr): St  [PUBLIC]   JS Platform
