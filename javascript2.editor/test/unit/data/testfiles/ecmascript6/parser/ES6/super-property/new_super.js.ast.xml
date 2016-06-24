@@ -62,6 +62,7 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
         <PropertyNode name='foo' start='24' end='61'>
@@ -98,7 +99,9 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
+        <!-- ClassNode Decorators -->
       </ClassNode>
     </VarNode>
   </Block>

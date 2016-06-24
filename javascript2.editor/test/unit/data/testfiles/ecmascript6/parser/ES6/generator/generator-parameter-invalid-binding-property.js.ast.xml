@@ -55,6 +55,7 @@
                             <NumberLiteralNode value='3' start='43' end='44'/>
                           </UnaryNode>
                         </BinaryNode>
+                        <!-- PropertyNode Decorators -->
                       </PropertyNode>
                     </ObjectNode>
                     <!-- BinaryNode rhs -->

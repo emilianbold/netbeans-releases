@@ -107,4 +107,9 @@ public class JsTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/spread.js",
                 JsTokenId.javascriptLanguage());
     }
+    
+    public void testExponentiation() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/exponentiation.js",
+                JsTokenId.javascriptLanguage());
+    }
 }
