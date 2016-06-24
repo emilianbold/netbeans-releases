@@ -197,7 +197,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             public @Override void popupMenuCanceled(PopupMenuEvent e) {}
         });
         configListCombo.setRenderer(new ConfigCellRenderer());
-        configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
+        configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label")));
         configListCombo.setFocusable(false);
         configListCombo.setMaximumRowCount(20);
         ProjectConfigurationProvider<?> _pcp;
@@ -351,7 +351,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     public @Override String getName() {
-        return NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label");
+        return "";
     }
 
     public @Override void performAction() {
@@ -382,7 +382,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             if (context != null) {
                 Mnemonics.setLocalizedText(this, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.context.label"));
             } else {
-                Mnemonics.setLocalizedText(this, ActiveConfigAction.this.getName());
+                Mnemonics.setLocalizedText(this, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label"));
             }
         }
 
