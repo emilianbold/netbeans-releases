@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import com.oracle.js.parser.Token;
+import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
@@ -168,7 +170,12 @@ public class Ecma7Rule extends EcmaLevelRule {
 
         @Override
         public boolean enterBinaryNode(BinaryNode binaryNode) {
-            // FIXME exp
+            long token = binaryNode.getToken();
+            TokenType type = Token.descType(token);
+            if (TokenType.ASSIGN_EXP == type || TokenType.EXP == type) {
+                int position = Token.descPosition(token);
+                addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+            }
             return super.enterBinaryNode(binaryNode);
         }
     }
