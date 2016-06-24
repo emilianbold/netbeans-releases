@@ -38,6 +38,7 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </ExpressionStatement>

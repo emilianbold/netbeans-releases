@@ -29,12 +29,14 @@
               <!-- Block Statements -->
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='__proto__' start='24' end='40'>
           <!-- PropertyNode Key -->
           <StringLiteralNode value='__proto__' start='24' end='33'/>
           <!-- PropertyNode Value -->
           <NullLiteralNode start='36' end='40'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='__proto__' start='42' end='57'>
           <!-- PropertyNode Key -->
@@ -45,6 +47,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <NullLiteralNode start='53' end='57'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </ExpressionStatement>

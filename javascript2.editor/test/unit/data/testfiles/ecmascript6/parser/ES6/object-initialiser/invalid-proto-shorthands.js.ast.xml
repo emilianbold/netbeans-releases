@@ -19,6 +19,7 @@
           <IdentNode start='3' end='12'>
             <name>__proto__</name>
           </IdentNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
         <PropertyNode name='__proto__' start='14' end='23'>
           <!-- PropertyNode Key -->
@@ -30,6 +31,7 @@
           <IdentNode start='14' end='23'>
             <name>__proto__</name>
           </IdentNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </ExpressionStatement>

@@ -28,6 +28,7 @@
               <IdentNode start='6' end='7'>
                 <name>a</name>
               </IdentNode>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
           </ObjectNode>
         </ArrayLiteralNode>

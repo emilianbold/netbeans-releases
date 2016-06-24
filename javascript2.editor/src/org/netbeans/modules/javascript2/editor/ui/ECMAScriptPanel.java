@@ -45,7 +45,7 @@ import java.util.Objects;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.editor.JSPreferences;
+import org.netbeans.modules.javascript2.editor.JsPreferences;
 import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.ChangeSupport;
@@ -70,10 +70,10 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
     private void initData() {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (JSPreferences.JSVersion version: JSPreferences.getECMAScriptAvailableVersions()) {
+        for (JsPreferences.JSVersion version: JsPreferences.getECMAScriptAvailableVersions()) {
             model.addElement(new DisplayVersion(version));
         }
-        model.setSelectedItem(new DisplayVersion(JSPreferences.getECMAScriptVersion(project)));
+        model.setSelectedItem(new DisplayVersion(JsPreferences.getECMAScriptVersion(project)));
         cbVersion.setModel(model);
         allowJsonComments.setSelected(JsonPreferences.forProject(project).isCommentSupported());
         category.setStoreListener((e) -> save());
@@ -162,19 +162,19 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
     }
 
     public void save() {
-        JSPreferences.putECMAScriptVersion(project, ((DisplayVersion) cbVersion.getSelectedItem()).getVersion());
+        JsPreferences.putECMAScriptVersion(project, ((DisplayVersion) cbVersion.getSelectedItem()).getVersion());
         JsonPreferences.forProject(project).setCommentSupported(allowJsonComments.isSelected());
     }
 
     private static class DisplayVersion {
 
-        private final JSPreferences.JSVersion version;
+        private final JsPreferences.JSVersion version;
 
-        public DisplayVersion(JSPreferences.JSVersion version) {
+        public DisplayVersion(JsPreferences.JSVersion version) {
             this.version = version;
         }
 
-        public JSPreferences.JSVersion getVersion() {
+        public JsPreferences.JSVersion getVersion() {
             return version;
         }
 

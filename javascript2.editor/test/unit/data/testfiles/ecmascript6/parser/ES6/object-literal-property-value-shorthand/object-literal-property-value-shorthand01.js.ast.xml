@@ -26,6 +26,7 @@
             <IdentNode start='6' end='7'>
               <name>y</name>
             </IdentNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
           <PropertyNode name='z' start='9' end='10'>
             <!-- PropertyNode Key -->
@@ -37,6 +38,7 @@
             <IdentNode start='9' end='10'>
               <name>z</name>
             </IdentNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
       </BinaryNode>
