@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import com.oracle.js.parser.Token;
+import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.VarNode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -125,10 +129,27 @@ public class Ecma7Rule extends EcmaLevelRule {
         @Override
         public boolean enterFunctionNode(FunctionNode functionNode) {
             if (functionNode.isModule()) {
-                functionNode.visitImports(this);
                 functionNode.visitExports(this);
             }
             return super.enterFunctionNode(functionNode);
+        }
+
+        @Override
+        public boolean enterExportNode(ExportNode exportNode) {
+            // the complex export nodes are included in top level function body anyway
+            // so we do not want to to visit further
+            if (exportNode.isDefault()) {
+                return super.enterExportNode(exportNode);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean enterVarNode(VarNode varNode) {
+            if (varNode.isExport() || varNode.isDestructuring()) {
+                return false;
+            }
+            return super.enterVarNode(varNode);
         }
 
         @Override
@@ -149,7 +170,12 @@ public class Ecma7Rule extends EcmaLevelRule {
 
         @Override
         public boolean enterBinaryNode(BinaryNode binaryNode) {
-            // FIXME exp
+            long token = binaryNode.getToken();
+            TokenType type = Token.descType(token);
+            if (TokenType.ASSIGN_EXP == type || TokenType.EXP == type) {
+                int position = Token.descPosition(token);
+                addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+            }
             return super.enterBinaryNode(binaryNode);
         }
     }

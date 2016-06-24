@@ -252,38 +252,6 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/expression/binary/logical06.js");
     }
 
-    public void testDecorators01() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators1.js");
-    }
-
-    public void testDecorators02() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators2.js");
-    }
-
-    public void testDecorators03() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators3.js");
-    }
-
-    public void testDecorators04() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators4.js");
-    }
-
-    public void testDecorators05() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators5.js");
-    }
-
-    public void testDecorators06() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators6.js");
-    }
-    
-    public void testDecorators07() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators7.js");
-    }
-    
-    public void testDecorators08() throws Exception {
-        checkAstResult("testfiles/parser/decorators/decorators8.js");
-    }
-    
     public void testComplexExpression01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/complex/complex01.js");
     }
@@ -310,6 +278,46 @@ public class AstTest extends CslTestBase {
     
     public void testConditional06() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/conditional/conditional06.js");
+    }
+
+    public void testDecorators01() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators1.js");
+    }
+
+    public void testDecorators02() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators2.js");
+    }
+
+    public void testDecorators03() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators3.js");
+    }
+
+    public void testDecorators04() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators4.js");
+    }
+
+    public void testDecorators05() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators5.js");
+    }
+
+    public void testDecorators06() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators6.js");
+    }
+
+    public void testDecorators07() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators7.js");
+    }
+
+    public void testDecorators08() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators8.js");
+    }
+
+    public void testDecorators09() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators9.js");
+    }
+
+    public void testDecorators10() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators10.js");
     }
 
     public void testEquality01() throws Exception {

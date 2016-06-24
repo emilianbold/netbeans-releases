@@ -39,14 +39,14 @@
           <!-- PropertyNode Decorators -->
         </PropertyNode>
         <!-- ClassNode Elements -->
-        <PropertyNode name='test' start='25' end='53'>
+        <PropertyNode name='test' start='30' end='53'>
           <!-- PropertyNode Key -->
           <IdentNode start='30' end='34'>
             <name>test</name>
             <isPropertyName/>
           </IdentNode>
           <!-- PropertyNode Value -->
-          <FunctionNode name='test' kind='NORMAL' start='25' end='53'>
+          <FunctionNode name='test' kind='NORMAL' start='30' end='53'>
             <isMethod/>
             <isNamedFunctionExpression/>
             <!-- FunctionNode Parameters -->
@@ -61,14 +61,14 @@
             <name>log</name>
           </IdentNode>
         </PropertyNode>
-        <PropertyNode name='x' start='63' end='96'>
+        <PropertyNode name='x' start='72' end='96'>
           <!-- PropertyNode Key -->
           <IdentNode start='76' end='77'>
             <name>x</name>
             <isPropertyName/>
           </IdentNode>
           <!-- PropertyNode Getter -->
-          <FunctionNode name='get x' kind='GETTER' start='63' end='96'>
+          <FunctionNode name='get x' kind='GETTER' start='72' end='96'>
             <isMethod/>
             <isNamedFunctionExpression/>
             <!-- FunctionNode Parameters -->
