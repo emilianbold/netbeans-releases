@@ -66,7 +66,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -89,6 +88,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -230,12 +230,12 @@ public final class RefactoringUtils {
 
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
-        Project p = FileOwnerQuery.getOwner(file);
+        Project p = ProjectConvertors.getNonConvertorOwner(file);
         return OpenProjects.getDefault().isProjectOpen(p);
     }
 
     public static boolean isOnSourceClasspath(FileObject fo) {
-        Project p = FileOwnerQuery.getOwner(fo);
+        Project p = ProjectConvertors.getNonConvertorOwner(fo);
         if (p == null) {
             return false;
         }
@@ -399,7 +399,7 @@ public final class RefactoringUtils {
 
     private static FileObject resolveRelativeFile(ParserResult info, String name) {
         PhpSourcePath psp = null;
-        Project p = FileOwnerQuery.getOwner(info.getSnapshot().getSource().getFileObject());
+        Project p = ProjectConvertors.getNonConvertorOwner(info.getSnapshot().getSource().getFileObject());
 
         if (p != null) {
             psp = p.getLookup().lookup(PhpSourcePath.class);
