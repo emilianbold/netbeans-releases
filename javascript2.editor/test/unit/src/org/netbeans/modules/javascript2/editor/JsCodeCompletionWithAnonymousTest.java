@@ -56,9 +56,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hejl
  */
-public class JsCodeCompletionWithAnonymous extends JsCodeCompletionBase {
+public class JsCodeCompletionWithAnonymousTest extends JsCodeCompletionBase {
     
-    public JsCodeCompletionWithAnonymous(String testName) {
+    public JsCodeCompletionWithAnonymousTest(String testName) {
         super(testName);
     }
 

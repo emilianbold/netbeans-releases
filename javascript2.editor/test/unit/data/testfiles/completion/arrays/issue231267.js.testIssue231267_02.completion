@@ -19,4 +19,3 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     toTimeString(): String          [PUBLIC]   JS Platform
 METHOD     toUTCString(): String           [PUBLIC]   JS Platform
 METHOD     toUpperCase(): String           [PUBLIC]   JS Platform
-
