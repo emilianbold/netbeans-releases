@@ -45,46 +45,28 @@ package org.netbeans.modules.profiler.j2ee;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.lib.profiler.global.CommonConstants;
-import org.netbeans.lib.profiler.marker.MethodMarker;
-import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.utils.MiscUtils;
-import org.netbeans.lib.profiler.utils.formatting.Formattable;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.netbeans.spi.project.support.ant.*;
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
 import java.io.*;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.profiler.api.JavaPlatform;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.j2ee.impl.ServerJavaPlatform;
-import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
-import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.DialogDisplayer;
 
 
 /**
@@ -92,7 +74,7 @@ import org.openide.DialogDisplayer;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg=Target server does not support profiling.\nTo profile project running on current server, use Attach Profiler and select main project in the dropdown.\nTo change server for this project, right-click the project and select Properties | Run | Server.\n",
+    "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg=Target server does not support profiling.\nTo profile project running on current server, use Attach to Project or Attach to External Process.\nTo change server for this project, right-click the project and select Properties | Run | Server.\n",
     "J2EEProjectTypeProfiler_SkipButtonName=Skip",
     "J2EEProjectTypeProfiler_NoServerFoundMsg=<html><b>Failed to obtain server information.</b><br>Check if the server for the profiled project has been set correctly.</html>",
     "TTL_setServletExecutionUri=Provide Servlet Request Parameters"
@@ -107,31 +89,31 @@ import org.openide.DialogDisplayer;
 public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private static class JSPNameFormatter implements org.netbeans.lib.profiler.utils.formatting.MethodNameFormatter {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Formattable formatMethodName(final SourceCodeSelection sourceCodeSelection) {
-            return new Formattable() {
-                    public String toFormatted() {
-                        String name = WebProjectUtils.getJSPPath(sourceCodeSelection);
-
-                        return name;
-                    }
-                };
-        }
-
-        public Formattable formatMethodName(final String className, final String methodName, final String signature) {
-            return new Formattable() {
-                    public String toFormatted() {
-                        ClientUtils.SourceCodeSelection tmpSelection = new ClientUtils.SourceCodeSelection(className, methodName,
-                                                                                                           signature);
-                        String name = WebProjectUtils.getJSPPath(tmpSelection);
-
-                        return name;
-                    }
-                };
-        }
-    }
+//    private static class JSPNameFormatter implements org.netbeans.lib.profiler.utils.formatting.MethodNameFormatter {
+//        //~ Methods --------------------------------------------------------------------------------------------------------------
+//
+//        public Formattable formatMethodName(final SourceCodeSelection sourceCodeSelection) {
+//            return new Formattable() {
+//                    public String toFormatted() {
+//                        String name = WebProjectUtils.getJSPPath(sourceCodeSelection);
+//
+//                        return name;
+//                    }
+//                };
+//        }
+//
+//        public Formattable formatMethodName(final String className, final String methodName, final String signature) {
+//            return new Formattable() {
+//                    public String toFormatted() {
+//                        ClientUtils.SourceCodeSelection tmpSelection = new ClientUtils.SourceCodeSelection(className, methodName,
+//                                                                                                           signature);
+//                        String name = WebProjectUtils.getJSPPath(tmpSelection);
+//
+//                        return name;
+//                    }
+//                };
+//        }
+//    }
 
     private static class MyPropertyProvider implements PropertyProvider {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
@@ -212,51 +194,44 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         return ServerJavaPlatform.getPlatform(serverInstanceID);
     }
 
-    private static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
-        J2eePlatform j2eePlatform = getJ2eePlatform(serverInstanceID);
-
-        if (j2eePlatform == null) {
-            return null;
-        }
-
-        org.netbeans.api.java.platform.JavaPlatform jp = j2eePlatform.getJavaPlatform();
-        if (jp == null) {
-            return null;
-        }
-        return JavaPlatform.getJavaPlatformById(jp.getProperties().get("platform.ant.name")); // NOI18N
-    }
+//    private static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
+//        J2eePlatform j2eePlatform = getJ2eePlatform(serverInstanceID);
+//
+//        if (j2eePlatform == null) {
+//            return null;
+//        }
+//
+//        org.netbeans.api.java.platform.JavaPlatform jp = j2eePlatform.getJavaPlatform();
+//        if (jp == null) {
+//            return null;
+//        }
+//        return JavaPlatform.getJavaPlatformById(jp.getProperties().get("platform.ant.name")); // NOI18N
+//    }
 
     @Override
     public boolean checkProjectCanBeProfiled(FileObject profiledClassFile) {
-        // Unsupported project type
-        if (!isProfilingSupported()) {
-            return false;
-        }
+//        // Unsupported project type
+//        if (!isProfilingSupported()) {
+//            return false;
+//        }
 
         // Check if server supports profiling
         J2eePlatform j2eePlatform = getJ2eePlatform(getProject());
 
-        if (j2eePlatform == null) {
-            ProfilerDialogs.displayError(Bundle.J2EEProjectTypeProfiler_NoServerFoundMsg());
+//        if (j2eePlatform == null) {
+//            ProfilerDialogs.displayError(Bundle.J2EEProjectTypeProfiler_NoServerFoundMsg());
+//
+//            return false;
+//        }
 
-            return false;
-        }
-
-        if (!j2eePlatform.supportsProfiling()) {
+        if (j2eePlatform != null && !j2eePlatform.supportsProfiling()) {
             // Server doesn't support profiling
             ProfilerDialogs.displayWarning(Bundle.J2EEProjectTypeProfiler_ProfilingNotSupportedMsg());
 
             return false;
         }
-
-        // Web Project running on supported server
-        if (profiledClassFile == null) {
-            // Profile project
-            return true;
-        } else {
-            // Profile single
-            return isFileObjectSupported(profiledClassFile);
-        }
+        
+        return super.checkProjectCanBeProfiled(profiledClassFile);
     }
     
     @Override
@@ -266,110 +241,6 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
                   || (WebProjectUtils.isHttpServlet(file) && WebProjectUtils.isWebJavaSource(file, project)
                   && WebProjectUtils.isMappedServlet(file, project, true)) // mapped servlet from /src directory
                   || super.isFileObjectSupported(file)); // regular java file
-    }
-
-    @Override
-    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
-        Project project = getProject();
-        initAntPlatform(project, props);
-        // set forceRestart
-        props.put("profiler.j2ee.serverForceRestart", "true"); // NOI18N
-                                                                       // set timeout
-
-        props.put("profiler.j2ee.serverStartupTimeout", "300000"); // NOI18N
-                                                                           // set agent id
-
-        props.put("profiler.j2ee.agentID", "-Dnbprofiler.agentid=" + new Integer(generateAgentID()).toString()); // NOI18N // sets lastAgentID
-                                                                                                                         // redirect profiler.info.jvmargs to profiler.info.jvmargs.extra
-                                                                                                                         // NOTE: disabled as a workaround for Issue 102323, needs to be fixed in order to restore the OOME detection functionality!
-
-//        String jvmArgs = props.get("profiler.info.jvmargs"); // NOI18N
-//
-//        if ((jvmArgs != null) && (jvmArgs.trim().length() > 0)) {
-//            props.put("profiler.info.jvmargs.extra", jvmArgs);
-//        }
-//
-//        // fix agent startup arguments
-//        JavaPlatform javaPlatform = getJavaPlatformFromAntName(project, props);
-//        props.put("profiler.platform.java", javaPlatform.getPlatformId()); // set the used platform ant property
-//
-//        String javaVersion = javaPlatform.getPlatformJDKVersion();
-//        String localPlatform = IntegrationUtils.getLocalPlatform(javaPlatform.getPlatformArchitecture());
-//
-//        if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
-//            // JDK 1.5 used
-//            props.put("profiler.info.jvmargs.agent", // NOI18N
-//                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_50,
-//                                                                               false,
-//                                                                               ProfilerIDESettings.getInstance().getPortNo()));
-//        } else {
-//            // JDK 1.6 or later used
-//            props.put("profiler.info.jvmargs.agent", // NOI18N
-//                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_60,
-//                                                                               false,
-//                                                                               ProfilerIDESettings.getInstance().getPortNo()));
-//        }
-//
-//        generateAgentPort(); // sets lastAgentPort
-//
-//        String loadGenPath = LoadGenPanel.hasInstance() ? LoadGenPanel.instance().getSelectedScript() : null;
-//        if (loadGenPath != null) {
-//            props.put("profiler.loadgen.path", loadGenPath); // TODO factor out "profiler.loadgen.path" to a constant
-//        }
-//
-//        if (profiledClassFile == null) {
-//            return;
-//        }
-//
-//        if (WebProjectUtils.isJSP(profiledClassFile)) {
-//            props.put("client.urlPart", WebProjectUtils.getJSPFileContext(project, profiledClassFile, false)); // NOI18N
-//        } else if (WebProjectUtils.isHttpServlet(profiledClassFile)) {
-//            String servletAddress = null;
-//            Collection<Document> ddos = WebProjectUtils.getDeploymentDescriptorDocuments(project, true);
-//
-//            for (Document dd : ddos) {
-//                String mapping = WebProjectUtils.getServletMapping(profiledClassFile, dd);
-//
-//                if ((mapping != null) && (mapping.length() > 0)) {
-//                    servletAddress = mapping;
-//
-//                    break;
-//                }
-//            }
-//
-//            if (servletAddress != null) {
-//                ServletUriPanel uriPanel = new ServletUriPanel(servletAddress);
-//                DialogDescriptor desc = new DialogDescriptor(uriPanel, Bundle.TTL_setServletExecutionUri(),
-//                                                             true, // NOI18N
-//                                                             new Object[] {
-//                                                                 DialogDescriptor.OK_OPTION,
-//                                                                 new javax.swing.JButton(Bundle.J2EEProjectTypeProfiler_SkipButtonName()) {
-//                        public java.awt.Dimension getPreferredSize() {
-//                            return new java.awt.Dimension(super.getPreferredSize().width + 16, super.getPreferredSize().height);
-//                        }
-//                    }
-//                                                             }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
-//                                                             null);
-//                Object res = DialogDisplayer.getDefault().notify(desc);
-//
-//                if (res.equals(NotifyDescriptor.YES_OPTION)) {
-//                    servletAddress = uriPanel.getServletUri();
-//                }
-//
-//                props.put("client.urlPart", servletAddress); // NOI18N
-//            }
-//        }
-//        // FIXME - method should receive the JavaProfilerSource as the parameter
-//        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-//        if (src != null) {
-//            String profiledClass = src.getTopLevelClass().getQualifiedName();
-//            props.put("profile.class", profiledClass); //NOI18N
-//            // include it in javac.includes so that the compile-single picks it up
-//            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
-//                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
-//                    profiledClassFile);
-//            props.put("javac.includes", clazz); //NOI18N
-//        }
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------
@@ -415,21 +286,6 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         super.setupProjectSessionSettings(ss);
     }
 
-    @Override
-    public boolean supportsSettingsOverride() {
-        return true; // supported for J2EE project
-    }
-
-    @Override
-    public boolean supportsUnintegrate() {
-        return true;
-    }
-
-    @Override
-    public void unintegrateProfiler() {
-        ProjectUtilities.unintegrateProfiler(getProject());
-    }
-
     private static J2eePlatform getJ2eePlatform(final Project project) {
         String serverInstanceID = getServerInstanceID(project);
 
@@ -444,36 +300,19 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
     }
 
-    private static JavaPlatform getJavaPlatformFromAntName(Project project, Map<String, String> props) {
-        String javaPlatformAntName = props.get("profiler.info.javaPlatform"); // NOI18N
-
-        if (javaPlatformAntName.equals("default_platform")) {
-            return JavaPlatform.getDefaultPlatform();
-        }
-
-        return JavaPlatform.getJavaPlatformById(javaPlatformAntName);
-    }
+//    private static JavaPlatform getJavaPlatformFromAntName(Project project, Map<String, String> props) {
+//        String javaPlatformAntName = props.get("profiler.info.javaPlatform"); // NOI18N
+//
+//        if (javaPlatformAntName.equals("default_platform")) {
+//            return JavaPlatform.getDefaultPlatform();
+//        }
+//
+//        return JavaPlatform.getJavaPlatformById(javaPlatformAntName);
+//    }
 
     // --- Private methods -------------------------------------------------------------------------------------------------
     private static int generateAgentNumber() {
         return (int) (Math.random() * (float) Integer.MAX_VALUE);
-    }
-
-    private void initAntPlatform(Project project, Map<String, String> props) {
-        String javaPlatformAntName = props.get("profiler.info.javaPlatform"); // NOI18N
-
-        if (javaPlatformAntName == null) {
-            JavaPlatform platform = getProjectJavaPlatform();
-            String platformId;
-            
-            if (platform == null) {
-                platformId = JavaPlatform.getDefaultPlatform().getPlatformId(); // no Platform sepcified; use the IDE default JVM platform
-            } else {
-                platformId = platform.getPlatformId();
-            }
-
-            props.put("profiler.info.javaPlatform", platformId); // set the used platform ant property
-        }
     }
 
     private PropertyEvaluator getProjectProperties(final Project project) {
@@ -542,14 +381,14 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         return pe;
     }
 
-    private void addJspMarker(MethodMarker marker, Mark mark, Project project) {
-        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods(project, true);
-
-        if (jspmethods != null) {
-            for (int i = 0; i < jspmethods.length; i++) {
-                marker.addMethodMark(jspmethods[i].getClassName(), jspmethods[i].getMethodName(),
-                                     jspmethods[i].getMethodSignature(), mark);
-            }
-        }
-    }
+//    private void addJspMarker(MethodMarker marker, Mark mark, Project project) {
+//        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods(project, true);
+//
+//        if (jspmethods != null) {
+//            for (int i = 0; i < jspmethods.length; i++) {
+//                marker.addMethodMark(jspmethods[i].getClassName(), jspmethods[i].getMethodName(),
+//                                     jspmethods[i].getMethodSignature(), mark);
+//            }
+//        }
+//    }
 }

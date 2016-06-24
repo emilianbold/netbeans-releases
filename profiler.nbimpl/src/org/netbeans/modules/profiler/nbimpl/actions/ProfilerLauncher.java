@@ -64,6 +64,7 @@ import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
+import org.netbeans.modules.profiler.nbimpl.project.AntProjectSupport;
 import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
 import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
@@ -338,8 +339,6 @@ public class ProfilerLauncher {
             if (ss == null || ss.getJavaExecutable() == null) return false; // No platform defined; fail
             if (ps == null) return false; // Unsupported workflow (lazy settings not supported in this version)
             
-            final ProjectProfilingSupport pSupport = ProjectProfilingSupport.get(project);
-
             NetBeansProfiler.getDefaultNB().setProfiledProject(project, fo);
 
 //            // ** display select task panel
@@ -348,11 +347,13 @@ public class ProfilerLauncher {
 //                this.ps = ps;
 //                this.ps.store(props); // TODO: check whether necessary or not!
                 
-                setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
-                pSupport.configurePropertiesForProfiling(props, fo);
+            setupAgentEnv(platform, ss, ProfilerIDESettings.getInstance(), ps, project, props);
+            
+            AntProjectSupport antSupport = AntProjectSupport.get(project);
+            antSupport.configurePropertiesForProfiling(props, fo);
 
-                rerun = false;
-                configured = true;
+            rerun = false;
+            configured = true;
 //            }
             return configured;
         }
@@ -479,24 +480,21 @@ public class ProfilerLauncher {
         }
         
         final ProjectProfilingSupport pSupport = ProjectProfilingSupport.get(project);
-        if (pSupport == null) {
-            return;
-        }
-
         // *** java platform recheck
         JavaPlatform platform = pSupport.getProjectJavaPlatform();
-        final String javaFile = platform != null ? platform.getPlatformJavaFile() : null;
-        
-        if (javaFile == null) {
-            if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
-                // used platform defined for project
-                ProfilerDialogs.displayError(Bundle.InvalidPlatformProjectMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
-            } else {
-                // used platform defined in Options / Profiler
-                ProfilerDialogs.displayError(Bundle.InvalidPlatformProfilerMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
-            }
-            return;
-        }
+        String javaFile = platform != null ? platform.getPlatformJavaFile() : null;
+        if (javaFile == null) return;
+//        
+//        if (javaFile == null) {
+//            if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
+//                // used platform defined for project
+//                ProfilerDialogs.displayError(Bundle.InvalidPlatformProjectMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
+//            } else {
+//                // used platform defined in Options / Profiler
+//                ProfilerDialogs.displayError(Bundle.InvalidPlatformProfilerMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
+//            }
+//            return;
+//        }
         
         final SessionSettings ss = new SessionSettings();
         // *** session settings setup
