@@ -62,9 +62,9 @@ public class JsCodeCompletionArgumentsTest extends JsCodeCompletionBase {
         super(testName);
     }
     //TODO comented out, fails accidentally in http://deadlock.netbeans.org/job/web-main-tests, need to be corrected. 
-//    public void testFunctionObjectProperties01() throws Exception {
-//        checkCompletion("testfiles/completion/arguments/argumentsTestFile.js", "formatter.print(ArgumentsContext.testFunction.^name);", false);
-//    }
+    public void testFunctionObjectProperties01() throws Exception {
+        checkCompletion("testfiles/completion/arguments/argumentsTestFile.js", "formatter.print(ArgumentsContext.testFunction.^name);", false);
+    }
     
     public void testFunctionObjectProperties02() throws Exception {
         checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction.^length + \" arguments.\");", false);
