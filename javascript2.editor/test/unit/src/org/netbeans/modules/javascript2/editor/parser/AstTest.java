@@ -283,6 +283,10 @@ public class AstTest extends CslTestBase {
     public void testDecorators08() throws Exception {
         checkAstResult("testfiles/parser/decorators/decorators8.js");
     }
+
+    public void testDecorators09() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators9.js");
+    }
     
     public void testComplexExpression01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/complex/complex01.js");
