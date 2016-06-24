@@ -54,30 +54,51 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public class JsCodeCompletionWithComplex extends JsCodeCompletionBase {
+public class JsCodeCompletionPrototypeChain01Test extends JsCodeCompletionBase {
     
-    public JsCodeCompletionWithComplex(String testName) {
+    public JsCodeCompletionPrototypeChain01Test(String testName) {
         super(testName);
     }
-
-    public void testWith4a() throws Exception {
-        checkCompletion("testfiles/completion/withComplex/with4.js", "        ^ // test", false);
+    
+    public void testSimple01() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/issue214556.js", "formatter.print(\"a.say(): \" + a.^help());", false);
+    }
+    
+    public void testSimple02() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/issue214556.js", "formatter.print(\"b.say(): \" + b.^help());", false);
+    }
+    
+    public void testSimple03() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/issue214556.js", "formatter.print(\"c.say(): \" + c.^help());", false);
+    }
+    
+    public void testFromIndex() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/issue214556_test.js", "cc.^toString();", false);
+    }
+    
+    public void testDocument01() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getE^lementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocaleString().charCodeAt(10).toExponential();", false);
     }
 
-    public void testWith4b() throws Exception {
-        checkCompletion("testfiles/completion/withComplex/with4.js", "           ^ // test catch", false);
+    public void testDocument02() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getElementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocale^String().charCodeAt(10).toExponential();", false);
     }
 
-    public void testWith4c() throws Exception {
-        checkCompletion("testfiles/completion/withComplex/with4.js", "       ^ // in function", false);
+    public void testDocument03() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getElementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocaleString().charCodeAt(10).toEx^ponential();", false);
+    }
+    
+    public void testDocument04() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.createTextNode(\"null\").replaceWholeText(\"flajfda\").le^ngth;", false);
     }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/withComplex")));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/prototypeChain01")));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
