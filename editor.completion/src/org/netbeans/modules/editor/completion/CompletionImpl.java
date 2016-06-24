@@ -1152,7 +1152,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
         pleaseWaitTimer.stop();
         stopProfiling();
-        boolean hidePerformed = layout.hideCompletion();
+        boolean hidePerformed = layout.hideCompletion(completionOnly);
         if (!layout.isCompletionVisible()) {
             pleaseWaitDisplayed = false;
             JTextComponent jtc = getActiveComponent();
