@@ -170,13 +170,16 @@ public final class CompletionLayout {
         }
     }
     
-    public boolean hideCompletion() {
-        for (CompletionLayoutPopup popup : visiblePopups) {
+    public boolean hideCompletion(boolean completionOnly) {
+        for (Iterator<CompletionLayoutPopup> it = visiblePopups.iterator(); it.hasNext();) {
+            CompletionLayoutPopup popup = it.next();
             if (popup instanceof CompletionPopup && popup.isVisible()) {
                 popup.hide();
                 ((CompletionPopup)popup).completionScrollPane = null;
-                visiblePopups.remove(popup);
-                return true;                
+                it.remove();
+                if (!completionOnly) {
+                    return true;
+                }
             }            
         }
         return false;
