@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -121,7 +122,7 @@ public class Hacks {
                         DataObject d = l.lookup(DataObject.class);
                         if (d != null) {
                             FileObject f = d.getPrimaryFile();
-                            p = FileOwnerQuery.getOwner(f);
+                            p = ProjectConvertors.getNonConvertorOwner(f);
                             if (p != null) {
                                 projects.add(p);
                             }
