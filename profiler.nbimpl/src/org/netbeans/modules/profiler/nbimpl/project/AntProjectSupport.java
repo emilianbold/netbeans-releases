@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.api.project;
+package org.netbeans.modules.profiler.nbimpl.project;
 
-import org.netbeans.modules.profiler.spi.project.AntProjectSupportProvider;
+import java.util.Map;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -94,6 +94,16 @@ public final class AntProjectSupport {
      */
     public FileObject getProjectBuildScript(String buildFileName) {
         return provider.getProjectBuildScript(buildFileName);
+    }
+    
+    /**
+     * Configures profiling properties passed to the Ant environment.
+     * 
+     * @param props properties
+     * @param profiledClassFile profiled file or null for profiling the entire project
+     */
+    public void configurePropertiesForProfiling(Map props, FileObject profiledClassFile) {
+        provider.configurePropertiesForProfiling(props, profiledClassFile);
     }
     
     
