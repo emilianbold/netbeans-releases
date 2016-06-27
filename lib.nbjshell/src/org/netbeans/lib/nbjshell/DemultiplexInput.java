@@ -56,6 +56,7 @@ final class DemultiplexInput extends Thread {
     private final PipeInputStream command;
     private final PrintStream out;
     private final PrintStream err;
+    private boolean closed;
 
     public DemultiplexInput(InputStream input, PipeInputStream command, PrintStream out, PrintStream err) {
         super("output reader");
@@ -65,8 +66,12 @@ final class DemultiplexInput extends Thread {
         this.err = err;
     }
 
-    public void close() {
+    public synchronized void close() {
+        if (closed) {
+            return;
+        }
         try {
+            closed = true;
             delegate.close();
             command.close();
         } catch (IOException ex) {
