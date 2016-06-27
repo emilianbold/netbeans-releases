@@ -53,7 +53,6 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -90,9 +89,9 @@ public class CsmKeywordCompletionItem implements CompletionItem {
         this.firstCompletion = firstCompletion;
     }
 
-    public static CsmKeywordCompletionItem createItem(int substitutionOffset, int priority, CppTokenId item, boolean firstCompletion) {
+    public static CsmKeywordCompletionItem createItem(int substitutionOffset, int priority, String item, boolean firstCompletion) {
         String appendItemText = "";
-        String sortItemText = item.fixedText();
+        String sortItemText = item;
         String coloredItemText;
         if (CndUtils.isUnitTestMode()) {
             coloredItemText = sortItemText;
