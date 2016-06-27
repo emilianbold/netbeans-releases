@@ -884,7 +884,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             }
         }
         if (expression != null) {
+            addToPath(exportNode);
             expression.accept(this);
+            removeFromPathTheLast();
         }
         return false;
     }
@@ -1843,6 +1845,12 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
             modelBuilder.setCurrentObject(objectScope);
             objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+        } else if (previousVisited instanceof ExportNode && ((ExportNode)previousVisited).isDefault()) { 
+            List<Identifier> fqName = new ArrayList(1);
+            fqName.add(new Identifier("default", OffsetRange.NONE));
+            JsObjectImpl objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, true); //ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
+            modelBuilder.setCurrentObject(objectScope);
+            objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
         } else {
             List<Identifier> fqName = null;
             int pathSize = getPath().size();
@@ -2407,7 +2415,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     variable.setJsKind(JsElement.Kind.CONSTANT);
                 }
             }
-        } else if(init instanceof ObjectNode) {
+        } else if(init instanceof ObjectNode && !varNode.isExport()) {
             JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
@@ -2423,7 +2431,11 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     modelBuilder.setCurrentObject(variable);
                 }
             }
-        } //else if (rNode != null) {
+        } else if(init instanceof ObjectNode && varNode.isExport()) {
+            // we are expecting here that the var node is artificial and is created due to: export default {}
+            return false;
+        }
+//else if (rNode != null) {
 //            if (rNode.getReference() != null && rNode.getReference() instanceof FunctionNode) {
 //                FunctionNode fnode = (FunctionNode)rNode.getReference();
 //                if (!rNode.isAnonymous()) {
