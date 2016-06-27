@@ -801,6 +801,11 @@ public class OperatorGenerator implements CodeGenerator {
                 }
 
                 @Override
+                public boolean isVolatile() {
+                    return false;
+                }
+
+                @Override
                 public boolean isPackExpansion() {
                     return false;
                 }

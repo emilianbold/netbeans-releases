@@ -1386,7 +1386,8 @@ abstract public class CsmCompletionQuery {
                         varType.getPointerDepth(),
                         getReferenceValue(oldType),
                         varType.getArrayDepth(),
-                        oldType.isConst() | (varType.isPointer() & varType.isConst())
+                        oldType.isConst() | (varType.isPointer() & varType.isConst()),
+                        oldType.isVolatile() | (varType.isPointer() & varType.isVolatile())
                     );
                 }
             } else {
@@ -1428,7 +1429,8 @@ abstract public class CsmCompletionQuery {
                                             varType.getPointerDepth(),
                                             getReferenceValue(oldType),
                                             varType.getArrayDepth(),
-                                            oldType.isConst() | (varType.isPointer() & varType.isConst())
+                                            oldType.isConst() | (varType.isPointer() & varType.isConst()),
+                                            oldType.isVolatile() | (varType.isPointer() & varType.isVolatile())
                                     );
                                 } else {
                                     // Iterations on array
@@ -1437,7 +1439,8 @@ abstract public class CsmCompletionQuery {
                                             varType.getPointerDepth(),
                                             getReferenceValue(oldType),
                                             varType.getArrayDepth() - 1,
-                                            oldType.isConst() | (varType.isPointer() & varType.isConst())
+                                            oldType.isConst() | (varType.isPointer() & varType.isConst()),
+                                            oldType.isVolatile() | (varType.isPointer() & varType.isVolatile())
                                     );
                                 }
                             }
@@ -1923,7 +1926,7 @@ abstract public class CsmCompletionQuery {
                                 CsmClass cls = sup.getClass(getCsmFile(), item.getTokenOffset(0));
                                 if (cls != null) {
                                     derefOfThisOUT.set(true);
-                                    lastType = CsmCompletion.createType(cls, 1, 0, 0, false);
+                                    lastType = CsmCompletion.createType(cls, 1, 0, 0, false, false);
                                     staticOnly = false;
                                 }
                             } else { // 'something.this'
@@ -2113,7 +2116,7 @@ abstract public class CsmCompletionQuery {
                                                     if (last && CsmBaseUtilities.isValid(varCls)) {
                                                         res.add(varCls);
                                                     } else {
-                                                        CsmType varType = CsmCompletion.createType(varCls, 0, 0, 0, false);
+                                                        CsmType varType = CsmCompletion.createType(varCls, 0, 0, 0, false, false);
                                                         baseClasses = getBaseClasses(varType, classifier, nextKind, true);
                                                         if (baseClasses != null && !baseClasses.isEmpty()) {
                                                             res.add(varCls);
@@ -2201,10 +2204,10 @@ abstract public class CsmCompletionQuery {
                                 // first try to decrease depth of array, then handle pointer as arrays as well
                                 if (arrDepth > 0) {
                                     arrDepth--;
-                                    lastType = CsmCompletion.createType(cls, ptrDepth, ref, arrDepth, lastType.isConst());
+                                    lastType = CsmCompletion.createType(cls, ptrDepth, ref, arrDepth, lastType.isConst(), lastType.isVolatile());
                                 } else if (ptrDepth > 0) {
                                     ptrDepth--;
-                                    lastType = CsmCompletion.createType(cls, ptrDepth, ref, arrDepth, lastType.isConst());
+                                    lastType = CsmCompletion.createType(cls, ptrDepth, ref, arrDepth, lastType.isConst(), lastType.isVolatile());
                                 } else {
                                     CsmFunction opArray = CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.ARRAY);
                                     if (opArray != null) {
@@ -2214,7 +2217,7 @@ abstract public class CsmCompletionQuery {
                                 cont = true;
                             } else { // no index, increase array depth
                                 lastType = CsmCompletion.createType(cls, lastType.getPointerDepth(), getReferenceValue(lastType),
-                                        lastType.getArrayDepth() + 1, lastType.isConst());
+                                        lastType.getArrayDepth() + 1, lastType.isConst(), lastType.isVolatile());
                                 cont = true;
                             }
                         }
@@ -2274,7 +2277,7 @@ abstract public class CsmCompletionQuery {
                             CsmObject obj = CompletionSupport.createInstantiation(this, (CsmTemplate)cls, item, Collections.<CsmType>emptyList());
 
                             if (CsmKindUtilities.isClassifier(obj)) {
-                                typ = CsmCompletion.createType((CsmClassifier)obj, 0, 0, 0, false);
+                                typ = CsmCompletion.createType((CsmClassifier)obj, 0, 0, 0, false, false);
                             }
 
                             if (outsiderTypeAlias && CsmKindUtilities.isTypeAlias(obj)) {
@@ -2526,6 +2529,7 @@ abstract public class CsmCompletionQuery {
                                     getReferenceValue(lastNestedType), 
                                     lastNestedType.getArrayDepth(), 
                                     lastNestedType.isConst(), 
+                                    lastNestedType.isVolatile(), 
                                     lastNestedType.isTemplateBased()
                                 );
                             }
@@ -2562,7 +2566,7 @@ abstract public class CsmCompletionQuery {
                                     default:
                                 }
                             }
-                            lastType = CsmCompletion.createType(lastType.getClassifier(), ptrLevel, ref, lastType.getArrayDepth(), lastType.isConst());
+                            lastType = CsmCompletion.createType(lastType.getClassifier(), ptrLevel, ref, lastType.getArrayDepth(), lastType.isConst(), lastType.isVolatile());
                         }
                     }
                     break;
@@ -2750,7 +2754,7 @@ abstract public class CsmCompletionQuery {
                             cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0), genericNameExp);
                         }
                         if (cls != null) {
-                            lastType = CsmCompletion.createType(cls, 1, 0, 0, false);
+                            lastType = CsmCompletion.createType(cls, 1, 0, 0, false, false);
 //
 //                        List ctrList = (finder instanceof JCBaseFinder) ?
 //                            JCUtilities.getConstructors(cls, ((JCBaseFinder)finder).showDeprecated()) :
@@ -2984,7 +2988,7 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             }
                                             cls = tryInstantiateClassifier(cls, genericNameExp);
-                                            lastType = CsmCompletion.createType(cls, 0, 0, 0, false);
+                                            lastType = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                                             break;
                                         }
                                     }
@@ -3012,7 +3016,7 @@ abstract public class CsmCompletionQuery {
                                             cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0), genericNameExp);
                                         }
                                         if (cls != null) {
-                                            lastType = CsmCompletion.createType(cls, 0, 0, 0, false);
+                                            lastType = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                                         }
                                     } else {
                                         lastType = null;
@@ -3083,7 +3087,7 @@ abstract public class CsmCompletionQuery {
                         // LAMBDA_FUNCTION node is declaration, so only findType is supported
                         CsmFunctionDefinition lambda = getCsmLambda(item);
                         if (lambda != null) {
-                            lastType = new CsmCompletion.CompletionClosureType(lambda, 0, false);
+                            lastType = new CsmCompletion.CompletionClosureType(lambda, 0, false, false);
                         } else {
                             lastType = null; // no lambda found
                             cont = false;
@@ -3406,7 +3410,7 @@ abstract public class CsmCompletionQuery {
             // try base classes names like in this->Base::foo()
             // or like in a.Base::foo()
             CsmClassifier cls = resolveClassifier(var, varPos);
-            CsmType varType = CsmCompletion.createType(cls, 0, 0, 0, false);
+            CsmType varType = CsmCompletion.createType(cls, 0, 0, 0, false, false);
             return getBaseClasses(varType, clazz, nextKind, exactMatch);
         }
 
@@ -3499,7 +3503,7 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 if (cls != null) {
-                    out = CsmCompletion.createType(cls, 0, 0, 0, false);
+                    out = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                 }
             }
             return out;
@@ -3593,7 +3597,7 @@ abstract public class CsmCompletionQuery {
                 CsmClass clazz = (CsmClass) classifier;
                 List<CsmClassifier> classes = finder.findNestedClassifiers(contextElement, clazz, name, true, true, this.sort);
                 if (classes != null && !classes.isEmpty()) {
-                    return CsmCompletion.createType(classes.get(0), 0, 0, 0, false);
+                    return CsmCompletion.createType(classes.get(0), 0, 0, 0, false, false);
                 }
             }
             return null;

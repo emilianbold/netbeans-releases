@@ -366,6 +366,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
                             TypeFactory.getReferenceValue(returnType), 
                             returnType.getArrayDepth(), 
                             returnType.isConst(),
+                            returnType.isVolatile(),
                             returnType.getStartOffset(), 
                             parametersList.getEndOffset(),
                             parameters,

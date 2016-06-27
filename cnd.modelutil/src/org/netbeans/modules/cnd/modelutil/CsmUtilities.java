@@ -1463,6 +1463,7 @@ public class CsmUtilities {
         REFERENCE(CppTokenId.AMP),
         RVALUE_REFERENCE(CppTokenId.AMPAMP),
         CONST(CppTokenId.CONST),
+        VOLATILE(CppTokenId.VOLATILE),
         ARRAY(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
 
         private final CppTokenId tokens[];
@@ -1498,6 +1499,9 @@ public class CsmUtilities {
             }
             if (value.isConst()) {
                 qualificators.add(Qualificator.CONST);
+            }
+            if (value.isVolatile()) {
+                qualificators.add(Qualificator.VOLATILE);
             }
             return false;
         }

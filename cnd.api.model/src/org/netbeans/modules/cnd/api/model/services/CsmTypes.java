@@ -72,7 +72,7 @@ public final class CsmTypes {
     }
 
     public static CsmType createSimpleType(CsmClassifier cls, OffsetDescriptor offs) {
-        return getProvider().createType(cls, new TypeDescriptor(false, 0, 0, 0), offs);
+        return getProvider().createType(cls, new TypeDescriptor(false, false, 0, 0, 0), offs);
     }
 
     /**
@@ -81,7 +81,7 @@ public final class CsmTypes {
      * @return new type
      */
     public static CsmType createConstType(CsmType orig) {
-        return getProvider().createType(orig, new TypeDescriptor(true, TypeDescriptor.getReferenceType(orig), orig.getPointerDepth(), orig.getArrayDepth()));
+        return getProvider().createType(orig, new TypeDescriptor(true, false, TypeDescriptor.getReferenceType(orig), orig.getPointerDepth(), orig.getArrayDepth()));
     }
 
     /**
@@ -98,7 +98,7 @@ public final class CsmTypes {
         } else {
             arrDepth = Math.max(arrDepth - 1, 0);
         }
-        return getProvider().createType(type, new TypeDescriptor(type.isConst(), TypeDescriptor.getReferenceType(type), ptrDepth, arrDepth));
+        return getProvider().createType(type, new TypeDescriptor(type.isConst(), type.isVolatile(), TypeDescriptor.getReferenceType(type), ptrDepth, arrDepth));
     }
 
     public static final class SequenceDescriptor {
@@ -174,15 +174,17 @@ public final class CsmTypes {
 
 
         private final boolean _const;
+        private final boolean _volatile;
         private final int _reference;
         private final int _ptrDepth;
         private final int _arrDepth;
 
-        public TypeDescriptor(boolean _const, int _reference, int _ptrDepth, int _arrDepth) {
+        public TypeDescriptor(boolean _const, boolean _volatile, int _reference, int _ptrDepth, int _arrDepth) {
             this._const = _const;
             this._reference = _reference;
             this._ptrDepth = _ptrDepth;
             this._arrDepth = _arrDepth;
+            this._volatile = _volatile;
         }
 
         public int getArrDepth() {
@@ -191,6 +193,10 @@ public final class CsmTypes {
 
         public boolean isConst() {
             return _const;
+        }
+
+        public boolean isVolatile() {
+            return _volatile;
         }
 
         public int getPtrDepth() {

@@ -215,6 +215,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             List<Qualificator> remainingQualifiers = targetTypeQuals;
 
                             boolean newConst = remainingQualifiers.contains(Qualificator.CONST);
+                            boolean newVolatile = remainingQualifiers.contains(Qualificator.VOLATILE);
                             int newPtrDepth = howMany(remainingQualifiers, Qualificator.POINTER);
                             int newArrayDepth = howMany(remainingQualifiers, Qualificator.ARRAY);
                             int newReference = CsmTypes.TypeDescriptor.NON_REFERENCE;
@@ -225,6 +226,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             }
                             CsmTypes.TypeDescriptor td = new CsmTypes.TypeDescriptor(
                                     newConst,
+                                    newVolatile,
                                     newReference,
                                     newPtrDepth,
                                     newArrayDepth

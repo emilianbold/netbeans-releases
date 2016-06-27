@@ -54,8 +54,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -76,8 +74,8 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
         this.parameter = UIDCsmConverter.objectToUID(parameter);
     }
 
-    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
-        this.type = TypeFactory.createType(type.type, pointerDepth, reference, arrayDepth, _const);
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
+        this.type = TypeFactory.createType(type.type, pointerDepth, reference, arrayDepth, _const, _volatile);
         this.parameter = type.parameter;
     }
 
@@ -163,6 +161,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     @Override
     public boolean isConst() {
         return type.isConst();
+    }
+
+    @Override
+    public boolean isVolatile() {
+        return type.isVolatile();
     }
 
     @Override

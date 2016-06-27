@@ -597,15 +597,15 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
             return new Object[] { info.isWriteAccessInside(), variable.getName().toString(), typeRepresentation};
         } else {
             if (desc.isReference()) {
-                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), desc.isVolatile(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
                 CsmType createType = CsmTypes.createType(desc, typeDescriptor);
                 return new Object[] { true, variable.getName().toString(), createType.getCanonicalText().toString()};
             } else if (desc.getArrayDepth() > 0) {
-                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(false, TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(false, desc.isVolatile(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
                 CsmType createType = CsmTypes.createType(desc, typeDescriptor);
                 return new Object[] { false, variable.getName().toString(), createType.getCanonicalText().toString()};
             } else {
-                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), desc.isVolatile(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
                 CsmType createType = CsmTypes.createType(desc, typeDescriptor);
                 if (desc.isBuiltInBased(true) && !info.isWriteAccessInside()) {
                     return new Object[] { false, variable.getName().toString(), createType.getCanonicalText().toString()};

@@ -2665,6 +2665,12 @@ public class CppParserActionImpl implements CppParserActionEx {
                 SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
                 sdb.setConst();
             }
+        } else if (kind == CV_QUALIFIER__VOLATILE) {
+            CsmObjectBuilder builder = builderContext.top();
+            if (builder instanceof TypeBuilder) {
+                TypeBuilder tb = (TypeBuilder)builder;
+                tb.setVolatile();
+            }
         }
     }
 

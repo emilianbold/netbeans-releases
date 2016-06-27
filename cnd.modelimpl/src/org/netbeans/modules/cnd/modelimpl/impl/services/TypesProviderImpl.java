@@ -96,7 +96,8 @@ public class TypesProviderImpl implements TypesProvider {
                 newDescriptor.getPtrDepth(), 
                 CsmTypes.TypeDescriptor.getReferenceType(newDescriptor), 
                 newDescriptor.getArrDepth(), 
-                newDescriptor.isConst()
+                newDescriptor.isConst(),
+                newDescriptor.isVolatile()
         );
     }
     

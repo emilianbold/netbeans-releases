@@ -265,6 +265,7 @@ public class TypeFactory {
                 refence, 
                 arrayDepth, 
                 TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.initVolatileQualifiers(ast), 
                 TypeImpl.getStartOffset(ast), 
                 TypeImpl.getEndOffset(ast, inFunctionParameters)
             );
@@ -278,6 +279,7 @@ public class TypeFactory {
                 refence, 
                 arrayDepth, 
                 TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.initVolatileQualifiers(ast), 
                 TypeImpl.getStartOffset(ast), 
                 TypeImpl.getEndOffset(ast, inFunctionParameters)
             );
@@ -290,6 +292,7 @@ public class TypeFactory {
                 getReferenceValue(parent), 
                 parent.getArrayDepth(), 
                 parent.isConst(), 
+                parent.isVolatile(), 
                 parent.getStartOffset(), 
                 parent.getEndOffset()
             );
@@ -300,6 +303,7 @@ public class TypeFactory {
                 refence,
                 arrayDepth, 
                 TypeImpl.initIsConst(ast), 
+                TypeImpl.initIsVolatile(ast),
                 TypeImpl.getStartOffset(ast),
                 TypeFunPtrImpl.getEndOffset(ast)
             );
@@ -313,6 +317,7 @@ public class TypeFactory {
                 refence, 
                 arrayDepth, 
                 TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.initVolatileQualifiers(ast), 
                 TypeImpl.getStartOffset(ast), 
                 TypeImpl.getEndOffset(ast, inFunctionParameters)
             );
@@ -359,7 +364,7 @@ public class TypeFactory {
                     } else {
                         //Check for global type
                         if (tokFirstId.getType() ==  CPPTokenTypes.SCOPE) {
-                            type = NestedType.create(null, file, type.isPackExpansion(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                            type = NestedType.create(null, file, type.isPackExpansion(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.isVolatile(), type.getStartOffset(), type.getEndOffset());
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
@@ -448,6 +453,7 @@ public class TypeFactory {
 
         private int reference;
         private boolean _const;
+        private boolean _volatile;
         
         private boolean typedef = false;
         
@@ -480,6 +486,10 @@ public class TypeFactory {
 
         public void setConst() {
             this._const = true;
+        }
+
+        public void setVolatile() {
+            this._volatile = true;
         }
         
         public void incPointerDepth() {
@@ -521,13 +531,13 @@ public class TypeFactory {
                     if(first) {
                         first = false;
                         List<CharSequence> nameList = new ArrayList<>();
-                        type = new TypeImpl(getFile(), false, pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
+                        type = new TypeImpl(getFile(), false, pointerDepth, reference, arrayDepth, _const, _volatile, getStartOffset(), getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
                     } else {
                         List<CharSequence> nameList = new ArrayList<>();
-                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), false, type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), false, type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.isVolatile(), type.getStartOffset(), type.getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));                    
@@ -539,9 +549,9 @@ public class TypeFactory {
                 }
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder);
-                type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, _volatile, getFile(), getStartOffset(), getEndOffset());
             } else if (cls != null) {
-                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, _volatile, getFile(), getStartOffset(), getEndOffset());
                 type.setTypeOfTypedef();    
             }
             return TemplateUtils.checkTemplateType(type, scope);
@@ -557,30 +567,31 @@ public class TypeFactory {
         }
     }
     
-    public static CsmType createType(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+    public static CsmType createType(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
         if(type.getPointerDepth() == pointerDepth &&
             type.isReference() == (reference > 0) &&
             type.isRValueReference() == (reference == 2) &&
             type.getArrayDepth() == arrayDepth &&
-            type.isConst() == _const) {
+            type.isConst() == _const &&
+            type.isVolatile() == _volatile) {
             return type;
         }
         if(type instanceof NestedType) {
-            return new NestedType((NestedType)type, pointerDepth, reference, arrayDepth, _const);
+            return new NestedType((NestedType)type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }
         if(type instanceof TypeFunPtrImpl) {
-            return new TypeFunPtrImpl((TypeFunPtrImpl)type, pointerDepth, reference, arrayDepth, _const);
+            return new TypeFunPtrImpl((TypeFunPtrImpl)type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }
         if(type instanceof TemplateParameterTypeImpl) {
-            return new TemplateParameterTypeImpl((TemplateParameterTypeImpl)type, pointerDepth, reference, arrayDepth, _const);
+            return new TemplateParameterTypeImpl((TemplateParameterTypeImpl)type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }
         if(type instanceof TypeImpl) {
-            return new TypeImpl((TypeImpl)type, pointerDepth, reference, arrayDepth, _const);
+            return new TypeImpl((TypeImpl)type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }        
         if (type instanceof CsmTemplateParameterType) {
-            return new TemplateParameterTypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
+            return new TemplateParameterTypeWrapper(type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }        
-        return new TypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
+        return new TypeWrapper(type, pointerDepth, reference, arrayDepth, _const, _volatile);
     }
 
     public static CsmType createType(CsmType type, List<CsmSpecializationParameter> instantiationParams) {
@@ -600,7 +611,7 @@ public class TypeFactory {
     }
 
     public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
-        TypeImpl type = new TypeImpl(file, false, 0, 0, 0, false, startOffset, endOffset);
+        TypeImpl type = new TypeImpl(file, false, 0, 0, 0, false, false, startOffset, endOffset);
         type.setClassifierText(cls.getName());
         List<CharSequence> l = new ArrayList<>();
         l.add(cls.getName());
@@ -614,6 +625,7 @@ public class TypeFactory {
                                            int reference, 
                                            int arrayDepth, 
                                            boolean _const, 
+                                           boolean _volatile, 
                                            int startOffset, 
                                            int endOffset,
                                            Collection<CsmParameter> functionParams,
@@ -625,6 +637,7 @@ public class TypeFactory {
                 reference, 
                 arrayDepth,
                 _const, 
+                _volatile, 
                 startOffset, 
                 endOffset, 
                 functionParams,
@@ -639,13 +652,15 @@ public class TypeFactory {
         protected int reference;
         protected int arrayDepth;
         protected boolean _const;
+        protected boolean _volatile;
 
-        public TypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+        public TypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
             this.type = type;
             this.pointerDepth = pointerDepth;
             this.reference = reference;
             this.arrayDepth = arrayDepth;
             this._const = _const;
+            this._volatile = _volatile;
         }
 
         @Override
@@ -706,6 +721,11 @@ public class TypeFactory {
         @Override
         public boolean isConst() {
             return _const;
+        }
+
+        @Override
+        public boolean isVolatile() {
+            return _volatile;
         }
 
         @Override
@@ -775,13 +795,12 @@ public class TypeFactory {
         public String toString() {
             return "WRAPPED TYPE: " + format().toString();  // NOI18N
         }        
-        
     }
     
     private static class TemplateParameterTypeWrapper extends TypeWrapper implements CsmTemplateParameterType {
 
-        public TemplateParameterTypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
-            super(type, pointerDepth, reference, arrayDepth, _const);
+        public TemplateParameterTypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
+            super(type, pointerDepth, reference, arrayDepth, _const, _volatile);
         }
 
         @Override
