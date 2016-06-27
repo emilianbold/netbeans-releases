@@ -65,6 +65,18 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        RemoteFileObjectFactory.testSetReportUnexpected(false);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        RemoteFileObjectFactory.testSetReportUnexpected(true);
+    }
+
     @ForAllEnvironments
     public void testChangeDirectoryLink() throws Exception {
         String baseDir = null;
