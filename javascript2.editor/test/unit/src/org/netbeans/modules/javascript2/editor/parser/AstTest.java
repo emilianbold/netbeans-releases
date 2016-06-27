@@ -59,9 +59,8 @@ public class AstTest extends CslTestBase {
     public AstTest(String testName) {
         super(testName);
     }
-    
-    
-        public void testAdditive01() throws Exception {
+
+    public void testAdditive01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/additive/additive01.js");
     }
 
@@ -281,6 +280,46 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/expression/conditional/conditional06.js");
     }
 
+    public void testDecorators01() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators1.js");
+    }
+
+    public void testDecorators02() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators2.js");
+    }
+
+    public void testDecorators03() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators3.js");
+    }
+
+    public void testDecorators04() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators4.js");
+    }
+
+    public void testDecorators05() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators5.js");
+    }
+
+    public void testDecorators06() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators6.js");
+    }
+
+    public void testDecorators07() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators7.js");
+    }
+
+    public void testDecorators08() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators8.js");
+    }
+
+    public void testDecorators09() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators9.js");
+    }
+
+    public void testDecorators10() throws Exception {
+        checkAstResult("testfiles/parser/decorators/decorators10.js");
+    }
+
     public void testEquality01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/equality/equality01.js");
     }
@@ -295,6 +334,10 @@ public class AstTest extends CslTestBase {
 
     public void testEquality04() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/equality/equality04.js");
+    }
+
+    public void testExponentiation() throws Exception {
+        checkAstResult("testfiles/parser/exponentiation.js");
     }
 
     public void testGrouping01() throws Exception {
@@ -1463,6 +1506,10 @@ public class AstTest extends CslTestBase {
     
     public void testClass28() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/class/class28.js");
+    }
+    
+    public void testClassProperty1() throws Exception {
+        checkAstResult("testfiles/parser/classProperty1.js");
     }
 
     public void testDefaultParameterValue01() throws Exception {

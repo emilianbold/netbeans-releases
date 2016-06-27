@@ -2203,6 +2203,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue262469.js", "test(servi^ce);", true);
     }
     
+    public void testDecorators8_01() throws Exception {
+        checkOccurrences("testfiles/parser/decorators/decorators8.js", "function annot^ation(target) {", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

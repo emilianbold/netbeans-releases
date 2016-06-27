@@ -18,6 +18,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <StringLiteralNode value='Error' start='18' end='23'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </ThrowNode>

@@ -1359,6 +1359,9 @@ public class ModelUtils {
                 }
             } 
         } 
+        if (result.isEmpty()) {
+            result.add("Object"); //NOI18N
+        }
         return result;
     }
     

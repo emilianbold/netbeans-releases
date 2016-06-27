@@ -38,6 +38,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <NumberLiteralNode value='1' start='33' end='34'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </VarNode>

@@ -615,6 +615,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/markoccurences/blockscope/arrayLiteral01.js");
     }
     
+    public void testDeclorators8() throws Exception {
+        checkSemantic("testfiles/parser/decorators/decorators8.js");
+    }
+
     public void testIssue262590() throws Exception {
         checkSemantic("testfiles/ecmascript6/importExport/issue262590.js");
     }

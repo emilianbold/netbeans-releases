@@ -23,6 +23,7 @@
               <IdentNode start='6' end='7'>
                 <name>x</name>
               </IdentNode>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
             <PropertyNode name='y' start='9' end='10'>
               <!-- PropertyNode Key -->
@@ -34,6 +35,7 @@
               <IdentNode start='9' end='10'>
                 <name>y</name>
               </IdentNode>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
           </ObjectNode>
           <JoinPredecessorExpression start='0' end='0'>
