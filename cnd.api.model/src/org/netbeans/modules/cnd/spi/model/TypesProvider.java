@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.spi.model;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 
 /**
  * SPI for types provider

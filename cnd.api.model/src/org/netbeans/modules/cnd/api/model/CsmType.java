@@ -90,6 +90,8 @@ public interface CsmType extends CsmOffsetable {
     
     boolean isConst();
     
+    boolean isVolatile();
+
     /* if this type is a pack expansion (pattern...) */
     boolean isPackExpansion();
     

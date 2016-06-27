@@ -48,7 +48,7 @@ import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.STRUCT;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.TYPEDEF;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.UNION;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
 import org.netbeans.spi.jumpto.support.NameMatcher;

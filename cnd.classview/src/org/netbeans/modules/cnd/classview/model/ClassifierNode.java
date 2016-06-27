@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.openide.nodes.Children;
 
 /**

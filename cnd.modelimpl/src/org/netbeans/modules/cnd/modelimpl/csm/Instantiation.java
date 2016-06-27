@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -1745,7 +1744,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                             pointerDepth, 
                             TypeFactory.getReferenceValue(origType), 
                             arrayDepth,
-                            origType.isConst()
+                            origType.isConst(),
+                            origType.isVolatile()
                     );             
                     
                     CsmTemplateParameter p = paramType.getParameter();
@@ -1963,6 +1963,15 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 return originalType.isConst() || instantiatedType.isConst();
             } else {
                 return originalType.isConst();
+            }
+        }
+        
+        @Override
+        public boolean isVolatile() {
+            if(instantiationHappened()) {
+                return originalType.isVolatile() || instantiatedType.isVolatile();
+            } else {
+                return originalType.isVolatile();
             }
         }
 
@@ -2228,7 +2237,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
             return true;
         }
-        
+
         protected static class CachedResolved {
             
             public final CsmClassifier classifier;

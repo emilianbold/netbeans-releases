@@ -55,7 +55,7 @@ STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_
             MEMBERS:
                 TYPEDEF base_type  [28:13/890-28:69/946] TYPE: RefCountedMTAdj::ThreadingModel TEXT=ThreadingModel<RefCountedMT<P>,MX>  [28:21/898-28:58/935] SCOPE: RefCountedMT 
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
-                TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *RefCountedMTAdj::RefCountedMT::CountType TEXT=CountType*  [30:21/1032-30:55/1066] SCOPE: RefCountedMT 
+                TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *RefCountedMTAdj::RefCountedMT::CountType TEXT=volatile CountType*  [30:21/1032-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE foo<class,class,class<class> >(T,C)
     UNIQUE NAME f:foo<class,class,class<class> >(T,C)
@@ -162,7 +162,7 @@ STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_
             MEMBERS:
                 TYPEDEF base_type  [28:13/890-28:69/946] TYPE: RefCountedMTAdj::ThreadingModel TEXT=ThreadingModel<RefCountedMT<P>,MX>  [28:21/898-28:58/935] SCOPE: RefCountedMT 
                 TYPEDEF CountType  [29:13/959-29:65/1011] TYPE: $unresolved$::base_type::IntType TEXT=base_type::IntType  [29:30/976-29:48/994] SCOPE: RefCountedMT 
-                TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *RefCountedMTAdj::RefCountedMT::CountType TEXT=CountType*  [30:21/1032-30:55/1066] SCOPE: RefCountedMT 
+                TYPEDEF CountPtrType  [30:13/1024-30:68/1079] TYPE: *RefCountedMTAdj::RefCountedMT::CountType TEXT=volatile CountType*  [30:21/1032-30:55/1066] SCOPE: RefCountedMT 
 FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE foo<class,class,class<class> >(T,C)
     UNIQUE NAME f:foo<class,class,class<class> >(T,C)
