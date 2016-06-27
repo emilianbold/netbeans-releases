@@ -717,6 +717,14 @@ public class BracketCompletion {
             }
             return;
         }
+        if (chr == '\n') {
+            if (cppTS.movePrevious()) {
+                if (cppTS.token().id() == CppTokenId.LINE_COMMENT) {
+                    // typed char belongs to line comment
+                    return;
+                }
+            }
+        }
         if (isCompletablePosition(context.getDocument(), context.getOffset())) {
             context.setText("" + insChr + matching(insChr) , 1);  // NOI18N
         }
