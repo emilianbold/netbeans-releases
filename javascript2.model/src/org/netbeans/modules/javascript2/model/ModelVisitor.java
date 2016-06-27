@@ -1846,8 +1846,10 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             modelBuilder.setCurrentObject(objectScope);
             objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
         } else if (previousVisited instanceof ExportNode && ((ExportNode)previousVisited).isDefault()) { 
+            // we are handling case: export default {}
+            // the node should be visible in navigator
             List<Identifier> fqName = new ArrayList(1);
-            fqName.add(new Identifier("default", OffsetRange.NONE));
+            fqName.add(new Identifier("default", OffsetRange.NONE)); // NOI18N
             JsObjectImpl objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, true); //ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
             modelBuilder.setCurrentObject(objectScope);
             objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
