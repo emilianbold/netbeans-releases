@@ -98,7 +98,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DeduceTemplateTypeStrategy;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DefaultDeduceTemplateTypeStrategy;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;

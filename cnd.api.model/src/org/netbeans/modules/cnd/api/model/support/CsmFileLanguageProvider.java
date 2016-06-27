@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.api.model.support;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
 

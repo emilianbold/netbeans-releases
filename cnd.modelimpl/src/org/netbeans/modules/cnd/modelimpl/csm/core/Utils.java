@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
+import org.netbeans.modules.cnd.api.model.support.CsmFileLanguageProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -152,7 +152,7 @@ public class Utils {
     public static String getLanguage(CsmFile.FileType fileType, String path) {
         String lang;
         if (!LangProviders.langProviders.isEmpty()) {
-            for (org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider provider : LangProviders.langProviders) {
+            for (org.netbeans.modules.cnd.api.model.support.CsmFileLanguageProvider provider : LangProviders.langProviders) {
                 lang = provider.getLanguage(fileType, path);
                 if (lang != null) {
                     return lang;

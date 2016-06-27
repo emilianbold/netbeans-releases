@@ -153,7 +153,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.cnd.api.model</package>
                 <package>org.netbeans.modules.cnd.api.model.deep</package>
-                <package>org.netbeans.modules.cnd.api.model.services</package>
+                <package>org.netbeans.modules.cnd.api.model.support</package>
                 <package>org.netbeans.modules.cnd.api.model.util</package>
                 <package>org.netbeans.modules.cnd.spi.model</package>
             </friend-packages>
