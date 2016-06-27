@@ -585,8 +585,8 @@ public final class ProcessUtils {
             }, "o"); // NOI18N
             if (input != null && input.length > 0) {
                 process.getOutputStream().write(input);
-                process.getOutputStream().close();
             }
+            process.getOutputStream().close();
             result = new ExitStatus(process.waitFor(), output.get(), (error == null) ? null : error.get());
         } catch (InterruptedException ex) {
             result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n"))); //NOI18N
@@ -651,8 +651,8 @@ public final class ProcessUtils {
             }, "o"); // NOI18N
             if (input != null && input.length > 0) {
                 process.getOutputStream().write(input);
-                process.getOutputStream().close();
             }
+            process.getOutputStream().close();
             result = new ExitStatus(process.waitFor(), output.get(), (error == null) ? null : error.get());
         } catch (InterruptedException ex) {
             result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n")));
