@@ -171,7 +171,6 @@ public final class NodeJsPathPanel extends JPanel {
         nodeInstallLabel.setVisible(enabled);
         sourcesLabel.setEnabled(enabled);
         sourcesTextField.setEnabled(enabled);
-        versionInfoLabel.setEnabled(enabled);
         selectSourcesButton.setEnabled(enabled);
         downloadSourcesButton.setEnabled(false);
         if (enabled) {
@@ -355,7 +354,6 @@ public final class NodeJsPathPanel extends JPanel {
         sourcesTextField = new JTextField();
         downloadSourcesButton = new JButton();
         selectSourcesButton = new JButton();
-        versionInfoLabel = new JLabel();
 
         Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeLabel.text")); // NOI18N
 
@@ -405,8 +403,6 @@ public final class NodeJsPathPanel extends JPanel {
             }
         });
 
-        Mnemonics.setLocalizedText(versionInfoLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.versionInfoLabel.text")); // NOI18N
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -426,9 +422,8 @@ public final class NodeJsPathPanel extends JPanel {
                         .addComponent(nodeHintLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(nodeInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(versionInfoLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addComponent(sourcesTextField, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(downloadSourcesButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -450,9 +445,7 @@ public final class NodeJsPathPanel extends JPanel {
                     .addComponent(sourcesLabel)
                     .addComponent(downloadSourcesButton)
                     .addComponent(selectSourcesButton)
-                    .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(versionInfoLabel))
+                    .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -519,7 +512,6 @@ public final class NodeJsPathPanel extends JPanel {
     private JButton selectSourcesButton;
     private JLabel sourcesLabel;
     private JTextField sourcesTextField;
-    private JLabel versionInfoLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

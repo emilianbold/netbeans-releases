@@ -301,6 +301,7 @@ public class AstXmlVisitor extends NodeVisitor {
         processWithComment(node.getClassHeritage(), "ClassNode Heritage");
         processWithComment(node.getConstructor(), "ClassNode Constructor");
         processWithComment(node.getClassElements(), "ClassNode Elements");
+        processWithComment(node.getDecorators(), "ClassNode Decorators");
         createCloseTag(node);
         return false;
     }
@@ -339,6 +340,7 @@ public class AstXmlVisitor extends NodeVisitor {
         processAttribute(node.isNamedFunctionExpression(), "isNamedFunctionExpression");
         processAttribute(node.isSubclassConstructor(), "isSubclassConstructor");
         processAttribute(node.isVarArg(), "isVarArg");
+        processAttribute(node.isAsync(), "isAsync");
         processAttribute(node);
 
         if (node.isModule()) {
@@ -423,6 +425,7 @@ public class AstXmlVisitor extends NodeVisitor {
         processWithComment(node.getValue(), "PropertyNode Value");
         processWithComment(node.getGetter(), "PropertyNode Getter");
         processWithComment(node.getSetter(), "PropertyNode Setter");
+        processWithComment(node.getDecorators(), "PropertyNode Decorators");
         createCloseTag(node);
         return false;
     }

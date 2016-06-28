@@ -9,7 +9,7 @@ var |>GLOBAL:o<| = {
     |>METHOD:set<| |>FIELD:property<|(value) {
         |>GLOBAL:property<| = value;  // global property
     },
-    |>METHOD:* generator<|() {}
+    * |>METHOD:generator<|() {}
 };   
 
 |>GLOBAL:console<|.log(|>GLOBAL:o<|.|>FIELD:property<|);

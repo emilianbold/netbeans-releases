@@ -2043,6 +2043,17 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     public boolean enterPropertyNode(PropertyNode propertyNode) {
         final Expression key = propertyNode.getKey();
         final Expression value = propertyNode.getValue();
+        List<Expression> decorators = propertyNode.getDecorators();
+        if (decorators != null && !decorators.isEmpty()) {
+            for (Expression decorator : decorators) {
+                if (decorator instanceof IdentNode) {
+                    // in such case, this is probaly a function
+                    addOccurence((IdentNode)decorator, false, true);
+                } else {
+                    decorator.accept(this);
+                }
+            }
+        }
         if ((key instanceof IdentNode || key instanceof LiteralNode)
                 && !(value instanceof ObjectNode
                 || value instanceof FunctionNode)
@@ -2436,54 +2447,21 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         } else if(init instanceof ObjectNode && varNode.isExport()) {
             // we are expecting here that the var node is artificial and is created due to: export default {}
             return false;
+        } else if (init instanceof ClassNode) {
+            ClassNode cNode = (ClassNode) init;
+            // process decorators
+            List<Expression> decorators = cNode.getDecorators();
+            if (decorators != null && !decorators.isEmpty()) {
+                for (Expression decorator : decorators) {
+                    if (decorator instanceof IdentNode) {
+                        // in such case, this is probaly a function
+                        addOccurence((IdentNode)decorator, false, true);
+                    } else {
+                        decorator.accept(this);
+                    }
+                }
+            }
         }
-//else if (rNode != null) {
-//            if (rNode.getReference() != null && rNode.getReference() instanceof FunctionNode) {
-//                FunctionNode fnode = (FunctionNode)rNode.getReference();
-//                if (!rNode.isAnonymous()) {
-//                    // we expect case like: var prom = function name () {}
-//                    JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
-//                    JsObject origFunction = function.getProperty(rNode.getIdent().getName());
-//                    Identifier name = new Identifier(varNode.getName().getName(), getOffsetRange(varNode.getName()));
-//                    if (name != null && origFunction != null && origFunction instanceof JsFunction
-//                            && !name.getOffsetRange().equals(origFunction.getDeclarationName().getOffsetRange())) {
-//                        JsObjectImpl oldVariable = (JsObjectImpl)function.getProperty(name.getName());
-//                        JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
-//                                oldVariable != null ? oldVariable.getModifiers() : null );
-//                        function.addProperty(variable.getName() + "Ref", variable);
-//                        if (oldVariable != null) {
-//                            for(Occurrence occurrence : oldVariable.getOccurrences()) {
-//                               variable.addOccurrence(occurrence.getOffsetRange());
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    if (init instanceof BinaryNode) {
-//                        init.accept(this);
-//                        JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
-//                        JsObject oldVariable = function.getProperty(varNode.getName().getName());
-//                        if ((oldVariable != null && !(oldVariable instanceof JsFunctionReference)) || oldVariable == null) {
-//                            Node lhs = ((BinaryNode)init).lhs();
-//                            if (lhs instanceof IdentNode)  {
-//                                JsObject previousRef = function.getProperty(((IdentNode)lhs).getName());
-//                                if (previousRef != null && (previousRef instanceof JsFunction || previousRef instanceof JsFunctionReference)) {
-//                                    Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
-//                                    JsFunction origFunction = previousRef instanceof JsFunctionReference ? ((JsFunctionReference)previousRef).getOriginal() : (JsFunction)previousRef;
-//                                    JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
-//                                            oldVariable != null ? oldVariable.getModifiers() : null );
-//                                    function.addProperty(variable.getName(), variable);
-//                                    if (oldVariable != null) {
-//                                        for(Occurrence occurrence : oldVariable.getOccurrences()) {
-//                                           variable.addOccurrence(occurrence.getOffsetRange());
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
         return super.enterVarNode(varNode);
     }
 

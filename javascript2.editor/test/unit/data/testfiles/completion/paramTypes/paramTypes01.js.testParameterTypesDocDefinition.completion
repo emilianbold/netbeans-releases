@@ -17,6 +17,7 @@ METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
 METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
 METHOD     endsWith(searchString: String)  [PUBLIC]   JS Platform
+METHOD     entries(obj: Object): Array     [PUBLIC,   JS Platform
 METHOD     fixed(): String                 [PUBLIC,   JS Platform
 METHOD     fontcolor(color: String): Stri  [PUBLIC,   JS Platform
 METHOD     fontsize(size: Number): Number  [PUBLIC,   JS Platform
@@ -24,6 +25,7 @@ METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     fromCharCode(num1): String      [PUBLIC,   JS Platform
 METHOD     fromCodePoint(num1): String     [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
 METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
@@ -42,6 +44,8 @@ METHOD     link(url: String): String       [PUBLIC]   JS Platform
 METHOD     localeCompare(compareString: S  [PUBLIC]   JS Platform
 METHOD     match(regexp: RegExp): Array    [PUBLIC]   JS Platform
 METHOD     normalize(): String             [PUBLIC]   JS Platform
+METHOD     padEnd(maxLength: Number): Str  [PUBLIC]   JS Platform
+METHOD     padStart(maxLength: Number): S  [PUBLIC]   JS Platform
 METHOD     preventExtensions(obj: Object)  [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   JS Platform
 METHOD     raw(callSite: Object): String   [PUBLIC,   JS Platform
@@ -66,6 +70,7 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     toUpperCase(): String           [PUBLIC]   JS Platform
 METHOD     trim(): String                  [PUBLIC]   JS Platform
 METHOD     valueOf(): String               [PUBLIC]   JS Platform
+METHOD     values(obj: Object): Array      [PUBLIC,   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      length: Number                  [PUBLIC,   JS Platform
 FIELD      name: String                    [PUBLIC,   JS Platform
