@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -73,10 +74,16 @@ public class ConstantRedeclarationHintError extends HintErrorRule {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         FileScope fileScope = context.fileScope;
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope), hints, fileObject);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope), hints, fileObject);
         }
     }
@@ -88,6 +95,9 @@ public class ConstantRedeclarationHintError extends HintErrorRule {
     private void checkTypeScopes(Collection<? extends TypeScope> typeScopes, final List<Hint> hints, FileObject fileObject) {
         for (TypeScope typeScope : typeScopes) {
             for (ClassConstantElement constant : getRedeclaredConstants(typeScope)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.add(new Hint(this, Bundle.ConstantRedeclarationCustom(constant.getName()), fileObject, constant.getNameRange(), null, 500));
             }
         }

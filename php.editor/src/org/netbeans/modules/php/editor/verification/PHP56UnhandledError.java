@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NavUtils;
@@ -83,8 +84,14 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null && appliesTo(fileObject)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             PHP56UnhandledError.CheckVisitor checkVisitor = new CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -111,6 +118,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(FormalParameter node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.isVariadic()) {
                 createError(node);
             }
@@ -122,6 +132,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(InfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (OperatorType.POW.equals(node.getOperator())) {
                 createError(node);
             } else {
@@ -131,6 +144,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (Type.POW_EQUAL.equals(node.getOperator())) {
                 createError(node);
             } else {
@@ -140,6 +156,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ConstantDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             for (Expression expression : node.getInitializers()) {
                 if (isStaticScalarExpression(expression)
                         || expression instanceof ArrayCreation
@@ -153,11 +172,17 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(Variadic node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(UseStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (UseStatement.Type.CONST.equals(node.getType()) || UseStatement.Type.FUNCTION.equals(node.getType())) {
                 createError(node);
             }
@@ -165,6 +190,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ExpressionArrayAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Expression expression = node.getExpression();
             if (expression instanceof Identifier) {
                 Identifier identifier = (Identifier) expression;

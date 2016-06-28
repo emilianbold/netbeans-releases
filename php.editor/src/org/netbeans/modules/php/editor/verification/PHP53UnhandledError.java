@@ -45,6 +45,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -84,8 +85,14 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null && appliesTo(fileObject)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -109,6 +116,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ClassDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parent.push(node);
             super.visit(node);
             parent.pop();
@@ -116,6 +126,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(InterfaceDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parent.push(node);
             super.visit(node);
             parent.pop();
@@ -123,6 +136,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(NamespaceDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             final NamespaceName name = node.getName();
             if (name != null) {
                 createError(node.getStartOffset(), name.getEndOffset());
@@ -134,18 +150,27 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
 
         @Override
         public void visit(GotoLabel node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
 
         @Override
         public void visit(ConstantDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!parent.isEmpty()
                     && parent.peek() instanceof TypeDeclaration) {
                 return;
@@ -156,18 +181,27 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(GotoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
 
         @Override
         public void visit(UseStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getDispatcher() instanceof Variable) {
                 createError(node.getDispatcher());
             }
@@ -176,6 +210,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticFieldAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getDispatcher() instanceof Variable) {
                 createError(node.getDispatcher());
             }
@@ -184,6 +221,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticConstantAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getDispatcher() instanceof Variable) {
                 createError(node.getDispatcher());
             }
@@ -192,6 +232,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(NamespaceName node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             QualifiedName qname = QualifiedName.create(node);
             if (qname.getKind() != QualifiedNameKind.UNQUALIFIED) {
                 createError(node);
@@ -201,6 +244,9 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ConditionalExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (ConditionalExpression.OperatorType.ELVIS.equals(node.getOperator())) {
                 createError(node);
             }

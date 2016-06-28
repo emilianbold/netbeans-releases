@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
@@ -70,8 +71,14 @@ public class TooManyReturnStatementsHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getHints());
             }
         }
@@ -97,6 +104,9 @@ public class TooManyReturnStatementsHint extends HintRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             functionStack.push(new ReturnStatementsHolder());
             super.visit(node);
             createHints(functionStack.pop());
@@ -104,6 +114,9 @@ public class TooManyReturnStatementsHint extends HintRule {
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             functionStack.push(new ReturnStatementsHolder());
             super.visit(node);
             createHints(functionStack.pop());
@@ -111,6 +124,9 @@ public class TooManyReturnStatementsHint extends HintRule {
 
         @Override
         public void visit(ReturnStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             ReturnStatementsHolder returnStatementsHolder = functionStack.peek();
             if (returnStatementsHolder != null) {

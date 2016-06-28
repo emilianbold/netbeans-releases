@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -106,6 +107,9 @@ public class VarDocSuggestion extends SuggestionRule {
                 String identifier = Utilities.getIdentifier(doc, caretOffset);
                 if (identifier != null && identifier.startsWith("$")) {
                     PHPParseResult parseResult = (PHPParseResult) context.parserResult;
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     Model model = parseResult.getModel();
                     VariableScope variableScope = model.getVariableScope(caretOffset);
                     if (variableScope != null) {

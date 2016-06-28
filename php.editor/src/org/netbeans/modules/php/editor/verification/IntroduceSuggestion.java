@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem;
@@ -146,6 +147,9 @@ public class IntroduceSuggestion extends SuggestionRule {
         }
         int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
         if (lineBounds.containsInclusive(caretOffset)) {
             final Model model = phpParseResult.getModel();
@@ -153,6 +157,9 @@ public class IntroduceSuggestion extends SuggestionRule {
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.add(new Hint(IntroduceSuggestion.this, getDisplayName(),
                         fileObject, variableFix.getOffsetRange(),
                         Collections.<HintFix>singletonList(variableFix), 500));
@@ -172,6 +179,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void scan(ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()))) {
                 super.scan(node);
             }
@@ -179,6 +189,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ClassInstanceCreation instanceCreation) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!instanceCreation.isAnonymous()
                     && lineBounds.containsInclusive(instanceCreation.getStartOffset())) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
@@ -200,6 +213,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(MethodInvocation methodInvocation) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(methodInvocation.getStartOffset())) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 if (StringUtils.hasText(methName)) {
@@ -224,6 +240,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticMethodInvocation methodInvocation) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(methodInvocation.getStartOffset())) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
@@ -252,6 +271,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(FieldAccess fieldAccess) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(fieldAccess.getStartOffset())) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
                 if (StringUtils.hasText(fieldName)) {
@@ -279,6 +301,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticFieldAccess fieldAccess) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(fieldAccess.getStartOffset())) {
                 final Variable field = fieldAccess.getField();
                 String clzName = CodeUtils.extractUnqualifiedClassName(fieldAccess);
@@ -319,6 +344,9 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticConstantAccess staticConstantAccess) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(staticConstantAccess.getStartOffset())) {
                 String constName = staticConstantAccess.getConstantName().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
@@ -375,7 +403,7 @@ public class IntroduceSuggestion extends SuggestionRule {
             }
             if (classes.size() == 1) {
                 retval = classes.iterator().next();
-                if ("parent".equals(name)) {
+                if ("parent".equals(name)) { // NOI18N
                     QualifiedName superClassQualifiedName = retval.getSuperClassName();
                     if (superClassQualifiedName != null) {
                         String superClassName = superClassQualifiedName.getName();

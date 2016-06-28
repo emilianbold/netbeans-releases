@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -73,6 +74,9 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
             fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             baseDocument = context.doc;
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 TokenHierarchy<?> th = phpParseResult.getSnapshot().getTokenHierarchy();
                 if (th != null) {
                     int startOffset = phpParseResult.getProgram().getStartOffset();

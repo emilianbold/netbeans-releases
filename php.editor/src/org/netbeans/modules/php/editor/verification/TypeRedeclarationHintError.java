@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -86,12 +87,18 @@ public class TypeRedeclarationHintError extends HintErrorRule {
         fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {
             this.hints = hints;
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor();
             phpParseResult.getProgram().accept(checkVisitor);
             conditionStatements = checkVisitor.getConditionStatements();
             declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
             typeNames = new HashSet<>();
             for (TypeScope typeScope : declaredTypes) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 if (!isInConditionStatament(typeScope)) {
                     checkDeclaredTypeScope(typeScope);
                 }
@@ -108,12 +115,18 @@ public class TypeRedeclarationHintError extends HintErrorRule {
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             addStatement(node.getTrueStatement());
             addStatement(node.getFalseStatement());
         }
 
         @Override
         public void visit(SwitchCase node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             addStatement(node);
         }
 
