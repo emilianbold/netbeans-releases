@@ -52,7 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JSPreferences;
+import org.netbeans.modules.javascript2.editor.JsPreferences;
 import static org.netbeans.modules.javascript2.editor.hints.JsAstRule.JS_OTHER_HINTS;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
@@ -81,7 +81,7 @@ public class Ecma6Rule extends EcmaLevelRule {
 
     @Override
     void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
-        if (JSPreferences.isPreECMAScript6(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
+        if (JsPreferences.isPreECMAScript6(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()))) {
             Snapshot snapshot = context.getJsParserResult().getSnapshot();
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, context.lexOffset);
             OffsetRange returnOffsetRange;

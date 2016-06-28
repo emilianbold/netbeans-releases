@@ -21,10 +21,12 @@ METHOD     forEach(callback: Function): u  [PUBLIC]   JS Platform
 METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     from(arrayLike: Object): Array  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
 METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
 METHOD     hasOwnProperty(prop: String):   [PUBLIC]   JS Platform
+METHOD     includes(searchElement: String  [PUBLIC]   JS Platform
 METHOD     indexOf(searchElement: Array):  [PUBLIC]   JS Platform
 METHOD     is(value1: String, value2: Str  [PUBLIC,   JS Platform
 METHOD     isArray(obj: Object): Boolean   [PUBLIC,   JS Platform

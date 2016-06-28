@@ -1,6 +1,6 @@
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/AbstractParser.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -88,6 +88,9 @@
      /** Is this parser running under strong mode? */
      protected boolean isStrongMode;
@@ -11,9 +11,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      /** What should line numbers be counted from? */
      protected final int lineOffset;
  
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Lexer.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -1160,7 +1160,7 @@
                  restoreState(expressionLexer.saveState());
  
@@ -23,10 +23,26 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                  type = TEMPLATE_MIDDLE;
  
                  // Skip over rbrace and record beginning of string content.
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Wed Jun 22 10:35:11 2016 +0200
-@@ -101,14 +101,21 @@
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/Parser.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -27,6 +27,7 @@
+ 
+ import static com.oracle.js.parser.TokenType.ARROW;
+ import static com.oracle.js.parser.TokenType.ASSIGN;
++import static com.oracle.js.parser.TokenType.AT;
+ import static com.oracle.js.parser.TokenType.CASE;
+ import static com.oracle.js.parser.TokenType.CATCH;
+ import static com.oracle.js.parser.TokenType.CLASS;
+@@ -36,6 +37,7 @@
+ import static com.oracle.js.parser.TokenType.CONST;
+ import static com.oracle.js.parser.TokenType.DECPOSTFIX;
+ import static com.oracle.js.parser.TokenType.DECPREFIX;
++import static com.oracle.js.parser.TokenType.DEFAULT;
+ import static com.oracle.js.parser.TokenType.ELLIPSIS;
+ import static com.oracle.js.parser.TokenType.ELSE;
+ import static com.oracle.js.parser.TokenType.EOF;
+@@ -101,14 +103,21 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;
  import com.oracle.js.parser.ir.ErrorNode;
@@ -48,7 +64,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
  import com.oracle.js.parser.ir.IndexNode;
  import com.oracle.js.parser.ir.JoinPredecessorExpression;
  import com.oracle.js.parser.ir.LabelNode;
-@@ -118,6 +125,8 @@
+@@ -118,6 +127,8 @@
  import com.oracle.js.parser.ir.Module;
  import com.oracle.js.parser.ir.Module.ExportEntry;
  import com.oracle.js.parser.ir.Module.ImportEntry;
@@ -57,7 +73,36 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
  import com.oracle.js.parser.ir.Node;
  import com.oracle.js.parser.ir.ObjectNode;
  import com.oracle.js.parser.ir.PropertyKey;
-@@ -580,12 +589,19 @@
+@@ -152,6 +163,8 @@
+     /** Function name for the program entry point. */
+     private static final String PROGRAM_NAME = ":program";
+ 
++    private static final String ASYNC_IDENT = "async";
++
+     private static final boolean ES6_FOR_OF = Options.getBooleanProperty("parser.for.of", true);
+     private static final boolean ES6_CLASS = Options.getBooleanProperty("parser.class", true);
+     private static final boolean ES6_ARROW_FUNCTION = Options.getBooleanProperty("parser.arrow.function", true);
+@@ -164,6 +177,10 @@
+     private static final boolean ES6_DEFAULT_PARAMETER = Options.getBooleanProperty("parser.default.parameter", true);
+     private static final boolean ES6_NEW_TARGET = Options.getBooleanProperty("parser.new.target", true);
+ 
++    private static final boolean ES7_CLASS_FIELD = Options.getBooleanProperty("parser.class.field", true);
++    private static final boolean ES7_DECORATOR = Options.getBooleanProperty("parser.decorator", true);
++    private static final boolean ES7_ASYNC_FUNCTION = Options.getBooleanProperty("parser.async.function", true);
++
+     /** Current env. */
+     private final ScriptEnvironment env;
+ 
+@@ -362,7 +379,7 @@
+ 
+             scanFirstToken();
+ 
+-            return formalParameterList(TokenType.EOF, false);
++            return formalParameterList(TokenType.EOF, false, false);
+         } catch (final Exception e) {
+             handleParseException(e);
+             return null;
+@@ -580,12 +597,19 @@
          }
  
          // Block closing brace.
@@ -78,7 +123,324 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -1442,6 +1458,9 @@
+@@ -616,7 +640,7 @@
+         // Set up new block. Captures first token.
+         final ParserContextBlockNode newBlock = newBlock();
+         try {
+-            statement(false, false, true, labelledStatement);
++            statement(false, false, true, labelledStatement, Collections.emptyList());
+         } finally {
+             restoreBlock(newBlock);
+         }
+@@ -657,6 +681,10 @@
+         return env.es6;
+     }
+ 
++    private boolean isES7() {
++        return env.es7;
++    }
++
+     private static boolean isArguments(final String name) {
+         return ARGUMENTS_NAME.equals(name);
+     }
+@@ -694,6 +722,7 @@
+         case ASSIGN_DIV:
+         case ASSIGN_MOD:
+         case ASSIGN_MUL:
++        case ASSIGN_EXP:
+         case ASSIGN_SAR:
+         case ASSIGN_SHL:
+         case ASSIGN_SHR:
+@@ -892,7 +921,7 @@
+ 
+                 try {
+                     // Get the next element.
+-                    statement(true, allowPropertyFunction, false, false);
++                    statement(true, allowPropertyFunction, false, false, Collections.emptyList());
+                     allowPropertyFunction = false;
+ 
+                     // check for directive prologues
+@@ -1005,7 +1034,7 @@
+      *     GeneratorDeclaration
+      */
+     private void statement() {
+-        statement(false, false, false, false);
++        statement(false, false, false, false, Collections.emptyList());
+     }
+ 
+     /**
+@@ -1013,7 +1042,11 @@
+      * @param allowPropertyFunction allow property "get" and "set" functions?
+      * @param singleStatement are we in a single statement context?
+      */
+-    private void statement(final boolean topLevel, final boolean allowPropertyFunction, final boolean singleStatement, final boolean labelledStatement) {
++    private void statement(final boolean topLevel, final boolean allowPropertyFunction,
++            final boolean singleStatement, final boolean labelledStatement, List<Expression> decorators) {
++        if (!decorators.isEmpty() && type != CLASS) {
++            throw error(expectMessage(CLASS));
++        }
+         switch (type) {
+         case LBRACE:
+             block();
+@@ -1076,7 +1109,7 @@
+                     throw error(AbstractParser.message("expected.stmt", "function declaration"), token);
+                 }
+             }
+-            functionExpression(true, topLevel || labelledStatement);
++            functionExpression(true, topLevel || labelledStatement, false);
+             return;
+         default:
+             if (useBlockScope() && (type == LET && lookaheadIsLetDeclaration(false) || type == CONST)) {
+@@ -1085,11 +1118,18 @@
+                 }
+                 variableStatement(type, true);
+                 break;
+-            } else if (ES6_CLASS && type == CLASS && isES6()) {
++            // either it is ES6 class or it starts with @something as is ES7 decorated class
++            } else if (ES6_CLASS && isES6() && (type == CLASS || (ES7_DECORATOR && isES7() && type == AT))) {
+                 if (singleStatement) {
+                     throw error(AbstractParser.message("expected.stmt", "class declaration"), token);
+                 }
+-                classDeclaration(false);
++                classDeclaration(false, decorators);
++                break;
++            // start of async function
++            } else if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                    && lookaheadIsAsyncFunction(false)) {
++                nextOrEOL();
++                functionExpression(true, topLevel || labelledStatement, true);
+                 break;
+             }
+             if (env.constAsVar && type == CONST) {
+@@ -1098,7 +1138,7 @@
+             }
+ 
+             if (isBindingIdentifier()) {
+-                if (T(k + 1) == COLON && (type != YIELD || !inGeneratorFunction())) {
++                if (T(k + 1) == COLON && (type != YIELD || !inGeneratorFunction()) && (!isAwait(token) || !inAsyncFunction())) {
+                     labelStatement();
+                     return;
+                 }
+@@ -1133,10 +1173,10 @@
+      *   class BindingIdentifier[?Yield] ClassTail[?Yield]
+      *   [+Default] class ClassTail[?Yield]
+      */
+-    private ClassNode classDeclaration(boolean isDefault) {
++    private ClassNode classDeclaration(boolean isDefault, List<Expression> exportDecorators) {
+         int classLineNumber = line;
+ 
+-        ClassNode classExpression = classExpression(!isDefault);
++        ClassNode classExpression = classExpression(!isDefault, exportDecorators);
+ 
+         if (!isDefault) {
+             VarNode classVar = new VarNode(classLineNumber, classExpression.getToken(), classExpression.getIdent().getFinish(), classExpression.getIdent(), classExpression, VarNode.IS_CONST);
+@@ -1149,18 +1189,20 @@
+      * ClassExpression[Yield] :
+      *   class BindingIdentifier[?Yield]opt ClassTail[?Yield]
+      */
+-    private ClassNode classExpression(boolean isStatement) {
+-        assert type == CLASS;
++    private ClassNode classExpression(boolean isStatement, List<Expression> exportDecorators) {
++        assert type == CLASS || type == AT;
+         int classLineNumber = line;
+         long classToken = token;
+-        next();
++        List<Expression> decorators = new ArrayList<>(exportDecorators);
++        decorators.addAll(decoratorList());
++        expect(CLASS);
+ 
+         IdentNode className = null;
+         if (isStatement || type == IDENT) {
+             className = getIdent();
+         }
+ 
+-        return classTail(classLineNumber, classToken, className);
++        return classTail(classLineNumber, classToken, className, decorators);
+     }
+ 
+     private static final class ClassElementKey {
+@@ -1209,7 +1251,7 @@
+      *   static MethodDefinition[?Yield]
+      *   ;
+      */
+-    private ClassNode classTail(int classLineNumber, long classToken, IdentNode className) {
++    private ClassNode classTail(int classLineNumber, long classToken, IdentNode className, List<Expression> decorators) {
+         boolean oldStrictMode = isStrictMode;
+         isStrictMode = true;
+         try {
+@@ -1232,18 +1274,31 @@
+                 if (type == RBRACE) {
+                     break;
+                 }
++
++                List<Expression> methodDecorators;
++                if (type == AT) {
++                    methodDecorators = decoratorList();
++                } else {
++                    methodDecorators = Collections.emptyList();
++                }
+                 long classElementToken = token;
+                 boolean isStatic = false;
+                 if (type == STATIC) {
+                     isStatic = true;
+                     next();
+                 }
++                boolean async = false;
++                if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                        && lookaheadIsAsyncFunction(true)) {
++                    async = true;
++                    next();
++                }
+                 boolean generator = false;
+-                if (ES6_GENERATOR_FUNCTION && type == MUL) {
++                if (!async && ES6_GENERATOR_FUNCTION && type == MUL) {
+                     generator = true;
+                     next();
+                 }
+-                PropertyNode classElement = methodDefinition(isStatic, classHeritage != null, generator);
++                PropertyNode classElement = classElement(isStatic, classHeritage != null, generator, async, methodDecorators);
+                 if (classElement.isComputed()) {
+                     classElements.add(classElement);
+                 } else if (!classElement.isStatic() && classElement.getKeyName().equals("constructor")) {
+@@ -1291,7 +1346,7 @@
+             }
+ 
+             classElements.trimToSize();
+-            return new ClassNode(classLineNumber, classToken, finish, className, classHeritage, constructor, classElements);
++            return new ClassNode(classLineNumber, classToken, finish, className, classHeritage, constructor, classElements, decorators);
+         } finally {
+             isStrictMode = oldStrictMode;
+         }
+@@ -1337,11 +1392,11 @@
+                         FunctionNode.Kind.NORMAL,
+                         classLineNumber,
+                         body
+-                        ), null, null, false, false);
++                        ), null, null, false, false, Collections.emptyList());
+         return constructor;
+     }
+ 
+-    private PropertyNode methodDefinition(boolean isStatic, boolean subclass, boolean generator) {
++    private PropertyNode classElement(boolean isStatic, boolean subclass, boolean generator, boolean async, List<Expression> decorators) {
+         final long methodToken = token;
+         final int methodLine = line;
+         final boolean computed = type == LBRACKET;
+@@ -1350,14 +1405,16 @@
+         int flags = FunctionNode.IS_METHOD;
+         if (!computed) {
+             final String name = ((PropertyKey)propertyName).getPropertyName();
+-            if (!generator && isIdent && type != LPAREN && name.equals("get")) {
++            if (!generator && isIdent && type != LPAREN && name.equals("get")
++                    && (!ES7_CLASS_FIELD || !isES7() || isPropertyName())) {
+                 PropertyFunction methodDefinition = propertyGetterFunction(methodToken, methodLine, flags);
+-                verifyAllowedMethodName(methodDefinition.key, isStatic, methodDefinition.computed, generator, true);
+-                return new PropertyNode(methodToken, finish, methodDefinition.key, null, methodDefinition.functionNode, null, isStatic, methodDefinition.computed);
+-            } else if (!generator && isIdent && type != LPAREN && name.equals("set")) {
++                verifyAllowedMethodName(methodDefinition.key, isStatic, methodDefinition.computed, generator, async, true);
++                return new PropertyNode(methodToken, finish, methodDefinition.key, null, methodDefinition.functionNode, null, isStatic, methodDefinition.computed, decorators);
++            } else if (!generator && isIdent && type != LPAREN && name.equals("set")
++                    && (!ES7_CLASS_FIELD || !isES7() || isPropertyName())) {
+                 PropertyFunction methodDefinition = propertySetterFunction(methodToken, methodLine, flags);
+-                verifyAllowedMethodName(methodDefinition.key, isStatic, methodDefinition.computed, generator, true);
+-                return new PropertyNode(methodToken, finish, methodDefinition.key, null, null, methodDefinition.functionNode, isStatic, methodDefinition.computed);
++                verifyAllowedMethodName(methodDefinition.key, isStatic, methodDefinition.computed, generator, async, true);
++                return new PropertyNode(methodToken, finish, methodDefinition.key, null, null, methodDefinition.functionNode, isStatic, methodDefinition.computed, decorators);
+             } else {
+                 if (!isStatic && !generator && name.equals("constructor")) {
+                     flags |= FunctionNode.IS_CLASS_CONSTRUCTOR;
+@@ -1365,17 +1422,54 @@
+                         flags |= FunctionNode.IS_SUBCLASS_CONSTRUCTOR;
+                     }
+                 }
+-                verifyAllowedMethodName(propertyName, isStatic, computed, generator, false);
++                if (async) {
++                    flags = FunctionNode.IS_ASYNC;
++                }
++                verifyAllowedMethodName(propertyName, isStatic, computed, generator, async, false);
+             }
+         }
+-        PropertyFunction methodDefinition = propertyMethodFunction(propertyName, methodToken, methodLine, generator, flags, computed);
+-        return new PropertyNode(methodToken, finish, methodDefinition.key, methodDefinition.functionNode, null, null, isStatic, computed);
++        // ClassFieldInitializer
++        if (ES7_CLASS_FIELD && isES7() && type != LPAREN && !async) {
++            // XXX decorators on properties
++            Expression assignment = null;
++            if (type == ASSIGN) {
++                next();
++                assignment = assignmentExpression(false);
++            }
++            endOfLine();
++            return new PropertyNode(methodToken, finish, propertyName, assignment, null, null, isStatic, computed, decorators);
++        }
++        PropertyFunction methodDefinition = propertyMethodFunction(propertyName, methodToken, methodLine, generator, false, flags, computed);
++        return new PropertyNode(methodToken, finish, methodDefinition.key, methodDefinition.functionNode, null, null, isStatic, computed, decorators);
++    }
++
++    /**
++     * https://github.com/wycats/javascript-decorators
++     */
++    private List<Expression> decoratorList() {
++        if (!isES7() || !ES7_DECORATOR || type != AT) {
++            return Collections.emptyList();
++        }
++        List<Expression> decorators = new ArrayList<>();
++        for (;;) {
++            next();
++            Expression decorator = leftHandSideExpression();
++            if (decorator == null) {
++                throw error(AbstractParser.message("expected.lvalue", type.getNameOrType()));
++            }
++            // FIXME https://github.com/wycats/javascript-decorators/issues/10 #2
++            decorators.add(decorator);
++            if (type != AT) {
++                break;
++            }
++        }
++        return decorators;
+     }
+ 
+     /**
+      * ES6 14.5.1 Static Semantics: Early Errors.
+      */
+-    private void verifyAllowedMethodName(Expression key, boolean isStatic, boolean computed, boolean generator, boolean accessor) {
++    private void verifyAllowedMethodName(Expression key, boolean isStatic, boolean computed, boolean generator, boolean async, boolean accessor) {
+         if (!computed) {
+             if (!isStatic && generator && ((PropertyKey) key).getPropertyName().equals("constructor")) {
+                 throw error("class constructor must not be a generator", key.getToken());
+@@ -1389,6 +1483,32 @@
+         }
+     }
+ 
++    private boolean isPropertyName() {
++        if (ES6_COMPUTED_PROPERTY_NAME && type == LBRACKET && isES6()) {
++            // computed property
++            return true;
++        }
++
++        switch (type) {
++        case IDENT:
++            return true;
++        case OCTAL_LEGACY:
++            if (isStrictMode) {
++                return false;
++            }
++        case STRING:
++        case ESCSTRING:
++        case DECIMAL:
++        case HEXADECIMAL:
++        case OCTAL:
++        case BINARY_NUMBER:
++        case FLOATING:
++            return true;
++        default:
++            return isIdentifierName();
++        }
++    }
++
+     /**
+      * block :
+      *      { StatementList? }
+@@ -1442,6 +1562,9 @@
              if (tokenType != IDENT && tokenType.getKind() != TokenKind.FUTURESTRICT) {
                  throw error(expectMessage(IDENT));
              }
@@ -88,7 +450,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
          }
      }
  
-@@ -1517,7 +1536,7 @@
+@@ -1517,7 +1640,7 @@
              Expression binding = bindingIdentifierOrPattern(contextString);
              final boolean isDestructuring = !(binding instanceof IdentNode);
              if (isDestructuring) {
@@ -97,7 +459,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                  verifyDestructuringBindingPattern(binding, new Consumer<IdentNode>() {
                      public void accept(IdentNode identNode) {
                          verifyIdent(identNode, contextString);
-@@ -1768,13 +1787,13 @@
+@@ -1768,13 +1891,13 @@
  
          ExpressionStatement expressionStatement = null;
          if (expression != null) {
@@ -106,14 +468,34 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              appendStatement(expressionStatement);
          } else {
              expect(null);
-+            endOfLine();
-         }
+-        }
 -
 -        endOfLine();
++            endOfLine();
++        }
      }
  
      /**
-@@ -2564,7 +2583,7 @@
+@@ -2300,6 +2423,18 @@
+         return new UnaryNode(yieldToken, expression);
+     }
+ 
++    private Expression awaitExpression() {
++        assert inAsyncFunction();
++        // Capture await token.
++        long awaitToken = token;
++        nextOrEOL();
++
++        Expression expression = unaryExpression();
++
++        // Construct and add AWAIT node.
++        return new UnaryNode(awaitToken, expression);
++    }
++
+     private static UnaryNode newUndefinedLiteral(long token, int finish) {
+         return new UnaryNode(Token.recast(token, VOID), LiteralNode.newInstance(token, finish, 0));
+     }
+@@ -2564,7 +2699,7 @@
                      appendStatement(catchNode);
                  } finally {
                      restoreBlock(catchBlock);
@@ -122,7 +504,189 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                  }
  
                  // If unconditional catch then should to be the end.
-@@ -3718,6 +3737,7 @@
+@@ -2694,7 +2829,7 @@
+                     return new ExpressionList(primaryToken, finish, Collections.emptyList());
+                 } else if (ES6_REST_PARAMETER && type == ELLIPSIS) {
+                     // (...rest)
+-                    IdentNode restParam = formalParameterList(false).get(0);
++                    IdentNode restParam = formalParameterList(false, false).get(0);
+                     expectDontAdvance(RPAREN);
+                     nextOrEOL();
+                     expectDontAdvance(ARROW);
+@@ -3040,19 +3175,29 @@
+      * @return Property or reference node.
+      */
+     private PropertyNode propertyAssignment() {
++        final Expression propertyName;
++        final boolean isIdentifier;
++
++        List<Expression> decorators = decoratorList();
++        boolean method = ES7_DECORATOR && isES7() && !decorators.isEmpty();
++
++        boolean async = false;
++        if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                && lookaheadIsAsyncFunction(true)) {
++            async = true;
++            next();
++        }
++        boolean generator = false;
++        if (!async && ES6_GENERATOR_FUNCTION && type == MUL && isES6()) {
++            generator = true;
++            next();
++        }
++
++        // We capture first tokens here to be consistent with classElement.
+         // Capture firstToken.
+         final long propertyToken = token;
+         final int  functionLine  = line;
+ 
+-        final Expression propertyName;
+-        final boolean isIdentifier;
+-
+-        boolean generator = false;
+-        if (ES6_GENERATOR_FUNCTION && type == MUL && isES6()) {
+-            generator = true;
+-            next();
+-        }
+-
+         final boolean computed = type == LBRACKET;
+         if (type == IDENT) {
+             // Get IDENT.
+@@ -3064,11 +3209,11 @@
+                 switch (ident) {
+                 case "get":
+                     final PropertyFunction getter = propertyGetterFunction(getSetToken, functionLine);
+-                    return new PropertyNode(propertyToken, finish, getter.key, null, getter.functionNode, null, false, getter.computed);
++                    return new PropertyNode(propertyToken, finish, getter.key, null, getter.functionNode, null, false, getter.computed, decorators);
+ 
+                 case "set":
+                     final PropertyFunction setter = propertySetterFunction(getSetToken, functionLine);
+-                    return new PropertyNode(propertyToken, finish, setter.key, null, null, setter.functionNode, false, setter.computed);
++                    return new PropertyNode(propertyToken, finish, setter.key, null, null, setter.functionNode, false, setter.computed, decorators);
+                 default:
+                     break;
+                 }
+@@ -3087,12 +3232,12 @@
+ 
+         Expression propertyValue;
+ 
+-        if (generator) {
++        if (generator || method || async) {
+             expectDontAdvance(LPAREN);
+         }
+ 
+         if (type == LPAREN && isES6()) {
+-            propertyValue = propertyMethodFunction(propertyName, propertyToken, functionLine, generator, FunctionNode.IS_METHOD, computed).functionNode;
++            propertyValue = propertyMethodFunction(propertyName, propertyToken, functionLine, generator, async, FunctionNode.IS_METHOD, computed).functionNode;
+         } else if (isIdentifier && (type == COMMARIGHT || type == RBRACE || type == ASSIGN) && isES6()) {
+             propertyValue = createIdentNode(propertyToken, finish, ((IdentNode) propertyName).getPropertyName());
+             if (type == ASSIGN && ES6_DESTRUCTURING) {
+@@ -3113,7 +3258,7 @@
+             }
+         }
+ 
+-        return new PropertyNode(propertyToken, finish, propertyName, propertyValue, null, null, false, computed);
++        return new PropertyNode(propertyToken, finish, propertyName, propertyValue, null, null, false, computed, decorators);
+     }
+ 
+     private PropertyFunction propertyGetterFunction(final long getSetToken, final int functionLine) {
+@@ -3209,7 +3354,7 @@
+         return new PropertyFunction(propertyName, function, computed);
+     }
+ 
+-    private PropertyFunction propertyMethodFunction(Expression key, final long methodToken, final int methodLine, final boolean generator, final int flags, boolean computed) {
++    private PropertyFunction propertyMethodFunction(Expression key, final long methodToken, final int methodLine, final boolean generator, final boolean async, final int flags, boolean computed) {
+         final String methodName = key instanceof PropertyKey ? ((PropertyKey) key).getPropertyName() : getDefaultValidFunctionName(methodLine, false);
+         final IdentNode methodNameNode = createIdentNode(((Node)key).getToken(), finish, methodName);
+ 
+@@ -3219,6 +3364,9 @@
+         if (computed) {
+             functionNode.setFlag(FunctionNode.IS_ANONYMOUS);
+         }
++        if (async) {
++            functionNode.setFlag(FunctionNode.IS_ASYNC);
++        }
+         lc.push(functionNode);
+ 
+         try {
+@@ -3226,7 +3374,7 @@
+             final List<IdentNode> parameters;
+             try {
+                 expect(LPAREN);
+-                parameters = formalParameterList(generator);
++                parameters = formalParameterList(generator, async);
+                 functionNode.setParameters(parameters);
+                 expect(RPAREN);
+             } finally {
+@@ -3456,12 +3604,13 @@
+ 
+         case FUNCTION:
+             // Get function expression.
+-            lhs = functionExpression(false, false);
++            lhs = functionExpression(false, false, false);
+             break;
+ 
+         case CLASS:
+-            if (ES6_CLASS && isES6()) {
+-                lhs = classExpression(false);
++        case AT:
++            if (ES6_CLASS && isES6() && (type == CLASS || (ES7_DECORATOR && isES7() && type == AT))) {
++                lhs = classExpression(false, Collections.emptyList());
+                 break;
+             } else {
+                 // fall through
+@@ -3500,6 +3649,12 @@
+             }
+ 
+         default:
++            if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                    && lookaheadIsAsyncFunction(false)) {
++                nextOrEOL();
++                lhs = functionExpression(false, false, true);
++                break;
++            }
+             // Get primary expression.
+             lhs = primaryExpression();
+             break;
+@@ -3646,7 +3801,7 @@
+      *
+      * @return Expression node.
+      */
+-    private Expression functionExpression(final boolean isStatement, final boolean topLevel) {
++    private Expression functionExpression(final boolean isStatement, final boolean topLevel, final boolean async) {
+         final long functionToken = token;
+         final int  functionLine  = line;
+         // FUNCTION is tested in caller.
+@@ -3668,6 +3823,9 @@
+                 // HoistableDeclaration with BindingIdentifier yield in generator function body
+                 expect(IDENT);
+             }
++            if (isAwait(token) && ((!isStatement && async) || (isStatement && inAsyncFunction()))) {
++                expect(IDENT);
++            }
+             name = getIdent();
+             verifyIdent(name, "function name");
+         } else if (isStatement) {
+@@ -3692,6 +3850,9 @@
+         Kind functionKind = generator ? FunctionNode.Kind.GENERATOR : FunctionNode.Kind.NORMAL;
+         List<IdentNode> parameters = Collections.emptyList();
+         final ParserContextFunctionNode functionNode = createParserContextFunctionNode(name, functionToken, functionKind, functionLine, parameters);
++        if (async) {
++            functionNode.setFlag(FunctionNode.IS_ASYNC);
++        }
+         lc.push(functionNode);
+ 
+         Block functionBody = null;
+@@ -3702,7 +3863,7 @@
+             ParserContextBlockNode parameterBlock = newBlock();
+             try {
+                 expect(LPAREN);
+-                parameters = formalParameterList(generator);
++                parameters = formalParameterList(generator, async);
+                 functionNode.setParameters(parameters);
+                 expect(RPAREN);
+             } finally {
+@@ -3718,6 +3879,7 @@
          }
  
          if (isStatement) {
@@ -130,7 +694,45 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              if (topLevel || useBlockScope() || (!isStrictMode && env.functionDeclarationHoisting && env.functionStatement == ScriptEnvironment.FunctionStatementBehavior.ACCEPT)) {
                  functionNode.setFlag(FunctionNode.IS_DECLARED);
              } else if (isStrictMode) {
-@@ -3989,7 +4009,8 @@
+@@ -3865,8 +4027,8 @@
+      * Parse function parameter list.
+      * @return List of parameter nodes.
+      */
+-    private List<IdentNode> formalParameterList(final boolean yield) {
+-        return formalParameterList(RPAREN, yield);
++    private List<IdentNode> formalParameterList(final boolean yield, final boolean await) {
++        return formalParameterList(RPAREN, yield, await);
+     }
+ 
+     /**
+@@ -3882,7 +4044,7 @@
+      * Parse function parameter list.
+      * @return List of parameter nodes.
+      */
+-    private List<IdentNode> formalParameterList(final TokenType endType, final boolean yield) {
++    private List<IdentNode> formalParameterList(final TokenType endType, final boolean yield, final boolean await) {
+         // Prepare to gather parameters.
+         final ArrayList<IdentNode> parameters = new ArrayList<>();
+         // Track commas.
+@@ -3902,7 +4064,7 @@
+                 restParameter = true;
+             }
+ 
+-            if (type == YIELD && yield) {
++            if (type == YIELD && yield || isAwait(token) && await) {
+                 expect(IDENT);
+             }
+ 
+@@ -3923,7 +4085,7 @@
+                     next();
+                     ident = ident.setIsDefaultParameter();
+ 
+-                    if (type == YIELD && yield) {
++                    if (type == YIELD && yield || isAwait(token) && await) {
+                         // error: yield in default expression
+                         expect(IDENT);
+                     }
+@@ -3989,7 +4151,8 @@
                  ParserContextFunctionNode currentFunction = lc.getCurrentFunction();
                  if (currentFunction != null) {
                      // declare function-scope variables for destructuring bindings
@@ -140,7 +742,121 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                      // detect duplicate bounds names in parameter list
                      currentFunction.addParameterBinding(identNode);
                      currentFunction.setSimpleParameterList(false);
-@@ -4941,8 +4962,10 @@
+@@ -4278,6 +4441,9 @@
+             return verifyIncDecExpression(unaryToken, opType, lhs, false);
+ 
+         default:
++            if (isAwait(token) && ES7_ASYNC_FUNCTION && inAsyncFunction() && isES7()) {
++                return awaitExpression();
++            }
+             break;
+         }
+ 
+@@ -4542,7 +4708,37 @@
+ 
+         final long startToken = token;
+         final int startLine = line;
+-        final Expression exprLhs = conditionalExpression(noIn);
++        final int pos = k;
++        Expression exprLhs = conditionalExpression(noIn);
++
++        boolean asyncArrow = false;
++        if (ES7_ASYNC_FUNCTION && isES7()) {
++            // FIXME do we have a better way
++            if ((exprLhs instanceof IdentNode) && ASYNC_IDENT.equals(((IdentNode) exprLhs).getName())) {
++                if (isNonStrictModeIdent() || type == IDENT) {
++                    boolean containsEol = false;
++                    for (int i = pos + 1; i < k; i++) {
++                        TokenType t = T(i);
++                        if (t != COMMENT) {
++                            containsEol = true;
++                            break;
++                        }
++                    }
++                    if (!containsEol) {
++                        // async arrow function with one parameter such as "async x => {x}"
++                        asyncArrow = true;
++                        exprLhs = conditionalExpression(noIn);
++                    }
++                }
++            }
++
++            if (!asyncArrow && (exprLhs instanceof CallNode) && type == ARROW) {
++                 Expression function = ((CallNode) exprLhs).getFunction();
++                 if ((function instanceof IdentNode) && ASYNC_IDENT.equals(((IdentNode) function).getName())) {
++                     asyncArrow = true;
++                 }
++            }
++        }
+ 
+         if (ES6_ARROW_FUNCTION && type == ARROW && isES6()) {
+             if (checkNoLineTerminator()) {
+@@ -4552,7 +4748,7 @@
+                 } else {
+                     paramListExpr = exprLhs;
+                 }
+-                return arrowFunction(startToken, startLine, paramListExpr);
++                return arrowFunction(startToken, startLine, paramListExpr, asyncArrow);
+             }
+         }
+         assert !(exprLhs instanceof ExpressionList);
+@@ -4590,6 +4786,7 @@
+         case ASSIGN_DIV:
+         case ASSIGN_MOD:
+         case ASSIGN_MUL:
++        case ASSIGN_EXP:
+         case ASSIGN_SAR:
+         case ASSIGN_SHL:
+         case ASSIGN_SHR:
+@@ -4613,7 +4810,7 @@
+      * @param functionLine start line of the arrow function
+      * @param paramListExpr ArrowParameters expression or {@code null} for {@code ()} (empty list)
+      */
+-    private Expression arrowFunction(final long startToken, final int functionLine, final Expression paramListExpr) {
++    private Expression arrowFunction(final long startToken, final int functionLine, final Expression paramListExpr, boolean async) {
+         // caller needs to check that there's no LineTerminator between parameter list and arrow
+         assert type != ARROW || checkNoLineTerminator();
+         expect(ARROW);
+@@ -4622,13 +4819,16 @@
+         final IdentNode name = new IdentNode(functionToken, Token.descPosition(functionToken), "=>:" + functionLine);
+         final ParserContextFunctionNode functionNode = createParserContextFunctionNode(name, functionToken, FunctionNode.Kind.ARROW, functionLine, null);
+         functionNode.setFlag(FunctionNode.IS_ANONYMOUS);
++        if (async) {
++            functionNode.setFlag(FunctionNode.IS_ASYNC);
++        }
+ 
+         lc.push(functionNode);
+         try {
+             ParserContextBlockNode parameterBlock = newBlock();
+             final List<IdentNode> parameters;
+             try {
+-                parameters = convertArrowFunctionParameterList(paramListExpr, functionLine);
++                parameters = convertArrowFunctionParameterList(paramListExpr, functionLine, async);
+                 functionNode.setParameters(parameters);
+ 
+                 if (!functionNode.isSimpleParameterList()) {
+@@ -4679,7 +4879,7 @@
+         }
+     }
+ 
+-    private List<IdentNode> convertArrowFunctionParameterList(Expression paramListExpr, int functionLine) {
++    private List<IdentNode> convertArrowFunctionParameterList(Expression paramListExpr, int functionLine, boolean async) {
+         List<IdentNode> parameters;
+         if (paramListExpr == null) {
+             // empty parameter list, i.e. () =>
+@@ -4695,6 +4895,11 @@
+                 car = ((BinaryNode) car).lhs();
+             } while (car instanceof BinaryNode && Token.descType(car.getToken()) == COMMARIGHT);
+             parameters.add(0, verifyArrowParameter(car, parameters.size(), functionLine));
++        } else if (paramListExpr instanceof CallNode && async) {
++            parameters = new ArrayList<>();
++            for (Expression param : ((CallNode) paramListExpr).getArgs()) {
++                parameters.add(verifyArrowParameter(param, parameters.size(), functionLine));
++            }
+         } else {
+             throw error("expected arrow function parameter list", paramListExpr.getToken());
+         }
+@@ -4941,8 +5146,10 @@
       */
      private FunctionNode module(final String moduleName) {
          boolean oldStrictMode = isStrictMode;
@@ -151,7 +867,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
  
              // Make a pseudo-token for the script holding its start and length.
              int functionStart = Math.min(Token.descPosition(Token.withDelimiter(token)), finish);
-@@ -4980,6 +5003,7 @@
+@@ -4980,6 +5187,7 @@
              script.setModule(module.createModule());
              return createFunctionNode(script, functionToken, ident, Collections.<IdentNode>emptyList(), FunctionNode.Kind.MODULE, functionLine, programBody);
          } finally {
@@ -159,7 +875,40 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              isStrictMode = oldStrictMode;
          }
      }
-@@ -5039,20 +5063,30 @@
+@@ -5000,19 +5208,30 @@
+      *      StatementListItem
+      */
+     private void moduleBody() {
++        // FIXME this decorator handling is not described in spec
++        // yet certain frameworks uses it this way
++        List<Expression> decorators = new ArrayList<>();
+         loop: while (type != EOF) {
+             switch (type) {
+             case EOF:
+                 break loop;
+             case IMPORT:
+                 importDeclaration();
++                decorators.clear();
+                 break;
+             case EXPORT:
+-                exportDeclaration();
++                exportDeclaration(decorators);
++                decorators.clear();
+                 break;
++            case AT:
++                if (ES7_DECORATOR && isES7()) {
++                    decorators.addAll(decoratorList());
++                    break;
++                }
+             default:
+                 // StatementListItem
+-                statement(true, false, false, false);
++                statement(true, false, false, false, decorators);
++                decorators.clear();
+                 break;
+             }
+         }
+@@ -5039,20 +5258,30 @@
       *     BindingIdentifier
       */
      private void importDeclaration() {
@@ -193,7 +942,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              } else if (isBindingIdentifier()) {
                  // ImportedDefaultBinding
                  IdentNode importedDefaultBinding = bindingIdentifier("ImportedBinding");
-@@ -5060,28 +5094,37 @@
+@@ -5060,28 +5289,37 @@
  
                  if (type == COMMARIGHT) {
                      next();
@@ -236,7 +985,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -5090,7 +5133,8 @@
+@@ -5090,7 +5328,8 @@
       *
       * @return imported binding identifier
       */
@@ -246,7 +995,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
          assert type == MUL;
          next();
          long asToken = token;
-@@ -5099,7 +5143,7 @@
+@@ -5099,7 +5338,7 @@
              throw error("expected 'as'", asToken);
          }
          IdentNode localNameSpace = bindingIdentifier("ImportedBinding");
@@ -255,7 +1004,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      /**
-@@ -5116,10 +5160,11 @@
+@@ -5116,10 +5355,11 @@
       * ImportedBinding :
       *     BindingIdentifier
       */
@@ -269,7 +1018,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
          while (type != RBRACE) {
              boolean bindingIdentifier = isBindingIdentifier();
              long nameToken = token;
-@@ -5127,11 +5172,13 @@
+@@ -5127,11 +5367,13 @@
              if (type == IDENT && "as".equals(getValue())) {
                  next();
                  IdentNode localName = bindingIdentifier("ImportedBinding");
@@ -285,7 +1034,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              }
              if (type == COMMARIGHT) {
                  next();
-@@ -5140,14 +5187,15 @@
+@@ -5140,14 +5382,15 @@
              }
          }
          expect(RBRACE);
@@ -303,7 +1052,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
          long fromToken = token;
          String name = (String) expectValue(IDENT);
          if (!"from".equals(name)) {
-@@ -5155,8 +5203,9 @@
+@@ -5155,8 +5398,9 @@
          }
          if (type == STRING || type == ESCSTRING) {
              String moduleSpecifier = (String) getValue();
@@ -314,13 +1063,19 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
          } else {
              throw error(expectMessage(STRING));
          }
-@@ -5176,31 +5225,39 @@
+@@ -5175,36 +5419,51 @@
+      *     export default ClassDeclaration[Default]
       *     export default [lookahead !in {function, class}] AssignmentExpression[In] ;
       */
-     private void exportDeclaration() {
+-    private void exportDeclaration() {
++    private void exportDeclaration(List<Expression> decorators) {
 +        final long exportToken = token;
          expect(EXPORT);
          ParserContextModuleNode module = lc.getCurrentModule();
++        if (!decorators.isEmpty() && type != DEFAULT && type != CLASS && type != AT) {
++            throw error(expectMessage(CLASS));
++        }
++
          switch (type) {
              case MUL: {
                  next();
@@ -359,7 +1114,41 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                  break;
              }
              case DEFAULT:
-@@ -5227,13 +5284,15 @@
+                 next();
++                if (!decorators.isEmpty() && type != AT && type != CLASS) {
++                    throw error(expectMessage(CLASS));
++                }
+                 Expression assignmentExpression;
+                 IdentNode ident;
+                 int lineNumber = line;
+@@ -5212,28 +5471,40 @@
+                 boolean declaration;
+                 switch (type) {
+                     case FUNCTION:
+-                        assignmentExpression = functionExpression(false, true);
++                        assignmentExpression = functionExpression(false, true, false);
+                         ident = ((FunctionNode) assignmentExpression).getIdent();
+                         declaration = true;
+                         break;
++                    // this is according to current decorator spec
+                     case CLASS:
+-                        assignmentExpression = classDeclaration(true);
++                    case AT:
++                        assignmentExpression = classDeclaration(true, decorators);
+                         ident = ((ClassNode) assignmentExpression).getIdent();
+                         declaration = true;
+                         break;
+                     default:
++                        if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                                && lookaheadIsAsyncFunction(false)) {
++                            nextOrEOL();
++                            assignmentExpression = functionExpression(false, true, true);
++                            ident = ((FunctionNode) assignmentExpression).getIdent();
++                            declaration = true;
++                            break;
++                        }
+                         assignmentExpression = assignmentExpression(false);
+                         ident = null;
                          declaration = false;
                          break;
                  }
@@ -377,7 +1166,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                      }
                      module.addLocalExportEntry(ExportEntry.exportDefault());
                  }
-@@ -5246,17 +5305,20 @@
+@@ -5246,21 +5517,34 @@
                  variableStatement(type, true);
                  for (Statement statement : statements.subList(previousEnd, statements.size())) {
                      if (statement instanceof VarNode) {
@@ -386,19 +1175,36 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
                      }
                  }
                  break;
-             case CLASS: {
-                 ClassNode classDeclaration = classDeclaration(false);
+-            case CLASS: {
+-                ClassNode classDeclaration = classDeclaration(false);
++            // this is according to current decorator spec
++            case CLASS:
++            case AT: {
++                ClassNode classDeclaration = classDeclaration(false, decorators);
 +                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, classDeclaration, false));
                  module.addLocalExportEntry(ExportEntry.exportSpecifier(classDeclaration.getIdent().getName()));
                  break;
              }
              case FUNCTION: {
-                 FunctionNode functionDeclaration = (FunctionNode) functionExpression(true, true);
+-                FunctionNode functionDeclaration = (FunctionNode) functionExpression(true, true);
++                FunctionNode functionDeclaration = (FunctionNode) functionExpression(true, true, false);
 +                module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, functionDeclaration, false));
                  module.addLocalExportEntry(ExportEntry.exportSpecifier(functionDeclaration.getIdent().getName()));
                  break;
              }
-@@ -5279,18 +5341,22 @@
+             default:
++                if (ES7_ASYNC_FUNCTION && isES7() && type == IDENT && ASYNC_IDENT.equals((String) getValue(token))
++                        && lookaheadIsAsyncFunction(false)) {
++                    nextOrEOL();
++                    FunctionNode functionDeclaration = (FunctionNode) functionExpression(true, true, true);
++                    module.addExport(new ExportNode(exportToken, Token.descPosition(exportToken), finish, functionDeclaration, false));
++                    module.addLocalExportEntry(ExportEntry.exportSpecifier(functionDeclaration.getIdent().getName()));
++                    break;
++                }
+                 throw error("invalid export declaration", token);
+         }
+     }
+@@ -5279,18 +5563,22 @@
       *
       * @return a list of ExportSpecifiers
       */
@@ -426,7 +1232,7 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
              }
              if (type == COMMARIGHT) {
                  next();
-@@ -5299,7 +5365,7 @@
+@@ -5299,7 +5587,7 @@
              }
          }
          expect(RBRACE);
@@ -435,10 +1241,35 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      }
  
      @Override
-@@ -5391,4 +5457,28 @@
+@@ -5391,4 +5679,53 @@
      private boolean inGeneratorFunction() {
          return lc.getCurrentFunction().getKind() == FunctionNode.Kind.GENERATOR;
      }
++
++    private boolean inAsyncFunction() {
++        return lc.getCurrentFunction().isAsync();
++    }
++
++    private boolean isAwait(long token) {
++        return Token.descType(token) == IDENT && "await".equals((String) getValue(token)); 
++    }
++
++    private boolean lookaheadIsAsyncFunction(boolean method) {
++        assert type == IDENT && ASYNC_IDENT.equals((String) getValue(token));
++        for (int i = 1;; i++) {
++            TokenType t = T(k + i);
++            switch (t) {
++            case COMMENT:
++                continue;
++            case FUNCTION:
++                return !method;
++            case EOL:
++                return false;
++            default:
++                return method && isPropertyName();
++            }
++        }
++    }
 +
 +    private static List<ImportEntry> convert(NamedImportsNode namedImportsNode) {
 +        List<ImportEntry> importEntries = new ArrayList<>(namedImportsNode.getImportSpecifiers().size());
@@ -464,9 +1295,21 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        return exports;
 +    }
  }
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextFunctionNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextFunctionNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextFunctionNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -264,4 +264,8 @@
+     public void setModule(Module module) {
+         this.module = module;
+     }
++
++    public boolean isAsync() {
++        return getFlag(FunctionNode.IS_ASYNC) != 0;
++    }
+ }
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ParserContextModuleNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -24,6 +24,8 @@
   */
  package com.oracle.js.parser;
@@ -509,27 +1352,135 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        return new Module(requestedModules, importEntries, localExportEntries, indirectExportEntries, starExportEntries, imports, exports);
      }
  }
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java
---- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Wed Jun 22 10:35:11 2016 +0200
-@@ -58,6 +58,16 @@
-         this.classElements = classElements;
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ScriptEnvironment.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ScriptEnvironment.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ScriptEnvironment.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -52,6 +52,9 @@
+     /** Enable ECMAScript 6 features. */
+     final boolean es6;
+ 
++    /** Enable ECMAScript 7 features. */
++    final boolean es7;
++
+     /**
+      * Behavior when encountering a function declaration in a lexical context where only statements
+      * are acceptable (function declarations are source elements, but not statements).
+@@ -93,7 +96,7 @@
+ 
+     final boolean functionDeclarationHoisting;
+ 
+-    private ScriptEnvironment(boolean strict, boolean es6, boolean earlyLvalueError, boolean emptyStatements, boolean syntaxExtensions, boolean scripting, boolean shebang, boolean constAsVar,
++    private ScriptEnvironment(boolean strict, boolean es6, boolean es7, boolean earlyLvalueError, boolean emptyStatements, boolean syntaxExtensions, boolean scripting, boolean shebang, boolean constAsVar,
+                     boolean functionDeclarationHoisting, FunctionStatementBehavior functionStatementBehavior, PrintWriter dumpOnError) {
+         this.namespace = new Namespace();
+         this.err = dumpOnError;
+@@ -108,6 +111,7 @@
+         this.scripting = scripting;
+         this.shebang = shebang;
+         this.es6 = es6;
++        this.es7 = es7;
+         this.functionDeclarationHoisting = functionDeclarationHoisting;
      }
  
+@@ -143,6 +147,7 @@
+         private boolean earlyLvalueError = true;
+         private boolean emptyStatements;
+         private boolean es6 = true;
++        private boolean es7 = false;
+         private boolean syntaxExtensions = true;
+         private boolean scripting;
+         private boolean shebang;
+@@ -174,6 +179,11 @@
+             return this;
+         }
+ 
++        public Builder es7(boolean es7) {
++            this.es7 = es7;
++            return this;
++        }
++
+         public Builder syntaxExtensions(boolean syntaxExtensions) {
+             this.syntaxExtensions = syntaxExtensions;
+             return this;
+@@ -210,7 +220,7 @@
+         }
+ 
+         public ScriptEnvironment build() {
+-            return new ScriptEnvironment(strict, es6, earlyLvalueError, emptyStatements, syntaxExtensions, scripting, shebang, constAsVar,
++            return new ScriptEnvironment(strict, es6, es7, earlyLvalueError, emptyStatements, syntaxExtensions, scripting, shebang, constAsVar,
+                             functionDeclarationHoisting, functionStatementBehavior, dumpOnError);
+         }
+     }
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/TokenType.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/TokenType.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/TokenType.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -64,6 +64,8 @@
+     RPAREN         (BRACKET, ")",     0, true),
+     MUL            (BINARY,  "*",    13, true),
+     ASSIGN_MUL     (BINARY,  "*=",    2, false),
++    EXP            (BINARY,  "**",   13, true),
++    ASSIGN_EXP     (BINARY,  "**=",   2, false),
+     ADD            (BINARY,  "+",    12, true),
+     INCPREFIX      (UNARY,   "++",   15, true),
+     ASSIGN_ADD     (BINARY,  "+=",    2, false),
+@@ -102,6 +104,7 @@
+     RBRACE         (BRACKET, "}"),
+     BIT_NOT        (UNARY,   "~",     14, false),
+     ELLIPSIS       (UNARY,   "..."),
++    AT             (UNARY,   "@"),
+ 
+     // ECMA 7.6.1.1 Keywords, 7.6.1.2 Future Reserved Words.
+     // All other Java keywords are commented out.
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/BinaryNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/BinaryNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/BinaryNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -135,6 +135,7 @@
+         case ASSIGN_DIV:
+         case ASSIGN_MOD:
+         case ASSIGN_MUL:
++        case ASSIGN_EXP:
+         case ASSIGN_SAR:
+         case ASSIGN_SHL:
+         case ASSIGN_SHR:
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ClassNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -39,6 +39,7 @@
+     private final Expression classHeritage;
+     private final PropertyNode constructor;
+     private final List<PropertyNode> classElements;
++    private final List<Expression> decorators;
+     private final int line;
+ 
+     /**
+@@ -49,13 +50,25 @@
+      * @param finish finish
+      */
+     public ClassNode(final int line, final long token, final int finish, final IdentNode ident, final Expression classHeritage, final PropertyNode constructor,
+-                    final List<PropertyNode> classElements) {
++                    final List<PropertyNode> classElements, final List<Expression> decorators) {
+         super(token, finish);
+         this.line = line;
+         this.ident = ident;
+         this.classHeritage = classHeritage;
+         this.constructor = constructor;
+         this.classElements = classElements;
++        this.decorators = decorators;
++    }
++
 +    private ClassNode(final ClassNode classNode, final IdentNode ident, final Expression classHeritage, final PropertyNode constructor,
-+                    final List<PropertyNode> classElements) {
++                    final List<PropertyNode> classElements, final List<Expression> decorators) {
 +        super(classNode);
 +        this.line = classNode.getLineNumber();
 +        this.ident = ident;
 +        this.classHeritage = classHeritage;
 +        this.constructor = constructor;
 +        this.classElements = classElements;
-+    }
-+
++        this.decorators = decorators;
+     }
+ 
      /**
-      * Class identifier. Optional.
-      */
-@@ -65,6 +75,13 @@
+@@ -65,6 +78,13 @@
          return ident;
      }
  
@@ -537,13 +1488,13 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        if (this.ident == ident) {
 +            return this;
 +        }
-+        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++        return new ClassNode(this, ident, classHeritage, constructor, classElements, decorators);
 +    }
 +
      /**
       * The expression of the {@code extends} clause. Optional.
       */
-@@ -72,6 +89,13 @@
+@@ -72,6 +92,13 @@
          return classHeritage;
      }
  
@@ -551,13 +1502,13 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        if (this.classHeritage == classHeritage) {
 +            return this;
 +        }
-+        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++        return new ClassNode(this, ident, classHeritage, constructor, classElements, decorators);
 +    }
 +
      /**
       * Get the constructor method definition.
       */
-@@ -79,6 +103,13 @@
+@@ -79,6 +106,13 @@
          return constructor;
      }
  
@@ -565,13 +1516,13 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        if (this.constructor == constructor) {
 +            return this;
 +        }
-+        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++        return new ClassNode(this, ident, classHeritage, constructor, classElements, decorators);
 +    }
 +
      /**
       * Get method definitions except the constructor.
       */
-@@ -86,6 +117,13 @@
+@@ -86,6 +120,27 @@
          return Collections.unmodifiableList(classElements);
      }
  
@@ -579,13 +1530,27 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        if (this.classElements == classElements) {
 +            return this;
 +        }
-+        return new ClassNode(this, ident, classHeritage, constructor, classElements);
++        return new ClassNode(this, ident, classHeritage, constructor, classElements, decorators);
++    }
++
++    /**
++     * Get decorators.
++     */
++    public List<Expression> getDecorators() {
++        return Collections.unmodifiableList(decorators);
++    }
++
++    private ClassNode setDecorators(final List<Expression> decorators) {
++        if (this.decorators == decorators) {
++            return this;
++        }
++        return new ClassNode(this, ident, classHeritage, constructor, classElements, decorators);
 +    }
 +
      /**
       * Returns the line number.
       */
-@@ -96,7 +134,13 @@
+@@ -96,7 +151,14 @@
      @Override
      public Node accept(final NodeVisitor<? extends LexicalContext> visitor) {
          if (visitor.enterClassNode(this)) {
@@ -596,13 +1561,14 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +            return visitor.leaveClassNode(setIdent(newIdent).
 +                    setClassHeritage(newClassHeritage).
 +                    setConstructor(newConstructor).
-+                    setClassElements(Node.accept(visitor, classElements)));
++                    setClassElements(Node.accept(visitor, classElements)).
++                    setDecorators(Node.accept(visitor, decorators)));
          }
  
          return this;
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportClauseNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -692,9 +1658,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,186 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -882,9 +1848,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ExportSpecifierNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,101 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -987,9 +1953,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FromNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,82 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1073,20 +2039,23 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Wed Jun 22 10:35:11 2016 +0200
-@@ -207,6 +207,9 @@
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/FunctionNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -207,6 +207,12 @@
      /** Does this function use new.target? */
      public static final int USES_NEW_TARGET = 1 << 23;
  
 +    /** Is it a statement? */
 +    public static final int IS_STATEMENT = 1 << 24;
 +
++    /** Is it async? */
++    public static final int IS_ASYNC = 1 << 25;
++
      /**
       * Constructor
       *
-@@ -314,6 +317,14 @@
+@@ -314,6 +320,14 @@
          return Node.accept(visitor, parameters);
      }
  
@@ -1101,7 +2070,17 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      /**
       * Get the source for this function
       *
-@@ -737,4 +748,8 @@
+@@ -363,6 +377,9 @@
+ 
+     @Override
+     public void toString(final StringBuilder sb, final boolean printTypes) {
++        if (isAsync()) {
++            sb.append("async ");
++        }
+         sb.append("function");
+ 
+         if (ident != null) {
+@@ -737,4 +754,12 @@
      public Module getModule() {
          return module;
      }
@@ -1109,10 +2088,14 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    public boolean isStatement() {
 +        return getFlag(IS_STATEMENT);
 +    }
++
++    public boolean isAsync() {
++        return getFlag(IS_ASYNC);
++    }
  }
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportClauseNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,149 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1263,9 +2246,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +    }
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,136 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1403,9 +2386,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/ImportSpecifierNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,101 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1508,9 +2491,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/Module.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -151,14 +151,18 @@
      private final List<ExportEntry> localExportEntries;
      private final List<ExportEntry> indirectExportEntries;
@@ -1550,9 +2533,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +                        indirectExportEntries + ", starExportEntries=" + starExportEntries + ", imports=" + imports + ", exports=" + exports + "]";
      }
  }
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NameSpaceImportNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,82 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1636,9 +2619,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/NamedImportsNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -1728,9 +2711,142 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +    }
 +
 +}
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/PropertyNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/PropertyNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/PropertyNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -27,6 +27,8 @@
+ 
+ import com.oracle.js.parser.ir.visitor.NodeVisitor;
+ import com.oracle.js.parser.ir.visitor.TranslatorNodeVisitor;
++import java.util.Collections;
++import java.util.List;
+ 
+ // @formatter:off
+ /**
+@@ -46,6 +48,8 @@
+     /** Property setter. */
+     private final FunctionNode setter;
+ 
++    private final List<Expression> decorators;
++
+     private final boolean isStatic;
+ 
+     private final boolean computed;
+@@ -60,7 +64,9 @@
+      * @param getter  getter function body
+      * @param setter  setter function body
+      */
+-    public PropertyNode(final long token, final int finish, final Expression key, final Expression value, final FunctionNode getter, final FunctionNode setter, final boolean isStatic, final boolean computed) {
++    public PropertyNode(final long token, final int finish, final Expression key,
++            final Expression value, final FunctionNode getter, final FunctionNode setter,
++            final boolean isStatic, final boolean computed, final List<Expression> decorators) {
+         super(token, finish);
+         this.key    = key;
+         this.value  = value;
+@@ -68,9 +74,12 @@
+         this.setter = setter;
+         this.isStatic = isStatic;
+         this.computed = computed;
++        this.decorators = decorators;
+     }
+ 
+-    private PropertyNode(final PropertyNode propertyNode, final Expression key, final Expression value, final FunctionNode getter, final FunctionNode setter, final boolean isStatic, final boolean computed) {
++    private PropertyNode(final PropertyNode propertyNode, final Expression key,
++            final Expression value, final FunctionNode getter, final FunctionNode setter,
++            final boolean isStatic, final boolean computed, final List<Expression> decorators) {
+         super(propertyNode);
+         this.key    = key;
+         this.value  = value;
+@@ -78,6 +87,7 @@
+         this.setter = setter;
+         this.isStatic = isStatic;
+         this.computed = computed;
++        this.decorators = decorators;
+     }
+ 
+     /**
+@@ -95,7 +105,8 @@
+                 setKey((Expression)key.accept(visitor)).
+                 setValue(value == null ? null : (Expression)value.accept(visitor)).
+                 setGetter(getter == null ? null : (FunctionNode)getter.accept(visitor)).
+-                setSetter(setter == null ? null : (FunctionNode)setter.accept(visitor)));
++                setSetter(setter == null ? null : (FunctionNode)setter.accept(visitor)).
++                setDecorators(Node.accept(visitor, decorators)));
+         }
+ 
+         return this;
+@@ -146,7 +157,7 @@
+         if (this.getter == getter) {
+             return this;
+         }
+-        return new PropertyNode(this, key, value, getter, setter, isStatic, computed);
++        return new PropertyNode(this, key, value, getter, setter, isStatic, computed, decorators);
+     }
+ 
+     /**
+@@ -161,7 +172,7 @@
+         if (this.key == key) {
+             return this;
+         }
+-        return new PropertyNode(this, key, value, getter, setter, isStatic, computed);
++        return new PropertyNode(this, key, value, getter, setter, isStatic, computed, decorators);
+     }
+ 
+     /**
+@@ -181,7 +192,7 @@
+         if (this.setter == setter) {
+             return this;
+         }
+-        return new PropertyNode(this, key, value, getter, setter, isStatic, computed);
++        return new PropertyNode(this, key, value, getter, setter, isStatic, computed, decorators);
+     }
+ 
+     /**
+@@ -201,8 +212,22 @@
+         if (this.value == value) {
+             return this;
+         }
+-        return new PropertyNode(this, key, value, getter, setter, isStatic, computed);
+-   }
++        return new PropertyNode(this, key, value, getter, setter, isStatic, computed, decorators);
++    }
++
++    /**
++     * Get decorators.
++     */
++    public List<Expression> getDecorators() {
++        return Collections.unmodifiableList(decorators);
++    }
++
++    private PropertyNode setDecorators(final List<Expression> decorators) {
++        if (this.decorators == decorators) {
++            return this;
++        }
++        return new PropertyNode(this, key, value, getter, setter, isStatic, computed, decorators);
++    }
+ 
+     public boolean isStatic() {
+         return isStatic;
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/UnaryNode.java
+--- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/UnaryNode.java	Mon Apr 18 15:25:25 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/UnaryNode.java	Tue Jun 28 16:22:04 2016 +0200
+@@ -128,6 +128,13 @@
+         final String    name      = tokenType.getName();
+         final boolean   isPostfix = tokenType == DECPOSTFIX || tokenType == INCPOSTFIX;
+ 
++        if (tokenType == TokenType.IDENT) {
++            // await expression
++            sb.append("await ");
++            getExpression().toString(sb, printType);
++            return;
++        }
++
+         boolean rhsParen = tokenType.needsParens(getExpression().tokenType(), false);
+ 
+         if (!isPostfix) {
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/VarNode.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -60,6 +60,12 @@
       *  a program node */
      public static final int IS_LAST_FUNCTION_DECLARATION = 1 << 2;
@@ -1757,9 +2873,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
 +        return getFlag(IS_DESTRUCTURING);
 +    }
  }
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/NodeVisitor.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -38,16 +38,25 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;
@@ -1886,9 +3002,9 @@ diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/j
      /**
       * Callback for entering an ObjectNode
       *
-diff -r 4baa8b862456 -r a1e46e3dede6 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java
+diff -r 4baa8b862456 -r 2012c98ce869 graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java
 --- a/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Mon Apr 18 15:25:25 2016 +0200
-+++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Wed Jun 22 10:35:11 2016 +0200
++++ b/graal/com.oracle.js.parser/src/com/oracle/js/parser/ir/visitor/TranslatorNodeVisitor.java	Tue Jun 28 16:22:04 2016 +0200
 @@ -38,16 +38,25 @@
  import com.oracle.js.parser.ir.DebuggerNode;
  import com.oracle.js.parser.ir.EmptyNode;

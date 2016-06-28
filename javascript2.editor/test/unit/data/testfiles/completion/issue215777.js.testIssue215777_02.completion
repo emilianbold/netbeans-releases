@@ -20,12 +20,14 @@ METHOD     cosh(x: Number): Number         [PUBLIC,   JS Platform
 METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
 METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
+METHOD     entries(obj: Object): Array     [PUBLIC,   JS Platform
 METHOD     exp(x: Number): Number          [PUBLIC,   JS Platform
 METHOD     expm1(x: Number): Number        [PUBLIC,   JS Platform
 METHOD     floor(x: Number): Number        [PUBLIC,   JS Platform
 METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     fround(x: Number): Number       [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
 METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
@@ -60,6 +62,7 @@ METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     trunc(x: Number): Number        [PUBLIC,   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+METHOD     values(obj: Object): Array      [PUBLIC,   JS Platform
 FIELD      E: Number                       [PUBLIC]   JS Platform
 FIELD      LN10: Number                    [PUBLIC]   JS Platform
 FIELD      LN2: Number                     [PUBLIC]   JS Platform

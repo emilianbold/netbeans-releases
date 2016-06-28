@@ -214,6 +214,7 @@ METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
 METHOD     dump(message: String): undefin  [PUBLIC,   JS Platform
 METHOD     encodeURI(uri: String): String  [PUBLIC]   JS Platform
 METHOD     encodeURIComponent(uriComponen  [PUBLIC]   JS Platform
+METHOD     entries(obj: Object): Array     [PUBLIC,   JS Platform
 METHOD     escape(regular: String): Strin  [PUBLIC,   JS Platform
 METHOD     eval(x: String): undefined      [PUBLIC]   JS Platform
 METHOD     find(aString: String, aCaseSen  [PUBLIC,   JS Platform
@@ -223,6 +224,7 @@ METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     getAttention(): undefined       [PUBLIC,   JS Platform
 METHOD     getComputedStyle(element: Elem  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
 METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
@@ -269,6 +271,7 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     unescape(escaped: String): Str  [PUBLIC,   JS Platform
 METHOD     updateCommands(sCommandName):   [PUBLIC,   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+METHOD     values(obj: Object): Array      [PUBLIC,   JS Platform
 FIELD      Components: Components          [PUBLIC]   JS Platform
 FIELD      applicationCache: Object        [PUBLIC]   JS Platform
 FIELD      closed: Boolean                 [PUBLIC]   JS Platform

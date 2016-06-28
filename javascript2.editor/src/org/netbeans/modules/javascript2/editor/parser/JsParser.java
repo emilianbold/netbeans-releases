@@ -114,7 +114,10 @@ public class JsParser extends SanitizingParser<JsParserResult> {
         errorManager.setLimit(0);
 
         ScriptEnvironment.Builder builder = ScriptEnvironment.builder();
-        Parser parser = new Parser(builder.emptyStatements(true).build(), source, errorManager);
+        Parser parser = new Parser(
+                builder.emptyStatements(true).es6(true).es7(true).build(),
+                source,
+                errorManager);
         FunctionNode node = null;
         if (isModule) {
             node = parser.parseModule(name);

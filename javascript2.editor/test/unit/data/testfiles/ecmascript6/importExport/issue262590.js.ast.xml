@@ -25,6 +25,7 @@
             </ExpressionStatement>
           </Block>
         </FunctionNode>
+        <!-- PropertyNode Decorators -->
       </PropertyNode>
     </ObjectNode>
   </ExportNode>
@@ -68,6 +69,7 @@
               </ExpressionStatement>
             </Block>
           </FunctionNode>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </VarNode>

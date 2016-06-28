@@ -48,15 +48,21 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.util.NbBundle;
 
 
-public class JSPreferences {
+public class JsPreferences {
     
     public enum JSVersion {
 
-        ECMA5("ECMAScript 5.1"),
-        ECMA6("ECMAScript 6");
-//        ECMA7("ECMAScript 7");
+        @NbBundle.Messages("LBL_ECMA5=ECMAScript 5.1")
+        ECMA5(Bundle.LBL_ECMA5()),
+
+        @NbBundle.Messages("LBL_ECMA6=ECMAScript 6")
+        ECMA6(Bundle.LBL_ECMA6()),
+
+        @NbBundle.Messages("LBL_ECMA7=ECMAScript 7 (Experimental)")
+        ECMA7(Bundle.LBL_ECMA7());
         
         private final String displayName;
 
@@ -112,15 +118,15 @@ public class JSPreferences {
     }
     
     private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, JSPreferences.class, true);
+        return ProjectUtils.getPreferences(project, JsPreferences.class, true);
     }
 
     public static boolean isPreECMAScript6(Project project) {
         return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA6.ordinal();
     }
     
-//    public static boolean isPreECMAScript7(Project project) {
-//        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA7.ordinal();
-//    }
+    public static boolean isPreECMAScript7(Project project) {
+        return getECMAScriptVersion(project).ordinal() < JSVersion.ECMA7.ordinal();
+    }
     
 }

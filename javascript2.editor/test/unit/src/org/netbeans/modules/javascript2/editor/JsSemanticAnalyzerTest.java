@@ -51,6 +51,30 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         super(testName);
     }
     
+    public void testAsyncFunction01() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions1.js");
+    }
+
+    public void testAsyncFunction02() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions2.js");
+    }
+
+    public void testAsyncFunction03() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions3.js");
+    }
+
+    public void testAsyncFunction04() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions4.js");
+    }
+
+    public void testAsyncFunction05() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions5.js");
+    }
+
+    public void testAsyncFunction06() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions6.js");
+    }
+
     public void testObjectAsParam() throws Exception {
         // TODO arguments can not be handled as global 
         checkSemantic("testfiles/model/objectAsParameter.js");
@@ -615,6 +639,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/markoccurences/blockscope/arrayLiteral01.js");
     }
     
+    public void testDeclorators8() throws Exception {
+        checkSemantic("testfiles/parser/decorators/decorators8.js");
+    }
+
     public void testIssue262590() throws Exception {
         checkSemantic("testfiles/ecmascript6/importExport/issue262590.js");
     }
