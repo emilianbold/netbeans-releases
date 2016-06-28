@@ -51,9 +51,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         super(testName);
     }
     
-//    public void testAsyncFunction01() throws Exception {
-//        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions1.js");
-//    }
+    public void testAsyncFunction01() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions1.js");
+    }
 
     public void testAsyncFunction02() throws Exception {
         checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions2.js");
@@ -71,9 +71,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions5.js");
     }
 
-//    public void testAsyncFunction06() throws Exception {
-//        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions6.js");
-//    }
+    public void testAsyncFunction06() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions6.js");
+    }
 
     public void testObjectAsParam() throws Exception {
         // TODO arguments can not be handled as global 

@@ -196,12 +196,9 @@ public class Ecma7Rule extends EcmaLevelRule {
 
     private static final class SwitchToEcma7Fix implements HintFix {
 
-        private final Document doc;
-
         private final FileObject fo;
 
         public SwitchToEcma7Fix(Snapshot snapshot) {
-            this.doc = snapshot.getSource().getDocument(false);
             this.fo = snapshot.getSource().getFileObject();
         }
 

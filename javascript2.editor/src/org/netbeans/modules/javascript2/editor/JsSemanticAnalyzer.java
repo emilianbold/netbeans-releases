@@ -49,6 +49,7 @@ import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.ImportSpecifierNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.NameSpaceImportNode;
+import com.oracle.js.parser.ir.ObjectNode;
 import com.oracle.js.parser.ir.PropertyNode;
 import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
@@ -386,30 +387,17 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
             @Override
             public boolean enterClassNode(ClassNode classNode) {
                 for (PropertyNode p : classNode.getClassElements()) {
-                    int offset = -1;
-                    if ((p.getValue() instanceof FunctionNode) && ((FunctionNode) p.getValue()).isAsync()) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), p.getStart() - 1);
-                        if (ts != null) {
-                            Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
-                            if (token != null && token.id() == JsTokenId.IDENTIFIER && "async".equals(token.text().toString())) {
-                                offset = ts.offset();
-                                highlights.put(LexUtilities.getLexerOffsets(result,
-                                        new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
-                            }
-                        }
-                    }
-                    if (p.isStatic()) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), offset >= 0 ? offset - 1 : p.getStart() - 1);
-                        if (ts != null) {
-                            Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
-                            if (token != null && token.id() == JsTokenId.RESERVED_STATIC) {
-                                highlights.put(LexUtilities.getLexerOffsets(result,
-                                        new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
-                            }
-                        }
-                    }
+                    handleProperty(p, true);
                 }
                 return super.enterClassNode(classNode);
+            }
+
+            @Override
+            public boolean enterObjectNode(ObjectNode objectNode) {
+                for (PropertyNode p : objectNode.getElements()) {
+                    handleProperty(p, false);
+                }
+                return super.enterObjectNode(objectNode);
             }
 
             @Override
@@ -440,6 +428,31 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                 }
                 return super.enterUnaryNode(unaryNode);
+            }
+
+            private void handleProperty(PropertyNode p, boolean classElement) {
+                int offset = -1;
+                if ((p.getValue() instanceof FunctionNode) && ((FunctionNode) p.getValue()).isAsync()) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), p.getStart() - 1);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.IDENTIFIER && "async".equals(token.text().toString())) {
+                            offset = ts.offset();
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                if (classElement && p.isStatic()) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), offset >= 0 ? offset - 1 : p.getStart() - 1);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.RESERVED_STATIC) {
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
             }
         };
 
