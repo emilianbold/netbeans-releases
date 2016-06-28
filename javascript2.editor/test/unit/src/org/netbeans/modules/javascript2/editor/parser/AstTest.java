@@ -132,6 +132,30 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/expression/assignment/assignment15.js");
     }
 
+    public void testAsyncFunction01() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions1.js");
+    }
+
+    public void testAsyncFunction02() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions2.js");
+    }
+
+    public void testAsyncFunction03() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions3.js");
+    }
+
+    public void testAsyncFunction04() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions4.js");
+    }
+
+    public void testAsyncFunction05() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions5.js");
+    }
+
+    public void testAsyncFunction06() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions6.js");
+    }
+
     public void testBinary01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/binary/binary01.js");
     }

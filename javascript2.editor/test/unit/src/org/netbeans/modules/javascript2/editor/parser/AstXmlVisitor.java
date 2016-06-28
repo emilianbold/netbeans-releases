@@ -340,6 +340,7 @@ public class AstXmlVisitor extends NodeVisitor {
         processAttribute(node.isNamedFunctionExpression(), "isNamedFunctionExpression");
         processAttribute(node.isSubclassConstructor(), "isSubclassConstructor");
         processAttribute(node.isVarArg(), "isVarArg");
+        processAttribute(node.isAsync(), "isAsync");
         processAttribute(node);
 
         if (node.isModule()) {
