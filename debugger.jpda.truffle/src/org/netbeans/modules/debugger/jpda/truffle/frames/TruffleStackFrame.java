@@ -49,6 +49,7 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
@@ -61,6 +62,7 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 public class TruffleStackFrame {
 
     private final JPDADebugger debugger;
+    private final Variable suspendedInfo;
     private final int depth;
     private final ObjectVariable frameInstance;
     private final ObjectVariable stackTrace;
@@ -86,7 +88,7 @@ public class TruffleStackFrame {
     }
     */
 
-    public TruffleStackFrame(JPDADebugger debugger, int depth,
+    public TruffleStackFrame(JPDADebugger debugger, Variable suspendedInfo, int depth,
                              ObjectVariable frameInstance, ObjectVariable stackTrace,
                              String frameDefinition, StringReference codeRef,
                              TruffleSlotVariable[] vars, ObjectVariable thisObject) {
@@ -97,6 +99,7 @@ public class TruffleStackFrame {
             iex.printStackTrace();
         }*/
         this.debugger = debugger;
+        this. suspendedInfo = suspendedInfo;
         this.depth = depth;
         this.frameInstance = frameInstance;
         this.stackTrace = stackTrace;
@@ -179,7 +182,7 @@ public class TruffleStackFrame {
     
     public TruffleSlotVariable[] getVars() {
         if (vars == null) {
-            vars = TruffleAccess.createVars(debugger, getStackFrameInstance());
+            vars = TruffleAccess.createVars(debugger, suspendedInfo, getStackFrameInstance());
         }
         return vars;
     }

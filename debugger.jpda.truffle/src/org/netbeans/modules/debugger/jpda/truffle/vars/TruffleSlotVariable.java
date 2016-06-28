@@ -58,9 +58,10 @@ import org.openide.util.Exceptions;
 public class TruffleSlotVariable implements TruffleVariable {
     
     private static final String METHOD_GET_SLOT_VALUE = "getSlotValue";         // NOI18N
-    private static final String METHOD_GET_SLOT_VALUE_SIG = "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_GET_SLOT_VALUE_SIG = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
     
     private final JPDADebugger debugger;
+    private final Variable suspendedInfo;
     private final ObjectVariable frame;
     private final ObjectVariable slot;
     private final String name;
@@ -69,9 +70,11 @@ public class TruffleSlotVariable implements TruffleVariable {
     private Object value;
     private TruffleVariableImpl truffleVariable;
     
-    public TruffleSlotVariable(JPDADebugger debugger, ObjectVariable frame, ObjectVariable slot,
+    public TruffleSlotVariable(JPDADebugger debugger, Variable suspendedInfo,
+                               ObjectVariable frame, ObjectVariable slot,
                                String name, String type) {
         this.debugger = debugger;
+        this.suspendedInfo = suspendedInfo;
         this.frame = frame;
         this.slot = slot;
         this.name = name;
@@ -114,7 +117,7 @@ public class TruffleSlotVariable implements TruffleVariable {
         try {
             Variable valueVar = debugAccessor.invokeMethod(METHOD_GET_SLOT_VALUE,
                                                            METHOD_GET_SLOT_VALUE_SIG,
-                                                           new Variable[] { frame, slot });
+                                                           new Variable[] { suspendedInfo, frame, slot });
             tv = TruffleVariableImpl.get(valueVar);
             if (tv != null) {
                 valueObj = tv.getDisplayValue();
