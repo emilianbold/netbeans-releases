@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -124,12 +125,18 @@ public class AddUseImportSuggestion extends SuggestionRule {
                 || CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_53)) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
         OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
         if (lineBounds.containsInclusive(caretOffset)) {
             CheckVisitor checkVisitor = new CheckVisitor(context, doc, lineBounds);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             hints.addAll(checkVisitor.getHints());
         }
     }
@@ -152,6 +159,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         @Override
         public void scan(ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()))) {
                 super.scan(node);
             }
@@ -159,6 +169,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         @Override
         public void visit(NamespaceName node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(node.getStartOffset())) {
                 NamespaceDeclaration currenNamespace = null;
                 List<ASTNode> path = getPath();
@@ -201,6 +214,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         @Override
         public void visit(Scalar node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(node.getStartOffset())) {
                 NamespaceDeclaration currenNamespace = null;
                 for (ASTNode oneNode : getPath()) {
@@ -223,6 +239,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
         }
 
         private void addImportHints(FullyQualifiedElement idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             final QualifiedName indexedName = idxElement.getFullyQualifiedName(); //getQualifiedName() used before
             QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
 

@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -79,8 +80,14 @@ public class UnreachableStatementHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.addAll(checkVisitor.getHints());
             }
         }
@@ -121,6 +128,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(ForStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Statement body = node.getBody();
             if (body instanceof Block) {
                 super.visit(node);
@@ -133,6 +143,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(ForEachStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Statement body = node.getStatement();
             if (body instanceof Block) {
                 super.visit(node);
@@ -145,6 +158,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(DoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Statement body = node.getBody();
             if (body instanceof Block) {
                 super.visit(node);
@@ -157,6 +173,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getCondition());
             Statement trueStatement = node.getTrueStatement();
             if (trueStatement instanceof Block) {
@@ -178,6 +197,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(WhileStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Statement body = node.getBody();
             if (body instanceof Block) {
                 super.visit(node);
@@ -190,6 +212,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(SwitchCase node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getValue());
             blocks.push(new CheckedBlock());
             scan(node.getActions());
@@ -198,6 +223,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(Program node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             blocks.push(new CheckedBlock());
             super.visit(node);
             processedBlocks.add(blocks.pop());
@@ -205,6 +233,9 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(Block node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             blocks.push(new CheckedBlock());
             super.visit(node);
             processedBlocks.add(blocks.pop());
@@ -212,24 +243,36 @@ public class UnreachableStatementHint extends HintRule {
 
         @Override
         public void visit(ReturnStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             processLastStatement(node);
         }
 
         @Override
         public void visit(BreakStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             processLastStatement(node);
         }
 
         @Override
         public void visit(ContinueStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             processLastStatement(node);
         }
 
         @Override
         public void visit(ThrowStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             processLastStatement(node);
         }

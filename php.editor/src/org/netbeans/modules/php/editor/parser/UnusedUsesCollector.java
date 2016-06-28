@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
@@ -85,12 +86,18 @@ public class UnusedUsesCollector extends DefaultVisitor {
 
     @Override
     public void visit(Program program) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         scan(program.getStatements());
         scan(program.getComments());
     }
 
     @Override
     public void visit(PHPDocTypeNode node) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         QualifiedName typeName = QualifiedName.create(node.getValue());
         if (unusedUsesOffsetRanges.size() > 0 && !typeName.getKind().isFullyQualified()) {
             String firstSegmentName = typeName.getSegments().getFirst();
@@ -100,6 +107,9 @@ public class UnusedUsesCollector extends DefaultVisitor {
 
     @Override
     public void visit(NamespaceName node) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         if (unusedUsesOffsetRanges.size() > 0 && !node.isGlobal()) {
             Identifier firstSegment = node.getSegments().get(0);
             String firstSegmentName = firstSegment.getName();
@@ -122,6 +132,9 @@ public class UnusedUsesCollector extends DefaultVisitor {
 
     @Override
     public void visit(UseStatement node) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         List<UseStatementPart> parts = node.getParts();
         if (parts.size() == 1
                 && parts.get(0) instanceof SingleUseStatementPart) {

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
@@ -84,8 +85,14 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null && appliesTo(fileObject)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             PHP54UnhandledError.CheckVisitor checkVisitor = new PHP54UnhandledError.CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -110,6 +117,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(TraitDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Identifier name = node.getName();
             if (name != null) {
                 createError(name);
@@ -120,11 +130,17 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(UseTraitStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(MethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkAnonymousObjectVariable = true;
             super.visit(node);
             checkAnonymousObjectVariable = false;
@@ -132,6 +148,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(FieldAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkAnonymousObjectVariable = true;
             super.visit(node);
             checkAnonymousObjectVariable = false;
@@ -139,6 +158,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(AnonymousObjectVariable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkAnonymousObjectVariable) {
                 createError(node);
             }
@@ -146,11 +168,17 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(DereferencedArrayAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(Scalar node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
                 createError(node);
             }
@@ -158,6 +186,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Expression name = node.getMethod().getFunctionName().getName();
             if (name instanceof ReflectionVariable) {
                 createError(name);
@@ -166,6 +197,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.isStatic()) {
                 createError(node);
             } else {
@@ -175,6 +209,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ArrayCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             ArrayCreation.Type type = node.getType();
             if (type == ArrayCreation.Type.NEW) {
                 createError(node);
@@ -185,6 +222,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!checkCallableType(node.getFormalParameters())) {
                 super.visit(node);
             }
@@ -192,6 +232,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(MethodDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!checkCallableType(node.getFunction().getFormalParameters())) {
                 super.visit(node);
             }

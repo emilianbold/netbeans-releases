@@ -43,12 +43,14 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -72,6 +74,9 @@ public class ArraySyntaxSuggestion extends SuggestionRule {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final BaseDocument doc = context.doc;
         int caretOffset = getCaretOffset();
         OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
@@ -80,6 +85,9 @@ public class ArraySyntaxSuggestion extends SuggestionRule {
             if (fileObject != null && isAtLeastPhp54(fileObject)) {
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, this, context.doc, lineBounds);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getHints());
             }
         }
@@ -107,6 +115,9 @@ public class ArraySyntaxSuggestion extends SuggestionRule {
         public List<Hint> getHints() {
             List<Hint> hints = new ArrayList<>();
             for (FixInfo fixInfo : fixInfos) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return Collections.emptyList();
+                }
                 hints.add(new Hint(suggestion, Bundle.ArraySyntaxDesc(), fileObject, fixInfo.getLineRange(), createFixes(fixInfo), 500));
             }
             return hints;
@@ -120,6 +131,9 @@ public class ArraySyntaxSuggestion extends SuggestionRule {
 
         @Override
         public void scan(ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineRange.getEnd()))) {
                 super.scan(node);
             }
@@ -127,6 +141,9 @@ public class ArraySyntaxSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ArrayCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             OffsetRange nodeRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             if (lineRange.overlaps(nodeRange)) {
                 processArrayCreation(node);

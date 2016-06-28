@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -76,8 +77,14 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null && appliesTo(fileObject)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             PHP55UnhandledError.CheckVisitor checkVisitor = new CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -100,21 +107,33 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ExpressionArrayAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(YieldExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(FinallyClause node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
         }
 
         @Override
         public void visit(ForEachStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Expression value = node.getValue();
             if (value instanceof ListVariable) {
                 createError(value);
@@ -125,6 +144,9 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticConstantAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Identifier constant = node.getConstantName();
             if (constant != null) {
                 String constantName = constant.getName();

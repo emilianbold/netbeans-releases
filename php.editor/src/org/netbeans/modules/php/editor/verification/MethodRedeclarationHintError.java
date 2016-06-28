@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -80,12 +81,27 @@ public class MethodRedeclarationHintError extends HintErrorRule {
         fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {
             this.hints = hints;
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor();
             phpParseResult.getProgram().accept(checkVisitor);
             conditionStatements = checkVisitor.getConditionStatements();
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredTraits(fileScope));
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
         }
     }
@@ -99,12 +115,18 @@ public class MethodRedeclarationHintError extends HintErrorRule {
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             addStatement(node.getTrueStatement());
             addStatement(node.getFalseStatement());
         }
 
         @Override
         public void visit(SwitchCase node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             addStatement(node);
         }
 
@@ -129,6 +151,9 @@ public class MethodRedeclarationHintError extends HintErrorRule {
     private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
         Set<String> declaredMethodNames = new HashSet<>();
         for (FunctionScope functionScope : declaredFunctions) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!isInConditionStatament(functionScope)) {
                 String fullyQualifiedFunctionName = functionScope.getFullyQualifiedName().toString();
                 if (declaredMethodNames.contains(fullyQualifiedFunctionName)) {
