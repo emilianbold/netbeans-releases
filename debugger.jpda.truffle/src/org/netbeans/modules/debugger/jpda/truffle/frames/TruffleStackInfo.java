@@ -67,11 +67,14 @@ public class TruffleStackInfo {
     private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Ljava/lang/Object;";   // NOI18N
     
     private final JPDADebugger debugger;
+    private final Variable suspendedInfo;
     private final ObjectVariable stackTrace;
     private TruffleStackFrame[] stackFrames;
 
-    public TruffleStackInfo(JPDADebugger debugger, Variable[] frameSlots, ObjectVariable stackTrace) {
+    public TruffleStackInfo(JPDADebugger debugger, Variable suspendedInfo,
+                            Variable[] frameSlots, ObjectVariable stackTrace) {
         this.debugger = debugger;
+        this.suspendedInfo = suspendedInfo;
         this.stackTrace = stackTrace;
         /*
         int n = stackTrace.length;
@@ -116,7 +119,7 @@ public class TruffleStackInfo {
             while ((i2 = framesDesc.indexOf("\n\n", i1)) > 0) {
                 StringReference codeRef = (StringReference) ((JDIVariable) codes[depth-1]).getJDIValue();
                 ObjectVariable frameInstance = (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
-                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth, frameInstance, stackTrace, framesDesc.substring(i1, i2), codeRef, null, (ObjectVariable) thiss[depth-1]);
+                TruffleStackFrame tsf = new TruffleStackFrame(debugger, suspendedInfo, depth, frameInstance, stackTrace, framesDesc.substring(i1, i2), codeRef, null, (ObjectVariable) thiss[depth-1]);
                 truffleFrames.add(tsf);
                 i1 = i2 + 2;
                 depth++;

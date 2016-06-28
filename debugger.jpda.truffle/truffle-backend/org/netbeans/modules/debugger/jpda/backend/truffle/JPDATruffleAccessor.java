@@ -279,7 +279,8 @@ public class JPDATruffleAccessor extends Object {
         stepCmd = 0;
     }*/
     
-    static Object getSlotValue(Object frameObj, Object slotObj) {
+    static Object getSlotValue(Object event, Object frameObj, Object slotObj) {
+        SuspendedEvent suspEvent = (SuspendedEvent) event;
         FrameInstance frameInstance = (FrameInstance) frameObj;
         Frame frame = frameInstance.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
         FrameSlot slot = (FrameSlot) slotObj;
@@ -338,7 +339,7 @@ public class JPDATruffleAccessor extends Object {
             //Node node = frame.materialize().getFrameDescriptor().
             String name;
             name = slot.getIdentifier().toString();
-            TruffleObject to = new TruffleObject(name, obj);
+            TruffleObject to = new TruffleObject(name, obj, suspEvent, frameInstance);
             //return context.getVisualizer().displayValue(context, obj);
             //System.err.println("TruffleObject: "+to);
             //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
@@ -554,13 +555,13 @@ public class JPDATruffleAccessor extends Object {
         try {
             value = evt.eval(expression, fi);
         } catch (IOException ioex) {
-            return new TruffleObject(ioex.getLocalizedMessage(), ioex);
+            return new TruffleObject(ioex.getLocalizedMessage(), ioex, null, null);
         }
         //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
-        TruffleObject to = new TruffleObject(expression, value);
+        TruffleObject to = new TruffleObject(expression, value, evt, fi);
         return to;
     }
     
