@@ -50,20 +50,32 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.CodeAuditProviderImpl;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -93,6 +105,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private final ExtendedModel model;
+    private final OptionsFilter filter;
     
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
     private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
@@ -123,14 +136,19 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         if (masterLookup != null) {
             filter = masterLookup.lookup(OptionsFilter.class);
         }
-        if (filter != null) {
-             ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
-        } else {
-            errorTree.setModel(model);
-        }
+        this.filter = filter;
+        installFilter();
         logic = new HintsPanelLogic();
         logic.connect(errorTree, model, severityLabel, severityComboBox,
                 customizerPanel, descriptionTextArea);
+    }
+    
+    private void installFilter() {
+        if (filter != null) {
+            ((OptionsFilter) filter).installFilteringModel(errorTree, model, new AcceptorImpl());
+        } else {
+            errorTree.setModel(model);
+        }
     }
     
     void selectPath(String path) {
@@ -395,26 +413,105 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private javax.swing.JLabel severityLabel;
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
+    
+    private static class TreeStorage {
 
-    static final class ExtendedModel implements TreeModel {
+        private final Map<HintModelController, List<HintModelController>> storage;
+
+        public TreeStorage() {
+            this.storage = new ConcurrentHashMap<HintModelController, List<HintModelController>>();
+        }
+
+        public void putRoot(HintModelController root) {
+            storage.put(root, new CopyOnWriteArrayList<HintModelController>());
+        }
+
+        public void removeRoot(HintModelController root) {
+            storage.remove(root);
+        }
+        
+        public void clearRoot(HintModelController root) {
+            storage.get(root).clear();
+        }
+
+        public void addNode(HintModelController parent, HintModelController node) {
+            List<HintModelController> children = storage.get(parent);
+            if (children != null) {
+                children.add(node);
+            }
+        }
+
+        public void removeNode(HintModelController parent, HintModelController node) {
+            List<HintModelController> children = storage.get(parent);
+            if (children != null) {
+                children.remove(node);
+            }
+        }
+
+        public boolean isChanged() {
+            for (Map.Entry<HintModelController, List<HintModelController>> entry : storage.entrySet()) {
+                if (entry.getKey().isChanged()) {
+                    return true;
+                }
+                for (HintModelController child : entry.getValue()) {
+                    if (child.isChanged()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void store() {
+            for (Map.Entry<HintModelController, List<HintModelController>> entry : storage.entrySet()) {
+                if (entry.getKey().isChanged()) {
+                    entry.getKey().store();
+                }
+                for (HintModelController child : entry.getValue()) {
+                    if (child.isChanged()) {
+                        child.store();
+                    }
+                }
+            }
+        }
+
+        public void cancel() {
+            for (Map.Entry<HintModelController, List<HintModelController>> entry : storage.entrySet()) {
+                if (entry.getKey().isChanged()) {
+                    entry.getKey().cancel();
+                }
+                for (HintModelController child : entry.getValue()) {
+                    if (child.isChanged()) {
+                        child.cancel();
+                    }
+                }
+            }
+        }
+    }
+
+    final class ExtendedModel implements TreeModel {
         private final List<DefaultMutableTreeNode> audits = new ArrayList<DefaultMutableTreeNode>();
-        private final List<HintModelController> storage =  new ArrayList<HintModelController>();
+        private final TreeStorage storage =  new TreeStorage();
         private final String mimeType;
         private final CodeAuditProvider selection;
-        private ExtendedModel(CodeAuditProvider selection, String mimeType){
+        private final List<TreeModelListener> listeners;
+        
+        private ExtendedModel(CodeAuditProvider selection, String mimeType) {
             this.mimeType = mimeType;
             this.selection = selection;
+            this.listeners = new ArrayList<TreeModelListener>();
             if (selection == null) {
-                for(CodeAuditProvider provider : CodeAuditProviderImpl.getDefault()) {
+                for (CodeAuditProvider provider : CodeAuditProviderImpl.getDefault()) {
                     if (mimeType.equals(provider.getMimeType())) {
-                        CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(provider, true);
-                        DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
+                        final CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(provider, true);
+                        final DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
                         audits.add(providerRoot);
-                        storage.add(proxy);
-                        for(CodeAudit audit : proxy.getAudits()) {
+                        storage.putRoot(proxy);
+                        for (CodeAudit audit : proxy.getAudits()) {
                             providerRoot.add(new DefaultMutableTreeNode(audit));
-                            storage.add((HintModelController) audit);
+                            storage.addNode(proxy, (HintModelController) audit);
                         }
+                        proxy.addAuditChangedListener(new ActionListenerImpl(providerRoot, proxy));
                     }
                 }
                 if (MIMENames.SOURCES_MIME_TYPE.equals(mimeType)) {
@@ -422,47 +519,35 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                         if (option.isVisible()) {
                             NamedOptionProxy proxy = new NamedOptionProxy(option, true);
                             audits.add(new DefaultMutableTreeNode(proxy));
-                            storage.add(proxy);
+                            storage.putRoot(proxy);
                         }
                     }
                 }
             } else {
-                CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(selection, false);
-                DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
+                final CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(selection, false);
+                final DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
                 audits.add(providerRoot);
-                storage.add(proxy);
-                for(CodeAudit audit : proxy.getAudits()) {
+                storage.putRoot(proxy);
+                for (CodeAudit audit : proxy.getAudits()) {
                     providerRoot.add(new DefaultMutableTreeNode(audit));
-                    storage.add((HintModelController) audit);
+                    storage.addNode(proxy, (HintModelController) audit);
                 }
+                proxy.addAuditChangedListener(new ActionListenerImpl(providerRoot, proxy));
             }
         }
 
         boolean isChanged() {
-            for(HintModelController node : storage) {
-                if (node.isChanged()) {
-                    return true;
-                }
-            }
-            return false;
+            return storage.isChanged();
         }
-        
+
         void store() {
-            for(HintModelController node : storage) {
-                if (node.isChanged()) {
-                    node.store();
-                }
-            }
+            storage.store();
         }
 
         void cancel() {
-            for(HintModelController node : storage) {
-                if (node.isChanged()) {
-                    node.cancel();
-                }
-            }
+            storage.cancel();
         }
-        
+
         @Override
         public Object getRoot() {
             return "Root"; //NOI18N
@@ -514,10 +599,24 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
 
         @Override
         public void addTreeModelListener(TreeModelListener l) {
+            listeners.add(l);
         }
 
         @Override
         public void removeTreeModelListener(TreeModelListener l) {
+            listeners.remove(l);
+        }
+
+        private void fireTreeNodesChanged(final TreeNode root) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    installFilter();
+                    for (TreeModelListener listener : listeners) {
+                        listener.treeStructureChanged(new TreeModelEvent(this, new TreePath(root)));
+                    }
+                }
+            });
         }
 
         public void nodeChanged(TreeNode node) {
@@ -532,8 +631,30 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
 //                }
 //            }
         }
+
+        private class ActionListenerImpl implements ActionListener {
+
+            private final DefaultMutableTreeNode providerRoot;
+            private final CodeAuditProviderProxy proxy;
+
+            public ActionListenerImpl(DefaultMutableTreeNode providerRoot, CodeAuditProviderProxy proxy) {
+                this.providerRoot = providerRoot;
+                this.proxy = proxy;
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                providerRoot.removeAllChildren();
+                storage.clearRoot(proxy);
+                for (CodeAudit audit : proxy.getAudits()) {
+                    providerRoot.add(new DefaultMutableTreeNode(audit));
+                    storage.addNode(proxy, (HintModelController) audit);
+                }
+                fireTreeNodesChanged(providerRoot);
+            }
+        }
     }
-    
+
     private final class AcceptorImpl implements OptionsFilter.Acceptor {
 
         @Override
@@ -564,28 +685,57 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     }
     
     static final class CodeAuditProviderProxy implements CodeAuditProvider, HintModelController {
+
         private final CodeAuditProvider proxy;
         private final List<CodeAudit> audits = new ArrayList<CodeAudit>();
         private final AuditPreferences modifiedAuditPref;
         private final ModifiedPreferences modifiedPref;
-        
-        private CodeAuditProviderProxy(CodeAuditProvider proxy, boolean supportChanges) {
+        private List<ActionListener> listeners;
+
+        private CodeAuditProviderProxy(final CodeAuditProvider proxy, final boolean supportChanges) {
             this.proxy = proxy;
+            this.listeners = new ArrayList<ActionListener>();
+
             modifiedPref = new ModifiedPreferences(proxy.getPreferences().getPreferences(), supportChanges);
             modifiedAuditPref = new AuditPreferences(modifiedPref);
-            for(CodeAudit a : proxy.getAudits()) {
+
+            for (CodeAudit a : proxy.getAudits()) {
                 audits.add(CodeAuditProxy.create(a, supportChanges));
             }
+
+            proxy.getPreferences().getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    Collection<CodeAudit> current = proxy.getAudits();
+                    if (!audits.equals(current)) {
+                        audits.clear();
+                        for (CodeAudit a : current) {
+                            audits.add(CodeAuditProxy.create(a, supportChanges));
+                        }
+                        for (ActionListener listener : listeners) {
+                            listener.actionPerformed(null);
+                        }
+                    }
+                }
+            });
+        }
+
+        public void addAuditChangedListener(ActionListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removeAuditChangedListener(ActionListener listener) {
+            listeners.remove(listener);
         }
 
         @Override
         public JComponent createComponent() {
             if (proxy instanceof AbstractCustomizerProvider) {
-                return ((AbstractCustomizerProvider)proxy).createComponent(modifiedPref);
+                return ((AbstractCustomizerProvider) proxy).createComponent(modifiedPref);
             }
             return null;
         }
-        
+
         @Override
         public Collection<CodeAudit> getAudits() {
             return audits;
