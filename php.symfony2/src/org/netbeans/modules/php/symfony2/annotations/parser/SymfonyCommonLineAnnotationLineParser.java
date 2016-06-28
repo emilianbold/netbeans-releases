@@ -93,7 +93,8 @@ public class SymfonyCommonLineAnnotationLineParser implements AnnotationLinePars
         TYPED_PARAMETERS.add("type"); //NOI18N
     }
 
-    @AnnotationLineParser.Registration(position=351)
+    // #258783 - register after Doctrine annotations (@Column)
+    @AnnotationLineParser.Registration(position=1000)
     public static AnnotationLineParser getDefault() {
         return INSTANCE;
     }
