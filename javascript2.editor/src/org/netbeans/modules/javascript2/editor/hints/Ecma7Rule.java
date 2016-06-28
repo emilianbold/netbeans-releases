@@ -49,6 +49,7 @@ import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
 import java.util.Collections;
 import java.util.List;
@@ -131,6 +132,9 @@ public class Ecma7Rule extends EcmaLevelRule {
             if (functionNode.isModule()) {
                 functionNode.visitExports(this);
             }
+            if (functionNode.isAsync()) {
+                addHint(context, hints, new OffsetRange(Token.descPosition(functionNode.getFirstToken()), functionNode.getStart()));
+            }
             return super.enterFunctionNode(functionNode);
         }
 
@@ -177,6 +181,16 @@ public class Ecma7Rule extends EcmaLevelRule {
                 addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
             }
             return super.enterBinaryNode(binaryNode);
+        }
+
+        @Override
+        public boolean enterUnaryNode(UnaryNode unaryNode) {
+            if (unaryNode.isTokenType(TokenType.IDENT)) {
+                long token = unaryNode.getToken();
+                int position = Token.descPosition(token);
+                addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+            }
+            return super.enterUnaryNode(unaryNode);
         }
     }
 
