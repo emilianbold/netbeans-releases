@@ -47,6 +47,7 @@
                   <IdentNode start='20' end='21'>
                     <name>y</name>
                   </IdentNode>
+                  <!-- PropertyNode Decorators -->
                 </PropertyNode>
               </ObjectNode>
               <!-- BinaryNode rhs -->

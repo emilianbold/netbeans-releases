@@ -11,6 +11,7 @@
         </IdentNode>
         <!-- PropertyNode Value -->
         <NumberLiteralNode value='1' start='22' end='23'/>
+        <!-- PropertyNode Decorators -->
       </PropertyNode>
     </ObjectNode>
   </ExportNode>
@@ -40,6 +41,7 @@
           </IdentNode>
           <!-- PropertyNode Value -->
           <NumberLiteralNode value='1' start='22' end='23'/>
+          <!-- PropertyNode Decorators -->
         </PropertyNode>
       </ObjectNode>
     </VarNode>

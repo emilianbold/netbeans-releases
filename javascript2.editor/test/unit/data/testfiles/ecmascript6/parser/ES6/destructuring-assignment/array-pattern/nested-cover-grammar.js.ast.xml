@@ -31,6 +31,7 @@
                   <name>b</name>
                 </IdentNode>
               </BinaryNode>
+              <!-- PropertyNode Decorators -->
             </PropertyNode>
           </ObjectNode>
           <!-- BinaryNode rhs -->

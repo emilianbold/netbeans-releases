@@ -27,6 +27,7 @@
             <IdentNode start='5' end='6'>
               <name>a</name>
             </IdentNode>
+            <!-- PropertyNode Decorators -->
           </PropertyNode>
         </ObjectNode>
         <!-- BinaryNode rhs -->

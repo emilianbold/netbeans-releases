@@ -1166,15 +1166,18 @@ public class FormatVisitor extends NodeVisitor {
         PropertyNode propertyNode = (PropertyNode) property;
         if (propertyNode.getGetter() != null) {
             FunctionNode getter = (FunctionNode) propertyNode.getGetter();
-            markClassElementFinish(getFinish(getter), start, false);
+            markClassElementFinish(getStart(getter), getFinish(getter), start,
+                    false, propertyNode.getGetter());
         }
         if (propertyNode.getSetter() != null) {
             FunctionNode setter = (FunctionNode) propertyNode.getSetter();
-            markClassElementFinish(getFinish(setter), start, false);
+            markClassElementFinish(getStart(setter), getFinish(setter), start,
+                    false, propertyNode.getSetter());
         }
 
         // mark property end
-        markClassElementFinish(getFinish(property), start, true);
+        markClassElementFinish(getStart(property), getFinish(property), start,
+                true, propertyNode.getValue());
     }
 
     private void markSpacesWithinParentheses(SwitchNode node) {
@@ -1262,8 +1265,24 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void markClassElementFinish(int finish, int classFinish, boolean checkDuplicity) {
-        FormatToken formatToken = tokenUtils.getPreviousToken(finish, JsTokenId.BRACKET_RIGHT_CURLY, classFinish);
+    private void markClassElementFinish(int start, int finish, int classFinish,
+            boolean checkDuplicity, Expression value) {
+
+        FormatToken formatToken;
+        if (value instanceof FunctionNode) {
+            // method
+            formatToken = tokenUtils.getPreviousToken(finish, JsTokenId.BRACKET_RIGHT_CURLY, classFinish);
+        } else {
+            // property
+            formatToken = tokenUtils.getPreviousToken(start < finish ? finish - 1 : finish, null);
+            while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
+                    || formatToken.getKind() == FormatToken.Kind.WHITESPACE
+                    || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
+                    || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                    || formatToken.getKind() == FormatToken.Kind.DOC_COMMENT)) {
+                formatToken = formatToken.previous();
+            }
+        }
         if (formatToken != null) {
             TokenUtils.appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_ELEMENT), checkDuplicity);

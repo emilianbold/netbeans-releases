@@ -1,41 +1,41 @@
 <Unnamed test>
-LINE_COMMENT    "// simple line comment", la=1, st=LexerState{zzState=93, zzLexicalState=24, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-EOL             "\n", st=LexerState{zzState=90, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-KEYWORD_VAR     "var", la=1, st=LexerState{zzState=225, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+LINE_COMMENT    "// simple line comment", la=1, st=LexerState{zzState=94, zzLexicalState=24, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=91, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+KEYWORD_VAR     "var", la=1, st=LexerState{zzState=228, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 IDENTIFIER      "a", la=1, st=LexerState{zzState=36, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 NUMBER          "10", la=1, st=LexerState{zzState=25, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/* some \n * block comment\n */", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/* some \n * block comment\n */", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-KEYWORD_VAR     "var", la=1, st=LexerState{zzState=225, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+KEYWORD_VAR     "var", la=1, st=LexerState{zzState=228, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 IDENTIFIER      "b", la=1, st=LexerState{zzState=33, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 NUMBER          "20", la=1, st=LexerState{zzState=25, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-DOC_COMMENT     "/** doc comment\n * \n */", st=LexerState{zzState=308, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+DOC_COMMENT     "/** doc comment\n * \n */", st=LexerState{zzState=311, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-KEYWORD_VAR     "var", la=1, st=LexerState{zzState=225, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+KEYWORD_VAR     "var", la=1, st=LexerState{zzState=228, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 IDENTIFIER      "c", la=1, st=LexerState{zzState=37, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 NUMBER          "30", la=1, st=LexerState{zzState=25, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/**/", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/**/", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/***/", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/***/", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/* \\* */", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/* \\* */", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/*\\**/", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/*\\**/", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-DOC_COMMENT     "/**\\***/", st=LexerState{zzState=308, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+DOC_COMMENT     "/**\\***/", st=LexerState{zzState=311, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
-BLOCK_COMMENT   "/*\\****/", st=LexerState{zzState=233, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BLOCK_COMMENT   "/*\\****/", st=LexerState{zzState=236, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 ----- EOF -----
 

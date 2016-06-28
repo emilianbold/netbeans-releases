@@ -56,6 +56,7 @@
                                                         <NumberLiteralNode value='0' start='25' end='26'/>
                                                       </IndexNode>
                                                     </BinaryNode>
+                                                    <!-- PropertyNode Decorators -->
                                                   </PropertyNode>
                                                 </ObjectNode>
                                               </ArrayLiteralNode>

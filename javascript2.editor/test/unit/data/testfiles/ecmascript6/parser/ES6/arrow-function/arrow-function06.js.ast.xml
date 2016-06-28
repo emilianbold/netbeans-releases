@@ -29,6 +29,7 @@
                 </IdentNode>
                 <!-- PropertyNode Value -->
                 <NumberLiteralNode value='42' start='18' end='20'/>
+                <!-- PropertyNode Decorators -->
               </PropertyNode>
             </ObjectNode>
           </ReturnNode>
