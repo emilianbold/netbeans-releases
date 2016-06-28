@@ -2095,15 +2095,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(ResultIterator resultIterator) throws Exception {
                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ExecutableElement ee = getElementHandle().resolve(copy);
-                        if (ee == null) {
-                            return;
-                        }
                         final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(pos.getOffset());
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             if (Utilities.inAnonymousOrLocalClass(tp)) {
                                 copy.toPhase(Phase.RESOLVED);
+                            }
+                            ExecutableElement ee = getElementHandle().resolve(copy);
+                            if (ee == null) {
+                                Element el = copy.getTrees().getElement(tp);
+                                if (el != null && el.getKind().isClass() || el.getKind().isInterface()) {
+                                    for (ExecutableElement e : copy.getElementUtilities().findUnimplementedMethods((TypeElement)el)) {
+                                        if (getElementHandle().signatureEquals(e)) {
+                                            ee = e;
+                                        }
+                                    }
+                                }
+                                if (ee == null) {
+                                    return;
+                                }
                             }
                             if (implement) {
                                 GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, embeddedOffset);
