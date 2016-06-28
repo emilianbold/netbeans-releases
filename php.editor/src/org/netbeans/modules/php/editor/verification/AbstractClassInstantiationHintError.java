@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -77,8 +78,14 @@ public class AbstractClassInstantiationHintError extends HintErrorRule {
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.getIndex(), phpParseResult.getModel());
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
@@ -104,6 +111,9 @@ public class AbstractClassInstantiationHintError extends HintErrorRule {
             "AbstractClassInstantiationDesc=Abstract class {0} can not be instantiated"
         })
         public void visit(ClassInstanceCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             ASTNodeInfo<ClassInstanceCreation> info = ASTNodeInfo.create(node);
             int startOffset = node.getStartOffset();
             VariableScope variableScope = model.getVariableScope(startOffset);

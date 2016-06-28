@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -86,6 +87,9 @@ public class UnusedUsesHint extends HintRule {
         hints = allHints;
         baseDocument = context.doc;
         for (UnusedOffsetRanges unusedOffsetRanges : new UnusedUsesCollector(phpParseResult).collect()) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createHint(unusedOffsetRanges);
         }
     }

@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -87,8 +88,14 @@ public class AmbiguousComparisonHint extends HintRule {
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         final CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
@@ -105,6 +112,9 @@ public class AmbiguousComparisonHint extends HintRule {
 
         public List<Hint> getHints() {
             for (InfixExpression infixExpression : expressions) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return Collections.emptyList();
+                }
                 createHint(infixExpression);
             }
             return hints;
@@ -126,6 +136,9 @@ public class AmbiguousComparisonHint extends HintRule {
 
         @Override
         public void visit(final InfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             final OperatorType operator = node.getOperator();
             if (OperatorType.IS_EQUAL.equals(operator) || OperatorType.IS_IDENTICAL.equals(operator)) {
                 checkPathForNode(node);
@@ -134,6 +147,9 @@ public class AmbiguousComparisonHint extends HintRule {
         }
 
         private void checkPathForNode(final InfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             final List<ASTNode> path = getPath();
             if (path.isEmpty() || !isValidContext(path)) {
                 expressions.add(node);

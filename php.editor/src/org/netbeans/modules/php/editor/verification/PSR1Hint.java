@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -86,8 +87,14 @@ public abstract class PSR1Hint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = createVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getHints());
             }
         }
@@ -113,6 +120,9 @@ public abstract class PSR1Hint extends HintRule {
             @Override
             @NbBundle.Messages("PSR1ConstantDeclarationHintText=Class constants MUST be declared in all upper case with underscore separators.")
             public void visit(ConstantDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 for (Identifier constantNameNode : node.getNames()) {
                     String constantName = constantNameNode.getName();
                     if (constantName != null && !CONSTANT_PATTERN.matcher(constantName).matches()) {
@@ -161,6 +171,9 @@ public abstract class PSR1Hint extends HintRule {
             @Override
             @NbBundle.Messages("PSR1MethodDeclarationHintText=Method names MUST be declared in camelCase().")
             public void visit(MethodDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 Identifier functionNameNode = node.getFunction().getFunctionName();
                 String methodName = functionNameNode.getName();
                 if (methodName != null && !METHOD_PATTERN.matcher(methodName).matches()) {
@@ -218,22 +231,34 @@ public abstract class PSR1Hint extends HintRule {
 
             @Override
             public void visit(NamespaceDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 isInNamedNamespaceDeclaration = node.getName() != null;
                 super.visit(node);
             }
 
             @Override
             public void visit(ClassDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 processTypeDeclaration(node);
             }
 
             @Override
             public void visit(InterfaceDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 processTypeDeclaration(node);
             }
 
             @Override
             public void visit(TraitDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 processTypeDeclaration(node);
             }
 
@@ -319,12 +344,18 @@ public abstract class PSR1Hint extends HintRule {
 
             @Override
             public void visit(FieldAccess node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 checkProperty(node.getField());
                 super.visit(node);
             }
 
             @Override
             public void visit(SingleFieldDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 checkProperty(node.getName());
                 super.visit(node);
             }
@@ -433,6 +464,9 @@ public abstract class PSR1Hint extends HintRule {
 
             @Override
             public void visit(Program node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 checkStatements(node.getStatements());
                 checkSideEffects();
             }

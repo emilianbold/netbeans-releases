@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -84,8 +85,14 @@ public class WrongParamNameHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getHints());
             }
         }
@@ -109,12 +116,18 @@ public class WrongParamNameHint extends HintRule {
 
         @Override
         public void visit(Program program) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             this.program = program;
             super.visit(program);
         }
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Comment comment = Utils.getCommentForNode(program, node);
             if (comment != null) {
                 checkNodeWithComment(node, comment);
@@ -128,6 +141,9 @@ public class WrongParamNameHint extends HintRule {
             List<FormalParameter> formalParameters = node.getFormalParameters();
             if (formalParameters.size() == paramVariables.size()) {
                 for (int i = 0; i < paramVariables.size(); i++) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     checkParametersEquality(paramVariables, formalParameters, i);
                 }
             }
@@ -179,6 +195,9 @@ public class WrongParamNameHint extends HintRule {
 
         @Override
         public void visit(PHPDocVarTypeTag node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             paramVariables.add(node.getVariable());
         }
 

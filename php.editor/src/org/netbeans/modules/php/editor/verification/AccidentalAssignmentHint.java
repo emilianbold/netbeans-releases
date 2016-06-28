@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -90,8 +91,14 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
@@ -109,6 +116,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         public List<Hint> getHints() {
             for (Assignment assignment : accidentalAssignments) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return Collections.emptyList();
+                }
                 createHint(assignment);
             }
             return hints;
@@ -165,6 +175,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         @Override
         public void visit(DoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkAssignmentsInWhileStatements(preferences)) {
                 processCondition(node.getCondition());
             }
@@ -173,6 +186,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             processCondition(node.getCondition());
             scan(node.getTrueStatement());
             scan(node.getFalseStatement());
@@ -180,6 +196,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         @Override
         public void visit(ForStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             for (Expression condition : node.getConditions()) {
                 processCondition(condition);
             }
@@ -190,6 +209,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         @Override
         public void visit(WhileStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkAssignmentsInWhileStatements(preferences)) {
                 processCondition(node.getCondition());
             }
@@ -204,6 +226,9 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
         @Override
         public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             accidentalAssignments.add(node);
             scan(node.getRightHandSide());
         }

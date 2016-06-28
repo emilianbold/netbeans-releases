@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BreakStatement;
@@ -72,8 +73,14 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             LoopOnlyKeywordsUnhandledError.CheckVisitor checkVisitor = new LoopOnlyKeywordsUnhandledError.CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -94,12 +101,18 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(final ContinueStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkProperPath(node);
             super.visit(node);
         }
 
         @Override
         public void visit(final BreakStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkProperPath(node);
             super.visit(node);
         }

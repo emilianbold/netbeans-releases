@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -74,8 +75,14 @@ public abstract class BracesHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = createVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.addAll(checkVisitor.getHints());
             }
         }
@@ -101,6 +108,9 @@ public abstract class BracesHint extends HintRule {
             @Override
             @NbBundle.Messages("IfBracesHintText=If-Else Statements Must Use Braces")
             public void visit(IfStatement node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 Statement trueStatement = node.getTrueStatement();
                 if (trueStatement != null && !(trueStatement instanceof Block)) {
@@ -151,6 +161,9 @@ public abstract class BracesHint extends HintRule {
             @Override
             @NbBundle.Messages("DoWhileBracesHintText=Do-While Loops Must Use Braces")
             public void visit(DoStatement node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 Statement bodyStatement = node.getBody();
                 if (bodyStatement != null && !(bodyStatement instanceof Block)) {
@@ -197,6 +210,9 @@ public abstract class BracesHint extends HintRule {
             @Override
             @NbBundle.Messages("WhileBracesHintText=While Loops Must Use Braces")
             public void visit(WhileStatement node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 Statement bodyStatement = node.getBody();
                 if (bodyStatement != null && !(bodyStatement instanceof Block)) {
@@ -243,6 +259,9 @@ public abstract class BracesHint extends HintRule {
             @Override
             @NbBundle.Messages("ForBracesHintText=For Loops Must Use Braces")
             public void visit(ForStatement node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 Statement bodyStatement = node.getBody();
                 if (bodyStatement != null && !(bodyStatement instanceof Block)) {
@@ -289,6 +308,9 @@ public abstract class BracesHint extends HintRule {
             @Override
             @NbBundle.Messages("ForEachBracesHintText=ForEach Loops Must Use Braces")
             public void visit(ForEachStatement node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 Statement bodyStatement = node.getStatement();
                 if (bodyStatement != null && !(bodyStatement instanceof Block)) {
@@ -333,6 +355,9 @@ public abstract class BracesHint extends HintRule {
         protected void addHint(Statement enclosingStatement, Statement node, String description) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             if (bracesHint.showHint(offsetRange, baseDocument)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.add(new Hint(bracesHint, description, fileObject, offsetRange, Collections.<HintFix>singletonList(new Fix(enclosingStatement, node, baseDocument)), 500));
             }
         }

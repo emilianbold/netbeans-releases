@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -88,8 +89,14 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
             if (fileObject == null) {
                 return;
             }
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, lineBounds);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             hints.addAll(checkVisitor.getHints());
         }
     }
@@ -128,6 +135,9 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
 
         @Override
         public void scan(ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineRange.getEnd()))) {
                 super.scan(node);
             }
@@ -135,6 +145,9 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
 
         @Override
         public void visit(InfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineRange.containsInclusive(node.getStartOffset())) {
                 processExpression(node);
             }

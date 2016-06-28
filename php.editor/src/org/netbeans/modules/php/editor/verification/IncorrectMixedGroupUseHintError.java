@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
@@ -74,8 +75,14 @@ public final class IncorrectMixedGroupUseHintError extends UnhandledErrorRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getErrors());
             }
         }
@@ -103,6 +110,9 @@ public final class IncorrectMixedGroupUseHintError extends UnhandledErrorRule {
 
         @Override
         public void visit(UseStatement statement) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             currentUseStatement = statement;
             super.visit(statement);
             currentUseStatement = null;
@@ -110,6 +120,9 @@ public final class IncorrectMixedGroupUseHintError extends UnhandledErrorRule {
 
         @Override
         public void visit(GroupUseStatementPart statementPart) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             currentGroupUseStatementPart = statementPart;
             super.visit(statementPart);
             currentGroupUseStatementPart = null;
@@ -117,6 +130,9 @@ public final class IncorrectMixedGroupUseHintError extends UnhandledErrorRule {
 
         @Override
         public void visit(SingleUseStatementPart statementPart) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkSingleUseStatement(statementPart);
             super.visit(statementPart);
         }

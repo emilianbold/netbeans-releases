@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -84,8 +85,14 @@ public class WrongOrderOfArgsHint extends HintRule {
             return;
         }
         TokenHierarchy<?> tokenHierarchy = phpParseResult.getSnapshot().getTokenHierarchy();
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc, tokenHierarchy);
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
@@ -121,6 +128,9 @@ public class WrongOrderOfArgsHint extends HintRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             boolean previousParamIsOptional = false;
             boolean currentParamIsOptional;
             for (FormalParameter formalParameter : node.getFormalParameters()) {
