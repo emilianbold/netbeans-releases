@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -86,8 +87,14 @@ public class InitializeFieldSuggestion extends SuggestionRule {
                 final BaseDocument doc = context.doc;
                 OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
                 if (lineBounds.containsInclusive(caretOffset)) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     ConstructorVisitor constructorVisitor = new ConstructorVisitor(fileObject, doc);
                     phpParseResult.getProgram().accept(constructorVisitor);
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return;
+                    }
                     hints.addAll(constructorVisitor.getHints());
                 }
             }
@@ -117,6 +124,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ClassDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             typeBodyStartOffset = node.getBody().getStartOffset() + 1;
             declaredFields = new ArrayList<>();
             usedVariables = new ArrayList<>();
@@ -126,6 +136,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ClassInstanceCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (!node.isAnonymous()) {
                 return;
             }
@@ -140,6 +153,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(TraitDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             typeBodyStartOffset = node.getBody().getStartOffset() + 1;
             declaredFields = new ArrayList<>();
             usedVariables = new ArrayList<>();
@@ -154,6 +170,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(SingleFieldDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             String fieldName = CodeUtils.extractVariableName(node.getName());
             if (fieldName != null) {
                 declaredFields.add(fieldName);
@@ -162,6 +181,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(MethodDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             FunctionDeclaration function = node.getFunction();
             if (CodeUtils.isConstructor(node) && function.getBody() != null) {
                 formalParameters = new ArrayList<>(function.getFormalParameters());
@@ -201,6 +223,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(Variable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (isInConstructor) {
                 String variableName = CodeUtils.extractVariableName(node);
                 if (variableName != null) {

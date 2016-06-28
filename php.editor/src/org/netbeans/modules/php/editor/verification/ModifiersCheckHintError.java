@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -89,10 +90,16 @@ public class ModifiersCheckHintError extends HintErrorRule {
         if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fileScope);
             for (ClassScope classScope : declaredClasses) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 processClassScope(classScope);
             }
             Collection<? extends InterfaceScope> declaredInterfaces = ModelUtils.getDeclaredInterfaces(fileScope);
             for (InterfaceScope interfaceScope : declaredInterfaces) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 processInterfaceScope(interfaceScope);
             }
         }
@@ -107,10 +114,16 @@ public class ModifiersCheckHintError extends HintErrorRule {
     private void processClassScope(ClassScope classScope) {
         Collection<? extends FieldElement> declaredFields = classScope.getDeclaredFields();
         for (FieldElement fieldElement : declaredFields) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             processFieldElement(fieldElement);
         }
         Collection<? extends MethodScope> declaredMethods = classScope.getDeclaredMethods();
         for (MethodScope methodScope : declaredMethods) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             processMethodScope(methodScope);
         }
         if (currectClassHasAbstractMethod) {
@@ -170,6 +183,9 @@ public class ModifiersCheckHintError extends HintErrorRule {
     private void processInterfaceScope(InterfaceScope interfaceScope) {
         Collection<? extends MethodScope> declaredMethods = interfaceScope.getDeclaredMethods();
         for (MethodScope methodScope : declaredMethods) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             processInterfaceMethodScope(methodScope);
         }
     }

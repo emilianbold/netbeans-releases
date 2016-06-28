@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -76,7 +77,13 @@ public class FieldRedeclarationHintError extends HintErrorRule {
         FileScope fileScope = context.fileScope;
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope), hints, fileObject);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkTypeScopes(ModelUtils.getDeclaredTraits(fileScope), hints, fileObject);
         }
     }
@@ -88,6 +95,9 @@ public class FieldRedeclarationHintError extends HintErrorRule {
     private void checkTypeScopes(Collection<? extends TypeScope> typeScopes, final List<Hint> hints, FileObject fileObject) {
         for (TypeScope typeScope : typeScopes) {
             for (FieldElement field : getRedeclaredFields(typeScope)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.add(new Hint(this, Bundle.FieldRedeclarationCustom(field.getName()), fileObject, field.getNameRange(), null, 500));
             }
         }
@@ -107,6 +117,9 @@ public class FieldRedeclarationHintError extends HintErrorRule {
         Set<FieldElement> redeclaredFields = new HashSet<>();
         Map<String, FieldElement> firstDeclaredFields = new HashMap<>();
         for (FieldElement declaredField : declaredFields) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return Collections.emptySet();
+            }
             String fieldName = declaredField.getName();
             FieldElement firstDeclaredField = firstDeclaredFields.get(fieldName);
             if (firstDeclaredField == null) {

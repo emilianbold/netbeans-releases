@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -118,8 +119,14 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
@@ -190,6 +197,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(Program node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -197,6 +207,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(NamespaceDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -204,6 +217,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -211,6 +227,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -218,6 +237,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -225,6 +247,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(CatchClause node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -232,6 +257,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(Block node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (parentNodes.peek() instanceof IfStatement) {
                 parentNodes.push(node);
                 super.visit(node);
@@ -243,6 +271,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(ForStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             scan(node.getInitializers());
             scan(node.getConditions());
@@ -252,6 +283,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(ForEachStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -259,6 +293,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(DoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -266,6 +303,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(WhileStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -273,6 +313,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(SwitchCase node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -285,6 +328,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(FormalParameter functionParameter) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Expression parameterName = functionParameter.getParameterName();
             if (parameterName instanceof Variable) {
                 processVariableAssignment((Variable) parameterName);
@@ -293,6 +339,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(Variable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (variableAssignment) {
                 processVariableAssignment(node);
             }
@@ -335,6 +384,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         @Override
         public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getOperator().equals(Type.EQUAL)) {
                 if (parentNodes.peek() instanceof IfStatement) {
                     parentNodes.push(node);

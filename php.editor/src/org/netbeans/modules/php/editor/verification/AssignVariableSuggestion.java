@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -102,12 +103,18 @@ public class AssignVariableSuggestion extends SuggestionRule {
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         int caretOffset = getCaretOffset();
         OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, context.doc);
         if (lineBounds.containsInclusive(caretOffset)) {
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBounds);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (variableFix != null) {
                 hints.add(new Hint(AssignVariableSuggestion.this, getDisplayName(),
                         fileObject, variableFix.getOffsetRange(),
@@ -130,6 +137,9 @@ public class AssignVariableSuggestion extends SuggestionRule {
 
         @Override
         public void scan(ASTNode node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()) || fix != null)) {
                 super.scan(node);
             }
@@ -137,6 +147,9 @@ public class AssignVariableSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ExpressionStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (lineBounds.containsInclusive(node.getStartOffset())) {
                 Expression expression = node.getExpression();
                 if (expression instanceof IgnoreError) {
@@ -179,6 +192,9 @@ public class AssignVariableSuggestion extends SuggestionRule {
 
         @Override
         public void visit(Variable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             variables.add(node);
             super.visit(node);
         }

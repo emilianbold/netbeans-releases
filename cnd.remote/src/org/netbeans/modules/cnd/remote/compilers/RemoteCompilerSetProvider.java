@@ -137,7 +137,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
             ProcessUtils.ExitStatus res = ProcessUtils.execute(pb, ToolchainScriptGenerator.generateScript(path, hinfo).getBytes("UTF-8")); //NOI18N
             List<String> lines = res.getOutputLines();
-            if (res.isOK()) {
+            if (!res.isOK()) {
                RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", res.exitCode); // NOI18N
                ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, res);
             } else {

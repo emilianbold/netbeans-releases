@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Model;
@@ -92,8 +93,14 @@ public class ErrorControlOperatorHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc, phpParseResult.getModel());
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.addAll(checkVisitor.getHints());
             }
         }
@@ -119,6 +126,9 @@ public class ErrorControlOperatorHint extends HintRule {
         @Override
         @NbBundle.Messages("ErrorControlOperatorHintText=Error Control Operator Misused")
         public void visit(IgnoreError node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             if (!isValidCase(node)) {
                 createHint(node);
