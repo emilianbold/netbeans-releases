@@ -1,16 +1,16 @@
-var o1 = require("folder/literal");
-var o2 = require("folder/literalRef");
+var o1_247565 = require("folder/literal247565");
+var o2_247565 = require("folder/literalRef247565");
 var kocka = require("fi");
 
-o1.obj.conf.a;
-o1.pokus.getDay();
-o1.obj.dob.getMilliseconds();
-o1.obj.hello();
-o1.obj.nick;
+o1_247565.obj.conf.a;
+o1_247565.pokus.getDay();
+o1_247565.obj.dob.getMilliseconds();
+o1_247565.obj.hello();
+o1_247565.obj.nick;
 
 
-o2.obj.conf.a;
-o2.obj.dob.getFullYear();
-o2.pokus.getSeconds();
-o2.obj.hello();
-o2.obj.nick;
+o2_247565.obj.conf.a;
+o2_247565.obj.dob.getFullYear();
+o2_247565.pokus.getSeconds();
+o2_247565.obj.hello();
+o2_247565.obj.nick;
