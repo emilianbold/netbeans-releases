@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.profiler.nbmodule;
 
+import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.project.AntProjectSupport;
-import org.netbeans.modules.profiler.nbimpl.project.AbstractAntProjectSupportProvider;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.nbimpl.project.AntProjectSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
@@ -52,21 +53,43 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.AntProjectSupportProvider.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.nbimpl.project.AntProjectSupportProvider.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-apisupport-project"), //NOI18N
                             @ProjectType(id="org-netbeans-modules-apisupport-project-suite") //NOI18N
                         }
 )
-public final class NbModuleAntProjectSupportProvider extends AbstractAntProjectSupportProvider {
+public final class NbModuleAntProjectSupportProvider extends AntProjectSupportProvider.Abstract {
+    
+    private static final String TEST_TYPE_UNIT = "unit"; // NOI18N
+    private static final String TEST_TYPE_QA_FUNCTIONAL = "qa-functional"; // NOI18N
+    
+    public NbModuleAntProjectSupportProvider(Project project) {
+        super(project);
+    }
+    
     @Override
     public FileObject getProjectBuildScript() {
         return getProject().getProjectDirectory().getFileObject("build.xml"); //NOI18N
     }
     
+    @Override
+    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+        if (src != null) {
+            final String profiledClass = src.getTopLevelClass().getQualifiedName();
+            props.put("profile.class", profiledClass); //NOI18N
+            // Set for all cases (incl. Profile Project, Profile File) but should only
+            // be taken into account when profiling single test
+            props.put("test.type", getTestType(profiledClassFile)); //NOI18N
+        }
+    }
     
-    public NbModuleAntProjectSupportProvider(Project project) {
-        super(project);
+    private static String getTestType(FileObject testFile) {
+        String testPath = testFile.getPath();
+        if (testPath.contains(TEST_TYPE_QA_FUNCTIONAL)) return TEST_TYPE_QA_FUNCTIONAL;
+        else return TEST_TYPE_UNIT;
     }
     
 }
