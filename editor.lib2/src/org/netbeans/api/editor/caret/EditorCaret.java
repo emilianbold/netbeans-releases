@@ -2746,15 +2746,30 @@ public final class EditorCaret implements Caret {
                             mouseState = MouseState.LINE_SELECTION;
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
-                            if (selectLineAction == null) {
-                                selectLineAction = EditorActionUtilities.getAction(
-                                                c.getUI().getEditorKit(c), DefaultEditorKit.selectLineAction);
-                            }
-                            if (selectLineAction != null) {
-                                selectLineAction.actionPerformed(null);
-                                // Select word action selects forward i.e. dot > mark
-                                minSelectionStartOffset = getMark();
-                                minSelectionEndOffset = getDot();
+                            if (evt.isControlDown() && evt.isShiftDown()) {
+                                try {
+                                    int begOffs = Utilities.getRowStart(c, offset);
+                                    int endOffs = Utilities.getRowEnd(c, offset);
+                                    Position beginPos = doc.createPosition(begOffs);
+                                    Position endPos = doc.createPosition(endOffs);
+                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
+                                            new CaretItem[]{new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward)}, null);
+                                    minSelectionStartOffset = begOffs;
+                                    minSelectionEndOffset = endOffs;
+                                } catch (BadLocationException ex) {
+                                    // Do nothing
+                                }
+                            } else {
+                                if (selectLineAction == null) {
+                                    selectLineAction = EditorActionUtilities.getAction(
+                                                    c.getUI().getEditorKit(c), DefaultEditorKit.selectLineAction);
+                                }
+                                if (selectLineAction != null) {
+                                    selectLineAction.actionPerformed(null);
+                                    // Select word action selects forward i.e. dot > mark
+                                    minSelectionStartOffset = getMark();
+                                    minSelectionEndOffset = getDot();
+                                }
                             }
                             break;
 
