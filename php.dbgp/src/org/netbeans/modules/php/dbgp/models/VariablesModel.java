@@ -76,6 +76,15 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
 public class VariablesModel extends ViewModelSupport implements TreeModel, TableModel, NodeModel {
+
+    private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
+
+    // #239743
+    private static final boolean SHOW_FULL_VALUES = Boolean.getBoolean("nb.php.debugger.full.values"); // NOI18N
+    private static final String FULL_VALUE_LENGTH = "nb.php.debugger.full.value.length"; // NOI18N
+    private static final int MAX_VALUE_LENGTH;
+    private static final int DEFAULT_MAX_VALUE_LENGTH = 2000;
+
     private static final String EVALUATING = "TXT_Evaluating"; // NOI18N
     static final String GET_SHORT_DESCRIPTION = "getShortDescription"; // NOI18N
     static final String NULL = "null"; // NOI18N
@@ -86,6 +95,28 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
     private ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
     private ReadLock myReadlock = myLock.readLock();
     private WriteLock myWritelock = myLock.writeLock();
+
+    static {
+        if (SHOW_FULL_VALUES) {
+            LOGGER.log(Level.INFO, "Max value length unlimited");
+            MAX_VALUE_LENGTH = -1;
+        } else {
+            int maxValueLength;
+            try {
+                maxValueLength = Integer.parseInt(System.getProperty(FULL_VALUE_LENGTH, String.valueOf(DEFAULT_MAX_VALUE_LENGTH)));
+            } catch (NumberFormatException ex) {
+                LOGGER.log(Level.INFO, "Invalid max value length given", ex);
+                maxValueLength = DEFAULT_MAX_VALUE_LENGTH;
+            }
+            if (maxValueLength <= 10) {
+                LOGGER.log(Level.INFO, "Invalid max value length given, must be >= 10 (was {0})", maxValueLength);
+                maxValueLength = DEFAULT_MAX_VALUE_LENGTH;
+            }
+            LOGGER.log(Level.INFO, "Max value length set to {0}", maxValueLength);
+            MAX_VALUE_LENGTH = maxValueLength;
+        }
+    }
+
 
     public VariablesModel(final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
@@ -196,7 +227,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
                 if (node instanceof ModelNode) {
                     ModelNode modelNode = (ModelNode) node;
                     try {
-                        result = modelNode.getValue();
+                        result = shortenValue(modelNode.getValue());
                     } catch (UnsufficientValueException e) {
                         sendValueCommand(modelNode);
                         return NbBundle.getMessage(VariablesModel.class, EVALUATING);
@@ -431,6 +462,23 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
             var.setupFillChildrenCommand(command);
             session.sendCommandLater(command);
         }
+    }
+
+    // #239743
+    @NbBundle.Messages({
+        "# {0} - shortened value",
+        "VariablesModel.value.shortened={0}... [shortened]",
+    })
+    private String shortenValue(String value) {
+        if (SHOW_FULL_VALUES) {
+            return value;
+        }
+        int length = value.length();
+        if (length <= MAX_VALUE_LENGTH) {
+            return value;
+        }
+        LOGGER.log(Level.INFO, "Shortening value from {0} to {1}", new Object[] {length, MAX_VALUE_LENGTH});
+        return Bundle.VariablesModel_value_shortened(value.substring(0, MAX_VALUE_LENGTH));
     }
 
     public static class ContextNode extends org.netbeans.modules.php.dbgp.models.nodes.ContextNode {
