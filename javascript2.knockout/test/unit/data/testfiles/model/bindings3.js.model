@@ -7,7 +7,7 @@ AppViewModel : FUNCTION AppViewModel [ANONYMOUS: false, DECLARED: true - AppView
              AppViewModel, RESOLVED: true
              # PROPERTIES
              arguments                      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-             bindings3AppViewModel$fullName : FUNCTION bindings3AppViewModel$fullName [ANONYMOUS: true, DECLARED: true - bindings3AppViewModel$fullName, MODIFIERS: PRIVATE, METHOD]
+             bindings3AppViewModel#fullName : FUNCTION bindings3AppViewModel#fullName [ANONYMOUS: true, DECLARED: true - bindings3AppViewModel#fullName, MODIFIERS: PRIVATE, METHOD]
                                             # RETURN TYPES
                                             String, RESOLVED: true
                                             # PROPERTIES
@@ -35,7 +35,7 @@ ko           : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUB
              # PROPERTIES
              $bindings     : OBJECT $bindings [ANONYMOUS: false, DECLARED: true - $bindings, MODIFIERS: PUBLIC, OBJECT]
                            # PROPERTIES
-                           bindings3AppViewModel$fullName : FUNCTION bindings3AppViewModel$fullName [ANONYMOUS: false, DECLARED: true - bindings3AppViewModel$fullName, MODIFIERS: PRIVATE, METHOD]
+                           bindings3AppViewModel#fullName : FUNCTION bindings3AppViewModel#fullName [ANONYMOUS: false, DECLARED: true - bindings3AppViewModel#fullName, MODIFIERS: PRIVATE, METHOD]
                                                           # RETURN TYPES
                                                           String, RESOLVED: true
                                                           # PROPERTIES

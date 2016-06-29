@@ -35,7 +35,7 @@
               <isInitializedHere/>
             </IdentNode>
             <!-- VarNode Init -->
-            <FunctionNode name='eval$inner' kind='NORMAL' start='18' end='51'>
+            <FunctionNode name='eval#inner' kind='NORMAL' start='18' end='51'>
               <isDeclared/>
               <!-- FunctionNode Parameters -->
               <!-- FunctionNode Body -->

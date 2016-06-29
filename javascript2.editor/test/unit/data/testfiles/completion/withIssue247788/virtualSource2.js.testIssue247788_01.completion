@@ -2,15 +2,12 @@ Code completion result for source line:
 ironman.|iterace;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      config                          [PUBLIC]   controllers.js
-CLASS      iterace                         [PUBLIC]   <font color=#999999>virtualSource2.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     assign(target: Object): Object  [PUBLIC,   JS Platform
 METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
 METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
 METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
 METHOD     entries(obj: Object): Array     [PUBLIC,   JS Platform
-METHOD     exec(): undefined               [PROTECTE  controllers.js
 METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
@@ -32,5 +29,4 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 METHOD     values(obj: Object): Array      [PUBLIC,   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
-FIELD      date: Date                      [PUBLIC]   controllers.js
-FIELD      iteration: Number               [PUBLIC]   controllers.js
+FIELD      iterace                         [PUBLIC]   virtualSource2.js

@@ -2,7 +2,7 @@ FUNCTION jQueryFragment02 [ANONYMOUS: false, DECLARED: true - jQueryFragment02, 
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-jQueryFragment02L$1 : FUNCTION jQueryFragment02L$1 [ANONYMOUS: true, DECLARED: true - jQueryFragment02L$1, MODIFIERS: PUBLIC, FUNCTION]
+jQueryFragment02L#1 : FUNCTION jQueryFragment02L#1 [ANONYMOUS: true, DECLARED: true - jQueryFragment02L#1, MODIFIERS: PUBLIC, FUNCTION]
                     # RETURN TYPES
                     undefined, RESOLVED: true
                     # PARAMETERS
@@ -18,7 +18,7 @@ jQueryFragment02L$1 : FUNCTION jQueryFragment02L$1 [ANONYMOUS: true, DECLARED: t
                     arguments                  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     document                   : OBJECT document [ANONYMOUS: false, DECLARED: true - document, MODIFIERS: PRIVATE, VARIABLE]
                     jQuery                     : OBJECT jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, VARIABLE]
-                    jQueryFragment02L$1$jQuery : FUNCTION jQueryFragment02L$1$jQuery [ANONYMOUS: true, DECLARED: true - jQueryFragment02L$1$jQuery, MODIFIERS: PRIVATE, METHOD]
+                    jQueryFragment02L#1#jQuery : FUNCTION jQueryFragment02L#1#jQuery [ANONYMOUS: true, DECLARED: true - jQueryFragment02L#1#jQuery, MODIFIERS: PRIVATE, METHOD]
                                                # RETURN TYPES
                                                undefined, RESOLVED: true
                                                # PROPERTIES
@@ -27,7 +27,7 @@ jQueryFragment02L$1 : FUNCTION jQueryFragment02L$1 [ANONYMOUS: true, DECLARED: t
                                                arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                jQuery     : FUNCTION jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, METHOD]
                                                           # RETURN TYPES
-                                                          jQueryFragment02L$1.jQueryFragment02L$1$jQuery.jQuery.fn.init, RESOLVED: true
+                                                          jQueryFragment02L#1.jQueryFragment02L#1#jQuery.jQuery.fn.init, RESOLVED: true
                                                           # PARAMETERS
                                                           OBJECT selector [ANONYMOUS: false, DECLARED: true - selector, MODIFIERS: PUBLIC, PARAMETER]
                                                           OBJECT context [ANONYMOUS: false, DECLARED: true - context, MODIFIERS: PUBLIC, PARAMETER]

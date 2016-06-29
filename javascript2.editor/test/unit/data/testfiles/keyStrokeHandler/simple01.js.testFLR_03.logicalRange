@@ -38,13 +38,13 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
- */[LR #2 Start]
+ */
 
 var listdirectory = require('./listdirectory');
 var dir = process.argv[2] || getUserHome();
 var extension = process.argv[3];
 
-[LR #3 Start][LR #4 Start]listdirectory([LR #5 Start]dir, extension, [LR #6 Start]function([LR #7 Start]err, [LR #8 Start]list[LR #8 End][LR #7 End]) {
+[LR #2 Start][LR #3 Start]listdirectory([LR #4 Start]dir, extension, [LR #5 Start]function([LR #6 Start]err, [LR #7 Start]list[LR #7 End][LR #6 End]) {
     if (err) {
         return console.error('Error occurred:', err);
     }
@@ -54,9 +54,9 @@ var extension = process.argv[3];
     list.forEach(function(file) {
         console.log(file);
     });
-}[LR #6 End][LR #5 End])[LR #4 End];[LR #3 End]
+}[LR #5 End][LR #4 End])[LR #3 End];[LR #2 End]
 
 function getUserHome() {
     return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
-[LR #2 End][LR #1 End]
+[LR #1 End]

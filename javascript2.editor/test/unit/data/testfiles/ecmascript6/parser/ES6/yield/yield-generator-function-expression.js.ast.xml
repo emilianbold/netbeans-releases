@@ -34,7 +34,7 @@
               <isInitializedHere/>
             </IdentNode>
             <!-- VarNode Init -->
-            <FunctionNode name='g$yield' kind='NORMAL' start='23' end='41'>
+            <FunctionNode name='g#yield' kind='NORMAL' start='23' end='41'>
               <isNamedFunctionExpression/>
               <!-- FunctionNode Parameters -->
               <!-- FunctionNode Body -->
