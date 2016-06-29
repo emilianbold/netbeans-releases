@@ -465,6 +465,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
     }
 
     // #239743
+    @NbBundle.Messages({
+        "# {0} - shortened value",
+        "VariablesModel.value.shortened={0}... [shortened]",
+    })
     private String shortenValue(String value) {
         if (SHOW_FULL_VALUES) {
             return value;
@@ -474,7 +478,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
             return value;
         }
         LOGGER.log(Level.INFO, "Shortening value from {0} to {1}", new Object[] {length, MAX_VALUE_LENGTH});
-        return value.substring(0, MAX_VALUE_LENGTH) + "..."; // NOI18N
+        return Bundle.VariablesModel_value_shortened(value.substring(0, MAX_VALUE_LENGTH));
     }
 
     public static class ContextNode extends org.netbeans.modules.php.dbgp.models.nodes.ContextNode {
