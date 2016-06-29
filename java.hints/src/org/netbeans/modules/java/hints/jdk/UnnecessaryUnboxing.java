@@ -1,27 +1,3 @@
-package org.netbeans.modules.java.hints.jdk;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.TreePath;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.ConstraintVariableType;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.openide.util.NbBundle;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -63,6 +39,29 @@ import org.openide.util.NbBundle;
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.jdk;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.util.TreePath;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.openide.util.NbBundle;
 
 /**
  *

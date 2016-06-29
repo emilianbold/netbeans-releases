@@ -1,16 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE
-
- @Override
- public void mouseClicked(MouseEvent e) {
- throw new UnsupportedOperationException("Not supported yet.");
- }
- }
- @Override
- public void mouseClicked(MouseEvent e) {
- throw new UnsupportedOperationException("Not supported yet.");
- }
- }COPYRIGHT NOTICES OR THIS HEADER.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
@@ -47,8 +36,6 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.odcs.ui.project;
 
