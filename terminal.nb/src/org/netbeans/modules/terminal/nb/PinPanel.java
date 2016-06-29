@@ -1,10 +1,5 @@
 /*
- * DO NOT ALTER OR 
- @Override
- public boolean verify(JComponent input) {
- throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
- }
- REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
@@ -41,8 +36,6 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.terminal.nb;
 
