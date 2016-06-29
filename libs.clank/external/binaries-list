@@ -1,6 +1,7 @@
-#changeset:   18560:c4b73a8e97df
+#changeset:   18989:841f7ab3d5cf
 #branch:      jclank
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Jun 14 16:18:11 2016 +0300
-#summary:     fixed misprint from https://hg.kenai.com/hg/sputnik~main/rev/affd419e3092
-1BD2563498D0E0BE1C7B3DD31FAD892B41EC041A clank_0.3.6.zip
+#tag:         tip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Wed Jun 29 18:29:52 2016 +0300
+#summary:     llvmToClankType
+21C9821B848F2BBD78FD1965DF7CD93A75621DED clank_0.3.6.zip
