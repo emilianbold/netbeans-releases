@@ -144,7 +144,7 @@ public class WebUtils {
                             //causes that fileobject representing the same file are not equal
                             File resolvedFile = FileUtil.toFile(resolvedFileObject);
                             if(resolvedFile != null) {
-                                FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
+                                FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile);
                                 //find out the base folder - bottom most folder of the link
                                 FileObject linkBase = findRelativeLinkBase(source, importedFileName);
                                 FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, linkBase, importedFileName, FileReferenceType.RELATIVE);
@@ -160,7 +160,11 @@ public class WebUtils {
                     }
                     if(webRoot != null) {
                         //resolve the link relative to the web root
-                        FileObject resolved = webRoot.getFileObject(file.getAbsolutePath());
+                        String path = file.getAbsolutePath();
+                        if (path.length() > webRoot.getPath().length() && webRoot.getPath().equals(path.substring(0, webRoot.getPath().length()))) {
+                            path = path.substring(webRoot.getPath().length());
+                        }
+                        FileObject resolved = webRoot.getFileObject(path);
                         if (resolved != null && resolved.isValid()) {
                             FileReference ref = new FileReference(source, resolved, webRoot, importedFileName, FileReferenceType.ABSOLUTE);
                             return ref;
