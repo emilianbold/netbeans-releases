@@ -64,6 +64,8 @@ made subject to such option by the copyright holder.
                 <package>org.clang.frontend</package>
                 <package>org.clang.frontendtool</package>
                 <package>org.clang.lex</package>
+                <package>org.clang.lex.java</package>
+                <package>org.clang.lex.llvm</package>
                 <package>org.clang.parse</package>
                 <package>org.clang.rewrite.frontend</package>
                 <package>org.clang.sema</package>

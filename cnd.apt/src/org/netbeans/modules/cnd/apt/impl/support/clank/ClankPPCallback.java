@@ -52,9 +52,7 @@ import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SourceManager;
-import org.clang.lex.DefMacroDirective;
 import org.clang.lex.DirectoryLookup;
-import org.clang.lex.MacroDirective;
 import org.clang.lex.MacroInfo;
 import org.clang.lex.Preprocessor;
 import org.clang.tools.services.support.FileInfo;
@@ -96,6 +94,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
 import static org.clang.basic.ClangGlobals.*;
+import org.clang.lex.MacroDefinition;
 import org.clank.support.NativePointer;
 import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -533,11 +532,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final CharSequence fileOwnerName; // lazy field based on fileOwner
         private final boolean isBuiltIn;
 
-        static ClankMacroDirectiveWrapper create(IdentifierInfo II, DefMacroDirective MD, SourceManager SM) {
+        static ClankMacroDirectiveWrapper create(IdentifierInfo II, MacroDefinition MD, SourceManager SM) {
             MacroInfo macroInfo = MD.getMacroInfo();
-            final int hashLoc = MD.getHashLoc();
+            final int hashLoc = macroInfo.getHashLoc();
             long/*<FileID, uint>*/ decomposedLocBegin = SM.getDecomposedLoc(hashLoc);
-            final int eodLoc = MD.getEodLoc();
+            final int eodLoc = macroInfo.getEodLoc();
             long/*<FileID, uint>*/ decomposedLocEnd = SM.getDecomposedLoc(eodLoc);
             int begOffset = $second_offset(decomposedLocBegin);
             int endOffset = $second_offset(decomposedLocEnd);
@@ -545,7 +544,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             boolean isVariadic = false;
             if (macroInfo.isFunctionLike()) {
                 IdentifierInfo[] args = null;
-                args = macroInfo.$ArgumentList();
+                args = macroInfo.$args();
                 if (args != null) { // the following macro will return null arguments: #define XXX() __xxx()
                     isVariadic = macroInfo.isVariadic();
                     params = new ArrayList<CharSequence>(args.length);
@@ -599,7 +598,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         public ClankMacroDirectiveWrapper(CharSequence macroName,
-                List<CharSequence> params, MacroDirectiveInfo clankDelegate, /*uint*/int macroNameStartOffset) {
+                List<CharSequence> params, MacroDefinitionInfo clankDelegate, /*uint*/int macroNameStartOffset) {
             super(clankDelegate);
             this.params = params;
             this.macroName = macroName;
@@ -814,7 +813,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         private void prepareConvertedMacroExpansions() {
-            Map<MacroDirective, ClankMacroDirective> directives = new HashMap<MacroDirective, ClankMacroDirective>();
+            Map<MacroDefinition, ClankMacroDirective> directives = new HashMap<MacroDefinition, ClankMacroDirective>();
             {
                 SmallVector<FileInfoCallback.MacroExpansionInfo> macroExpansions = current.getMacroExpansions();
                 int size = macroExpansions.size();
@@ -822,14 +821,14 @@ public final class ClankPPCallback extends FileInfoCallback {
                 convertedMacroExpansions = new ArrayList<MacroExpansion>(size);
                 for (int i = 0; i < size; i++) {
                     FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
-                    MacroDirective MD = e.getReferencedMacroDirective();
+                    MacroDefinition MD = e.getReferencedMacroDefinition();
                     ClankMacroDirective referencedMacro = directives.get(MD);
                     if (referencedMacro == null) {
-                        if (MD instanceof DefMacroDirective) {
-                            referencedMacro = ClankMacroDirectiveWrapper.create(e.getExpandedMacroName(), (DefMacroDirective) MD, current.getSourceManager());
+                        if (MD.$bool()) {
+                            referencedMacro = ClankMacroDirectiveWrapper.create(e.getExpandedMacroName(), MD, current.getSourceManager());
                             directives.put(MD, referencedMacro);
                         } else {
-                           CndUtils.assertTrueInConsole(false, "Should be DefMacroDirective: " + MD);
+                           CndUtils.assertTrueInConsole(false, "Should be defined MacroDefinition: " + MD);
                            continue;
                         }
                     }
@@ -845,14 +844,14 @@ public final class ClankPPCallback extends FileInfoCallback {
                 SourceManager srcMgr = current.getSourceManager();                
                 for (int i = 0; i < size; i++) {
                     FileInfoCallback.MacroUsageInfo e = (FileInfoCallback.MacroUsageInfo)expansions[i];
-                    MacroDirective MD = e.getReferencedMacroDirective();
+                    MacroDefinition MD = e.getReferencedMacroDefinition();
                     ClankMacroDirective referencedMacro = directives.get(MD);
                     if (referencedMacro == null) {
-                        if (MD instanceof DefMacroDirective) {
-                            referencedMacro = ClankMacroDirectiveWrapper.create(e.getUsedMacroName(), (DefMacroDirective) MD, srcMgr);
+                        if (MD.$bool()) {
+                            referencedMacro = ClankMacroDirectiveWrapper.create(e.getUsedMacroName(), MD, srcMgr);
                             directives.put(MD, referencedMacro);
                         } else {
-                           CndUtils.assertTrueInConsole(false, "Should be DefMacroDirective: " + MD);
+                           CndUtils.assertTrueInConsole(false, "Should be defined MacroDefinition: " + MD);
                            continue;
                         }
                     }               
@@ -932,8 +931,8 @@ public final class ClankPPCallback extends FileInfoCallback {
                         assert wrapper != null;
                         this.convertedPPDirectives.add(wrapper);
                     }
-                } else if (curDirective instanceof MacroDirectiveInfo) {
-                    MacroDirectiveInfo macroDirective = (MacroDirectiveInfo)curDirective;
+                } else if (curDirective instanceof MacroDefinitionInfo) {
+                    MacroDefinitionInfo macroDirective = (MacroDefinitionInfo)curDirective;
                     if (macroDirective.isDefined()) {
                         // old model tracked only #define and not #undef
                         CharSequence macroName = ClankToAPTUtils.getIdentifierText(macroDirective.getMacroName());
