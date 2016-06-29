@@ -99,6 +99,9 @@ public class CPUtils {
             if (file.isSymbolicLink() && reff.getPath().equals(file.readSymbolicLinkPath())) {
                 continue;
             }
+            if (!reff.getPath().contains(project.getProjectDirectory().getPath())) {
+                continue;
+            }
             
             CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
             if (cpIndexModel != null) {
