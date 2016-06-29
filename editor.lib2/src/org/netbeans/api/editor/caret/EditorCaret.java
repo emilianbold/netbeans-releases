@@ -94,6 +94,7 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -109,6 +110,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.Utilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -2709,16 +2711,31 @@ public final class EditorCaret implements Caret {
                                     foldExpanded = caretFoldExpander.checkExpandFold(c, evt.getPoint());
                                 }
                                 if (!foldExpanded) {
-                                    if (selectWordAction == null) {
-                                        selectWordAction = EditorActionUtilities.getAction(
-                                                c.getUI().getEditorKit(c), DefaultEditorKit.selectWordAction);
+                                    if (evt.isControlDown() && evt.isShiftDown()) {
+                                        try {
+                                            int begOffs = Utilities.getWordStart(c, offset);
+                                            int endOffs = Utilities.getWordEnd(c, offset);
+                                            Position beginPos = doc.createPosition(begOffs);
+                                            Position endPos = doc.createPosition(endOffs);
+                                            runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
+                                                     new CaretItem[] { new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward) }, null);
+                                            minSelectionStartOffset = begOffs;
+                                            minSelectionEndOffset = endOffs;
+                                        } catch (BadLocationException ex) {
+                                            // Do nothing
+                                        }
+                                    } else {
+                                        if (selectWordAction == null) {
+                                            selectWordAction = EditorActionUtilities.getAction(
+                                                    c.getUI().getEditorKit(c), DefaultEditorKit.selectWordAction);
+                                        }
+                                        if (selectWordAction != null) {
+                                            selectWordAction.actionPerformed(null);
+                                        }
+                                        // Select word action selects forward i.e. dot > mark
+                                        minSelectionStartOffset = getMark();
+                                        minSelectionEndOffset = getDot();
                                     }
-                                    if (selectWordAction != null) {
-                                        selectWordAction.actionPerformed(null);
-                                    }
-                                    // Select word action selects forward i.e. dot > mark
-                                    minSelectionStartOffset = getMark();
-                                    minSelectionEndOffset = getDot();
                                 }
                             } catch (Exception ex) {
                                 Exceptions.printStackTrace(ex);
