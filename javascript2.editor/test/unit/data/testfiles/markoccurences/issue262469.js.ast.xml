@@ -27,7 +27,7 @@
                 <isInitializedHere/>
               </IdentNode>
               <!-- VarNode Init -->
-              <FunctionNode name='L:1$=>:2' kind='ARROW' start='33' end='64'>
+              <FunctionNode name='L:1#=>:2' kind='ARROW' start='33' end='64'>
                 <isAnonymous/>
                 <!-- FunctionNode Parameters -->
                 <!-- FunctionNode Body -->
@@ -60,7 +60,7 @@
                 <isInitializedHere/>
               </IdentNode>
               <!-- VarNode Init -->
-              <FunctionNode name='L:1$test' kind='NORMAL' start='86' end='121'>
+              <FunctionNode name='L:1#test' kind='NORMAL' start='86' end='121'>
                 <isAnonymous/>
                 <!-- FunctionNode Parameters -->
                 <IdentNode start='96' end='98'>

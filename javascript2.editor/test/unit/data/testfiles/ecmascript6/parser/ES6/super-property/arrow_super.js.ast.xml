@@ -41,7 +41,7 @@
               <isFunctionBody/>
               <!-- Block Statements -->
               <ExpressionStatement start='48' end='61'>
-                <FunctionNode name='constructor$=>:3' kind='ARROW' start='48' end='66'>
+                <FunctionNode name='constructor#=>:3' kind='ARROW' start='48' end='66'>
                   <isAnonymous/>
                   <!-- FunctionNode Parameters -->
                   <!-- FunctionNode Body -->

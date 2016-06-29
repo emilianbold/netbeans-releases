@@ -2,7 +2,7 @@ FUNCTION semiTypes [ANONYMOUS: false, DECLARED: true - semiTypes, MODIFIERS: PUB
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-semiTypesL$1 : FUNCTION semiTypesL$1 [ANONYMOUS: true, DECLARED: true - semiTypesL$1, MODIFIERS: PUBLIC, FUNCTION]
+semiTypesL#1 : FUNCTION semiTypesL#1 [ANONYMOUS: true, DECLARED: true - semiTypesL#1, MODIFIERS: PUBLIC, FUNCTION]
              # RETURN TYPES
              undefined, RESOLVED: true
              # PROPERTIES
