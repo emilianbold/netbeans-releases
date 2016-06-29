@@ -1,6 +1,7 @@
-#changeset:   18963:88a44c965665
+#changeset:   18989:841f7ab3d5cf
 #branch:      jclank
+#tag:         tip
 #user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Tue Jun 28 19:12:38 2016 +0300
-#summary:     Additional fix for #7468 - java-invalid JavaCleaner in switch/case
-21C9821B848F2BBD78FD1965DF7CD93A75621DED clank_0.3.6.zip
+#date:        Wed Jun 29 18:29:52 2016 +0300
+#summary:     llvmToClankType
+5F62670605D036468D158D3D02FDCC6FBAB5D20F clank_0.3.6.zip
