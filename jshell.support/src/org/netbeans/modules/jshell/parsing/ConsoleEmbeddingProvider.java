@@ -45,6 +45,7 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -77,7 +78,8 @@ public class ConsoleEmbeddingProvider extends EmbeddingProvider {
         if (model == null) {
             return Collections.emptyList();
         }
-        EmbeddingProcessor p = new EmbeddingProcessor(session, model, snapshot);
+        ConsoleSection inputSection = model.parseInputSection(snapshot);
+        EmbeddingProcessor p = new EmbeddingProcessor(session, model, snapshot, inputSection);
         return p.process();
     }
     

@@ -109,8 +109,8 @@ public abstract class NbExecutionControlBase<T> implements
         try {
             delegate.close();
         } catch (IOException ex) {
-            
         }
+        shutdown();
     }
 
     public boolean load(Collection<String> classes) {
@@ -140,6 +140,9 @@ public abstract class NbExecutionControlBase<T> implements
     protected abstract boolean isClosed();
     
     protected void shutdown() {
+        if (remoteIn == null) {
+            return;
+        }
         try {
             remoteIn.close();
             remoteOut.close();

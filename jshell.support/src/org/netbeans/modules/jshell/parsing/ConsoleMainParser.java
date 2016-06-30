@@ -45,6 +45,7 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleResult;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.jshell.support.ShellSession;
@@ -54,6 +55,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,6 +73,7 @@ public final class ConsoleMainParser extends Parser {
         ConsoleModel theModel = null;
         if (ss != null) {
             theModel = ss.getModel();
+            theModel.updateIfIdle();
         }
         this.result = new ConsoleResult(theModel, snapshot);
     }

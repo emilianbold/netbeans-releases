@@ -322,7 +322,7 @@ public class OverrideEditorActions {
                 return;
             }
             ConsoleModel mod = session.getModel();
-            ConsoleSection sec = mod.processInputSection();
+            ConsoleSection sec = mod.processInputSection(false);
             // the interceptor is executed even if a break insertion fails, e.g. is
             // filtered out by DocumentFilter. Accept and process only those inserts,
             // which happen in the input section
@@ -401,7 +401,7 @@ public class OverrideEditorActions {
                 return;
             }
             ConsoleModel mod = s.getModel();
-            ConsoleSection sec = mod.processInputSection();
+            ConsoleSection sec = mod.processInputSection(false);
             if (sec == null || sec.isIncomplete()) {
                 return;
             }

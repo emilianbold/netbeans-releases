@@ -70,6 +70,7 @@ import org.netbeans.lib.nbjshell.SnippetWrapping;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedException;
@@ -77,6 +78,7 @@ import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.parsing.JShellParser;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -96,9 +98,9 @@ import org.openide.util.Task;
  * Use {@link #getInputEndOffset()} to get the current end offset or -1 if no active input section.
  * 
  * <p/>
- * <b>Threading model:</b> all updates must be done in JShell evaluator thread. Synchronization on 
- * the ConsoleModel <b>must be nested</b> in a document read-lock, if document access is necessary - doing
- * the opposite will deadlock with EDT.
+ * <b>Threading model:</b> all updates must be done either in JSHell evaluator thread, or when the JShell evaluator
+ * thread does not evaluate user code. Calls from Parsing API may perform immediate updates provided that the
+ * evaluator does not evaluate user code.
  * 
  * @author sdedic
  */
@@ -110,6 +112,8 @@ public class ConsoleModel {
      * The working and configured JShell instance
      */
     private JShell shell;
+    
+    private JShell privateShell;
     
     /**
      * The document for console contents
@@ -175,10 +179,10 @@ public class ConsoleModel {
     }
     
     private int getScrollbackEnd() {
-        ConsoleSection s = getInputSection();
         if (isExecute()) {
             return document.getLength();
         }
+        ConsoleSection s = getInputSection();
         if (inputOffset == null) {
             return s != null ? s.getStart() : document.getLength();
         } else {
@@ -231,6 +235,21 @@ public class ConsoleModel {
     
     private RequestProcessor.Task inputTask;
     
+    public void updateIfIdle() {
+        synchronized (this) {
+            if (isExecute()) {
+                return;
+            }
+        }
+        processInputSection(false);
+    }
+    
+    public ConsoleSection   parseInputSection(Snapshot snap) {
+        InputReader rdr = new InputReader(snap);
+        rdr.run();
+        return rdr.newSection;
+    }
+    
     /**
      * Returns the input section information. If the data is inaccurate,
      * tries to refresh them before returning from the call. The call may block,
@@ -238,13 +257,13 @@ public class ConsoleModel {
      * Document.
      * @return the input section
      */
-    public ConsoleSection processInputSection() {
+    public ConsoleSection processInputSection(boolean force) {
         synchronized (this) {
-            if (inputValid) {
+            if (!shouldRefresh() && !force) {
                 return getInputSection();
             }
         }
-        refreshInput(true).waitFinished();
+        refreshInput(force, true).waitFinished();
         return inputSection;
     }
     
@@ -263,29 +282,57 @@ public class ConsoleModel {
                 return null;
             }
         } 
-        if (!inputValid) {
+        if (shouldRefresh()) {
             // in evaluator, the refresh happens immediately
-            refreshInput(false);
+            refreshInput(false, false);
         }
         return inputSection;
     }
     
-    private Task refreshInput(boolean now) {
+    /**
+     * True, if the thread itself is refreshing the model.
+     */
+    private boolean isRefreshPending() {
+        return refreshPending.get();
+    }
+    
+    private boolean isInputValid() {
+        return inputValid;
+    }
+    
+    private synchronized boolean shouldRefresh() {
+        return !inputValid && inputTask == null;
+    }
+    
+    private Task refreshInput(boolean force, boolean now) {
         Task t;
         boolean wait;
-        
         synchronized (this) {
-             if (executing) {
-                return Task.EMPTY;
+            boolean rp = isRefreshPending();
+            if (rp || executing) {
+                 // cannot refresh during execution. Must not refresh if the
+                 // thread itself is the refresh one.
+                 return Task.EMPTY;
             }
+            // reset the valid flag
             inputValid = false;
+            boolean sched = inputTask == null;
             if (inputTask != null) {
-                inputTask.schedule(now ? 0 : 200);
-            } else {
-                inputTask = evaluator.post(new InputReader(), now ? 0 : 200);
+                if (!force) {
+                    return inputTask;
+                }
+                if (inputTask.cancel()) {
+                    inputTask.schedule(now ? 0 : 200);
+                    sched = true;
+                }
+            }
+            if (sched) {
+                InputReader r = new InputReader();
+                inputTask = evaluator.post(r, now ? 0 : 200);
+                r.myTask = inputTask;
             }
             t = inputTask;
-            wait = !refreshPending && evaluator.isRequestProcessorThread();
+            wait = now && !rp && evaluator.isRequestProcessorThread();
         }
         if (wait) {
             t.waitFinished();
@@ -293,12 +340,23 @@ public class ConsoleModel {
         return t;
     }
     
+    private synchronized void clearInputTask(Task t) {
+        if (t == inputTask) {
+            inputTask = null;
+        }
+    }
+    
     /**
      * If true, the refresh task is running. Input section is then to be returned
      * immediately, no wait on the refresh task to prevent self-deadlock.
      * Set and reset by the InputReader only.
      */
-    private volatile boolean refreshPending;
+    private ThreadLocal<Boolean> refreshPending = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
     
     private class InputReader extends EventBuffer implements Runnable {
         private int stage;
@@ -309,8 +367,17 @@ public class ConsoleModel {
         private long endSerial;
         private Position endPos;
         private int stalledInput;
+        private Task myTask;
+        private Snapshot processSnapshot;
         
         private List<ConsoleSection>    updateSections;
+        
+        private InputReader(Snapshot snapshot) {
+            this.processSnapshot = snapshot;
+        }
+        
+        private InputReader() {
+        }
         
         @Override
         public void run() {
@@ -320,10 +387,14 @@ public class ConsoleModel {
                     doIt();
                     break;
                 case 1:
-                    readContents();
-                    if (contents != null) {
-                        parseInput();
-                        propagateResults();
+                    try {
+                        readContents();
+                        if (contents != null) {
+                            parseInput();
+                            propagateResults();
+                        }
+                    } finally {
+                        clearInputTask(myTask);
                     }
                     break;
             }
@@ -332,14 +403,19 @@ public class ConsoleModel {
         public void doIt() {
             // stage 0, read the document and serial
             synchronized (ConsoleModel.this) {
-                refreshPending = true;
+                refreshPending.set(true);
             }
             try {
                 // stage 1
-                document.render(this);
+                if (processSnapshot != null) {
+                    // do not use document lock, get the contents from the snapshot.
+                    run();
+                } else {
+                    document.render(this);
+                }
             } finally {
                 synchronized (ConsoleModel.this) {
-                    refreshPending = false;
+                    refreshPending.set(false);
                 }
                 stage = 0;
             }
@@ -347,11 +423,11 @@ public class ConsoleModel {
         
         private void readContents() {
             stalledInput = getInputOffset();
-            if (isExecute() || stalledInput == -1) {
+            if (isExecute() /* || stalledInput == -1 */) {
                 return;
             }
             int is = getScrollbackEnd();
-            if (stalledInput < is) {
+            if (stalledInput >= 0 && stalledInput < is) {
                 inputStart = lastSection != null ? lastSection.getStart() : stalledInput;
                 LOG.log(Level.FINER, "Detected stale input. Know input at {0} while anchor moved to {1}. LastSection = {2}, inputStart = {3}", new Object[] {
                     stalledInput, is, lastSection, inputStart
@@ -360,10 +436,15 @@ public class ConsoleModel {
                 inputStart = is;
             }
             try {
-                contents = DocumentUtilities.getText(document, inputStart, document.getLength() - inputStart);
+                if (processSnapshot != null) {
+                    contents = processSnapshot.getText().subSequence(inputStart,processSnapshot.getText().length()).toString();
+                    // intentionally do not fetch document's serial. the results will not update at the end
+                } else {
+                    contents = DocumentUtilities.getText(document, inputStart, document.getLength() - inputStart);
+                    docSerial = DocumentUtilities.getDocumentVersion(document);
+                }
             } catch (BadLocationException ex) {
             }
-            docSerial = DocumentUtilities.getDocumentVersion(document);
         }
         
         private void getPositionAndSerial() {
@@ -392,13 +473,17 @@ public class ConsoleModel {
             
             inputEndPos = endPos;
             inputValid = true;
-            try {
-                inputOffset = document.createPosition(newSection.getStart(), Position.Bias.Forward);
-            } catch (BadLocationException ex) {
-                // should not happen, running inside readlock.
+            if (newSection != null) {
+                try {
+                    inputOffset = document.createPosition(newSection.getStart(), Position.Bias.Forward);
+                } catch (BadLocationException ex) {
+                    // should not happen, running inside readlock.
+                }
             }
-            for (ConsoleSection s : updateSections) {
-                addOrUpdate(s);
+            if (updateSections != null) {
+                for (ConsoleSection s : updateSections) {
+                    addOrUpdate(s);
+                }
             }
         }
 /*
@@ -463,11 +548,25 @@ public class ConsoleModel {
         }
         */
         private void parseInput() {
-            TokenHierarchy th = TokenHierarchy.get(getDocument());
-            TokenSequence seq = th.tokenSequence();
-            assert seq != null;
-            seq.move(inputStart);
-            JShellParser parser2 = new JShellParser(shell, seq, 0, inputStart + contents.length());
+            TokenHierarchy th;
+            TokenSequence seq;
+            int limit = contents.length();
+            
+            if (processSnapshot == null) {
+                th = TokenHierarchy.get(getDocument()); 
+                seq = th.tokenSequence();
+                seq.move(inputStart);
+                limit += inputStart;
+            } else {
+                th = TokenHierarchy.create(contents, Language.find("text/x-repl"));
+                seq = th.tokenSequence();
+                seq.move(0);
+            }
+            
+            JShellParser parser2 = new JShellParser(
+                    (evaluator.isRequestProcessorThread() || !isExecute())  ? 
+                            shell : 
+                            createPrivateShell(), seq, 0, limit);
             
             parser2.execute();
             
@@ -530,10 +629,6 @@ public class ConsoleModel {
                         (h) -> h.getSnippet()).collect(Collectors.toList())
             );
         }
-    }
-    
-    public void inputChanged() {
-        refreshInput(false);
     }
     
     private static final RequestProcessor RP = new RequestProcessor(ConsoleModel.class);
@@ -701,75 +796,6 @@ public class ConsoleModel {
             return;
         }
         
-        List<ConsoleSection> created = new ArrayList<>(sections);
-        ConsoleSection updated = null;
-
-        /*
-        ConsoleSection l = sections.get(sections.size() - 1);
-        ConsoleSection f = sections.get(0);
-        
-        synchronized (this) {
-            if (lastSection != null) {
-                if (sections.size() > 1) {
-                    if (lastSection != last) {
-                        // no update
-                        scrollbackSections.add(lastSection);
-                    } else {
-                        updated = created.remove(0);
-                    }
-                    scrollbackSections.addAll(sections.subList(0, sections.size() - 1));
-                } else {
-                    // just 1 section updated, it is the last section.
-                    if (last != null && lastSection == last) {
-                        lastSection = updated = f;
-                        created.clear();
-                    } else {
-                        scrollbackSections.add(lastSection);
-                    }
-                }
-            } else {
-                scrollbackSections.addAll(sections.subList(0, sections.size() - 1));
-            }
-            if (l.getType().input) {
-                if (sections.size() > 1) {
-                    ConsoleSection prevLast = sections.get(sections.size() - 2);
-                    if (!prevLast.getType().input) {
-                        lastSection = prevLast;
-                    } else {
-                        lastSection = null;
-                    }
-                } else {
-                    lastSection = null;
-                }
-            } else {
-                lastSection = l;
-            }
-            processed = end;
-        }
-        ConsoleSection execSection;
-        
-        if (l.getType().input) {
-            // prompt was displayed
-            execSection = executingSection;
-            setInputSection(l);
-        } else {
-            lastSection = l;
-            execSection = null;
-        } 
-        final ConsoleSection fu = updated;
-        RP.post(() -> {
-            if (fu != null) {
-                notifyUpdated(fu);
-            }
-            if (!created.isEmpty()) {
-                notifyCreated(created);
-            }
-            if (execSection != null) {
-                ConsoleEvent e = new ConsoleEvent(this, execSection, false);
-                listeners.stream().forEach(t -> t.executing(e));
-            }
-        });
-        */
         new EventBuffer() {
             @Override
             protected void doUpdates() {
@@ -801,7 +827,7 @@ public class ConsoleModel {
             }
             textAppended(document.getLength() + 1);
         } else if (inputSection != null && inputSection.getStart() < s) {
-            refreshInput(false);
+            refreshInput(true, false);
         }
     }
     
@@ -837,28 +863,48 @@ public class ConsoleModel {
      * input section to the scrollback
      * 
      */
-    synchronized void beforeExecution() {
-        assert !isExecute();
-        ConsoleSection is = getInputSection();
-        executingSection = is;
-        if (is != null) {
-            // the input will be added to the scrollback; if something is still
-            // buffered in the lastSection, add it first:
-            if (lastSection != null) {
-                scrollbackSections.add(lastSection);
+    void beforeExecution() {
+        Task t = null;
+        ConsoleSection is = null;
+        while (true) {
+            // wait after all refreshes are complete, block furthe refreshes by setting up executing flag
+            synchronized (this) {
+                assert !isExecute();
+                t = inputTask;
             }
-            lastSection = null;
-            scrollbackSections.add(executingSection);
+            if (t != null) {
+                t.waitFinished();
+            }
+            is = getInputSection();
+            synchronized (this) {
+                if (inputTask == null) {
+                    // no refresh is pending, change mode
+                    executingSection = is;
+                    executing = true;
+                    break;
+                }
+            }
         }
-        executing = true;
-        if (is != null) {
-            RP.post(() -> { 
-                // notify that the scrollback has been changed.
-                notifyUpdated(is); 
-                
-                ConsoleEvent e = new ConsoleEvent(this, is, true);
-                listeners.stream().forEach(l -> l.executing(e));
-            });
+        synchronized (this) {
+            ConsoleSection finIs = is;
+            if (finIs != null) {
+                // the input will be added to the scrollback; if something is still
+                // buffered in the lastSection, add it first:
+                if (lastSection != null) {
+                    scrollbackSections.add(lastSection);
+                }
+                lastSection = null;
+                scrollbackSections.add(executingSection);
+            }
+            if (is != null) {
+                RP.post(() -> { 
+                    // notify that the scrollback has been changed.
+                    notifyUpdated(finIs); 
+
+                    ConsoleEvent e = new ConsoleEvent(this, finIs, true);
+                    listeners.stream().forEach(l -> l.executing(e));
+                });
+            }
         }
     }
     
@@ -889,6 +935,13 @@ public class ConsoleModel {
     public void attach(JShell shell) {
         this.shell = shell;
         snippetSubscription = shell.onSnippetEvent(this::acceptSnippet);
+    }
+    
+    private synchronized JShell createPrivateShell() {
+        if (privateShell == null) {
+            privateShell = JShell.create();
+        }
+        return privateShell;
     }
 
     /**
@@ -1027,7 +1080,7 @@ public class ConsoleModel {
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            change(e);
+            //change(e);
         }
 
         @Override
@@ -1305,6 +1358,8 @@ public class ConsoleModel {
         return shell;
     }
     
+    private Task execWaitTask = null;
+    
     static class ModelAccImpl extends ModelAccessor {
 
         @Override
@@ -1380,7 +1435,7 @@ public class ConsoleModel {
     }
 
     void ensureInputSectionAvailable(Supplier<String> promptSupplier) {
-        ConsoleSection s = processInputSection();
+        ConsoleSection s = processInputSection(true);
         if (s != null) {
             return;
         }

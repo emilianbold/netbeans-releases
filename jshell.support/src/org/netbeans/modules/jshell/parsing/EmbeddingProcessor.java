@@ -72,6 +72,8 @@ final class EmbeddingProcessor {
     private final JShell shell;
     private final Snapshot snapshot;
     private final ShellSession session;
+    private final ConsoleSection inputSection;
+    private final ConsoleSection modelInputSection;
     
     private StringBuilder precedingImports = new StringBuilder();
     
@@ -79,12 +81,14 @@ final class EmbeddingProcessor {
     
     private int snippetIndex;
 
-    public EmbeddingProcessor(ShellSession session, ConsoleModel model, Snapshot snapshot) {
+    public EmbeddingProcessor(ShellSession session, ConsoleModel model, Snapshot snapshot, ConsoleSection snapshotInput) {
         this.session = session;
         this.model = model;
         this.snapshot = snapshot;
         
         this.shell = model.getShell();
+        this.modelInputSection = model.getInputSection();
+        this.inputSection = snapshotInput != null ? snapshotInput : modelInputSection;
     }
     
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -121,7 +125,7 @@ final class EmbeddingProcessor {
         if (snipFile == null) {
             return;
         }
-        ConsoleSection activeInput = model.getInputSection();
+        ConsoleSection activeInput = inputSection;
         
         String prologText = contents.substring(0, ts);
         

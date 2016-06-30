@@ -576,13 +576,14 @@ public class ShellSession {
         synchronized (allSessions) {
             allSessions.put(consoleDocument, new WeakReference<>(this));
         }
-        return Pair.of(previous, evaluator.post(() -> {
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
-                env.getSnippetClassPath()
-            });
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
+            env.getSnippetClassPath()
+        });
 
-            URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
-            IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
+        URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
+        IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
+        return Pair.of(previous, evaluator.post(() -> {
+
             ModelAccessor.INSTANCE.execute(model, () -> {
                 try {
                     getJShell();
@@ -724,7 +725,7 @@ public class ShellSession {
     }
 
     private void ensureInputSectionAvailable() {
-        ConsoleSection s = model.processInputSection();
+        ConsoleSection s = model.processInputSection(false);
         if (s != null) {
             return;
         }
@@ -1014,7 +1015,7 @@ public class ShellSession {
         post(() -> {
             String c = command;
             if (c == null) {
-                ConsoleSection s = model.processInputSection();
+                ConsoleSection s = model.processInputSection(true);
                 if (s == null) {
                     return;
                 }
@@ -1040,7 +1041,7 @@ public class ShellSession {
         "MSG_ErrorExecutingCommand=Note: You may need to restart the Java Shell to resume proper operation"
     })
     private void doExecuteCommands() {
-        ConsoleSection sec = model.processInputSection();
+        ConsoleSection sec = model.processInputSection(true);
         if (sec == null) {
             return;
         }
@@ -1069,7 +1070,7 @@ public class ShellSession {
                 try {
                     for (String s : toExec) {
                             ModelAccessor.INSTANCE.setSnippetOffset(model, exec.offsetToContents(ranges[index].start, true));
-                            launcher.evaluate(s);
+                            launcher.evaluate(s, index == toExec.size() - 1);
                             if (erroneous) {
                                 break;
                             }
@@ -1080,6 +1081,7 @@ public class ShellSession {
                     reportShellMessage(Bundle.MSG_ErrorExecutingCommand());
                 }
             } finally {
+                System.err.println("Bubu");
                 erroneous = false;
             }
         }, this::getPromptAfterError);

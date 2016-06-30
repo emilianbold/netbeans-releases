@@ -69,6 +69,7 @@ public class DebugExecutionEnvironment extends NbExecutionControlBase<ReferenceT
     @Override
     protected void shutdown() {
         agent.closeConnection(shellConnection);
+        super.shutdown();
     }
 
     @Override
@@ -216,6 +217,7 @@ public class DebugExecutionEnvironment extends NbExecutionControlBase<ReferenceT
             }
             closed = true;
         }
+        shutdown();
 //        shellEnv.reportClosedBridge(reportSession, true);
     }
 
@@ -227,6 +229,7 @@ public class DebugExecutionEnvironment extends NbExecutionControlBase<ReferenceT
             }
             closed = true;
         }
+        shutdown();
 //        shellEnv.reportClosedBridge(reportSession, false);
     }
     

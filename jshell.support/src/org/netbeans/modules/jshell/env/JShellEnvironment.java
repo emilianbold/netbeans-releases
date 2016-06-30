@@ -298,9 +298,16 @@ public class JShellEnvironment {
     }
     
     private void fireExecuting(ShellSession session, boolean start) {
+        List<ShellListener> ll;
+        synchronized (this) {
+            ll = new ArrayList<>(this.shellListeners);
+        }
+        if (ll.isEmpty()) {
+            return;
+        }
         ShellEvent e = new ShellEvent(this, session, 
                 start ? ShellStatus.EXECUTE : ShellStatus.READY);
-        shellListeners.stream().forEach(l -> l.shellStatusChanged(e));
+        ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
     private void doStartAndFire(ShellSession nss) {

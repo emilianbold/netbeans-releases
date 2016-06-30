@@ -507,6 +507,7 @@ public final class RemoteExecutionSupport<T> {
         final DemultiplexInput demux[] = new DemultiplexInput[1];
         PipeInputStream pis = new PipeInputStream() {
             public void close() {
+                super.close();
                 demux[0].close();
             }
         };

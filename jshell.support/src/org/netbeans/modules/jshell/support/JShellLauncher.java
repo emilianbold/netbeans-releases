@@ -100,13 +100,15 @@ public class JShellLauncher extends InternalJShell {
         closeState();
     }
     
-    public void evaluate(String command) throws IOException {
+    public void evaluate(String command, boolean prompt) throws IOException {
         ensureLive();
         String trimmed = trimEnd(command);
         if (!trimmed.isEmpty()) {
             prefix = process(prefix, command);
         }
-//        cmdout.append(prompt(!prefix.isEmpty()));
+        if (prompt) {
+            cmdout.append(prompt(!prefix.isEmpty()));
+        }
     }
     
     public List<String> completion(String command) {
