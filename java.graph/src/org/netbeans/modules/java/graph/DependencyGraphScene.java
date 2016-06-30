@@ -488,8 +488,10 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
 
 
     private void addPathToRoot(GraphNodeImplementation impl, GraphNodeImplementation parentImpl, List<GraphEdge> edges, List<GraphNode> nodes) {
+        final Set<GraphNodeImplementation> seen = new HashSet<>();
         GraphNode grNode;
         while (parentImpl != null) {
+            seen.add(parentImpl);
             grNode = getGraphNodeRepresentant(parentImpl);
             if (grNode == null) {
                 return;
@@ -502,6 +504,9 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             nodes.add(grNode);
             impl = parentImpl;
             parentImpl = grNode.getParent();
+            if (seen.contains(parentImpl)) {
+                parentImpl = null;
+            }
         }
     }
 
