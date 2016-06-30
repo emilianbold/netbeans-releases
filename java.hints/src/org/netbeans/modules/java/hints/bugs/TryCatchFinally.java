@@ -52,14 +52,22 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -70,6 +78,11 @@ import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.Bundle.*;
+import org.netbeans.modules.java.hints.introduce.Flow;
+import org.netbeans.modules.java.hints.introduce.Flow.Cancel;
+import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.UseOptions;
 
 /**
  * Contains hints for try-catch-finally blocks.
@@ -79,10 +92,19 @@ import static org.netbeans.modules.java.hints.bugs.Bundle.*;
 @NbBundle.Messages({
     "# {0} - the rogue statement",
     "TEXT_returnBreakContinueInFinallyBlock=The ''{0}'' statement in the ''finally'' block discards unhandled exceptions",
-    "TEXT_throwsInFinallyBlock=The 'throw' statement in 'finally' block may hide the original exception"
+    "TEXT_throwsInFinallyBlock=The 'throw' statement in 'finally' block may hide the original exception",
+    "OPT_ReportFinallyRethrow=Report rethrow of caught exceptions"
 })
 public class TryCatchFinally {
     private static final Logger LOG = Logger.getLogger(TryCatchFinally.class.getName());
+    
+    public static final boolean DEF_REPORT_RETHROW = true;
+    @BooleanOption(
+            displayName = "#OPT_ReportFinallyRethrow", 
+            defaultValue = DEF_REPORT_RETHROW,
+            tooltip = ""
+    )
+    public static final String OPT_REPORT_RETHROW = "reportFinallyRethrow"; // NOI18N
     
     @Hint(category = "bugs",
           displayName = "#DN_TryCatchFinally_finallyThrowsException", // NOI18N
@@ -90,20 +112,96 @@ public class TryCatchFinally {
           suppressWarnings={"ThrowFromFinallyBlock"}, 
           options= Hint.Options.QUERY
     )
+    @UseOptions(OPT_REPORT_RETHROW)
     @TriggerPattern("try { $smts$; } catch $catches$ finally { $handler$; }") // NOI18N
     public static List<ErrorDescription> finallyThrowsException(HintContext ctx) {
-        List<Tree>  trees = new ArrayList<Tree>(3);
+        List<TreePath>  trees = new ArrayList<TreePath>(3);
         ExitsFromBranches efab = new ExitsFromBranches(ctx.getInfo(), true);
         Collection<? extends TreePath> paths = ctx.getMultiVariables().get("$handler$"); // NOI18N
-        
+        CompilationInfo info = ctx.getInfo();
         for (TreePath tp : paths) {
             efab.scan(tp, trees);
         }
         if (trees.isEmpty()) {
             return null;
         }
+        
+        TreePath parent = ctx.getPath().getParentPath();
+        TreePath selected = ctx.getPath();
+        Set<Tree> catchVars = new HashSet<>();
+        // finds the outermost enclosing catch
+        while (parent != null) {
+            Tree.Kind k = parent.getLeaf().getKind();
+            if (k == Tree.Kind.METHOD || k == Tree.Kind.CLASS || k == Tree.Kind.INTERFACE || k == Tree.Kind.ENUM) {
+                break;
+            } else if (k == Tree.Kind.CATCH) {
+                selected = parent;
+                catchVars.add(
+                        ((CatchTree)parent.getLeaf()).getParameter()
+                );
+                break;
+            }
+            parent = parent.getParentPath();
+        }
+        
+        boolean checkRethrow = ctx.getPreferences().getBoolean(OPT_REPORT_RETHROW, DEF_REPORT_RETHROW);
         List<ErrorDescription> errs = new ArrayList<ErrorDescription>(trees.size());
-        for (Tree stmt : trees) {
+        
+        if (!checkRethrow) {
+            FlowResult assignments = Flow.assignmentsForUse(ctx.getInfo(), selected, ctx::isCanceled);
+            if (assignments == null || ctx.isCanceled()) {
+                return null;
+            }
+            T: for (Iterator<TreePath> it = trees.iterator(); it.hasNext(); ) {
+                TreePath p = it.next();
+                Tree stmt = p.getLeaf();
+                if (stmt.getKind() != Tree.Kind.THROW) {
+                    it.remove();
+                    continue;
+                }
+                ThrowTree tt = (ThrowTree)stmt;
+                TreePath tp = new TreePath(p, tt.getExpression());
+
+                Queue<TreePath> q = new ArrayDeque<>();
+                q.offer(tp);
+
+                boolean rethrow = true;
+
+                Map<Tree, Iterable<?extends TreePath>> ass2Use = assignments.getAssignmentsForUse();
+                while (rethrow && !q.isEmpty()) {
+                    tp = q.poll();
+                    Element el = info.getTrees().getElement(tp);
+                    if (el == null) {
+                        rethrow = false;
+                        break;
+                    }
+                    if (el.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+                        if (el.getModifiers().contains(Modifier.FINAL)) {
+                            // OK
+                            continue;
+                        }
+                    }
+                    Iterable<? extends TreePath> vals = ass2Use.get(tp.getLeaf());
+                    if (vals == null) {
+                        rethrow = false;
+                        break;
+                    }
+                    for (TreePath valuePath : vals) {
+                        if (!catchVars.contains(valuePath.getLeaf())) {
+                            q.offer(valuePath);
+                        }
+                    }
+                }
+                if (rethrow) {
+                    it.remove();
+                }
+            }
+        }
+        if (ctx.isCanceled()) {
+            return null;
+        }
+        for (TreePath p : trees) {
+            Tree stmt = p.getLeaf();
             errs.add(ErrorDescriptionFactory.forTree(ctx, stmt, TEXT_throwsInFinallyBlock()));
         }
         return errs;
@@ -117,7 +215,7 @@ public class TryCatchFinally {
     )
     @TriggerPattern("try { $smts$; } catch $catches$ finally { $handler$; }") // NOI18N
     public static List<ErrorDescription> finallyDiscardsException(HintContext ctx) {
-        List<Tree>  trees = new ArrayList<Tree>(3);
+        List<TreePath>  trees = new ArrayList<TreePath>(3);
         ExitsFromBranches efab = new ExitsFromBranches(ctx.getInfo());
         Collection<? extends TreePath> paths = ctx.getMultiVariables().get("$handler$"); // NOI18N
         
@@ -128,7 +226,8 @@ public class TryCatchFinally {
             return null;
         }
         List<ErrorDescription> errs = new ArrayList<ErrorDescription>(trees.size());
-        for (Tree stmt : trees) {
+        for (TreePath p : trees) {
+            Tree stmt = p.getLeaf();
             final String stmtName;
             switch (stmt.getKind()) {
                 case CONTINUE:
@@ -150,7 +249,7 @@ public class TryCatchFinally {
         return errs;
     }
     
-    private static final class ExitsFromBranches extends TreePathScanner<Void, Collection<Tree>> {
+    private static final class ExitsFromBranches extends TreePathScanner<Void, Collection<TreePath>> {
         private final  boolean analyzeThrows;
         private final CompilationInfo info;
         private final Set<Tree> seenTrees = new HashSet<Tree>();
@@ -167,7 +266,7 @@ public class TryCatchFinally {
         }
 
         @Override
-        public Void scan(Tree tree, Collection<Tree> trees) {
+        public Void scan(Tree tree, Collection<TreePath> trees) {
             seenTrees.add(tree);
             return super.scan(tree, trees);
         }
@@ -178,44 +277,44 @@ public class TryCatchFinally {
          * it must be also added to seenTrees.s
          */
         @Override
-        public Void visitLabeledStatement(LabeledStatementTree node, Collection<Tree> p) {
+        public Void visitLabeledStatement(LabeledStatementTree node, Collection<TreePath> p) {
             seenTrees.add(node);
             return super.visitLabeledStatement(node, p);
         }
         
         @Override
-        public Void visitIf(IfTree node, Collection<Tree> trees) {
+        public Void visitIf(IfTree node, Collection<TreePath> trees) {
             scan(node.getThenStatement(), trees);
             scan(node.getElseStatement(), trees);
             return null;
         }
 
         @Override
-        public Void visitReturn(ReturnTree node, Collection<Tree> trees) {
+        public Void visitReturn(ReturnTree node, Collection<TreePath> trees) {
             if (!analyzeThrows) {
-                trees.add(node);
+                trees.add(getCurrentPath());
             }
             return null;
         }
 
         @Override
-        public Void visitBreak(BreakTree node, Collection<Tree> trees) {
+        public Void visitBreak(BreakTree node, Collection<TreePath> trees) {
             if (!analyzeThrows && !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
-                trees.add(node);
+                trees.add(getCurrentPath());
             }
             return null;
         }
 
         @Override
-        public Void visitContinue(ContinueTree node, Collection<Tree> trees) {
+        public Void visitContinue(ContinueTree node, Collection<TreePath> trees) {
             if (!analyzeThrows && !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
-                trees.add(node);
+                trees.add(getCurrentPath());
             }
             return null;
         }
 
         @Override
-        public Void visitTry(TryTree node, Collection<Tree> trees) {
+        public Void visitTry(TryTree node, Collection<TreePath> trees) {
             Set<TypeMirror> caught = new HashSet<TypeMirror>();
 
             for (CatchTree ct : node.getCatches()) {
@@ -230,15 +329,15 @@ public class TryCatchFinally {
             
             try {
                 scan(node.getBlock(), trees);
-                scan(node.getFinallyBlock(), trees);
             } finally {
                 caughtExceptions.pop();
             }
+            scan(node.getFinallyBlock(), trees);
             return null;
         }
 
         @Override
-        public Void visitThrow(ThrowTree node, Collection<Tree> trees) {
+        public Void visitThrow(ThrowTree node, Collection<TreePath> trees) {
             if (!analyzeThrows) {
                 return null;
             }
@@ -256,7 +355,7 @@ public class TryCatchFinally {
 
             super.visitThrow(node, trees);
             if (!isCaught) {
-                trees.add(node);
+                trees.add(getCurrentPath());
             }
             return null;
         }

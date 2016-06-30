@@ -96,7 +96,7 @@ public class ImportClassCustomizer extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void organizeImportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_organizeImportsActionPerformed
-        ErrorFixesFakeHint.setCreateFinalFieldsForCtor(prefs, organizeImports.isSelected());
+        ErrorFixesFakeHint.setOrganizeAfterImportClass(prefs, organizeImports.isSelected());
     }//GEN-LAST:event_organizeImportsActionPerformed
 
 

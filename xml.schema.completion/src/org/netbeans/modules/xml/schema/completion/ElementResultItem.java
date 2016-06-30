@@ -44,7 +44,9 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyAttribute;
@@ -117,10 +119,12 @@ public class ElementResultItem extends CompletionResultItem {
         StringBuffer buffer = new StringBuffer(CompletionUtil.TAG_FIRST_CHAR);
         buffer.append(itemText);
 
-        boolean firstAttr = false;
+        boolean firstAttr = true;
+        boolean noAttrs = true;
         for (AbstractAttribute aa : element.getAttributes()) {
             if (aa instanceof AnyAttribute) continue;
             
+            noAttrs = false;
             Attribute a = (Attribute)aa;
             if (a.getUse() == Use.REQUIRED) {
                 if (buffer.length() == 0)
@@ -129,11 +133,13 @@ public class ElementResultItem extends CompletionResultItem {
                     AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
                 if (firstAttr) {
                     caretPosition = buffer.length() - 1;
-                    firstAttr = false;
                 }                
+                firstAttr = false;
             }
         }
-        buffer.append(CompletionUtil.TAG_LAST_CHAR);
+        if (noAttrs) {
+            buffer.append(CompletionUtil.TAG_LAST_CHAR);
+        }
         replacingText = buffer.toString();
         return replacingText;
     }
@@ -153,6 +159,31 @@ public class ElementResultItem extends CompletionResultItem {
      */
     @Override
     public int getCaretPosition() {
-        return ((replacingText == null ? 0 : replacingText.length()) + caretPosition);
+        if (replacingText == null) {
+            return 0;
+        }
+        if (caretPosition == 0) {
+            return replacingText.length();
+        } else {
+            return caretPosition;
+        }
     }    
+
+    @Override
+    protected int removeTextLength(JTextComponent component, int offset, int removeLength) {
+        if (removeLength <= 0) {
+            return super.removeTextLength(component, offset, removeLength);
+        }
+        TokenSequence s = createTokenSequence(component);
+        s.move(offset);
+        s.moveNext();
+        if (s.token().id() == XMLTokenId.TAG || s.token().id() == XMLTokenId.TEXT) {
+            // replace entire tag, minus starting >
+            if (s.token().text().toString().startsWith(CompletionUtil.TAG_FIRST_CHAR)) {
+                return s.token().length() - (offset - s.offset());
+            }
+        }
+        return super.removeTextLength(component, offset, removeLength);
+    }
+
 }

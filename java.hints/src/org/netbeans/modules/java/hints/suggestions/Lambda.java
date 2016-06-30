@@ -65,13 +65,16 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -87,11 +90,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToLambdaConverter;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -405,9 +410,8 @@ public class Lambda {
                 targetTypeTree = (ExpressionTree) make.ParameterizedType(make.QualIdent(samTypeElement), typeArguments);
             }
             
-            NewClassTree newClass = make.NewClass(null, Collections.<ExpressionTree>emptyList(), targetTypeTree, Collections.<ExpressionTree>emptyList(), innerClass);
             
-            copy.rewrite(ctx.getPath().getLeaf(), newClass);
+            NewClassTree newClass = make.NewClass(null, Collections.<ExpressionTree>emptyList(), targetTypeTree, Collections.<ExpressionTree>emptyList(), innerClass);
             
             TreePath clazz = ctx.getPath();
             
@@ -415,18 +419,112 @@ public class Lambda {
                 clazz = clazz.getParentPath();
             }
             
-            if (clazz != null) {
-                final Name outterClassName = ((ClassTree) clazz.getLeaf()).getSimpleName();
-                
-                new TreeScanner<Void, Void>() {
-                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                        if (node.getName().contentEquals("this")) {
-                            copy.rewrite(node, make.MemberSelect(make.Identifier(outterClassName), "this"));
-                        }
-                        return super.visitIdentifier(node, p);
-                    }
-                }.scan(lambda.getBody(), null);
+            if (clazz == null) {
+                return;
             }
+            
+            Element clazzElement = copy.getTrees().getElement(clazz);
+            if (clazzElement == null || !(
+                    clazzElement.getKind().isClass() || clazzElement.getKind().isInterface())) {
+                return;
+            }
+            
+            copy.rewrite(ctx.getPath().getLeaf(), newClass);
+
+            final Name outterClassName = ((ClassTree) clazz.getLeaf()).getSimpleName();
+            // possibly wrong, since the rewritten code will work in context of a different class.
+            Scope s = copy.getTrees().getScope(ctx.getPath());
+            final Map<Name, Element> types = new HashMap<>();
+            final Map<Name, Element> vars = new HashMap<>();
+            final Set<Name> methods = new HashSet<>();
+
+            // lambda parameter names will be used as method parameter names, so variable clash should
+            // not occur.
+            for (Element e : copy.getElementUtilities().getMembers(samTypeElement.asType(), null)) {
+                switch (e.getKind()) {
+                    case ENUM:
+                    case CLASS:
+                    case ANNOTATION_TYPE:
+                    case INTERFACE:
+                        types.put(e.getSimpleName(), e);
+                        break;
+
+                    case ENUM_CONSTANT:
+                    case FIELD:
+                        vars.put(e.getSimpleName(), e);
+                        break;
+
+                    case METHOD:
+                        methods.add(e.getSimpleName());
+                        break;
+                }
+            }
+            types.put(samTypeElement.getSimpleName(), samTypeElement);
+            
+            new TreePathScanner<Void, Boolean>() {
+                @Override public Void visitIdentifier(final IdentifierTree node, Boolean p) {
+                    boolean rewrite = false;
+                    boolean statRef = false;
+                    
+                    if (node.getName().contentEquals("this") || node.getName().contentEquals("super")) {
+                        if (types.containsKey(outterClassName)) {
+                            copy.rewrite(node, make.MemberSelect(make.QualIdent(clazzElement), node.getName()));
+                        } else {
+                            copy.rewrite(node, make.MemberSelect(make.Identifier(outterClassName), node.getName()));
+                        }
+                    } else if (Boolean.TRUE != p) {
+                        Element e = copy.getTrees().getElement(getCurrentPath());
+                        Element other = null;
+                        if (e != null) {
+                            switch (e.getKind()) {
+                                case METHOD: {
+                                    if (methods.contains(e.getSimpleName())) {
+                                        Map<? extends ExecutableElement,? extends ExecutableElement> conflicting = Utilities.findConflictingMethods(copy, samTypeElement, 
+                                                true, Collections.singleton((ExecutableElement)e));
+                                        rewrite = !conflicting.isEmpty();
+                                    }
+                                    break;
+                                }
+                                // fields and enum fields may be hidden by interface fields.
+                                case ENUM_CONSTANT: 
+                                    statRef = true;
+                                    // fall through
+                                case FIELD: 
+                                    rewrite = (other = vars.get(e.getSimpleName())) != null;
+                                    break;
+                                // types may be hidden by inner interface types
+                                case ANNOTATION_TYPE:
+                                case CLASS:
+                                case INTERFACE:
+                                case ENUM:
+                                    rewrite = (other = types.get(e.getSimpleName())) != null;
+                                    statRef = true;
+                                    break;
+                            }
+                        }
+                        if (rewrite) {
+                            statRef |= (e.getModifiers().contains(Modifier.STATIC));
+                            ExpressionTree n;
+                            if (statRef && other == e) {
+                                // static reference && the element was reintroduced actually
+                                return super.visitIdentifier(node, p);
+                            }
+                            if (types.containsKey(outterClassName)) {
+                                n = make.QualIdent(clazzElement);
+                            } else {
+                                n = make.Identifier(outterClassName);
+                            }
+                            if (!statRef) {
+                                n = make.MemberSelect(n, "this"); // NOI18N
+                            }
+                            if (rewrite) {
+                                copy.rewrite(node, make.MemberSelect(n, node.getName()));
+                            }
+                        }
+                    }
+                    return super.visitIdentifier(node, p);
+                }
+            }.scan(ctx.getPath(), null);
         }        
     }
 
