@@ -47,7 +47,7 @@ import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
 import org.clang.lex.Lexer;
 import org.clang.lex.Preprocessor;
-import org.clang.lex.SmallVectorToken;
+import org.clang.lex.llvm.SmallVectorToken;
 import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfoCallback;
 import static org.clank.java.std.*;
