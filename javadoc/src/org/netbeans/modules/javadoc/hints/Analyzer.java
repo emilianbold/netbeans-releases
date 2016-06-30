@@ -85,6 +85,7 @@ import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.TreePath;
+import com.sun.tools.doclint.HtmlTag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
