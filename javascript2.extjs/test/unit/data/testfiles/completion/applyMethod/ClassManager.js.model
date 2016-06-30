@@ -13,7 +13,7 @@ Array             : OBJECT Array [ANONYMOUS: false, DECLARED: false - Array, MOD
                                        OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                        # PROPERTIES
                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214, MODIFIERS: PUBLIC, FUNCTION]
+ClassManagerL#214 : FUNCTION ClassManagerL#214 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214, MODIFIERS: PUBLIC, FUNCTION]
                   # RETURN TYPES
                   undefined, RESOLVED: true
                   # PARAMETERS
@@ -123,7 +123,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                            widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                                                           # RETURN TYPES
-                                                          @exp;ClassManagerL$214@pro;ClassManagerAnonym$10@pro;widget@pro;config, RESOLVED: false
+                                                          @exp;ClassManagerL#214@pro;ClassManagerAnonym$10@pro;widget@pro;config, RESOLVED: false
                                                           @new;T, RESOLVED: false
                                                           @pro;Manager@call;instantiateByAlias, RESOLVED: false
                                                           # PARAMETERS
@@ -141,7 +141,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                           xtype     : OBJECT xtype [ANONYMOUS: false, DECLARED: true - xtype, MODIFIERS: PRIVATE, VARIABLE]
                   ClassManagerAnonym$12    : OBJECT ClassManagerAnonym$12 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                   ClassManagerAnonym$9     : OBJECT ClassManagerAnonym$9 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-                  ClassManagerL$214$L$1225 : FUNCTION ClassManagerL$214$L$1225 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1225, MODIFIERS: PRIVATE, METHOD]
+                  ClassManagerL#214#L#1225 : FUNCTION ClassManagerL#214#L#1225 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1225, MODIFIERS: PRIVATE, METHOD]
                                            # RETURN TYPES
                                            undefined, RESOLVED: true
                                            # PARAMETERS
@@ -163,7 +163,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                      OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                      # PROPERTIES
                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                  ClassManagerL$214$L$1257 : FUNCTION ClassManagerL$214$L$1257 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1257, MODIFIERS: PRIVATE, METHOD]
+                  ClassManagerL#214#L#1257 : FUNCTION ClassManagerL#214#L#1257 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1257, MODIFIERS: PRIVATE, METHOD]
                                            # RETURN TYPES
                                            Boolean, RESOLVED: true
                                            # PARAMETERS
@@ -184,7 +184,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            # PROPERTIES
                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                  ClassManagerL$214$L$1291 : FUNCTION ClassManagerL$214$L$1291 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1291, MODIFIERS: PRIVATE, METHOD]
+                  ClassManagerL#214#L#1291 : FUNCTION ClassManagerL#214#L#1291 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1291, MODIFIERS: PRIVATE, METHOD]
                                            # RETURN TYPES
                                            undefined, RESOLVED: true
                                            # PARAMETERS
@@ -207,7 +207,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                       OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                  ClassManagerL$214$L$1761 : FUNCTION ClassManagerL$214$L$1761 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1761, MODIFIERS: PRIVATE, METHOD]
+                  ClassManagerL#214#L#1761 : FUNCTION ClassManagerL#214#L#1761 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1761, MODIFIERS: PRIVATE, METHOD]
                                            # RETURN TYPES
                                            undefined, RESOLVED: true
                                            # PARAMETERS
@@ -220,9 +220,9 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                    $className : OBJECT $className [ANONYMOUS: false, DECLARED: false - $className, MODIFIERS: PUBLIC, PROPERTY]
                                            # PROPERTIES
                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                  ClassManagerL$214$L$1774 : FUNCTION ClassManagerL$214$L$1774 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1774, MODIFIERS: PRIVATE, CONSTRUCTOR]
+                  ClassManagerL#214#L#1774 : FUNCTION ClassManagerL#214#L#1774 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1774, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                            # RETURN TYPES
-                                           ClassManagerL$214.ClassManagerL$214$L$1774, RESOLVED: true
+                                           ClassManagerL#214.ClassManagerL#214#L#1774, RESOLVED: true
                                            # PARAMETERS
                                            OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
                                                    # PROPERTIES
@@ -237,7 +237,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                    xtypesMap   : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: true - xtypesMap, MODIFIERS: PUBLIC, PROPERTY]
                                            # PROPERTIES
                                            ClassManagerAnonym$11           : OBJECT ClassManagerAnonym$11 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-                                           ClassManagerL$214$L$1774$L$1818 : FUNCTION ClassManagerL$214$L$1774$L$1818 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$L$1774$L$1818, MODIFIERS: PRIVATE, METHOD]
+                                           ClassManagerL#214#L#1774#L#1818 : FUNCTION ClassManagerL#214#L#1774#L#1818 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#L#1774#L#1818, MODIFIERS: PRIVATE, METHOD]
                                                                            # RETURN TYPES
                                                                            undefined, RESOLVED: true
                                                                            # PROPERTIES
@@ -293,7 +293,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            # PROPERTIES
                                            addNameAliasMappings            : FUNCTION addNameAliasMappings [ANONYMOUS: false, DECLARED: true - addNameAliasMappings, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT aliases [ANONYMOUS: false, DECLARED: true - aliases, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -313,7 +313,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            nameToAliasesMap     : OBJECT nameToAliasesMap [ANONYMOUS: false, DECLARED: true - nameToAliasesMap, MODIFIERS: PRIVATE, VARIABLE]
                                            addNameAlternateMappings        : FUNCTION addNameAlternateMappings [ANONYMOUS: false, DECLARED: true - addNameAlternateMappings, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT alternates [ANONYMOUS: false, DECLARED: true - alternates, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -334,7 +334,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            classes                         : OBJECT classes [ANONYMOUS: false, DECLARED: true - classes, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                                            create                          : FUNCTION create [ANONYMOUS: false, DECLARED: true - create, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Class, RESOLVED: true
+                                                                           ClassManagerL#214.Class, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
@@ -349,7 +349,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                                    postprocessors : OBJECT postprocessors [ANONYMOUS: false, DECLARED: true - postprocessors, MODIFIERS: PUBLIC, PROPERTY]
                                                                            OBJECT createdFn [ANONYMOUS: false, DECLARED: true - createdFn, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
-                                                                           ClassManagerL$214$create$L$757 : FUNCTION ClassManagerL$214$create$L$757 [ANONYMOUS: true, DECLARED: true - ClassManagerL$214$create$L$757, MODIFIERS: PRIVATE, METHOD]
+                                                                           ClassManagerL#214#create#L#757 : FUNCTION ClassManagerL#214#create#L#757 [ANONYMOUS: true, DECLARED: true - ClassManagerL#214#create#L#757, MODIFIERS: PRIVATE, METHOD]
                                                                                                           # RETURN TYPES
                                                                                                           undefined, RESOLVED: true
                                                                                                           # PROPERTIES
@@ -389,7 +389,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                                                           displayName : OBJECT displayName [ANONYMOUS: false, DECLARED: true - displayName, MODIFIERS: PUBLIC, PROPERTY]
                                            createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;createNamespaces@pro;root, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;createNamespaces@pro;root, RESOLVED: false
                                                                            # PROPERTIES
                                                                            ClassManagerAnonym$3 : OBJECT ClassManagerAnonym$3 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                                            arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
@@ -406,7 +406,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            subLn                : OBJECT subLn [ANONYMOUS: false, DECLARED: true - subLn, MODIFIERS: PRIVATE, VARIABLE]
                                            createOverride                  : FUNCTION createOverride [ANONYMOUS: false, DECLARED: true - createOverride, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;createOverride@pro;me, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;createOverride@pro;me, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
@@ -444,7 +444,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            defaultPostprocessors           : OBJECT defaultPostprocessors [ANONYMOUS: false, DECLARED: true - defaultPostprocessors, MODIFIERS: PUBLIC, PROPERTY]
                                            dynInstantiate                  : FUNCTION dynInstantiate [ANONYMOUS: false, DECLARED: true - dynInstantiate, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager@pro;instantiate@call;apply, RESOLVED: false
+                                                                           ClassManagerL#214.Manager@pro;instantiate@call;apply, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PUBLIC, PARAMETER]
@@ -461,7 +461,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            get                             : FUNCTION get [ANONYMOUS: false, DECLARED: true - get, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
                                                                            @arr;classes, RESOLVED: false
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;get@pro;root, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;get@pro;root, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -477,7 +477,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            getAliasesByName                : FUNCTION getAliasesByName [ANONYMOUS: false, DECLARED: true - getAliasesByName, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
                                                                            Array, RESOLVED: true
-                                                                           ClassManagerL$214.Manager.maps.nameToAliases, RESOLVED: true
+                                                                           ClassManagerL#214.Manager.maps.nameToAliases, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -485,7 +485,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            getByAlias                      : FUNCTION getByAlias [ANONYMOUS: false, DECLARED: true - getByAlias, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
                                                                            @arr;classes, RESOLVED: false
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;get@pro;root, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;get@pro;root, RESOLVED: false
                                                                            unresolved, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
@@ -502,7 +502,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT length [ANONYMOUS: false, DECLARED: true - length, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -535,7 +535,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            getNameByAlias                  : FUNCTION getNameByAlias [ANONYMOUS: false, DECLARED: true - getNameByAlias, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager.maps.aliasToName, RESOLVED: true
+                                                                           ClassManagerL#214.Manager.maps.aliasToName, RESOLVED: true
                                                                            String, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
@@ -543,7 +543,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            getNameByAlternate              : FUNCTION getNameByAlternate [ANONYMOUS: false, DECLARED: true - getNameByAlternate, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager.maps.alternateToName, RESOLVED: true
+                                                                           ClassManagerL#214.Manager.maps.alternateToName, RESOLVED: true
                                                                            String, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT alternate [ANONYMOUS: false, DECLARED: true - alternate, MODIFIERS: PUBLIC, PARAMETER]
@@ -551,7 +551,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            getNamesByExpression            : FUNCTION getNamesByExpression [ANONYMOUS: false, DECLARED: true - getNamesByExpression, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;getNamesByExpression@pro;names, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;getNamesByExpression@pro;names, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT expression [ANONYMOUS: false, DECLARED: true - expression, MODIFIERS: PUBLIC, PARAMETER]
                                                                                    # PROPERTIES
@@ -606,7 +606,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            regex            : OBJECT regex [ANONYMOUS: false, DECLARED: true - regex, MODIFIERS: PRIVATE, VARIABLE]
                                            instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager@call;@call;getInstantiator, RESOLVED: false
+                                                                           ClassManagerL#214.Manager@call;@call;getInstantiator, RESOLVED: false
                                                                            # PROPERTIES
                                                                            alias        : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, VARIABLE]
                                                                            apply        : FUNCTION apply [ANONYMOUS: false, DECLARED: false - apply, MODIFIERS: PUBLIC, METHOD]
@@ -628,7 +628,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            possibleName : OBJECT possibleName [ANONYMOUS: false, DECLARED: true - possibleName, MODIFIERS: PRIVATE, VARIABLE]
                                            instantiateByAlias              : FUNCTION instantiateByAlias [ANONYMOUS: false, DECLARED: true - instantiateByAlias, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager@pro;instantiate@call;apply, RESOLVED: false
+                                                                           ClassManagerL#214.Manager@pro;instantiate@call;apply, RESOLVED: false
                                                                            # PROPERTIES
                                                                            alias     : OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PRIVATE, VARIABLE]
                                                                            args      : OBJECT args [ANONYMOUS: false, DECLARED: true - args, MODIFIERS: PRIVATE, VARIABLE]
@@ -693,7 +693,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                            parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
                                                                            @arr;cache, RESOLVED: false
-                                                                           @exp;ClassManagerL$214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false
+                                                                           @exp;ClassManagerL#214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false
                                                                            # PARAMETERS
                                                                            OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -789,7 +789,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            registerPostprocessor           : FUNCTION registerPostprocessor [ANONYMOUS: false, DECLARED: true - registerPostprocessor, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, PARAMETER]
@@ -805,7 +805,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            set                             : FUNCTION set [ANONYMOUS: false, DECLARED: true - set, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
@@ -828,7 +828,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            targetName           : OBJECT targetName [ANONYMOUS: false, DECLARED: true - targetName, MODIFIERS: PRIVATE, VARIABLE]
                                            setAlias                        : FUNCTION setAlias [ANONYMOUS: false, DECLARED: true - setAlias, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
@@ -840,7 +840,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            nameToAliasesMap     : OBJECT nameToAliasesMap [ANONYMOUS: false, DECLARED: true - nameToAliasesMap, MODIFIERS: PRIVATE, VARIABLE]
                                            setDefaultPostprocessorPosition : FUNCTION setDefaultPostprocessorPosition [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessorPosition, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                                            OBJECT offset [ANONYMOUS: false, DECLARED: true - offset, MODIFIERS: PUBLIC, PARAMETER]
@@ -862,7 +862,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            index                 : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
                                            setDefaultPostprocessors        : FUNCTION setDefaultPostprocessors [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessors, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           ClassManagerL$214.Manager, RESOLVED: true
+                                                                           ClassManagerL#214.Manager, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT postprocessors [ANONYMOUS: false, DECLARED: true - postprocessors, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -926,12 +926,12 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                   arguments                : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                   makeCtor                 : FUNCTION makeCtor [ANONYMOUS: false, DECLARED: true - makeCtor, MODIFIERS: PRIVATE, METHOD]
                                            # RETURN TYPES
-                                           ClassManagerL$214.makeCtor.constructor, RESOLVED: true
+                                           ClassManagerL#214.makeCtor.constructor, RESOLVED: true
                                            # PROPERTIES
                                            arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            constructor : FUNCTION constructor [ANONYMOUS: false, DECLARED: true - constructor, MODIFIERS: PRIVATE, METHOD]
                                                        # RETURN TYPES
-                                                       ClassManagerL$214.makeCtor@pro;constructor@call;apply, RESOLVED: false
+                                                       ClassManagerL#214.makeCtor@pro;constructor@call;apply, RESOLVED: false
                                                        # PROPERTIES
                                                        arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                        constructor : OBJECT constructor [ANONYMOUS: false, DECLARED: false - constructor, MODIFIERS: PUBLIC, OBJECT]
@@ -1013,7 +1013,7 @@ Ext               : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIER
                                                   length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                   widget         : FUNCTION widget [ANONYMOUS: false, DECLARED: true - widget, MODIFIERS: PUBLIC, METHOD]
                                  # RETURN TYPES
-                                 @exp;ClassManagerL$214@pro;ClassManagerAnonym$10@pro;widget@pro;config, RESOLVED: false
+                                 @exp;ClassManagerL#214@pro;ClassManagerAnonym$10@pro;widget@pro;config, RESOLVED: false
                                  @new;T, RESOLVED: false
                                  @pro;Manager@call;instantiateByAlias, RESOLVED: false
                                  # PARAMETERS
