@@ -87,15 +87,15 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     private transient CsmScope scopeRef;
     
 
-    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        super(file, false, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile, int startOffset, int endOffset) {
+        super(file, false, pointerDepth, reference, arrayDepth, _const, _volatile, startOffset, endOffset);
         functionParameters = null;
         returnType = null;
     }
     
     // package-local - for facory only
-    TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
-        super(type, pointerDepth, reference, arrayDepth, _const);
+    TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
+        super(type, pointerDepth, reference, arrayDepth, _const, _volatile);
         if(type.functionParameters != null) {
             functionParameters = new ArrayList<>(type.functionParameters);
         } else {
@@ -118,8 +118,8 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     }
     
     // package-local - for facory only
-    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters, CsmType returnType) {
-        super(file, false, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile, int startOffset, int endOffset, Collection<CsmParameter> parameters, CsmType returnType) {
+        super(file, false, pointerDepth, reference, arrayDepth, _const, _volatile, startOffset, endOffset);
         this.functionParameters = parameters;
         this.returnType = returnType;
     }    
@@ -472,7 +472,8 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         int retPointerDepth = super.getPointerDepth();
         int retReference = TypeFactory.getReferenceValue(super.isReference(), super.isRValueReference());
         boolean retIsConst = super.isConst();
-        returnType = TypeFactory.createType(returnType, retPointerDepth, retReference, returnType.getArrayDepth(), retIsConst);
+        boolean retIsVolatile = super.isVolatile();
+        returnType = TypeFactory.createType(returnType, retPointerDepth, retReference, returnType.getArrayDepth(), retIsConst, retIsVolatile);
     }
     
     public static int getEndOffset(AST node) {

@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -271,7 +271,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private void rootFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootFolderButtonActionPerformed
         FileObject projectDirectory = wizard.getWizardDescriptor().getProject().getProjectDirectory();
         ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(projectDirectory);
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(execEnv,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(execEnv,
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY,

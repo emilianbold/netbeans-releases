@@ -47,16 +47,14 @@ package org.netbeans.modules.cnd.makefile.loaders;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
-
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makefile.parser.MakefileTargetProviderImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.MIMEResolver;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -64,11 +62,6 @@ import org.openide.windows.TopComponent;
 /**
  *  Represents a Makefile object in the Repository.
  */
-@MIMEResolver.Registration(
-        displayName="#MakeResolver.Name", // NOI18N
-        position=140,
-        resource="../../script/resources/mime-resolver-make.xml", // NOI18N
-        showInFileChooser="#MakeResolver.FileChooserName") // NOI18N
 public class MakefileDataObject extends MultiDataObject {
 
     /** Serial version number */

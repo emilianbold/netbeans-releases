@@ -85,11 +85,12 @@ public class LookupProviderImpl implements LookupProvider {
     }
     
     private static Lookup initLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        Classpaths cp = new Classpaths(projectHelper, projectEvaluator, aux);
+        final SourceForBinaryQueryImpl sfbq = new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux);
+        final Classpaths cp = new Classpaths(projectHelper, projectEvaluator, aux, sfbq);
         return Lookups.fixed(
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
-            new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
+            sfbq,   // SourceForBinaryQueryImplementation
             new AnnotationProcessingQueryImpl(projectHelper, projectEvaluator, aux),
             new OpenHook(project, cp), // ProjectOpenedHook
             new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation

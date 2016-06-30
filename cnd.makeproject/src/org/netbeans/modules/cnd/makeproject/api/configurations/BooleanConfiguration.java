@@ -55,6 +55,9 @@ public class BooleanConfiguration implements Cloneable {
         reset();
     }
 
+    protected BooleanConfiguration() {
+    }
+
     public void setValue(boolean b) {
         this.value = b;
         setModified(b != getDefault());
@@ -64,7 +67,7 @@ public class BooleanConfiguration implements Cloneable {
         return value;
     }
 
-    public final void setModified(boolean b) {
+    public void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -89,7 +92,7 @@ public class BooleanConfiguration implements Cloneable {
         setModified(value != def);
     }
 
-    public final void reset() {
+    public void reset() {
         value = getDefault();
         setModified(false);
     }

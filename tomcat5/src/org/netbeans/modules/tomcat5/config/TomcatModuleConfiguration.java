@@ -139,7 +139,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         try {
             getContext();
         } catch (ConfigurationException e) {
-            LOGGER.log(Level.FINE, null, e);
+            LOGGER.log(Level.INFO, null, e);
         }
         if (contextDataObject == null) {
             try {

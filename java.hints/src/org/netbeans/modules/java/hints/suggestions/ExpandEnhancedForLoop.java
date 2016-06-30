@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2011 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,25 +64,18 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -166,7 +162,7 @@ public class ExpandEnhancedForLoop {
 
             ExecutableElement getIterator = findIterable(copy);
             ExecutableType    getIteratorType = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) expressionType, getIterator);
-            TypeMirror        iteratorType = Utilities.resolveCapturedType(copy, getIteratorType.getReturnType());
+            TypeMirror        iteratorType = Utilities.resolveTypeForDeclaration(copy, getIteratorType.getReturnType());
             TreeMaker         make = copy.getTreeMaker();
             Tree              iteratorTypeTree = make.Type(iteratorType);
             ExpressionTree    getIteratorTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),

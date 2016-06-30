@@ -54,13 +54,19 @@ public class DefaultFindState implements FindState {
     private boolean visible = false;
     private String pattern;
     private boolean tentative;
-    private Coord dot = null;
+    private Direction direction;
+    private Extent extent = null;
     private Status status = Status.EMPTYPATTERN;
     private boolean found = false;
+
+    private enum Direction {
+        BACKWARD, FORWARD
+    }
 
     public DefaultFindState(Term term) {
         super();
         this.term = term;
+        this.direction = Direction.FORWARD;
     }
 
     private LogicalLineVisitor forwardVisitor = new LogicalLineVisitor() {
@@ -71,9 +77,9 @@ public class DefaultFindState implements FindState {
                 return true;    // keep going
             }
             if (!tentative) {
-                Extent extent = term.extentInLogicalLine(begin, i, pattern.length());
+                extent = term.extentInLogicalLine(begin, i, pattern.length());
                 term.setSelectionExtent(extent);
-                dot = term.advance(extent.end);
+                extent.end = term.advance(extent.end);
             }
             found = true;
             return false;       // stop
@@ -88,9 +94,13 @@ public class DefaultFindState implements FindState {
                 return true;        // keep going
             }
             if (!tentative) {
-                Extent extent = term.extentInLogicalLine(begin, i, pattern.length());
+                extent = term.extentInLogicalLine(begin, i, pattern.length());
                 term.setSelectionExtent(extent);
-                dot = term.backup(extent.end);
+                Coord bckp = term.backup(extent.begin);
+                if (bckp != null) {
+                    extent.begin = bckp;
+                }
+
             }
             found = true;
             return false;          // stop
@@ -100,10 +110,11 @@ public class DefaultFindState implements FindState {
     public void setPattern(String pattern) {
         this.pattern = pattern;
         this.found = false;
-        if (pattern == null || pattern.equals(""))
+        if (pattern == null || pattern.equals("")) {
             status = Status.EMPTYPATTERN;
-        else
+        } else {
             status = Status.OK;
+        }
     }
 
     public String getPattern() {
@@ -119,23 +130,24 @@ public class DefaultFindState implements FindState {
     }
 
     public void next() {
-        if (status == Status.EMPTYPATTERN)
+        if (status == Status.EMPTYPATTERN) {
             return;
+        }
 
         found = false;      // dot and found set by forwardVisitor
 
         tentative = false;
-        term.visitLogicalLines(dot, null, forwardVisitor);
+        term.visitLogicalLines(end(), null, forwardVisitor);
 
         if (found) {
-            term.possiblyNormalize(dot);
+            term.possiblyNormalize(end());
             status = Status.OK;
         } else {
             // see if it will be found if wrapped
             tentative = true;
             term.visitLogicalLines(null, null, forwardVisitor);
             if (found) {
-                dot = null;
+                extent.end = null;
                 status = Status.WILLWRAP;
             } else {
                 status = Status.NOTFOUND;
@@ -144,23 +156,24 @@ public class DefaultFindState implements FindState {
     }
 
     public void prev() {
-        if (status == Status.EMPTYPATTERN)
+        if (status == Status.EMPTYPATTERN) {
             return;
+        }
 
         found = false;      // dot and found set by forwardVisitor
 
         tentative = false;
-        term.reverseVisitLogicalLines(null, dot, backwardVisitor);
+        term.reverseVisitLogicalLines(null, begin(), backwardVisitor);
 
         if (found) {
-            term.possiblyNormalize(dot);
+            term.possiblyNormalize(begin());
             status = Status.OK;
         } else {
             // see if it will be found if wrapped
             tentative = true;
             term.reverseVisitLogicalLines(null, null, backwardVisitor);
             if (found) {
-                dot = null;
+                extent.begin = null;
                 status = Status.WILLWRAP;
             } else {
                 status = Status.NOTFOUND;
@@ -170,5 +183,13 @@ public class DefaultFindState implements FindState {
 
     public Status getStatus() {
         return status;
+    }
+
+    private Coord begin() {
+        return (extent == null) ? null : extent.begin;
+    }
+
+    private Coord end() {
+        return (extent == null) ? null : extent.end;
     }
 }

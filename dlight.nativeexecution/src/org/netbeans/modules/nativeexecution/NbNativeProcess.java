@@ -206,7 +206,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             npb.setArguments("-c", "cat " + reportFile + " && rm " + reportFile); // NOI18N
             ExitStatus st = ProcessUtils.execute(npb);
             if (st.isOK()) {
-                statusEx = ProcessStatusAccessor.getDefault().create(st.output.split("\n")); // NOI18N
+                statusEx = ProcessStatusAccessor.getDefault().create(st.getOutputString().split("\n")); // NOI18N
                 result = statusEx.getExitCode();
             }
         }

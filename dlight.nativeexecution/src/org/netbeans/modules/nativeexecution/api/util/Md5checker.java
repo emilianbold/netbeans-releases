@@ -121,7 +121,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
         // On MacOSX - sh -c "md5 non-existent || openssl -md5 non-existent" 
         //             has status 0.
 
-        if (!result.isOK() || result.output.isEmpty()) {
+        if (!result.isOK() || result.getOutputString().isEmpty()) {
             //throw new CheckSumException("The output of the '" + cmd + "' command is empty"); //NOI18N
             // TODO: should we check existence via a separate command?
             // it's easy to do, but will take some execution timem while result will be the same: copy the file
@@ -130,7 +130,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
         // calculate local sum while remote process is running
         String localCheckSum = getLocalChecksum(localFile);
-        String[] parts = result.output.split(" "); // NOI18N
+        String[] parts = result.getOutputString().split(" "); // NOI18N
         if (parts.length == 0) {
             throw new CheckSumException("Line shouldn't be empty"); // NOI18N
         }

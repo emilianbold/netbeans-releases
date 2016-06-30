@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
@@ -171,10 +172,14 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         return false;
     }
 
+    private static final List<String> predefinedVariables;
     private static final List<CppTokenId> keywordsAll;
     private static final List<CppTokenId> keywordsFirst;
 
     static {
+        predefinedVariables = Arrays.asList(
+            "__VA_ARGS__" //NOI18N
+        );
         keywordsFirst = Arrays.asList(
             CppTokenId.ALIGNOF,
 //            CppTokenId.ASM,
@@ -273,6 +278,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
         private String filterPrefix;
         private final int queryType;
         private boolean caseSensitive = false;
+        private boolean inDefine = false;
 
         /*package*/ Query(int caretOffset, int queryType) {
             if(TRACE)System.err.println("KW Query("+caretOffset+","+queryType+")");
@@ -357,7 +363,12 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                                 continue;
                             }
                         }
-                        items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id, keywordsFirst.contains(id)));
+                        items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id.fixedText(), keywordsFirst.contains(id)));
+                    }
+                    if (inDefine) {
+                        for (String id : predefinedVariables) {
+                            items.add(CsmKeywordCompletionItem.createItem(queryAnchorOffset, caretOffset, id, false));
+                        }
                     }
                 }
             } catch (BadLocationException ex) {
@@ -392,6 +403,7 @@ public class CsmKeywordsCompletionProvider implements CompletionProvider {
                             } else {
                                 queryAnchorOffset = caretOffset;
                             }
+                            inDefine =ppTs.token().id() == CppTokenId.PREPROCESSOR_IDENTIFIER;
                             break;
                     }
                 }

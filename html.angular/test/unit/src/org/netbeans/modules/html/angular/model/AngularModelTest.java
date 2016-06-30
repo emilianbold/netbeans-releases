@@ -47,12 +47,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.JsObjectImpl;
+import org.netbeans.modules.javascript2.model.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.openide.filesystems.FileObject;
 
 /**

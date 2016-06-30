@@ -95,7 +95,8 @@ import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle.Messages;
 
-@Hint(displayName="#DN_IteratorToFor", description="#DESC_IteratorToFor", category="rules15", suppressWarnings={"", "ForLoopReplaceableByForEach", "WhileLoopReplaceableByForEach"})
+@Hint(displayName="#DN_IteratorToFor", description="#DESC_IteratorToFor", category="rules15", suppressWarnings={"", "ForLoopReplaceableByForEach", "WhileLoopReplaceableByForEach"},
+        minSourceVersion = "5")
 @Messages({
     "DN_IteratorToFor=Use JDK 5 for-loop",
     "DESC_IteratorToFor=Replaces simple uses of Iterator with a corresponding for-loop.",
@@ -108,9 +109,6 @@ public class IteratorToFor {
     @TriggerPattern(value = "java.util.Iterator $it = $coll.iterator(); while ($it.hasNext()) {$type $elem = ($type) $it.next(); $rest$;}", 
             constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable"))
     public static ErrorDescription whileIdiom(HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
         if (uses(ctx, ctx.getMultiVariables().get("$rest$"), ctx.getVariables().get("$it"))) {
             return null;
         }
@@ -135,9 +133,6 @@ public class IteratorToFor {
                 constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable"))
     })
     public static ErrorDescription forIdiom(HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
         if (uses(ctx, ctx.getMultiVariables().get("$rest$"), ctx.getVariables().get("$it"))) {
             return null;
         }
@@ -213,9 +208,6 @@ public class IteratorToFor {
     
     @TriggerPattern(value = "for (int $index = 0; $index < $col.size(); $index++) $statement;", constraints = @ConstraintVariableType(variable = "$col", type = "java.util.List"))
     public static ErrorDescription forListCollection(final HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
         final boolean implicitThis = !ctx.getVariableNames().containsKey("$col"); // NOI18N
         AccessAndVarVisitor v = new AccessAndVarVisitor(ctx) {
             @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -265,9 +257,6 @@ public class IteratorToFor {
     
     @TriggerPattern(value="for (int $index = 0; $index < $arr.length; $index++) $statement;", constraints=@ConstraintVariableType(variable="$arr", type="Object[]"))
     public static ErrorDescription forIndexedArray(final HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
         AccessAndVarVisitor v = new AccessAndVarVisitor(ctx) {
             @Override public Void visitArrayAccess(ArrayAccessTree node, Void p) {
             TreePath path = getCurrentPath();

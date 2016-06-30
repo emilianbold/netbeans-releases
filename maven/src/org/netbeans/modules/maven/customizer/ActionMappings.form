@@ -284,9 +284,6 @@
         <Component class="javax.swing.JEditorPane" name="epProperties">
           <Properties>
             <Property name="contentType" type="java.lang.String" value="text/x-properties" noResource="true"/>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[0, 6, 0, 6]"/>
-            </Property>
           </Properties>
         </Component>
       </SubComponents>

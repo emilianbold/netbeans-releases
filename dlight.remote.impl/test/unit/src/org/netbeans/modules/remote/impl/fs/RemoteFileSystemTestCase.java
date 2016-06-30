@@ -219,7 +219,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             assertTrue("FileObject should be writable: " + temp_fo.getPath(), temp_fo.canWrite());
             assertFalse("FileObject should NOT be executable: " + temp_fo.getPath(), FileSystemProvider.canExecute(temp_fo));                        
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "chmod", "u+x", temp_fo.getPath());
-            assertEquals("chmod failed: " + res.error, 0, res.exitCode);
+            assertEquals("chmod failed: " + res.getErrorString(), 0, res.exitCode);
             temp_fo.getParent().refresh();
             assertTrue("FileObject should be executable: " + temp_fo.getPath(), FileSystemProvider.canExecute(temp_fo));
             

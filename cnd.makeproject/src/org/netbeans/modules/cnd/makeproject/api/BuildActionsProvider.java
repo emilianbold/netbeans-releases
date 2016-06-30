@@ -81,6 +81,13 @@ public abstract class BuildActionsProvider {
 
         void close();
     }
+
+    public interface EventsProcessor {
+        void submitTask();
+        ProjectActionEvent[] getProjectActionEvents();
+        boolean checkProject(ProjectActionEvent pae);
+    }
+
     /**
      * Implementation of the default BuildActionsProvider
      */
@@ -95,9 +102,9 @@ public abstract class BuildActionsProvider {
         @Override
         public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
             List<BuildAction> list = new ArrayList<>();
-            for (BuildActionsProvider provider : res.allInstances()) {
+            res.allInstances().forEach((provider) -> {
                 list.addAll(provider.getActions(ioTabName, events));
-            }
+            });
             return list;
         }
     }

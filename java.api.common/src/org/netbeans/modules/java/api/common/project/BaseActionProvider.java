@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -391,7 +392,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @CheckForNull
-    private FileObject findBuildXml() {
+    protected final FileObject findBuildXml() {
         String name = buildXMLName;
         if (name == null) {
             buildXMLName = name = getBuildXmlName(project, evaluator);
@@ -495,7 +496,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         showBuildActionWarning(context);
                         return ;
                     }
-                    Map<String, Object> execProperties = new HashMap<String, Object>();
+                    final Map<String, Object> execProperties = new HashMap<>();
                     execProperties.put("nb.internal.action.name", command2execute);
 
                     copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
@@ -514,6 +515,10 @@ public abstract class BaseActionProvider implements ActionProvider {
                             LOG.log(Level.WARNING, "Unsupported charset : {0}", runtimeEnc); //NOI18N
                         }
                     }
+                    Optional.ofNullable(evaluator.getProperty("java.failonerror"))  //NOI18N
+                            .map((val) -> Boolean.valueOf(val))
+                            .ifPresent((b) -> execProperties.put("java.failonerror", b));    //NOI18N
+                    
 
                     if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
                         try {

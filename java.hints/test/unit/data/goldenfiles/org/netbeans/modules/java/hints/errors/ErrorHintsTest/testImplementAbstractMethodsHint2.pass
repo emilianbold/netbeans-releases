@@ -17,6 +17,7 @@ public class ImplementAbstractMethods2 {
         new Runnable() {
 
             public void run() {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
         };
     }

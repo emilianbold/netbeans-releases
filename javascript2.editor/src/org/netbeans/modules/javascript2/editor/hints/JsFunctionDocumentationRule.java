@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +55,13 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -170,11 +171,12 @@ public class JsFunctionDocumentationRule extends JsAstRule {
         }
 
         @Override
-        public Node enter(FunctionNode fn) {
-            JsDocumentationHolder docHolder = context.getJsParserResult().getDocumentationHolder();
-            if (fn.getParent() == null
+        public boolean enterFunctionNode(FunctionNode fn) {
+            JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(context.getJsParserResult());
+            // TRUFFLE
+            if (fn.isProgram()
                     || docHolder.getCommentForOffset(fn.getStart(), docHolder.getCommentBlocks()) == null) {
-                return super.enter(fn);
+                return super.enterFunctionNode(fn);
             }
 
             List<DocParameter> docParameters = docHolder.getParameters(fn);
@@ -204,7 +206,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
                         600));
             }
 
-            return super.enter(fn);
+            return super.enterFunctionNode(fn);
         }
 
         private String missingParameters(List<IdentNode> functionParams, List<DocParameter> documentationParams) {

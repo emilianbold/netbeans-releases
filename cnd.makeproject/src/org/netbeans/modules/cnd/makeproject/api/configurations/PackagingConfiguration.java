@@ -43,32 +43,19 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class PackagingConfiguration implements Cloneable {
 
@@ -327,121 +314,6 @@ public class PackagingConfiguration implements Cloneable {
         return clone;
     }
 
-    private TypePropertyChangeListener typePropertyChangeListener;
-    // Sheet
-    public Sheet getGeneralSheet(JPanel makeCustomizer) {
-        IntNodeProp intNodeprop;
-        OutputNodeProp outputNodeProp;
-        StringNodeProp toolNodeProp;
-        StringNodeProp optionsNodeProp;
-
-        Sheet sheet = new Sheet();
-        Sheet.Set set = new Sheet.Set();
-        set.setName("General"); // NOI18N
-        set.setDisplayName(getString("GeneralTxt"));
-        set.setShortDescription(getString("GeneralHint"));
-
-        IntConfiguration tmpIntConfiguration = new PackagerIntConfiguration(null, 0, PackagerManager.getDefault().getDisplayNames(), null);
-
-        set.put(intNodeprop = new PackagerIntNodeProp(tmpIntConfiguration, true, "PackageType", getString("PackageTypeName"), getString("PackageTypeHint"))); // NOI18N
-        set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        String[] texts = new String[]{"Files", getString("FilesName"), getString("FilesHint")}; // NOI18N
-        set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
-        set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
-        set.put(optionsNodeProp = new StringNodeProp(getOptions(), getOptionsDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", getString("VerboseName"), getString("VerboseHint"))); // NOI18N
-
-        sheet.put(set);
-
-        intNodeprop.getPropertyEditor().addPropertyChangeListener(typePropertyChangeListener = new TypePropertyChangeListener(makeCustomizer, outputNodeProp, toolNodeProp, optionsNodeProp));
-        return sheet;
-    }
-
-    private class PackagerIntConfiguration extends IntConfiguration {
-        PackagerIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
-            super(master, def, names, options);
-        }
-
-        @Override
-        public void setValue(String s) {
-            if (s != null) {
-                String displayName = s;
-                String name = PackagerManager.getDefault().getName(displayName);
-                if (name != null) {
-                    getType().setValue(name);
-                }
-                else {
-                    assert false;
-                }
-            }
-        }
-
-        @Override
-        public int getValue() {
-            int i = PackagerManager.getDefault().getNameIndex(getType().getValue());
-            return i;
-        }
-    }
-
-    private class PackagerIntNodeProp extends IntNodeProp {
-        public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
-            super(intConfiguration, canWrite, name, displayName, description);
-        }
-
-
-        @Override
-        public Object getValue() {
-            return PackagerManager.getDefault().getNameIndex(getType().getValue());
-        }
-
-        @Override
-        public void setValue(Object v) {
-            String displayName = (String)v;
-            String name = PackagerManager.getDefault().getName(displayName);
-            if (name != null) {
-                getType().setValue(name);
-            }
-            else {
-                assert false;
-            }
-        }
-    }
-
-    private class TypePropertyChangeListener implements PropertyChangeListener {
-
-        private final JPanel makeCustomizer;
-        private final OutputNodeProp outputNodeProp;
-        private final StringNodeProp toolNodeProp;
-        private final StringNodeProp optionsNodeProp;
-
-        TypePropertyChangeListener(JPanel makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
-            this.makeCustomizer = makeCustomizer;
-            this.outputNodeProp = outputNodeProp;
-            this.toolNodeProp = toolNodeProp;
-            this.optionsNodeProp = optionsNodeProp;
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent arg0) {
-            toolNodeProp.setCanWrite(getToolDefault().length() > 0);
-            optionsNodeProp.setCanWrite(getToolDefault().length() > 0);
-            if (!output.getModified()) {
-                outputNodeProp.setDefaultValue(getOutputDefault());
-                output.reset();
-            }
-            if (!tool.getModified()) {
-                toolNodeProp.setDefaultValue(getToolDefault());
-                tool.reset();
-            }
-            if (!options.getModified()) {
-                optionsNodeProp.setDefaultValue(getOptionsDefault());
-                options.reset();
-            }
-            makeCustomizer.validate(); // this swill trigger repainting of the property
-            makeCustomizer.repaint();
-        }
-    }
-
     public String getOutputValue() {
         if (getOutput().getModified()) {
             return getOutput().getValue();
@@ -477,7 +349,7 @@ public class PackagingConfiguration implements Cloneable {
         return outputName;
     }
 
-    private String getOutputDefault() {
+    public String getOutputDefault() {
         String outputPath = MakeConfiguration.CND_DISTDIR_MACRO + "/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/package"; // NOI18N
 //        String outputName = getOutputName();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
@@ -497,7 +369,7 @@ public class PackagingConfiguration implements Cloneable {
         }
     }
 
-    private String getToolDefault() {
+    public String getToolDefault() {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         return packager.getDefaultTool();
     }
@@ -510,25 +382,9 @@ public class PackagingConfiguration implements Cloneable {
         }
     }
 
-    private String getOptionsDefault() {
+    public String getOptionsDefault() {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(getType().getValue());
         return packager.getDefaultOptions();
-    }
-
-    private static class OutputNodeProp extends StringNodeProp {
-
-        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, def, txt1, txt2, txt3);
-        }
-
-        @Override
-        public void setValue(String v) {
-            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-            super.setValue(v);
-        }
     }
 
     public String[] getDisplayNames() {
@@ -585,10 +441,5 @@ public class PackagingConfiguration implements Cloneable {
             }
         }
         return null;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(PackagingConfiguration.class, s);
     }
 }

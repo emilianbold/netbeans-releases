@@ -54,14 +54,14 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderSamba implements HostMappingProvider {
+/*package*/final class HostMappingProviderSamba implements HostMappingProvider {
 
     @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<>();
         ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, "cat", "/etc/sfw/smb.conf"); //NOI18N
         if (exit.isOK()) {
-            mappings.putAll(parseOutput(new StringReader(exit.output)));
+            mappings.putAll(parseOutput(new StringReader(exit.getOutputString())));
         }
         return mappings;
     }

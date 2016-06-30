@@ -54,14 +54,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.swing.text.Document;
@@ -262,12 +263,12 @@ public final class CompilationInfoImpl {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
-        Collection<Collection<Diagnostic<? extends JavaFileObject>>> errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo).values();
+        DiagnosticListenerImpl.Diagnostics errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo);
         List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl)diagnosticListener).partialReparseErrors;
         List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl)diagnosticListener).affectedErrors;
         int errorsSize = 0;
 
-        for (Collection<Diagnostic<? extends JavaFileObject>> err : errors) {
+        for (Collection<DiagnosticListenerImpl.DiagNode> err : errors.values()) {
             errorsSize += err.size();
         }
 
@@ -276,10 +277,10 @@ public final class CompilationInfoImpl {
                 (affectedErrors == null ? 0 : affectedErrors.size()));
         DiagnosticFormatter<JCDiagnostic> formatter = Log.instance(javacTask.getContext()).getDiagnosticFormatter();
         
-        for (Collection<Diagnostic<? extends JavaFileObject>> err : errors) {
-            for (Diagnostic<? extends JavaFileObject> d : err) {
-                localErrors.add(RichDiagnostic.wrap(d, formatter));
-            }
+        DiagnosticListenerImpl.DiagNode node = errors.first;
+        while(node != null) {
+            localErrors.add(RichDiagnostic.wrap(node.diag, formatter));
+            node = node.next;
         }
         if (partialReparseErrors != null) {
             for (Diagnostic<? extends JavaFileObject> d : partialReparseErrors) {
@@ -373,21 +374,13 @@ public final class CompilationInfoImpl {
             JavaSource.Phase currentPhase = getPhase();
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
-                if (currentPhase == JavaSource.Phase.MODIFIED) {
+                if (currentPhase == JavaSource.Phase.MODIFIED)
                     getJavacTask().analyze(); // Ensure proper javac initialization
-                }
-                currentPhase = phase;
             }
-            return currentPhase;
-        }
-        else {
-            try {
-                JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
-                return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
-            } catch (Throwable t) {
-                System.out.println(t);
-                throw t;
-            }
+            return phase;
+        } else {
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
+            return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
 
@@ -482,7 +475,7 @@ public final class CompilationInfoImpl {
     @Trusted
     static class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
         
-        private final Map<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>> source2Errors;
+        private final Map<JavaFileObject, Diagnostics> source2Errors;
         private final FileObject root;
         private final JavaFileObject jfo;
         private final ClasspathInfo cpInfo;
@@ -514,41 +507,32 @@ public final class CompilationInfoImpl {
                     }
                 }
             } else {
-                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = getErrors(message.getSource());
-                Collection<Diagnostic<? extends JavaFileObject>> diags = errors.get((int) message.getPosition());
-
-                if (diags == null) {
-                    errors.put((int) message.getPosition(), diags = new ArrayList<>());
-                }
-                diags.add(message);
+                Diagnostics errors = getErrors(message.getSource());
+                errors.add((int) message.getPosition(), message);
             }
         }
 
-        private TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> getErrors(JavaFileObject file) {
-            TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors;
+        private Diagnostics getErrors(JavaFileObject file) {
+            Diagnostics errors;
             if (isIncompleteClassPath()) {
                 if (root != null && JavaIndex.hasSourceCache(root.toURL(), false)) {
                     errors = source2Errors.get(file);
                     if (errors == null) {
-                        source2Errors.put(file, errors = new TreeMap<>());
+                        source2Errors.put(file, errors = new Diagnostics());
                         if (this.jfo != null && this.jfo == file) {
-                            final List l;
-                            errors.put(-1, l = new ArrayList<>());
-                            l.add(new IncompleteClassPath(this.jfo));
+                            errors.add(-1, new IncompleteClassPath(this.jfo));
                         }
                     }
                 } else {
-                    errors = new TreeMap<>();
+                    errors = new Diagnostics();
                     if (this.jfo != null && this.jfo == file) {
-                        final List l;
-                        errors.put(-1, l = new ArrayList<>());
-                        l.add(new IncompleteClassPath(this.jfo));
+                        errors.add(-1, new IncompleteClassPath(this.jfo));
                     }
                 }
             } else {
                 errors = source2Errors.get(file);
                 if (errors == null) {
-                    source2Errors.put(file, errors = new TreeMap<>());
+                    source2Errors.put(file, errors = new Diagnostics());
                 }
             }
             return errors;
@@ -561,21 +545,36 @@ public final class CompilationInfoImpl {
         
         final void startPartialReparse (int from, int to) {
             if (partialReparseErrors == null) {
-                partialReparseErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>();
-                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = getErrors(jfo);
-                errors.subMap(from, to).clear();       //Remove errors in changed method durring the partial reparse
-                Map<Integer, Collection<Diagnostic<? extends JavaFileObject>>> tail = errors.tailMap(to);
-                this.affectedErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>(tail.size());
-                for (Iterator<Entry<Integer,Collection<Diagnostic<? extends JavaFileObject>>>> it = tail.entrySet().iterator(); it.hasNext();) {
-                    Entry<Integer, Collection<Diagnostic<? extends JavaFileObject>>> e = it.next();
-                    for (Diagnostic<? extends JavaFileObject> d : e.getValue()) {
-                        final JCDiagnostic diagnostic = (JCDiagnostic) d;
+                partialReparseErrors = new ArrayList<>();
+                Diagnostics errors = getErrors(jfo);
+                SortedMap<Integer, Collection<DiagNode>> subMap = errors.subMap(from, to);
+                subMap.values().forEach((value) -> {
+                    value.forEach((node) -> {
+                        errors.unlink(node);
+                    });
+                });
+                subMap.clear();       //Remove errors in changed method durring the partial reparse
+                Map<Integer, Collection<DiagNode>> tail = errors.tailMap(to);
+                this.affectedErrors = new ArrayList<>(tail.size());
+                HashSet<DiagNode> tailNodes = new HashSet<>();
+                for (Iterator<Entry<Integer,Collection<DiagNode>>> it = tail.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, Collection<DiagNode>> e = it.next();
+                    for (DiagNode d : e.getValue()) {
+                        tailNodes.add(d);
+                    }
+                    it.remove();
+                }
+                DiagNode node = errors.first;
+                while(node != null) {
+                    if (tailNodes.contains(node)) {
+                        errors.unlink(node);
+                        final JCDiagnostic diagnostic = (JCDiagnostic) node.diag;
                         if (diagnostic == null) {
                             throw new IllegalStateException("#184910: diagnostic == null " + mapArraysToLists(Thread.getAllStackTraces())); //NOI18N
                         }
                         this.affectedErrors.add(new D (diagnostic));
                     }
-                    it.remove();
+                    node = node.next;
                 }
             }
             else {
@@ -724,6 +723,53 @@ public final class CompilationInfoImpl {
                     CompilationInfoImpl.class,
                     "ERR_IncompleteClassPath");
             }
+        }
+        
+        private static final class Diagnostics extends TreeMap<Integer, Collection<DiagNode>> {
+            private DiagNode first;
+            private DiagNode last;
+
+            public void add(int pos, Diagnostic<? extends JavaFileObject> diag) {
+                Collection<DiagNode> nodes = get((int)diag.getPosition());
+                if (nodes == null) {
+                    put((int) diag.getPosition(), nodes = new ArrayList<>());
+                }
+                DiagNode node = new DiagNode(last, diag, null);
+                nodes.add(node);
+                if (last != null) {
+                    last.next = node;
+                }
+                last = node;
+                if (first == null) {
+                    first = node;
+                }
+            }
+            
+            private void unlink(DiagNode node) {
+                if (node.next == null) {
+                    last = node.prev;
+                } else {
+                    node.next.prev = node.prev;
+
+                }
+                if (node.prev == null) {
+                    first = node.next;
+                } else {
+                    node.prev.next = node.next;
+                }
+            }
+        }
+        
+        private static final class DiagNode {
+            private Diagnostic<? extends JavaFileObject> diag;
+            private DiagNode next;
+            private DiagNode prev;
+
+            private DiagNode(DiagNode prev, Diagnostic<? extends JavaFileObject> diag, DiagNode next) {
+                this.diag = diag;
+                this.next = next;
+                this.prev = prev;
+            }            
         }
     }
 

@@ -240,6 +240,46 @@ public class BrokenReferencesSupport {
             @NonNull final PropertyEvaluator evaluator,
             @NonNull final String[] properties,
             @NonNull final String[] platformProperties) {
+        return createReferenceProblemsProvider(
+                projectHelper,
+                referenceHelper,
+                evaluator,
+                null,
+                properties,
+                platformProperties
+            );
+    }
+
+    /**
+     * Creates a {@link ProjectProblemsProvider} creating broken references
+     * problems.
+     * @param projectHelper AntProjectHelper associated with the project.
+     * @param referenceHelper ReferenceHelper associated with the project.
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param platformUpdatedCallBack called by problem resolution after the platform property has changed
+     *    to a new platform. The project type can do project specific changes like updating project.xml file.
+     *    The hook is called under {@link ProjectManager#mutex} write access before the project is saved.
+     * @param properties array of property names which values hold
+     *    references which may be broken. For example for J2SE project
+     *    the property names will be: "javac.classpath", "run.classpath", etc.
+     * @param platformProperties array of property names which values hold
+     *    name of the platform(s) used by the project. These platforms will be
+     *    checked for existence. For example for J2SE project the property
+     *    name is one and it is "platform.active". The name of the default
+     *    platform is expected to be "default_platform" and this platform
+     *    always exists.
+     * @return the {@link ProjectProblemsProvider} to be laced into project lookup.
+     * @see ProjectProblemsProvider
+     * @since 1.68
+     */
+    @NonNull
+    public static ProjectProblemsProvider createReferenceProblemsProvider(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NullAllowed final PlatformUpdatedCallBack platformUpdatedCallBack,
+            @NonNull final String[] properties,
+            @NonNull final String[] platformProperties) {
         Parameters.notNull("projectHelper", projectHelper);             //NOI18N
         Parameters.notNull("referenceHelper", referenceHelper);         //NOI18N
         Parameters.notNull("evaluator", evaluator);                     //NOI18N
@@ -249,6 +289,7 @@ public class BrokenReferencesSupport {
                 projectHelper,
                 referenceHelper,
                 evaluator,
+                platformUpdatedCallBack,
                 properties,
                 platformProperties);
     }
@@ -406,6 +447,7 @@ public class BrokenReferencesSupport {
                         projectHelper,
                         referenceHelper,
                         evaluator,
+                        null,
                         properties,
                         platformProperties)):
                 new ProjectDecorator();

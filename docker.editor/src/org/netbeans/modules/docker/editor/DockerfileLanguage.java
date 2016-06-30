@@ -44,9 +44,13 @@
 package org.netbeans.modules.docker.editor;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.docker.editor.completion.DockerfileCompletion;
 import org.netbeans.modules.docker.editor.lexer.DockerfileTokenId;
+import org.netbeans.modules.docker.editor.parser.DockerfileParser;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,6 +69,16 @@ public final class DockerfileLanguage extends DefaultLanguageConfig {
     @Override
     public String getDisplayName() {
         return Bundle.Dockerfile();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new DockerfileCompletion();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new DockerfileParser();
     }
 
     @Override

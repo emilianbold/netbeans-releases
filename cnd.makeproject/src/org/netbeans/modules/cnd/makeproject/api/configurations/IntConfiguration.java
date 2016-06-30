@@ -61,7 +61,7 @@ public class IntConfiguration implements Cloneable {
         this.options = options;
         reset();
     }
-
+    
     /** Needed for CompilerSetConfiguration to maintain compatibility */
     protected IntConfiguration() {
     }
@@ -99,7 +99,7 @@ public class IntConfiguration implements Cloneable {
         }
     }
 
-    public final void setModified(boolean b) {
+    public void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -124,7 +124,7 @@ public class IntConfiguration implements Cloneable {
         setModified(value != getDefault());
     }
 
-    public final void reset() {
+    public void reset() {
         previousValue = value;
         value = (byte) getDefault();
         setModified(false);

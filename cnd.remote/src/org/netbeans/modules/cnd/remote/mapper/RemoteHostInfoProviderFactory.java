@@ -101,7 +101,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
                 envCache = new HashMap<>();
                 ProcessUtils.ExitStatus rc = ProcessUtils.execute(executionEnvironment, "env"); // NOI18N
                 if (rc.isOK()) {
-                    String val = rc.output;
+                    String val = rc.getOutputString();
                     String[] lines = val.split("\n"); // NOI18N
                     for (int i = 0; i < lines.length; i++) {
                         int pos = lines[i].indexOf('=');

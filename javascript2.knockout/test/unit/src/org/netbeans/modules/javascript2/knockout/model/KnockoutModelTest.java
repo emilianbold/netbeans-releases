@@ -52,19 +52,20 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.JsFunctionImpl;
+import org.netbeans.modules.javascript2.model.JsFunctionReference;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +104,7 @@ public class KnockoutModelTest extends ModelTestBase {
         JsObject observableArray = ko.getProperty("observableArray");
         if (observableArray instanceof JsFunction) {
             JsFunction func = (JsFunction) observableArray;
-            func.addReturnType(new TypeUsageImpl("ko.observableArray.result", -1, true));
+            func.addReturnType(new TypeUsage("ko.observableArray.result", -1, true));
 
             Set<String> arrayMethods = new HashSet<String>();
             Collections.addAll(arrayMethods,
@@ -111,20 +112,20 @@ public class KnockoutModelTest extends ModelTestBase {
             JsObject fn = observableArray.getProperty("fn");
             JsObject result = observableArray.getProperty("result");
             if (fn != null) {
-                JsIndex index = JsIndex.get(fo);
+                Index index = Index.get(fo);
                 for (IndexedElement elem : index.getProperties("Array.prototype")) {
                     if (arrayMethods.contains(elem.getName())) {
                         IndexedElement.FunctionIndexedElement felem = (IndexedElement.FunctionIndexedElement) elem;
                         List<Identifier> params = new ArrayList<Identifier>(felem.getParameters().size());
                         for (String paramName : felem.getParameters().keySet()) {
-                            params.add(new IdentifierImpl(paramName, OffsetRange.NONE));
+                            params.add(new Identifier(paramName, OffsetRange.NONE));
                         }
 
                         JsFunction function = new JsFunctionImpl(func, fn,
-                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE, null, null);
+                                new Identifier(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE, null, null);
                         fn.addProperty(elem.getName(), function);
                         result.addProperty(elem.getName(),
-                                new JsFunctionReference(result, new IdentifierImpl(elem.getName(), OffsetRange.NONE),
+                                new JsFunctionReference(result, new Identifier(elem.getName(), OffsetRange.NONE),
                                 function, false, null));
                     }
                 }
@@ -181,6 +182,11 @@ public class KnockoutModelTest extends ModelTestBase {
         checkModel("testfiles/model/issue233001.js");
     }
 
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JsTestBase.TestJsLanguage();
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

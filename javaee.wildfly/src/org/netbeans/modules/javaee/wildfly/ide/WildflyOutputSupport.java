@@ -117,6 +117,11 @@ public final class WildflyOutputSupport {
     /**
      * GuardedBy("this")
      */
+    private Process process;
+
+    /**
+     * GuardedBy("this")
+     */
     private Future<?> profileCheckTask;
 
     /**
@@ -160,6 +165,12 @@ public final class WildflyOutputSupport {
 
             @Override
             public void run() {
+                synchronized (WildflyOutputSupport.this) {
+                    if (profileCheckTask != null) {
+                        profileCheckTask.cancel(true);
+                    }
+                    WildflyOutputSupport.this.notifyAll();
+                }
                 synchronized (WildflyOutputSupport.class) {
                     INSTANCE_CACHE.remove(WildflyOutputSupport.this.props);
                 }
@@ -182,6 +193,7 @@ public final class WildflyOutputSupport {
             }
 
             processTask = localProcessTask;
+            process = serverProcess;
         }
         failed = !isAlive(serverProcess);
     }
@@ -222,6 +234,7 @@ public final class WildflyOutputSupport {
                 started = false;
                 failed = false;
                 processTask = null;
+                process = null;
                 profileCheckTask = null;
                 fileTask = null;
             }
@@ -244,6 +257,10 @@ public final class WildflyOutputSupport {
 
             while (!started && !failed) {
                 wait(timeout);
+                if (process != null && !isAlive(process)) {
+                    failed = true;
+                    return false;
+                }
             }
             if (started) {
                 return true;
@@ -272,6 +289,12 @@ public final class WildflyOutputSupport {
         localProcessTask.get(timeout, TimeUnit.MILLISECONDS);
     }
 
+    public Process getProcess() {
+        synchronized (this) {
+            return process;
+        }
+    }
+
     private void reset() {
         synchronized (this) {
             if (fileTask != null) {
@@ -285,6 +308,7 @@ public final class WildflyOutputSupport {
             started = false;
             failed = false;
             processTask = null;
+            process = null;
             profileCheckTask = null;
             fileTask = null;
         }

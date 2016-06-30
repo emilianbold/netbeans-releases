@@ -2,98 +2,58 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: PHP: Code Analysis</title>
+<title>Options Window: PHP: Annotations</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController" name="org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController"></a></p>
-<div id="NBCSH3710"><!-- infolevel="all" infotype="General" --><a id="sthref489" name="sthref489"></a>
-<h1>Options Window: PHP: Code Analysis</h1>
+<p>Beta Draft: 2016-06-21</p>
+<p><a id="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" name="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController"></a></p>
+<div id="NBCSH3706"><!-- infolevel="all" infotype="General" --><a id="sthref490" name="sthref490"></a>
+<h1>Options Window: PHP: Annotations</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use this panel to specify the following global options for PHP code analysis.</p>
+<p>Use this panel to create and manage custom PHP annotations in code completion. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1988">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t35">Element</th>
-<th style="text-align:left" valign="bottom" id="r1c2-t35">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t36">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t36">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r2c1-t35" headers="r1c1-t35">
-<p>Code Sniffer</p>
+<td style="text-align:left" id="r2c1-t36" headers="r1c1-t36">
+<p>Resolve Deprecated Elements</p>
 </td>
-<td style="text-align:left" headers="r2c1-t35 r1c2-t35">Select this category to specify the following Code Sniffer options.</td>
+<td style="text-align:left" headers="r2c1-t36 r1c2-t36">Select this option to resolve deprecated elements.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r3c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Code Sniffer</p>
-</td>
-<td style="text-align:left" headers="r3c1-t35 r1c2-t35">Specify the path to the Code Sniffer script. Click Browse or Search to locate the scripts on your local file system.</td>
+<td style="text-align:left" id="r3c1-t36" headers="r1c1-t36">Treat Unknown Annotations as Type Annotations</td>
+<td style="text-align:left" headers="r3c1-t36 r1c2-t36">Select this option to resolve unknown annotations as type annotations.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r4c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default Standard</p>
+<td style="text-align:left" id="r4c1-t36" headers="r1c1-t36">
+<p>Custom Annotations</p>
 </td>
-<td style="text-align:left" headers="r4c1-t35 r1c2-t35">Select a default PHP standard from the drop-down list.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t35" headers="r1c1-t35">
-<p>Coding Standards Fixer</p>
+<td style="text-align:left" headers="r4c1-t36 r1c2-t36">This table lists all custom annotations that you define. The table has two columns: one for the annotation name, and one for the annotation context ('For'). The possible contexts are function, class/interface (type), method, and field.
+<p>Click Add to create a new custom annotation. Select an annotation in the table and click Edit or Delete to modify or remove the selected custom annotation.</p>
 </td>
-<td style="text-align:left" headers="r5c1-t35 r1c2-t35">Select this category to specify the following Coding Standards Fixer options.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r6c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Coding Standards Fixer</p>
-</td>
-<td style="text-align:left" headers="r6c1-t35 r1c2-t35">Specify the path to the Coding Standards Fixer script. Click Browse or Search to locate the scripts on your local file system.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r7c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default Level</p>
-</td>
-<td style="text-align:left" headers="r7c1-t35 r1c2-t35">Select a level from the drop-down list to set the limit for the fixers that are applied. This option corresponds to the <code dir="ltr">--level</code> option.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r8c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default Config</p>
-</td>
-<td style="text-align:left" headers="r8c1-t35 r1c2-t35">Select the default configuration from the drop-down list.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r9c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default Options</p>
-</td>
-<td style="text-align:left" headers="r9c1-t35 r1c2-t35">Type specific CS Fixer options in the text field, separated by a comma.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r10c1-t35" headers="r1c1-t35">
-<p>Mess Detector</p>
-</td>
-<td style="text-align:left" headers="r10c1-t35 r1c2-t35">Select this category to specify the following Mess Detector options.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r11c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Mess Detector</p>
-</td>
-<td style="text-align:left" headers="r11c1-t35 r1c2-t35">Specify the path to the Mess Detector script. Click Browse or Search to locate the scripts on your local file system.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r12c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default Rule Sets</p>
-</td>
-<td style="text-align:left" headers="r12c1-t35 r1c2-t35">Select the rule sets that are run by default.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3722" name="NBCSH3722"></a>
+<a id="NBCSH3709" name="NBCSH3709"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -111,7 +71,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2016,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

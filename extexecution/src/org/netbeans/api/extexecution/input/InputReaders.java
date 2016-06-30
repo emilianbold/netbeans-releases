@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
@@ -176,12 +177,22 @@ public final class InputReaders {
 
         final org.netbeans.api.extexecution.base.input.InputReader delegate = org.netbeans.api.extexecution.base.input.InputReaders.forFileInputProvider(new org.netbeans.api.extexecution.base.input.InputReaders.FileInput.Provider() {
 
+            private org.netbeans.api.extexecution.base.input.InputReaders.FileInput proxy;
+
+            private FileInput input;
+
             @Override
             public org.netbeans.api.extexecution.base.input.InputReaders.FileInput getFileInput() {
-                FileInput input = fileProvider.getFileInput();
-                return new org.netbeans.api.extexecution.base.input.InputReaders.FileInput(input.getFile(), input.getCharset());
+                FileInput fresh = fileProvider.getFileInput();
+                if (input != fresh && (input == null || !input.equals(fresh))) {
+                    input = fresh;
+                    proxy = new org.netbeans.api.extexecution.base.input.InputReaders.FileInput(
+                            input.getFile(), input.getCharset());
+                }
+                return proxy;
             }
         });
+
         return new InputReader() {
 
             @Override

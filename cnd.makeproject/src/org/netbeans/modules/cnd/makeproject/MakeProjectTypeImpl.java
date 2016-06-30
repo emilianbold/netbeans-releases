@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.IOException;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.project.NativeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
@@ -62,19 +62,13 @@ import org.w3c.dom.NodeList;
  * 
  * @author Alexander Simon
  */
-public final class MakeProjectTypeImpl implements NativeProjectType {
+public final class MakeProjectTypeImpl implements MakeProjectType {
 
-    public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
-    public static final String PROJECT_TYPE = "org-netbeans-modules-cnd-makeproject";//NOI18N
-    public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
-    public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
-    public final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
     public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
     public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
@@ -90,14 +84,14 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_CUSTOMIZERID = "activeConfCustomizerid"; // NOI18N
     
-    public static final String TYPE_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png"; // NOI18N
-    public static final String TYPE_DB_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png"; // NOI18N
-    public static final String TYPE_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png"; // NOI18N
-    public static final String TYPE_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png"; // NOI18N
-    public static final String TYPE_QT_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png"; // NOI18N
-    public static final String TYPE_QT_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png"; // NOI18N
-    public static final String TYPE_QT_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png"; // NOI18N
-    public static final String TYPE_MAKEFILE_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"; // NOI18N
+    public static final String TYPE_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed.png"; // NOI18N
+    public static final String TYPE_DB_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-database.png"; // NOI18N
+    public static final String TYPE_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed-dynamic.png"; // NOI18N
+    public static final String TYPE_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-managed-static.png"; // NOI18N
+    public static final String TYPE_QT_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt.png"; // NOI18N
+    public static final String TYPE_QT_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt-dynamic.png"; // NOI18N
+    public static final String TYPE_QT_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-Qt-static.png"; // NOI18N
+    public static final String TYPE_MAKEFILE_ICON = "org/netbeans/modules/cnd/makeproject/resources/projects-unmanaged.png"; // NOI18N
 
     /**
      * Do nothing, just a service.
@@ -146,7 +140,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
     
     public Project createProject(MakeProjectHelper helper) throws IOException {
-        return new MakeProject(helper);
+        return new MakeProjectImpl(helper);
     }
 
     @Override
@@ -205,6 +199,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
      * System fs path for other modules to add make project folders' specific actions
      * @return A path
      */
+    @Override
     public String folderActionsPath() {
         return projectLayerPath() + "/ActionsFolder"; //NOI18N
     }
@@ -213,6 +208,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
      * System fs path for other modules to add make project external folders' specific actions
      * @return A path
      */
+    @Override
     public String extFolderActionsPath() {
         return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
     }

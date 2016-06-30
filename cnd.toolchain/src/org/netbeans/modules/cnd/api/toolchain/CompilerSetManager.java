@@ -69,6 +69,8 @@ public abstract class CompilerSetManager {
         return CompilerSetManagerAccessorImpl.getDefault(env);
     }
 
+    public abstract ExecutionEnvironment getExecutionEnvironment();
+    
     public abstract CompilerSet getCompilerSet(String name);
 
     public abstract List<CompilerSet> getCompilerSets();
@@ -95,6 +97,14 @@ public abstract class CompilerSetManager {
     public abstract boolean isPending();
 
     public abstract boolean isUninitialized();
+    //add methods below as API/SPI should give the client the possibility to create own UI
+    //in ODCS, for example
+    
+    public abstract boolean isComplete();
+    
+    public abstract void add(CompilerSet cs);
+    
+    public abstract void remove(CompilerSet cs);
 
     protected CompilerSetManager() {
         if (!getClass().equals(CompilerSetManagerImpl.class)) {

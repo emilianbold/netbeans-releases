@@ -49,8 +49,11 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -68,8 +71,14 @@ public class EmptyStatementHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 hints.addAll(checkVisitor.getHints());
             }
         }
@@ -93,9 +102,24 @@ public class EmptyStatementHint extends HintRule {
         @Override
         @NbBundle.Messages("EmptyStatementHintText=Empty Statement")
         public void visit(EmptyStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             super.visit(node);
             if (isSemicolon(node)) {
                 createHint(node);
+            }
+        }
+
+        @Override
+        public void visit(DeclareStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            Statement body = node.getBody();
+            // #259026 ignore declare();
+            if (!(body instanceof EmptyStatement)) {
+                super.visit(node);
             }
         }
 

@@ -137,101 +137,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         return null;
     }
     
-    private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
-        Set<FileObject> fileSet;
-        ClasspathInfo cp = getClasspathInfo(refactoring);
-        fromLibrary = tph.getFileObject() == null || tph.getFileObject().getNameExt().endsWith("class"); // NOI18N
-        if(isSearchFromBaseClass()) {
-            TreePathHandle sourceHandle = refactoring.getContext().lookup(TreePathHandle.class);
-            if (fromLibrary && sourceHandle != null) {
-                cp = RefactoringUtils.getClasspathInfoFor(sourceHandle, tph);
-            } else {
-                cp = RefactoringUtils.getClasspathInfoFor(tph);
-            }
-        }
-        
-        Scope customScope = refactoring.getContext().lookup(Scope.class);
-        ClasspathInfo cpath;
-        if (customScope != null) {
-            fileSet = new TreeSet<>(new FileComparator());
-            fileSet.addAll(customScope.getFiles());
-            FileObject fo = null;
-            if(fromLibrary) {
-                fo = RefactoringUtils.getFileObject(tph);
-                if (fo == null) {
-                    fo = tph.getFileObject();
-                }
-            }
-            if (!customScope.getSourceRoots().isEmpty()) {
-                if(isSearchFromBaseClass() && fo != null) {
-                    HashSet<FileObject> fileobjects = new HashSet<>(customScope.getSourceRoots());
-                    fileobjects.add(fo);
-                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), fileobjects.toArray(new FileObject[0]));
-                } else {
-                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), customScope.getSourceRoots().toArray(new FileObject[0]));
-                }
-                Set<FileObject> relevantFiles = getRelevantFiles(tph,
-                        cpath,
-                        isFindSubclasses(),
-                        isFindDirectSubclassesOnly(),
-                        isFindOverridingMethods(),
-                        isSearchOverloadedMethods(),
-                        isFindUsages(),
-                        customScope.isDependencies(),
-                        isSearchInComments(),
-                        null, cancelRequested);
-                fileSet.addAll(relevantFiles);
-            }
-            Map<FileObject, Set<NonRecursiveFolder>> folders = new HashMap<>();
-            
-            for(NonRecursiveFolder nonRecursiveFolder : customScope.getFolders()) {
-                FileObject folder = nonRecursiveFolder.getFolder();
-                ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
-                final FileObject sourceRoot = classPath.findOwnerRoot(folder);
-                Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
-                if(packages == null) {
-                    packages = new HashSet<>();
-                    folders.put(sourceRoot, packages);
-                }
-                packages.add(nonRecursiveFolder);
-            }
-            
-            for (FileObject sourceRoot : folders.keySet()) {
-                Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
-                if (packages != null && !packages.isEmpty()) {
-                    if(isSearchFromBaseClass() && fo != null) {
-                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot, fo);
-                    } else {
-                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot);
-                    }
-                    Set<FileObject> relevantFiles = getRelevantFiles(tph,
-                            cpath,
-                            isFindSubclasses(),
-                            isFindDirectSubclassesOnly(),
-                            isFindOverridingMethods(),
-                            isSearchOverloadedMethods(),
-                            isFindUsages(), customScope.isDependencies(),
-                            isSearchInComments(), packages, cancelRequested);
-                    fileSet.addAll(relevantFiles);
-                }
-            }
-            return fileSet;
-        } else {
-            fileSet = getRelevantFiles(
-                    tph,
-                    cp,
-                    isFindSubclasses(),
-                    isFindDirectSubclassesOnly(),
-                    isFindOverridingMethods(),
-                    isSearchOverloadedMethods(),
-                    isFindUsages(),
-                    false,
-                    isSearchInComments(),
-                    null,
-                    cancelRequested);
-        }
-        return fileSet;
-    }
     
     public static Set<FileObject> getRelevantFiles(
             final TreePathHandle tph, final ClasspathInfo cpInfo,
@@ -382,9 +287,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         }
         Set<FileObject> result = sourceSet;
         // filter out files that are not on source path
-        for (FileObject fileObject : result) {
-            LOG.fine(fileObject.getNameExt());
-        }
         if(!isIncludeDependencies) {
             Set<FileObject> filteredSources = new HashSet<>(sourceSet.size());
             ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -403,11 +305,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         return result;
     }
     private static final Logger LOG = Logger.getLogger(JavaWhereUsedQueryPlugin.class.getName());
-    
-    static {
-        LOG.setLevel(Level.ALL);
-    }
-    
+
     private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
         Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, el, cancel);
 
@@ -436,15 +334,105 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         fireProgressListenerStart(ProgressEvent.START, -1);
         usedAccessFilters.clear();
         usedFilters.clear();
-        Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
-        fireProgressListenerStep(a.size());
+        
+        final FindTask findTask = new FindTask(elements);
         Problem problem = null;
-        try {
-            final FindTask findTask = new FindTask(elements);
-            queryFiles(a, findTask, getClasspathInfo(refactoring));
-        } catch (IOException e) {
-            problem = createProblemAndLog(null, e);
+        
+        ClasspathInfo cp = getClasspathInfo(refactoring);
+        fromLibrary = refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject() == null || refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject().getNameExt().endsWith("class"); // NOI18N
+        if (isSearchFromBaseClass()) {
+            TreePathHandle sourceHandle = refactoring.getContext().lookup(TreePathHandle.class);
+            if (fromLibrary && sourceHandle != null) {
+                cp = RefactoringUtils.getClasspathInfoFor(sourceHandle, refactoring.getRefactoringSource().lookup(TreePathHandle.class));
+            } else {
+                cp = RefactoringUtils.getClasspathInfoFor(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
+            }
         }
+        Scope customScope = refactoring.getContext().lookup(Scope.class);
+        if (customScope != null) {
+
+            // ********* 1 *********
+            if (!customScope.getFiles().isEmpty()) {
+                Set<FileObject> a = new TreeSet<>(new FileComparator());
+                a.addAll(customScope.getFiles());
+                fireProgressListenerStep(a.size());
+                try {
+                    queryFiles(a, findTask,  RefactoringUtils.getClasspathInfoFor(a.toArray(new FileObject[a.size()])));
+                } catch (IOException e) {
+                    problem = JavaPluginUtils.chainProblems(problem, createProblemAndLog(null, e));
+                }
+            }
+
+            // ********* 2 *********            
+            FileObject fo = null;
+            if (fromLibrary) {
+                fo = RefactoringUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
+                if (fo == null) {
+                    fo = refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject();
+                }
+            }
+            if (!customScope.getSourceRoots().isEmpty()) {
+                ClasspathInfo cpath;
+                if(isSearchFromBaseClass() && fo != null) {
+                    HashSet<FileObject> fileobjects = new HashSet<>(customScope.getSourceRoots());
+                    fileobjects.add(fo);
+                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), fileobjects.toArray(new FileObject[0]));
+                } else {
+                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), customScope.getSourceRoots().toArray(new FileObject[0]));
+                }
+                Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class), cpath, isFindSubclasses(), isFindDirectSubclassesOnly(), isFindOverridingMethods(), isSearchOverloadedMethods(), isFindUsages(), customScope.isDependencies(), isSearchInComments(), null, cancelRequested);
+                
+                fireProgressListenerStep(a.size());
+                try {
+                    queryFiles(a, findTask, cpath);
+                } catch (IOException e) {
+                    problem = JavaPluginUtils.chainProblems(problem, createProblemAndLog(null, e));
+                }
+            }
+            
+
+            // ********* 3n *********
+            Map<FileObject, Set<NonRecursiveFolder>> folders = new HashMap<>();
+            for(NonRecursiveFolder nonRecursiveFolder : customScope.getFolders()) {
+                FileObject folder = nonRecursiveFolder.getFolder();
+                ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+                final FileObject sourceRoot = classPath.findOwnerRoot(folder);
+                Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
+                if(packages == null) {
+                    packages = new HashSet<>();
+                    folders.put(sourceRoot, packages);
+                }
+                packages.add(nonRecursiveFolder);
+            }
+            for (FileObject sourceRoot1 : folders.keySet()) {
+                Set<NonRecursiveFolder> packages1 = folders.get(sourceRoot1);
+                if (packages1 != null && !packages1.isEmpty()) {
+                    ClasspathInfo cpath;
+                    if (isSearchFromBaseClass() && fo != null) {
+                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot1, fo);
+                    } else {
+                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot1);
+                    }
+                    Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class), cpath, isFindSubclasses(), isFindDirectSubclassesOnly(), isFindOverridingMethods(), isSearchOverloadedMethods(), isFindUsages(), customScope.isDependencies(), isSearchInComments(), packages1, cancelRequested);
+                 
+                    fireProgressListenerStep(a.size());
+                    try {
+                        queryFiles(a, findTask, cpath);
+                    } catch (IOException e) {
+                        problem = JavaPluginUtils.chainProblems(problem, createProblemAndLog(null, e));
+                    }
+                }
+            }
+        } else {
+            Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class), cp, isFindSubclasses(), isFindDirectSubclassesOnly(), isFindOverridingMethods(), isSearchOverloadedMethods(), isFindUsages(), false, isSearchInComments(), null, cancelRequested);
+            fireProgressListenerStep(a.size());
+            try {
+                queryFiles(a, findTask, cp);
+            } catch (IOException e) {
+                problem = JavaPluginUtils.chainProblems(problem, createProblemAndLog(null, e));
+            }
+        }
+        
         fireProgressListenerStop();
         return problem;
     }

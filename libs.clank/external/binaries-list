@@ -1,6 +1,6 @@
-#changeset:   17350:bccc5ec75432
-#tag:         tip
+#changeset:   18560:c4b73a8e97df
+#branch:      jclank
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Apr 08 21:26:43 2016 +0300
-#summary:     MANUAL: fix usage of raw_stream.$out(Object v)
-85FD13415B0553D6421F4BBA5FE0F587B9748B20 clank_0.3.6.zip
+#date:        Tue Jun 14 16:18:11 2016 +0300
+#summary:     fixed misprint from https://hg.kenai.com/hg/sputnik~main/rev/affd419e3092
+1BD2563498D0E0BE1C7B3DD31FAD892B41EC041A clank_0.3.6.zip

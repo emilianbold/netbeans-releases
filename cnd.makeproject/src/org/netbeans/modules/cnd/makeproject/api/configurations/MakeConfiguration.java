@@ -58,21 +58,12 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformSpecificProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -83,7 +74,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -109,23 +99,23 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public static final String CND_OUTPUT_PATH_MACRO = "${OUTPUT_PATH}"; // NOI18N
     public static final String PROJECTDIR_MACRO = "${PROJECT_DIR}"; // NOI18N
     // Project Types
-    private static String[] TYPE_NAMES_UNMANAGED = {
+    private static final String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
     };
-    private static String[] TYPE_NAMES_MANAGED = {
+    private static final String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),};
-    private static String[] TYPE_NAMES_MANAGED_DB = {
+    private static final String[] TYPE_NAMES_MANAGED_DB = {
         getString("DBApplicationName")
     };
-    private static String[] TYPE_NAMES_MANAGED_QT = {
+    private static final String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
     };
     
-    private static String[] TYPE_NAMES_CUSTOM = {
+    private static final String[] TYPE_NAMES_CUSTOM = {
         "CUSTOM"                                        // <=== FIXUP // NOI18N
     };
     public static final int TYPE_MAKEFILE = 0;
@@ -216,8 +206,8 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         }
         cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         ccCompilerConfiguration = new CCCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
-        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
-        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
+        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
@@ -817,38 +807,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         return clone;
     }
 
-    public Sheet getBuildSheet(Project project) {
-        Sheet sheet = new Sheet();
-
-        Sheet.Set set = new Sheet.Set();
-        set.setName("ProjectDefaults"); // NOI18N
-        set.setDisplayName(getString("ProjectDefaultsTxt"));
-        set.setShortDescription(getString("ProjectDefaultsHint"));
-        boolean canEditHost = MakeProjectUtils.canChangeHost(project, this);
-        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, "DevelopmentHost", getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
-        RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
-        set.put(rsfNodeProp);
-//        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSetCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-//        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
-//        set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
-//        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
-//        set.put(new BooleanNodeProp(getAssemblerRequired(), true, "assemblerRequired", getString("AssemblerRequiredTxt"), getString("AssemblerRequiredHint"))); // NOI18N
-        set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
-        sheet.put(set);
-
-        set = Sheet.createExpertSet();
-        if (isCompileConfiguration()) {
-            set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
-            set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
-        }
-        set.put(new PlatformSpecificProp(this, getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getPrependToolCollectionPath(), true, "PrependToolCollectionPath", getString("PrependToolCollectionPathTxt"), getString("PrependToolCollectionPathHint"))); // NOI18N
-        sheet.put(set);
-
-        return sheet;
-    }
-    
     public RemoteSyncFactory getRemoteSyncFactory() {
         RemoteSyncFactory result = fixedRemoteSyncFactory;
         synchronized (this) {
@@ -885,20 +843,6 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         return FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
     }
     
-    public Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
-        Sheet sheet = new Sheet();
-        String[] texts = new String[]{getString("ProjectsTxt1"), getString("ProjectsHint"), getString("ProjectsTxt2"), getString("AllOptionsTxt2")};
-
-        Sheet.Set set2 = new Sheet.Set();
-        set2.setName("Projects"); // NOI18N
-        set2.setDisplayName(getString("ProjectsTxt1"));
-        set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseFSPath(), texts));
-        sheet.put(set2);
-
-        return sheet;
-    }
-
     public void setRequiredLanguagesDirty(boolean b) {
         languagesDirty = b;
     }
@@ -1120,7 +1064,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
                     subProjectOutputLocations.add(outputLocation);
                 } else {
                     subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
-                } // NOI18N
+                }
             }
         }
         return subProjectOutputLocations;
@@ -1145,13 +1089,17 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
-        if (output == null) {
+        if (output == null || output.isEmpty()) {
             return output;
         }
         if (!CndPathUtilities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilities.normalizeSlashes(output);
+            boolean isNetworkPath = output.startsWith("//");
             output = CndPathUtilities.normalizeUnixPath(output);
+            if (isNetworkPath && !output.startsWith("//")) {
+                output = "/"+output; // NOI18N
+            }
         }
         return expandMacros(output);
     }

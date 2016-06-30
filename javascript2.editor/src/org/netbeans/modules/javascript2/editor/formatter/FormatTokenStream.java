@@ -50,7 +50,7 @@ import java.util.TreeMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  *
@@ -105,6 +105,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_NOT_EQUALS_EXACTLY:
                 case OPERATOR_AND:
                 case OPERATOR_OR:
+                case OPERATOR_EXPONENTIATION:
                 case OPERATOR_MULTIPLICATION:
                 case OPERATOR_DIVISION:
                 case OPERATOR_BITWISE_AND:
@@ -125,6 +126,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_ASSIGNMENT:
                 case OPERATOR_PLUS_ASSIGNMENT:
                 case OPERATOR_MINUS_ASSIGNMENT:
+                case OPERATOR_EXPONENTIATION_ASSIGNMENT:
                 case OPERATOR_MULTIPLICATION_ASSIGNMENT:
                 case OPERATOR_DIVISION_ASSIGNMENT:
                 case OPERATOR_BITWISE_AND_ASSIGNMENT:
@@ -138,6 +140,12 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR_WRAP));
+                    break;
+                case OPERATOR_ARROW:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ARROW_OPERATOR));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ARROW_OPERATOR));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ARROW_OPERATOR_WRAP));
                     break;
                 case OPERATOR_COMMA:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_COMMA));

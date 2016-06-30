@@ -91,9 +91,9 @@ import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.api.DebuggerOptions;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -249,10 +249,10 @@ public class NodeExecutable {
             return null;
         }
         // #255872 - for node.js, use latest 0.12
-        if (!isIojs()
-                && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
-            return Version.fromDottedNotationWithFallback("0.12.9"); // NOI18N
-        }
+//        if (!isIojs()
+//                && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
+//            return Version.fromDottedNotationWithFallback("0.12.9"); // NOI18N
+//        }
         return version;
     }
 

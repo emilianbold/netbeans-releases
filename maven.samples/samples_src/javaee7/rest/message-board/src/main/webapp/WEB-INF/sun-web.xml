@@ -41,8 +41,6 @@
     holder.
 
 -->
-
-<!-- Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.-->
 <sun-web-app error-url="">
   <context-root>/message-board-war</context-root>
 </sun-web-app>

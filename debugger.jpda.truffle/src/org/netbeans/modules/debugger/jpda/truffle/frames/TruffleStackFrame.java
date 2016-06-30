@@ -43,10 +43,13 @@
 package org.netbeans.modules.debugger.jpda.truffle.frames;
 
 import com.sun.jdi.StringReference;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
@@ -59,6 +62,7 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 public class TruffleStackFrame {
 
     private final JPDADebugger debugger;
+    private final Variable suspendedInfo;
     private final int depth;
     private final ObjectVariable frameInstance;
     private final ObjectVariable stackTrace;
@@ -69,6 +73,7 @@ public class TruffleStackFrame {
     private final int    sourceId;
     private final String sourceName;
     private final String sourcePath;
+    private final URI    sourceURI;
     private final int    sourceLine;
     private final StringReference codeRef;
     private TruffleSlotVariable[] vars;
@@ -83,7 +88,7 @@ public class TruffleStackFrame {
     }
     */
 
-    public TruffleStackFrame(JPDADebugger debugger, int depth,
+    public TruffleStackFrame(JPDADebugger debugger, Variable suspendedInfo, int depth,
                              ObjectVariable frameInstance, ObjectVariable stackTrace,
                              String frameDefinition, StringReference codeRef,
                              TruffleSlotVariable[] vars, ObjectVariable thisObject) {
@@ -94,6 +99,7 @@ public class TruffleStackFrame {
             iex.printStackTrace();
         }*/
         this.debugger = debugger;
+        this. suspendedInfo = suspendedInfo;
         this.depth = depth;
         this.frameInstance = frameInstance;
         this.stackTrace = stackTrace;
@@ -116,6 +122,13 @@ public class TruffleStackFrame {
             i1 = i2 + 1;
             i2 = frameDefinition.indexOf('\n', i1);
             sourcePath = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            try {
+                sourceURI = new URI(frameDefinition.substring(i1, i2));
+            } catch (URISyntaxException usex) {
+                throw new IllegalStateException("Bad URI: "+frameDefinition.substring(i1, i2), usex);
+            }
             i1 = i2 + 1;
             sourceLine = Integer.parseInt(frameDefinition.substring(i1));
         } catch (IndexOutOfBoundsException ioob) {
@@ -157,7 +170,7 @@ public class TruffleStackFrame {
     public SourcePosition getSourcePosition() {
         Source src = Source.getExistingSource(debugger, sourceId);
         if (src == null) {
-            src = Source.getSource(debugger, sourceId, sourceName, sourcePath, codeRef);
+            src = Source.getSource(debugger, sourceId, sourceName, sourcePath, sourceURI, codeRef);
         }
         SourcePosition sp = new SourcePosition(debugger, sourceId, src, sourceLine);
         return sp;
@@ -169,7 +182,7 @@ public class TruffleStackFrame {
     
     public TruffleSlotVariable[] getVars() {
         if (vars == null) {
-            vars = TruffleAccess.createVars(debugger, getStackFrameInstance());
+            vars = TruffleAccess.createVars(debugger, suspendedInfo, getStackFrameInstance());
         }
         return vars;
     }

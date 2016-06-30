@@ -69,25 +69,24 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
          * privileges...
          */
 
-        NativeProcess ppriv = null;
+        ProcessUtils.ExitStatus res = null;
         try {
             String command = "/usr/bin/ppriv -v $$ | grep [IL]"; // NOI18N
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("/bin/sh").setArguments("-c", command); // NOI18N
 
-            ppriv = npb.call();
-            int result = ppriv.waitFor();
+            res = ProcessUtils.execute(npb);
 
-            if (result != 0) {
+            if (res.exitCode != 0) {
                 throw new IOException("Unable to get current privileges. Command " + // NOI18N
-                        command + " failed with code " + result); // NOI18N
+                        command + " failed with code " + res.exitCode); // NOI18N
             }
 
             List<String> iprivs = new ArrayList<>();
             List<String> lprivs = new ArrayList<>();
 
-            List<String> out = ProcessUtils.readProcessOutput(ppriv);
+            List<String> out = res.getOutputLines();
 
             for (String str : out) {
                 if (str.contains("I:")) { // NOI18N
@@ -116,14 +115,13 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
             return real_privs;
         } catch (ConnectException ex) {
             return Collections.emptyList();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return Collections.emptyList();
         } catch (IOException ex) {
             log.fine(ex.getMessage());
-            try {
-                ProcessUtils.logError(Level.FINE, log, ppriv);
-            } catch (IOException ioex) {
+            if (res != null) {
+                try {
+                    ProcessUtils.logError(Level.FINE, log, res);
+                } catch (IOException ioex) {
+                }
             }
         }
 

@@ -172,7 +172,7 @@ public class CompileLineServiceTest extends NativeExecutionBaseTestCase {
                     new String[]{"-file", executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             List<SourceFile> res2 = CompileLineService.getSourceProperties(br);
             assertEquals(res1.size(), res2.size());
             for(int i = 0; i < res1.size(); i++) {

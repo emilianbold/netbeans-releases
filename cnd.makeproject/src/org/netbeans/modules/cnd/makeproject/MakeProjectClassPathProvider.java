@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
@@ -72,21 +73,15 @@ public class MakeProjectClassPathProvider implements ClassPathProvider {
     private static final ReadWriteLock PROJECT_LOCK = new ReentrantReadWriteLock();
 
     public static void addProjectCP(final ClassPath[] cp) {
-        runUnderWriteLock(new Runnable() {
-            @Override
-            public void run() {
-                Collections.addAll(PROJECT_CPS, cp);
-            }
+        runUnderWriteLock(() -> {
+            Collections.addAll(PROJECT_CPS, cp);
         });
     }
 
     public static void removeProjectCP(final ClassPath[] cp) {
-        runUnderWriteLock(new Runnable() {
-            @Override
-            public void run() {
-                for (ClassPath classPath : cp) {
-                    PROJECT_CPS.remove(classPath);
-                }
+        runUnderWriteLock(() -> {
+            for (ClassPath classPath : cp) {
+                PROJECT_CPS.remove(classPath);
             }
         });
     }

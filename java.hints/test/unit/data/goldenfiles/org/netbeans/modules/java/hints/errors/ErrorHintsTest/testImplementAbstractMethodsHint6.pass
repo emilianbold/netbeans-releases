@@ -6,8 +6,8 @@ package org.netbeans.test.java.hints;
 public class ImplementAbstractMethods6 {
 
     private Runnable r = new Runnable() {
-
         public void run() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
     

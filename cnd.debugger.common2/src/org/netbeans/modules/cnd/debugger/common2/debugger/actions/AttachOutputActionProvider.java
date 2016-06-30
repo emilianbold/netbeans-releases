@@ -61,12 +61,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -154,7 +156,13 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
                     dt.setHostName(ExecutionEnvironmentFactory.toUniqueID(exEnv));
                     dt.setEngine(projectDebuggerType);
 
-                    NativeDebuggerManager.get().attach(dt);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, 
+                                            ProjectActionEvent.PredefinedType.ATTACH, 
+                                            dt.getExecutable(), dt.getConfig(), 
+                                            dt.getRunProfile(), false, 
+                                            Lookups.fixed(dt)
+                                    );
+                    ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] {projectActionEvent});
                 }
             }
         }

@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.utils.filters;
 
-import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -53,6 +53,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -247,7 +247,7 @@ public class ParameterInfoSupport {
         }
         if (state.equals(State.STOP)) {
             String typeName = metaAll.toString();
-            Stack<? extends ModelElement> elemenst = VariousUtils.getElements(modelScope, nearestVariableScope, typeName, offset);
+            ArrayDeque<? extends ModelElement> elemenst = VariousUtils.getElements(modelScope, nearestVariableScope, typeName, offset);
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {

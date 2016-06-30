@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
 import org.netbeans.modules.cnd.support.Interrupter;
 
 /**

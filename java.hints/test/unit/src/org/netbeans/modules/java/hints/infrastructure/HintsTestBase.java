@@ -112,7 +112,7 @@ public class HintsTestBase extends NbTestCase {
         
     }
     
-    private FileObject packageRoot;
+    protected FileObject packageRoot;
     private FileObject testSource;
     private JavaSource js;
     protected CompilationInfo info;
@@ -187,6 +187,10 @@ public class HintsTestBase extends NbTestCase {
     protected void prepareTest(String capitalizedName) throws Exception {
         prepareTest(capitalizedName, "1.5");
     }
+    
+    protected void copyAdditionalData() throws Exception {
+        
+    }
 
     protected void prepareTest(String capitalizedName, String sourceLevel) throws Exception {
         File workFolder = new File(getWorkDir(), "work");
@@ -230,7 +234,7 @@ public class HintsTestBase extends NbTestCase {
         }
         
         copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
-        
+        copyAdditionalData();
         packageRoot.refresh();
         
         testSource = packageRoot.getFileObject(testFileName);

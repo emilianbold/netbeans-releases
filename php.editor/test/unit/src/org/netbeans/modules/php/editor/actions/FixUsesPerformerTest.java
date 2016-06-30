@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -75,7 +74,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@RandomlyFails
 public class FixUsesPerformerTest extends PHPTestBase {
     private static final String CAN_NOT_BE_RESOLVED = "<CAN-NOT-BE-RRESOLVED>"; //NOI18N
 
@@ -118,19 +116,17 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
-    // XXX incorrect result
-//    public void testIssue211585_02() throws Exception {
-//        String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
-//        Options options = new Options(false, false, true, true, false);
-//        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
-//    }
+    public void testIssue211585_02() throws Exception {
+        String[] selections = new String[] {"\\Baz\\Bat\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        Options options = new Options(false, false, true, true, false);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
+    }
 
-    // XXX incorrect result
-//    public void testIssue211585_03() throws Exception {
-//        String[] selections = new String[] {"\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName"};
-//        Options options = new Options(false, false, true, true, false);
-//        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
-//    }
+    public void testIssue211585_03() throws Exception {
+        String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        Options options = new Options(false, false, true, true, false);
+        performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
+    }
 
     public void testIssue233527() throws Exception {
         String[] selections = new String[] {"\\NS1\\NS2\\SomeClass", "\\NS1\\NS2\\SomeClass"};
@@ -323,6 +319,18 @@ public class FixUsesPerformerTest extends PHPTestBase {
         List<Selection> selections = new ArrayList<>();
         Options options = new Options(false, true, true, true, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testIssue249140_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, true);
+        performTest("$d = d($someVar);^", selections, false, options);
+    }
+
+    public void testIssue249140_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, true);
+        performTest("$f = f($someVar);^", selections, false, options);
     }
 
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {

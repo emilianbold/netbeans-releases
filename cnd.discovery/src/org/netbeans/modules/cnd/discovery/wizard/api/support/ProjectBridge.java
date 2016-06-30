@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -65,7 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -142,7 +142,7 @@ public class ProjectBridge {
         String prjName = "DiscoveryProject"; // NOI18N
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, CndFileUtils.createLocalFile(baseFolder, prjName));// NOI18N
         prjParams.setOpenFlag(true).setConfiguration(extConf);
-        project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
+        project = ProjectGenerator.getDefault().createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -165,7 +165,7 @@ public class ProjectBridge {
      * Create new item. Path is converted to relative.
      */
     public Item createItem(String path){
-        return Item.createInFileSystem(baseFolderFileSystem, getRelativepath(path));
+        return ItemFactory.getDefault().createInFileSystem(baseFolderFileSystem, getRelativepath(path));
     }
     
     // return true if state was changed

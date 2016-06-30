@@ -22,7 +22,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
             <file name="EmptyJMUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
                 <attr name="position" intvalue="590"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.j2meunit.J2MEUnitFileIterator.createIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/templates/EmptyJ2MEUnitTest.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>

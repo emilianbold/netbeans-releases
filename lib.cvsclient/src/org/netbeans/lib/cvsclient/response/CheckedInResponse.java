@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,12 +60,12 @@ import org.netbeans.lib.cvsclient.util.*;
  */
 class CheckedInResponse implements Response {
 
-    /** 
+    /**
      * The date Formatter used to parse and format dates.
      * Format is: "EEE MMM dd HH:mm:ss yyyy"
      */
     private DateFormat dateFormatter;
-    
+
     /**
      * Process the data for the response.
      * @param dis the data inputstream allowing the client to read the server's
@@ -82,12 +82,12 @@ class CheckedInResponse implements Response {
             //System.err.println("Repository path is: " + repositoryPath);
             String entriesLine = dis.readLine();
             //System.err.println("New entries line is: " + entriesLine);
-            
-            String absPath = services.convertPathname(localPath, repositoryPath);            
+
+            String absPath = services.convertPathname(localPath, repositoryPath);
             if (services.getGlobalOptions().isExcluded(new File(absPath))) {
                 return;
-            }            
-            
+            }
+
             // we set the date the file was last modified in the Entry line
             // so that we can easily determine whether the file has been
             // untouched

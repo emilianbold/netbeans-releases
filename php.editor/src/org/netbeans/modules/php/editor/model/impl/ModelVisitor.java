@@ -56,7 +56,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -230,7 +230,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (namespaceScope != null) {
                             final String varName = phpVariable.getName();
                             VariableNameImpl variable = findVariable(namespace, varName);
-                            final PhpClass type = phpVariable.getType();
+                            final PhpType type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
                                         varName,
@@ -1501,13 +1501,19 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private void processSingleUseStatement(UseStatement.Type type, @NullAllowed GroupUseStatementPart groupUseStatementPart,
             SingleUseStatementPart singleUseStatementPart) {
         NamespaceName name;
+        UseStatement.Type realType;
         if (groupUseStatementPart == null) {
             name = singleUseStatementPart.getName();
+            realType = type;
         } else {
             name = CodeUtils.compoundName(groupUseStatementPart, singleUseStatementPart, false);
+            realType = singleUseStatementPart.getType();
+            if (realType == null) {
+                realType = type;
+            }
         }
         ScopeImpl currentScope = modelBuilder.getCurrentScope();
-        switch (type) {
+        switch (realType) {
             case CONST:
                 occurencesBuilder.prepare(Kind.CONSTANT, name, currentScope);
                 break;
@@ -1516,9 +1522,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 break;
             case TYPE:
                 occurencesBuilder.prepare(Kind.CLASS, name, currentScope);
+                occurencesBuilder.prepare(Kind.IFACE, name, currentScope);
+                occurencesBuilder.prepare(Kind.TRAIT, name, currentScope);
                 break;
             default:
-                assert false : "Unknown type: " + type;
+                assert false : "Unknown type: " + realType;
         }
         if (singleUseStatementPart.getAlias() != null) {
             occurencesBuilder.prepare(Kind.USE_ALIAS, singleUseStatementPart.getAlias(), currentScope);

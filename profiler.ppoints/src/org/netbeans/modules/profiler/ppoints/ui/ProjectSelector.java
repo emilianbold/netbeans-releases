@@ -57,6 +57,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -88,6 +89,8 @@ class ProjectSelector extends LazyComboBox<Lookup.Provider> {
     }
     
     final void setProject(Lookup.Provider project) {
+        if (project != null && !ProjectProfilingSupport.get(project).areProfilingPointsSupported())
+            project = null;
         setSelectedItem(project == null ? EXTRA_ITEM : project);
     }
     
@@ -115,8 +118,14 @@ class ProjectSelector extends LazyComboBox<Lookup.Provider> {
         
         protected final Lookup.Provider[] populate() {
             Set<Lookup.Provider> s = new HashSet();
-            s.addAll(Arrays.asList(ProjectUtilities.getOpenedProjects()));
-            s.addAll(additionalProjects());
+            
+            for (Lookup.Provider project : ProjectUtilities.getOpenedProjects())
+                if (ProjectProfilingSupport.get(project).areProfilingPointsSupported())
+                    s.add(project);
+            
+            for (Lookup.Provider project : additionalProjects())
+                if (ProjectProfilingSupport.get(project).areProfilingPointsSupported())
+                    s.add(project);
 
             List<Lookup.Provider> l = new ArrayList();
             Lookup.Provider[] pa = s.toArray(new Lookup.Provider[0]);

@@ -47,6 +47,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import javax.lang.model.element.Element;
@@ -108,20 +109,29 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
 
             @Override
             public void insertUpdate(DocumentEvent de) {
-                parent.stateChanged(null);
+                postUpdate();
             }
 
             @Override
             public void removeUpdate(DocumentEvent de) {
-                parent.stateChanged(null);
+                postUpdate();
             }
 
             @Override
             public void changedUpdate(DocumentEvent de) {
-                parent.stateChanged(null);
+                postUpdate();
             }
         };
         ((JEditorPane) singleLineEditor[1]).getDocument().addDocumentListener(nameChangedListener);
+    }
+
+    private void postUpdate() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                parent.stateChanged(null);
+            }
+        });
     }
     
     private boolean initialized = false;
@@ -170,9 +180,10 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         }
                         
                         Scope scope =  null;
-                        TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
-                        scope = info.getTrees().getScope(bodyPath);
-                        
+                        if(methodTree.getBody() != null) {
+                            TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
+                            scope = info.getTrees().getScope(bodyPath);
+                        }
                         CodeStyle cs;
                         Document doc = info.getDocument();
                         if(doc != null) {

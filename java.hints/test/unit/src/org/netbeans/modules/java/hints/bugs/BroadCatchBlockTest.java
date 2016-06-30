@@ -129,7 +129,7 @@ public class BroadCatchBlockTest extends NbTestCase {
             assertOutput(f(), golden("TwoExceptionsMulti"));
     }
     
-    private static final String FIX_SEPARATE_CATCHES = "Generate catch handlers for specific exceptions";
+    private static final String FIX_SEPARATE_CATCHES = "FIX_UseSpecificCatchSplit";
     private static final String FIX_SPECIFIC_CATCH2 = "FIX_UseSpecificCatch";
 
     private static final String[] warn_twoCommonParents = {

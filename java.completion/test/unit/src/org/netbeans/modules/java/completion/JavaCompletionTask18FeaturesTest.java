@@ -94,15 +94,15 @@ public class JavaCompletionTask18FeaturesTest extends CompletionTestBase {
     }
 
     public void testEmptyFileAfterTypingStaticModifier() throws Exception {
-        performTest("Empty", 0, "package test;\ninterface Test {\nstatic ", "interfaceMemberModifiersAndTypesWithoutDefaultAndStatic.pass", "1.8");
+        performTest("Empty", 0, "package test;\ninterface Test {\nstatic ", "memberModifiersAndTypesWithoutStatic.pass", "1.8");
     }
 
     public void testAfterTypingStaticModifier() throws Exception {
-        performTest("SimpleInterfaceNoExtends", 31, "\nstatic ", "interfaceMemberModifiersAndTypesWithoutDefaultAndStatic.pass", "1.8");
+        performTest("SimpleInterfaceNoExtends", 31, "\nstatic ", "memberModifiersAndTypesWithoutStatic.pass", "1.8");
     }
 
     public void testAfterStaticModifier() throws Exception {
-        performTest("Interface", 102, null, "interfaceMemberModifiersAndTypesWithoutDefaultAndStatic.pass", "1.8");
+        performTest("Interface", 102, null, "memberModifiersAndTypesWithoutStatic.pass", "1.8");
     }
 
     public void testEmptyFileTypingDefaultMethodBody() throws Exception {

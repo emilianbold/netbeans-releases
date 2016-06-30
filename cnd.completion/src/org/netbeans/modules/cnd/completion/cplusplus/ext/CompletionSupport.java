@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctional;
@@ -92,7 +91,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
@@ -100,7 +98,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DeduceTemplateTypeStrategy;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DefaultDeduceTemplateTypeStrategy;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -1475,7 +1473,7 @@ public final class CompletionSupport implements DocumentListener {
             if (CsmKindUtilities.isFunctional(entity)) {
                 out = ((CsmFunctional) entity).getReturnType();
             } else if (CsmKindUtilities.isClassifier(entity)) {
-                out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false);
+                out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false, false);
             }
             if (out != null) {
                 break;
@@ -1829,7 +1827,7 @@ public final class CompletionSupport implements DocumentListener {
                 CsmClass contextClass = CsmContextUtilities.getContextClassInInitializer(varObj, (CsmClass) varCls, pos, getFinder());
                 if (contextClass != null) {
                     // Note that we can extract type from CsmField if necessary
-                    return CsmCompletion.createType(contextClass, 0, 0, 0, false);
+                    return CsmCompletion.createType(contextClass, 0, 0, 0, false, false);
                 }
             }
             if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), pos)) {
@@ -1837,7 +1835,7 @@ public final class CompletionSupport implements DocumentListener {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.createType(cls, 0, 0, 0, false);
+                        type = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                     }
                 }
                 return type;
@@ -1854,7 +1852,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((\\W|\n)*)return((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {
@@ -1867,7 +1865,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((.|\n)*)=((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {

@@ -39,15 +39,17 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.navigation.JsonOccurrencesFinder;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -64,6 +66,13 @@ import org.openide.windows.TopComponent;
 @LanguageRegistration(mimeType="text/x-json", useMultiview = true) //NOI18N
 @PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
 public class JsonLanguage extends DefaultLanguageConfig {
+    
+    private static final boolean NAVIGATOR = Boolean.valueOf(
+            System.getProperty(String.format("%s.navigator", JsonLanguage.class.getSimpleName()),   //NOI18N
+                    Boolean.TRUE.toString()));
+    private static final boolean FINDER = Boolean.valueOf(
+            System.getProperty(String.format("%s.finder", JsonLanguage.class.getSimpleName()),      //NOI18N
+                    Boolean.TRUE.toString()));
 
     //~ Inner classes
 
@@ -108,12 +117,14 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean hasStructureScanner() {
-        return true;
+        return NAVIGATOR;
     }
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new JsStructureScanner(JsTokenId.jsonLanguage());
+        return NAVIGATOR ?
+                new JsStructureScanner(JsTokenId.jsonLanguage()) :
+                null;
     }
 
 //    @Override
@@ -121,26 +132,29 @@ public class JsonLanguage extends DefaultLanguageConfig {
 //        return new JsSemanticAnalyzer();
 //    }
 
+// todo: tzezula - disable for now
+//    @Override
+//    public DeclarationFinder getDeclarationFinder() {
+//        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+//    }
+
     @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+    public boolean hasOccurrencesFinder() {
+        return FINDER;
     }
 
-//    @Override
-//    public boolean hasOccurrencesFinder() {
-//        return true;
-//    }
-//
-//    @Override
-//    public OccurrencesFinder getOccurrencesFinder() {
-//        return new OccurrencesFinderImpl();
-//    }
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return FINDER ?
+                new JsonOccurrencesFinder() :
+                null;
+    }
 
-//    @Override
-//    public CodeCompletionHandler getCompletionHandler() {
-//        return new JsCodeCompletion();
-//    }
-//
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsonCodeCompletion();
+    }
+
 //    @Override
 //    public EmbeddingIndexerFactory getIndexerFactory() {
 //        return new JsIndexer.Factory();
@@ -156,10 +170,8 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return true;
     }
 
-//    @Override
-//    public InstantRenamer getInstantRenamer() {
-//        return new JsInstantRenamer();
-//    }
-
-
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsonInstantRenamer();
+    }
 }

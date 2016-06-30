@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.lang.model.SourceVersion;
 import javax.swing.JComponent;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -79,7 +80,8 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, customizerProvider=CustomizerProviderImpl.class, suppressWarnings="Convert2Diamond")
+@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, customizerProvider=CustomizerProviderImpl.class, suppressWarnings="Convert2Diamond",
+        minSourceVersion = "7")
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";

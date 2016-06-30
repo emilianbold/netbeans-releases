@@ -74,7 +74,6 @@ class DebuggerExternalTerminal {
     private final long pid;
     private File gdbHelperLog = null;
     private File gdbHelperScript = null;
-    private NativeProcess process = null;
 
     private final ExecutionEnvironment exEnv;
 
@@ -96,7 +95,7 @@ class DebuggerExternalTerminal {
             npb.setExecutable(gdbHelperScript.getAbsolutePath());
             npb.redirectError();
             try {
-                process = npb.call();
+                ProcessUtils.ignoreProcessOutput(npb.call());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -130,25 +129,7 @@ class DebuggerExternalTerminal {
             while (count++ < RETRY_LIMIT) {
                 // first check for process termination
                 // only if not in KDE
-                if (false) {
-                    try {
-                        int rc = process.exitValue();
 
-                        // In case of failure - read output and log it
-                        // See IZ 164026
-                        String out = ProcessUtils.readProcessOutputLine(process);
-
-                        // process already terminated - exit
-                        throw new IllegalStateException(NbBundle.getMessage(
-                                DebuggerExternalTerminal.class,
-                                "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
-                                null,//Arrays.toString(termProfile.options),
-                                rc,
-                                out));
-                    } catch (IllegalThreadStateException e) {
-                        // do nothing
-                    }
-                }
                 // TODO: it is not good to wait for the file to be filled with info this way
                 // need to find a better way to get pid later
                 BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog));

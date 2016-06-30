@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.OutputListenerExt;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -226,8 +227,8 @@ public class CompileErrorScanner extends PushTaskScanner {
                 Set<OutputListener> fileListeners = aRegestry.getFileListeners(file);
                 if (fileListeners != null) {
                     for (OutputListener listener : fileListeners) {
-                        if (listener instanceof OutputListenerImpl) {
-                            OutputListenerImpl impl = (OutputListenerImpl) listener;
+                        if (listener instanceof OutputListenerExt) {
+                            OutputListenerExt impl = (OutputListenerExt) listener;
                             String type;
                             if (impl.isError()) {
                                 type = "nb-tasklist-error"; //NOI18N

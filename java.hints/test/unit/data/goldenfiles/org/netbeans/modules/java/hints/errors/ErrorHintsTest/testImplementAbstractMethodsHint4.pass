@@ -20,8 +20,9 @@ public class ImplementAbstractMethods4 extends AbstractClass2 {
     /** Creates a new instance of ImplementAbstractMethod1 */
     public ImplementAbstractMethods4() {
     }
-
+    @Override
     public String[] test(int[] x, String[] y, String... args) throws IOException, BadLocationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

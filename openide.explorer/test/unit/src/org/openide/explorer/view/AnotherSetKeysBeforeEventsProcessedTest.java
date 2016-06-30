@@ -110,13 +110,17 @@ public class AnotherSetKeysBeforeEventsProcessedTest extends NbTestCase {
     class AwtRun implements Runnable {
 
         VisualizerNode visNode;
-        Panel p = new Panel();
-        BeanTreeView btv = new BeanTreeView();
-        JFrame f = new JFrame();
-        JTree tree = btv.tree;
+        Panel p;
+        BeanTreeView btv;
+        JFrame f;
+        JTree tree;
         boolean ok;
         
         public void run() {
+            p = new Panel();
+            btv = new BeanTreeView();
+            f = new JFrame();
+            tree = btv.tree;
             try {
                 root.setName("test root");
                 p.getExplorerManager().setRootContext(root);

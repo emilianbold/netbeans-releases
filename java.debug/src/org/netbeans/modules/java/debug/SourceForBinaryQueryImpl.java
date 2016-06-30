@@ -103,27 +103,29 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
             if (projectFO != null) {
                 try {
                     Project project = ProjectManager.getDefault().findProject(projectFO);
-                    SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    final FileObject[] roots = new FileObject[sourceGroups.length];
-                    for (int i = 0; i < sourceGroups.length; i++) {
-                        roots[i] = sourceGroups[i].getRootFolder();
+                    if (project != null) {
+                        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        final FileObject[] roots = new FileObject[sourceGroups.length];
+                        for (int i = 0; i < sourceGroups.length; i++) {
+                            roots[i] = sourceGroups[i].getRootFolder();
+                        }
+                        Result result = new Result() {
+                            public FileObject[] getRoots() {
+                                return roots;
+                            }
+
+                            public void addChangeListener(ChangeListener l) {
+                            }
+
+                            public void removeChangeListener(ChangeListener l) {
+                            }
+                        };
+
+                        url2Result.put(binaryRoot, new WeakReference<Result>(result));
+                        result2URL.put(result, binaryRoot);
+
+                        return result;
                     }
-                    Result result = new Result() {
-                        public FileObject[] getRoots() {
-                            return roots;
-                        }
-
-                        public void addChangeListener(ChangeListener l) {
-                        }
-
-                        public void removeChangeListener(ChangeListener l) {
-                        }
-                    };
-
-                    url2Result.put(binaryRoot, new WeakReference<Result>(result));
-                    result2URL.put(result, binaryRoot);
-
-                    return result;
                 } catch (IOException ex) {
                     Logger.getLogger(SourceForBinaryQueryImpl.class.getName()).log(Level.FINE, null, ex);
                 } catch (IllegalArgumentException ex) {

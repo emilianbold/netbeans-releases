@@ -104,6 +104,8 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -277,8 +279,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (guessedName == null) guessedName = "name"; // NOI18N
         Scope s = info.getTrees().getScope(resolved);
         CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
-
-        Fix variable = isVariable ? new IntroduceVariableFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix()), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE, end) : null;
+        Fix variable = isVariable ? new IntroduceVariableFix(h, info.getJavaSource(), 
+                variableRewrite ? 
+                        guessedName : 
+                        Utilities.makeNameUnique(info, s, guessedName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix()), 
+                duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE, TreePathHandle.create(method, info), end) : null;
         Fix constant = IntroduceConstantFix.createConstant(resolved, info, value, guessedName, 
                         duplicatesForConstant.size() + 1, end, variableRewrite, cancel);
 
@@ -315,21 +320,21 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                                            statik ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
                 }
             }
-
-            if (pathToClass == null || (pathToClass.getLeaf().getKind() == Tree.Kind.CLASS || pathToClass.getLeaf().getKind() == Tree.Kind.ENUM)) {
-                field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end, !variableRewrite);
+            Element el = info.getTrees().getElement(pathToClass);
+            if (pathToClass != null && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, 
+                        statik, allowFinalInCurrentMethod, end, !variableRewrite, TreePathHandle.create(pathToClass, info));
             }
 
             if (!variableRewrite) {
                 //introduce method based on expression:
-                Element methodEl = info.getTrees().getElement(method);
                 Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
                 List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
 
                 prepareTypeVars(method, info, typeVar2Def, typeVars);
 
                 ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, Collections.<Tree, Iterable<? extends TreePath>>emptyMap(), cancel);
-
+                Element methodEl = info.getTrees().getElement(method);
                 if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
                     ExecutableElement ee = (ExecutableElement) methodEl;
 
@@ -367,37 +372,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     typeVars.retainAll(scanner.usedTypeVariables);
 
                     AtomicBoolean allIfaces = new AtomicBoolean();
-                    Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>(); 
                      List<TargetDescription> viableTargets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
                             Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces);
                     if (viableTargets != null && !viableTargets.isEmpty()) {
-                        for (TargetDescription target : viableTargets) {
-                            Set<String> cNames = new HashSet<>();
-                            if (target.type == null) {
-                                // could not create a handle for a type ??
-                                continue;
-                            }
-                            Element parent = target.type.resolve(info);
-                            // resolve may result in null ptr
-                            if (parent == null) {
-                                continue;
-                            }
-                            outer: for (ExecutableElement ee : ElementFilter.methodsIn(parent.getEnclosedElements())) {
-                                List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
-                                if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
-                                    Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
-                                    Iterator<VariableElement> pVarsIt = scanner.usedLocalVariables.keySet().iterator();
-                                    while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
-                                        if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
-                                            continue outer;
-                                        }
-                                    }
-                                    cNames.add(ee.getSimpleName().toString());
-                                }
-                            }
-                            targets.put(target, cNames);
-                        }
-                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
+                        TypeMirror returnType = 
+                                Utilities.convertIfAnonymous(Utilities.resolveCapturedType(info, 
+                                        resolveType(info, resolved)));
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), 
+                                h, params, TypeMirrorHandle.create(returnType), 
+                                exceptionHandles, duplicatesCount, typeVars, end, 
+                                viableTargets);
                         methodFix.setTargetIsInterface(allIfaces.get());
                     }
                 }

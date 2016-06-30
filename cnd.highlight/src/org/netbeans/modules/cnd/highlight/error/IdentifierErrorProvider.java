@@ -46,7 +46,7 @@ import java.util.MissingResourceException;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;

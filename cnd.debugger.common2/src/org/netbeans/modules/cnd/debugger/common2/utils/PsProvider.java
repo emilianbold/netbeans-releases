@@ -291,14 +291,9 @@ public abstract class PsProvider {
                 }
                 pargsBuilder.setArguments(pargs_args);
 
-                try {
-                    final NativeProcess pargsProcess = pargsBuilder.call();
-                    CndUtils.assertNotNull(pargsProcess, "pargsBuilder.call() returned null");   // NOI18N
-                    List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsProcess);
-                    updatePargsData(res, pargs_args, pargsOutput);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                ProcessUtils.ExitStatus status = ProcessUtils.execute(pargsBuilder);
+                List<String> pargsOutput = status.getOutputLines();
+                updatePargsData(res, pargs_args, pargsOutput);
             }
             
             return res;
@@ -609,17 +604,9 @@ public abstract class PsProvider {
             try {
                 NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
                 npb.setCommandLine(uidCommand());
-                NativeProcess process;
-                try {
-                    process = npb.call();
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Failed to exec id command", e);
-                    return exEnv.getUser();
-                }
-
-                String res = ProcessUtils.readProcessOutputLine(process);
-
-                int exitCode = process.waitFor();
+                ProcessUtils.ExitStatus status = ProcessUtils.execute(npb);
+                String res = status.getOutputString();
+                int exitCode = status.exitCode;
                 if (exitCode != 0) {
                     String msg = "id command failed with " + exitCode; // NOI18N
                     logger.log(Level.WARNING, msg);
@@ -782,17 +769,9 @@ public abstract class PsProvider {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
             npb.setCommandLine(psCommand(luid));
             npb.getEnvironment().put("LANG", "C"); //NOI18N
-
-            NativeProcess process;
-	    try {
-		process = npb.call();
-	    } catch (Exception e) {
-		logger.log(Level.WARNING, "Failed to exec ps command", e);
-		return null;
-	    } 
-
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
 	    int lineNo = 0;
-	    for (String line : ProcessUtils.readProcessOutput(process)) {
+	    for (String line : res.getOutputLines()) {
 		if (Log.Ps.debug) 
 		    System.out.printf("PsOutput: '%s'\n", line); // NOI18N
 
@@ -806,8 +785,8 @@ public abstract class PsProvider {
                     }
 		}
 	    }
-            
-            int exitCode = process.waitFor();
+
+            int exitCode = res.exitCode;
 	    if (exitCode != 0) {
 		String msg = "ps command failed with " + exitCode; // NOI18N
 		logger.log(Level.WARNING, msg);

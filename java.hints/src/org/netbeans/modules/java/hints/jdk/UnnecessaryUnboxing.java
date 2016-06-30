@@ -78,7 +78,8 @@ import org.openide.util.NbBundle;
     displayName = "#DN_UnnecessaryUnboxing",
     description = "#DESC_UnnecessaryUnboxing",
     enabled = true,
-    suppressWarnings = "UnnecessaryUnboxing"
+    suppressWarnings = "UnnecessaryUnboxing",
+    minSourceVersion = "5"
     
 )
 public class UnnecessaryUnboxing {
@@ -95,7 +96,7 @@ public class UnnecessaryUnboxing {
     })
     public static ErrorDescription run(HintContext ctx) {
         CompilationInfo ci = ctx.getInfo();
-        if (ci.getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0 || ctx.getPath().getLeaf().getKind() != Tree.Kind.METHOD_INVOCATION) {
+        if (ctx.getPath().getLeaf().getKind() != Tree.Kind.METHOD_INVOCATION) {
             return null;
         }
         MethodInvocationTree mit = (MethodInvocationTree)ctx.getPath().getLeaf();

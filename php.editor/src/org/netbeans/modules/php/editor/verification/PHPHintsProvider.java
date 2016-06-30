@@ -68,7 +68,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 public class PHPHintsProvider implements HintsProvider {
     public static final String DEFAULT_HINTS = "default.hints"; //NOI18N
     public static final String DEFAULT_SUGGESTIONS = "default.suggestions"; //NOI18N
-    private volatile boolean cancel = false;
+    volatile boolean cancel = false;
 
     enum ErrorType {
         UNHANDLED_ERRORS,
@@ -80,8 +80,17 @@ public class PHPHintsProvider implements HintsProvider {
         resume();
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
+        if (cancel) {
+            return;
+        }
         RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), hints);
+        if (cancel) {
+            return;
+        }
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new ResetCaretOffsetAdjuster()));
+        if (cancel) {
+            return;
+        }
         rulesRunner.run(modelHints, forAllAdjusters);
     }
 
@@ -89,14 +98,29 @@ public class PHPHintsProvider implements HintsProvider {
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
         resume();
         RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), suggestions);
+        if (cancel) {
+            return;
+        }
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new CaretOffsetAdjuster(caretOffset)));
         Map<?, List<? extends AstRule>> hintsOnLine = mgr.getHints(true, context);
+        if (cancel) {
+            return;
+        }
         List<? extends AstRule> defaultHintsOnLine = hintsOnLine.get(DEFAULT_HINTS);
+        if (cancel) {
+            return;
+        }
         if (defaultHintsOnLine != null) {
             rulesRunner.run(defaultHintsOnLine, forAllAdjusters);
         }
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getSuggestions();
+        if (cancel) {
+            return;
+        }
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_SUGGESTIONS);
+        if (cancel) {
+            return;
+        }
         if (modelHints != null) {
             rulesRunner.run(modelHints, forAllAdjusters);
         }
@@ -111,13 +135,28 @@ public class PHPHintsProvider implements HintsProvider {
         resume();
         List<? extends Error> errors = context.parserResult.getDiagnostics();
         unhandled.addAll(errors);
+        if (cancel) {
+            return;
+        }
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
+        if (cancel) {
+            return;
+        }
         List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
+        if (cancel) {
+            return;
+        }
         if (unhandledErrors != null) {
             RulesRunner<Error> rulesRunner = new RulesRunnerImpl<>(manager, initializeContext(context), unhandled);
             rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
         }
+        if (cancel) {
+            return;
+        }
         List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
+        if (cancel) {
+            return;
+        }
         if (hintErrors != null) {
             RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(manager, initializeContext(context), hints);
             rulesRunner.run(hintErrors, RuleAdjuster.NONE);
@@ -128,7 +167,13 @@ public class PHPHintsProvider implements HintsProvider {
         PHPRuleContext phpRuleContext = (PHPRuleContext) context;
         ParserResult info = context.parserResult;
         PHPParseResult result = (PHPParseResult) info;
+        if (cancel) {
+            return phpRuleContext;
+        }
         final Model model = result.getModel();
+        if (cancel) {
+            return phpRuleContext;
+        }
         FileScope modelScope = model.getFileScope();
         phpRuleContext.fileScope = modelScope;
         return phpRuleContext;
@@ -221,7 +266,7 @@ public class PHPHintsProvider implements HintsProvider {
         void adjust(Rule rule);
     }
 
-    private static final class ForAllAdjusters implements RuleAdjuster {
+    private final class ForAllAdjusters implements RuleAdjuster {
         private final Collection<RuleAdjuster> adjusters;
 
         public ForAllAdjusters(Collection<RuleAdjuster> adjusters) {
@@ -231,6 +276,9 @@ public class PHPHintsProvider implements HintsProvider {
         @Override
         public void adjust(Rule rule) {
             for (RuleAdjuster hintAdjuster : adjusters) {
+                if (cancel) {
+                    return;
+                }
                 hintAdjuster.adjust(rule);
             }
         }

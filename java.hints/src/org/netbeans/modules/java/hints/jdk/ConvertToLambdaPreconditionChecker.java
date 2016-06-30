@@ -49,8 +49,8 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -97,6 +97,7 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean foundRefToUninitializedVar = false;
     private final Element ownerClass;
     private final Element createdClass;
+    private boolean foundConstructorReferenceCandidate = false;
 
     public ConvertToLambdaPreconditionChecker(TreePath pathToNewClassTree, CompilationInfo info) {
 
@@ -138,12 +139,25 @@ public class ConvertToLambdaPreconditionChecker {
     
     private MethodTree getMethodFromFunctionalInterface(TreePath pathToNewClassTree) {
         //ignore first member, which is a synthetic constructor call
-        TreeUtilities tu = info.getTreeUtilities();
-        for (Tree member : ((NewClassTree)pathToNewClassTree.getLeaf()).getClassBody().getMembers()) {
-            if (member.getKind() == Tree.Kind.METHOD && !tu.isSynthetic(new TreePath(pathToNewClassTree, member)))
-                return (MethodTree)member;
+        if (createdClass == null) {
+            return null;
         }
-        return null;
+        TreePath typePath = new TreePath(pathToNewClassTree, ((NewClassTree)pathToNewClassTree.getLeaf()).getIdentifier());
+        Element baseElement  = info.getTrees().getElement(typePath);
+        if (baseElement == null || baseElement.getKind().isClass()) {
+            return null;
+        }
+        TreeUtilities tu = info.getTreeUtilities();
+        MethodTree candidate = null;
+        for (Tree member : ((NewClassTree)pathToNewClassTree.getLeaf()).getClassBody().getMembers()) {
+            if (member.getKind() == Tree.Kind.METHOD && !tu.isSynthetic(new TreePath(pathToNewClassTree, member))) {
+                if (candidate != null) {
+                    return null;
+                }
+                candidate = (MethodTree)member;
+            }
+        }
+        return candidate;
     }
 
     public boolean passesAllPreconditions() {
@@ -161,11 +175,12 @@ public class ConvertToLambdaPreconditionChecker {
     
     private void ensurePreconditionsAreChecked() {
         if (!havePreconditionsBeenChecked) {
-            TreePath path = new TreePath(pathToNewClassTree, lambdaMethodTree);
-            new PreconditionScanner().scan(path, info.getTrees());
-            checkForOverload();
-            verifyTargetType();
-            
+            if (lambdaMethodTree != null) {
+                TreePath path = new TreePath(pathToNewClassTree, lambdaMethodTree);
+                new PreconditionScanner().scan(path, info.getTrees());
+                checkForOverload();
+                verifyTargetType();
+            }
             havePreconditionsBeenChecked = true;
         }
     }
@@ -176,7 +191,8 @@ public class ConvertToLambdaPreconditionChecker {
     }
     
     public boolean passesFatalPreconditions() {
-        return !foundRefToThisOrSuper() &&
+        return lambdaMethodTree != null && 
+               !foundRefToThisOrSuper() &&
                !foundRecursiveCall() &&
                !foundErroneousTargetType() && 
                !foundRefToUninitializedVar();
@@ -228,6 +244,11 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean foundMemberReferenceCandidate() {
         ensurePreconditionsAreChecked();
         return foundMemberReferenceCandidate;
+    }
+    
+    public boolean foundConstructorReferenceCandidate() {
+        ensurePreconditionsAreChecked();
+        return foundConstructorReferenceCandidate;
     }
 
     private void checkForOverload() {
@@ -315,6 +336,68 @@ public class ConvertToLambdaPreconditionChecker {
                 foundShadowedVariable = true;
             }
             return super.visitVariable(variableDeclTree, trees);
+        }
+
+        public boolean isMeaninglessQualifier(TreePath exprPath) {
+            if (exprPath == null) {
+                return false;
+            }
+            Tree leaf = exprPath.getLeaf();
+            if (leaf.getKind() == Tree.Kind.PARENTHESIZED) {
+                return isMeaninglessQualifier(new TreePath(exprPath, ((ParenthesizedTree)leaf).getExpression()));
+            } else if (leaf.getKind() == Tree.Kind.IDENTIFIER) {
+                String s = ((IdentifierTree)leaf).getName().toString();
+                if ("this".equals(s)) {
+                    // this alone denotes the class which is going to be turned to lambda.
+                    return  false;
+                }
+            } else if (leaf.getKind() == Tree.Kind.MEMBER_SELECT && createdClass != null) {
+                MemberSelectTree mst = (MemberSelectTree)leaf;
+                String s = mst.getIdentifier().toString();
+                if ("this".equals(s)) {
+                    // SomeOuterClass.this; if the qualifier is an enclosing class,
+                    // permit:
+                    TypeMirror thisType = info.getTrees().getTypeMirror(exprPath);
+                    if (thisType == null || thisType.getKind() != TypeKind.DECLARED) {
+                        return false;
+                    }
+                    Element el = ((DeclaredType)thisType).asElement();
+                    for (Element outer = createdClass.getEnclosingElement(); outer != null; outer = outer.getEnclosingElement()) {
+                        if (el.getModifiers().contains(Modifier.STATIC)) {
+                            // lost the reference to the outer instances
+                            return false;
+                        }
+                        if (el == outer) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Tree visitNewClass(NewClassTree node, Trees p) {
+            Tree t = super.visitNewClass(node, p);
+            // new class tree > expression statement tree > block. Does not accept anonymous classes for ctor references.
+            if (node.getClassBody() == null && singleStatementLambdaMethodBody == getCurrentPath().getParentPath().getParentPath().getLeaf()) {
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                Element el = info.getTrees().getElement(getCurrentPath());
+                if (el == null || el.getKind() != ElementKind.CONSTRUCTOR || !el.getEnclosingElement().getKind().isClass()) {
+                    return t;
+                }
+                el = el.getEnclosingElement();
+                if (parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT || parent.getKind() == Tree.Kind.RETURN) {
+                    ExpressionTree et = node.getEnclosingExpression();
+                    if (et != null) {
+                        if (el.getModifiers().contains(Modifier.STATIC) || !isMeaninglessQualifier(new TreePath(getCurrentPath().getParentPath(), et))) {
+                            return t;
+                        }
+                    }
+                    foundConstructorReferenceCandidate = true;
+                }
+            }
+            return t;
         }
 
         @Override

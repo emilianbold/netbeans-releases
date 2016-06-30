@@ -111,44 +111,44 @@ abstract public class CsmCompletion {
     public static final SimpleClass UNSIGNED_LONG_CLASS = new SimpleClass("unsigned long", ""); // NOI18N
     public static final SimpleClass UNSIGNED_SHORT_CLASS = new SimpleClass("unsigned short", ""); // NOI18N
     public static final SimpleClass LONG_DOUBLE_CLASS = new SimpleClass("long double", ""); // NOI18N
-    public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, 0, 0, false);
-    public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, 0, 0, false);
-    public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, 0, 0, false);
-    public static final BaseType DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, 0, 0, false);
-    public static final BaseType FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, 0, 0, false);
-    public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, 0, 0, false);
-    public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, 0, 0, false);
-    public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, 0, 0, false);
-    public static final BaseType UNSIGNED_CHAR_TYPE = new BaseType(UNSIGNED_CHAR_CLASS, 0, 0, 0, false);
-    public static final BaseType UNSIGNED_INT_TYPE = new BaseType(UNSIGNED_INT_CLASS, 0, 0, 0, false);
-    public static final BaseType UNSIGNED_LONG_TYPE = new BaseType(UNSIGNED_LONG_CLASS, 0, 0, 0, false);
-    public static final BaseType UNSIGNED_SHORT_TYPE = new BaseType(UNSIGNED_SHORT_CLASS, 0, 0, 0, false);
-    public static final BaseType LONG_DOUBLE_TYPE = new BaseType(LONG_DOUBLE_CLASS, 0, 0, 0, false);
-    public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, 0, 0, false);
-    public static final BaseType NULLPTR_TYPE = new BaseType(NULLPTR_CLASS, 1, 0, 0, false);
+    public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, 0, 0, false, false);
+    public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, 0, 0, false, false);
+    public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, 0, 0, false, false);
+    public static final BaseType DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, 0, 0, false, false);
+    public static final BaseType FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, 0, 0, false, false);
+    public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, 0, 0, false, false);
+    public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, 0, 0, false, false);
+    public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, 0, 0, false, false);
+    public static final BaseType UNSIGNED_CHAR_TYPE = new BaseType(UNSIGNED_CHAR_CLASS, 0, 0, 0, false, false);
+    public static final BaseType UNSIGNED_INT_TYPE = new BaseType(UNSIGNED_INT_CLASS, 0, 0, 0, false, false);
+    public static final BaseType UNSIGNED_LONG_TYPE = new BaseType(UNSIGNED_LONG_CLASS, 0, 0, 0, false, false);
+    public static final BaseType UNSIGNED_SHORT_TYPE = new BaseType(UNSIGNED_SHORT_CLASS, 0, 0, 0, false, false);
+    public static final BaseType LONG_DOUBLE_TYPE = new BaseType(LONG_DOUBLE_CLASS, 0, 0, 0, false, false);
+    public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, 0, 0, false, false);
+    public static final BaseType NULLPTR_TYPE = new BaseType(NULLPTR_CLASS, 1, 0, 0, false, false);
     public static final SimpleClass INVALID_CLASS = new SimpleClass("", ""); // NOI18N
-    public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, 0, 0, false);
+    public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, 0, 0, false, false);
     public static final SimpleClass NULL_CLASS = new SimpleClass("null", ""); // NOI18N
-    public static final BaseType NULL_TYPE = new BaseType(NULL_CLASS, 0, 0, 0, false);
+    public static final BaseType NULL_TYPE = new BaseType(NULL_CLASS, 0, 0, 0, false, false);
     public static final SimpleClass OBJECT_CLASS_ARRAY = new SimpleClass("java.lang.Object[]", "java.lang".length(), true); // NOI18N
-    public static final BaseType OBJECT_TYPE_ARRAY = new BaseType(OBJECT_CLASS_ARRAY, 0, 0, 0, false);
+    public static final BaseType OBJECT_TYPE_ARRAY = new BaseType(OBJECT_CLASS_ARRAY, 0, 0, 0, false, false);
     public static final SimpleClass OBJECT_CLASS = new SimpleClass("java.lang.Object", "java.lang".length(), true); // NOI18N
-    public static final BaseType OBJECT_TYPE = new BaseType(OBJECT_CLASS, 0, 0, 0, false);
+    public static final BaseType OBJECT_TYPE = new BaseType(OBJECT_CLASS, 0, 0, 0, false, false);
     public static final SimpleClass CLASS_CLASS = new SimpleClass("java.lang.Class", "java.lang".length(), true); // NOI18N
-    public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0, 0, 0, false);
+    public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0, 0, 0, false, false);
     public static final SimpleClass STRING_CLASS = new SimpleClass("char", 0, true); // NOI18N
-    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, 0, 0, false);
+    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, 0, 0, false, false);
     public static final SimpleClass CONST_STRING_CLASS = new SimpleClass("const char", 0, true); // NOI18N
-    public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, 0, 0, true);
-    public static final BaseType CONST_BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_BYTE_TYPE = new BaseType(BYTE_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_CHAR_TYPE = new BaseType(CHAR_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_INT_TYPE = new BaseType(INT_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_LONG_TYPE = new BaseType(LONG_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_SHORT_TYPE = new BaseType(SHORT_CLASS, 0, 0, 0, true);
-    public static final BaseType CONST_VOID_TYPE = new BaseType(VOID_CLASS, 0, 0, 0, true);
+    public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, 0, 0, true, false);
+    public static final BaseType CONST_BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_BYTE_TYPE = new BaseType(BYTE_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_CHAR_TYPE = new BaseType(CHAR_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_INT_TYPE = new BaseType(INT_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_LONG_TYPE = new BaseType(LONG_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_SHORT_TYPE = new BaseType(SHORT_CLASS, 0, 0, 0, true, false);
+    public static final BaseType CONST_VOID_TYPE = new BaseType(VOID_CLASS, 0, 0, 0, true, false);
 
     // the bit for local member. the modificator is not saved within this bit.
     public static final int LOCAL_MEMBER_BIT = (1 << 29);
@@ -297,14 +297,14 @@ abstract public class CsmCompletion {
     public static CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
         CsmType type = null;
         if (CsmKindUtilities.isTypedefOrTypeAlias(obj)) {
-            type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier);
+            type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier, false);
         } else if (CsmKindUtilities.isClassifier(obj)) {
-            type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier);
+            type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier, false);
         } else if (CsmKindUtilities.isFunction(obj)) {
             CsmFunction fun = (CsmFunction) obj;
             if (CsmKindUtilities.isConstructor(fun)) {
                 CsmClassifier cls = ((CsmConstructor) obj).getContainingClass();
-                type = CsmCompletion.createType(cls, 0, 0, 0, false);
+                type = CsmCompletion.createType(cls, 0, 0, 0, false, false);
             } else {
                 type = fun.getReturnType();
             }
@@ -324,8 +324,8 @@ abstract public class CsmCompletion {
      * on the real completion classes that can become obsolete and thus should
      * be garbage collected.
      */
-    public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const) {
-        return createType(cls, ptrDepth, refDepth, arrayDepth, _const, CsmKindUtilities.isTemplateParameter(cls));
+    public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const, boolean _volatile) {
+        return createType(cls, ptrDepth, refDepth, arrayDepth, _const, _volatile, CsmKindUtilities.isTemplateParameter(cls));
     }
     
     /** Create new type or get the existing one from the cache. The cache holds
@@ -334,14 +334,14 @@ abstract public class CsmCompletion {
      * on the real completion classes that can become obsolete and thus should
      * be garbage collected.
      */
-    public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const, boolean templateBased) {
+    public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const, boolean _volatile, boolean templateBased) {
         if (cls == null) {
             return null;
         }
         if (CsmKindUtilities.isClosureClassifier(cls)) {
-            return new CompletionClosureType(((CsmClosureClassifier) cls).getLambda(), refDepth, _const);
+            return new CompletionClosureType(((CsmClosureClassifier) cls).getLambda(), refDepth, _const, _volatile);
         }
-        return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const, templateBased);
+        return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const, _volatile, templateBased);
     }
 
     public static CsmNamespace getProjectNamespace(CsmProject project, CsmNamespace ns) {
@@ -645,13 +645,14 @@ abstract public class CsmCompletion {
         protected int pointerDepth;
         protected int reference; // nothing, & or && as in C++11
         protected boolean _const;
+        protected boolean _volatile;
         protected boolean templateBased;
         
-        private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const) {
-            this(clazz, pointerDepth, reference, arrayDepth, _const, CsmKindUtilities.isTemplateParameter(clazz));
+        private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
+            this(clazz, pointerDepth, reference, arrayDepth, _const, _volatile, CsmKindUtilities.isTemplateParameter(clazz));
         }
 
-        private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean templateBased) {
+        private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile, boolean templateBased) {
             this.clazz = clazz;
             this.arrayDepth = arrayDepth;
             this.pointerDepth = pointerDepth;
@@ -661,6 +662,7 @@ abstract public class CsmCompletion {
             }
             this.reference = reference;
             this._const = _const;
+            this._volatile = _volatile;
             this.templateBased = templateBased;
             if (arrayDepth < 0) {
                 throw new IllegalArgumentException("Array depth " + arrayDepth + " < 0."); // NOI18N
@@ -803,6 +805,11 @@ abstract public class CsmCompletion {
         @Override
         public boolean isConst() {
             return _const;
+        }
+
+        @Override
+        public boolean isVolatile() {
+            return _volatile;
         }
 
         @Override
@@ -960,6 +967,11 @@ abstract public class CsmCompletion {
         }
 
         @Override
+        public boolean isVolatile() {
+            return delegate.isVolatile();
+        }
+
+        @Override
         public boolean isPackExpansion() {
             return delegate.isPackExpansion();
         }
@@ -1066,8 +1078,8 @@ abstract public class CsmCompletion {
 
     public static class CompletionClosureType extends BaseType implements CsmClosureType {
 
-        public CompletionClosureType(CsmFunctionDefinition lambda, int reference, boolean _const) {
-            super(new CompletionClosureClassifier(lambda), 0, reference, 0, _const);
+        public CompletionClosureType(CsmFunctionDefinition lambda, int reference, boolean _const, boolean _volatile) {
+            super(new CompletionClosureClassifier(lambda), 0, reference, 0, _const, _volatile);
         }
 
         @Override

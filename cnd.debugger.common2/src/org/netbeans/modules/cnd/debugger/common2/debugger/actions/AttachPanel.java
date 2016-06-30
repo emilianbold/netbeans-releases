@@ -61,6 +61,7 @@ import javax.swing.border.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.debugger.Properties;
@@ -97,13 +98,20 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.spi.UserAttachAction;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
 
 /**
@@ -1010,9 +1018,15 @@ public final class AttachPanel extends TopComponent {
                                 if (tp.cancelled.get()) {
                                     return;
                                 }
-                                DebugTarget target = tp.targetRef.get();
+                                final DebugTarget target = tp.targetRef.get();
                                 if (target != null) {
-                                    NativeDebuggerManager.get().attach(target);
+                                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(executableProjectPanel.getSelectedProject(), 
+                                            ProjectActionEvent.PredefinedType.ATTACH, 
+                                            target.getExecutable(), target.getConfig(), 
+                                            target.getRunProfile(), false, 
+                                            Lookups.fixed(target)
+                                    );
+                                    ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] {projectActionEvent});
                                 }
                             }
                         };

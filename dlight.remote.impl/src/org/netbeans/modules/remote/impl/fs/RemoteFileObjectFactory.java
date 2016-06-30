@@ -86,7 +86,7 @@ public class RemoteFileObjectFactory {
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
         return fileObjectsCache.values(); // WeakCache returns a copy => no need to copy here
     }
-    
+
     /*package*/ int getCachedFileObjectsCount() {
         return fileObjectsCache.size();
     }
@@ -166,7 +166,7 @@ public class RemoteFileObjectFactory {
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
-                reportUnexpectedPrevFileObject(result, "directory"); //NOI18N
+                reportUnexpectedPrevFileObject(result, "either not a RemoteDirectory or has different parent"); //NOI18N
                 return result;
             }
         } else {
@@ -205,7 +205,7 @@ public class RemoteFileObjectFactory {
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
-                reportUnexpectedPrevFileObject(result, "plain file"); //NOI18N
+                reportUnexpectedPrevFileObject(result, "either not a RemotePlainFile or has different parent"); //NOI18N
                 return result;
             }
         } else {
@@ -244,7 +244,7 @@ public class RemoteFileObjectFactory {
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
-                reportUnexpectedPrevFileObject(result, "plain file"); //NOI18N
+                reportUnexpectedPrevFileObject(result, "either not a SpecialRemoteFileObject or has different parent"); //NOI18N
                 return result;
             }
         } else {
@@ -304,16 +304,22 @@ public class RemoteFileObjectFactory {
             }
         }
         if (!(result instanceof RemoteLinkChild)) {
-            reportUnexpectedPrevFileObject(result, "link"); //NOI18N
+            reportUnexpectedPrevFileObject(result, "not a RemoteLinkChild"); //NOI18N
         }
         return result;
     }
 
-    private void reportUnexpectedPrevFileObject(RemoteFileObjectBase prevFieObject, String expected) {
-        if (RemoteLogger.isLoggable(Level.INFO)) {
-            RemoteLogger.info(new Exception(String.format("Unexpected file object in cache, found %s, expected %s: %s", //NOI18N
-                    (expected == null) ? "null" : prevFieObject.getClass().getSimpleName(), // NOI18N
-                    expected, prevFieObject))); //NOI18N
+
+    private static volatile boolean reportUnexpected = true;
+
+    /*package*/ static void testSetReportUnexpected(boolean report) {
+        reportUnexpected = report;
+    }
+
+    private void reportUnexpectedPrevFileObject(RemoteFileObjectBase prevFieObject, String message) {
+        if (reportUnexpected && RemoteLogger.isLoggable(Level.INFO)) {
+            RemoteLogger.info(new Exception(String.format("Unexpected file object in cache, found %s %s - %s", //NOI18N
+                    prevFieObject.getClass().getSimpleName(), prevFieObject, message))); //NOI18N
         }
     }
 

@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;

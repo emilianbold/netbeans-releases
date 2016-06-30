@@ -46,7 +46,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -60,6 +63,11 @@ public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
     public FtpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    @Override
+    RemoteSyncFactory getSyncFactory() {
+        return RemoteSyncFactory.fromID(FtpSyncFactory.ID);
     }
 
     @Override

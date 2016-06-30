@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript2.requirejs;
 
 import java.io.File;
 import java.io.StringWriter;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.ModelTestBase;
 import org.openide.filesystems.FileObject;
 
 /**

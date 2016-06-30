@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.jdk;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -66,6 +67,10 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ReturnTree;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.matching.Matcher;
@@ -109,7 +114,64 @@ public class ConvertToLambdaConverter {
 
         copy.rewrite(newClassTree, convertedTree);
     }
+    
+    private static Tree possiblyCast(WorkingCopy copy, ExpressionTree tree, TreePath path, boolean typeCast) {
+        if (!typeCast) {
+            return tree;
+        }
+        NewClassTree nct = (NewClassTree)path.getLeaf();
+        return copy.getTreeMaker().TypeCast(nct.getIdentifier(), tree);
+    }
+    
+    public static Tree newClassToConstructorReference(WorkingCopy copy, Tree tree, TreePath contextPath, List<? extends VariableTree> passedParameters, boolean addTypeCast) {
+        NewClassTree nct = (NewClassTree)tree;
+        if (passedParameters.size() != nct.getArguments().size()) {
+            return null;
+        }
+        Element e = copy.getTrees().getElement(new TreePath(contextPath, tree));
+        if (e == null || e.getKind() != ElementKind.CONSTRUCTOR) {
+            return null;
+        }
+        TreeMaker make = copy.getTreeMaker();
+        return possiblyCast(copy, 
+                make.MemberReference(MemberReferenceTree.ReferenceMode.NEW, nct.getIdentifier(), "new", (List<? extends ExpressionTree>)nct.getTypeArguments()), 
+                contextPath, addTypeCast);
+    }
 
+    public static Tree methodInvocationToMemberReference(WorkingCopy copy, Tree tree, TreePath contextPath, List<? extends VariableTree> passedParameters, boolean addTypeCast) {
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return null;
+        ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
+        Element e = copy.getTrees().getElement(new TreePath(contextPath, ms));
+        if (e == null || e.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+        Name name = null;
+        ExpressionTree expr = null;
+        TreeMaker make = copy.getTreeMaker();
+        
+        if (ms.getKind() == Tree.Kind.IDENTIFIER) {
+            name = ((IdentifierTree)ms).getName();
+            expr = e.getModifiers().contains(Modifier.STATIC) ? 
+                    make.Identifier(e.getEnclosingElement()) :
+                    make.Identifier("this"); //NOI18N
+        } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
+            name = ((MemberSelectTree)ms).getIdentifier();
+            if (passedParameters.size() == ((MethodInvocationTree)tree).getArguments().size()) {
+                expr = ((MemberSelectTree)ms).getExpression();
+            } else {
+                expr = make.Identifier(e.getEnclosingElement());
+            }
+        }
+        if (name == null || expr == null) {
+            return null;
+        }
+        return possiblyCast(copy, 
+                make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList()),
+                contextPath, addTypeCast
+        );
+    }
+    
     public void performRewriteToMemberReference() {
         MethodTree methodTree = getMethodFromFunctionalInterface(newClassTree);
         if (methodTree.getBody() == null || methodTree.getBody().getStatements().size() != 1)
@@ -122,29 +184,15 @@ public class ConvertToLambdaConverter {
         } else {
             return;
         }
-        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
-            return;
-        ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
-        Name name = null;
-        ExpressionTree expr = null;
-        TreeMaker make = copy.getTreeMaker();
-        if (ms.getKind() == Tree.Kind.IDENTIFIER) {
-            name = ((IdentifierTree)ms).getName();
-            expr = make.Identifier("this"); //NOI18N
-        } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
-            name = ((MemberSelectTree)ms).getIdentifier();
-            if (methodTree.getParameters().size() == ((MethodInvocationTree)tree).getArguments().size()) {
-                expr = ((MemberSelectTree)ms).getExpression();
-            } else {
-                Element e = copy.getTrees().getElement(new TreePath(pathToNewClassTree, ms));
-                if (e != null && e.getKind() == ElementKind.METHOD) {
-                    expr = make.Identifier(e.getEnclosingElement());
-                }
-            }
+        Tree changed = null;
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            changed = methodInvocationToMemberReference(copy, tree, pathToNewClassTree, methodTree.getParameters(),
+                    preconditionChecker.needsCastToExpectedType());
+        } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+            changed = newClassToConstructorReference(copy, tree, pathToNewClassTree, methodTree.getParameters(), preconditionChecker.needsCastToExpectedType());
         }
-        if (name != null && expr != null) {
-            MemberReferenceTree referenceTree = make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList());
-            copy.rewrite(newClassTree, referenceTree);
+        if (changed != null) {
+            copy.rewrite(newClassTree, changed);
         }
     }
 

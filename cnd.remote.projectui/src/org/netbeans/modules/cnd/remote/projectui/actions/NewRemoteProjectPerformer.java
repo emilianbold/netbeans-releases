@@ -54,7 +54,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteActionPerformer;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.NewProjectWizard;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.OpenProjectList;

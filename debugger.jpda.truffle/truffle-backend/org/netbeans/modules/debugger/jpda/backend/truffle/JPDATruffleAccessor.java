@@ -55,7 +55,6 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.impl.Accessor;
-import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.LineLocation;
@@ -68,6 +67,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -192,8 +193,7 @@ public class JPDATruffleAccessor extends Object {
     static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         Node node = evt.getNode();
-        Visualizer visualizer = getVisualizer(node);
-        return new FrameInfo(evt.getFrame(), visualizer, node, evt.getStack());
+        return new FrameInfo(evt.getFrame(), node, evt.getStack());
     }
     
     static void setStep(/*SuspendedEvent*/Object suspendedEvent, int stepCmd) {
@@ -262,24 +262,6 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    private static Visualizer getVisualizer(Node node) {
-        TruffleLanguage tl = getLanguage(node);
-        if (tl == null) {
-            return null;
-        }
-        try {
-            Method getVisualizerMethod = TruffleLanguage.class.getDeclaredMethod("getVisualizer");
-            getVisualizerMethod.setAccessible(true);
-            return (Visualizer) getVisualizerMethod.invoke(tl);
-        } catch (InvocationTargetException itex) {
-            itex.getTargetException().printStackTrace();
-            return null;
-        } catch (IllegalAccessException | IllegalArgumentException |
-                 NoSuchMethodException | SecurityException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    
     /*
     private static void setCommand() {
         stepIntoPrepared = false;
@@ -297,7 +279,8 @@ public class JPDATruffleAccessor extends Object {
         stepCmd = 0;
     }*/
     
-    static Object getSlotValue(Object frameObj, Object slotObj) {
+    static Object getSlotValue(Object event, Object frameObj, Object slotObj) {
+        SuspendedEvent suspEvent = (SuspendedEvent) event;
         FrameInstance frameInstance = (FrameInstance) frameObj;
         Frame frame = frameInstance.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
         FrameSlot slot = (FrameSlot) slotObj;
@@ -354,14 +337,9 @@ public class JPDATruffleAccessor extends Object {
             Node node = frameInstance.getCallNode();
             //System.err.println("Frame instance "+frameInstance+" node = "+node);
             //Node node = frame.materialize().getFrameDescriptor().
-            Visualizer visualizer = (node != null) ? getVisualizer(node.getRootNode()) : null;
             String name;
-            if (visualizer != null) {
-                name = visualizer.displayIdentifier(slot);
-            } else {
-                name = slot.getIdentifier().toString();
-            }
-            TruffleObject to = new TruffleObject(visualizer, name, obj);
+            name = slot.getIdentifier().toString();
+            TruffleObject to = new TruffleObject(name, obj, suspEvent, frameInstance);
             //return context.getVisualizer().displayValue(context, obj);
             //System.err.println("TruffleObject: "+to);
             //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
@@ -401,23 +379,12 @@ public class JPDATruffleAccessor extends Object {
         Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
-            Visualizer visualizer = getVisualizer(fi.getCallNode());
-            //TruffleFrame tf = new TruffleFrame();
-            if (visualizer != null) {
-                frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
-                frameInfos.append('\n');
-                frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
-                frameInfos.append('\n');
-                frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
-                frameInfos.append('\n');
-            } else {
-                frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
-                frameInfos.append('\n');
-                frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
-                frameInfos.append('\n');
-                frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
-                frameInfos.append('\n');
-            }
+            frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
+            frameInfos.append('\n');
+            frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
+            frameInfos.append('\n');
+            frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
+            frameInfos.append('\n');
             if (fi.getCallNode() == null) {
                 /* frames with null call nodes are filtered out by JPDATruffleDebugManager.FrameInfo
                 System.err.println("Frame with null call node: "+fi);
@@ -432,6 +399,8 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append(position.name);
             frameInfos.append('\n');
             frameInfos.append(position.path);
+            frameInfos.append('\n');
+            frameInfos.append(position.uri.toString());
             frameInfos.append('\n');
             frameInfos.append(position.line);
             
@@ -465,9 +434,9 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static Breakpoint setLineBreakpoint(String path, int line,
-                                            int ignoreCount, String condition) {
-        return doSetLineBreakpoint(path, line, ignoreCount, condition, false);
+    static Breakpoint setLineBreakpoint(String uriStr, int line,
+                                        int ignoreCount, String condition) throws URISyntaxException {
+        return doSetLineBreakpoint(new URI(uriStr), line, ignoreCount, condition, false);
     }
     
     static Breakpoint setLineBreakpoint(URL url, int line,
@@ -475,8 +444,8 @@ public class JPDATruffleAccessor extends Object {
         return doSetLineBreakpoint(url, line, ignoreCount, condition, false);
     }
     
-    static Breakpoint setOneShotLineBreakpoint(String path, int line) {
-        return doSetLineBreakpoint(path, line, 0, null, true);
+    static Breakpoint setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
+        return doSetLineBreakpoint(new URI(uriStr), line, 0, null, true);
     }
     
     static Breakpoint setOneShotLineBreakpoint(URL url, int line) {
@@ -542,6 +511,30 @@ public class JPDATruffleAccessor extends Object {
         return lb;
     }
     
+    private static Breakpoint doSetLineBreakpoint(URI uri, int line,
+                                                  int ignoreCount, String condition,
+                                                  boolean oneShot) {
+        Breakpoint lb;
+        try {
+            lb = debugManager.getDebugger().setLineBreakpoint(0, uri, line, oneShot);
+        } catch (IOException dex) {
+            System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
+            return null;
+        }
+        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        if (ignoreCount != 0) {
+            lb.setIgnoreCount(ignoreCount);
+        }
+        if (condition != null) {
+            try {
+                lb.setCondition(condition);
+            } catch (IOException dex) {
+                System.err.println("Wrong condition "+condition+" : "+dex);
+            }
+        }
+        return lb;
+    }
+    
     static void removeBreakpoint(Object br) {
         ((Breakpoint) br).dispose();
     }
@@ -558,18 +551,17 @@ public class JPDATruffleAccessor extends Object {
         if (node == null) {
             node = evt.getNode();
         }
-        Visualizer visualizer = getVisualizer(node);
         Object value;
         try {
             value = evt.eval(expression, fi);
         } catch (IOException ioex) {
-            return new TruffleObject(visualizer, ioex.getLocalizedMessage(), ioex);
+            return new TruffleObject(ioex.getLocalizedMessage(), ioex, null, null);
         }
         //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
-        TruffleObject to = new TruffleObject(visualizer, expression, value);
+        TruffleObject to = new TruffleObject(expression, value, evt, fi);
         return to;
     }
     
@@ -591,13 +583,8 @@ public class JPDATruffleAccessor extends Object {
         FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
         String[] slotNames = new String[slots.length];
         String[] slotTypes = new String[slots.length];
-        Visualizer visualizer = getVisualizer(fi.getCallNode());
         for (int i = 0; i < frameSlots.length; i++) {
-            if (visualizer != null) {
-                slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
-            } else {
-                slotNames[i] = frameSlots[i].getIdentifier().toString();
-            }
+            slotNames[i] = frameSlots[i].getIdentifier().toString();
             slotTypes[i] = frameSlots[i].getKind().toString();
         }
         slots[0] = fi;

@@ -16,13 +16,17 @@ public class ImplementAbstractMethods7 extends ImplementAbstractMethods7Usee2
     public void createStuff() {
     }
 
+    @Override
     protected boolean resolve() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String doStuff() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public int resolveStuff(JButton button) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

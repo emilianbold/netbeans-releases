@@ -41,15 +41,11 @@
  */
 package org.netbeans.modules.javascript.v8debug.ui.vars.models;
 
-import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JEditorPane;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.commands.Evaluate;
@@ -57,13 +53,12 @@ import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript.v8debug.ui.vars.tooltip.V8DebuggerTooltipSupport;
+import org.netbeans.modules.javascript.v8debug.ui.vars.tooltip.ToolTipAnnotation;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
-import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.AbstractExpandToolTipAction;
 import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.openide.util.RequestProcessor;
 
@@ -228,21 +223,22 @@ public class PinWatchValueProvider implements PinWatchUISupport.ValueProvider,
         }
     }
 
-    private class ExpandAction extends AbstractAction {
+    private class ExpandAction extends AbstractExpandToolTipAction {
 
         private final Variable var;
 
         ExpandAction(Variable var) {
             this.var = var;
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            putValue(Action.SMALL_ICON, expIcon);
-            putValue(Action.LARGE_ICON_KEY, expIcon);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            AbstractJSToolTipAnnotation.openTooltipView(new V8DebuggerTooltipSupport(dbg, dbg.getCurrentFrame()), var.getName(), var);
+        protected void openTooltipView() {
+            ToolTipSupport tts = openTooltipView(var.getName(), var);
+            if (tts != null) {
+                ToolTipAnnotation.handleToolTipClose(dbg, tts);
+            }
         }
+
     }
 
 }

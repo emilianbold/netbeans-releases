@@ -85,6 +85,7 @@ public final class ProjectActionEvent {
         DEBUG_STEPINTO("Debug"), // NOI18N
         DEBUG_TEST("Debug"), // NOI18N
         DEBUG_STEPINTO_TEST("Debug"), // NOI18N
+        ATTACH("Attach"),  // NOI18N
         CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
         CUSTOM_ACTION("Custom"), // NOI18N
         BUILD_TESTS("BuildTests"), // NOI18N
@@ -160,7 +161,12 @@ public final class ProjectActionEvent {
 
     // TODO: move method to ProjectActionHandlerFactory or ProjectActionHandler
     public String getActionName() {
-        return type.getLocalizedName();
+        Type myType = getContext().lookup(Type.class);
+        if (myType != null) {
+            return myType.getLocalizedName();
+        } else {
+            return type.getLocalizedName();
+        }
     }
 
     private String getExecutableFromRunCommand() {

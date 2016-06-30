@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         <mapID target="jmx_jdk50" url="jmx_jdk50.html" />
         <mapID target="jmx_jdk60" url="jmx_jdk60.html" />
         <mapID target="jmx_progr_model" url="jmx_progr_model.html"/>
-        
+
         <mapID target="jmx_instrumenting_app" url="jmx_instrumenting_app.html"/>
         <mapID target="jmx_instrumenting_notification_app" url="jmx_instrumenting_notification_app.html"/>
         <mapID target="jmx_instrumenting_from_existing_app" url="jmx_instrumenting_from_existing_app.html"/>
@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
         <mapID target="jmx_agent_instantiate_mbean" url="jmx_agent_instantiate_mbean.html"/>
         <mapID target="jmx_agent_instantiate_java" url="jmx_agent_instantiate_java.html"/>
         <mapID target="jmx_manager_app" url="jmx_manager_app.html"/>
-        
+
         <mapID target="jmx_sample" url="jmx_sample.html"/>
         <mapID target="jconsole_standalone" url="jconsole_standalone.html"/>
         <mapID target="jmx_project_conf" url="jmx_project_conf.html"/>

@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -214,7 +214,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 StringBuilder sb = new StringBuilder(UID_INTERNAL_DATA_PREFIX); 
                 sb.append("("); // NOI18N
                 AST param = AstUtil.findChildOfType(params, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
-                do {
+                while (param != null) {
                     AST stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_VARIABLE_DECLARATION);
                     if (stopAt == null) {
                         stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_PARMLIST);
@@ -232,7 +232,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         break;
                     }
                     first = false;
-                } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
+                    param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION);
+                }
                 sb.append(")"); // NOI18N
                 return sb.toString();
             }

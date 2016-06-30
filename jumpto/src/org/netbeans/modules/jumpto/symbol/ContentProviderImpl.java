@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -197,7 +198,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         final boolean exact = text.endsWith(" "); // NOI18N
         final boolean isCaseSensitive = panel.isCaseSensitive();
         text = text.trim();
-        if ( text.length() == 0 || !Utils.isValidInput(text)) {
+        if ( text.isEmpty() || !Utils.isValidInput(text)) {
             currentSearch.filter(
                     SearchType.EXACT_NAME,
                     text,
@@ -205,14 +206,17 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             panel.revalidateModel(true);
             return false;
         }
-        final SearchType searchType = Utils.getSearchType(text, exact, isCaseSensitive, null, null);
+
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text);
+        String name = nameAndScope.first();
+        final SearchType searchType = Utils.getSearchType(name, exact, isCaseSensitive, null, null);
         if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
-            text = Utils.removeNonNeededWildCards(text);
+            name = Utils.removeNonNeededWildCards(name);
         }
-        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
-        final String name = nameAndScope.first();
-        final String scope = nameAndScope.second();
-        if (name.length() == 0) {
+        final String scope = Optional.ofNullable(nameAndScope.second())
+                .map(Utils::removeNonNeededWildCards)
+                .orElse(null);
+        if (name.isEmpty()) {
             //Empty name, wait for next char
             currentSearch.resetFilter();
             panel.setModel(new DefaultListModel(), true);

@@ -120,7 +120,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     + "ln -s " + baseDir + "/ade/111/222 " + baseDir + "/ade_path;"
                     + "ln -s ade_path/" + dataFile + ' ' + dataFile;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             final FileObject baseDirFO = getFileObject(baseDir);
             assertTrue("FileObject should be readable: " + baseDirFO, baseDirFO.canRead());
@@ -133,7 +133,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     + "mv " + baseDir + "/ade_autofs/111/222/" + dataFile + ' ' + dataFile + "; "
                     + "chmod a+w " + dataFile;
             res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             refreshFor(dataFileFO.getPath());
             assertEquals("FileObject hashCode should not change", hashCode, dataFileFO.hashCode());
@@ -167,7 +167,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     + "echo " + content2 + " > " + baseDir + "/ade_autofs/222/" + dataFile + ";"
                     + "ln -s " + baseDir + "/ade_autofs/111 " + baseDir + "/" + dirLink + ';';
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             final FileObject baseDirFO = getFileObject(baseDir);
             final FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
@@ -182,7 +182,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     + "rm " + baseDir + "/" + dirLink + ';'
                     + "ln -s " + baseDir + "/ade_autofs/222 " + baseDir + "/" + dirLink + ';';
             res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             refreshFor(dataFileFO.getPath());
             assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
@@ -213,7 +213,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     + "echo \"Oracle Solaris Studio 13\" > ../LEGAL/ProductName;"
                     + "ln -s ../LEGAL/ProductName SolarisStudio;";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             final String parentPath = baseDir + "/link_dir/intel-S2/lib";
             final FileObject parentFO = FileSystemProvider.getFileObject(env, parentPath);
@@ -269,7 +269,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "echo 123 > " + realFile;
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             final FileObject realFO = getFileObject(realFile);
             final FileObject linkFO = getFileObject(linkFile);
@@ -309,7 +309,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "cd " + baseDir + "; " +
                     "ln -s " + linkName + ' ' + linkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             FileObject linkFO;
 
@@ -336,7 +336,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "ln -s " + linkName2 + ' ' + linkName1 + ";" +
                     "ln -s " + baseDir + ' ' + baseDirlinkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
@@ -371,7 +371,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "ln -s " + cyclickLink3 + ' ' + cyclickLink1 + ";" +
                     "ln -s " + baseDir + ' ' + baseDirlinkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
             FileObject[] children = baseDirFO.getChildren(); // otherwise existent children are empty => refresh won't cycle
@@ -396,7 +396,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     " rm -rf " + folderName + ";" +
                     "ln -s " + selfLinkName + ' ' + folderName + ";";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
@@ -426,7 +426,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "sleep 10;" +
                     "ln -s " + fileName + ' ' + linkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             FileObject linkFO = getFileObject(baseDir + '/' + linkName);
             FileObject fileFO = getFileObject(baseDir + '/' + fileName);
@@ -453,7 +453,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "ln -s " + realDir + ' ' + linkDirName;
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             FileObject linkDirFO = getFileObject(linkDir);
 

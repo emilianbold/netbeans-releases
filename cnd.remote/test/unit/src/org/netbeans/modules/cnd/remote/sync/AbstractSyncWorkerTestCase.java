@@ -47,8 +47,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -60,6 +63,10 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Kvashin
  */
 public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
+
+    private RemoteSyncFactory oldSyncFactory;
+
+    abstract RemoteSyncFactory getSyncFactory();
 
     abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
             PrintWriter out, PrintWriter err, FileObject privProjectStorageDir);
@@ -87,12 +94,18 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         createRemoteTmpDir();
+        RemoteServerRecord record = RemoteServerList.getInstance().get(getTestExecutionEnvironment());
+        oldSyncFactory = record.getSyncFactory();
+        record.setSyncFactory(getSyncFactory());
     }
 
     @Override
     protected void tearDown() throws Exception {
         clearRemoteTmpDir(); // before disconnection!
         super.tearDown();
+        if (oldSyncFactory != null) {
+            RemoteServerList.getInstance().get(getTestExecutionEnvironment()).setSyncFactory(oldSyncFactory);
+        }
     }
 
 

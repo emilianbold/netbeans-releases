@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,39 +56,39 @@ import org.netbeans.lib.cvsclient.CVSRoot;
  @author <a href="mailto:rami.ojares@elisa.fi">Rami Ojares</a>, Elisa Internet Oy
  */
 public class ConnectionFactory {
-    
+
     /**
      <b>Protected Constructor</b>
      */
     protected ConnectionFactory() {}
-    
+
     /**
      * Returns a Connection object to handle the specific CVSRoot
      * specification. This returns null if not suitable connection
      * was found.
-     * 
+     *
      * If the return value is an instance of the PServerConnection class,
      * then the encoded password needs to be set if not defined in the CVSRoot.
      * This is left up to the client to set.
      */
     public static Connection getConnection(String cvsRoot) throws IllegalArgumentException {
-        
+
         CVSRoot root = CVSRoot.parse(cvsRoot);
         return getConnection(root);
-        
+
     }
-    
+
     /**
      * Returns a Connection object to handle the specific CVSRoot
      * specification. This returns null if not suitable connection
      * was found.
-     * 
+     *
      * If the return value is an instance of the PServerConnection class,
      * then the encoded password needs to be set if not defined in the CVSRoot.
      * This is left up to the client to set.
      */
     public static Connection getConnection(CVSRoot root) throws IllegalArgumentException {
-        
+
         // LOCAL CONNECTIONS (no-method, local & fork)
         if (root.isLocal()) {
             LocalConnection con = new LocalConnection();

@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.util.logging.Logger;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Immutable info about a single caret used in caret API - see {@link EditorCaret}.
@@ -67,22 +68,28 @@ public final class CaretInfo {
     private final CaretItem caretItem;
 
     private final Position dotPos;
+    
+    private final Position.Bias dotBias;
 
     private final Position markPos;
+    
+    private final Position.Bias markBias;
 
     private final Point magicCaretPosition;
 
     CaretInfo(CaretItem caretItem) {
         this.caretItem = caretItem;
         this.dotPos = caretItem.getDotPosition();
+        this.dotBias = caretItem.getDotBias();
         this.markPos = caretItem.getMarkPosition();
+        this.markBias = caretItem.getMarkBias();
         this.magicCaretPosition = caretItem.getMagicCaretPosition();
     }
 
     /**
      * Get position of the caret itself.
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getDotPosition() {
@@ -90,17 +97,45 @@ public final class CaretInfo {
     }
 
     /**
+     * Get a bias of the dot position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getDotBias() {
+        return dotBias;
+    }
+
+    /**
      * Return either the same object like {@link #getDotPosition()} if there's no selection
      * or return position denoting the other end of an existing selection (which is either before
      * or after the dot position depending of how the selection was created).
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getMarkPosition() {
         return markPos;
     }
     
+    /**
+     * Get a bias of the mark position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getMarkBias() {
+        return markBias;
+    }
+
     /**
      * Fetches the current position of the caret.
      *

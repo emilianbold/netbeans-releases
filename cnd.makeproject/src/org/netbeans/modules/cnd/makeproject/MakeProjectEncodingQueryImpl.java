@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -64,6 +65,7 @@ public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
         this.project = project;
     }
     
+    @Override
     public Charset getEncoding(FileObject file) {
         assert file != null;
         

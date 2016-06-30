@@ -65,8 +65,7 @@ import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.dlight.terminal.action.TerminalAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.terminal.api.TerminalContainer;
-import org.netbeans.modules.terminal.api.TabContentProvider;
+import org.netbeans.modules.terminal.api.ui.TerminalContainer;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -175,9 +174,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
     public SubComponent[] getSubComponents() {
         ArrayList<Component> terminalList = new ArrayList<Component>();
         
-        if (tc instanceof TabContentProvider) {
-            terminalList.addAll(((TabContentProvider) tc).getAllTabs());
-        }
+        terminalList.addAll(tc.getAllTabs());
 
         if (terminalList.size() <= 1) {
             return super.getSubComponents();

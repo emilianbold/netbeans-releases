@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
  *
  * @author Sergey Grinev
  */
-public abstract class HostMappingProviderUnixAbstract implements HostMappingProvider {
+/*package*/ abstract class HostMappingProviderUnixAbstract implements HostMappingProvider {
     private static final Logger log = RemoteUtil.LOGGER;
 
     protected abstract String getShareCommand();
@@ -84,7 +84,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         if (hostName != null) {
             ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, getShareCommand());
             if (exit.isOK()) { //NOI18N
-                List<String> paths = parseOutput(execEnv, new StringReader(exit.output));
+                List<String> paths = parseOutput(execEnv, new StringReader(exit.getOutputString()));
                 for (String path : paths) {
                     log.log(Level.FINE, "Path {0}", path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';

@@ -47,6 +47,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
@@ -61,18 +62,22 @@ public class TemplatesPanelGUITest extends NbTestCase implements TemplatesPanelG
     }
 
     private static Object editor;
-    public void testTemplatesPanel() {
-        TemplatesPanelGUI inst;
-        inst = new TemplatesPanelGUI(this);
-        
-        inst.addNotify();
-        editor = find(inst, JEditorPane.class, true);
-        WeakReference<Object> ref = new WeakReference<Object>(inst);
-        
-        inst.removeNotify();
-        
-        inst = null;
-        assertGC("Panel does not hold ref", ref);
+    public void testTemplatesPanel() throws Exception {
+        final WeakReference[] refRef = new WeakReference[] { null };
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                TemplatesPanelGUI inst = new TemplatesPanelGUI(TemplatesPanelGUITest.this);
+
+                inst.addNotify();
+                editor = find(inst, JEditorPane.class, true);
+                WeakReference<Object> ref = new WeakReference<Object>(inst);
+                refRef[0] = ref;
+
+                inst.removeNotify();
+            }
+        });
+        assertGC("Panel does not hold ref", refRef[0]);
     }
     
     private static Component find(Component c, Class<?> clazz, boolean fail) {

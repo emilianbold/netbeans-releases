@@ -100,7 +100,8 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToARM", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToARM", category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToARM", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToARM", category="rules15", suppressWarnings="ConvertToTryWithResources",
+        minSourceVersion = "7")  //NOI18N
 public class ConvertToARM {
 
     private static final Logger LOG = Logger.getLogger(ConvertToARMFix.class.getName());

@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
 
   <folder name="Services">
-      
+
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
       <file name="standard-update-provider.instance">
@@ -57,19 +57,19 @@ made subject to such option by the copyright holder.
         <attr name="category" stringvalue="STANDARD"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
       </file>
-    
+
       <file name="dev-update-provider.instance">
           <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/dev-update-provider.instance"/>
           <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
           <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_Default_N"/>
-          <attr name="category" stringvalue="STANDARD"/> 
+          <attr name="category" stringvalue="STANDARD"/>
           <attr name="enabled" boolvalue="true"/>
           <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
+          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
       </file>
-      
+
    </folder>
     
   </folder> <!-- Services -->

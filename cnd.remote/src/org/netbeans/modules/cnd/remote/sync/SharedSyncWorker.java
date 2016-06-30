@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.spi.remote.setup.support.RemoteSyncNotifier;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileSystem;
@@ -79,7 +80,7 @@ import org.openide.filesystems.FileSystem;
     public boolean startup(Map<String, String> env2add) {
 
         if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
-            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            RemoteSyncNotifier.getInstance().warnDoubleRemote(executionEnvironment, fileSystem);
             return false;
         }
 

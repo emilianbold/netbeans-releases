@@ -2,39 +2,36 @@ Code completion result for source line:
 formatter.print("a.say(): " + a.|help());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   issue214556.js
-METHOD     apply(): Array                  [PUBLIC]   stub_CORE_Function.js
-METHOD     bind(): String                  [PUBLIC]   stub_CORE_Function.js
-METHOD     call(): String                  [PUBLIC]   stub_CORE_Function.js
-METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
-METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
+CLASS      prototype                       [PUBLIC]   JS Platform
+METHOD     apply(thisArg: Object): Array   [PUBLIC]   JS Platform
+METHOD     assign(target: Object): Object  [PUBLIC,   JS Platform
+METHOD     call(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     create(proto: Object): Object   [PUBLIC,   JS Platform
+METHOD     defineProperties(obj: Object,   [PUBLIC,   JS Platform
+METHOD     defineProperty(obj: Object, pr  [PUBLIC,   JS Platform
+METHOD     entries(obj: Object): Array     [PUBLIC,   JS Platform
+METHOD     freeze(obj: Object): Object     [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptors(obj:  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(obj: Objec  [PUBLIC,   JS Platform
+METHOD     getOwnPropertySymbols(obj: Obj  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(obj: Object): O  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   JS Platform
 METHOD     help(): String                  [PUBLIC]   issue214556.js
-METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
-METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
-METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
-METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
-METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
-METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
-METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
+METHOD     is(value1: String, value2: Str  [PUBLIC,   JS Platform
+METHOD     isExtensible(obj: Object): Boo  [PUBLIC,   JS Platform
+METHOD     isFrozen(obj: Object): Boolean  [PUBLIC,   JS Platform
+METHOD     isPrototypeOf(obj): Boolean     [PUBLIC]   JS Platform
+METHOD     isSealed(obj: Object): Boolean  [PUBLIC,   JS Platform
+METHOD     keys(obj: Object): Array        [PUBLIC,   JS Platform
+METHOD     preventExtensions(obj: Object)  [PUBLIC,   JS Platform
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   JS Platform
 METHOD     say(): String                   [PUBLIC]   issue214556.js
-METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
-METHOD     toSource(): String              [PUBLIC]   stub_CORE_Function.js
-METHOD     toString(): String              [PUBLIC]   stub_CORE_Function.js
-METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
-METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
-FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
-FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
-FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Function.js
-FIELD      length                          [PUBLIC]   stub_CORE_Function.js
-FIELD      name                            [PUBLIC]   stub_CORE_Function.js
+METHOD     seal(obj: Object): Object       [PUBLIC,   JS Platform
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+METHOD     values(obj: Object): Array      [PUBLIC,   JS Platform
+FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      length: Number                  [PUBLIC,   JS Platform
+FIELD      name: String                    [PUBLIC,   JS Platform

@@ -184,32 +184,25 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         env.appendPathVariable("PATH", "/secondPath"); // NOI18N
         env.put("XXX", "It WORKS!"); // NOI18N
 
-        try {
-            Process p = npb.call();
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
 
-            List<String> pout = ProcessUtils.readProcessOutput(p);
-            int ok = 0;
+        List<String> pout = res.getOutputLines();
+        int ok = 0;
 
-            for (String line : pout) {
-                if (line.startsWith("PATH")) {
-                    if (line.contains("firstPath") && line.contains("secondPath")) {
-                        ok++;
-                    }
-                } else if (line.startsWith("XXX")) {
-                    if (line.contains("It WORKS!")) {
-                        ok++;
-                    }
+        for (String line : pout) {
+            if (line.startsWith("PATH")) {
+                if (line.contains("firstPath") && line.contains("secondPath")) {
+                    ok++;
+                }
+            } else if (line.startsWith("XXX")) {
+                if (line.contains("It WORKS!")) {
+                    ok++;
                 }
             }
-
-            int result = p.waitFor();
-            assertEquals(0, result);
-
-            assertEquals(2, ok);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
+
+        assertEquals(0, res.exitCode);
+
+        assertEquals(2, ok);
     }
 }

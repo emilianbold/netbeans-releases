@@ -1,0 +1,42 @@
+<Unnamed test>
+KEYWORD_CONST   "const", la=1, st=LexerState{zzState=287, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "versionsMap", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=49, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+KEYWORD_NEW     "new", la=1, st=LexerState{zzState=208, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "Map", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "lines", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "forEach", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "line", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_ARROW  "=>", st=LexerState{zzState=149, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "versionsMap", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "set", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_REST   "...", st=LexerState{zzState=188, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "line", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "split", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+STRING_BEGIN    "'", st=LexerState{zzState=30, zzLexicalState=8, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+STRING          "@", la=1, st=LexerState{zzState=77, zzLexicalState=10, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+STRING_END      "'", st=LexerState{zzState=72, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+----- EOF -----
+

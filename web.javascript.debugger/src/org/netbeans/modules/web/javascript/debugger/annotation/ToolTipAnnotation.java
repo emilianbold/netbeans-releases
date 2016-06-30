@@ -96,22 +96,61 @@ import org.openide.util.RequestProcessor;
     "# {0} - variable name",
     "var.undefined={0} is not defined"
 })
-public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<WebJSDebuggerTooltipSupport>
+public class ToolTipAnnotation extends AbstractJSToolTipAnnotation
 {
     
     @Override
-    protected WebJSDebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
+    protected void handleToolTipClose(DebuggerEngine engine, ToolTipSupport tts) {
+        Debugger d = engine.lookupFirst(null, Debugger.class);
+        if (d == null || !d.isSuspended()) {
+            return ;
+        }
+        handleToolTipClose(d, tts);
+    }
+    
+    static void handleToolTipClose(Debugger d, final ToolTipSupport tts) {
+        Debugger.Listener dl = new Debugger.Listener() {
+            @Override
+            public void paused(List<CallFrame> callStack, String reason) {}
+
+            @Override
+            public void resumed() {
+                doClose();
+            }
+
+            @Override
+            public void reset() {
+                doClose();
+            }
+
+            @Override
+            public void enabled(boolean enabled) {
+                if (!enabled) {
+                    doClose();
+                }
+            }
+            
+            private void doClose() {
+                tts.setToolTipVisible(false);
+            }
+        };
+        d.addListener(dl);
+        tts.addPropertyChangeListener(pl -> {
+            if (ToolTipSupport.PROP_STATUS.equals(pl.getPropertyName()) &&
+                    !tts.isToolTipVisible()) {
+                d.removeListener(dl);
+            }
+        });
+    }
+    
+    @Override
+    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine) throws CancellationException {
         Debugger d = engine.lookupFirst(null, Debugger.class);
         if (d == null || !d.isSuspended()) {
             return null;
         }
         CallFrame currentCallFrame = d.getCurrentCallFrame();
-        return new WebJSDebuggerTooltipSupport(d, currentCallFrame);
-    }
-
-    @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, WebJSDebuggerTooltipSupport dbg) throws CancellationException {
-        VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(dbg.getFrame(), expression, true);
+        VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(currentCallFrame, expression, true);
         Object tooltipVariable = null;
         String tooltipText;
         if (sv != null) {

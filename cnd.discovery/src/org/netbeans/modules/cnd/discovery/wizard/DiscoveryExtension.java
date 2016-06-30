@@ -79,7 +79,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension.class)
 public class DiscoveryExtension implements IteratorExtension, DiscoveryExtensionInterface {
     public static final String DWARF_PROVIDER = "dwarf-executable";// NOI18N
     public static final String FOLDER_PROVIDER = "dwarf-folder"; // NOI18N

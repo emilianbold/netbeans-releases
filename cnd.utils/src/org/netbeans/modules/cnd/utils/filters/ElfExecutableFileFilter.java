@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
-import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,6 +51,7 @@ import java.io.InputStream;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 

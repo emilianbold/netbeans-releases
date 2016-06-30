@@ -41,37 +41,27 @@
  */
 package org.netbeans.modules.debugger.jpda.projectsui;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JEditorPane;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.AbstractExpandToolTipAction;
 
 /**
  *
  * @author martin
  */
 @DebuggerServiceRegistration(path = "netbeans-JPDASession/PinWatchHeadActions", types = Action.class)
-public class PinWatchExpandAction extends AbstractAction {
+public class PinWatchExpandAction extends AbstractExpandToolTipAction {
 
     private Reference<JPDADebugger> debuggerRef;
     private String expression;
     private Reference<ObjectVariable> varRef;
 
     public PinWatchExpandAction() {
-        Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-        putValue(Action.SMALL_ICON, expIcon);
-        putValue(Action.LARGE_ICON_KEY, expIcon);
     }
 
     @Override
@@ -79,7 +69,9 @@ public class PinWatchExpandAction extends AbstractAction {
         switch (key) {
             case "debugger":
                 synchronized (this) {
-                    debuggerRef = new WeakReference<>((JPDADebugger) value);
+                    if (debuggerRef == null || debuggerRef.get() != value) {
+                        debuggerRef = new WeakReference<>((JPDADebugger) value);
+                    }
                 }
                 break;
             case "expression":
@@ -89,7 +81,10 @@ public class PinWatchExpandAction extends AbstractAction {
                 break;
             case "variable":
                 synchronized (this) {
-                    varRef = new WeakReference<>((ObjectVariable) value);
+                    if (varRef == null || varRef.get() != value) {
+                        varRef = new WeakReference<>((ObjectVariable) value);
+//                        expanded = false;
+                    }
                 }
                 break;
             case "disposeState":
@@ -104,7 +99,7 @@ public class PinWatchExpandAction extends AbstractAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    protected void openTooltipView() {
         JPDADebugger debugger = null;
         String exp;
         ObjectVariable var = null;
@@ -118,18 +113,10 @@ public class PinWatchExpandAction extends AbstractAction {
             }
         }
         if (debugger != null && exp != null && var != null) {
-            displayExpanded(debugger, expression, var);
-        }
-    }
-
-    private void displayExpanded(JPDADebugger debugger, String expression, ObjectVariable var) {
-        ToolTipView toolTipView = ToolTipView.getToolTipView(debugger, expression, var);
-        JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        EditorUI eui = Utilities.getEditorUI(currentEditor);
-        if (eui != null) {
-            toolTipView.setToolTipSupport(eui.getToolTipSupport());
-            eui.getToolTipSupport().setToolTipVisible(true, false);
-            eui.getToolTipSupport().setToolTip(toolTipView);
+            ToolTipSupport tts = openTooltipView(expression, var);
+            if (tts != null) {
+                DebuggerStateChangeListener.attach(debugger, tts);
+            }
         }
     }
 

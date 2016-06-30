@@ -44,6 +44,8 @@ package org.netbeans.api.progress;
 import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
@@ -182,38 +184,29 @@ public class RunOffEDTTest extends NbTestCase {
         final R r = new R();
         r.l = new CountDownLatch(1);
 
-        SwingUtilities.invokeLater(new Runnable() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+                if (w != null) {
+                    w.setVisible(false);
+                }
+            }
+        });
+        SwingUtilities.invokeAndWait(new Runnable() {
 
             public void run() {
                 ProgressUtils.runOffEventDispatchThread(r, "Test", new AtomicBoolean(false), false, 10, 100);
             }
         });
-        for (int i = 0; i < 100; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-            if (w != null) {
-                w.setVisible(false);
-                break;
-            }
-        }
 
         final AtomicBoolean finished = new AtomicBoolean(false);
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeAndWait(new Runnable() {
 
             public void run() {
                 finished.set(true);
             }
         });
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(100);
-            if (finished.get()) {
-                break;
-            }
-        }
         assertTrue("Should be finished", finished.get());
         r.l.countDown();
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -267,21 +260,26 @@ public class RunOffEDTTest extends NbTestCase {
     public void testDlgIsShown() throws Exception {
         final R r = new R();
         r.l = new CountDownLatch(1);
-        SwingUtilities.invokeLater(new Runnable() {
+        final boolean[] shown = new boolean[] { false };
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+                if (w != null) {
+                    r.l.countDown();
+                    shown[0] = true;
+                }
+            }
+        });
+        SwingUtilities.invokeAndWait(new Runnable() {
 
             public void run() {
                 ProgressUtils.runOffEventDispatchThread(r, "Test", new AtomicBoolean(false), true, 10, 100);
             }
         });
-        for (int i = 0; i < 100; i++) {
-            Thread.sleep(100);
-            Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-            if (w != null) {
-                r.l.countDown();
-                return;
-            }
+        if (!shown[0]) {
+            fail("Dialog was not shown");
         }
-        fail("Dialog was not shown");
     }
 
     /* No longer consistently pass after 42651596988d, TBD why:

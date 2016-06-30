@@ -56,6 +56,7 @@ import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.BaseCaret;
+import org.netbeans.modules.editor.lib2.caret.CaretFoldExpander;
 import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 
 /**
@@ -67,6 +68,10 @@ import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
  */
 public class FoldingEditorSupport implements FoldHierarchyListener {
     private static final Logger LOG = Logger.getLogger(FoldingEditorSupport.class.getName());
+    
+    static {
+        CaretFoldExpander.register(new CaretFoldExpanderImpl());
+    }
     
     /**
      * Component where the folding takes place

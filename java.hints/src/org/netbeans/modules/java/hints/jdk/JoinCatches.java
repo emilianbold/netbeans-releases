@@ -83,7 +83,8 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.JoinCatches", description = "#DESC_org.netbeans.modules.java.hints.jdk.JoinCatches", category="rules15")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.JoinCatches", description = "#DESC_org.netbeans.modules.java.hints.jdk.JoinCatches", category="rules15",
+        minSourceVersion = "7")
 public class JoinCatches {
 
     @TriggerPatterns({
@@ -101,8 +102,6 @@ public class JoinCatches {
         )
     })
     public static ErrorDescription hint(HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
-        
         TryTree tt = (TryTree) ctx.getPath().getLeaf();
 
         List<? extends CatchTree> catches = new ArrayList<CatchTree>(tt.getCatches());

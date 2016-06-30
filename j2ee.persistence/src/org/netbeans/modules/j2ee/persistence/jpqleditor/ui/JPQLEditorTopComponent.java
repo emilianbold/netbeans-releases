@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.persistence.jpqleditor.ui;
 
 import java.awt.CardLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -53,20 +55,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -74,19 +73,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -100,8 +97,6 @@ import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
-import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -161,6 +156,19 @@ public final class JPQLEditorTopComponent extends TopComponent {
     public JPQLEditorTopComponent(JPQLEditorController controller) {
         this.controller = controller;
         initComponents();
+        
+        // configure row height
+        // FIXME there should be a common place to do that
+        int height = resultsTable.getRowHeight();
+        Font cellFont = UIManager.getFont("TextField.font");
+        if (cellFont != null) {
+            FontMetrics metrics = resultsTable.getFontMetrics(cellFont);
+            if (metrics != null) {
+                height = metrics.getHeight() + 2;
+            }
+        }
+        resultsTable.setRowHeight(Math.max(resultsTable.getRowHeight(), height));
+        
         puComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -182,6 +190,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
         });
         jpqlEditor.addMouseListener(new JPQLEditorPopupMouseAdapter());
         showSQL(NbBundle.getMessage(JPQLEditorTopComponent.class, "BuildHint"));
+        resultsTable.setDefaultRenderer(Object.class, new ResultTableCellRenderer());
     }
 
     private class JPQLEditorPopupMouseAdapter extends PopupMouseAdapter {
@@ -538,35 +547,18 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
             setStatus(strBuffer.toString());
 
-            Vector<String> tableHeaders = new Vector<String>();
-            Vector<Vector> tableData = new Vector<Vector>();
+            TableModel tm = new DefaultTableModel();
 
             if (!result.getQueryResults().isEmpty()) {
-
-                Object firstObject = result.getQueryResults().get(0);
-                if (firstObject instanceof Object[]) {
-                    // Join query result.
-                    for (Object oneObject : (Object[]) firstObject) {
-                        createTableHeaders(tableHeaders, oneObject);
-                    }
-
-                    for (Object row : result.getQueryResults()) {
-                        createTableData(tableData, (Object[]) row);
-                    }
-
-                } else {
-                    // Construct the table headers
-                    createTableHeaders(tableHeaders, firstObject);
-                    for (Object oneObject : result.getQueryResults()) {
-                        createTableData(tableData, oneObject);
-                    }
+                try {
+                    List<ReflectionInfo> info = ReflectionInfo.prepare(result.getQueryResults());
+                    tm = new ReflectiveTableModel(info, result.getQueryResults());
+                } catch (IntrospectionException ex) {
+                    logger.log(Level.WARNING, "Failed to reflect while building table model for JPA display", ex);
                 }
-
-            } else {
-                
             }
             resultsTable.clearSelection();
-            resultsTable.setModel(new JPQLEditorResultTableModel(tableData, tableHeaders)); //new DefaultTableModel(tableData, tableHeaders));
+            resultsTable.setModel(tm);
 
 
         } else {
@@ -596,88 +588,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
         Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
 
-    private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {//NOI18N
-            //case for Long, String etc
-            tableHeaders.add(org.openide.util.NbBundle.getMessage(JPQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " + (tableHeaders.size() + 1));//NOI18N
-        } else {
-            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-                String methodName = m.getName();
-                if (methodName.startsWith("get")) { //NOI18N
-                    String head = JpaControllerUtil.getPropNameFromMethod(methodName);
-                    try {
-                        oneObject.getClass().getDeclaredField(head);
-                        tableHeaders.add(head);
-                    } catch (Exception ex) {
-                        String head2 = null;
-                        for(Field f:oneObject.getClass().getDeclaredFields()){
-                            if(head.equalsIgnoreCase(f.getName())){
-                                head2 = head;
-                            }
-                        }
-                        head2 = head2 == null ? methodName.substring(3) : head2;
-                        tableHeaders.add(head2);
-                    }
-                    
-                }
-            }
-        }
-    }
-
-    private void createTableData(Vector<Vector> tableData, Object... rowObject) {
-        Vector<Object> oneRow = new Vector<Object>();
-        for (Object oneObject : rowObject) {
-            if (oneObject == null) {
-                oneRow.add("NULL");//NOI18N
-            } else if (oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {
-                //case for Long, String etc
-                oneRow.add(oneObject.toString());
-            } else {
-                for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-                    String methodName = m.getName();
-                    if (methodName.startsWith("get")) { //NOI18N
-                        try {
-                            Object methodReturnValue = m.invoke(oneObject, new Object[]{});
-                            if (methodReturnValue == null) {
-                                oneRow.add("NULL"); //NOI18N
-                                continue;
-                            }
-                            if (methodReturnValue instanceof java.util.Collection) {
-                                oneRow.add(methodReturnValue.toString());
-                                continue;
-                            }
-                            oneRow.add(methodReturnValue.toString());
-                        } catch (IllegalAccessException ex) {
-                            //Exceptions.printStackTrace(ex);
-                        } catch (IllegalArgumentException ex) {
-                            //Exceptions.printStackTrace(ex);
-                        } catch (InvocationTargetException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            }
-        }
-        tableData.add(oneRow);
-    }
-
     private void setStatus(String message) {
         statusLabel.setText(message);
-    }
-
-    /*
-     * Creates custom table model with read only cell customization.
-     */
-    private class JPQLEditorResultTableModel extends DefaultTableModel {
-
-        public JPQLEditorResultTableModel(Vector<Vector> tableData, Vector<String> tableHeaders) {
-            super(tableData, tableHeaders);
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
     }
 
     private String removePersistenceModuleCodelines(String exceptionTrace) {

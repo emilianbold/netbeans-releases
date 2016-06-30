@@ -57,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class DockerfileResolver extends MIMEResolver {
 
     public static final String MIME_TYPE = "text/x-dockerfile"; //NOI18N
-    private static final String FILE_NAME = "Dockerfile";   //NOI18N
+    private static final String FILE_NAME = "dockerfile";   //NOI18N
 
     public DockerfileResolver() {
         super(MIME_TYPE);
@@ -66,7 +66,9 @@ public final class DockerfileResolver extends MIMEResolver {
     @CheckForNull
     @Override
     public String findMIMEType(@NonNull final FileObject fo) {
-        return FILE_NAME.equalsIgnoreCase(fo.getNameExt()) ?
+        final String ext = fo.getExt();
+        final String nameWithExt = fo.getNameExt().toLowerCase();
+        return FILE_NAME.equalsIgnoreCase(ext) || nameWithExt.startsWith(FILE_NAME)?
             MIME_TYPE :
             null;
     }

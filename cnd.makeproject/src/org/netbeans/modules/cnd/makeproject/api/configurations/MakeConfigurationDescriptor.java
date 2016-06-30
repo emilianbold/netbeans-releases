@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -72,48 +71,48 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
+import org.netbeans.modules.cnd.makeproject.uiapi.LongOperation;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainChangeSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -121,7 +120,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -135,8 +133,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
-    public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
-    public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
+    public static final String ICON = "org/netbeans/modules/cnd/makeproject/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT = "^(nbproject)$"; // NOI18N
@@ -212,7 +209,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (interrupter != null && interrupter.cancelled()) {
             return;
         }
-        ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        ToolchainChangeSupport.addCompilerSetModifiedListener(this);
         //for (Item item : getProjectItems()) {
         //    if (interrupter != null && interrupter.cancelled()) {
         //        return;
@@ -230,7 +227,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      */
     @Override
     public void closed() {
-        ToolsPanelSupport.removeCompilerSetModifiedListener(this);
+        ToolchainChangeSupport.removeCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
             item.onClose();
         }
@@ -257,9 +254,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
-        for (Entry<String, Item> entry : projectItems.entrySet()) {
+        projectItems.entrySet().forEach((entry) -> {
             entry.getValue().onClose();
-        }
+        });
         projectItems.clear();
         synchronized (sourceRoots) {
             sourceRoots.clear();
@@ -354,7 +351,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void initLogicalFolders(Iterator<? extends SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<? extends SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
-            String mainFilePath, DataObject mainFileTemplate, boolean addGeneratedMakefileToLogicalView) {
+            String mainFilePath, /*DataObject mainFileTemplate,*/ boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -366,7 +363,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         if (!addGeneratedMakefileToLogicalView) {
             if (!getProjectMakefileName().isEmpty()) {
-                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
+                externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
             }
         }
         if (logicalFolderItems != null) {
@@ -374,7 +371,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 LogicalFolderItemsInfo logicalFolderInfo = logicalFolderItems.next();
                 Folder f = rootFolder.findFolderByName(logicalFolderInfo.getLogicalFolderName());
                 if (f != null) {
-                    f.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+                    f.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
                 }
             }
         }
@@ -395,7 +392,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
-                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, importantItems.next()));
+                externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, importantItems.next()));
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true
@@ -403,8 +400,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (mainFilePath != null) {
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
-                Item added = srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
-                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, added);
+                Item added = srcFolder.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, mainFilePath));
+                PredefinedToolKind defaultToolForItem = added.getDefaultTool(); //Item.getDefaultToolForItem(mainFileTemplate, added);
                 for (ItemConfiguration ic : added.getItemConfigurations()) {
                     ic.setTool(defaultToolForItem);
                 }
@@ -568,9 +565,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     // External File Items
     public void setExternalFileItems(List<String> items) {
         externalFileItems.reset();
-        for (String s : items) {
-            externalFileItems.addItem(Item.createInFileSystem(baseDirFS, s));
-        }
+        items.forEach((s) -> {
+            externalFileItems.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, s));
+        });
     }
 
     public void setExternalFileItems(Folder folder) {
@@ -637,7 +634,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilities.isPathAbsolute(path)) {
-                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), path);
             } else {
                 newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
@@ -658,7 +655,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (CndPathUtilities.isPathAbsolute(path)) {
-                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), path);
             } else {
                 newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
@@ -706,17 +703,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             checkForChangedItems2(folder, item);
         }
-        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
+        MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+        if (viewModel != null) {
+            viewModel.checkForChangedViewItemNodes(folder, item);
+        }
     }
 
     private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(folder, item);
-                }
+            RP.post(() -> {
+                checkForChangedItemsWorker(folder, item);
             });
         } else {
             checkForChangedItemsWorker(folder, item);
@@ -956,17 +952,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             checkForChangedItems2(delta);
         }
-        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
+        MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
+        if (viewModel != null) {
+            viewModel.checkForChangedViewItemNodes(delta);
+        }
     }
 
     private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    checkForChangedItemsWorker(delta);
-                }
+            RP.post(() -> {
+                checkForChangedItemsWorker(delta);
             });
         } else {
             checkForChangedItemsWorker(delta);
@@ -1100,21 +1095,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public boolean save() {
-        return save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
+        return save(NbBundle.getMessage(MakeProjectImpl.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
     }
 
     @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
-            ModalMessageDlg.runLongTask(
-                    WindowManager.getDefault().getMainWindow(),
-                    saveRunnable, null, null,
-                    getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
-                    getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
-        } else {
-            saveRunnable.run();
-        }
+        LongOperation.getLongOperation().executeLongOperation2(saveRunnable, 
+                getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+                getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         return saveRunnable.ret;
     }
     
@@ -1123,7 +1112,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * @param needAdd list of needed extensions of header files.
      */
     public boolean addAdditionalHeaderExtensions(Collection<String> needAdd) {
-        return ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
+        return ((MakeProjectImpl) getProject()).addAdditionalHeaderExtensions(needAdd);
     }
 
     public CndVisibilityQuery getFolderVisibilityQuery() {
@@ -1244,8 +1233,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndUtils.isStandalone() || SwingUtilities.isEventDispatchThread()) {
                 LOGGER.info(text.toString());
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+                CndNotifier.getDefault().notifyError(text.toString());
             }
             return allOk;
         }
@@ -1287,7 +1275,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
             return;
         }
-        MakeProjectHelper helper = ((MakeProject) getProject()).getMakeProjectHelper();
+        MakeProjectHelper helper = ((MakeProject) getProject()).getHelper();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
 
@@ -1416,7 +1404,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (getProject() == null) {
             return;
         }
-        MakeProjectHelper helper = ((MakeProject) getProject()).getMakeProjectHelper();
+        MakeProjectHelper helper = ((MakeProject) getProject()).getHelper();
         Element data = helper.getPrimaryConfigurationData(false);
         Document doc = data.getOwnerDocument();
 
@@ -1492,9 +1480,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void updateExtensionList() {
-        Set<String> h = MakeProject.createExtensionSet();
-        Set<String> c = MakeProject.createExtensionSet();
-        Set<String> cpp = MakeProject.createExtensionSet();
+        Set<String> h = MakeProjectImpl.createExtensionSet();
+        Set<String> c = MakeProjectImpl.createExtensionSet();
+        Set<String> cpp = MakeProjectImpl.createExtensionSet();
         for (Item item : getProjectItems()) {
             String itemName = item.getName();
             String ext = FileUtil.getExtension(itemName);
@@ -1510,7 +1498,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
-        MakeProject makeProject = (MakeProject) getProject();
+        MakeProjectImpl makeProject = (MakeProjectImpl) getProject();
         if (makeProject != null) {
             makeProject.updateExtensions(c, cpp, h);
         }
@@ -1628,9 +1616,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             if (toBeRemoved.size() > 0) {
-                for (String toRemove : toBeRemoved) {
+                toBeRemoved.forEach((toRemove) -> {
                     sourceRoots.remove(toRemove);
-                }
+                });
             }
             if (addPath) {
                 String usePath;
@@ -1699,9 +1687,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
             sourceRoots.clear();
-            for (String l : newList) {
+            newList.forEach((l) -> {
                 addSourceRoot(l);
-            }
+            });
 
             MakeConfiguration active = (MakeConfiguration) getConfs().getActive(); // FIXUP: need better check
             if (!active.isMakefileConfiguration()) {
@@ -1715,13 +1703,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             List<String> toBeAdded = new ArrayList<>();
             for (String s : sourceRoots) {
                 if (!inList(oldList, s)) {
-                    toBeAdded.add(s);
+                toBeAdded.add(s);
                 }
             }
             List<String> toBeRemoved = new ArrayList<>();
             for (String s : oldList) {
                 if (!inList(sourceRoots, s)) {
-                    toBeRemoved.add(s);
+                toBeRemoved.add(s);
                 }
             }
 
@@ -1760,9 +1748,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void checkForChangedTestRoots(List<String> oldList, List<String> newList) {
         synchronized (testRoots) {
             testRoots.clear();
-            for (String l : newList) {
+            newList.forEach((l) -> {
                 addTestRoot(l);
-            }
+            });
 
             List<String> toBeAdded = new ArrayList<>();
             for (String s : testRoots) {
@@ -1821,9 +1809,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getAbsoluteSourceRoots() {
         List<String> copy = new ArrayList<>();
         synchronized (sourceRoots) {
-            for (String sr : sourceRoots) {
+            sourceRoots.forEach((sr) -> {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, sr));
-            }
+            });
         }
         return copy;
     }
@@ -1834,9 +1822,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getAbsoluteTestRoots() {
         List<String> copy = new ArrayList<>();
         synchronized (testRoots) {
-            for (String s : testRoots) {
+            testRoots.forEach((s) -> {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, s));
-            }
+            });
         }
         return copy;
     }
@@ -1917,12 +1905,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         if (attachListeners) {
             final Folder aSrcRoot = srcRoot;
-            RP_LISTENER.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    aSrcRoot.attachListeners(interrupter);
-                }
+            RP_LISTENER.post(() -> {
+                aSrcRoot.attachListeners(interrupter);
             });
         }
 
@@ -2048,7 +2032,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                         try {
                             performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
                             String path = ProjectSupport.toProperPath(baseDirFO, file, project);
-                            item = Item.createInBaseDir(baseDirFO, path);
+                            item = ItemFactory.getDefault().createInBaseDir(baseDirFO, path);
                             if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                                 filesAdded.add(item);
                             }
@@ -2070,12 +2054,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
         if (previousVersion < currentVersion) {
             String txt = getString("UPGRADE_TXT"); //NOI18N
+            String autoMassage = getString("UPGRADE_TXT_AUTO");
             if (CndUtils.isStandalone()) {
                 System.err.print(txt);
-                System.err.println(getString("UPGRADE_TXT_AUTO")); //NOI18N
+                System.err.println(autoMassage); //NOI18N
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                String dialogTitle = getString("UPGRADE_DIALOG_TITLE");
+                ConfirmSupport.ConfirmVersion confirm = ConfirmSupport.getConfirmVersionFactory().createAndWait(dialogTitle, txt, autoMassage);
+                if (confirm == null) {
                     return false;
                 }
             }

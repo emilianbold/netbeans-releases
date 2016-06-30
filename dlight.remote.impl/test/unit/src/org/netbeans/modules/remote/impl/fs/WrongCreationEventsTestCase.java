@@ -112,7 +112,7 @@ public class WrongCreationEventsTestCase extends RemoteFileTestBase {
                     "echo abc > file_2";
 
             ProcessUtils.ExitStatus res1 = ProcessUtils.execute(execEnv, "sh", "-c", creationScript);
-            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.getErrorString(), 0, res1.exitCode);
 
             FileSystemProvider.addRecursiveListener(listener, fs, "/");
             FileObject baseDirFO = getFileObject(baseDir);

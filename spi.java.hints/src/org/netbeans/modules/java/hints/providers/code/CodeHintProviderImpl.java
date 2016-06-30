@@ -180,6 +180,7 @@ public class CodeHintProviderImpl implements HintProvider {
                                               .setCustomizerProvider(createCustomizerProvider(clazz, method, id, metadata))
                                               .addSuppressWarnings(metadata.suppressWarnings())
                                               .addOptions(Options.fromHintOptions(metadata.options()).toArray(new Options[0]))
+                                              .setSourceVersion(metadata.minSourceVersion())
                                               .build();
         return hm;
     }
@@ -396,6 +397,10 @@ public class CodeHintProviderImpl implements HintProvider {
     private static final class EmptyHintMetadataDescription implements Hint {
 
         public String id() {
+            return "";
+        }
+        
+        public String minSourceVersion() {
             return "";
         }
 

@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <folder name="DeploymentPlugins">
             <folder name="WildFly">
                 <file name="Descriptor" url="nbdep.xml"/>
-                
+
                 <file name="Factory.instance">
                     <attr name="urlPattern" stringvalue="^wildfly-deployer:.*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
@@ -57,14 +57,14 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
-                
+
                 <file name="RegistryNodeFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
 
-              
+
                 <file name="J2eePlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.ide.WildflyJ2eePlatformFactory"/>

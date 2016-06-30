@@ -241,6 +241,22 @@ public class ElementNode extends AbstractNode {
             return false;
         }
         
+        public boolean hasSelection(boolean includeSelf) {
+            if (includeSelf && isSelected()) {
+                return true;
+            }
+            List<Description> descs = getSubs();
+            if (descs == null) {
+                return false;
+            }
+            for (Description d : descs) {
+                if (d.hasSelection(true)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         public boolean isSelected() {
             return isSelected;
         }

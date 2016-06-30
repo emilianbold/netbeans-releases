@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +59,7 @@ public class checkout extends AbstractCommandProvider {
     public String[] getSynonyms() {
         return new String[] { "co", "get" };
     }
-    
+
     public Command createCommand(String[] args, int index, GlobalOptions gopt, String workDir) {
         CheckoutCommand command = new CheckoutCommand();
         command.setBuilder(null);

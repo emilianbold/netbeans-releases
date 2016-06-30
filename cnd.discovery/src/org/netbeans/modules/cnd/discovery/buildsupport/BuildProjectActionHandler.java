@@ -67,7 +67,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -83,6 +82,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
     private Collection<OutputStreamHandler> outputHandlers;
+    private BuildTraceSupport.BuildTrace support;
     static final Logger logger = Logger.getLogger(BuildProjectActionHandler.class.getName());
 
     /* package-local */
@@ -96,18 +96,23 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         this.delegate.init(pae, paes, outputHandlers);
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
         this.outputHandlers = outputHandlers;
+        this.support = BuildTraceSupport.supportedPlatforms(execEnv, pae.getConfiguration(), pae.getProject());
     }
 
     @Override
     public void addExecutionListener(ExecutionListener l) {
         delegate.addExecutionListener(l);
-        listeners.add(l);
+        if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
+            listeners.add(l);
+        }
     }
 
     @Override
     public void removeExecutionListener(ExecutionListener l) {
         delegate.removeExecutionListener(l);
-        listeners.remove(l);
+        if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
+            listeners.remove(l);
+        }
     }
 
     @Override
@@ -119,9 +124,22 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     public void cancel() {
         delegate.cancel();
     }
-
+    
     @Override
     public void execute(InputOutput io) {
+        if (pae.getType() == ProjectActionEvent.PredefinedType.PRE_BUILD ||
+            pae.getType() == ProjectActionEvent.PredefinedType.CLEAN ||
+            pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
+            support.modifyEnv(pae.getProfile().getEnvironment());
+        }
+        if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
+            executeBuild(io);
+        } else {
+            delegate.execute(io);
+        }
+    }
+
+    private void executeBuild(InputOutput io) {
         File execLog;
         String remoteExecLog = null;
         try {
@@ -144,51 +162,14 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             } else {
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
             }
-            try {
-                if (BuildTraceHelper.isMac(execEnv)) {
-                    String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
-                    String merge = env.getenv(ldPreliad);
-                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                    if (what.indexOf(':') > 0) {
-                        what = what.substring(0,what.indexOf(':'));
-                    }
-                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                    if (where.indexOf(':') > 0) {
-                        where = where.substring(0,where.indexOf(':'));
-                    }
-                    String lib = where+'/'+what;
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = lib+":"+merge; // NOI18N
-                    } else {
-                        merge = lib;
-                    }
-                    env.putenv(ldPreliad, merge);
-                } else {
-                    String ldPreliad = BuildTraceHelper.getLDPreloadEnvName(execEnv);
-                    String merge = env.getenv(ldPreliad);
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
-                    } else {
-                        merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                    }
-                    env.putenv(ldPreliad, merge);
-
-                    String ldPath = BuildTraceHelper.getLDPathEnvName(execEnv);
-                    merge = env.getenv(ldPath);
-                    if (merge == null || merge.isEmpty()) {
-                        merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get(ldPath);
-                    }
-                    if (merge != null && !merge.isEmpty()) {
-                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
-                    } else {
-                        merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                    }
-                    env.putenv(ldPath, merge); 
+            if (support.getKind() == BuildTraceSupport.BuildTraceKind.Preload) {
+                try {
+                    support.modifyPreloadEnv(env);
+                } catch (CancellationException ex) {
+                    // don't report CancellationException
+                } catch (IOException ex) {
+                    io.getErr().println(ex.getLocalizedMessage());
                 }
-            } catch (CancellationException ex) {
-                // don't report CancellationException
-            } catch (IOException ex) {
-                io.getErr().println(ex.getLocalizedMessage());
             }
         }
         final ExecLogWrapper wrapper = new ExecLogWrapper(execLog, execEnv);
@@ -236,13 +217,6 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
         }
         DiscoveryManagerImpl.projectBuilt(pae.getProject(), map, true);
-    }
-    
-    private static final class BuildTraceHelper extends HelperLibraryUtility {
-        private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
-        private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.${soext}"); // NOI18N
-        }
     }
     
     public static final class ExecLogWrapper {

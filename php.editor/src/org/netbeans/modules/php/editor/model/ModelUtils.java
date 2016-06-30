@@ -260,10 +260,24 @@ public final class ModelUtils {
     }
 
     @NonNull
-    public static Collection<? extends TypeScope> resolveTypeAfterReferenceToken(Model model, TokenSequence<PHPTokenId> tokenSequence, int offset) {
+    public static Collection<? extends TypeScope> resolveTypeAfterReferenceToken(Model model, TokenSequence<PHPTokenId> tokenSequence,
+            int offset, boolean specialVariable) {
         tokenSequence.move(offset);
         Collection<? extends TypeScope> retval = Collections.emptyList();
         VariableScope scp = model.getVariableScope(offset);
+        if (specialVariable) {
+            // #247082
+            // typically 'self', '$this' etc.; it means that we need to find method scope since these
+            // variables can be used in lambda functions directly
+            Scope tmpScope = scp;
+            while (tmpScope != null) {
+                if (tmpScope instanceof MethodScope) {
+                    scp = (VariableScope) tmpScope;
+                    break;
+                }
+                tmpScope = tmpScope.getInScope();
+            }
+        }
         if (scp != null) {
                 String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp);
                 if (semiType != null) {

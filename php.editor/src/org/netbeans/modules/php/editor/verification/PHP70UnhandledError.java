@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
@@ -55,8 +56,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
@@ -90,8 +93,14 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null
                 && appliesTo(fileObject)) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             errors.addAll(checkVisitor.getErrors());
         }
     }
@@ -127,6 +136,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(InfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (InfixExpression.OperatorType.SPACESHIP.equals(node.getOperator())) {
                 createError(node);
             }
@@ -135,6 +147,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(ConditionalExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (ConditionalExpression.OperatorType.COALESCE.equals(node.getOperator())) {
                 createError(node);
             }
@@ -143,6 +158,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkScalarTypes(node.getFormalParameters());
             checkReturnType(node.getReturnType());
             super.visit(node);
@@ -150,6 +168,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(MethodDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkScalarTypes(node.getFunction().getFormalParameters());
             checkReturnType(node.getFunction().getReturnType());
             super.visit(node);
@@ -157,6 +178,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkScalarTypes(node.getFormalParameters());
             checkReturnType(node.getReturnType());
             super.visit(node);
@@ -164,6 +188,9 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(GroupUseStatementPart node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
@@ -171,12 +198,18 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
         // XXX check yield in assignment
         @Override
         public void visit(YieldFromExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             createError(node);
             super.visit(node);
         }
 
         @Override
         public void visit(ClassInstanceCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.isAnonymous()) {
                 createError(node);
             }
@@ -185,19 +218,37 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticConstantAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkDispatcher(node);
             super.visit(node);
         }
 
         @Override
         public void visit(StaticFieldAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkDispatcher(node);
             super.visit(node);
         }
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             checkDispatcher(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(FunctionInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            checkIssetFunction(node);
             super.visit(node);
         }
 
@@ -226,6 +277,23 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
                 return;
             }
             createError(dispatcher);
+        }
+
+        private void checkIssetFunction(FunctionInvocation node) {
+            String functionName = CodeUtils.extractFunctionName(node);
+            if ("isset".equals(functionName)) { // NOI18N
+                List<Expression> parameters = node.getParameters();
+                for (Expression parameter : parameters) {
+                    Expression expression = parameter;
+                    if (expression instanceof StaticConstantAccess) {
+                        StaticConstantAccess sca = (StaticConstantAccess) expression;
+                        expression = sca.getConstant();
+                    }
+                    if (expression instanceof ExpressionArrayAccess) {
+                        createError(parameter);
+                    }
+                }
+            }
         }
 
         private void createError(int startOffset, int endOffset) {

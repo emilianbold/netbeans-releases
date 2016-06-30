@@ -57,16 +57,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -79,6 +77,8 @@ import org.openide.util.RequestProcessor;
 public abstract class ConfigurationDescriptorProvider {
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
     
+    public static final String PROP_CONFIGURATIONS_LOADED = "loadedConfigurations"; // NOI18N
+     
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
@@ -154,12 +154,7 @@ public abstract class ConfigurationDescriptorProvider {
                         reader.read(projectDescriptor, relativeOffset, interrupter);
                         projectDescriptor.waitInitTask();
                         endModifications(delta, true, LOGGER);
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                fireConfigurationDescriptorLoaded();
-                            }
-                        });
+                        RP.post(this::fireConfigurationDescriptorLoaded);
 
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
@@ -492,21 +487,21 @@ public abstract class ConfigurationDescriptorProvider {
             if (interrupter.cancelled()) {
                 return;
             }
-            if (project instanceof MakeProject) {
-                if (((MakeProject)project).isDeleted()) {
+            if (project instanceof MakeProjectImpl) {
+                if (((MakeProjectImpl)project).isDeleted()) {
                     return;
                 }
             }
             // Ask user if descriptor is modified in memory.
+            String title = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"); // NOI18N
             String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
+            String autoConfirm = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto");
             if (CndUtils.isStandalone()) {
                 System.err.print(txt);
-                System.err.println(NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto")); //NOI18N
+                System.err.println(autoConfirm); //NOI18N
             } else {
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt,
-                        NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"), // NOI18N
-                        NotifyDescriptor.YES_NO_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                ConfirmSupport.AutoConfirm confirm = ConfirmSupport.getAutoConfirmFactory().create(title, txt, autoConfirm);
+                if (confirm == null) {
                     return;
                 }
             }
@@ -519,12 +514,8 @@ public abstract class ConfigurationDescriptorProvider {
                     hasTried = false;
                 }
             }
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    getConfigurationDescriptor(true);
-                }
+            RP.post(() -> {
+                getConfigurationDescriptor(true);
             });
         }
     }
@@ -592,9 +583,9 @@ public abstract class ConfigurationDescriptorProvider {
         
         private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
             Set<Item> oldSet = new HashSet<>();
-            for (Map.Entry<String, Delta.Pair> entry : oldState.entrySet()) {
+            oldState.entrySet().forEach((entry) -> {
                 oldSet.add(entry.getValue().item);
-            }
+            });
             Item[] newItems = newDescriptor.getProjectItems();
             for (Item item : newItems) {
                 Delta.Pair pair = oldState.get(item.getAbsolutePath());
@@ -621,9 +612,9 @@ public abstract class ConfigurationDescriptorProvider {
                     }
                 }
             }
-            for (Item item : oldSet) {
+            oldSet.forEach((item) -> {
                 deleted.add(item);
-            }
+            });
             oldState.clear();
         }
         

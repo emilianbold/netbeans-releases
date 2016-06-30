@@ -41,6 +41,12 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+namespace TodoList;
+
+use \TodoList\Dao\TodoDao;
+use \TodoList\Flash\Flash;
+use \TodoList\Util\Utils;
+
 $todo = Utils::getTodoByGetId();
 $todo->setStatus(Utils::getUrlParam('status'));
 if (array_key_exists('comment', $_POST)) {
@@ -51,4 +57,4 @@ $dao = new TodoDao();
 $dao->save($todo);
 Flash::addFlash('TODO status changed successfully.');
 
-Utils::redirect('detail', array('id' => $todo->getId()));
+Utils::redirect('detail', ['id' => $todo->getId()]);

@@ -44,8 +44,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 
-Contributor(s): Andrei Badea
-		Petr Hrebejk
+Contributor(s): Andrei Badea, Petr Hrebejk
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
@@ -283,6 +282,7 @@ Contributor(s): Andrei Badea
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <friend>org.netbeans.modules.cnd.makeproject.ui</friend>
                 <friend>org.netbeans.modules.csl.api</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>

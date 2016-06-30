@@ -13,8 +13,8 @@ CND_BUILDDIR=build
 CND_DLIB_EXT=dll
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows
-OUTPUT_BASENAME=toolswrapperwidows
+OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper
+OUTPUT_BASENAME=wrapper
 PACKAGE_TOP_DIR=toolswrapperwidows/
 
 # Functions

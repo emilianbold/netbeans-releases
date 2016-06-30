@@ -46,9 +46,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +79,8 @@ import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -251,6 +256,8 @@ public class SrcNode extends FilterNode {
     @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class PackageNode extends FilterNode {
 
+        private static final Logger LOGGER = Logger.getLogger(PackageNode.class.getName());
+
         private final PhpProject project;
         private final boolean isTest;
         private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
@@ -315,6 +322,14 @@ public class SrcNode extends FilterNode {
                     && !owner.equals(project)
                     && owner.getProjectDirectory().equals(folder)) {
                 originalIcon = ImageUtilities.icon2Image(ProjectUtils.getInformation(owner).getIcon());
+                try {
+                    final Set<FileObject> clds = new HashSet<>();
+                    Collections.addAll(clds, owner.getProjectDirectory().getChildren());
+                    originalIcon = FileUIUtils.getImageDecorator(owner.getProjectDirectory().getFileSystem())
+                            .annotateIcon(originalIcon, type, clds);
+                } catch (FileStateInvalidException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
             } else {
                 originalIcon = opened ? super.getOpenedIcon(type) : super.getIcon(type);
             }

@@ -225,7 +225,7 @@ public class JspParserImpl implements JspParserAPI {
 
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
         WebAppParseProxy pp = parseSupports.get(wm);
-        if (pp == null || !pp.isValid()) {
+        if (pp == null || !pp.isValid(wm)) {
             pp = createParseProxy(wm);
             parseSupports.put(wm, pp);
         }

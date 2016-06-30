@@ -41,27 +41,49 @@
  */
 package org.netbeans.modules.html.editor.typinghooks;
 
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.test.TestBase;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.test.TestBase2;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 
 /**
  *
  * @author marek
  */
-public class HtmlTypedBreakInterceptorTest extends TestBase{
+public class HtmlTypedBreakInterceptorTest extends TestBase2 {
     
     public HtmlTypedBreakInterceptorTest(String name) {
         super(name);
     }
-
-    public void testPairedTagsReindent() {
-        Typing t = new Typing(new HtmlKit(), "<div>|</div>");
-        t.typeChar('\n');
-        t.assertDocumentTextEquals("<div>\n    |\n</div>");
-        
-        t = new Typing(new HtmlKit(), "<div>\n<div>|</div>\n</div>");
-        t.typeChar('\n');
-        t.assertDocumentTextEquals("<div>\n    <div>\n        |\n    </div>\n</div>");
-    }
     
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        HtmlTypedTextInterceptor.adjust_quote_type_after_eq = false;
+
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
+        AbstractIndenter.inUnitTestRun = true;
+
+        CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory, CssTokenId.language());
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
+    }
+
+    public void testPairedTagsReindent() throws Exception {
+        insertBreak("<div>^</div>", "<div>\n    ^\n</div>");
+        insertBreak("<div>\n<div>^</div>\n</div>", "<div>\n    <div>\n        ^\n    </div>\n</div>");
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
 }

@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.NamedOption;
 
 /**
  *

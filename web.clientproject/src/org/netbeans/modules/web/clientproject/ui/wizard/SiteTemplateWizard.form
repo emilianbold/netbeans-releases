@@ -60,14 +60,14 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="onlineTemplateScrollPane" min="-2" pref="67" max="-2" attributes="0"/>
+              <Component id="onlineTemplateScrollPane" pref="67" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="onlineTemplateDescriptionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="clearCacheLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="76" max="-2" attributes="0"/>
+              <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="50" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -156,6 +156,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTextPane" name="onlineTemplateDescriptionTextPane">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

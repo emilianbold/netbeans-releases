@@ -118,6 +118,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
+import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -558,7 +559,11 @@ public class SourceUtils {
                         for (String candidate : (List<String>)fnames) {
                             FileObject match = findMatchingChild(candidate, folders, caseSensitive);
                             if (match != null) {
-                                return match;
+                                FileObject ownerRoot = sourcePath.entries().isEmpty() ? root : sourcePath.findOwnerRoot(match);
+                                FQN2Files fQN2Files = ownerRoot != null ? FQN2Files.forRoot(ownerRoot.toURL()) : null;
+                                if (fQN2Files == null || !fQN2Files.check(signature[0], match.toURL())) {
+                                    return match;
+                                }
                             }
                         }
                     }
@@ -1059,20 +1064,16 @@ public class SourceUtils {
      * class names. 
      */
     private static Object getSourceFileNames (String classFileName) {
-        int max = classFileName.length() - 1;
-        int index = classFileName.indexOf('$');
+        int index = classFileName.lastIndexOf('$');
         if (index == -1) {
             return classFileName;
         }
         List<String> ll = new ArrayList<>(3);
-        do {
-            ll.add(classFileName.substring(0, index));
-            if (index >= max) {
-                break;
-            }
-            index = classFileName.indexOf('$', index + 1);
-        } while (index >= 0);
         ll.add(classFileName);
+        while (index >= 0) {
+            ll.add(classFileName.substring(0, index));
+            index = classFileName.lastIndexOf('$', index - 1);
+        }
         return ll;
     }
         
@@ -1180,14 +1181,6 @@ public class SourceUtils {
         
         while(path != null) {
             switch(path.getLeaf().getKind()) {
-                case BLOCK:
-                    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
-                        break;
-                case ANNOTATION_TYPE:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                    return refs;
                 case VARIABLE:
                     el = trees.getElement(path);
                     if (el != null) {
@@ -1206,7 +1199,7 @@ public class SourceUtils {
                             }
                         }
                     }
-                    return refs;
+                    break;
                 case ENHANCED_FOR_LOOP:
                     EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
                     if (sourcePositions.getEndPosition(path.getCompilationUnit(), efl.getExpression()) >= pos) {

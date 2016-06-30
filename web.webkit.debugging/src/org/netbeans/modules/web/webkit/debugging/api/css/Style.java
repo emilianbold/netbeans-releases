@@ -54,7 +54,7 @@ import org.json.simple.JSONObject;
  */
 public class Style {
     /** Identifier of the style. */
-    private StyleId id;
+    private final StyleId id;
     /** Properties in the style. */
     private final List<Property> properties;
     /** Style declaration text (if available). */
@@ -79,6 +79,8 @@ public class Style {
                 id = new StyleId((JSONObject)style.get("styleId")); // NOI18N
             } else if (style.containsKey("styleSheetId")) { // NOI18N
                 id = new StyleId((String)style.get("styleSheetId")); // NOI18N
+            } else {
+                id = null;
             }
         }
         JSONArray cssProperties = (JSONArray)style.get("cssProperties"); // NOI18N

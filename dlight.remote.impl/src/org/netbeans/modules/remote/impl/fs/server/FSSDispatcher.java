@@ -495,7 +495,7 @@ import org.openide.util.RequestProcessor;
     private static boolean isFreeBSD(ExecutionEnvironment execEnv) {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
         if (res.isOK()) {
-            if (res.output.equals("FreeBSD")) { // NOI18N
+            if (res.getOutputString().equals("FreeBSD")) { // NOI18N
                 return true;
             }
         }
@@ -576,7 +576,7 @@ import org.openide.util.RequestProcessor;
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N
-            npb.call().waitFor();
+            ProcessUtils.execute(npb);
             Future<CommonTasksSupport.UploadStatus> copyTask;
             copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
             CommonTasksSupport.UploadStatus uploadStatus = copyTask.get();
@@ -903,7 +903,7 @@ import org.openide.util.RequestProcessor;
                 if (hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
                     ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid); // NOI18N
                     if (res.isOK()) {
-                        System.err.println(res.output);
+                        System.err.println(res.getOutputString());
                     }
                 }
             }

@@ -46,14 +46,9 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.InvocationException;
-import com.sun.jdi.Method;
-import com.sun.jdi.ObjectReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
@@ -126,8 +121,6 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                              InternalExceptionWrapper | InvalidTypeException |
                              ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
                         Exceptions.printStackTrace(ex);
-                    //} catch (IncompatibleThreadStateException | InvocationException ex) {
-                    //    Exceptions.printStackTrace(ex);
                     }
                 } else {
                     // When the service is created, perform step into...
@@ -158,8 +151,6 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                     LOG.fine("StepIntoScriptHandler: isSteppingInto set to false.");
                 } catch (InvalidTypeException | ClassNotLoadedException ex) {
                     Exceptions.printStackTrace(ex);
-                //} catch (IncompatibleThreadStateException | InvocationException ex) {
-                //    Exceptions.printStackTrace(ex);
                 }
             } else {
                 // Cancel step into when the service is created

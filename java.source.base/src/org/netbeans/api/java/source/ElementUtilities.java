@@ -71,9 +71,12 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.DocEnv;
+import java.util.ArrayDeque;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,7 +84,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -108,6 +113,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -317,6 +323,119 @@ public final class ElementUtilities {
             }
         }
         return members;
+    }
+    
+    /**
+     * Finds symbols which satisfy the acceptor visible in the passed scope. The method returns a Map keyed by the
+     * found Elements. Each Element is mapped to the closest Scope which introduced the Element. For example, a field declared
+     * by an outer class will map to that outer class' scope. An accessible field inherited from outer class' superclass
+     * will <b>also</b> map to the outer class' scope. The caller can then determine, based on {@link Element#getEnclosingElement()} and
+     * the mapped Scope whether the symbol is directly declared, or inherited. Non-member symbols (variables, parameters, try resources, ...) 
+     * map to Scope of their defining Method.
+     * <p/>
+     * If an Element from outer Scope is hidden by a similar Element
+     * in inner scope, only the Element visible to the passed Scope is returned. For example, if both the starting (inner) class and its outer class
+     * define method m(), only InnerClass.m() will be returned.
+     * <p/>
+     * Note that {@link Scope#getEnclosingMethod()} returns non-null even for class scopes of local or anonymous classes; check both {@link Scope#getEnclosingClass()}
+     * and {@link Scope#getEnclosingMethod()} and their relationship to get the appropriate Element associated with the Scope.
+     * 
+     * @param scope the initial search scope
+     * @param acceptor the element filter.
+     * @return Mapping of visible and accessible Elements to their defining {@link Scope}s (which introduced them).
+     * @see Scope
+     * @since 2.16
+     */
+    public @NonNull Map<? extends Element, Scope> findElementsAndOrigins(@NonNull Scope scope, ElementAcceptor acceptor) {
+        Parameters.notNull("scope", scope); // NOI18N
+        final Map<Element, Scope> result = new HashMap<>();
+
+        if (acceptor == null) {
+            acceptor = ALL_ACCEPTOR;
+        }
+        Map<String, List<Element>> members = null;
+        Elements elements = JavacElements.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
+        TypeElement cls;
+        Deque<Scope>  outerScopes = new ArrayDeque();
+        Deque<Map>  visibleEls = new ArrayDeque();
+        Element current = null;
+        
+        while (scope != null) {
+            cls = scope.getEnclosingClass();
+            Element e = null;
+            if (cls != null) {
+                ExecutableElement ee = scope.getEnclosingMethod();
+                if (ee != null && ee.getEnclosingElement() != cls) {
+                    e = ee;
+                } else {
+                    e = cls;
+                }
+            }
+            if (e != current) {
+                // push at the scope entry
+                members = new HashMap<>();
+                outerScopes.push(scope);
+                visibleEls.push(members);
+                current = e;
+            }
+            if (cls != null) {
+                for (Element local : scope.getLocalElements()) {
+                    if (acceptor == null || acceptor.accept(local, null)) {
+                        addIfNotHidden(local, members, local.getSimpleName().toString(), elements, types);
+                    }
+                }
+                TypeMirror type = cls.asType();
+                for (Element member : elements.getAllMembers(cls)) {
+                    if (acceptor == null || acceptor.accept(member, type)) {
+                        addIfNotHidden(member, members, member.getSimpleName().toString(), elements, types);
+                    }
+                }
+            } else {
+                for (Element local : scope.getLocalElements()) {
+                    if (!local.getKind().isClass() && !local.getKind().isInterface() &&
+                        (acceptor == null || local.getEnclosingElement() != null && acceptor.accept(local, local.getEnclosingElement().asType()))) {
+                        addIfNotHidden(local, members, local.getSimpleName().toString(), elements, types);
+                    }
+                }
+            }
+            scope = scope.getEnclosingScope();
+        }
+        
+        while (!outerScopes.isEmpty()) {
+            Scope x = outerScopes.pop();
+            Collection<List<Element>> vals = (Collection<List<Element>>)visibleEls.pop().values();
+            for (List<Element> col : vals) {
+                for (Element e : col) {
+                    result.put(e, x);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static final ElementAcceptor ALL_ACCEPTOR = new ElementAcceptor() {
+        @Override
+        public boolean accept(Element e, TypeMirror type) {
+            return true;
+        }
+    };
+    
+    private void addIfNotHidden(Element local, Map<String, List<Element>> members, String name, Elements elements, Types types) {
+        List<Element> namedMembers = members.get(name);
+        if (namedMembers != null) {
+            // PENDING: isHidden will not report variables, which are effectively hidden by anonymous or local class' variables.
+            // there is no way how to denote such hidden local variable/paremeter from the inner class, so such vars should
+            // not be reported.
+            if (isHidden(local, namedMembers, elements, types)) {
+                return;
+            }
+        } else {
+            namedMembers = new ArrayList<>();
+            members.put(name, namedMembers);
+        }
+        namedMembers.add(local);
     }
     
     /**Return members declared in the given scope.
@@ -565,14 +684,35 @@ public final class ElementUtilities {
     }
     
     /**Find all methods in given type and its supertypes, which are not implemented.
+     * Will not return default methods implemented directly in interfaces in impl type closure.
      * 
      * @param type to inspect
      * @return list of all unimplemented methods
      * 
      * @since 0.20
+     * @since 2.15 does not return default methods
      */
     public List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl) {
-        return findUnimplementedMethods(impl, impl);
+        return findUnimplementedMethods(impl, impl, false);
+    }
+    
+    /**
+     * Finds all unimplemented methods in the given type and supertypes, but possibly include
+     * also interface default methods.
+     * <p/>
+     * If the platform configured for the type is older than JDK8, the method is equivalent
+     * to {@link #findUnimplementedMethods(javax.lang.model.element.TypeElement)}. If `includeDefaults'
+     * is {@code true}, returns also default methods as if the methods were required to be
+     * reimplemented by the final class.
+     * 
+     * @param impl the implementation type
+     * @param includeDefaults if true, will also return interface default methods, which
+     * are not overriden in supertypes 
+     * @return unimplemented (and/or default) methods.
+     * @since 2.15
+     */
+    public List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, boolean includeDefaults) {
+        return findUnimplementedMethods(impl, impl, includeDefaults);
     }
 
     /**Find all methods in given type and its supertypes, which are overridable.
@@ -588,13 +728,25 @@ public final class ElementUtilities {
         if (!type.getModifiers().contains(Modifier.ABSTRACT)) {
             notOverridable.add(Modifier.ABSTRACT);
         }
+        DeclaredType dt = (DeclaredType)type.asType();
+        Types types = JavacTypes.instance(ctx);
+        Set<String> typeStrings = new HashSet<>();
         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(type))) {
+            
+            TypeMirror methodType = types.erasure(types.asMemberOf(dt, ee));
+            String methodTypeString = ee.getSimpleName().toString() + methodType.toString();
+            if (typeStrings.contains(methodTypeString)) {
+                continue;
+            }
             Set<Modifier> set = EnumSet.copyOf(notOverridable);                
             set.removeAll(ee.getModifiers());                
             if (set.size() == notOverridable.size()
                     && !overridesPackagePrivateOutsidePackage(ee, type) //do not offer package private methods in case they're from different package
                     && !isOverridden(ee, type)) {
                 overridable.add(ee);
+                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                    typeStrings.add(methodTypeString);
+                }
             }
         }
         Collections.reverse(overridable);
@@ -791,24 +943,47 @@ public final class ElementUtilities {
     // private implementation --------------------------------------------------
 
     private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
-
-    private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element) {
+    
+    private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element, boolean includeDefaults) {
         List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
         Types types = JavacTypes.instance(ctx);
         com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
         if (element.getKind().isInterface() || element.getModifiers().contains(Modifier.ABSTRACT)) {
             for (Element e : element.getEnclosedElements()) {
-                if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    ExecutableElement ee = (ExecutableElement)e;
-                    Element eeImpl = getImplementationOf(ee, impl);
-                    if ((eeImpl == null || (eeImpl == ee && impl != element)) && implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null)
+                if (e.getKind() != ElementKind.METHOD) {
+                    continue;
+                }
+                if (element.getKind().isInterface()) {
+                    // as of JDK9 interafce can contain static methods.
+                    if (e.getModifiers().contains(Modifier.STATIC)) {
+                        continue;
+                        /*
+                    } else if (e.getModifiers().contains(Modifier.DEFAULT) && !includeDefaults) {
+                        continue;
+                        */
+                    } 
+                } else if (!e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    continue;
+                }
+                ExecutableElement ee = (ExecutableElement)e;
+                ExecutableElement eeImpl = (ExecutableElement)getImplementationOf(ee, impl);
+                
+                if (eeImpl == null) {
+                    if (implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null) {
                         undef.add(ee);
+                    }
+                } else if (impl != element && implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null) {
+                    if (eeImpl == ee) {
+                        undef.add(ee);
+                    } else if (includeDefaults && eeImpl.getModifiers().contains(Modifier.DEFAULT)) {
+                        undef.add((ExecutableElement)eeImpl);
+                    }
                 }
             }
         }
         for (TypeMirror t : types.directSupertypes(element.asType())) {
-            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
+            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement(), includeDefaults)) {
                 //check if "the same" method has already been added:
                 boolean exists = false;
                 ExecutableType eeType = (ExecutableType)types.asMemberOf(implType, ee);
@@ -818,6 +993,7 @@ public final class ElementUtilities {
                         if (types.isSubsignature(existingType, eeType)) {
                             TypeMirror existingReturnType = existingType.getReturnType();
                             TypeMirror eeReturnType = eeType.getReturnType();
+                            MethodSymbol msExisting = ((MethodSymbol)existing);
                             if (!types.isSubtype(existingReturnType, eeReturnType)) {
                                 if (types.isSubtype(eeReturnType, existingReturnType)) {
                                     undef.remove(existing);
@@ -827,12 +1003,30 @@ public final class ElementUtilities {
                                     DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
                                     if (subType != null) {
                                         undef.remove(existing);
-                                        MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
+                                        MethodSymbol ms = msExisting.clone((Symbol)impl);
                                         Type mt = implTypes.createMethodTypeWithReturn(ms.type, (Type)subType);
                                         ms.type = mt;
                                         undef.add(ms);
                                     }
                                 }
+                            } else if (!msExisting.overrides((MethodSymbol)ee, (TypeSymbol)impl, implTypes, true)) {
+                                // newly added does not override the old one, BUT 
+                                // 1/ the old one might have been defined by an abstract class. In that case, only the abstract class' member should prevail
+                                // 2/ we are in an abstract class AND 
+                                //      both existing and ee are interface methods AND
+                                //      a/ neither of them is default -> select one of them, discard the other
+                                if (existing.getEnclosingElement().getKind().isClass()) {
+                                    exists = true;
+                                } else if (element.getKind().isClass()) {
+                                    // existing is now known to be an interface
+                                    if (ee.getEnclosingElement().getKind().isInterface()) {
+                                        if (!existing.getModifiers().contains(Modifier.DEFAULT) &&
+                                            !ee.getModifiers().contains(Modifier.DEFAULT)) {
+                                            exists = true;
+                                        }
+                                    }
+                                }
+                                break;
                             }
                             exists = true;
                             break;
@@ -841,6 +1035,15 @@ public final class ElementUtilities {
                 }
                 if (!exists) {
                     undef.add(ee);
+                }
+            }
+        }
+        // if not defaults, prune the defaults out:
+        if (!includeDefaults && element.getKind() == ElementKind.INTERFACE) {
+            for (Iterator<ExecutableElement> it = undef.iterator(); it.hasNext();) {
+                ExecutableElement ee = it.next();
+                if (ee.getModifiers().contains(Modifier.DEFAULT)) {
+                    it.remove();
                 }
             }
         }

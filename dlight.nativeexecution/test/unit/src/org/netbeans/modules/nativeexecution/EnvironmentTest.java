@@ -183,17 +183,15 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 npb.useExternalTerminal(terminal);
             }
 
-            Process p = npb.call();
-            final int rc = p.waitFor();
-            if (rc != 0) {
-                List<String> stderr = ProcessUtils.readProcessError(p);
-                fail("Failed to execute " + shell + " -c " + cmd + " rc=" + rc + " stderr=" + stderr);
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+            if (!res.isOK()) {
+                fail("Failed to execute " + shell + " -c " + cmd + " rc=" + res.exitCode + " stderr=" + res.getErrorString());
             }
 
             List<String> result;
 
             if (terminal == null) {
-                result = ProcessUtils.readProcessOutput(p);
+                result = res.getOutputLines();
             } else {
                 // read result from tmpFile
 
@@ -208,7 +206,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 } else {
                     ExitStatus status = ProcessUtils.execute(execEnv, "cat", tmpFile);
                     assertTrue(status.isOK());
-                    result = Arrays.asList(status.output.split("\n"));
+                    result = Arrays.asList(status.getOutputString().split("\n"));
                 }
             }
 

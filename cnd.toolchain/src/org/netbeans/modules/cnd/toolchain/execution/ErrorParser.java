@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -148,7 +148,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
     }
 
     private FileObject _resolveRelativePath(FileObject relativeDir, String relativePath) {
-        if (ToolUtils.isPathAbsolute(relativePath)) {
+        if (CndPathUtilities.isAbsolute(relativePath)) {
             // NOI18N
             if (execEnv.isRemote() || Utilities.isWindows()) {
                 // See IZ 106841 for details.

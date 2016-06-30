@@ -1,6 +1,6 @@
 /**
  * 
- * @param {type} param^
+ * @type type^
  */
 $(window).resize(function() {
     if(jQuery.browser.msie){

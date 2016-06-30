@@ -96,7 +96,12 @@ public class NoType implements CsmType {
     public boolean isConst() {
         return false;
     }
-    
+
+    @Override
+    public boolean isVolatile() {
+        return false;
+    }
+
     @Override
     public CharSequence getText() {
         return "";

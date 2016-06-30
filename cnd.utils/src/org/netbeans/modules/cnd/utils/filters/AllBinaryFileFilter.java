@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
-import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;

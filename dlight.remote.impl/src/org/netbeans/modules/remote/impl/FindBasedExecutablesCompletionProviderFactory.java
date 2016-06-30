@@ -43,9 +43,7 @@
 package org.netbeans.modules.remote.impl;
 
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
-import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;
-import org.netbeans.modules.remote.util.ExecSupport;
-import org.netbeans.modules.remote.util.ExecSupport.Status;
+import org.netbeans.modules.remote.ui.spi.AutocompletionProviderFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +54,7 @@ import java.util.concurrent.FutureTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -140,8 +139,8 @@ public class FindBasedExecutablesCompletionProviderFactory implements Autocomple
                 try {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                     npb.setExecutable("/bin/sh").setArguments("-c", "find `echo $PATH|tr : ' '` -type f -perm -+x 2>/dev/null"); // NOI18N
-                    Status rc = ExecSupport.call(npb);
-                    for (String s : rc.output) {
+                    ProcessUtils.ExitStatus rc = ProcessUtils.execute(npb);
+                    for (String s : rc.getOutputLines()) {
                         int idx = s.lastIndexOf('/') + 1;
                         if (idx > 0) {
                             result.add(s.substring(idx));

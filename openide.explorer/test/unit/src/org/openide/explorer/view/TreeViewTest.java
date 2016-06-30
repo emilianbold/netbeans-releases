@@ -103,6 +103,11 @@ public final class TreeViewTest extends NbTestCase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        testWindow = null;
+    }
+    
+    @Override
     protected void runTest() throws Throwable {
         VisualizerNode.LOG.setLevel(Level.FINE);
         log = Log.enable(VisualizerNode.LOG.getName(), Level.FINE);
@@ -118,7 +123,7 @@ public final class TreeViewTest extends NbTestCase {
      * <code>TreeView.TreePropertyListener.treeExpanded(...)</code>.
      */
     @RandomlyFails // NB-Core-Build #8278: Check the view has scrolled
-    public void testAutoscrollOnOff() throws InterruptedException {
+    public void testAutoscrollOnOff() throws InterruptedException, InvocationTargetException {
         assert !EventQueue.isDispatchThread();
         
         class Detector implements Runnable {
@@ -156,7 +161,12 @@ public final class TreeViewTest extends NbTestCase {
                 }
             }
         }
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.showWindow();
         EventQueue.invokeLater(new Tester(true, 1));
         Thread.sleep(2000);      //wait for update of the screen
@@ -209,7 +219,12 @@ public final class TreeViewTest extends NbTestCase {
         final OutOfAWT ch = new OutOfAWT(false, "A", "B", "C");
         AbstractNode an = new AbstractNode(ch);
         root.getChildren().add(new Node[] { an });
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);
 
@@ -504,7 +519,12 @@ public final class TreeViewTest extends NbTestCase {
         node.setName(getName());
         AbstractNode root = node;
 
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);
         assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
@@ -533,16 +553,16 @@ public final class TreeViewTest extends NbTestCase {
     }
 
     @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9880/testReport/
-    public void testNodesGCedAfterSetChildrenLazy() {
+    public void testNodesGCedAfterSetChildrenLazy() throws Exception {
         doTestNodesGCedAfterSetChildren(true);
     }
 
     @RandomlyFails // NB-Core-Build #9918: Unstable, NB-Core-Build #9919 on the same sources passed
-    public void testNodesGCedAfterSetChildrenEager() {
+    public void testNodesGCedAfterSetChildrenEager() throws Exception {
         doTestNodesGCedAfterSetChildren(false);
     }
 
-    void doTestNodesGCedAfterSetChildren(boolean lazy) {
+    void doTestNodesGCedAfterSetChildren(boolean lazy) throws Exception {
         Keys keys = new Keys(lazy, "A", "B", "C");
         class MyNode extends AbstractNode {
 
@@ -555,7 +575,12 @@ public final class TreeViewTest extends NbTestCase {
         }
         MyNode root = new MyNode(keys);
         root.setName(getName());
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);
         testWindow.getExplorerManager().setExploredContext(root);
@@ -590,7 +615,12 @@ public final class TreeViewTest extends NbTestCase {
         node.setName(getName());
         final AbstractNode root = node;
 
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.getExplorerManager().setRootContext(root);
         testWindow.showWindow();
 
@@ -646,7 +676,12 @@ public final class TreeViewTest extends NbTestCase {
         node.setName(getName());
         final AbstractNode root = node;
 
-        testWindow = new ExplorerWindow();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                testWindow = new ExplorerWindow();
+            }
+        });
         testWindow.getExplorerManager().setRootContext(root);
         testWindow.showWindow();
         testWindow.getExplorerManager().setRootContext(root);

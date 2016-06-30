@@ -43,7 +43,7 @@
 package org.netbeans.modules.remote.spi;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.netbeans.modules.remote.api.ConnectionNotifier;
 
 /**
  *

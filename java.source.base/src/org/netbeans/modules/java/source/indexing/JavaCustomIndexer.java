@@ -48,6 +48,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -66,6 +68,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -73,10 +76,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
+import javax.management.MBeanServer;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
@@ -139,7 +144,9 @@ import org.openide.util.Lookup;
 public class JavaCustomIndexer extends CustomIndexer {
 
             static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
+    private static final String DUMP_ON_LOW_MEM = System.getProperty(JavaCustomIndexer.class.getName() + ".dump.on.low.mem");    //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
+    private static final String APT_SOURCE_OUTPUT = "apSrcOut"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
@@ -177,9 +184,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             if (isAptBuildGeneratedFolder(context.getRootURI(),sourcePath)) {
                 txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
+                JavaIndex.setAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, Boolean.TRUE.toString());
                 JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
+            JavaIndex.setAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, null);
             if (!files.iterator().hasNext() && !context.isAllFilesIndexing()) {
                 boolean success = false;
                 try {
@@ -272,6 +281,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             if (compileResult == null || context.isCancelled()) {
                                 return; // cancelled, IDE is sutting down
                             }
+                            if (compileResult.lowMemory) {
+                                w.freeMemory(false);
+                            }
                             moduleName = moduleName(moduleName, compileResult);
                             if (compileResult.success) {
                                 break;
@@ -296,7 +308,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, moduleName);
                     }
                     finished = compileResult.success;
-                    
+
                     if (compileResult.lowMemory) {
                         final String rootName = FileUtil.getFileDisplayName(context.getRoot());
                         JavaIndex.LOG.log(
@@ -307,8 +319,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (uip != null) {
                             uip.notifyLowMemory(rootName);
                         }
+                        if (DUMP_ON_LOW_MEM != null) {
+                            final File heapDump = dumpHeap(DUMP_ON_LOW_MEM);
+                            if (heapDump != null) {
+                                JavaIndex.LOG.log(
+                                    Level.INFO,
+                                    "Heap dump generated into: {0}.",     //NOI18N
+                                    heapDump.getAbsolutePath());
+                            } else {
+                                JavaIndex.LOG.log(
+                                    Level.WARNING,
+                                    "Cannot generate heap dump.");     //NOI18N
+                            }
+                        }
                     }
-                    
                 } finally {
                     try {
                         javaContext.finish();
@@ -426,61 +450,57 @@ public class JavaCustomIndexer extends CustomIndexer {
         return fo != null ? new CompileTuple(FileObjects.sourceFileObject(fo, context.getRoot()), indexable) : null;
     }
 
-    private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
+    private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) throws IOException {
         final TransactionContext txCtx =  TransactionContext.get();
         assert txCtx != null;
         final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
         assert fmTx != null;
         final ClassIndexEventsTransaction ciTx = txCtx.get(ClassIndexEventsTransaction.class);
         assert ciTx != null;
+        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
         try {
-            final JavaParsingContext javaContext = new JavaParsingContext(context, true);
-            try {
-                if (javaContext.getClassIndexImpl() == null)
-                    return; //IDE is exiting, indeces are already closed.
-                if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
-                    return; //No java no need to continue
-                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                final Set<File> removedFiles = new HashSet<File> ();
-                final boolean[] isModuleInfo = new boolean[1];
-                ElementHandle<ModuleElement> module = null;
-                for (Indexable i : files) {
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
-                    if (isModuleInfo[0]) {
-                        final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
-                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
-                        module = moduleName == null ?
-                                null :
-                                ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
-                    }
-                    ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                    javaContext.getCheckSums().remove(i.getURL());
+            if (javaContext.getClassIndexImpl() == null)
+                return; //IDE is exiting, indeces are already closed.
+            if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
+                return; //No java no need to continue
+            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+            final Set<File> removedFiles = new HashSet<File> ();
+            final boolean[] isModuleInfo = new boolean[1];
+            ElementHandle<ModuleElement> module = null;
+            for (Indexable i : files) {
+                clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
+                if (isModuleInfo[0]) {
+                    final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                    JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                    module = moduleName == null ?
+                            null :
+                            ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
                 }
-                for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
-                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                }
-                try {
-                    javaContext.store();
-                } catch (JavaParsingContext.BrokenIndexException bi) {
-                    JavaIndex.LOG.log(
-                        Level.WARNING,
-                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
-                        new Object[] {
-                            context.getRootURI(),
-                            bi.getMessage()
-                        });
-                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
-                    assert piTx != null;
-                    piTx.setBroken();
-                }
-                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                ciTx.removedTypes(context.getRootURI(), module, removedTypes);
-            } finally {
-                javaContext.finish();
+                ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
+                javaContext.getCheckSums().remove(i.getURL());
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+            }
+            try {
+                javaContext.store();
+            } catch (JavaParsingContext.BrokenIndexException bi) {
+                JavaIndex.LOG.log(
+                    Level.WARNING,
+                    "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                    new Object[] {
+                        context.getRootURI(),
+                        bi.getMessage()
+                    });
+                final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                assert piTx != null;
+                piTx.setBroken();
+            }
+            ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
+            ciTx.removedTypes(context.getRootURI(), module, removedTypes);
+        } finally {
+            javaContext.finish();
         }
     }
 
@@ -555,7 +575,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
+                if (!javaContext.getFQNs().check(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[][] patterns = new String[][]{
@@ -584,6 +604,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     if (children != null) {
                         for (File f : children) {
                             String className = FileObjects.getBinaryName(f, classFolder);
+                            javaContext.getFQNs().remove(className, relURLPair.second());
                             toDelete.add(Pair.<String, String>of(className, null));
                             removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                             removedFiles.add(f);
@@ -1045,7 +1066,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
-            clearFiles(context, deleted);
+            try {
+                if(!Boolean.parseBoolean(JavaIndex.getAttribute(context.getRootURI(), APT_SOURCE_OUTPUT, null))) {
+                    clearFiles(context, deleted);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
 
         @Override
@@ -1221,6 +1248,46 @@ public class JavaCustomIndexer extends CustomIndexer {
             "compiler.warn.diamond.redundant.args.1",
             "compiler.note.potential.lambda.found"));
 
+    @CheckForNull
+    private static File dumpHeap(@NonNull final String path) {
+        try {
+            if (heapDumper == null) {
+                final Class<?> clz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");   //NOI18N
+                final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+                final Object bean = ManagementFactory.newPlatformMXBeanProxy(
+                    server,
+                    "com.sun.management:type=HotSpotDiagnostic",    //NOI18N
+                    clz);
+                final Method m = clz.getDeclaredMethod("dumpHeap", String.class, Boolean.TYPE);
+                heapDumper = Pair.of(bean,m);
+            }
+            final File folder = new File(path);
+            final File[] children = folder.listFiles();
+            if (children != null) {
+                final String namePattern = "heapdump_"; //NOI18N
+                final Set<String> names = Arrays.stream(children)
+                        .map((f) -> f.getName())
+                        .filter((n) -> n.startsWith(namePattern))
+                        .collect(Collectors.toSet());
+                int index = 1;
+                while (true) {
+                    if (!names.contains(namePattern + index)) {
+                        break;
+                    }
+                    index++;
+                }
+                final File file = new File(folder, namePattern + index);
+                heapDumper.second().invoke(heapDumper.first(), file.getAbsolutePath(), true);
+                return file;
+            }
+        } catch (Exception e) {
+            //pass
+        }
+        return null;
+    }
+
+    private static Pair<Object,Method> heapDumper;
+
     private static class FilterOutJDK7AndLaterWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
         @Override public int compareTo(Diagnostic<? extends JavaFileObject> o) {
             return JDK7AndLaterWarnings.contains(o.getCode()) ? 0 : -1;
@@ -1320,7 +1387,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             if (root == null) {
                 return vote;
             }
-            if (APTUtils.get(root).verifyAttributes(ctx.getRoot(), false)) {
+            if (Optional.ofNullable(APTUtils.get(root))
+                    .map((apt) -> apt.verifyAttributes(ctx.getRoot(), false))
+                    .orElse(Boolean.FALSE)) {
                 vote = false;
             }
             if (ensureSourcePath(root)) {

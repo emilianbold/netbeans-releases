@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -185,7 +186,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
         public String addAction() {
             JFileChooser fileChooser;
             if (RemoteFileUtil.isRemote(fileSystem)) {
-                fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+                fileChooser = RemoteFileChooserUtil.createFileChooser(fileSystem,
                         getString("ADD_DIRECTORY_DIALOG_TITLE"), // NOI18N
                         getString("ADD_DIRECTORY_BUTTON_TXT"), // NOI18N
                         FileChooser.DIRECTORIES_ONLY,
@@ -193,7 +194,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
                         fullPath(baseDir, path),
                         true);
             } else {
-                // TODO: remove if and leave RemoteFileUtil.createFileChooser
+                // TODO: remove if and leave RemoteFileChooserUtil.createFileChooser
                 // I'm just not sure there won't be side effects, 
                 // so I leave FileChooser for local  
                 fileChooser = new FileChooser(

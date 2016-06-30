@@ -65,7 +65,7 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
 
     @Override
     public boolean canHandle(Type type, Lookup context, Configuration configuration) {
-        if (type == PredefinedType.BUILD) {
+        if (type == PredefinedType.PRE_BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD) {
             if (configuration instanceof MakeConfiguration) {
                 Node node = context.lookup(Node.class);
                 if (node != null) {
@@ -78,9 +78,8 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
                 if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                     if (BuildTraceSupport.useBuildTrace(conf)) {
-                        if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
-                            return true;
-                        }
+                        BuildTraceSupport.BuildTrace support = BuildTraceSupport.supportedPlatforms(executionEnvironment, conf, null);
+                        return support != null;
                     }
                 }
             }

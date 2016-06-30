@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -86,7 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectOptionsFormat;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -439,9 +440,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
             List<PackagerInfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
-            for (PackagerInfoElement elem : toBeRemove) {
+            toBeRemove.forEach((elem) -> {
                 currentPackagingConfiguration.getInfo().getValue().remove(elem);
-            }
+            });
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration) currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -625,7 +626,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
+                val = val.replace("$(MAKE)", MakeArtifact.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(val);
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
@@ -633,7 +634,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
+                val = val.replace("$(MAKE)", MakeArtifact.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
         } else if (element.equals(PRE_BUILD_WORKING_DIR_ELEMENT)) {
@@ -783,13 +784,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 93 && currentList != null && !currentList.isEmpty() && currentCCCCompilerConfiguration != null) {
                 List<String> files = currentCCCCompilerConfiguration.getIncludeFiles().getValue();
                 for(String path : currentList) {
-                   if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
-                       files.add(path);
-                   }
+                    if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
+                        files.add(path);
+                    }
                 }
-                for(String path : files) {
+                files.forEach((path) -> {
                     currentList.remove(path);
-                }
+                });
             }
             currentList = null;
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
@@ -883,11 +884,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
-                List<String> list = CppUtils.tokenizeString(currentText);
+                List<String> list = MakeProjectOptionsFormat.tokenizeString(currentText);
                 List<String> res = new ArrayList<>();
-                for (String val : list) {
+                list.forEach((val) -> {
                     res.add(this.getString(val));
-                }
+                });
                 currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue().addAll(res);
             }
         } else if (element.equals(STRIP_SYMBOLS_ELEMENT)) {
@@ -1097,7 +1098,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        return Item.createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
+        return ItemFactory.getDefault().createInBaseDir(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {

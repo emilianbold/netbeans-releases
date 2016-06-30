@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,9 +24,20 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ * Portions Copyrighted 2006 Sun Microsystems, Inc.
  */
 
 package org.netbeans.lib.uihandlerserver;
@@ -52,11 +63,11 @@ import org.netbeans.lib.uihandler.TestHandler;
  */
 public class ReadBigDataTest extends NbTestCase {
     private Logger LOG;
-    
+
     public ReadBigDataTest(String testName) {
         super(testName);
     }
-    
+
     protected Level logLevel() {
         return Level.FINEST;
     }
@@ -70,13 +81,13 @@ public class ReadBigDataTest extends NbTestCase {
 
     public void testAntonsOutOfMemExc() throws Exception {
         String what = "antons.gz";
-        
+
         InputStream is = new GZIPInputStream(getClass().getResourceAsStream(what));
-        
+
         class H extends Handler {
             int cnt;
             LogRecord first;
-            
+
             public void publish(LogRecord record) {
                 if (cnt == 0) {
                     first = record;
@@ -93,12 +104,12 @@ public class ReadBigDataTest extends NbTestCase {
             public void close() throws SecurityException {
             }
         }
-        
+
         H h = new H();
         is = new GZIPInputStream(getClass().getResourceAsStream(what));
         LogRecords.scan(is, h);
         is.close();
-        
+
         if (h.cnt != 322) {
             fail("Invalid number of records: " + h.cnt);
         }
@@ -114,11 +125,11 @@ public class ReadBigDataTest extends NbTestCase {
         if (arr == null) {
             return;
         }
-        
+
         int[] cnts = new int[arr.length];
         int err1 = readAsAStream(cnts, arr, 0);
         int err2 = readAsSAX(cnts, 0, arr);
-        
+
         assertEquals("No errors: " + err1 + " and no " + err2, 0, err1 + err2);
     }
 

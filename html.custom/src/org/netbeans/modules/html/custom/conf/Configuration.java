@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.json.simple.JSONArray;
@@ -72,6 +73,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -278,46 +280,29 @@ public class Configuration {
         //and save it to the underlying document/file
         DataObject dobj = DataObject.find(getProjectsConfigurationFile());
         EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
-        final BaseDocument document = (BaseDocument) editorCookie.openDocument();
-        final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
-
-        final Reformat reformat = Reformat.get(document);
-        Preferences preferences = CodeStylePreferences.get(document).getPreferences();
-
+        Document doc = editorCookie.openDocument();
         //depends on javascript2.editor
-        preferences.put("wrapArrayInit", "WRAP_ALWAYS"); //NOI18N
-        preferences.put("wrapArrayInitItems", "WRAP_ALWAYS"); //NOI18N
-        preferences.put("wrapObjects", "WRAP_ALWAYS"); //NOI18N
-        preferences.put("wrapProperties", "WRAP_ALWAYS"); //NOI18N
+        if (doc instanceof BaseDocument) {
+            final BaseDocument document = (BaseDocument) doc;
+            final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
 
-        //modify
-        document.runAtomic(new Runnable() {
+            final Reformat reformat = Reformat.get(document);
+            Preferences preferences = CodeStylePreferences.get(document).getPreferences();
 
-            @Override
-            public void run() {
-                try {
-                    //TODO apply just changes via diff!
-                    document.remove(0, document.getLength());
-                    document.insertString(0, newContent, null);
-                } catch (BadLocationException ex) {
-                    bleRef.set(ex);
-                }
-            }
+            preferences.put("wrapArrayInit", "WRAP_ALWAYS"); //NOI18N
+            preferences.put("wrapArrayInitItems", "WRAP_ALWAYS"); //NOI18N
+            preferences.put("wrapObjects", "WRAP_ALWAYS"); //NOI18N
+            preferences.put("wrapProperties", "WRAP_ALWAYS"); //NOI18N
 
-        });
-        if (bleRef.get() != null) {
-            throw new IOException(bleRef.get());
-        }
-
-        //reformat
-        try {
-            reformat.lock();
+            //modify
             document.runAtomic(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        reformat.reformat(0, document.getLength());
+                        //TODO apply just changes via diff!
+                        document.remove(0, document.getLength());
+                        document.insertString(0, newContent, null);
                     } catch (BadLocationException ex) {
                         bleRef.set(ex);
                     }
@@ -327,8 +312,36 @@ public class Configuration {
             if (bleRef.get() != null) {
                 throw new IOException(bleRef.get());
             }
-        } finally {
-            reformat.unlock();
+
+            //reformat
+            try {
+                reformat.lock();
+                document.runAtomic(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, document.getLength());
+                        } catch (BadLocationException ex) {
+                            bleRef.set(ex);
+                        }
+                    }
+
+                });
+                if (bleRef.get() != null) {
+                    throw new IOException(bleRef.get());
+                }
+            } finally {
+                reformat.unlock();
+            }
+        } else {
+            // FIXME atomic lock
+            try {
+                doc.remove(0, doc.getLength());
+                doc.insertString(0, newContent, null);
+            } catch (BadLocationException ex) {
+                throw new IOException(ex);
+            }
         }
 
         //save changes

@@ -404,6 +404,7 @@ public class SiteTemplateWizard extends JPanel {
             }
         });
 
+        onlineTemplateDescriptionTextPane.setEditable(false);
         onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -443,13 +444,13 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(onlineTemplateRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(onlineTemplateDescriptionLabel)
                     .addComponent(clearCacheLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

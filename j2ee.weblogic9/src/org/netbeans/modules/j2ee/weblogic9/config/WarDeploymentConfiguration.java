@@ -237,10 +237,14 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     // TODO: this contextPath fix code will be removed, as soon as it will 
     // be moved to the web project
     private boolean isCorrectCP(String contextPath) {
-        boolean correct=true;
-        if (!contextPath.equals("") && !contextPath.startsWith("/")) correct=false; //NOI18N
-        else if (contextPath.endsWith("/")) correct=false; //NOI18N
-        else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
+        boolean correct = true;
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) { //NOI18N
+            correct = false;
+        } else if (contextPath.endsWith("/")) { //NOI18N
+            correct = false;
+        } else if (contextPath.contains("//")) { //NOI18N
+            correct = false;
+        }
         return correct;
     }
     
@@ -256,21 +260,27 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     public void setContextRoot(String contextRoot) throws ConfigurationException {
         // TODO: this contextPath fix code will be removed, as soon as it will 
         // be moved to the web project
-        if (!isCorrectCP(contextRoot)) {
-            String ctxRoot = contextRoot;
-            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextRoot,"/"); //NOI18N
+        
+        String currentCP = "";
+        if (contextRoot != null) {
+            currentCP = contextRoot;
+        }
+
+        if (!isCorrectCP(currentCP)) {
+            String ctxRoot = currentCP;
+            java.util.StringTokenizer tok = new java.util.StringTokenizer(currentCP,"/"); //NOI18N
             StringBuffer buf = new StringBuffer(); //NOI18N
             while (tok.hasMoreTokens()) {
                 buf.append("/"+tok.nextToken()); //NOI18N
             }
             ctxRoot = buf.toString();
             NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage (WarDeploymentConfiguration.class, "MSG_invalidCP", contextRoot),
+                    NbBundle.getMessage (WarDeploymentConfiguration.class, "MSG_invalidCP", currentCP),
                     NotifyDescriptor.Message.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            contextRoot = ctxRoot;
+            currentCP = ctxRoot;
         }
-        final String newContextPath = contextRoot;
+        final String newContextPath = currentCP;
         modifier.modify(new WeblogicWebAppModifier() {
             @Override
             public void modify(WebApplicationModel webLogicWebApp) {

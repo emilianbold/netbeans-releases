@@ -42,7 +42,9 @@
 package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
@@ -292,21 +294,15 @@ public final class SourceAnalyzerFactory {
         }
     }
         
-    private static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,UsagesData<String>>> {
+    private static class UsagesVisitor extends TreePathScanner<Void,Map<Pair<String,String>,UsagesData<String>>> {
 
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
 
-        private static final Convertor<String,String> CONVERTOR =
-                new Convertor<String, String>() {
-            @Override
-            public String convert(String p) {
-                return p;
-            }
-        };
+        private static final Convertor<String,String> CONVERTOR = (String p) -> p;
 
         private final Stack<Pair<String,String>> activeClass;
-        private final Name errorName;
-        private final Name pkgImportName;
+        private final Names names;
+        private final Trees trees;
         private final CompilationUnitTree cu;
         private final URL siblingUrl;
         private final String sourceName;
@@ -339,31 +335,16 @@ public final class SourceAnalyzerFactory {
                 @NullAllowed final Set<? super ElementHandle<TypeElement>> newTypes,
                 @NullAllowed final Set<? super ElementHandle<ModuleElement>> newModules,
                 final JavaCustomIndexer.CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
-
-            assert jt != null;
-            assert cu != null;
-            assert manager != null;
-            assert sibling != null;
-
-            this.activeClass = new Stack<> ();
-            this.imports = new HashSet<> ();
-            this.staticImports = new HashSet<> ();
-            this.unusedPkgImports = new HashSet<>();
-            this.importIdents = new HashSet<>();
-            this.packageAnnotationIdents = new HashSet<>();
-            this.packageAnnotations = new HashSet<>();
-            final Names names = Names.instance(jt.getContext());
-            this.errorName = names.error;
-            this.pkgImportName = names.asterisk;
-            this.state = State.OTHER;
-            this.cu = cu;
-            this.signatureFiles = true;
-            this.virtual = tuple.virtual;
-            this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
-            this.sourceName = inferBinaryName(manager, sibling);
-            this.topLevels = null;
-            this.newTypes = newTypes;
-            this.newModules = newModules;
+            this(
+                    jt,
+                    cu,
+                    inferBinaryName(manager, sibling),
+                    tuple.virtual ? tuple.indexable.getURL() : sibling.toUri().toURL(),
+                    true,
+                    tuple.virtual,
+                    newTypes,
+                    newModules,
+                    null);
         }
 
         protected UsagesVisitor (
@@ -372,31 +353,49 @@ public final class SourceAnalyzerFactory {
                 JavaFileManager manager,
                 javax.tools.JavaFileObject sibling,
                 Set<? super Pair<String,String>> topLevels) throws MalformedURLException, IllegalArgumentException {
+            this(
+                    jt,
+                    cu,
+                    inferBinaryName(manager, sibling),
+                    sibling.toUri().toURL(),
+                    false,
+                    false,
+                    null,
+                    null,
+                    topLevels);
+        }
 
+        private UsagesVisitor(
+                @NonNull final JavacTaskImpl jt,
+                @NonNull final CompilationUnitTree cu,
+                @NonNull final String sourceName,
+                @NonNull final URL siblingUrl,
+                final boolean sigFiles,
+                final boolean virtual,
+                @NullAllowed final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final Set<? super ElementHandle<ModuleElement>> newModules,
+                @NullAllowed final Set<? super Pair<String,String>> topLevels) {
+            assert sourceName != null;
             assert jt != null;
             assert cu != null;
-            assert manager != null;
-            assert sibling != null;
-
             this.activeClass = new Stack<> ();
             this.imports = new HashSet<> ();
-            this.staticImports = new HashSet<>();
+            this.staticImports = new HashSet<> ();
             this.unusedPkgImports = new HashSet<>();
             this.importIdents = new HashSet<>();
             this.packageAnnotationIdents = new HashSet<>();
             this.packageAnnotations = new HashSet<>();
-            final Names names = Names.instance(jt.getContext());
-            this.errorName = names.error;
-            this.pkgImportName = names.asterisk;
+            this.names = Names.instance(jt.getContext());
+            this.trees = Trees.instance(jt);
             this.state = State.OTHER;
             this.cu = cu;
-            this.signatureFiles = false;
-            this.siblingUrl = sibling.toUri().toURL();
-            this.sourceName = inferBinaryName(manager, sibling);
+            this.signatureFiles = sigFiles;
+            this.virtual = virtual;
+            this.newTypes = newTypes;
+            this.newModules = newModules;
             this.topLevels = topLevels;
-            this.newTypes = null;
-            this.newModules = null;
-            this.virtual = false;
+            this.sourceName = sourceName;
+            this.siblingUrl = siblingUrl;
         }
 
 
@@ -463,7 +462,8 @@ public final class SourceAnalyzerFactory {
         @Override
         @CheckForNull
         public Void visitMemberSelect(@NonNull final MemberSelectTree node,  @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
-            handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, node.getIdentifier(), p);
+            final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
+            handleVisitIdentSelect (sym, node.getIdentifier(), p);
             State oldState = this.state;
             this.state = (this.state == State.IMPORT || state == State.PACKAGE_ANN) ? state : State.OTHER;
             Void ret = super.visitMemberSelect (node, p);
@@ -474,7 +474,8 @@ public final class SourceAnalyzerFactory {
         @Override
         @CheckForNull
         public Void visitIdentifier(@NonNull final IdentifierTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
-            handleVisitIdentSelect (((JCTree.JCIdent)node).sym, node.getName(), p);
+            final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
+            handleVisitIdentSelect (sym, node.getName(), p);
             return super.visitIdentifier(node, p);
         }
 
@@ -483,7 +484,7 @@ public final class SourceAnalyzerFactory {
         public Void visitImport (@NonNull final ImportTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
             this.isStaticImport = node.isStatic();
             final Tree qit = node.getQualifiedIdentifier();
-            isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && pkgImportName == (((MemberSelectTree)qit).getIdentifier());
+            isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && names.asterisk == (((MemberSelectTree)qit).getIdentifier());
             final Void ret = super.visitImport(node, p);
             isStaticImport = isPkgImport = false;
             return ret;
@@ -491,7 +492,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         public Void visitMemberReference(MemberReferenceTree node, Map<Pair<String, String>, UsagesData<String>> p) {
-            final Symbol sym = ((JCTree.JCMemberReference)node).sym;
+            final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
             handleVisitIdentSelect(sym, node.getName(), p);
             return super.visitMemberReference(node, p);
         }
@@ -873,7 +874,7 @@ public final class SourceAnalyzerFactory {
          * @throws IllegalArgumentException when file cannot be inferred.
          */
         @NonNull
-        private String inferBinaryName(
+        private static String inferBinaryName(
                 @NonNull final JavaFileManager jfm,
                 @NonNull final javax.tools.JavaFileObject jfo) throws IllegalArgumentException {
             String result = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, jfo);
@@ -986,7 +987,7 @@ public final class SourceAnalyzerFactory {
                 if (owner.first().charAt(owner.first().length()-2) == '.') {    //NOI18N
                     throw new IllegalArgumentException(owner.first());
                 }
-                data = new UsagesData<String> (CONVERTOR);
+                data = new UsagesData<> (CONVERTOR);
                 map.put(owner,data);
             }
             return data;
@@ -994,7 +995,7 @@ public final class SourceAnalyzerFactory {
 
         private boolean hasErrorName (@NullAllowed Symbol cs) {
             while (cs != null) {
-                if (cs.name == errorName) {
+                if (cs.name == names.error) {
                     return true;
                 }
                 cs = cs.getEnclosingElement();

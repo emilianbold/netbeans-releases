@@ -1,8 +1,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright (c) 2009, 2016 Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -14,19 +16,13 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -38,6 +34,8 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
+
+Contributor(s):
 -->
 <html><head><title>The NetBeans look and feel customization library</title></head><body>
 
@@ -51,7 +49,7 @@ be customized to match the UI specification for different platforms/look and fee
 <p>
 This library centralizes the installation and setup of such custom values.  It also:
 <ul>
-<li>Handles the setup of custom font sizes for look and feels (other than GTK, which 
+<li>Handles the setup of custom font sizes for look and feels (other than GTK, which
 gets its font sizes from the operating system theme), by replacing the font entries in UIDefaults with those
 of the requested font size</li>
 <li>Allows UIDefaults values to be guaranteed to be present for look and feels (GTK) which do not

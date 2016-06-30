@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -86,12 +87,18 @@ public class ParentConstructorCallHint extends HintRule {
     private void checkHints(PHPParseResult phpParseResult, FileObject fileObject) {
         Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(phpParseResult.getModel().getFileScope());
         for (ClassScope classScope : declaredClasses) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             MethodScope constructor = extractConstructor(classScope);
             MethodScope overriddenConstructor = extractOverriddenConstructor(classScope);
             if (constructor != null && overriddenConstructor != null) {
                 ParametersDescriptor parametersDescriptor = new ParametersDescriptor(overriddenConstructor.getParameters());
                 CheckVisitor checkVisitor = new CheckVisitor(constructor.getOffset());
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 createHint(checkVisitor.getConstructorCallDescriptor(), parametersDescriptor, constructor.getNameRange());
             }
         }
@@ -143,6 +150,9 @@ public class ParentConstructorCallHint extends HintRule {
 
         @Override
         public void visit(MethodDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getStartOffset() <= constructorOffset && node.getEndOffset() >= constructorOffset) {
                 inConstructor = true;
                 super.visit(node);
@@ -152,6 +162,9 @@ public class ParentConstructorCallHint extends HintRule {
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (inConstructor) {
                 String functionName = CodeUtils.extractFunctionName(node.getMethod());
                 if (functionName.equals("__construct")) { //NOI18N

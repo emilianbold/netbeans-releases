@@ -404,7 +404,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected String runCommand(ExecutionEnvironment env, String command, String... args) throws Exception {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
         assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
-        return res.output;
+        return res.getOutputString();
     }
 
     protected String runCommandInDir(String dir, String command, String... args) throws Exception {
@@ -416,7 +416,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
         assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
                 "\" in dir " + dir + " failed", res.isOK());
-        return res.output;
+        return res.getOutputString();
     }
     
     /**
@@ -497,9 +497,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
         ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script.toString());
         if (res.exitCode != 0) {
-            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
-        } else if (res.error != null && res.error.length() > 0) {
-            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.getErrorString(), false);
+        } else if (res.getErrorString() != null && res.getErrorString().length() > 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.getErrorString(), false);
         }
     }
     
@@ -536,19 +536,19 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected boolean canRead(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-r", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     protected boolean canWrite(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-w", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     protected boolean canExecute(ExecutionEnvironment env, String path) throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setExecutable("test").setArguments("-x", path);
-        return npb.call().waitFor() == 0;        
+        return ProcessUtils.execute(npb).isOK();
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {

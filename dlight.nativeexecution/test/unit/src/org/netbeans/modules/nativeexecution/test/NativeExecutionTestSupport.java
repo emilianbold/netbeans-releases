@@ -406,7 +406,7 @@ public class NativeExecutionTestSupport {
         }        
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
         if (!res.isOK()) {
-            throw new AssertionError("mktemp failed on " + execEnv + ": " + res.error + " return code: " + res.exitCode);
+            throw new AssertionError("mktemp failed on " + execEnv + ": " + res.getErrorString() + " return code: " + res.exitCode);
         }
         if (Boolean.getBoolean("trace.mktemp")) {   // trace all mkTemp
             StackTraceElement caller = null;
@@ -417,9 +417,9 @@ public class NativeExecutionTestSupport {
                     break;
                 }
             }
-            System.err.printf("mktemp -> %s called by %s\n", res.output, caller.getClassName() + '.' + caller.getMethodName());
+            System.err.printf("mktemp -> %s called by %s\n", res.getOutputString(), caller.getClassName() + '.' + caller.getMethodName());
         }
-        return res.output;
+        return res.getOutputString();
     }    
     
     public static void threadsDump(String header, String footer) {

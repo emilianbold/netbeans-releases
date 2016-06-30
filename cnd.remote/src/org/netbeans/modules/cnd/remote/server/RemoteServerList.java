@@ -60,7 +60,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
@@ -455,7 +455,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             }
             ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path); // NOI18N
             if (res.isOK()) {
-                path = res.output;
+                path = res.getOutputString();
             } else {
                 return false;
             }

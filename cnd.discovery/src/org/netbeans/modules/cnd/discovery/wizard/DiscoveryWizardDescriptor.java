@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;

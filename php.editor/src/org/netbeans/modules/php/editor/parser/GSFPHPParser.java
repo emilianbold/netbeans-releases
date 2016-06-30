@@ -78,14 +78,18 @@ import org.openide.util.WeakListeners;
  */
 public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
-    private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.php.parse.big.files"); //NOI18N
-    private static final int BIG_FILE_SIZE = Integer.getInteger("nb.php.big.file.size", 5000000); //NOI18N
+    public static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.php.parse.big.files"); //NOI18N
+    public static final int BIG_FILE_SIZE = Integer.getInteger("nb.php.big.file.size", 5000000); //NOI18N
     private static final List<String> REGISTERED_PHP_EXTENSIONS = FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE);
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean shortTags = true;
     private boolean aspTags = false;
     private ParserResult result = null;
     private boolean projectPropertiesListenerAdded = false;
+
+    static {
+        LOGGER.log(Level.INFO, "Parsing of big PHP files enabled: {0} (max size: {1})", new Object[] {PARSE_BIG_FILES, BIG_FILE_SIZE});
+    }
 
     @Override
     public Result getResult(Task task) throws ParseException {
@@ -215,6 +219,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 rootSymbol = parser.parse();
             }
         }
+        // #262380 - prevent OOME
+        scanner = null;
+        parser = null;
         if (rootSymbol != null) {
             Program program = null;
             if (rootSymbol.value instanceof Program) {
@@ -244,14 +251,21 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 if (ok) {
                     phpParserResult = new PHPParseResult(context.getSnapshot(), program);
                 } else {
+                    // #262380 - prevent OOME
+                    rootSymbol = null;
+                    statements = null;
                     phpParserResult = sanitize(context, sanitizing, errorHandler);
                 }
             } else {
+                // #262380 - prevent OOME
                 LOGGER.log(Level.FINE, "The parser value is not a Program: {0}", rootSymbol.value);
+                rootSymbol = null;
                 phpParserResult = sanitize(context, sanitizing, errorHandler);
             }
             if (isParsingWithoutSanitization(sanitizing)) {
                 phpParserResult.setErrors(errorHandler.displaySyntaxErrors(program));
+                // #262380 - prevent OOME
+                program = null;
             }
         } else { // there was no rootElement
             phpParserResult = sanitize(context, sanitizing, errorHandler);

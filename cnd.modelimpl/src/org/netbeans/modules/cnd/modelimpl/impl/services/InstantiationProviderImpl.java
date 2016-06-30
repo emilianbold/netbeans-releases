@@ -110,7 +110,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -215,6 +215,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             List<Qualificator> remainingQualifiers = targetTypeQuals;
 
                             boolean newConst = remainingQualifiers.contains(Qualificator.CONST);
+                            boolean newVolatile = remainingQualifiers.contains(Qualificator.VOLATILE);
                             int newPtrDepth = howMany(remainingQualifiers, Qualificator.POINTER);
                             int newArrayDepth = howMany(remainingQualifiers, Qualificator.ARRAY);
                             int newReference = CsmTypes.TypeDescriptor.NON_REFERENCE;
@@ -225,6 +226,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             }
                             CsmTypes.TypeDescriptor td = new CsmTypes.TypeDescriptor(
                                     newConst,
+                                    newVolatile,
                                     newReference,
                                     newPtrDepth,
                                     newArrayDepth

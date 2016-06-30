@@ -42,22 +42,16 @@
 
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -70,22 +64,16 @@ public class PathUtils {
     }
 
     public static String getPathFromSymlink(String path, ExecutionEnvironment execEnv) {
-        try {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
-            final NativeProcess process = npb.call();
-            BufferedReader br = ProcessUtils.getReader(process.getInputStream(), execEnv.isRemote());
-            String line = br.readLine(); // just read 1st line...
-            br.close();
-            if (line != null) {
-                int pos = line.indexOf("->"); // NOI18N
-                if (pos > 0) {
-                    return line.substring(pos + 2).trim();
-                }
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+        List<String> outputLines = res.getOutputLines();
+        String line = outputLines.isEmpty() ? null : outputLines.get(0); // just read 1st line...
+        if (line != null) {
+            int pos = line.indexOf("->"); // NOI18N
+            if (pos > 0) {
+                return line.substring(pos + 2).trim();
             }
-        } catch (IOException ex) {
-            //NO exception here
-            //Exceptions.printStackTrace(ex);
         }
         return null;
     }

@@ -42,7 +42,6 @@
 
 -->
 
-<!-- Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.-->
 <sun-web-app error-url="">
   <context-root>/async-chat</context-root>
 </sun-web-app>

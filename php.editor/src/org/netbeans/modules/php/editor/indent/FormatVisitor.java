@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -125,7 +125,7 @@ public class FormatVisitor extends DefaultVisitor {
     private final TokenSequence<PHPTokenId> ts;
     private final LinkedList<ASTNode> path;
     private final DocumentOptions options;
-    private final Stack<GroupAlignmentTokenHolder> groupAlignmentTokenHolders;
+    private final ArrayDeque<GroupAlignmentTokenHolder> groupAlignmentTokenHolders;
     private final int caretOffset;
     private final int startOffset;
     private final int endOffset;
@@ -148,7 +148,7 @@ public class FormatVisitor extends DefaultVisitor {
         this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
-        groupAlignmentTokenHolders = new Stack<>();
+        groupAlignmentTokenHolders = new ArrayDeque<>();
         inArrayBalance = 0;
     }
 
@@ -602,13 +602,13 @@ public class FormatVisitor extends DefaultVisitor {
                     break;
                 case PHP_IMPLEMENTS:
                     if (node.getInterfaes().size() > 0) {
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                         ts.movePrevious();
                         addListOfNodes(node.getInterfaes(), FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST);
                     }
                     break;
                 case PHP_EXTENDS:
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                     addFormatToken(formatTokens);
                     break;
                 default:
@@ -659,13 +659,13 @@ public class FormatVisitor extends DefaultVisitor {
                         break;
                     case PHP_IMPLEMENTS:
                         if (node.getInterfaces().size() > 0) {
-                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                             ts.movePrevious();
                             addListOfNodes(node.getInterfaces(), FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST);
                         }
                         break;
                     case PHP_EXTENDS:
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset()));
                         addFormatToken(formatTokens);
                         break;
                     default:
@@ -2262,7 +2262,7 @@ public class FormatVisitor extends DefaultVisitor {
      * the group
      */
     private void handleGroupAlignment(int nodeLength, boolean multilined) {
-        if (groupAlignmentTokenHolders.empty()) {
+        if (groupAlignmentTokenHolders.isEmpty()) {
             createGroupAlignment();
         }
         GroupAlignmentTokenHolder tokenHolder = groupAlignmentTokenHolders.peek();
@@ -2316,7 +2316,7 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private void resetGroupAlignment() {
-        if (!groupAlignmentTokenHolders.empty()) {
+        if (!groupAlignmentTokenHolders.isEmpty()) {
             groupAlignmentTokenHolders.pop();
         }
     }

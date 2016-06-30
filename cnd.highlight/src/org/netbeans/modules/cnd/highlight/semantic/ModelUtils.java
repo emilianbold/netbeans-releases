@@ -117,7 +117,7 @@ public class ModelUtils {
     }
 
     /*package*/ static List<CsmReference> getMacroBlocks(CsmFile file, Document doc, Interrupter interrupter) {
-        return CsmFileInfoQuery.getDefault().getMacroUsages(file, interrupter);
+        return CsmFileInfoQuery.getDefault().getMacroUsages(file, doc, interrupter);
     }
 
     private static abstract class AbstractReferenceCollector implements ReferenceCollector {

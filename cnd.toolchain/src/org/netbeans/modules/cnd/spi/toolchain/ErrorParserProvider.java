@@ -49,11 +49,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +101,7 @@ public abstract class ErrorParserProvider {
         public OutputListener register(FileObject file, int line, boolean isError, String description) {
             IOPosition.Position ioPos = IOPosition.currentPosition(io); // null is ok
 
-            OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description, ioPos);
+            OutputListener res = OutputListenerProvider.getInstance().get(this, file, line, isError, description, ioPos);
             synchronized(storage) {
                 Set<OutputListener> list = storage.get(file);
                 if (list == null) {

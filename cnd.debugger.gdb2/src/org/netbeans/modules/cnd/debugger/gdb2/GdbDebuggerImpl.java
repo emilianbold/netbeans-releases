@@ -2499,6 +2499,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
 		protected void onDone(MIRecord record) {
 		    updateLocalsForSelectFrame();
+                    if (RegistersWindow.getDefault().isShowing()) {
+                        requestRegisters();
+                    }
 		    finish();
 		}
 	    };
@@ -2976,7 +2979,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	retryWatches();
         updateMIVar();
     }
-
+    
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
         MITList attr_results = attr.results();
         String value = attr_results.getConstValue("attr"); // NOI18N
@@ -3027,6 +3030,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
+            final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
+            if (nativeWatch != null) {
+                NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+            }
         } else {
             localUpdater.treeNodeChanged(v); // just update this node
         }
@@ -3785,7 +3792,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 showThreads();
             }
 
-            if (get_watches) {
+            if (get_watches || watchBag().hasPinnedWatches()) {
                 updateWatches();
             }
             
@@ -3928,7 +3935,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         state().isRunning = false;
 
         // detect first stop (in _start or main)
-        if (firstBreakpointId != null && "breakpoint-hit".equals(results.getConstValue("reason"))) { // NOI18N
+        if (firstBreakpointId != null && results != null && "breakpoint-hit".equals(results.getConstValue("reason"))) { // NOI18N
             if (ATTACH_ID.equals(firstBreakpointId)) {
                 attachDone();
                 return;
@@ -3949,7 +3956,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         //detect silent stop
         if (gdb.isSignalled()) {
-            if ("signal-received".equals(results.getConstValue("reason"))) { //NOI18N
+            if (results != null && "signal-received".equals(results.getConstValue("reason"))) { //NOI18N
                 MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {
                     String signal = signalValue.asConst().value();
@@ -3981,7 +3988,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             }
         }
-        MIValue threadIdValue = results.valueOf("thread-id"); // NOI18N
+        MIValue threadIdValue = (results == null) ? null : results.valueOf("thread-id"); // NOI18N
         if (threadIdValue != null) {    // exited case should be omitted
             currentThreadId = threadIdValue.asConst().value();
         }
@@ -4256,7 +4263,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     state().isCore = true;
                 }
 
-                getFullPath(null);
+                if ((getNDI().getAction() & NativeDebuggerManager.LOAD) != 0) {
+                    getFullPath(null);
+                }
 
 		gdb.startProgressManager().finishProgress();
                 session().setTarget(fprogram);

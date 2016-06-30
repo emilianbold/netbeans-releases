@@ -43,10 +43,8 @@
 package org.netbeans.modules.db.api.sql.execute;
 
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.sql.loader.SQLEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,24 +53,27 @@ import org.openide.util.NbBundle;
  * @author David Van Couvering
  */
 public class LogFileLogger implements SQLExecuteLogger {
-    private static Logger LOGGER = Logger.getLogger(LogFileLogger.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LogFileLogger.class.getName());
     
     private int errorCount;
 
+    @Override
     public void log(StatementExecutionInfo info) {
         if (info.hasExceptions()) {
             logException(info);
         }
     }
 
+    @Override
     public void finish(long executionTime) {
-        LOGGER.log(Level.INFO, (NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
-                String.valueOf(millisecondsToSeconds(executionTime)),
-                String.valueOf(errorCount))));
+        LOGGER.log(Level.INFO, (NbBundle.getMessage(LogFileLogger.class, "LBL_ExecutionFinished",
+                executionTime / 1000d,
+                errorCount)));
     }
 
+    @Override
     public void cancel() {
-        LOGGER.log(Level.INFO, NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
+        LOGGER.log(Level.INFO, NbBundle.getMessage(LogFileLogger.class, "LBL_ExecutionCancelled"));
     }
 
     private void logException(StatementExecutionInfo info) {
@@ -82,21 +83,15 @@ public class LogFileLogger implements SQLExecuteLogger {
             if (e instanceof SQLException) {
                 logSQLException((SQLException)e, info);
             } else {
-                LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
+                LOGGER.log(Level.INFO, NbBundle.getMessage(LogFileLogger.class, "MSG_SQLExecutionException", info.getSQL()), e);
             }
         }
     }
 
     private void logSQLException(SQLException e, StatementExecutionInfo info) {
         while (e != null) {
-            LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
+            LOGGER.log(Level.INFO, NbBundle.getMessage(LogFileLogger.class, "MSG_SQLExecutionException", info.getSQL()), e);
             e = e.getNextException();
         }
-    }
-
-    private String millisecondsToSeconds(long ms) {
-        NumberFormat fmt = NumberFormat.getInstance();
-        fmt.setMaximumFractionDigits(3);
-        return fmt.format(ms / 1000.0);
     }
 }

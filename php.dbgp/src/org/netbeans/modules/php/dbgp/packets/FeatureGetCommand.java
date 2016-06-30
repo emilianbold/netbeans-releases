@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.Locale;
+
 /**
  * @author ads
  *
@@ -75,7 +77,7 @@ public class FeatureGetCommand extends DbgpCommand {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            return super.toString().toLowerCase(Locale.US);
         }
 
         public Feature forString(String str) {

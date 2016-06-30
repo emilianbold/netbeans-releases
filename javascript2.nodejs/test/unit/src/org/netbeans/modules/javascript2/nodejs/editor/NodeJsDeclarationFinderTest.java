@@ -125,77 +125,77 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
     
     @Test
     public void testIssue247565_01() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o^1.obj.conf.a;", "issue247565.js", 4);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o^1_247565.obj.conf.a;", "issue247565.js", 4);
     }
     
     @Test
     public void testIssue247565_02() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.o^bj.conf.a;", "literal.js", 256);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.o^bj.conf.a;", "literal247565.js", 198);
     }
 
     @Test
     public void testIssue247565_03() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.co^nf.a;", "literal.js", 114);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.obj.co^nf.a;", "literal247565.js", 114);
     }
     
     @Test
     public void testIssue247565_04() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.conf.a^;", "literal.js", 131);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.obj.conf.a^;", "literal247565.js", 131);
     }
     
     @Test
     public void testIssue247565_05() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.pok^us.getDay();", "literal.js", 233);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.pok^us.getDay();", "literal247565.js", 175);
     }
     
     @Test
     public void testIssue247565_06() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.do^b.getMilliseconds();", "literal.js", 49);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.obj.do^b.getMilliseconds();", "literal247565.js", 49);
     }
     
     @Test
     public void testIssue247565_07() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.he^llo();", "literal.js", 76);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.obj.he^llo();", "literal247565.js", 76);
     }
     
     @Test
     public void testIssue247565_08() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.ni^ck;", "literal.js", 29);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1_247565.obj.ni^ck;", "literal247565.js", 29);
     }
     
     @Test
     public void testIssue247565_09() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.ob^j.conf.a;", "literalRef.js", 415);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.ob^j.conf.a;", "literalRef247565.js", 415);
     }
     
     @Test
     public void testIssue247565_10() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.co^nf.a;", "literalRef.js", 303);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.obj.co^nf.a;", "literalRef247565.js", 303);
     }
     
     @Test
     public void testIssue247565_11() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.conf.a^;", "literalRef.js", 320);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.obj.conf.a^;", "literalRef247565.js", 320);
     }
     
     @Test
     public void testIssue247565_12() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.po^kus.getSeconds();", "literalRef.js", 392);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.po^kus.getSeconds();", "literalRef247565.js", 392);
     }
     
     @Test
     public void testIssue247565_13() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.d^ob.getFullYear();", "literalRef.js", 238);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.obj.d^ob.getFullYear();", "literalRef247565.js", 238);
     }
     
     @Test
     public void testIssue247565_14() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.he^llo();", "literalRef.js", 265);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.obj.he^llo();", "literalRef247565.js", 265);
     }
     
     @Test
     public void testIssue247565_15() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.ni^ck;", "literalRef.js", 218);
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2_247565.obj.ni^ck;", "literalRef247565.js", 218);
     }
     
     @Test

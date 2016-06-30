@@ -69,8 +69,8 @@ import org.openide.util.Exceptions;
 @EditorActionRegistration(
     name             = FixImportsAction.ACTION_NAME,
     mimeType         = "text/x-groovy",
-    shortDescription = "Fixes import statements.",
-    popupText        = "Fix Imports..."
+    shortDescription = "#fix-groovy-imports-description",
+    popupText        = "#fix-groovy-imports"
 )
 public class FixImportsAction extends BaseAction {
 

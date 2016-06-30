@@ -136,8 +136,13 @@ public class NbFormServices implements FormServices {
     }
 
     @Override
+    public Class<? extends EditorSupport> getEditorSupportClass(FormDataObject formDataObject) {
+        return FormEditorSupport.class;
+    }
+
+    @Override
     public EditorSupport createEditorSupport(FormDataObject formDataObject) {
-        return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
+        return new FormEditorSupport(formDataObject);
     }
     
 }

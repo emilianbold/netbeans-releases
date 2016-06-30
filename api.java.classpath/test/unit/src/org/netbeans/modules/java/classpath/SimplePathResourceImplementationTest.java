@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -56,6 +57,12 @@ public class SimplePathResourceImplementationTest extends NbTestCase {
 
     public SimplePathResourceImplementationTest(final String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
 
     public void testVerify() throws Exception {
@@ -70,7 +77,9 @@ public class SimplePathResourceImplementationTest extends NbTestCase {
         } catch (IllegalArgumentException e) {
         }
         try {
-            SimplePathResourceImplementation.verify(new URL("file:///tmp/foo.jar/"),null);
+            File f = new File(getWorkDir(),"test.jar");
+            f.createNewFile();
+            SimplePathResourceImplementation.verify(new URL(BaseUtilities.toURI(f).toString()+'/'),null);
             assertTrue("Verify should fail for non jar protocol file",false);
         } catch (IllegalArgumentException e) {
         }

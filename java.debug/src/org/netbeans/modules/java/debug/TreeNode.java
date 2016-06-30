@@ -232,16 +232,10 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
     }
         
-    static final class NodeChilren extends Children.Keys<Node> {
-        
+    static final class NodeChilren extends Children.Array {
         public NodeChilren(List<Node> nodes) {
-            setKeys(nodes);
+            super(nodes);
         }
-        
-        protected Node[] createNodes(Node key) {
-            return new Node[] {key};
-        }
-        
     }
     
     private static class FindChildrenTreeVisitor extends CancellableTreePathScanner<Void, List<Node>> {

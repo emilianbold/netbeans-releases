@@ -73,11 +73,12 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
@@ -171,6 +172,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.shutdown();
         RepositoryTestUtils.deleteDefaultCacheLocation();
+        TextIndexStorageManager.shutdown();
     }
 
     protected File detectConfigure(String path){
@@ -614,6 +616,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(this, fsPath.getFileObject());
             WizardConstants.PROPERTY_PROJECT_FOLDER.put(this, fsPath);
             WizardConstants.PROPERTY_TOOLCHAIN.put(this, def);
+            WizardConstants.PROPERTY_USE_BUILD_ANALYZER.put(this, true);
 
             WizardConstants.PROPERTY_HOST_UID.put(this, ExecutionEnvironmentFactory.toUniqueID(ee));
             WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(this, fs);

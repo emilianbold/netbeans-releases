@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.util.Mutex;
 import org.w3c.dom.DOMException;
@@ -118,31 +119,23 @@ public final class NativeProjectSettingsImpl implements NativeProjectSettings {
     }
 
     private String doLoad(final String name) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-
-            @Override
-            public String run() {
-                Element configurationFragment = getConfigurationFragment();
-                if (configurationFragment == null) {
-                    return null;
-                }
-                return getNode(configurationFragment, name).getTextContent();
+        return ProjectManager.mutex().readAccess((Mutex.Action<String>) () -> {
+            Element configurationFragment = getConfigurationFragment();
+            if (configurationFragment == null) {
+                return null;
             }
+            return getNode(configurationFragment, name).getTextContent();
         });
     }
 
     private void doSave(final String name, final String value) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                Element configurationFragment = getConfigurationFragment();
-                if (configurationFragment != null) {
-                    Element el = getNode(configurationFragment, name);
-                    el.setTextContent(value);
-                    AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-                    aux.putConfigurationFragment(configurationFragment, shared);
-                }
+        ProjectManager.mutex().writeAccess(() -> {
+            Element configurationFragment = getConfigurationFragment();
+            if (configurationFragment != null) {
+                Element el = getNode(configurationFragment, name);
+                el.setTextContent(value);
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+                aux.putConfigurationFragment(configurationFragment, shared);
             }
         });
     }

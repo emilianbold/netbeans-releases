@@ -55,7 +55,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -96,83 +95,81 @@ public final class MakeProjectGenerator {
      */
     public static MakeProjectHelper createProject(final FileObject directory, final String type) throws IOException, IllegalArgumentException {
         try {
-            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<MakeProjectHelper>() {
-                public @Override MakeProjectHelper run() throws IOException {
-                    directory.refresh();
-                    FileObject projectXml = directory.getFileObject(MakeProjectHelper.PROJECT_XML_PATH);
-                    if (projectXml != null) {
-                        throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
-                    }
-                    Project prj = ProjectManager.getDefault().findProject(directory);
-                    if (prj != null && prj.getProjectDirectory().getChildren().length == 0) {
-                        // #139769: try to cleanse ProjectManager's cache of it.
-                        MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
-                        if (h != null) {
-                            h.notifyDeleted();
-                            prj = ProjectManager.getDefault().findProject(directory);
-                        }
-                    }
-                    if (prj != null) {
-                        throw new IllegalArgumentException("Already a " + prj.getClass().getName() + " in " + directory); // NOI18N
-                    }
-                    projectXml = FileUtil.createData(directory, MakeProjectHelper.PROJECT_XML_PATH);
-                    Document doc = XMLUtil.createDocument("project", MakeProjectHelper.PROJECT_NS, null, null); // NOI18N
-                    Element el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "type"); // NOI18N
-                    el.appendChild(doc.createTextNode(type));
-                    doc.getDocumentElement().appendChild(el);
-                    el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "configuration"); // NOI18N
-                    doc.getDocumentElement().appendChild(el);
-                    
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                    final byte[] data = MakeProjectHelperImpl.convertLineSeparator(baos, projectXml, projectXml.getParent());
-                    OutputStream os = SmartOutputStream.getSmartOutputStream(projectXml);
-                    try {
-                        os.write(data);
-                    } finally {
-                        os.close();
-                    }
-                    // OK, disk file project.xml has been created.
-                    // Load the project into memory and mark it as modified.
-                    ProjectManager.getDefault().clearNonProjectCache();
-                    ByteArrayOutputStream diagStream = new ByteArrayOutputStream();
-                    Project p;
-                    if (System.getProperty("java.class.path").contains("junit")) {
-                        diagStream.write(':');
-                        diagStream.write('\n');
-                        Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
-                        diagHandler.setLevel(Level.ALL);
-                        Level oldLevel = MakeBasedProjectFactorySingleton.LOG.getLevel();
-                        MakeBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
-                        MakeBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
-                        try {
-                            p = ProjectManager.getDefault().findProject(directory);
-                        } finally {
-                            MakeBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
-                            MakeBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
-                            diagHandler.close();
-                        }
-                    } else {
-                        p = ProjectManager.getDefault().findProject(directory);
-                    }
-                    if (p == null) {
-                        // Something is wrong, it is not being recognized.
-                        for (MakeProjectTypeImpl abpt : Lookup.getDefault().lookupAll(MakeProjectTypeImpl.class)) {
-                            if (abpt.getType().equals(type)) {
-                                // Well, the factory was there.
-                                throw new IllegalArgumentException("For some reason the folder " + directory + // NOI18N
-                                        " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
-                            }
-                        }
-                        throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N
-                    }
-                    MakeProjectHelperImpl helper = MakeBasedProjectFactorySingleton.getHelperFor(p);
-                    if (helper == null) {
-                        throw new IllegalArgumentException("Project " + p + " was not recognized as an Ant-based project"); // NOI18N
-                    }
-                    helper.markModified();
-                    return helper;
+            return ProjectManager.mutex().writeAccess((Mutex.ExceptionAction<MakeProjectHelper>) () -> {
+                directory.refresh();
+                FileObject projectXml = directory.getFileObject(MakeProjectHelper.PROJECT_XML_PATH);
+                if (projectXml != null) {
+                    throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
                 }
+                Project prj = ProjectManager.getDefault().findProject(directory);
+                if (prj != null && prj.getProjectDirectory().getChildren().length == 0) {
+                    // #139769: try to cleanse ProjectManager's cache of it.
+                    MakeProjectHelper h = MakeBasedProjectFactorySingleton.getHelperFor(prj);
+                    if (h != null) {
+                        h.notifyDeleted();
+                        prj = ProjectManager.getDefault().findProject(directory);
+                    }
+                }
+                if (prj != null) {
+                    throw new IllegalArgumentException("Already a " + prj.getClass().getName() + " in " + directory); // NOI18N
+                }
+                projectXml = FileUtil.createData(directory, MakeProjectHelper.PROJECT_XML_PATH);
+                Document doc = XMLUtil.createDocument("project", MakeProjectHelper.PROJECT_NS, null, null); // NOI18N
+                Element el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "type"); // NOI18N
+                el.appendChild(doc.createTextNode(type));
+                doc.getDocumentElement().appendChild(el);
+                el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "configuration"); // NOI18N
+                doc.getDocumentElement().appendChild(el);
+                
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+                final byte[] data = SmartOutputStream.convertLineSeparator(baos, projectXml, projectXml.getParent());
+                OutputStream os = SmartOutputStream.getSmartOutputStream(projectXml);
+                try {
+                    os.write(data);
+                } finally {
+                    os.close();
+                }
+                // OK, disk file project.xml has been created.
+                // Load the project into memory and mark it as modified.
+                ProjectManager.getDefault().clearNonProjectCache();
+                ByteArrayOutputStream diagStream = new ByteArrayOutputStream();
+                Project p;
+                if (System.getProperty("java.class.path").contains("junit")) {
+                    diagStream.write(':');
+                    diagStream.write('\n');
+                    Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
+                    diagHandler.setLevel(Level.ALL);
+                    Level oldLevel = MakeBasedProjectFactorySingleton.LOG.getLevel();
+                    MakeBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
+                    MakeBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
+                    try {
+                        p = ProjectManager.getDefault().findProject(directory);
+                    } finally {
+                        MakeBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
+                        MakeBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
+                        diagHandler.close();
+                    }
+                } else {
+                    p = ProjectManager.getDefault().findProject(directory);
+                }
+                if (p == null) {
+                    // Something is wrong, it is not being recognized.
+                    for (MakeProjectTypeImpl abpt : Lookup.getDefault().lookupAll(MakeProjectTypeImpl.class)) {
+                        if (abpt.getType().equals(type)) {
+                            // Well, the factory was there.
+                            throw new IllegalArgumentException("For some reason the folder " + directory + // NOI18N
+                                    " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
+                        }
+                    }
+                    throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N
+                }
+                MakeProjectHelperImpl helper = MakeBasedProjectFactorySingleton.getHelperFor(p);
+                if (helper == null) {
+                    throw new IllegalArgumentException("Project " + p + " was not recognized as an Ant-based project"); // NOI18N
+                }
+                helper.markModified();
+                return helper;
             });
         } catch (MutexException e) {
             throw (IOException)e.getException();

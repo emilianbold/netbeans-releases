@@ -88,6 +88,14 @@ public @interface Hint {
     public Kind hintKind() default Kind.INSPECTION;
     /**Specify various options for the hint*/
     public Options[] options() default {};
+    
+    /**
+     * Minimum source version required to process this hint.
+     * Annotated hint will be never invoked for files configured for earlier source
+     * level. The value should be single integer e.g. "3" for source level 1.3.
+     * @return required source level
+     */
+    public String minSourceVersion() default "";
 
     /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it
      * detects a code smell, or otherwise leads to improving the code, or a {@link Kind#ACTION},

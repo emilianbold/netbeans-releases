@@ -298,22 +298,70 @@ class Buffer {
         }
     }
 
+    public BExtent find_line(BCoord coord) {
+        WordDelineator newLine = WordDelineator.createNewlineDelineator();
+        return find_word(newLine, coord);
+    }
+
     public BExtent find_word(WordDelineator word_delineator, BCoord coord) {
         /*
          * Find the boundaries of a "word" at 'coord'.
          */
 
-        Line l = lineAt(coord.row);
+        int row = coord.row;
+        Line startLine = lineAt(row);
 
-        if (coord.col >= l.length()) {
+        if (coord.col >= startLine.length()) {
             return new BExtent(coord, coord);
         }
 
-        int lx = word_delineator.findLeft(l.stringBuffer(), coord.col);
-        int rx = word_delineator.findRight(l.stringBuffer(), coord.col);
+        int lx = 0;
+        int rx = 0;
+        int beginRow = row;
+        int endRow = row;
+        StringBuffer lineBuffer;
 
-        return new BExtent(new BCoord(coord.row, lx),
-                new BCoord(coord.row, rx));
+        // Try to use lineVisitor
+        while (beginRow >= 0) {
+            Line line = lineAt(beginRow);
+            lineBuffer = line.stringBuffer();
+            int searchCol = (lx == -1) ? line.length() - 1 : coord.col;
+            lx = word_delineator.findLeft(lineBuffer, searchCol, true);
+            
+            if (lx != -1) {
+                break;
+            } else {
+                if (beginRow == 0) {
+                    lx = 0;
+                } else if (!lineAt(beginRow - 1).isWrapped()) {
+                    lx = 0;
+                    break;
+                }
+            }
+            beginRow--;
+        }
+        while (endRow < nlines) {
+            Line line = lineAt(endRow);
+            lineBuffer = line.stringBuffer();
+            int searchCol = (rx == -1) ? 0 : coord.col;
+            rx = word_delineator.findRight(lineBuffer, searchCol, true);
+            
+            if (rx != -1) {
+                break;
+            } else {
+                if (endRow == nlines - 1) {
+                    rx = line.length() - 1;
+                }
+                if (!line.isWrapped()) {
+                    rx = line.length() - 1;
+                    break;
+                }
+            }
+            endRow++;
+        }
+
+        return new BExtent(new BCoord(beginRow, lx),
+                new BCoord(endRow, rx));
     }
 
     /**

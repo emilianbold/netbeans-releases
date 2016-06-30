@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,13 +76,13 @@ class RemovedResponse implements Response {
             filePath = new File(filePath).getAbsolutePath();
             if (services.getGlobalOptions().isExcluded(new File(filePath))) {
                 return;
-            }            
+            }
 
             FileToRemoveEvent e1 = new FileToRemoveEvent(this, filePath);
             FileRemovedEvent e2 = new FileRemovedEvent(this, filePath);
 
             //Fire the event before removing the local file. This is done
-            //so that event listeners have a chance to access the file one 
+            //so that event listeners have a chance to access the file one
             //last time before the file is removed.
             services.getEventManager().fireCVSEvent(e1);
             services.removeLocalFile(localPath, repositoryPath);

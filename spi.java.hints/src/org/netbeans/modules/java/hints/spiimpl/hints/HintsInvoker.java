@@ -77,6 +77,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -155,10 +156,15 @@ public class HintsInvoker {
         Map<HintMetadata, ? extends Collection<? extends HintDescription>> allHints = RulesManager.getInstance().readHints(info, null, cancel);
 
         if (allHints == null || cancel.get()) return null;
-        
+        SourceVersion sourceLevel = info.getSourceVersion();
         for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : allHints.entrySet()) {
             HintMetadata m = e.getKey();
-
+            SourceVersion hintSourceLevel = m.sourceVersion;
+            // hint requires a higher source level than the current compilation is configured for
+            if (hintSourceLevel != null &&
+                (sourceLevel.compareTo(hintSourceLevel) < 0)) {
+                continue;
+            }
             if (!settings.isEnabled(m)) {
                 continue;
             }
@@ -221,8 +227,13 @@ public class HintsInvoker {
         for (Class<? extends Trigger> c : TRIGGER_KINDS) {
             triggerKind2Hints.put(c, new ArrayList<HintDescription>());
         }
-
+        SourceVersion srcVersion = info.getSourceVersion();
         for (HintDescription hd : hints) {
+            SourceVersion hVersion = hd.getMetadata().sourceVersion;
+            if (hVersion != null &&
+                (srcVersion.compareTo(hVersion) < 0)) {
+                continue;
+            }
             List<HintDescription> sorted = triggerKind2Hints.get(hd.getTrigger().getClass());
 
             sorted.add(hd);

@@ -14,27 +14,35 @@ VARIABLE   $parent                         [PRIVATE]  <font color=#999999>index.
 VARIABLE   $parents: Array                 [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   $root: ko.$bindings             [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>index.html</font>
+VARIABLE   invalid                         [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   <font color=#999999>index.html</font>
 VARIABLE   userNameToAdd                   [PUBLIC]   index.html
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
+KEYWORD    class                                      null
+KEYWORD    const                                      null
 KEYWORD    continue                                   null
 KEYWORD    debugger                                   null
 KEYWORD    default                                    null
 KEYWORD    delete                                     null
 KEYWORD    do                                         null
 KEYWORD    else                                       null
+KEYWORD    export                                     null
+KEYWORD    extends                                    null
 KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    function                                   null
 KEYWORD    if                                         null
+KEYWORD    import                                     null
 KEYWORD    in                                         null
 KEYWORD    instanceof                                 null
+KEYWORD    let                                        null
 KEYWORD    new                                        null
 KEYWORD    null                                       null
 KEYWORD    return                                     null
+KEYWORD    super                                      null
 KEYWORD    switch                                     null
 KEYWORD    this                                       null
 KEYWORD    throw                                      null
@@ -45,3 +53,4 @@ KEYWORD    var                                        null
 KEYWORD    void                                       null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
+KEYWORD    yield                                      null

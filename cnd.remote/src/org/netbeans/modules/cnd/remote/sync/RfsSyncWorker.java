@@ -65,7 +65,8 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteException;
 import org.netbeans.modules.cnd.remote.support.RemoteLogger;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.setup.support.RemoteSyncNotifier;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -104,7 +105,7 @@ import org.openide.util.RequestProcessor;
     public boolean startup(Map<String, String> env2add) {
 
         if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
-            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            RemoteSyncNotifier.getInstance().warnDoubleRemote(executionEnvironment, fileSystem);
             return false;
         }
 
@@ -190,7 +191,7 @@ import org.openide.util.RequestProcessor;
         if (exitFlagFile != null) {
             pb.getEnvironment().put("RFS_CONTROLLER_EXIT_FLAG_FILE", exitFlagFile); // NOI18N
         }
-        NativeProcess remoteControllerProcess = pb.call();
+        NativeProcess remoteControllerProcess = pb.call(); // ProcessUtils.execute doesn't work here
         remoteController = new RemoteProcessController(remoteControllerProcess);
 
         errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);

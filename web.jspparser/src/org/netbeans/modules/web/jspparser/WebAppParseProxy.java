@@ -47,6 +47,7 @@ package org.netbeans.modules.web.jspparser;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.Map;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 
@@ -73,5 +74,5 @@ public interface WebAppParseProxy {
     URLClassLoader getWAClassLoader();
 
     // #146242
-    boolean isValid();
+    boolean isValid(WebModule module);
 }

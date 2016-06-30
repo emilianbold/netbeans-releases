@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -74,6 +75,9 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
@@ -156,6 +160,12 @@ public class NbEditorKit extends ExtKit implements Callable {
     private Map systemAction2editorAction = new HashMap();
     
     static {
+        
+        // Ensure that Nimbus L&F does not have the scrollbar size too small for large files
+        LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+        UIDefaults defaults = lookAndFeel.getDefaults();
+        defaults.put("ScrollBar.minimumThumbSize", new Dimension(20, 20));
+
         contentTypeTable = new HashMap<String, String>();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
         contentTypeTable.put("org.netbeans.modules.web.core.syntax.JSPKit", "text/x-jsp"); // NOI18N

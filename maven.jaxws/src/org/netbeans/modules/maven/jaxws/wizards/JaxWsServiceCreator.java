@@ -335,7 +335,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             MavenModelUtils.addWsimportExecution(plugin, 
                                     serviceName, relativePath,null );
                             if (WSUtils.isWeb(project)) { // expecting web project
-                                MavenModelUtils.addWarPlugin(model);
+                                MavenModelUtils.addWarPlugin(model, false);
                             } else { // J2SE Project
                                 MavenModelUtils.addWsdlResources(model);
                             }

@@ -70,7 +70,8 @@ public final class SingleUseStatementPartInfo extends ASTNodeInfo<SingleUseState
     }
 
     public static SingleUseStatementPartInfo create(SingleUseStatementPart node, GroupUseStatementPartInfo groupUseStatementPartInfo) {
-        return new SingleUseStatementPartInfo(node, groupUseStatementPartInfo, groupUseStatementPartInfo.getType());
+        UseStatement.Type type = node.getType() != null ? node.getType() : groupUseStatementPartInfo.getType();
+        return new SingleUseStatementPartInfo(node, groupUseStatementPartInfo, type);
     }
 
     public UseStatement.Type getType() {

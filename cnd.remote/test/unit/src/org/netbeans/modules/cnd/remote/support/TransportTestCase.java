@@ -67,7 +67,7 @@ public class TransportTestCase extends RemoteTestBase {
         final String randomString = "i am just a random string, it does not matter that I mean";
         ProcessUtils.ExitStatus rcs = ProcessUtils.execute(getTestExecutionEnvironment(), "echo", randomString);
         assert rcs.exitCode == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.exitCode;
-        assert randomString.equals( rcs.output.trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.output;
+        assert randomString.equals( rcs.getOutputString().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutputString();
     }
 
     @ForAllEnvironments

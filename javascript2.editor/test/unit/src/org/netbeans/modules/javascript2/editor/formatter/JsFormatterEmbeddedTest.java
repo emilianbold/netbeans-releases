@@ -52,7 +52,7 @@ import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -115,6 +115,10 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
 
     public void testEmbeddedSimple6() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedSimple6.html", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple7() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple7.html", new IndentPrefs(4,4));
     }
 
     public void testEmbeddedTrimmed1() throws Exception {

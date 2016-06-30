@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ThreadReference;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,10 +57,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -197,6 +205,9 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
             }
             ObjectVariable contendedMonitor = thread.getContendedMonitor();
             ObjectVariable[] ownedMonitors = thread.getOwnedMonitors();
+            if (contendedMonitor != null && (((JDIVariable) contendedMonitor).getJDIValue() instanceof ThreadReference)) {
+                ownedMonitors = checkForThreadJoin(thread, ownedMonitors);
+            }
             if (contendedMonitor == null || ownedMonitors.length == 0) {
                 continue;
             } // if
@@ -219,6 +230,26 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
                 contNode.addIncomming(node);
             } // for
         } // for
+    }
+
+    private ObjectVariable[] checkForThreadJoin(JPDAThread thread, ObjectVariable[] ownedMonitors) {
+        CallStackFrame[] callStack;
+        try {
+            callStack = thread.getCallStack(0, 2);
+        } catch (AbsentInformationException ex) {
+            return ownedMonitors;
+        }
+        if (callStack.length < 2) {
+            return ownedMonitors;
+        }
+        if (Thread.class.getName().equals(callStack[1].getClassName()) && "join".equals(callStack[1].getMethodName())) {    // NOI18N
+            // This current thread is the "owned" monitor, it's joning the contended monitor.
+            ObjectVariable[] ownedMonitorsWithThread = Arrays.copyOf(ownedMonitors, ownedMonitors.length + 1);
+            ownedMonitorsWithThread[ownedMonitors.length] = (ObjectVariable) ((JPDAThreadImpl) thread).getDebugger().getVariable(((JPDAThreadImpl) thread).getThreadReference());
+            return ownedMonitorsWithThread;
+        } else {
+            return ownedMonitors;
+        }
     }
     
     // **************************************************************************

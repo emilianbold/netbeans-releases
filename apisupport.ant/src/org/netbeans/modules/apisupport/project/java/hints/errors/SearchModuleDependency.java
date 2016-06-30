@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,12 +35,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): 
- *      theanuradha@netbeans.org
- *      markiewb@netbeans.org
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- * Portions Copyrighted 2013 markiewb@netbeans.org
+ * Contributor(s): theanuradha@netbeans.org, markiewb@netbeans.org
  */
 package org.netbeans.modules.apisupport.project.java.hints.errors;
 

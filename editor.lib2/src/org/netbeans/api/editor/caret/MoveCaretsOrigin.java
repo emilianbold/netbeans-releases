@@ -183,4 +183,8 @@ public final class MoveCaretsOrigin {
         return direction;
     }
     
+    public String toString() {
+        return "{action=\"" + actionType + "\" dir=" + direction + "}"; // NOI18N
+    }
+    
 }

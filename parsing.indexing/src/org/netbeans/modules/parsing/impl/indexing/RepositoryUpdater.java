@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.event.DocumentEvent;
@@ -1123,83 +1125,101 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @Override
     public void activeDocumentChanged(@NonNull final ActiveDocumentProvider.ActiveDocumentEvent event) {
         handleActiveDocumentChange(event.getDeactivatedDocument(), event.getActivatedDocument());
-        Map<URL, FileListWork> jobs = new HashMap<>();
         final Collection<? extends Document> docs = event.getDocumentsToRefresh();
         if (!docs.isEmpty()) {
-            for(Document doc : docs) {
-                Pair<URL, FileObject> root = getOwningSourceRoot(doc);
-                if (root != null) {
-                    if (root.second() == null) {
-                        final FileObject file = Utilities.getFileObject(doc);
-                        assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first() + " and owningSourceRoot=" + root.second(); //NOI18N
-                        return;
-                    }
-                    long version = DocumentUtilities.getDocumentVersion(doc);
-                    Long lastIndexedVersion = (Long) doc.getProperty(PROP_LAST_INDEXED_VERSION);
-                    Long lastDirtyVersion = (Long) doc.getProperty(PROP_LAST_DIRTY_VERSION);
-                    boolean reindex;
-
-                    boolean openedInEditor = activeDocProvider.getActiveDocuments().contains(doc);
-                    if (openedInEditor) {
-                        if (lastIndexedVersion == null) {
-                            reindex = lastDirtyVersion != null;
-                        } else {
-                            reindex = lastIndexedVersion < version;
+            class DocPropsSnapshot {
+                final Document doc;
+                final boolean openedInEditor;
+                final long version;
+                final Long lastIndexedVersion;
+                final Long lastDirtyVersion;
+                
+                DocPropsSnapshot(@NonNull final Document doc) {
+                    this.doc = doc;
+                    this.openedInEditor = activeDocProvider.getActiveDocuments().contains(doc);
+                    this.version = DocumentUtilities.getDocumentVersion(doc);
+                    this.lastIndexedVersion = (Long) doc.getProperty(PROP_LAST_INDEXED_VERSION);
+                    this.lastDirtyVersion = (Long) doc.getProperty(PROP_LAST_DIRTY_VERSION);
+                }
+            }
+            // 1)Sync part - collect doc properties snapshots
+            final List<DocPropsSnapshot> docsProps = docs.stream()
+                    .map((doc) -> new DocPropsSnapshot(doc))
+                    .collect(Collectors.toList());
+            // 2) Async part on doc properties snapshots
+            RP.execute(() -> {
+                final Map<URL, FileListWork> jobs = new HashMap<>();
+                for (DocPropsSnapshot dp : docsProps) {
+                    final Pair<URL, FileObject> root = getOwningSourceRoot(dp.doc);
+                    if (root != null) {
+                        if (root.second() == null) {
+                            final FileObject file = Utilities.getFileObject(dp.doc);
+                            assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first() + " and owningSourceRoot=" + root.second(); //NOI18N
+                            continue;
                         }
-                    } else {
-                        // Editor closed. There were possibly discarded changes and
-                        // so we have to reindex the contents of the file.
-                        // This must not be done too agresively (eg reindex only when there really were
-                        // editor changes) otherwise it may cause unneccessary redeployments, etc (see #152222).
-                        reindex = lastDirtyVersion != null;
-                    }
-
-                    FileObject docFile = Utilities.getFileObject(doc);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
-                            docFile.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
-                        });
-                    }
-
-                    if (reindex) {
-                        // we have already seen the document and it's been modified since the last time
+                        boolean reindex;
+                        if (dp.openedInEditor) {
+                            if (dp.lastIndexedVersion == null) {
+                                reindex = dp.lastDirtyVersion != null;
+                            } else {
+                                reindex = dp.lastIndexedVersion < dp.version;
+                            }
+                        } else {
+                            // Editor closed. There were possibly discarded changes and
+                            // so we have to reindex the contents of the file.
+                            // This must not be done too agresively (eg reindex only when there really were
+                            // editor changes) otherwise it may cause unneccessary redeployments, etc (see #152222).
+                            reindex = dp.lastDirtyVersion != null;
+                        }
+                        final FileObject docFile = Utilities.getFileObject(dp.doc);
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(
-                                Level.FINE,
-                                "Document modified (reindexing): {0} Owner: {1}",   //NOI18N
-                                new Object[]{
-                                    FileUtil.getFileDisplayName(docFile),
-                                    root.first()});
+                            LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
+                                docFile.getPath(),
+                                dp.version,
+                                dp.lastIndexedVersion,
+                                dp.lastDirtyVersion,
+                                dp.openedInEditor,
+                                reindex
+                            });
                         }
-
-                        FileListWork job = jobs.get(root.first());
-                        if (job == null) {
-                            Collection<FileObject> c = Collections.singleton(docFile);
-                            job = new FileListWork(
-                                    scannedRoots2Dependencies,
-                                    root.first(),
-                                    c,
-                                    false,
-                                    openedInEditor,
-                                    true,
-                                    sourcesForBinaryRoots.contains(root.first()),
-                                    false,
-                                    suspendSupport.getSuspendStatus(),
-                                    LogContext.create(LogContext.EventType.FILE, null).
-                                        withRoot(root.first()).
-                                        addFileObjects(c));
-                            jobs.put(root.first(), job);
-                        } else {
-                            // XXX: strictly speaking we should set 'checkEditor' for each file separately
-                            // and not for each job; in reality we normally do not end up here
-                            job.addFile(docFile);
+                        if (reindex) {
+                            // we have already seen the document and it's been modified since the last time
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(
+                                    Level.FINE,
+                                    "Document modified (reindexing): {0} Owner: {1}",   //NOI18N
+                                    new Object[]{
+                                        FileUtil.getFileDisplayName(docFile),
+                                        root.first()});
+                            }
+                            FileListWork job = jobs.get(root.first());
+                            if (job == null) {
+                                Collection<FileObject> c = Collections.singleton(docFile);
+                                job = new FileListWork(
+                                        scannedRoots2Dependencies,
+                                        root.first(),
+                                        c,
+                                        false,
+                                        dp.openedInEditor,
+                                        true,
+                                        sourcesForBinaryRoots.contains(root.first()),
+                                        false,
+                                        suspendSupport.getSuspendStatus(),
+                                        LogContext.create(LogContext.EventType.FILE, null).
+                                            withRoot(root.first()).
+                                            addFileObjects(c));
+                                jobs.put(root.first(), job);
+                            } else {
+                                // XXX: strictly speaking we should set 'checkEditor' for each file separately
+                                // and not for each job; in reality we normally do not end up here
+                                job.addFile(docFile);
+                            }
                         }
                     }
                 }
-            }
-        }
-        for(FileListWork job : jobs.values()) {
-            scheduleWork(job, false);
+                jobs.values()
+                        .forEach((job) -> scheduleWork(job, false));
+            });
         }
     }
 

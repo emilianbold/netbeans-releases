@@ -79,7 +79,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -94,7 +94,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.util.Exceptions;
 
 /**

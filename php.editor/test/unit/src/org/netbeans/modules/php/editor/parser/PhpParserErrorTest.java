@@ -601,4 +601,12 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/groupUse_03.php");
     }
 
+    public void testGroupUse_04() throws Exception {
+        checkErrors("testfiles/parser/groupUse_04.php");
+    }
+
+    public void testIssue258959() throws Exception {
+        checkErrors("testfiles/parser/issue258959.php");
+    }
+
 }

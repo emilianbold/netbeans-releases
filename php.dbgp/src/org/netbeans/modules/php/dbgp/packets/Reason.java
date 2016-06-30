@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.Locale;
+
 public enum Reason {
     OK,
     ERROR,
@@ -67,7 +69,7 @@ public enum Reason {
 
     @Override
     public String toString() {
-        return super.toString().toLowerCase();
+        return super.toString().toLowerCase(Locale.US);
     }
 
     static Reason forString(String str) {

@@ -97,6 +97,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     private String localizedMessage;
     private Throwable cause;
     private StackTraceElement[] stackTrace;
+    private final Throwable createdAt;
 
     public InvocationExceptionTranslated(InvocationException iex, JPDADebuggerImpl debugger) {
         this(iex.getMessage(), iex.exception(), debugger);
@@ -115,10 +116,24 @@ public class InvocationExceptionTranslated extends ApplicationException {
                        ",\n evm = "+printVM(evm)+",\n dvm = "+printVM(dvm),     // NOI18N
                        new IllegalStateException("Stack Trace Info"));          // NOI18N
         }
+        this.createdAt = new Throwable().fillInStackTrace();
     }
     
     public void setPreferredThread(JPDAThreadImpl preferredThread) {
         this.preferredThread = preferredThread;
+    }
+    
+    public InvocationExceptionTranslated preload(JPDAThreadImpl preferredThread) {
+        this.preferredThread = preferredThread;
+        getMessage();
+        getLocalizedMessage();
+        Throwable c = getCause();
+        getStackTrace();
+        toString();
+        if (c instanceof InvocationExceptionTranslated) {
+            ((InvocationExceptionTranslated) c).preload(preferredThread);
+        }
+        return this;
     }
     
     @Override
@@ -272,6 +287,9 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         } else {
                             return ex.getLocalizedMessage();
                         }
+                    } catch (AssertionError ae) {
+                        Exceptions.printStackTrace(new IllegalStateException("Do preload the exception content", createdAt));
+                        throw ae;
                     }
                 }
             } catch (InternalExceptionWrapper iex) {

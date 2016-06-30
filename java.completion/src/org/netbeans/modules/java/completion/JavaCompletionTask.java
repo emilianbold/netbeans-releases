@@ -136,6 +136,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
         T createTypeCastableExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef);        
     }
+    
+    public static interface LambdaItemFactory<T> extends ItemFactory<T> {
+        T createLambdaItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon);
+    }
 
     public static enum Options {
 
@@ -1398,15 +1402,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         } else if (last.getKind() == Tree.Kind.TRY) {
             if (((TryTree) last).getFinallyBlock() == null) {
-                addKeyword(env, CATCH_KEYWORD, null, false);
-                addKeyword(env, FINALLY_KEYWORD, null, false);
+                addKeyword(env, CATCH_KEYWORD, null, true);
+                addKeyword(env, FINALLY_KEYWORD, null, true);
                 if (((TryTree) last).getCatches().isEmpty() && ((TryTree) last).getResources().isEmpty()) {
                     return;
                 }
             }
         } else if (last.getKind() == Tree.Kind.IF) {
             if (((IfTree) last).getElseStatement() == null) {
-                addKeyword(env, ELSE_KEYWORD, null, false);
+                addKeyword(env, ELSE_KEYWORD, null, true);
             }
         }
         localResult(env);
@@ -1973,7 +1977,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
         TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, env.getPath().getLeaf(), env.getOffset());
         if (last != null && (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.SEMICOLON)) {
             addKeyword(env, FINAL_KEYWORD, SPACE, false);
-            addKeyword(env, NEW_KEYWORD, SPACE, false);
             if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_9) >= 0) {
                 addEffectivelyFinalAutoCloseables(env);
             }
@@ -1994,7 +1997,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             if (!options.contains(Options.ALL_COMPLETION)) {
                 TreeUtilities tu = controller.getTreeUtilities();
                 TreePath tryPath = tu.getPathElementOfKind(Tree.Kind.TRY, path);
-                Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath);
+                Set<TypeMirror> exs = tu.getUncaughtExceptions(tryPath != null ? tryPath : path.getParentPath());
                 Elements elements = controller.getElements();
                 for (TypeMirror ex : exs) {
                     if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType) ex).asElement().getSimpleName().toString())
@@ -2590,7 +2593,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         String prefix = env.getPrefix();
         Tree et = exPath.getLeaf();
         Tree parent = exPath.getParentPath().getLeaf();
-        CompilationController controller = env.getController();
+        final CompilationController controller = env.getController();
         int endPos = (int) env.getSourcePositions().getEndPosition(env.getRoot(), et);
         if (endPos != Diagnostic.NOPOS && endPos < offset) {
             TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, endPos, offset);
@@ -2615,14 +2618,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
         if (parent.getKind() != Tree.Kind.PARENTHESIZED
                 && (et.getKind() == Tree.Kind.PRIMITIVE_TYPE || et.getKind() == Tree.Kind.ARRAY_TYPE || et.getKind() == Tree.Kind.PARAMETERIZED_TYPE)) {
             TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
-            final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+            final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
             Scope scope = env.getScope();
             final ExecutableElement method = scope.getEnclosingMethod();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 @Override
                 public boolean accept(Element e, TypeMirror t) {
-                    return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                            && !illegalForwardRefs.contains(e);
+                    return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                            || EnumSet.of(LOCAL_VARIABLE, PARAMETER, EXCEPTION_PARAMETER, RESOURCE_VARIABLE).contains(e.getKind()) && controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                            && !illegalForwardRefs.containsKey(e.getSimpleName());
                 }
             };
             for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument()))) {
@@ -2650,14 +2654,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 case PACKAGE:
                     if (parent.getKind() != Tree.Kind.PARENTHESIZED
                             || env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
-                        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                        final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
                         Scope scope = env.getScope();
                         final ExecutableElement method = scope.getEnclosingMethod();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             @Override
                             public boolean accept(Element e, TypeMirror t) {
-                                return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                                        && !illegalForwardRefs.contains(e);
+                                return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                                        || EnumSet.of(LOCAL_VARIABLE, PARAMETER, EXCEPTION_PARAMETER, RESOURCE_VARIABLE).contains(e.getKind()) && controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                                        && !illegalForwardRefs.containsKey(e.getSimpleName());
                             }
                         };
                         for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(),
@@ -2681,14 +2686,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     }
                     TypeElement te = getTypeElement(env, e.getSimpleName().toString());
                     if (te != null) {
-                        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                        final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
                         Scope scope = env.getScope();
                         final ExecutableElement method = scope.getEnclosingMethod();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             @Override
                             public boolean accept(Element e, TypeMirror t) {
-                                return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                                        && !illegalForwardRefs.contains(e);
+                                return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                                        || EnumSet.of(LOCAL_VARIABLE, PARAMETER, EXCEPTION_PARAMETER, RESOURCE_VARIABLE).contains(e.getKind()) && controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                                        && !illegalForwardRefs.containsKey(e.getSimpleName());
                             }
                         };
                         for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), varKind, varMods, null, prefix, controller.getTypes(),
@@ -2790,14 +2796,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
             case ENUM:
             case INTERFACE:
             case PACKAGE:
-                final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
                 Scope scope = env.getScope();
                 final ExecutableElement method = scope.getEnclosingMethod();
                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                     @Override
                     public boolean accept(Element e, TypeMirror t) {
-                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                                && !illegalForwardRefs.contains(e);
+                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                                || EnumSet.of(LOCAL_VARIABLE, PARAMETER, EXCEPTION_PARAMETER, RESOURCE_VARIABLE).contains(e.getKind()) && controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                                && !illegalForwardRefs.containsKey(e.getSimpleName());
                     }
                 };
                 for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument()))) {
@@ -2937,6 +2944,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         final TypeElement element = (TypeElement) type.asElement();
                         if (JAVA_LANG_CLASS.contentEquals(element.getQualifiedName())) {
                             addTypeDotClassMembers(env, type);
+                        } else if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
+                                && elements.isFunctionalInterface(element) && itemFactory instanceof LambdaItemFactory) {
+                            results.add(((LambdaItemFactory<T>)itemFactory).createLambdaItem(env.getController(), element, type, anchorOffset, env.addSemicolon()));
                         }
                         final boolean startsWith = startsWith(env, element.getSimpleName().toString());
                         final boolean withinScope = withinScope(env, element);
@@ -3073,7 +3083,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         final TypeElement enclClass = scope.getEnclosingClass();
         final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
         final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree) env.getPath().getLeaf()).isStatic()));
-        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+        final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
         final ExecutableElement method = scope.getEnclosingMethod() != null && scope.getEnclosingMethod().getEnclosingElement() == enclClass ? scope.getEnclosingMethod() : null;
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
             @Override
@@ -3093,14 +3103,14 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                 || (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT
                                 || e.getEnclosingElement().getKind() == STATIC_INIT
                                 || e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD)))
-                                && !illegalForwardRefs.contains(e);
+                                && (!illegalForwardRefs.containsKey(e.getSimpleName()) || illegalForwardRefs.get(e.getSimpleName()).getEnclosingElement() != e.getEnclosingElement());
                     case FIELD:
                         if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
                         }
                     case ENUM_CONSTANT:
                         return startsWith(env, e.getSimpleName().toString())
-                                && !illegalForwardRefs.contains(e)
+                                && !illegalForwardRefs.containsValue(e)
                                 && (!isStatic || e.getModifiers().contains(STATIC))
                                 && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
                                 && trees.isAccessible(scope, e, (DeclaredType) t);
@@ -3906,7 +3916,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     }
 
     private void addMethodArguments(Env env, MethodInvocationTree mit) throws IOException {
-        CompilationController controller = env.getController();
+        final CompilationController controller = env.getController();
         TreePath path = env.getPath();
         CompilationUnitTree root = env.getRoot();
         SourcePositions sourcePositions = env.getSourcePositions();
@@ -3949,7 +3959,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     final Trees trees = controller.getTrees();
                     final TypeElement enclClass = scope.getEnclosingClass();
                     final boolean isStatic = enclClass != null ? (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree) env.getPath().getLeaf()).isStatic())) : false;
-                    final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                    final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
                     final ExecutableElement method = scope.getEnclosingMethod();
                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                         @Override
@@ -3959,10 +3969,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                 case RESOURCE_VARIABLE:
                                 case EXCEPTION_PARAMETER:
                                 case PARAMETER:
-                                    return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                                            && !illegalForwardRefs.contains(e);
+                                    return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                                            || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                                            && (!illegalForwardRefs.containsKey(e.getSimpleName()) || illegalForwardRefs.get(e.getSimpleName()).getEnclosingElement() != e.getEnclosingElement());
                                 case FIELD:
-                                    if (illegalForwardRefs.contains(e)) {
+                                    if (illegalForwardRefs.containsValue(e)) {
                                         return false;
                                     }
                                     if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
@@ -4629,7 +4640,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         final TypeElement enclClass = scope.getEnclosingClass();
         final boolean isStatic = enclClass == null ? false
                 : (controller.getTreeUtilities().isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree) env.getPath().getLeaf()).isStatic()));
-        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+        final Map<Name, ? extends Element> illegalForwardRefs = env.getForwardReferences();
         final ExecutableElement method = scope.getEnclosingMethod();
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
             @Override
@@ -4645,14 +4656,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                     case EXCEPTION_PARAMETER:
                     case PARAMETER:
-                        return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL))
-                                && !illegalForwardRefs.contains(e);
+                        return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)
+                                || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && controller.getElementUtilities().isEffectivelyFinal((VariableElement)e))
+                                && (!illegalForwardRefs.containsKey(e.getSimpleName()) || illegalForwardRefs.get(e.getSimpleName()).getEnclosingElement() != e.getEnclosingElement());
                     case FIELD:
                         if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                             return !isStatic;
                         }
                     case ENUM_CONSTANT:
-                        return !illegalForwardRefs.contains(e);
+                        return !illegalForwardRefs.containsValue(e);
                 }
                 return false;
             }
@@ -4901,6 +4913,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     }
                     return ret;
                 case TRY:
+                    TryTree tt = (TryTree) tree;
+                    BlockTree tryBlock = tt.getBlock();
+                    SourcePositions sourcePositions = env.getSourcePositions();
+                    if (tryBlock != null && sourcePositions.getStartPosition(env.getRoot(), tryBlock) <= offset) {
+                        return null;
+                    }
                     TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
                     return te != null ? Collections.singleton(controller.getTypes().getDeclaredType(te)) : null;
                 case IF:
@@ -4924,7 +4942,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                         return cond == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
                     }
-                    SourcePositions sourcePositions = env.getSourcePositions();
+                    sourcePositions = env.getSourcePositions();
                     CompilationUnitTree root = env.getRoot();
                     if (cond != null && sourcePositions.getEndPosition(root, cond) < offset) {
                         return null;
@@ -5376,6 +5394,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         }
                     }
                     break;
+                case BLOCK:
+                    return null;
             }
             lastTree = tree;
             path = path.getParentPath();

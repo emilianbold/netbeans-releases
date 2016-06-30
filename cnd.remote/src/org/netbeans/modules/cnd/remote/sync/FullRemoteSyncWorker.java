@@ -48,7 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.setup.support.RemoteSyncNotifier;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -81,7 +82,7 @@ import org.openide.util.RequestProcessor;
     public boolean startup(Map<String, String> env2add) {
 
         if (SyncUtils.isDoubleRemote(executionEnvironment, sourceFileSystem)) {
-            SyncUtils.warnDoubleRemote(executionEnvironment, sourceFileSystem);
+            RemoteSyncNotifier.getInstance().warnDoubleRemote(executionEnvironment, sourceFileSystem);
             return false;
         }
 

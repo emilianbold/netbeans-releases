@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;

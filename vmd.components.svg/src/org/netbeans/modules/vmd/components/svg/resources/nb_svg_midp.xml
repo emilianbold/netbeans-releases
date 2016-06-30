@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.vmd.components.svg.resources.Bundle</localizing-bundle>
     <volume>
-        <type>classpath</type> 
+        <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.vmd.components.svg/modules/ext/nb_svg_midp_components.jar!/</resource>
     </volume>
     <volume>

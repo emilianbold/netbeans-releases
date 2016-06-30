@@ -421,6 +421,7 @@ public class TreeLoader extends LazyTreeLoader {
             @NonNull final ClassSymbol clazz,
             @NonNull final HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
         Log log = Log.instance(jti.getContext());
+        JavaCompiler compiler = JavaCompiler.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         DiscardDiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         final TaskListener listener = new TaskListener() {
@@ -436,13 +437,16 @@ public class TreeLoader extends LazyTreeLoader {
             public void finished(TaskEvent e) {
             }
         };
+        boolean oldSkipAP = compiler.skipAnnotationProcessing;
         try {
+            compiler.skipAnnotationProcessing = true;
             jti.addTaskListener(listener);
             jti.generate(Collections.singletonList(clazz));
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jti.removeTaskListener(listener);
+            compiler.skipAnnotationProcessing = oldSkipAP;
             log.popDiagnosticHandler(discardDiagnosticHandler);
             log.useSource(prevLogTo);
         }

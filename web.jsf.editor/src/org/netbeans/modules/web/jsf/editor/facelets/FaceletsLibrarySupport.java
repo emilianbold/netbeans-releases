@@ -59,6 +59,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -89,8 +91,10 @@ public class FaceletsLibrarySupport {
 
     private static final RequestProcessor RP = new RequestProcessor(FaceletsLibrarySupport.class);
     private static final RequestProcessor FC_REFRESH_RP = new RequestProcessor("FLSFacesComponentsRefresh", 1);
+    
+    private final RequestProcessor updateProcessor = new RequestProcessor("FLSCheckLibraries", 1);
 
-    private JsfSupportImpl jsfSupport;
+    private final JsfSupportImpl jsfSupport;
 
     /**
      * Library's namespace to library instance map.
@@ -102,13 +106,11 @@ public class FaceletsLibrarySupport {
     private Map<String, Library> faceletsLibraries;
 
     private long libraries_hash;
-    
-    private boolean checkLibrariesUpToDate;
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
     private RequestProcessor.Task facesComponentsRefreshTask;
-    private volatile Collection<? extends Library> facesComponentsCache = new ArrayList<>();
+    private volatile Collection<? extends Library> facesComponentsCache = Collections.emptyList();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
         @Override
@@ -183,51 +185,73 @@ public class FaceletsLibrarySupport {
         checkLibraryDescriptorsUpToDate();
     }
 
-    /** @return URI -> library map */
-    public synchronized Map<String, Library> getLibraries() {
-        if (faceletsLibraries == null) {
-            // preload FacesComponents
-            refreshFacesComponentsCache(0);
-
-            //not initialized yet, or invalidated by checkLibraryDescriptorsUpToDate()
-            faceletsLibraries = findLibraries();
-
-            if (faceletsLibraries == null) {
-                //an error when scanning libraries, return no libraries, but give it a next try
-                return Collections.emptyMap();
-            }
-            
-            updateCompositeLibraries(faceletsLibraries);
+    /**
+     * @return URI -> library map
+     */
+    public Map<String, Library> getLibraries() {
+        try {
+            return updateProcessor.submit(new Callable<Map<String, Library>>() {
+                @Override
+                public Map<String, Library> call() throws Exception {
+                    synchronized (FaceletsLibrarySupport.this) {
+                        if (faceletsLibraries == null) {
+                            // preload FacesComponents
+                            refreshFacesComponentsCache(0);
+                            
+                            //not initialized yet, or invalidated by checkLibraryDescriptorsUpToDate()
+                            faceletsLibraries = findLibraries();
+                            
+                            if (faceletsLibraries == null) {
+                                //an error when scanning libraries, return no libraries, but give it a next try
+                                return Collections.emptyMap();
+                            }
+                            
+                            updateCompositeLibraries(faceletsLibraries);
+                        }
+                        updateFacesComponentLibraries(faceletsLibraries);
+                        
+                        return faceletsLibraries;
+                    }
+                }
+            }).get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return Collections.emptyMap();
+        } catch (ExecutionException ex) {
+            throw new RuntimeException(ex);
         }
-        updateFacesComponentLibraries(faceletsLibraries);
-
-        return faceletsLibraries;
     }
 
     private void checkLibraryDescriptorsUpToDate() {
-        //check whether the library descriptors have changes since the last time
-        long hash = 7;
-        for (IndexedFile indexedFile : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            String md5checksum = indexedFile.getMD5Checksum();
-            hash = 79 * hash + md5checksum.hashCode();
-        }
+        updateProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                //check whether the library descriptors have changes since the last time
+                long hash = 7;
+                for (IndexedFile indexedFile : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
+                    String md5checksum = indexedFile.getMD5Checksum();
+                    hash = 79 * hash + md5checksum.hashCode();
+                }
 
-        //Check whether a new composite component library has been created or removed.
-        //The changes within the composite component libraries does not need to be
-        //checked here since the CC libraries are doing index queries whenever a library
-        //metdata are requested.
-        for(String ccLibName : getJsfSupport().getIndex().getAllCompositeLibraryNames()) {
-            hash = 79 * hash + ccLibName.hashCode();
-        }
+                //Check whether a new composite component library has been created or removed.
+                //The changes within the composite component libraries does not need to be
+                //checked here since the CC libraries are doing index queries whenever a library
+                //metdata are requested.
+                for (String ccLibName : getJsfSupport().getIndex().getAllCompositeLibraryNames()) {
+                    hash = 79 * hash + ccLibName.hashCode();
+                }
 
-        if(hash != libraries_hash) {
-            LOGGER.info("Invalidating facelets libraries due to a library descriptor change."); //NOI18N
-            
-            //some library descriptor has been modified, invalidate the cache
-            invalidateLibrariesCache();
-            libraries_hash = hash;
-        }
+                synchronized (FaceletsLibrarySupport.this) {
+                    if (hash != libraries_hash) {
+                        LOGGER.info("Invalidating facelets libraries due to a library descriptor change."); //NOI18N
 
+                        //some library descriptor has been modified, invalidate the cache
+                        invalidateLibrariesCache();
+                        libraries_hash = hash;
+                    }
+                }
+            }
+        });
     }
 
     // This method creates a library instances for the composite libraries without

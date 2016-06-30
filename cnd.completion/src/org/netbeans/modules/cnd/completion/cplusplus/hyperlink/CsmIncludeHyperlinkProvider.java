@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;

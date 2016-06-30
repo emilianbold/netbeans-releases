@@ -45,8 +45,9 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
+import com.oracle.truffle.api.debug.SuspendedEvent;
+import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Property;
@@ -62,30 +63,24 @@ public class TruffleObject {
     
     static final int DISPLAY_TRIM = 1000;
     
-    final Visualizer visualizer;
     final String name;
     final String type;
     final Object object;
     final String displayValue;
     final boolean leaf;
+    final SuspendedEvent event;
+    final FrameInstance fi;
     
-    public TruffleObject(Visualizer visualizer, String name, Object object) {
-        this.visualizer = visualizer;
+    TruffleObject(String name, Object object, SuspendedEvent event, FrameInstance fi) {
         this.name = name;
         this.object = object;
-        String value;
-        if (visualizer != null) {
-            value = visualizer.displayValue(object, DISPLAY_TRIM);
+        this.event = event;
+        this.fi = fi;
+        if (event != null) {
+            this.displayValue = event.toString(object, fi);
         } else {
-            value = Objects.toString(object);
+            this.displayValue = Objects.toString(object);
         }
-        if (object instanceof DynamicObject && value.startsWith("DynamicObject<")) {
-            // Ugly:
-            ObjectType objectType = ((DynamicObject) object).getShape().getObjectType();
-            //value = objectType.toString((DynamicObject) object);
-            value = objectType.toString();
-        }
-        this.displayValue = value;
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
@@ -100,7 +95,7 @@ public class TruffleObject {
             System.err.println("Object's class = "+object.getClass()+", is DynamicObject = "+(object instanceof DynamicObject));
         }*/
     }
-    
+
     public Object[] getChildren() {
         // TODO: Handle arrays in a special way
         return getChildrenGeneric();
@@ -164,7 +159,7 @@ public class TruffleObject {
             for (int i = 0; i < n; i++) {
                 String name = props.get(i).getKey().toString();
                 Object obj = props.get(i).get(dobj, true);
-                ch[i] = new TruffleObject(visualizer, name, obj);
+                ch[i] = new TruffleObject(name, obj, event, fi);
             }
             return ch;
         } else {

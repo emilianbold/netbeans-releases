@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+-->
+<project basedir="." default="netbeans" name="libs.dbx">
+    <description>Builds, tests, and runs the project org.netbeans.libs.dbx</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <property name="otool.dbx.dest.zip" value="${basedir}/external/otool.dbx.zip"/>
+    <property name="otool.dbx.libs.dest.zip" value="${basedir}/release/otool.libs.dbx.zip"/>
+ <!--   <property name="copy.otool.dbx.jars" value="true"/>
+    <property name="sputnik" value="/home/masha/netbeans-src/sputnik-main"/>-->
+    <target name="-overwrite-otool.dbx-zip" if="${copy.otool.dbx.jars}">
+      <echo message="HHH"/>
+      <property name="otool.dbx.suite.dir" value="${sputnik}/tailwind.support.suite"/>
+      <property name="otool.dbx.suite.jars.dir" value="${otool.dbx.suite.dir}/build/cluster/modules"/>
+      <property name="otool.dbx.suite.ext.jars.dir" value="${otool.dbx.suite.dir}/build/public-package-jars"/>
+      <property name="otool.dbx.suite.ext.lib.dir" value="${sputnik}/ide.suite/build/cluster/modules/ext"/>
+       <property name="otool.dbx.suite.ext.libs.dir" value="${sputnik}/ide.suite/build/cluster/modules/ext/lib"/>
+      <condition property="SPUTNIK.found">
+          <isset property="sputnik"/>
+      </condition>
+      <fail unless="SPUTNIK.found" message="${sputnik} property is not set."/>      
+      
+      <condition property="otool.dbx.suite.built">
+        <available file="${otool.dbx.suite.jars.dir}" type="dir"/>
+      </condition>      
+      <fail unless="otool.dbx.suite.built" message="${otool.dbx.suite.jars.dir} doesn't exist. ${otool.dbx.suite.dir} was not built?"/>      
+
+      <fileset dir="${otool.dbx.suite.jars.dir}" id="otool.dbx.jars.fileset" includes="*.jar"/>
+      <fileset dir="${otool.dbx.suite.ext.jars.dir}" id="otool.dbx.ext.jars.fileset" includes="org-netbeans-modules-cnd-dbx-support.jar"/>
+  <!--    <fileset dir="${otool.dbx.suite.ext.lib.dir}" id="otool.dbx.ext.libs.fileset" includes="**"/>-->
+      <pathconvert refid="otool.dbx.jars.fileset" property="otool.dbx.suite.contains-files" setonempty="false"/>  
+      <fail unless="otool.dbx.suite.contains-files" message="${otool.dbx.suite.jars.dir} doesn't contain jar files. ${otool.dbx.suite.dir} was not built?"/>        
+      <echo message="WILL ZIP ################################################################################"></echo>
+      <echo message="Zipping .jar files from ${otool.dbx.suite.jars.dir}/*.jar into ${otool.dbx.dest.zip}" />
+      <echo message="${otool.dbx.dest.zip} is overwritten" />
+      <echo  message="################################################################################"></echo>
+      <zip basedir="${otool.dbx.suite.jars.dir}" destfile="${otool.dbx.dest.zip}">
+          <fileset dir="${otool.dbx.suite.jars.dir}" includes="*.jar"/>
+          <fileset dir="${otool.dbx.suite.ext.lib.dir}" includes="toolscommon.jar"/>
+           <fileset dir="${otool.dbx.suite.ext.jars.dir}" includes="org-netbeans-modules-cnd-dbx-support.jar"/>
+      </zip>
+      <zip basedir="${otool.dbx.suite.ext.libs.dir}" destfile="${otool.dbx.libs.dest.zip}">
+        <!--  <fileset dir="${otool.dbx.suite.ext.lib.dir}" includes="toolcommon.jar"/>-->
+            <fileset dir="${otool.dbx.suite.ext.libs.dir}" includes="**"/>
+            
+      </zip>      
+      <echo message="need to unzip replaced otool.dbx; copy.otool.dbx.jars=${copy.otool.dbx.jars}" />
+      <unzip src="${otool.dbx.dest.zip}" dest="${basedir}/external" overwrite="true">
+      </unzip>
+      <echo message="need to unzip replaced otool.libs.dbx; copy.otool.dbx.jars=${copy.otool.dbx.jars}" />
+      <unzip src="${otool.dbx.libs.dest.zip}" dest="${basedir}/release/bin" overwrite="true">
+      </unzip>      
+    </target>
+    
+    <!-- We distribute zip, but use unpacked jars, replace projectized.-release.files to insert unzip -->
+    
+    <!-- remove when https://netbeans.org/bugzilla/show_bug.cgi?id=253923  is implemented-->
+    <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
+    <target name="-otool.dbx-release.files" depends="projectized-common.-release.files,projectized.-define-downloadbinaries-task">
+        <echo message="overridden -release.files by libs.otool.dbx with copy.otool.dbx.jars=${copy.otool.dbx.jars}" /> 
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir=".">
+                <include name="external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
+        <echo message="need to unzip otool.dbx.zip to get jar files (copy.otool.dbx.jars=${copy.otool.dbx.jars})" />
+        <unzip src="${otool.dbx.dest.zip}" dest="${basedir}/external" overwrite="true"/>
+        <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nbantext.jar}"/>
+        <releasefilesextra property="release.files.extra"/>        
+    </target>
+    
+    <target name="-release.files" depends="-otool.dbx-release.files,-overwrite-otool.dbx-zip">
+    </target>
+
+<!-- it can be uncommented instead of -release.files above when https://netbeans.org/bugzilla/show_bug.cgi?id=253923  is implemented    
+    <target name="-post.release.files.download" depends="-overwrite-otool.dbx-zip,projectized.-post.release.files.download">
+        <echo message="need to unzip otool.dbx.zip to get jar files (copy.otool.dbx.jars=${copy.otool.dbx.jars})" />
+        <unzip src="${otool.dbx.dest.zip}" dest="${basedir}/external" overwrite="true"/>
+    </target>-->
+        
+    <target name="netbeans" depends="projectized-common.netbeans,-post-build-otool.dbx">
+        <echo message="I am here"/>
+        <mkdir dir="${cluster}/bin"/>
+        <fixcrlf srcdir="${cluster}/bin" eol="lf">
+            <include name="**"/>
+            <!--<exclude name="*.zip"/>-->
+        </fixcrlf>
+    </target>        
+    
+    <target name="-post-build-otool.dbx" if="${copy.otool.dbx.jars}">
+        <!-- The only purpose of this target is to print warning below in the very end, rather than in the middle -->
+        <echo level="warning" message="################################################################################"></echo>
+        <echo level="warning" message="# Attention: otool.dbx was not downloaded, but copied from here:"></echo>
+        <echo level="warning" message="# ${otool.dbx.suite.jars.dir}"></echo>
+        <echo level="warning" message="################################################################################"></echo>
+    </target>    
+</project>

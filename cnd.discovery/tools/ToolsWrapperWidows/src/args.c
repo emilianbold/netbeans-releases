@@ -40,8 +40,19 @@
 #endif
 #include <unistd.h>
 #include <limits.h>
-
+#ifdef WINDOWS
+#define PATH_SEPARATOR ";"
+#define FILE_SEPARATOR_CHAR '\\'
+#define FILE_SEPARATOR_STRING "\\"
+#else
+#define PATH_SEPARATOR ":"
+#define FILE_SEPARATOR_CHAR '/'
+#define FILE_SEPARATOR_STRING "/"
+#endif
+#define MAGIC "echo magic"
 extern char **environ;
+#define COPY(x) x x x x x x x x x x
+char *real_binary = COPY(COPY(MAGIC));
 
 void prependPath(char* path) {
     char** e = environ;
@@ -56,11 +67,7 @@ void prependPath(char* path) {
                 char *tool_path = malloc(strlen(path) + 1);
                 strcpy(tool_path, path);
                 char* key;
-#ifdef WINDOWS
-                key = strrchr(tool_path, '\\');
-#else
-                key = strrchr(tool_path, '/');
-#endif
+                key = strrchr(tool_path, FILE_SEPARATOR_CHAR);
                 if (key != NULL) {
                     *key = 0;
                 }
@@ -90,59 +97,28 @@ void prependPath(char* path) {
 }
 
 int main(int argc, char**argv) {
-    const char* key;
-#ifdef WINDOWS
-    key = strrchr(argv[0], '\\');
-#else
-    key = strrchr(argv[0], '/');
-#endif
-    if (key == NULL) {
-        key = argv[0];
-    } else {
-        key++;
+    char *pattern = MAGIC;
+    char *place = real_binary;
+    int changed = 0;
+    while(*pattern) {
+        if (*place != *pattern) {
+            changed = 1;
+            break;
+        }
+        pattern++;
+        place++;
     }
-#ifdef WINDOWS
-    char* dot = strrchr(key, '.');
-    if (dot != NULL) {
-        char *buf = malloc(strlen(key) + 1);
-        strcpy(buf, key);
-        dot = strrchr(buf, '.');
-        *dot = 0;
-        key = buf;
+    if (!changed) {
+        printf("Real compiler is not set\n");
+        return -1;
     }
-#endif
 
-    char* tool = NULL;
-    char* tool_path_variable = NULL;
-    if (strcmp(key, "cc") == 0 ||
-            strcmp(key, "xgcc") == 0 ||
-            strcmp(key, "clang") == 0 ||
-            strcmp(key, "icc") == 0 ||
-            strcmp(key, "gcc") == 0) {
-        tool = getenv("__CND_C_TOOL__");
-        tool_path_variable = "__CND_C_TOOL__";
-    } else if (strcmp(key, "CC") == 0 ||
-            strcmp(key, "c++") == 0 ||
-            strcmp(key, "clang++") == 0 ||
-            strcmp(key, "icpc") == 0 ||
-            strcmp(key, "cl") == 0 ||
-            strcmp(key, "g++") == 0) {
-        tool = getenv("__CND_CPP_TOOL__");
-        tool_path_variable = "__CND_CPP_TOOL__";
-    } else {
-        printf("Unsupported %s compiler", key);
-        return -1;
-    }
-    if (tool == NULL) {
-        printf("Set path to %s compiler in env variable %s", key, tool_path_variable);
-        return -1;
-    }
-    argv[0] = tool;
+    argv[0] = real_binary;
     char* log = getenv("__CND_BUILD_LOG__");
     if (log != NULL) {
         FILE* flog = fopen(log, "a");
         if (flog != NULL) {
-            fprintf(flog, "called: %s\n", tool);
+            fprintf(flog, "called: %s\n", real_binary);
             char *buf = malloc(MY_MAX_PATH + 1);
             getcwd(buf, MY_MAX_PATH);
             fprintf(flog, "\t%s\n", buf);
@@ -155,9 +131,9 @@ int main(int argc, char**argv) {
             fclose(flog);
         }
     }
-    prependPath(tool);
+    prependPath(real_binary);
 #ifdef MINGW
-    return spawnv(P_WAIT, tool, argv);
+    return spawnv(P_WAIT, real_binary, argv);
 #else
     pid_t pid;
     int status;

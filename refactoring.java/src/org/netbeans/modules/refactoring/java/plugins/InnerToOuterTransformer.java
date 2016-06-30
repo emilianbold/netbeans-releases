@@ -53,7 +53,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -474,6 +473,18 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         }
         
         return super.visitMemberSelect(memberSelect, element);
+    }
+
+    @Override
+    public Tree visitLambdaExpression(LambdaExpressionTree node, Element p) {
+        List<? extends VariableTree> params = node.getParameters();
+        boolean skipType = params.size() > 0 && (params.get(0).getType() == null
+                || workingCopy.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), params.get(0).getType())));
+        if(skipType) {
+            return scan(node.getBody(), p);
+        } else {
+            return super.visitLambdaExpression(node, p);
+        }
     }
 
     private boolean isThisReferenceToInner() {

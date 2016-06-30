@@ -82,7 +82,7 @@ public class AdeMockupTestCase  extends RemoteFileTestBase  {
                     "ln -s " + fileName1 + ' ' + fileName2 + ";";
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script1);
-            assertEquals("Error executing script \"" + script1 + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script1 + "\": " + res.getErrorString(), 0, res.exitCode);
             
             FileObject baseDirFO = getFileObject(baseDir);
             
@@ -93,7 +93,7 @@ public class AdeMockupTestCase  extends RemoteFileTestBase  {
             assertNotNull(fo2_1);
             
             res = ProcessUtils.execute(execEnv, "sh", "-c", script2);
-            assertEquals("Error executing script \"" + script1 + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script1 + "\": " + res.getErrorString(), 0, res.exitCode);
                         
             baseDirFO.refresh();
             

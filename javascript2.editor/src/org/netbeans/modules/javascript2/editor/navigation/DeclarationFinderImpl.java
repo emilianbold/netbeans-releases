@@ -44,11 +44,13 @@ package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -57,21 +59,22 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.EditorExtender;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.SemiTypeResolverVisitor;
+import org.netbeans.modules.javascript2.editor.FileUtils;
+import org.netbeans.modules.javascript2.editor.Utils;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -84,7 +87,7 @@ import org.openide.util.Exceptions;
  * @author Petr Pisl
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
-
+    
     private final Language<JsTokenId> language;
 
     public DeclarationFinderImpl(Language<JsTokenId> language) {
@@ -97,10 +100,31 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return DeclarationLocation.NONE;
         }
         JsParserResult jsResult = (JsParserResult)info;
-        Model model = jsResult.getModel();
-        model.resolve();
+        Snapshot snapshot = jsResult.getSnapshot();
+        TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
         int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
-        OccurrencesSupport os = model.getOccurrencesSupport();
+        
+        ts.move(offset);
+        if (ts.moveNext()) {
+            if (ts.token().id() == JsTokenId.STRING) {
+                //are we in the import expression to navigate the imported file?
+                String path = ts.token().text().toString();
+                Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+                if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
+                    FileObject currentFO = snapshot.getSource().getFileObject();
+                    FileObject destinationFO = FileUtils.findFileObject(currentFO, path, false);
+                    if (destinationFO != null) {
+                        return new DeclarationLocation(destinationFO, 0);
+                    } else {
+                        return DeclarationLocation.NONE;
+                    }
+                }
+            }
+        }
+        Model model = Model.getModel(jsResult, false);
+        model.resolve();
+        
+        OccurrencesSupport os = new OccurrencesSupport(model);
         Occurrence occurrence = os.getOccurrence(offset);
         if (occurrence != null) {
             JsObject object = occurrence.getDeclarations().iterator().next();
@@ -109,8 +133,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (assignments != null && assignments.isEmpty()) {
                 assignments = parent.getAssignments();
             }
-            Snapshot snapshot = jsResult.getSnapshot();
-            JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
+            Index jsIndex = Index.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
                 FileObject fo = object.getFileObject();
@@ -120,7 +143,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (fo.equals(snapshot.getSource().getFileObject()) && object.getDeclarationName() != null) {
                             int docOffset = LexUtilities.getLexerOffset(jsResult, getDeclarationOffset(object));
                             if (docOffset > -1) {
-                                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                                 if (ts != null) {
                                     ts.move(offset);
                                     if (ts.moveNext()) {
@@ -139,8 +161,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         
                     }
                 } else {
-                    Collection<? extends IndexResult> items = JsIndex.get(fo).findByFqn(
-                            object.getFullyQualifiedName(), JsIndex.TERMS_BASIC_INFO);
+                    Collection<? extends IndexResult> items = Index.get(fo).findByFqn(
+                            object.getFullyQualifiedName(), Index.TERMS_BASIC_INFO);
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
                     if (location != null) {
@@ -189,7 +211,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                 Collection<? extends TypeUsage> assigns = parent.getAssignments();
                                 if (!assigns.isEmpty()) {
                                     for (Type type : assigns) {
-                                        String afqn = getFQNFromType(type);
+                                        String afqn = ModelUtils.getFQNFromType(type);
                                         rItems.addAll(findPropertyOfType(jsIndex, afqn, fqnParts[i]));
                                     }
                                 }
@@ -220,20 +242,19 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         
                     }
                 }
-                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            String fqn = getFQNFromType(type);
+                            String fqn = ModelUtils.getFQNFromType(type);
                             Collection<? extends IndexResult> items = findPropertyOfType(jsIndex, fqn, propertyName);
                             if (items.isEmpty()) {
-                                Collection<? extends IndexResult> tmpItems = jsIndex.findByFqn(fqn, JsIndex.TERMS_BASIC_INFO);
+                                Collection<? extends IndexResult> tmpItems = jsIndex.findByFqn(fqn, Index.TERMS_BASIC_INFO);
                                 for (IndexResult indexResult : tmpItems) {
                                     Collection<TypeUsage> tmpAssignments = IndexedElement.getAssignments(indexResult);
                                     for (Type tmpType : tmpAssignments) {
-                                        items = findPropertyOfType(jsIndex, getFQNFromType(tmpType), propertyName);
+                                        items = findPropertyOfType(jsIndex, ModelUtils.getFQNFromType(tmpType), propertyName);
                                         indexResults.addAll(items);
                                     }
                                 }
@@ -260,7 +281,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             JsObject object = occurrence.getDeclarations().iterator().next();
             FileObject fo = object.getFileObject();
             if (fo != null && object.getName() != null) {
-                Collection<? extends IndexResult> items = JsIndex.get(fo).query(JsIndex.FIELD_BASE_NAME, object.getName(), QuerySupport.Kind.EXACT, JsIndex.TERMS_BASIC_INFO);
+                Collection<? extends IndexResult> items = Index.get(fo).query(Index.FIELD_BASE_NAME, object.getName(), QuerySupport.Kind.EXACT, Index.TERMS_BASIC_INFO);
                 List<IndexResult> indexResults = new ArrayList<IndexResult>();
                 for (IndexResult item : items) {
                     IndexedElement element = IndexedElement.create(item);
@@ -292,47 +313,36 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return object;
     }
     
-    private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName) {
+    private Collection<? extends IndexResult> findPropertyOfType(Index jsIndex, String fqn, String propertyName) {
         return findPropertyOfType(jsIndex, fqn, propertyName, 0);
     }
     
-    private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName, int count) {
+    private Collection<? extends IndexResult> findPropertyOfType(Index jsIndex, String fqn, String propertyName, int count) {
         List<IndexResult> items = new ArrayList();
         if (count > 5) {
             return items;
         }
         items.addAll(jsIndex.findByFqn(
-                fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO)); // NOI18N
+                fqn + "." + propertyName, Index.TERMS_BASIC_INFO)); // NOI18N
         if (items.isEmpty()) {
-            items.addAll(jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO)); // NOI18N
+            items.addAll(jsIndex.findByFqn(fqn + ".prototype." + propertyName, Index.TERMS_BASIC_INFO)); // NOI18N
         }
         if (items.isEmpty()) {
-            Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn(fqn, JsIndex.TERMS_BASIC_INFO);
+            Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn(fqn, Index.TERMS_BASIC_INFO);
             for (IndexResult indexResult : findByFqn) {
             Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                 for (Type tmpType : assignments) {
-                    items.addAll(findPropertyOfType(jsIndex, getFQNFromType(tmpType), propertyName, count++));
+                    items.addAll(findPropertyOfType(jsIndex, ModelUtils.getFQNFromType(tmpType), propertyName, count++));
                 }
             }
         }
         return items;
     }
     
-    private String getFQNFromType(Type type) {
-        String fqn = type.getType();
-        if (fqn.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
-            fqn = fqn.substring(SemiTypeResolverVisitor.ST_EXP.length());
-        }
-        if (fqn.contains(SemiTypeResolverVisitor.ST_PRO)) {
-            fqn = fqn.replace(SemiTypeResolverVisitor.ST_PRO, ".");     //NOI18N
-        }
-        return fqn;
-    }
-    
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
         if (!indexResults.isEmpty()) {
             IndexResult iResult = indexResults.get(0);
-            String value = iResult.getValue(JsIndex.FIELD_OFFSET);
+            String value = iResult.getValue(Index.FIELD_OFFSET);
             int offset = Integer.parseInt(value);
             HashSet<String> alreadyThere = new HashSet<String>();
             DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset, IndexedElement.create(iResult));
@@ -377,8 +387,15 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                     value[0] = new OffsetRange(tsDoc.offset(), tsDoc.offset() + tsDoc.token().length());
                                 }
                             }
+                        } 
+                    } else if (ts.token() != null && ts.token().id() == JsTokenId.STRING) {
+                        // we need to check, where we are in the import expression (ES6)
+                        int start = ts.offset();
+                        int end = ts.offset() + ts.token().length();
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+                        if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
+                            value[0] = new OffsetRange (start, end);
                         }
-                        
                     }
                 }
             }
@@ -409,7 +426,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         
         public AlternativeLocationImpl(IndexResult iResult) {
             this.iResult = iResult;
-            String value = iResult.getValue(JsIndex.FIELD_OFFSET);
+            String value = iResult.getValue(Index.FIELD_OFFSET);
             this.offset = Integer.parseInt(value);
             this.location = new DeclarationLocation(iResult.getFile(), offset);
             this.element = IndexedElement.create(iResult);

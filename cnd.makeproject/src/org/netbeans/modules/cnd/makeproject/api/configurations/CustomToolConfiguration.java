@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class CustomToolConfiguration implements ConfigurationBase, Cloneable {
@@ -115,22 +113,6 @@ public class CustomToolConfiguration implements ConfigurationBase, Cloneable {
         i.setOutputs(getOutputs().clone());
         i.setAdditionalDependencies(getAdditionalDependencies().clone());
         return i;
-    }
-
-    public Sheet getSheet() {
-        Sheet sheet = new Sheet();
-
-        Sheet.Set set = new Sheet.Set();
-        set.setName("CustomBuild"); // NOI18N
-        set.setDisplayName(getString("CustomBuildTxt"));
-        set.setShortDescription(getString("CustomBuildHint"));
-        set.put(new StringNodeProp(getCommandLine(), "Command Line", getString("CommandLineTxt2"), getString("CommandLineHint2"))); // NOI18N
-        set.put(new StringNodeProp(getDescription(), "Description", getString("DescriptionTxt"), getString("DescriptionHint"))); // NOI18N
-        set.put(new StringNodeProp(getOutputs(), "Outputs", getString("OutputsTxt"), getString("OutputsNint"))); // NOI18N
-        set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"))); // NOI18N
-        sheet.put(set);
-
-        return sheet;
     }
 
     /** Look up i18n strings here */

@@ -41,17 +41,11 @@
  */
 package org.netbeans.modules.cnd.spi.toolchain;
 
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.SPIAccessor;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -75,7 +69,8 @@ public final class CompilerSetManagerEvents {
 
     private final ExecutionEnvironment executionEnvironment;
     private boolean isCodeModelInfoReady;
-    private List<Runnable> tasks = new ArrayList<Runnable>();
+    private final CSMInitializationTaskRunner taskRunner;    
+    
 
     public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
         CompilerSetManagerEvents instance = map.get(env);
@@ -86,44 +81,19 @@ public final class CompilerSetManagerEvents {
         return instance;
     }
 
-    public void runProjectReadiness(NamedRunnable task) {
-        if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
-            task.run();
-        } else {
-            tasks.add(task);
-            final ServerRecord record = ServerList.get(executionEnvironment);
-            if (record.isOffline()) {
-                ConnectionNotifier.addTask(executionEnvironment, new ConnectionNotifier.NamedRunnable(task.getName()) {
-                    @Override
-                    protected void runImpl() {
-                        record.checkSetupAfterConnection(new Runnable(){
-                            @Override
-                            public void run() {
-                                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
-                                CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
-                                csm.initialize(false, true, null);
-                                cacheManager.applyChanges();
-                            }
-                        });
-                    }
-                });
-            }
-        }
+    public void runProjectReadiness(NamedRunnable task) {        
+        taskRunner.runTask(executionEnvironment, isCodeModelInfoReady, task);
     }
     
     private CompilerSetManagerEvents(ExecutionEnvironment env) {
         this.executionEnvironment = env;
-        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
+        this.isCodeModelInfoReady = CompilerSetManager.get(executionEnvironment).isComplete();
+        taskRunner = CSMInitializationTaskRunner.getInstance();
     }
 
     private void runTasks() {
         isCodeModelInfoReady = true;
-        if (tasks != null) {
-            for (Runnable task : tasks) {
-                task.run();
-            }
-        }
-        tasks = null;
+        taskRunner.runTasks();
     }
 
     private static final class SPIAccessorImpl extends SPIAccessor {

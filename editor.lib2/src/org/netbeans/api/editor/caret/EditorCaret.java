@@ -80,7 +80,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -133,6 +132,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.caret.CaretFoldExpander;
 import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
 import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
@@ -173,7 +173,13 @@ public final class EditorCaret implements Caret {
     private static final String CHAIN_FILTER_PROPERTY = EditorCaret.class.getName() + ".chainFilter"; // NOI18N
     
     // -J-Dorg.netbeans.api.editor.caret.EditorCaret.level=FINEST
-    private static final Logger LOG = Logger.getLogger(EditorCaret.class.getName());
+    static final Logger LOG = Logger.getLogger(EditorCaret.class.getName());
+    
+    // -J-Dorg.netbeans.api.editor.caret.EditorCaret.paint=true with logging enabled for this class
+    static final boolean logPaint = Boolean.getBoolean("org.netbeans.api.editor.caret.EditorCaret.paint");
+    
+    // -J-Dorg.netbeans.api.editor.caret.EditorCaret.blinkRate=800 - Force overrride of a default caret blink rate
+    static final Integer overrideCaretBlinkRate = Integer.getInteger("org.netbeans.api.editor.caret.EditorCaret.blinkRate");
     
     static final long serialVersionUID = 0L;
     
@@ -329,24 +335,11 @@ public final class EditorCaret implements Caret {
     private boolean atomicSectionAnyCaretChange;
     
     /**
-     * Whether a (visual) caret update needs to be done at the end of the document atomic section.
-     * This is an optimization to only do a single visual update for the whole atomic transaction
-     * rather than several individual ones for each caret change.
-     */
-    private boolean atomicSectionUpdateNeeded;
-
-    /**
      * Lowest offset where modification was performed during atomic lock.
      * <br>
      * Set to Integer.MAX_VALUE if no modification was done during atomic section yet.
      */
     private transient int atomicSectionLowestModOffset;
-    
-    /**
-     * Set to true once the folds have changed. The caret should retain
-     * its relative visual position on the screen.
-     */
-    private boolean updateAfterFoldHierarchyChange;
     
     private Preferences prefs = null;
 
@@ -403,7 +396,7 @@ public final class EditorCaret implements Caret {
     public EditorCaret() {
         caretItems = new GapList<>();
         sortedCaretItems = new GapList<>();
-        CaretItem singleCaret = new CaretItem(this, null, null);
+        CaretItem singleCaret = new CaretItem(this, null, Position.Bias.Forward, null, Position.Bias.Forward);
         caretItems.add(singleCaret);
         sortedCaretItems.add(singleCaret);
 
@@ -420,6 +413,20 @@ public final class EditorCaret implements Caret {
     public int getDot() {
         return getLastCaret().getDot();
     }
+    
+    /**
+     * Get a bias of the dot position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text document.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getDotBias() {
+        return getLastCaret().getDotBias();
+    }
 
     /**
      * Get mark offset of the last created caret in the underlying document.
@@ -432,6 +439,20 @@ public final class EditorCaret implements Caret {
         return getLastCaret().getMark();
     }
     
+    /**
+     * Get a bias of the mark position which is either
+     * {@link Position.Bias.Forward} or {@link Position.Bias.Backward} depending
+     * on whether the caret biases towards the next character or previous one.
+     * The bias is always forward for non bidirectional text document.
+     *
+     * @return either forward or backward bias.
+     * @since 2.12
+     */
+    @NonNull
+    public Position.Bias getMarkBias() {
+        return getLastCaret().getMarkBias();
+    }
+
     /**
      * Get information about all existing carets in the order they were created.
      * <br>
@@ -466,8 +487,8 @@ public final class EditorCaret implements Caret {
     /**
      * Get information about all existing carets sorted by dot positions in ascending order.
      * <br>
-     * If some of the carets are {@link org.netbeans.api.editor.document.ShiftPositions}
-     * their order will reflect the increasing shift.
+     * If some of the carets are {@link org.netbeans.api.editor.document.ComplexPositions}
+     * their order will reflect the increasing split offset.
      * <br>
      * The list is a snapshot of the current state of the carets. The list content itself and its contained
      * caret infos are guaranteed not change after subsequent calls to caret API or document modifications.
@@ -532,7 +553,7 @@ public final class EditorCaret implements Caret {
      * @see Caret#setDot(int) 
      */
     public @Override void setDot(final int offset) {
-        setDot(offset, MoveCaretsOrigin.DEFAULT);
+        setDot(offset, Position.Bias.Forward, MoveCaretsOrigin.DEFAULT);
     }
 
     /**
@@ -549,15 +570,18 @@ public final class EditorCaret implements Caret {
      * actions (pg up, pg down, left, right, ...).
      * </p>
      * @param offset new offset for the caret
-     * @param orig specifies the operation which caused the caret to move.
+     * @param bias new bias for the caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
+     * @param origin specifies the operation which caused the caret to move.
      * @see #setDot(int) 
      * @since 2.10
      */
-    public void setDot(final int offset, MoveCaretsOrigin orig) {
+    public void setDot(final int offset, Position.Bias bias, MoveCaretsOrigin origin) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("setDot: offset=" + offset); //NOI18N
+            LOG.fine("EditorCaret.setDot: offset=" + offset + ", bias=" + bias + ", origin=" + origin + "\n"); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.INFO, "setDot call stack", new Exception());
+                LOG.log(Level.INFO, "    setDot call stack\n", new Exception());
             }
         }
         runTransaction(CaretTransaction.RemoveType.RETAIN_LAST_CARET, 0, null, new CaretMoveHandler() {
@@ -573,7 +597,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        }, orig);
+        }, origin);
     }
 
     /**
@@ -587,7 +611,7 @@ public final class EditorCaret implements Caret {
      * @see Caret#moveDot(int) 
      */
     public @Override void moveDot(final int offset) {
-        moveDot(offset, MoveCaretsOrigin.DEFAULT);
+        moveDot(offset, Position.Bias.Forward, MoveCaretsOrigin.DEFAULT);
     }
     
     /**
@@ -605,13 +629,16 @@ public final class EditorCaret implements Caret {
      * </p>
      * 
      * @param offset new offset for the caret
-     * @param orig specifies the operation which caused the caret to move.
+     * @param bias new bias for the caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
+     * @param origin specifies the operation which caused the caret to move.
      * @see #moveDot(int) 
      * @since 2.10
      */
-    public void moveDot(final int offset, MoveCaretsOrigin orig) {
+    public void moveDot(final int offset, Position.Bias bias, MoveCaretsOrigin origin) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("moveDot: offset=" + offset); //NOI18N
+            LOG.fine("EditorCaret.moveDot: offset=" + offset + ", bias=" + bias + ", origin=" + origin + "\n"); //NOI18N
         }
         
         runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, new CaretMoveHandler() {
@@ -627,7 +654,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        }, orig);
+        }, origin);
     }
 
     /**
@@ -721,18 +748,26 @@ public final class EditorCaret implements Caret {
      * </pre>
      * 
      * @param dotPos position of the newly created caret.
+     * @param dotBias bias of the new caret. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @param markPos beginning of the selection (the other end is dotPos) or the same position like dotPos for no selection.
      *  The markPos may have higher offset than dotPos to select in a backward direction.
+     * @param markBias bias of the begining of the selection. Use either {@link Position.Bias.Forward}
+     *  or {@link Position.Bias.Backward} depending on whether the caret should bias
+     *  towards the next character or previous one. Use forward bias for non-bidirectional text document.
      * @return difference between current count of carets and the number of carets when the operation started.
-     *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
+     *  Returns Integer.MIN_VALUE if the operation was canceled due to the caret not being installed in any text component
      *  or no document installed in the text component.
      *  <br>
      *  Note that adding a new caret to offset where another caret is already located may lead
      *  or no document installed in the text component.
      */
-    public int addCaret(@NonNull Position dotPos, @NonNull Position markPos) {
+    public int addCaret(@NonNull Position dotPos, @NonNull Position.Bias dotBias,
+            @NonNull Position markPos, @NonNull Position.Bias markBias)
+    {
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                new CaretItem[] { new CaretItem(this, dotPos, markPos) }, null);
+                new CaretItem[] { new CaretItem(this, dotPos, dotBias, markPos, markBias) }, null);
     }
     
     /**
@@ -760,13 +795,16 @@ public final class EditorCaret implements Caret {
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like the dot
      *  if the particular caret has no selection. The list must have even size.
+     * @param dotAndMarkBiases list of position biases (corresponding to the dot and mark positions
+     *  in the previous parameter) or null may be passed if all dotAndMarkPosPairs positions should have a forward bias.
      * @return difference between current count of carets and the number of carets when the operation started.
-     *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
+     *  Returns Integer.MIN_VALUE if the operation was canceled due to the caret not being installed in any text component
      *  or no document installed in the text component.
+     * @see #addCaret(javax.swing.text.Position, javax.swing.text.Position.Bias, javax.swing.text.Position, javax.swing.text.Position.Bias)
      */
-    public int addCarets(@NonNull List<Position> dotAndMarkPosPairs) {
+    public int addCarets(@NonNull List<Position> dotAndMarkPosPairs, List<Position.Bias> dotAndMarkBiases) {
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                CaretTransaction.asCaretItems(this, dotAndMarkPosPairs), null);
+                CaretTransaction.asCaretItems(this, dotAndMarkPosPairs, dotAndMarkBiases), null);
     }
 
     /**
@@ -778,15 +816,17 @@ public final class EditorCaret implements Caret {
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like dot
      *  if the particular caret has no selection. The list must have even size.
+     * @param dotAndMarkBiases list of position biases (corresponding to the dot and mark positions
+     *  in the previous parameter) or null may be passed if all dotAndMarkPosPairs positions should have a forward bias.
      * @return difference between current count of carets and the number of carets when the operation started.
      *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
      *  or no document installed in the text component.
      */
-    public int replaceCarets(@NonNull List<Position> dotAndMarkPosPairs) {
+    public int replaceCarets(@NonNull List<Position> dotAndMarkPosPairs, List<Position.Bias> dotAndMarkBiases) {
         if (dotAndMarkPosPairs.isEmpty()) {
             throw new IllegalArgumentException("dotAndSelectionStartPosPairs list must not be empty");
         }
-        CaretItem[] addedItems = CaretTransaction.asCaretItems(this, dotAndMarkPosPairs);
+        CaretItem[] addedItems = CaretTransaction.asCaretItems(this, dotAndMarkPosPairs, dotAndMarkBiases);
         return runTransaction(CaretTransaction.RemoveType.REMOVE_ALL_CARETS, 0, addedItems, null);
     }
 
@@ -864,23 +904,26 @@ public final class EditorCaret implements Caret {
      */
     @Override
     public void setVisible(boolean visible) {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("BaseCaret.setVisible(" + visible + ")\n");
+        boolean log = LOG.isLoggable(Level.FINE);
+        if (log && LOG.isLoggable(Level.FINER)) {
+            LOG.finer("EditorCaret.setVisible(" + visible + ")\n");
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.log(Level.INFO, "", new Exception());
             }
         }
         synchronized (listenerList) {
             if (blinkTimer != null) {
-                if (this.visible) {
+                if (this.visible && !visible) {
                     blinkTimer.stop();
+                    setShowing(false);
                 }
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer((visible ? "Starting" : "Stopping") + // NOI18N
+                    LOG.finer("    " + (visible ? "Starting" : "Stopping") + // NOI18N
                             " the caret blinking timer: " + dumpVisibility() + '\n'); // NOI18N
                 }
                 this.visible = visible;
                 if (visible) {
+                    setShowing(true);
                     blinkTimer.start();
                 } else {
                     blinkTimer.stop();
@@ -889,14 +932,12 @@ public final class EditorCaret implements Caret {
         }
         JTextComponent c = component;
         if (c != null) {
-            // TODO only paint carets showing on screen
             List<CaretInfo> sortedCarets = getSortedCarets();
-            for (CaretInfo caret : sortedCarets) {
+            int sortedCaretsSize = sortedCarets.size();
+            for (int i = 0; i < sortedCaretsSize; i++) {
+                CaretInfo caret = sortedCarets.get(i);
                 CaretItem caretItem = caret.getCaretItem();
-                if (caretItem.getCaretBounds() != null) {
-                    Rectangle repaintRect = caretItem.getCaretBounds();
-                    c.repaint(repaintRect);
-                }
+                caretItem.repaintIfShowing(c, "setVisible", i);
             }
         }
     }
@@ -923,17 +964,16 @@ public final class EditorCaret implements Caret {
     public void install(JTextComponent c) {
         assert (SwingUtilities.isEventDispatchThread()); // must be done in AWT
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Installing to " + s2s(c)); //NOI18N
+            LOG.fine("EditorCaret.install: Installing to " + s2s(c) + "\n"); //NOI18N
         }
         
         component = c;
-        visible = true;
+        setVisible(c.hasFocus());
         modelChanged(null, c.getDocument());
 
         Boolean b = (Boolean) c.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
         overwriteMode = (b != null) ? b : false;
         updateOverwriteModeLayer(true);
-        setShowing(true);
         
         // Attempt to assign initial bounds - usually here the component
         // is not yet added to the component hierarchy.
@@ -956,7 +996,7 @@ public final class EditorCaret implements Caret {
 
         if (component.hasFocus()) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Component has focus, calling BaseCaret.focusGained(); doc=" // NOI18N
+                LOG.fine("    Component has focus, calling EditorCaret.focusGained(); doc=" // NOI18N
                     + component.getDocument().getProperty(Document.TitleProperty) + '\n');
             }
             listenerImpl.focusGained(null); // emulate focus gained
@@ -969,7 +1009,7 @@ public final class EditorCaret implements Caret {
     @Override
     public void deinstall(JTextComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Deinstalling from " + s2s(c)); //NOI18N
+            LOG.fine("EditorCaret.deinstall: Deinstalling from " + s2s(c) + "\n"); //NOI18N
         }
         
         synchronized (listenerList) {
@@ -1038,7 +1078,7 @@ public final class EditorCaret implements Caret {
                     if (caretItem.getAndClearUpdateCaretBounds()) {
                         int dot = caretItem.getDot();
                         Rectangle newCaretBounds = lvh.modelToViewBounds(dot, Position.Bias.Forward);
-                        caretItem.setCaretBounds(newCaretBounds);
+                        caretItem.setCaretBoundsWithRepaint(newCaretBounds, c, "EditorCaret.paint()", i);
                     }
                     Rectangle caretBounds = caretItem.getCaretBounds();
                     if (caretBounds != null) {
@@ -1046,17 +1086,17 @@ public final class EditorCaret implements Caret {
                         if (caretBounds.y > clipBounds.y + clipBounds.height) {
                             break;
                         }
+                        boolean painted = false;
                         switch (type) {
                             case THICK_LINE_CARET:
                                 g.fillRect(caretBounds.x, caretBounds.y, this.thickCaretWidth, caretBounds.height - 1);
-                                caretItem.markCaretPainted();
+                                painted = true;
                                 break;
 
                             case THIN_LINE_CARET:
-                                int upperX = caretItem.getCaretBounds().x;
-                                g.drawLine((int) upperX, caretItem.getCaretBounds().y, caretItem.getCaretBounds().x,
-                                        (caretItem.getCaretBounds().y + caretItem.getCaretBounds().height - 1));
-                                caretItem.markCaretPainted();
+                                int upperX = caretBounds.x;
+                                g.drawLine((int) upperX, caretBounds.y, caretBounds.x, (caretBounds.y + caretBounds.height - 1));
+                                painted = true;
                                 break;
 
                             case BLOCK_CARET:
@@ -1066,6 +1106,12 @@ public final class EditorCaret implements Caret {
 
                             default:
                                 throw new IllegalStateException("Invalid caret type=" + type);
+                        }
+                        if (painted) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("EditorCaret.paint: caretItem[" + i + "] item=" + caretItem.toStringDetail() + "\n");
+                            }
+                            caretItem.markCaretPainted();
                         }
                     }
                 }
@@ -1116,7 +1162,7 @@ public final class EditorCaret implements Caret {
 
     public @Override void setBlinkRate(int rate) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("setBlinkRate(" + rate + ")" + dumpVisibility() + '\n'); // NOI18N
+            LOG.finer("EditorCaret.setBlinkRate(" + rate + ") " + dumpVisibility() + '\n'); // NOI18N
         }
         synchronized (listenerList) {
             this.blinkDefaultDelay = rate;
@@ -1129,6 +1175,7 @@ public final class EditorCaret implements Caret {
             if (blinkTimer != null) {
                 if (rate > 0) {
                     if (blinkTimer.getDelay() != rate) {
+                        blinkTimer.setInitialDelay(rate);
                         blinkTimer.setDelay(rate);
                     }
                 } else { // zero rate - don't blink
@@ -1138,9 +1185,7 @@ public final class EditorCaret implements Caret {
                     }
                     blinkTimer = null;
                     setShowing(true);
-                    if (LOG.isLoggable(Level.FINER)){
-                        LOG.finer("Zero blink rate - no blinking. blinkTimer=null; showing=true"); // NOI18N
-                    }
+                    LOG.finer("    Zero blink rate - no blinking. blinkTimer=null; showing=true\n"); // NOI18N
                 }
             }
         }
@@ -1494,7 +1539,7 @@ public final class EditorCaret implements Caret {
                     activeTransaction = new CaretTransaction(this, c, d, org);
                     if (LOG.isLoggable(Level.FINE)) {
                         StringBuilder msgBuilder = new StringBuilder(200);
-                        msgBuilder.append("EditorCaret.runTransaction(): removeType=").append(removeType).
+                        msgBuilder.append("EditorCaret.runTransaction: removeType=").append(removeType).
                                 append(", offset=").append(offset);
                         if (addCarets != null) {
                             msgBuilder.append(", addCarets:");
@@ -1517,6 +1562,7 @@ public final class EditorCaret implements Caret {
                         activeTransaction.removeOverlappingRegions();
                         int diffCount = 0;
                         boolean inAtomicSectionL;
+                        List<Position> expandFoldPositions;
                         synchronized (listenerList) {
                             inAtomicSectionL = inAtomicSection;
                             GapList<CaretItem> replaceItems = activeTransaction.getReplaceItems();
@@ -1539,15 +1585,13 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
+                            expandFoldPositions = activeTransaction.expandFoldPositions();
                         }
                         // Repaint bounds of removed items
                         GapList<CaretItem> removedItems = activeTransaction.allRemovedItems();
                         if (removedItems != null) {
                             for (CaretItem removedItem : removedItems) {
-                                Rectangle caretBounds = removedItem.getCaretBounds();
-                                if (caretBounds != null) {
-                                    c.repaint(caretBounds);
-                                }
+                                removedItem.repaintIfShowing(c, "runTransaction-repaintRemovedItems", -1);
                             }
                         }
                         // Possibly update RS
@@ -1569,10 +1613,10 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                         }
-                        GapList<CaretItem> allRemovedItems = activeTransaction.allRemovedItems();
-                        if (allRemovedItems != null) {
-                            for (CaretItem removedItem : allRemovedItems) {
-                                removedItem.repaintIfShowing(c);
+                        if (expandFoldPositions != null) {
+                            CaretFoldExpander caretFoldExpander = CaretFoldExpander.get();
+                            if (caretFoldExpander != null) {
+                                caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
                         if (activeTransaction.isAnyChange()) {
@@ -1713,6 +1757,7 @@ public final class EditorCaret implements Caret {
             } else {
                 newType = CaretType.THICK_LINE_CARET;
             }
+            this.type = newType;
 
             String mimeType = DocumentUtilities.getMimeType(c);
             FontColorSettings fcs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class) : null;
@@ -1726,8 +1771,18 @@ public final class EditorCaret implements Caret {
                 }
             }
             c.setCaretColor(caretColor);
-            
-            this.type = newType;
+
+            Preferences prefs = this.prefs;
+            if (prefs != null) {
+                int rate = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, -1);
+                if (rate == -1) {
+                    rate = EditorPreferencesDefaults.defaultCaretBlinkRate;
+                }
+                if (overrideCaretBlinkRate != null) {
+                    rate = overrideCaretBlinkRate;
+                }
+                setBlinkRate(rate);
+            }
         }
     }
 
@@ -1786,7 +1841,8 @@ public final class EditorCaret implements Caret {
 
             // Set caret to zero position upon document change (DefaultCaret impl does this too)
             runTransaction(CaretTransaction.RemoveType.REMOVE_ALL_CARETS, 0,
-                    new CaretItem[] { new CaretItem(this, newDoc.getStartPosition(), null) }, null);
+                    new CaretItem[] { new CaretItem(this, newDoc.getStartPosition(), Position.Bias.Forward,
+                            null, Position.Bias.Forward ) }, null);
             
             // Leave caretPos and markPos null => offset==0
             prefs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(Preferences.class) : null;
@@ -1842,7 +1898,7 @@ public final class EditorCaret implements Caret {
         synchronized (listenerList) {
             caretUpdatePending = false;
         }
-        JTextComponent c = component;
+        final JTextComponent c = component;
         if (c != null) {
             if (!calledFromPaint && !c.isValid()) {
                 updateLaterDuringPaint = true;
@@ -1864,7 +1920,7 @@ public final class EditorCaret implements Caret {
             Document doc = c.getDocument();
             if (doc != null) {
                 if (log) {
-                    LOG.fine("EditorCaret.update(): editorRect=" + editorRect + "\n"); // NOI18N
+                    LOG.fine("EditorCaret.update: editorRect=" + editorRect + "\n"); // NOI18N
                 }
                 // Only update caret bounds of the carets that are currently showing on the screen.
                 // Carets that are not visible on the screen are not updated at this point - they will be updated
@@ -1885,7 +1941,7 @@ public final class EditorCaret implements Caret {
                         Rectangle oldCaretBounds;
                         if (lastCaretItem.getAndClearUpdateCaretBounds()) {
                             caretBounds = lvh.modelToViewBounds(lastCaretItem.getDot(), Position.Bias.Forward);
-                            oldCaretBounds = lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c);
+                            oldCaretBounds = lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c, "update()-last-for-scroll", -2);
                         } else {
                             caretBounds = lastCaretItem.getCaretBounds();
                             oldCaretBounds = caretBounds;
@@ -1918,13 +1974,28 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             if (editorRect == null || !editorRect.contains(scrollBounds)) {
-                                c.scrollRectToVisible(scrollBounds);
+                                // When typing on a longest line the size of the component may still not incorporate just performed insert
+                                // at this point so schedule the scrolling for later.
+                                Dimension size = c.getSize();
+                                if (scrollBounds.x + scrollBounds.width <= size.width &&
+                                    scrollBounds.y + scrollBounds.height <= size.height)
+                                {
+                                    c.scrollRectToVisible(scrollBounds);
+                                } else {
+                                    final Rectangle finalScrollBounds = scrollBounds;
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            c.scrollRectToVisible(finalScrollBounds);
+                                        }
+                                    });
+                                }
                                 // Schedule another update that will read the updated editorRect
                                 dispatchUpdate(true);
                                 return;
                             }
-                            if (LOG.isLoggable(Level.FINER)) {
-                                LOG.finer("Scrolling to: " + scrollBounds);
+                            if (log && LOG.isLoggable(Level.FINER)) {
+                                LOG.finer("EditorCaret.update: Scrolling to: " + scrollBounds + "\n");
                             }
                         }
                     }
@@ -1961,10 +2032,7 @@ public final class EditorCaret implements Caret {
                         Rectangle caretBounds = null;
                         if (caretItem.getAndClearUpdateCaretBounds()) {
                             caretBounds = lvh.modelToViewBounds(caretItem.getDot(), Position.Bias.Forward);
-                            lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c);                            
-                            if (log) {
-                                LOG.fine("  [" + i + "] new caretBounds=" + caretBounds + " for caretItem=" + caretItem + "\n"); // NOI18N
-                            }
+                            caretItem.setCaretBoundsWithRepaint(caretBounds, c, "EditorCaret.update()", i);                            
                         }
                         if (i > 0) {
                             if (caretBounds == null) {
@@ -2078,7 +2146,7 @@ public final class EditorCaret implements Caret {
                     }
                     synchronized (rsRegions) {
                         if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Rectangular-selection position regions:\n");
+                            LOG.fine("EditorCaret.updateRectangularSelectionPositionBlocks: position regions:\n");
                         }
                         rsRegions.clear();
                         if (rsPaintRect != null) {
@@ -2103,7 +2171,7 @@ public final class EditorCaret implements Caret {
                                     rsRegions.add(startPos);
                                     rsRegions.add(endPos);
                                     if (LOG.isLoggable(Level.FINE)) {
-                                        LOG.fine("  <" + startOffset + "," + endOffset + ">\n");
+                                        LOG.fine("    <" + startOffset + "," + endOffset + ">\n");
                                     }
                                     y += rowHeight;
                                 } while (y < maxY);
@@ -2121,7 +2189,7 @@ public final class EditorCaret implements Caret {
             }
         }
     }
-
+    
     private String dumpVisibility() {
         return "visible=" + isVisible() + ", showing=" + showing;
     }
@@ -2131,19 +2199,20 @@ public final class EditorCaret implements Caret {
         synchronized (listenerList) {
             if (blinkTimer != null) {
                 blinkTimer.stop();
-                setShowing(true);
                 lastBlinkTime = System.currentTimeMillis();
                 if (visible) {
                     if (LOG.isLoggable(Level.FINER)){
-                        LOG.finer("Reset blinking (caret already visible)" + // NOI18N
+                        LOG.finer("EditorCaret.resetBlink: Reset blinking (caret already visible)" + // NOI18N
                                 " - starting the caret blinking timer: " + dumpVisibility() + '\n'); // NOI18N
                     }
+                    setShowing(true);
                     blinkTimer.start();
                 } else {
                     if (LOG.isLoggable(Level.FINER)){
-                        LOG.finer("Reset blinking (caret not visible)" + // NOI18N
+                        LOG.finer("EditorCaret.resetBlink: Reset blinking (caret not visible)" + // NOI18N
                                 " - caret blinking timer not started: " + dumpVisibility() + '\n'); // NOI18N
                     }
+                    setShowing(false);
                 }
             }
         }
@@ -2259,7 +2328,7 @@ public final class EditorCaret implements Caret {
 
     private void selectEnsureMinSelection(int mark, int dot, int newDot) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("selectEnsureMinSelection: mark=" + mark + ", dot=" + dot + ", newDot=" + newDot); // NOI18N
+            LOG.fine("EditorCaret.selectEnsureMinSelection: mark=" + mark + ", dot=" + dot + ", newDot=" + newDot + "\n"); // NOI18N
         }
         if (dot >= mark) { // Existing forward selection
             if (newDot >= mark) {
@@ -2358,17 +2427,17 @@ public final class EditorCaret implements Caret {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) { // Blinker timer fired
             JTextComponent c = component;
             if (c != null) {
                 setShowing(!showing);
                 List<CaretInfo> sortedCarets = getSortedCarets(); // TODO only repaint carets showing on screen
-                for (CaretInfo caret : sortedCarets) {
+                int sortedCaretsSize = sortedCarets.size();
+                for (int i = 0; i < sortedCaretsSize; i++) {
+                    CaretInfo caret = sortedCarets.get(i);
                     CaretItem caretItem = caret.getCaretItem();
-                    if (caretItem.getCaretBounds() != null) {
-                        Rectangle repaintRect = caretItem.getCaretBounds();
-                        c.repaint(repaintRect);
-                    }
+                    // Repaint either visible or invisible caret to visually toggle its state
+                    caretItem.repaint(c, "EditorCaret: repaint-to-" + (isShowing() ? "show" : "hide"), i);
                 }
                 // Check if the system is responsive enough to blink at the current blink rate
                 long tm = System.currentTimeMillis();
@@ -2379,14 +2448,7 @@ public final class EditorCaret implements Caret {
         }
         
         public @Override void preferenceChange(PreferenceChangeEvent evt) {
-            String setingName = evt == null ? null : evt.getKey();
-            if (setingName == null || SimpleValueNames.CARET_BLINK_RATE.equals(setingName)) {
-                int rate = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, -1);
-                if (rate == -1) {
-                    rate = EditorPreferencesDefaults.defaultCaretBlinkRate;
-                }
-                setBlinkRate(rate);
-            }
+            updateType();
         }
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
@@ -2494,7 +2556,6 @@ public final class EditorCaret implements Caret {
                 atomicSectionLowestModOffset = Integer.MAX_VALUE;
                 atomicSectionImplicitSetDotOffset = Integer.MAX_VALUE;
                 atomicSectionAnyCaretChange = false;
-                atomicSectionUpdateNeeded = false;
             }
         }
 
@@ -2525,6 +2586,14 @@ public final class EditorCaret implements Caret {
         }
 
         private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+            // For typing modification ensure that the last caret will be visible after the typing modification.
+            // Otherwise the caret would go off the screen when typing at the end of a long line.
+            // It might make sense to make an implicit dot setting to end of the modification
+            // but that would break existing tests like TypingCompletionUnitTest wihch expects
+            // that even typing modifications do not influence the caret position (not only the non-typing ones).
+            boolean typingModification = DocumentUtilities.isTypingModification(evt.getDocument());
+            scrollToLastCaret |= typingModification;
+
             if (!implicitSetDot(evt, setDotOffset)) {
                 // Ensure that a valid atomicSectionImplicitSetDotOffset value
                 // will be updated by the just performed document modification
@@ -2558,7 +2627,7 @@ public final class EditorCaret implements Caret {
          * @return true if the given offset was used or false if not.
          */
         private boolean implicitSetDot(DocumentEvent evt, int offset) {
-            if (UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
+            if (evt == null || UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
                 if (getCarets().size() == 1) { // And if there is just a single caret
                     boolean inActiveTransaction;
                     synchronized (listenerList) {
@@ -2589,7 +2658,7 @@ public final class EditorCaret implements Caret {
         @Override
         public void mousePressed(MouseEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("mousePressed: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
+                LOG.fine("EditorCaret.mousePressed: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
             }
 
             JTextComponent c = component;
@@ -2610,7 +2679,8 @@ public final class EditorCaret implements Caret {
                                 try {
                                     Position pos = doc.createPosition(offset);
                                     runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, pos) }, null);
+                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward) }, null);
+                                    evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
                                 }
@@ -2632,14 +2702,13 @@ public final class EditorCaret implements Caret {
                             mouseState = MouseState.WORD_SELECTION;
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
-                            // Check possible fold expansion
                             try {
-                                // hack, to get knowledge of possible expansion. Editor depends on Folding, so it's not really possible
-                                // to have Folding depend on BaseCaret (= a cycle). If BaseCaret moves to editor.lib2, this contract
-                                // can be formalized as an interface.
-                                @SuppressWarnings("unchecked")
-                                Callable<Boolean> cc = (Callable<Boolean>) c.getClientProperty("org.netbeans.api.fold.expander");
-                                if (cc == null || !cc.equals(this)) {
+                                boolean foldExpanded = false;
+                                CaretFoldExpander caretFoldExpander = CaretFoldExpander.get();
+                                if (caretFoldExpander != null) {
+                                    foldExpanded = caretFoldExpander.checkExpandFold(c, evt.getPoint());
+                                }
+                                if (!foldExpanded) {
                                     if (selectWordAction == null) {
                                         selectWordAction = EditorActionUtilities.getAction(
                                                 c.getUI().getEditorKit(c), DefaultEditorKit.selectWordAction);
@@ -2683,7 +2752,7 @@ public final class EditorCaret implements Caret {
         @Override
         public void mouseReleased(MouseEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("mouseReleased: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
+                LOG.fine("EditorCaret.mouseReleased: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
             }
 
             int offset = mouse2Offset(evt);
@@ -2730,11 +2799,14 @@ public final class EditorCaret implements Caret {
         @Override
         public void mouseClicked(MouseEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("mouseClicked: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
+                LOG.fine("EditorCaret.mouseClicked: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
             }
 
             JTextComponent c = component;
             if (c != null) {
+                if (evt.getClickCount() == 1 && evt.isControlDown() && evt.isShiftDown()) {
+                    evt.consume(); // consume event already handled by mousePressed
+                }
                 if (isMiddleMouseButtonExt(evt)) {
                     if (evt.getClickCount() == 1) {
                         if (c == null) {
@@ -2837,7 +2909,7 @@ public final class EditorCaret implements Caret {
         @Override
         public void mouseDragged(MouseEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("mouseDragged: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); //NOI18N
+                LOG.fine("EditorCaret.mouseDragged: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); //NOI18N
             }
 
             if (isLeftMouseButtonExt(evt)) {
@@ -2899,14 +2971,13 @@ public final class EditorCaret implements Caret {
         public @Override void focusGained(FocusEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine(
-                        "BaseCaret.focusGained(); doc=" + // NOI18N
+                        "EditorCaret.focusGained: doc=" + // NOI18N
                         component.getDocument().getProperty(Document.TitleProperty) + '\n'
                 );
             }
             
             JTextComponent c = component;
             if (c != null) {
-                updateType();
                 if (component.isEnabled()) {
                     if (component.isEditable()) {
                         setVisible(true);
@@ -2914,23 +2985,23 @@ public final class EditorCaret implements Caret {
                     setSelectionVisible(true);
                 }
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer("Caret visibility: " + isVisible() + '\n'); // NOI18N
+                    LOG.finer("    Caret visibility: " + isVisible() + '\n'); // NOI18N
                 }
             } else {
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer("Text component is null, caret will not be visible" + '\n'); // NOI18N
+                    LOG.finer("    Text component is null, caret will not be visible" + '\n'); // NOI18N
                 }
             }
         }
 
         public @Override void focusLost(FocusEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("BaseCaret.focusLost(); doc=" + // NOI18N
+                LOG.fine("EditorCaret.focusLost: doc=" + // NOI18N
                         component.getDocument().getProperty(Document.TitleProperty) +
                         "\nFOCUS GAINER: " + evt.getOppositeComponent() + '\n' // NOI18N
                 );
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer("FOCUS EVENT: " + evt + '\n'); // NOI18N
+                    LOG.finer("    FOCUS EVENT: " + evt + '\n'); // NOI18N
                 }
             }
 	    setVisible(false);

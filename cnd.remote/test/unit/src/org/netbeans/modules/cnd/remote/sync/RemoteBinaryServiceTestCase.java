@@ -70,15 +70,15 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
         // setup: create a temp file and copy /bin/ls into it
         ExitStatus rcs = ProcessUtils.execute(execEnv, "mktemp");
-        assertTrue("mktemp is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
-        String remotePath = rcs.output;
+        assertTrue("mktemp is not successful " + rcs.exitCode + " rc=" + rcs.getErrorString(), rcs.isOK());
+        String remotePath = rcs.getOutputString();
         assertNotNull(remotePath);
         if (remotePath.endsWith("\n")) {
             remotePath = remotePath.substring(0, remotePath.length() - 1);
         }
         assertTrue(remotePath.length() > 0);
         rcs = ProcessUtils.execute(execEnv, "cp", "/bin/ls", remotePath);
-        assertTrue("cp /bin/ls " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
+        assertTrue("cp /bin/ls " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.getErrorString(), rcs.isOK());
 
         String localPath;
         File localFile = null;
@@ -90,7 +90,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
                 expectedDownloadCount++;
             } else if (i == 4) {
                 rcs = ProcessUtils.execute(execEnv, "touch", remotePath);
-                assertTrue("touch " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
+                assertTrue("touch " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.getErrorString(), rcs.isOK());
                 expectedDownloadCount++;
             }
 

@@ -6,15 +6,15 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=OracleDeveloperStudio-Solaris-x86
+CND_PLATFORM=GNU-Solaris-x86
 CND_CONF=Unix_64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 CND_DLIB_EXT=so
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows
-OUTPUT_BASENAME=toolswrapperwidows
+OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wrapper
+OUTPUT_BASENAME=wrapper
 PACKAGE_TOP_DIR=toolswrapperwidows/
 
 # Functions

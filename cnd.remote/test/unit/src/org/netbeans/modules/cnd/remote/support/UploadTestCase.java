@@ -107,7 +107,7 @@ public class UploadTestCase extends RemoteTestBase {
         if (rc != 0) {
             assert false : "RemoteCommandSupport: " + "cat " + remoteFile + " returned " + rc + " on " + execEnv;
         }
-        assert rcs2.output.equals(sb.toString());
+        assert rcs2.getOutputString().equals(sb.toString());
         ProcessUtils.ExitStatus rc3 = ProcessUtils.execute(execEnv, "rm", remoteFile);
         assert rc3.exitCode == 0;
         localFile.delete();

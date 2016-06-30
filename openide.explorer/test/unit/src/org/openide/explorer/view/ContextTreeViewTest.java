@@ -86,21 +86,21 @@ public class ContextTreeViewTest extends NbTestCase {
             createLeaf("huk"),
         });
         
-        Panel p = new Panel();
-        p.getExplorerManager().setRootContext(root);
-        
-        ContextTreeView ctv = new ContextTreeView();
-        p.add(BorderLayout.CENTER, ctv);
-        
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
-        f.getContentPane().add(BorderLayout.CENTER, p);
-        f.setVisible(true);
-        
-        final JTree tree = ctv.tree;
-        
         class AWTTst implements Runnable {
             public void run() {
+                Panel p = new Panel();
+                p.getExplorerManager().setRootContext(root);
+
+                ContextTreeView ctv = new ContextTreeView();
+                p.add(BorderLayout.CENTER, ctv);
+
+                JFrame f = new JFrame();
+                f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+                f.getContentPane().add(BorderLayout.CENTER, p);
+                f.setVisible(true);
+
+                final JTree tree = ctv.tree;
+        
                 // wait a while till the frame is realized and ctv.addNotify called
                 Object r = tree.getModel().getRoot();
                 assertEquals("There is root", Visualizer.findVisualizer(root), r);

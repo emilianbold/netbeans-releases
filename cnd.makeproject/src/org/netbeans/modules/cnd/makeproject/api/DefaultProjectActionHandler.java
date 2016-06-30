@@ -69,8 +69,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -80,6 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -96,8 +95,6 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -129,34 +126,35 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
             @Override
             public void executionStarted(int pid) {
-                for (ExecutionListener l : listeners) {
+                listeners.forEach((l) -> {
                     l.executionStarted(pid);
-                }
+                });
             }
 
             @Override
             public void executionFinished(int rc) {
-                for (ExecutionListener l : listeners) {
+                listeners.forEach((l) -> {
                     l.executionFinished(rc);
-                }
+                });
             }
         };
 
-        Runnable executor = new Runnable() {
-
-            @Override
-            public void run() {
+        Runnable executor = () -> {
+            try {
+                _execute(io, listener);
+            } catch (Throwable th) {
                 try {
-                    _execute(io, listener);
-                } catch (Throwable th) {
-                    try {
-                        io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
-                    } catch (IOException ex) {
-                    }
-                    io.getOut().close();
-                    listener.executionFinished(-1);
-                    throw new RuntimeException(th);
+                    io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                } catch (Throwable ex) {
+                    ex.printStackTrace(System.err);
                 }
+                try {
+                    io.getOut().close();
+                } catch (Throwable ex) {
+                    ex.printStackTrace(System.err);
+                }
+                listener.executionFinished(-1);
+                throw new RuntimeException(th);
             }
         };
 
@@ -211,7 +209,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 } else {
                     errmsg = getString("Err_NoTermFound");
                 }
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                CndNotifier.getDefault().notifyInfo(errmsg);
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 runInExternalTerminal = runInInternalTerminal = false;
             }
@@ -312,7 +310,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD) {
                 ArrayList<String> expandedArgs = new ArrayList<>();
                 for(String s :args) {
-                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
+                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs, env));
                 }
                 args = expandedArgs;
             }
@@ -406,6 +404,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     }
 
     private static void modifyPath(final ExecutionEnvironment execEnv, final Map<String, String> env, final PlatformInfo pi, final CompilerSet cs, final String type) {
+        if (env.get("__CND_TOOL_WRAPPER__") != null) { //NOI18N
+            return;
+        }
         String macro;
         if ("run".equals(type)) { //NOI18N
             macro = cs.getModifyRunPath();
@@ -470,14 +471,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
     @Override
     public void cancel() {
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                Future<Integer> et = executorTask;
-                if (et != null) {
-                    et.cancel(true);
-                }
+        RP.post(() -> {
+            Future<Integer> et = executorTask;
+            if (et != null) {
+                et.cancel(true);
             }
         });
     }
@@ -540,13 +537,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         @Override
         public LineConvertor newLineConvertor() {
-            return new LineConvertor() {
-
-                @Override
-                public List<ConvertedLine> convert(String line) {
-                    return ProcessChangeListener.this.convert(line);
-                }
-            };
+            return ProcessChangeListener.this::convert;
         }
 
         private synchronized void closeOutputListener() {
@@ -590,23 +581,23 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         @Override
         public void write(String line) throws IOException {
-            for (OutputStreamHandler outputStreamHandler : handlers) {
+            handlers.forEach((outputStreamHandler) -> {
                 outputStreamHandler.handleLine(line);
-            }
+            });
         }
 
         @Override
         public void flush() throws IOException {
-            for (OutputStreamHandler outputStreamHandler : handlers) {
+            handlers.forEach((outputStreamHandler) -> {
                 outputStreamHandler.flush();
-            }
+            });
         }
 
         @Override
         public void close() throws IOException {
-            for (OutputStreamHandler outputStreamHandler : handlers) {
+            handlers.forEach((outputStreamHandler) -> {
                 outputStreamHandler.close();
-            }
+            });
         }
 
         @Override

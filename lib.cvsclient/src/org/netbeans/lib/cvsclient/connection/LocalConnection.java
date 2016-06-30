@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +65,7 @@ import org.netbeans.lib.cvsclient.util.*;
 public class LocalConnection extends AbstractConnection {
 
     private static final String CVS_EXE_COMMAND = System.getenv("CVS_EXE") != null?
-        System.getenv("CVS_EXE") + " server": "cvs server";  // NOI18N    
+        System.getenv("CVS_EXE") + " server": "cvs server";  // NOI18N
 
     /**
      * The CVS process that is being run.

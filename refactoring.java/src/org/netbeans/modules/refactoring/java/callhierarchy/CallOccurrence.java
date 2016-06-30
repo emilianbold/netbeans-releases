@@ -84,14 +84,16 @@ final class CallOccurrence implements CallDescriptor {
 
     @Override
     public void open() {
-        Call.doOpen(occurrence.getFileObject(), selectionBounds);
+        if(occurrence != null) {
+            Call.doOpen(occurrence.getFileObject(), selectionBounds);
+        }
     }
 
     public static CallOccurrence createOccurrence(
             CompilationInfo javac, TreePath selection, Call parent) {
         WhereUsedElement wue = WhereUsedElement.create(javac, selection, false);
         CallOccurrence c = new CallOccurrence();
-        if(!javac.getTreeUtilities().isSynthetic(selection)) {
+        if(javac.getTreeUtilities().isSynthetic(selection)) {
             selection = getEnclosingTree(selection);
             if (javac.getTreeUtilities().isSynthetic(selection)) {
                 selection = getEnclosingTree(selection.getParentPath());

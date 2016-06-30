@@ -64,7 +64,7 @@ public class ImplementOverridePanel extends JPanel {
     /** Creates new form ConstructorPanel */
     public ImplementOverridePanel(ElementNode.Description description, boolean isImplement) {
         initComponents();
-        elementSelector = new ElementSelectorPanel(description, false);
+        elementSelector = new ElementSelectorPanel(description, false, true);
         elementSelector.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

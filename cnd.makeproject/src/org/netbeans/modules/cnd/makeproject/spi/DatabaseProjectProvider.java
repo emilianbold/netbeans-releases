@@ -44,11 +44,9 @@ package org.netbeans.modules.cnd.makeproject.spi;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.openide.WizardDescriptor;
 
 /**
  *
@@ -59,8 +57,6 @@ public interface DatabaseProjectProvider {
     void setupReleaseConfiguration(MakeConfiguration conf);
     void setupDebugConfiguration(MakeConfiguration conf);   
 
-    void setupAdditionalWizardPanels(List<WizardDescriptor.Panel<WizardDescriptor>> panels);   
-    
     boolean isProCItem(Item item);
     String getProCOutput(Item item, MakeConfiguration conf);
     String getCompileOptions(Item item, MakeConfiguration conf);

@@ -45,6 +45,7 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -238,7 +239,7 @@ public class ToolTipAnnotation extends Annotation implements PropertyChangeListe
     }
 
     private static boolean endsWithAccessModifier(final String possibleAccessModifier) {
-        String lowerCased = possibleAccessModifier.toLowerCase();
+        String lowerCased = possibleAccessModifier.toLowerCase(Locale.US);
         return lowerCased.endsWith("private") || lowerCased.endsWith("protected") || lowerCased.endsWith("public") || lowerCased.endsWith("var"); //NOI18N
     }
 

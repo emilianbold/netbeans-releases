@@ -47,13 +47,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public abstract class BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase {
@@ -75,7 +71,6 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getString("DiagnosableReleaseTxt"),
         getString("ReleaseTxt"),
         getString("PerformanceReleaseTxt"),};
-    private IntConfiguration developmentMode;
     public static final int WARNING_LEVEL_NO = 0;
     public static final int WARNING_LEVEL_DEFAULT = 1;
     public static final int WARNING_LEVEL_MORE = 2;
@@ -87,7 +82,6 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getString("SomeWarningsTxt"),
         getString("MoreWarningsTxt"),
         getString("ConvertWarningsTxt"),};
-    private IntConfiguration warningLevel;
     public static final int BITS_DEFAULT = 0;
     public static final int BITS_32 = 1;
     public static final int BITS_64 = 2;
@@ -95,8 +89,6 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getString("BITS_DEFAULT"),
         getString("BITS_32"),
         getString("BITS_64"),};
-    private IntConfiguration sixtyfourBits;
-    private InheritedBooleanConfiguration strip;
     public static final int MT_LEVEL_NONE = 0;
     public static final int MT_LEVEL_SAFE = 1;
     public static final int MT_LEVEL_AUTOMATIC = 2;
@@ -106,24 +98,35 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getString("SafeTxt"),
         getString("AutomaticTxt"),
         getString("OpenMPTxt"),};
-    private static final String[] MT_LEVEL_OPTIONS = null;
-    private IntConfiguration mpLevel;
-    private StringConfiguration additionalDependencies;
-    private StringConfiguration tool;
-    private OptionsConfiguration commandLineConfiguration;
+    private MakeConfiguration owner;
+    private final ConfigurationContainer container;
 
     // Constructors
-    protected BasicCompilerConfiguration(String baseDir, BasicCompilerConfiguration master) {
+    protected BasicCompilerConfiguration(String baseDir, BasicCompilerConfiguration master, MakeConfiguration owner) {
+        assert owner != null;
+        this.owner = owner;
         this.baseDir = baseDir;
         this.master = master;
-        developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
-        warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
-        sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
-        strip = new InheritedBooleanConfiguration(master != null ? master.getStrip() : null, false);
-        mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
-        additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
-        tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
-        commandLineConfiguration = new OptionsConfiguration();
+        if (!owner.isMakefileConfiguration()) {
+            // managed configuration propertyes only
+            container = new ManagedConfigurationContainer(master);
+        } else {
+            container = UNMANAGED_CONTAINER;
+        }
+    }
+
+    /**
+     * @return the owner
+     */
+    public MakeConfiguration getOwner() {
+        return owner;
+    }
+
+    /**
+     * @param owner the owner to set
+     */
+    public void setOwner(MakeConfiguration owner) {
+        this.owner = owner;
     }
 
     public void fixupMasterLinks(BasicCompilerConfiguration compilerConfiguration) {
@@ -137,14 +140,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
 
     @Override
     public boolean getModified() {
-        return developmentMode.getModified() ||
-                mpLevel.getModified() ||
-                warningLevel.getModified() ||
-                sixtyfourBits.getModified() ||
-                strip.getModified() ||
-                additionalDependencies.getModified() ||
-                tool.getModified() ||
-                commandLineConfiguration.getModified();
+        return container.getModified();
     }
 
     // baseDir
@@ -157,9 +153,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
     }
 
     // To be overridden
-    public String getOptions(AbstractCompiler compiler) {
-        return "OVERRIDE"; // NOI18N
-    }
+    public abstract String getOptions(AbstractCompiler compiler);
 
     // Master
     public void setMaster(BasicCompilerConfiguration master) {
@@ -189,75 +183,73 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
     
     // Development Mode
     public void setDevelopmentMode(IntConfiguration developmentMode) {
-        this.developmentMode = developmentMode;
+        container.setDevelopmentMode(developmentMode);
     }
 
     public IntConfiguration getDevelopmentMode() {
-        return developmentMode;
+        return container.getDevelopmentMode();
     }
 
     // Warning Level
     public void setWarningLevel(IntConfiguration warningLevel) {
-        this.warningLevel = warningLevel;
+        container.setWarningLevel(warningLevel);
     }
 
     public IntConfiguration getWarningLevel() {
-        return warningLevel;
+        return container.getWarningLevel();
     }
-
 
     // SixtyfourBits
     public void setSixtyfourBits(IntConfiguration sixtyfourBits) {
-        this.sixtyfourBits = sixtyfourBits;
+        container.setSixtyfourBits(sixtyfourBits);
     }
 
     public IntConfiguration getSixtyfourBits() {
-        return sixtyfourBits;
+        return container.getSixtyfourBits();
     }
 
     // MT Level
     public void setMTLevel(IntConfiguration mpLevel) {
-        this.mpLevel = mpLevel;
+        container.setMTLevel(mpLevel);
     }
 
     public IntConfiguration getMTLevel() {
-        return mpLevel;
+        return container.getMTLevel();
     }
     
-    // To be overridden
-    protected String[] getMTLevelOptions() {
-        return MT_LEVEL_OPTIONS;
-    }
-
     // Strip
     public void setStrip(InheritedBooleanConfiguration strip) {
-        this.strip = strip;
+        container.setStrip(strip);
     }
 
     public InheritedBooleanConfiguration getStrip() {
-        return strip;
+        return container.getStrip();
     }
 
     public void setAdditionalDependencies(StringConfiguration additionalDependencies) {
-        this.additionalDependencies = additionalDependencies;
+        container.setAdditionalDependencies(additionalDependencies);
     }
 
     public StringConfiguration getAdditionalDependencies() {
-        return additionalDependencies;
+        return container.getAdditionalDependencies();
     }
 
     // Tool
     public void setTool(StringConfiguration tool) {
-        this.tool = tool;
+        container.setTool(tool);
     }
 
     public StringConfiguration getTool() {
-        return tool;
+        return container.getTool();
     }
 
     // CommandLine
+    public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
+        container.setCommandLineConfiguration(commandLineConfiguration);
+    }
+    
     public OptionsConfiguration getCommandLineConfiguration() {
-        return commandLineConfiguration;
+        return container.getCommandLineConfiguration();
     }
     
     protected String getCommandLineOptions(boolean inherit) {
@@ -277,16 +269,12 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             options.add(0, masters.get(i).getCommandLineConfiguration().getValue());
         }
         StringBuilder sb = new StringBuilder();
-        for (String opt : options) {
+        options.forEach((opt) -> {
             sb.append(opt).append(' ');
-        }
+        });
         return sb.toString().trim();
     }
 
-    public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
-        this.commandLineConfiguration = commandLineConfiguration;
-    }
-    
     public String getOutputFile(Item item, MakeConfiguration conf, boolean expanded) {
         String filePath = item.getPath(true);
         // qmake generated Makefile expects to find all object files in one directory 
@@ -364,30 +352,585 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
     }
 
-    // Sheets
-    protected Sheet.Set getBasicSet() {
-        Sheet.Set set = new Sheet.Set();
-        set.setName("BasicOptions"); // NOI18N
-        set.setDisplayName(getString("BasicOptionsTxt"));
-        set.setShortDescription(getString("BasicOptionsHint"));
-        set.put(new IntNodeProp(getDevelopmentMode(), true, "DevelopmentMode", getString("DevelopmentModeTxt"), getString("DevelopmentModeHint"))); // NOI18N
-        set.put(new IntNodeProp(getWarningLevel(), true, "WarningLevel", getString("WarningLevelTxt"), getString("WarningLevelHint"))); // NOI18N
-        set.put(new IntNodeProp(getSixtyfourBits(), true, "64BitArchitecture", getString("64BitArchitectureTxt"), getString("64BitArchitectureHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getStrip(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-        return set;
-    }
-
-    protected Sheet.Set getInputSet() {
-        Sheet.Set set = new Sheet.Set();
-        set.setName("Input"); // NOI18N
-        set.setDisplayName(getString("InputTxt"));
-        set.setShortDescription(getString("InputHint"));
-        set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint")));  // NOI18N
-        return set;
-    }
-
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(BasicCompilerConfiguration.class, s);
+    }
+    
+    private static interface ConfigurationContainer {
+        void setDevelopmentMode(IntConfiguration developmentMode);
+        IntConfiguration getDevelopmentMode();
+        void setWarningLevel(IntConfiguration warningLevel);
+        IntConfiguration getWarningLevel();
+        void setSixtyfourBits(IntConfiguration sixtyfourBits);
+        IntConfiguration getSixtyfourBits();
+        void setMTLevel(IntConfiguration mpLevel);
+        IntConfiguration getMTLevel();
+        void setStrip(InheritedBooleanConfiguration strip);
+        InheritedBooleanConfiguration getStrip();
+        void setAdditionalDependencies(StringConfiguration additionalDependencies);
+        StringConfiguration getAdditionalDependencies();
+        void setTool(StringConfiguration tool);
+        StringConfiguration getTool();
+        void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration);
+        OptionsConfiguration getCommandLineConfiguration();
+        boolean getModified();
+    }
+    
+    private static final class ManagedConfigurationContainer implements ConfigurationContainer {
+        private IntConfiguration developmentMode;
+        private IntConfiguration warningLevel;
+        private IntConfiguration sixtyfourBits;
+        private InheritedBooleanConfiguration strip;
+        private IntConfiguration mpLevel;
+        private StringConfiguration additionalDependencies;
+        private StringConfiguration tool;
+        private OptionsConfiguration commandLineConfiguration;
+        private ManagedConfigurationContainer(BasicCompilerConfiguration master) {
+            developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
+            warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
+            sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
+            strip = new InheritedBooleanConfiguration(master != null ? master.getStrip() : null, false);
+            mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
+            additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
+            tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
+            commandLineConfiguration = new OptionsConfiguration();
+        }
+        
+        @Override
+        public void setDevelopmentMode(IntConfiguration developmentMode) {
+            this.developmentMode = developmentMode;
+        }
+
+        @Override
+        public IntConfiguration getDevelopmentMode() {
+            return developmentMode;
+        }
+
+        @Override
+        public void setWarningLevel(IntConfiguration warningLevel) {
+            this.warningLevel = warningLevel;
+        }
+
+        @Override
+        public IntConfiguration getWarningLevel() {
+            return warningLevel;
+        }
+
+        @Override
+        public void setSixtyfourBits(IntConfiguration sixtyfourBits) {
+            this.sixtyfourBits = sixtyfourBits;
+        }
+
+        @Override
+        public IntConfiguration getSixtyfourBits() {
+            return sixtyfourBits;
+        }
+
+        @Override
+        public void setMTLevel(IntConfiguration mpLevel) {
+            this.mpLevel = mpLevel;
+        }
+
+        @Override
+        public IntConfiguration getMTLevel() {
+            return mpLevel;
+        }
+
+        @Override
+        public void setStrip(InheritedBooleanConfiguration strip) {
+            this.strip = strip;
+        }
+
+        @Override
+        public InheritedBooleanConfiguration getStrip() {
+            return strip;
+        }
+
+        @Override
+        public void setAdditionalDependencies(StringConfiguration additionalDependencies) {
+            this.additionalDependencies = additionalDependencies;
+        }
+
+        @Override
+        public StringConfiguration getAdditionalDependencies() {
+            return additionalDependencies;
+        }
+
+        @Override
+        public void setTool(StringConfiguration tool) {
+            this.tool = tool;
+        }
+
+        @Override
+        public StringConfiguration getTool() {
+            return tool;
+        }
+
+        @Override
+        public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
+            this.commandLineConfiguration = commandLineConfiguration;
+        }
+    
+        @Override
+        public OptionsConfiguration getCommandLineConfiguration() {
+            return commandLineConfiguration;
+        }
+        
+        @Override
+        public boolean getModified() {
+            return developmentMode.getModified() ||
+                   mpLevel.getModified() ||
+                   warningLevel.getModified() ||
+                   sixtyfourBits.getModified() ||
+                   strip.getModified() ||
+                   additionalDependencies.getModified() ||
+                   tool.getModified() ||
+                   commandLineConfiguration.getModified();
+        }
+    }
+    
+    private static final ConfigurationContainer UNMANAGED_CONTAINER = new UnmanagedConfigurationContainer();
+    
+    private static final class UnmanagedConfigurationContainer implements ConfigurationContainer {
+
+        @Override
+        public void setDevelopmentMode(IntConfiguration developmentMode) {
+        }
+
+        @Override
+        public IntConfiguration getDevelopmentMode() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setWarningLevel(IntConfiguration warningLevel) {
+        }
+
+        @Override
+        public IntConfiguration getWarningLevel() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setSixtyfourBits(IntConfiguration sixtyfourBits) {
+        }
+
+        @Override
+        public IntConfiguration getSixtyfourBits() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setMTLevel(IntConfiguration mpLevel) {
+        }
+
+        @Override
+        public IntConfiguration getMTLevel() {
+            return UNSUPPORTED_INT_CONFIGURATION;
+        }
+
+        @Override
+        public void setStrip(InheritedBooleanConfiguration strip) {
+        }
+
+        @Override
+        public InheritedBooleanConfiguration getStrip() {
+            return UNSUPPORTED_INHERITED_BOOLEAN_CONFIGURATION;
+        }
+
+        @Override
+        public void setAdditionalDependencies(StringConfiguration additionalDependencies) {
+        }
+
+        @Override
+        public StringConfiguration getAdditionalDependencies() {
+            return UNSUPPORTED_STRING_CONFIGURATION;
+        }
+
+        @Override
+        public void setTool(StringConfiguration tool) {
+        }
+
+        @Override
+        public StringConfiguration getTool() {
+            return UNSUPPORTED_STRING_CONFIGURATION;
+        }
+
+        @Override
+        public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
+        }
+
+        @Override
+        public OptionsConfiguration getCommandLineConfiguration() {
+            return UNSUPPORTED_OPTIONS_CONFIGURATION;
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+    }
+    
+    private static final String UNSUPPORTED = "Unsupported"; // NOI18N
+    protected static final IntConfiguration UNSUPPORTED_INT_CONFIGURATION = new UnsupportedIntConfiguration();
+    protected static final StringConfiguration UNSUPPORTED_STRING_CONFIGURATION = new UnsupportedStringConfiguration();
+    protected static final BooleanConfiguration UNSUPPORTED_BOOLEAN_CONFIGURATION= new UnsupportedBooleanConfiguration();
+    protected static final InheritedBooleanConfiguration UNSUPPORTED_INHERITED_BOOLEAN_CONFIGURATION= new UnsupportedInheritedBooleanConfiguration();
+    protected static final OptionsConfiguration UNSUPPORTED_OPTIONS_CONFIGURATION = new UnsupportedOptionsConfiguration();
+    
+    private static final class UnsupportedIntConfiguration extends IntConfiguration {
+
+        protected UnsupportedIntConfiguration() {
+        }
+
+        @Override
+        public void setMaster(IntConfiguration master) {
+        }
+
+        @Override
+        public void setValue(int value) {
+        }
+
+        @Override
+        public void setValue(String s) {
+        }
+
+        @Override
+        public int getValue() {
+            return 0;
+        }
+
+        @Override
+        public final void setModified(boolean b) {
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+
+        @Override
+        public void setDirty(boolean dirty) {
+        }
+
+        @Override
+        public boolean getDirty() {
+            return false;
+        }
+
+        @Override
+        public int getDefault() {
+            return 0;
+        }
+
+        @Override
+        public void setDefault(int def) {
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public String getName() {
+            return UNSUPPORTED;
+        }
+
+        @Override
+        public String[] getNames() {
+            return new String[]{UNSUPPORTED};
+        }
+
+        @Override
+        public String getOption() {
+            return UNSUPPORTED;
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(IntConfiguration conf) {
+        }
+
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
+        public IntConfiguration clone() {
+            return this;
+        }
+
+        @Override
+        public byte getPreviousValue() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + getValue() + ")" + getName(); // NOI18N
+        }
+
+    }
+    
+    private static final class UnsupportedStringConfiguration extends StringConfiguration {
+        protected UnsupportedStringConfiguration() {
+        }
+
+        @Override
+        public void setMaster(StringConfiguration master) {
+        }
+
+        @Override
+        public void setValue(String b) {
+        }
+
+        @Override
+        public String getValue() {
+            return "";
+        }
+
+        @Override
+        public String getValueDef(String def) {
+            return "";
+        }
+
+        @Override
+        public String getValue(String delim) {
+            return "";
+        }
+
+        @Override
+        public void setModified(boolean b) {
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+
+        @Override
+        public String getDefault() {
+            return "";
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void setDefaultValue(String def) {
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(StringConfiguration conf) {
+        }
+
+        @Override
+        public StringConfiguration clone() {
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "{value=" + getValue() + " modified=" + getModified() + '}'; // NOI18N
+        }
+    }
+    
+    private static final class UnsupportedBooleanConfiguration extends BooleanConfiguration {
+        protected UnsupportedBooleanConfiguration() {
+        }
+
+        @Override
+        public void setValue(boolean b) {
+        }
+
+        @Override
+        public boolean getValue() {
+            return false;
+        }
+
+        @Override
+        public void setModified(boolean b) {
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+
+        @Override
+        public void setDirty(boolean dirty) {
+        }
+
+        @Override
+        public boolean getDirty() {
+            return false;
+        }
+
+        @Override
+        public boolean getDefault() {
+            return false;
+        }
+
+        @Override
+        public void setDefault(boolean b) {
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(BooleanConfiguration conf) {
+        }
+
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
+        public BooleanConfiguration clone() {
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "{value=" + getValue() + " modified=" + getModified() + " dirty=" + getDirty() +  '}'; // NOI18N
+        }
+    }
+
+    private static final class UnsupportedInheritedBooleanConfiguration extends InheritedBooleanConfiguration {
+        protected UnsupportedInheritedBooleanConfiguration() {
+        }
+
+        @Override
+        protected BooleanConfiguration getMaster() {
+            return null;
+        }
+
+        @Override
+        public void setMaster(InheritedBooleanConfiguration master) {
+        }
+
+
+        @Override
+        public void setValue(boolean b) {
+        }
+
+        @Override
+        public boolean getValue() {
+            return false;
+        }
+
+        @Override
+        public void setModified(boolean b) {
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+
+        @Override
+        public void setDirty(boolean dirty) {
+        }
+
+        @Override
+        public boolean getDirty() {
+            return false;
+        }
+
+        @Override
+        public boolean getDefault() {
+            return false;
+        }
+
+        @Override
+        public void setDefault(boolean b) {
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        // Clone and Assign
+        @Override
+        public void assign(InheritedBooleanConfiguration conf) {
+        }
+
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
+        public InheritedBooleanConfiguration clone() {
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "{value=" + getValue() + " modified=" + getModified() + " dirty=" + getDirty() +  '}'; // NOI18N
+        }
+    }
+    
+    private static final class UnsupportedOptionsConfiguration extends OptionsConfiguration {
+        protected UnsupportedOptionsConfiguration() {
+        }
+
+        @Override
+        public void setDirty(boolean dirty) {
+        }
+
+        @Override
+        public boolean getDirty() {
+            return false;
+        }
+
+        @Override
+        public void setValue(String commandLine) {
+        }
+        
+        @Override
+        public String getValue() {
+            return "";
+        }
+        
+        @Override
+        public void setModified(boolean b) {
+        }
+
+        @Override
+        public boolean getModified() {
+            return false;
+        }
+        
+        @Override
+        public String getDefault() {
+            return "";
+        }
+
+        @Override
+        public void optionsReset() {
+        }
+
+        // Predefined
+        @Override
+        public void setPreDefined(String preDefined) {
+        }
+
+        @Override
+        public String getPreDefined() {
+            return "";
+        }
+
+        // Clone and assign
+        @Override
+        public void assign(OptionsConfiguration conf) {
+        }
+
+        @Override
+        public OptionsConfiguration clone() {
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "{commandLine=" + getValue() + "] dirty=" + getDirty() + // NOI18N
+                    " commandLineModified=" + getModified() + '}'; // NOI18N
+        }
     }
 }

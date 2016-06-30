@@ -272,22 +272,19 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                         } else {
                             sttmts = findAddPosition(workingCopy, resolved, Collections.<TreePath>emptySet());
                         }
-                        if (sttmts == null) {
-                            return;
+                        if (sttmts != null) {
+                            List<StatementTree> nueStatements2 = new LinkedList<StatementTree>(sttmts.getStatements());
+
+                            if (expressionStatement) {
+                                nueStatements2.remove(resolved.getParentPath().getLeaf());
+                            }
+                            if (variableRewrite) {
+                                nueStatements2.remove(resolved.getLeaf());
+                            }
+
+                            BlockTree nueBlock2 = make.Block(nueStatements2, false);
+                            workingCopy.rewrite(sttmts, nueBlock2);
                         }
-
-                        List<StatementTree> nueStatements2 = new LinkedList<StatementTree>(sttmts.getStatements());
-
-                        if (expressionStatement) {
-                            nueStatements2.remove(resolved.getParentPath().getLeaf());
-                        }
-                        if (variableRewrite) {
-                            nueStatements2.remove(resolved.getLeaf());
-                        }
-
-                        BlockTree nueBlock2 = make.Block(nueStatements2, false);
-                        workingCopy.rewrite(sttmts, nueBlock2);
-
                         if (!variableRewrite) {
                             Tree origParent = resolved.getParentPath().getLeaf();
                             Tree leaf = resolved.getLeaf();
@@ -547,12 +544,12 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 boolean variableRewrite = original.getKind() == Kind.VARIABLE;
                 ExpressionTree expression = !variableRewrite ? (ExpressionTree) original : ((VariableTree) original).getInitializer();
 
-                if (expression.getKind() == Kind.PARENTHESIZED) { // If parenthesis are necessary, they will be added again later.
+                if (expression != null && expression.getKind() == Kind.PARENTHESIZED) { // If parenthesis are necessary, they will be added again later.
                     ParenthesizedTree parents = (ParenthesizedTree) expression;
                     expression = parents.getExpression();
                 }
 
-                paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), (refactoring.isFinal() ? FINAL : "") + type, expression.toString());
+                paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), (refactoring.isFinal() ? FINAL : "") + type, expression == null ? ((VariableTree) original).getName().toString() : expression.toString());
                 
                 TreePath resolved = treePathHandle.resolve(info);
                 TreePath meth = JavaPluginUtils.findMethod(resolved);

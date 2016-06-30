@@ -43,39 +43,16 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StateCA;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanReverseNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StateCANodeProp;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary {
 
     // enabled by default for now, see #217779
-    private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
-
     private boolean needSave = false;
     private Configuration configuration;
     private Item item;
@@ -255,7 +232,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         return languageFlavor;
     }
 
-    protected String[] getToolNames() {
+    public String[] getToolNames() {
         return new String[]{PredefinedToolKind.CCompiler.getDisplayName(), PredefinedToolKind.CCCompiler.getDisplayName(),
                             PredefinedToolKind.FortranCompiler.getDisplayName(), PredefinedToolKind.Assembler.getDisplayName(),
                             PredefinedToolKind.CustomTool.getDisplayName()};
@@ -326,7 +303,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
         if (getTool() == PredefinedToolKind.FortranCompiler) {
             if (lastConfiguration == null) {
-                lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
+                lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration(), (MakeConfiguration) configuration);
             }
             assert lastConfiguration instanceof FortranCompilerConfiguration;
             return  (FortranCompilerConfiguration) lastConfiguration;
@@ -342,7 +319,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
         if (getTool() == PredefinedToolKind.Assembler) {
             if (lastConfiguration == null) {
-                lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
+                lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration(), (MakeConfiguration) configuration);
             }
             assert lastConfiguration instanceof AssemblerConfiguration;
             return  (AssemblerConfiguration) lastConfiguration;
@@ -540,62 +517,6 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         // FIXUP: this doesn't make sense...
     }
 
-    public Sheet getGeneralSheet() {
-        Sheet sheet = new Sheet();
-
-        Sheet.Set set = new Sheet.Set();
-        set.setName("Item"); // NOI18N
-        set.setDisplayName(getString("ItemTxt"));
-        set.setShortDescription(getString("ItemHint"));
-        set.put(new StringRONodeProp(getString("NameTxt"), CndPathUtilities.getBaseName(item.getPath())));
-        set.put(new StringRONodeProp(getString("FilePathTxt"), item.getPath()));
-        String mdate = ""; // NOI18N
-        String fullPath;
-        FileObject itemFO;
-        MakeConfiguration mc = (MakeConfiguration) configuration;
-        FileSystem sourceFS = mc.getSourceFileSystem();
-        if (sourceFS == null) {
-            sourceFS = CndFileUtils.getLocalFileSystem();
-        }
-        final String baseDir = mc.getBaseDir();
-        FileObject baseDirFO = sourceFS.findResource(baseDir);
-        if (baseDirFO != null && baseDirFO.isValid()) {
-            fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());
-            itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
-        } else {
-            fullPath = CndPathUtilities.toAbsolutePath(sourceFS, baseDir, item.getPath());
-            itemFO = null;
-        }
-        if (itemFO != null && itemFO.isValid()) {
-            Date lastModified = itemFO.lastModified();
-            mdate = DateFormat.getDateInstance().format(lastModified);
-            mdate += " " + DateFormat.getTimeInstance().format(lastModified); // NOI18N
-        }
-        set.put(new StringRONodeProp(getString("FullFilePathTxt"), fullPath));
-        set.put(new StringRONodeProp(getString("LastModifiedTxt"), mdate));
-        sheet.put(set);
-
-        set = new Sheet.Set();
-        set.setName("ItemConfiguration"); // NOI18N
-        set.setDisplayName(getString("ItemConfigurationTxt"));
-        set.setShortDescription(getString("ItemConfigurationHint"));
-
-        set.put(new StateCANodeProp(StateCA.getState(getConfiguration(), item, this),
-                getString("CodeAssistanceTxt"), getString("CodeAssistanceHint"))); //NOI18N
-        if (SHOW_HEADER_EXCLUDE || !MIMENames.isHeader(item.getMIMEType())) {
-            if ((getConfiguration() instanceof MakeConfiguration) &&
-                    ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
-                set.put(new BooleanReverseNodeProp(getExcluded(), true, "IncludedInCodeAssistance", getString("IncludedInCodeAssistanceTxt"), getString("IncludedInCodeAssistanceHint"))); // NOI18N
-            } else {
-                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
-            }
-        }
-        set.put(new ToolNodeProp());
-        sheet.put(set);
-
-        return sheet;
-    }
-
     public boolean isProCFile() {
         return isProCFile(item, tool);
     }
@@ -622,89 +543,6 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
         return false;
     }
 
-    private class ToolNodeProp extends Node.Property<PredefinedToolKind> {
-
-        public ToolNodeProp() {
-            super(PredefinedToolKind.class);
-        }
-
-        @Override
-        public String getName() {
-            return getString("ToolTxt1");
-        }
-
-        @Override
-        public PredefinedToolKind getValue() {
-            return getTool();
-        }
-
-        @Override
-        public void setValue(PredefinedToolKind v) {
-            setTool(v);
-        }
-
-        @Override
-        public boolean canWrite() {
-            return true;
-        }
-
-        @Override
-        public boolean canRead() {
-            return true;
-        }
-
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            return new ToolEditor();
-        }
-    }
-
-    private class ToolEditor extends PropertyEditorSupport {
-
-        @Override
-        public String getJavaInitializationString() {
-            return getAsText();
-        }
-
-        @Override
-        public String getAsText() {
-            ToolKind val = (ToolKind) getValue();
-            return val.getDisplayName();
-//            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
-//            return set.getTool(val).getGenericName();
-        }
-
-        @Override
-        public void setAsText(String text) throws java.lang.IllegalArgumentException {
-//            setValue(text);
-            setValue(PredefinedToolKind.getTool(text));
-        }
-
-        @Override
-        public String[] getTags() {
-            return getToolNames();
-        }
-    }
-
-    private static class StringRONodeProp extends PropertySupport<String> {
-
-        private final String value;
-
-        public StringRONodeProp(String name, String value) {
-            super(name, String.class, name, name, true, false);
-            this.value = value;
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public void setValue(String v) {
-        }
-    }
-
     @Override
     public String toString() {
         String pref = "";
@@ -712,13 +550,5 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
             pref = "[excluded]"; // NOI18N
         }
         return pref + getItem().getPath();
-    }
-    private static ResourceBundle bundle = null;
-
-    private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(ItemConfiguration.class);
-        }
-        return bundle.getString(s);
     }
 }

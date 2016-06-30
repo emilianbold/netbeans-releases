@@ -94,15 +94,15 @@ public class DebugSLTest extends NbTestCase {
     }
 
     public void testStepIntoMainSL() throws Exception {
-        doStepIntoSL(0, "main", 1);
+        doStepIntoSL(0, "main", 2);
     }
     
     public void testStepIntoInvokeAs() throws Exception {
-        doStepIntoSL(1, "init", 6);
+        doStepIntoSL(1, "init", 7);
     }
     
     public void testStepIntoDynamicInterface() throws Exception {
-        doStepIntoSL(2, "main", 1);
+        doStepIntoSL(2, "main", 2);
     }
     
     private void doStepIntoSL(int bpNum, String methodName, int lineNo) throws Exception {
@@ -196,7 +196,7 @@ public class DebugSLTest extends NbTestCase {
             assertNotNull("No top frame", topFrame);
             SourcePosition sourcePosition = topFrame.getSourcePosition();
             assertEquals("Bad source", "TestApp.sl", sourcePosition.getSource().getName());
-            assertEquals("Bad line", lb.getLineNumber() + 1 /*(?)*/, sourcePosition.getLine());
+            assertEquals("Bad line", lb.getLineNumber(), sourcePosition.getLine());
             assertEquals("Bad method name", "main", topFrame.getMethodName());
             
             support.doContinue();

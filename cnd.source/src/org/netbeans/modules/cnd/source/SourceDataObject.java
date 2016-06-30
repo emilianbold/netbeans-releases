@@ -45,7 +45,8 @@ package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
 
-import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.CndCookieProvider.InstanceContentOwner;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -62,7 +63,7 @@ import org.openide.util.lookup.InstanceContent;
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
  */
-public abstract class SourceDataObject extends MultiDataObject {
+public abstract class SourceDataObject extends MultiDataObject implements InstanceContentOwner {
     //private static final Logger LOG = Logger.getLogger(SourceDataObject.class.getName());
 
     /** Serial version number */
@@ -70,12 +71,12 @@ public abstract class SourceDataObject extends MultiDataObject {
     private InstanceContent ic;
     private Lookup myLookup;
 
-
     public SourceDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
     }
 
-    final synchronized InstanceContent getInstanceContent(){
+    @Override
+    public final synchronized InstanceContent getInstanceContent(){
         return ic;
     }
 
@@ -87,12 +88,12 @@ public abstract class SourceDataObject extends MultiDataObject {
             ic.add(getPrimaryFile());
             ic.add(this, CppEditorSupportProvider.staticFactory);
             ic.add(this, CppEditorSupportProvider.saveAsStaticFactory);
-            CndCookieProvider.getDefault().addLookup(this, ic);
+            CndCookieProvider.getDefault().addLookup(this);
             myLookup = new AbstractLookup(ic);
         }
         return myLookup;
     }
-
+    
     @Override
     public final <T extends Cookie> T getCookie(Class<T> type) {
         if (!Cookie.class.isAssignableFrom(type)) {

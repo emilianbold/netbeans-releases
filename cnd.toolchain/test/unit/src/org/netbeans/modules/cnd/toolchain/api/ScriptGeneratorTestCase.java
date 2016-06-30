@@ -80,42 +80,28 @@ public class ScriptGeneratorTestCase extends NativeExecutionBaseTestCase {
 
     public void runScript(String script, HostInfo info, ExecutionEnvironment env, boolean full) {
         String platform = null;
-        try {
-            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-            pb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
-            NativeProcess process = pb.call();
-            process.getOutputStream().write(script.getBytes());
-            process.getOutputStream().close();
+        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
+        pb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(pb, script.getBytes());
 
-            List<String> lines = ProcessUtils.readProcessOutput(process);
-            int status = -1;
-
-            try {
-                status = process.waitFor();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            if (status != 0) {
-                assert false;
-            } else {
-                int i = 0;
-                for (String s : lines) {
-                    System.err.println(s);
-                    if (full) {
-                        if (i == 0) {
-                            platform = s;
-                        } else {
-                            checkLine(s, platform);
-                        }
-                    } else {
-                        checkLine(s, info);
-                    }
-                    i++;
-                }
-            }
-        } catch (IOException ex) {
+        List<String> lines = res.getOutputLines();
+        if (res.exitCode != 0) {
             assert false;
+        } else {
+            int i = 0;
+            for (String s : lines) {
+                System.err.println(s);
+                if (full) {
+                    if (i == 0) {
+                        platform = s;
+                    } else {
+                        checkLine(s, platform);
+                    }
+                } else {
+                    checkLine(s, info);
+                }
+                i++;
+            }
         }
     }
 

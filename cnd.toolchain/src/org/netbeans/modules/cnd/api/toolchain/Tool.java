@@ -46,7 +46,7 @@ import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 
@@ -160,7 +160,7 @@ public class Tool {
     private void setPath(String p) {
         if (p != null) {
             path = p;
-            name = ToolUtils.getBaseName(path);
+            name = CndPathUtilities.getBaseName(path);
             if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
                 name = name.substring(0, name.length() - 4);
             }

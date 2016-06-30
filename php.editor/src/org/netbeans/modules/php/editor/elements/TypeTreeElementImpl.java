@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.TraitedElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
@@ -88,29 +89,31 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
         if (delegate instanceof ClassElement) {
             final QualifiedName superClassName = ((ClassElement) delegate).getSuperClassName();
             if (superClassName != null) {
-                final ElementFilter forName = ElementFilter.forName(NameKind.exact(superClassName));
-                Set<TypeElement> types = forName.filter(preferredTypes);
-                if (types.isEmpty()) {
-                    Index index = getIndex();
-                    types = index.getTypes(NameKind.exact(superClassName));
-                }
-                for (TypeElement typeElementImpl : types) {
-                    directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes, superTypesAsChildren));
-                }
+                addDirectType(superClassName, directTypes);
             }
         }
         for (final QualifiedName iface : delegate.getSuperInterfaces()) {
-            final ElementFilter forName = ElementFilter.forName(NameKind.exact(iface));
-            Set<TypeElement> types = forName.filter(preferredTypes);
-            if (types.isEmpty()) {
-                Index index = getIndex();
-                types = index.getTypes(NameKind.exact(iface));
-            }
-            for (TypeElement typeElementImpl : types) {
-                directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes, superTypesAsChildren));
+            addDirectType(iface, directTypes);
+        }
+        if (delegate.isTraited()) {
+            TraitedElement traitedElement = (TraitedElement) delegate;
+            for (QualifiedName trait : traitedElement.getUsedTraits()) {
+                addDirectType(trait, directTypes);
             }
         }
         return directTypes;
+    }
+
+    private void addDirectType(final QualifiedName typeName, final HashSet<TreeElement<TypeElement>> directTypes) {
+        final ElementFilter forName = ElementFilter.forName(NameKind.exact(typeName));
+        Set<TypeElement> types = forName.filter(preferredTypes);
+        if (types.isEmpty()) {
+            Index index = getIndex();
+            types = index.getTypes(NameKind.exact(typeName));
+        }
+        for (TypeElement typeElementImpl : types) {
+            directTypes.add(new TypeTreeElementImpl(typeElementImpl, preferredTypes, superTypesAsChildren));
+        }
     }
 
     private Set<TreeElement<TypeElement>> childrenForSubTypes() {

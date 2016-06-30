@@ -178,6 +178,11 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
     }
 
     @Override
+    public boolean isVolatile() {
+        return type.isVolatile();
+    }
+
+    @Override
     public boolean isBuiltInBased(boolean resolveTypeChain) {
         return type.isBuiltInBased(resolveTypeChain);
     }
@@ -224,7 +229,7 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
         }
         return super.equals(obj);
     }
-    
+
     public static class TypeBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
 
         private TypeBuilder typeBuilder;

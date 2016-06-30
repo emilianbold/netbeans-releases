@@ -477,7 +477,7 @@ public final class ModuleUpdater extends Thread {
                                         }
                                     } else {
                                         bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
-                                        XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
+                                        XMLUtil.LOG.info("Copied file " + jarFile.getName() + ":" + entry + " to " + destFile);
                                         crc = entry.getCrc();
                                     }
                                     if(executableFiles.contains(pathTo)) {
@@ -512,7 +512,7 @@ public final class ModuleUpdater extends Thread {
                                 destFile.getParentFile ().mkdirs ();
                                 hasMainClass = true;
                                 bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
-                                XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
+                                XMLUtil.LOG.info("Copied file " + jarFile.getName() + ":" + entry + " to " + destFile);
                                 context.setProgressValue( bytesRead );
                             }
                         }

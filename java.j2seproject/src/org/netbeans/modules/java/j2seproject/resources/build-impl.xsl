@@ -386,6 +386,7 @@ is divided into following sections:
                 <property name="application.args" value=""/>
                 <property name="source.encoding" value="${{file.encoding}}"/>
                 <property name="runtime.encoding" value="${{source.encoding}}"/>
+                <property name="manifest.encoding" value="${{source.encoding}}"/>
                 <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
                     <and>
                         <isset property="javadoc.encoding"/>
@@ -1888,7 +1889,7 @@ is divided into following sections:
                             </chainedmapper>
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}" excludeFromCopy="${{copylibs.excludes}}">
+                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" manifestencoding="UTF-8" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}" excludeFromCopy="${{copylibs.excludes}}">
                             <fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>
@@ -1903,7 +1904,7 @@ is divided into following sections:
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
-                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
+                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}" manifestencoding="UTF-8">
                         <j2seproject1:fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
@@ -2163,13 +2164,13 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
                 <tempfile destdir="${{build.dir}}" deleteonexit="true" property="tmp.manifest.file"/>
-                <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}"/>
+                <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}" encoding="${{manifest.encoding}}" outputencoding="UTF-8"/>
             </target>
 
             <target name="-do-jar-set-mainclass">
                 <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive+main.class.available</xsl:attribute>
-                <manifest file="${{tmp.manifest.file}}" mode="update">
+                <manifest file="${{tmp.manifest.file}}" mode="update" encoding="UTF-8">
                     <attribute name="Main-Class" value="${{main.class}}"/>
                 </manifest>
             </target>
@@ -2177,7 +2178,7 @@ is divided into following sections:
             <target name="-do-jar-set-profile">
                 <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive+profile.available</xsl:attribute>
-                <manifest file="${{tmp.manifest.file}}" mode="update">
+                <manifest file="${{tmp.manifest.file}}" mode="update" encoding="UTF-8">
                     <attribute name="Profile" value="${{javac.profile}}"/>
                 </manifest>
             </target>
@@ -2188,7 +2189,7 @@ is divided into following sections:
                 <basename file="${{application.splash}}" property="splashscreen.basename"/>
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
                 <copy failonerror="false" file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF"/>
-                <manifest file="${{tmp.manifest.file}}" mode="update">
+                <manifest file="${{tmp.manifest.file}}" mode="update" encoding="UTF-8">
                     <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
                 </manifest>
             </target>

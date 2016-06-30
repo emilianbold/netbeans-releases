@@ -468,7 +468,7 @@ public final class NativeProcessInfo {
         return commandLine != null;
     }
 
-    boolean isRedirectError() {
+    public boolean isRedirectError() {
         return redirectError;
     }
     

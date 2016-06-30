@@ -47,10 +47,12 @@ import java.util.Collection;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * @author Tomas Zezula
@@ -88,8 +90,11 @@ public class JavaSourceUtil {
     }
 
 
-    public static Handle createControllerHandle (final FileObject file, final Handle handle) throws IOException {
-        assert file != null;
+    @NonNull
+    public static Handle createControllerHandle (
+            @NonNull final FileObject file,
+            @NullAllowed final Handle handle) throws IOException {
+        Parameters.notNull("file", file);   //NOI18N
         final JavaSourceUtilImpl impl = getSPI();
         assert impl != null;
         final long id = handle == null ? -1 : handle.id;

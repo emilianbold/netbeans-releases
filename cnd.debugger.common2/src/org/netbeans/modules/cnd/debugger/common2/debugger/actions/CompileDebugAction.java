@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.actions.CompileRunActionBase;
-import org.netbeans.modules.cnd.builds.ImportUtils;
+import org.netbeans.modules.cnd.api.utils.ImportUtils;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.execution.CompileExecSupport;

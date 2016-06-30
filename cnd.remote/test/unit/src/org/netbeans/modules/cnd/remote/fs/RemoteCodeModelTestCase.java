@@ -51,7 +51,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;

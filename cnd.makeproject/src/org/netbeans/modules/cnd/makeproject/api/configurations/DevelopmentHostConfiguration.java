@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -209,29 +207,23 @@ public class DevelopmentHostConfiguration implements Cloneable {
             //TODO: could we use something straightforward here?
             if (currRecord.getDisplayName().equals(v)) {
                 final int newValue = i;
-                final Runnable setter = new Runnable() {
-                    @Override
-                    public void run() {
-                        value = newValue;
-                        setBuildPlatform(CompilerSetManager.get(currEnv).getPlatform());
-                        if (getBuildPlatform() == -1) {
-                            // TODO: CompilerSet is not reliable about platform; it must be.
-                            setBuildPlatform(PlatformTypes.PLATFORM_NONE);
-                        }
-                        if (firePC) {
-                            fireHostChanged();
-                        }
+                final Runnable setter = () -> {
+                    value = newValue;
+                    setBuildPlatform(CompilerSetManager.get(currEnv).getPlatform());
+                    if (getBuildPlatform() == -1) {
+                        // TODO: CompilerSet is not reliable about platform; it must be.
+                        setBuildPlatform(PlatformTypes.PLATFORM_NONE);
+                    }
+                    if (firePC) {
+                        fireHostChanged();
                     }
                 };
                 if (currRecord.isSetUp()) {
                     setter.run();
                 } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (currRecord.setUp()) {
-                                setter.run();
-                            }
+                    SwingUtilities.invokeLater(() -> {
+                        if (currRecord.setUp()) {
+                            setter.run();
                         }
                     });
                 }

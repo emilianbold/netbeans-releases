@@ -101,10 +101,7 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
 
     @Override
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx("help.key.here");
+        return new HelpCtx("docker_registering_connection"); // NOI18N
     }
 
     @NbBundle.Messages({

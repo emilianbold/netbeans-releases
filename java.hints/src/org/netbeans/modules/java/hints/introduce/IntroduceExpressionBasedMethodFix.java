@@ -43,8 +43,6 @@ package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
@@ -53,15 +51,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -69,7 +65,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
 import javax.swing.text.Document;
@@ -89,6 +84,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
@@ -127,7 +123,11 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 if (el != null) {
                     boolean isIface = el.getKind().isInterface();
                     if (el.getKind().isClass() || isIface) {
-                        targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable, isIface));
+                        TargetDescription td = TargetDescription.create(info, (TypeElement) el, 
+                                acceptableParent, duplicatesAcceptable, isIface);
+                        if (td.type != null && td.type.resolve(info) != null) {
+                            targets.add(td);
+                        }
                         allInterfaces &= isIface;
                     }
                 }
@@ -165,23 +165,25 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 return null;
             }
             allInterfaces = el.getKind().isInterface();
-            targets.add(TargetDescription.create(info, (TypeElement) el, true, el.getKind().isInterface()));
+            targets.add(TargetDescription.create(info, (TypeElement) el, clazz, true, el.getKind().isInterface()));
         }
         allIfaces.set(allInterfaces);
         return targets;
     }
     
+    private final TypeMirrorHandle     returnType;
     private final List<TreePathHandle> parameters;
     private final Set<TypeMirrorHandle> thrownTypes;
     private final List<TreePathHandle> typeVars;
-    private final Map<TargetDescription, Set<String>> targets;
+    private final Collection<TargetDescription> targets;
 
-    public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset, Map<TargetDescription, Set<String>> targets) {
+    public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, TypeMirrorHandle returnType, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset, Collection<TargetDescription> targets) {
         super(js, expression, duplicatesCount, offset);
         this.parameters = parameters;
         this.thrownTypes = thrownTypes;
         this.typeVars = typeVars;
         this.targets = targets;
+        this.returnType = returnType;
     }
 
     public String getText() {
@@ -197,9 +199,13 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
         IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets, targetIsInterface); //NOI18N
-        panel.setOkButton(btnOk);
         String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        NotificationLineSupport notifier = dd.createNotificationLineSupport();
+        MethodValidator val = new MethodValidator(js, parameters, returnType);
+        panel.setNotifier(notifier);
+        panel.setValidator(val);
+        panel.setOkButton(btnOk);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
@@ -207,10 +213,16 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
         final Set<Modifier> access = panel.getAccess();
         final boolean replaceOther = panel.getReplaceOther();
         final TargetDescription target = panel.getSelectedTarget();
+        final MemberSearchResult searchResult = val.getResult();
+        final boolean redoReferences = panel.isRefactorExisting();
         js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 copy.toPhase(JavaSource.Phase.RESOLVED);
                 TreePath expression = IntroduceExpressionBasedMethodFix.this.handle.resolve(copy);
+                Scope s = copy.getTrees().getScope(expression);
+                for (Element e : s.getLocalElements()) {
+                    System.err.println(e);
+                }
                 InstanceRefFinder finder = new InstanceRefFinder(copy, expression);
                 finder.process();
                 if (finder.containsLocalReferences()) {
@@ -223,7 +235,7 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 if (expression == null || returnType == null) {
                     return; //TODO...
                 }
-                returnType = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(copy, returnType));
+                returnType = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(copy, returnType));
                 final TreeMaker make = copy.getTreeMaker();
                 Tree returnTypeTree = make.Type(returnType);
                 List<VariableElement> parameters = IntroduceHint.resolveVariables(copy, IntroduceExpressionBasedMethodFix.this.parameters);
@@ -286,7 +298,7 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 
                 if (target.iface) {
                     modifiers.add(Modifier.DEFAULT);
-                } else if (isStatic) {
+                } else if (isStatic && target.canStatic) {
                     modifiers.add(Modifier.STATIC);
                 }
                 modifiers.addAll(access);
@@ -294,6 +306,13 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                 MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
                 ClassTree nueClass = IntroduceHint.INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree) pathToClass.getLeaf(), method, offset);
                 copy.rewrite(pathToClass.getLeaf(), nueClass);
+                
+                if (redoReferences) {
+                    new ReferenceTransformer(
+                        copy, ElementKind.METHOD,  searchResult,
+                        name, 
+                        targetType).scan(pathToClass, null);
+                }
             }
         }).commit();
         return null;

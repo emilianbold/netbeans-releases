@@ -107,13 +107,14 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
                         @Override
                         public void run() {
                             assert EventQueue.isDispatchThread();
-                            if (simpleTargetChooserPanel == null) {
+                            final WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanelRef = simpleTargetChooserPanel;
+                            if (simpleTargetChooserPanelRef == null) {
                                 // #241005 - already uninitialized
                                 return;
                             }
                             WizardDescriptor descriptor = new DummyWizardDescriptor();
-                            assert simpleTargetChooserPanel != null;
-                            simpleTargetChooserPanel.storeSettings(descriptor);
+                            assert simpleTargetChooserPanelRef != null;
+                            simpleTargetChooserPanelRef.storeSettings(descriptor);
                             BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
                             assert bottomPanelForPhpProject != null;
                             bottomPanelForPhpProject.targetFolderChanged(Templates.getTargetFolder(descriptor));

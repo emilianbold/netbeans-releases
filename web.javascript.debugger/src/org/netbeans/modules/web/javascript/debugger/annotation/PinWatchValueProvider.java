@@ -41,16 +41,12 @@
  */
 package org.netbeans.modules.web.javascript.debugger.annotation;
 
-import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.UIManager;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.web.javascript.debugger.eval.Evaluator;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -59,6 +55,7 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject.Type;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.AbstractExpandToolTipAction;
 import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.openide.util.RequestProcessor;
 
@@ -232,7 +229,7 @@ public class PinWatchValueProvider implements PinWatchUISupport.ValueProvider,
         }
     }
 
-    private class ExpandAction extends AbstractAction {
+    private class ExpandAction extends AbstractExpandToolTipAction {
 
         private final VariablesModel.ScopedRemoteObject sr;
         private final String expression;
@@ -240,17 +237,16 @@ public class PinWatchValueProvider implements PinWatchUISupport.ValueProvider,
         ExpandAction(VariablesModel.ScopedRemoteObject sr, String expression) {
             this.sr = sr;
             this.expression = expression;
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            putValue(Action.SMALL_ICON, expIcon);
-            putValue(Action.LARGE_ICON_KEY, expIcon);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            AbstractJSToolTipAnnotation.openTooltipView(
-                    new WebJSDebuggerTooltipSupport(dbg, dbg.getCurrentCallFrame()),
-                    expression, sr);
+        protected void openTooltipView() {
+            ToolTipSupport tts = openTooltipView(expression, sr);
+            if (tts != null) {
+                ToolTipAnnotation.handleToolTipClose(dbg, tts);
+            }
         }
+
     }
 
 }

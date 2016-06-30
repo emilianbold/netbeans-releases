@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 
@@ -177,7 +178,7 @@ import org.openide.util.Utilities;
 	// npb.getEnvironment().put("_ST_GLUE_SM_PATH", host().getRemoteStudioLocation() + "/prod/lib"); //NOI18N
 
         try {
-            engineProc = npb.call();
+            engineProc = npb.call(); // should be followed by reap, which will read out and err
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -222,7 +223,7 @@ import org.openide.util.Utilities;
         }
 
         try {
-            engineProc = npb.call();
+            engineProc = npb.call(); // no ProcessUtils - we'll attach it to pty
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return 0;
@@ -288,6 +289,14 @@ import org.openide.util.Utilities;
 	    @Override
 	    public void run() {
 		setName("ExecutorCND Reaper"); // NOI18N
+                Future<List<String>> err = null;
+                Future<List<String>> out = null;
+                if (Log.Executor.debug) {
+                    err = ProcessUtils.readProcessErrorAsync(engineProc);
+                    out = ProcessUtils.readProcessOutputAsync(engineProc);
+                } else {
+                    ProcessUtils.ignoreProcessOutputAndError(engineProc);
+                }
 		try {
 		    engineProc.waitFor();
 		} catch (InterruptedException ex) {
@@ -297,40 +306,44 @@ import org.openide.util.Utilities;
 		if (Log.Executor.debug) {
 		    // Normal termination is done using SIGTERM which gives us
 		    // an exitValue of 1 instead of 0.
-		    if (exitValue != 0) {
-			List<String> processError = null;
-			List<String> processOutput = null;
+		    if (exitValue != 0 && err != null && out != null) { // err & out null checks are paranoidal
 			try {
-			    processError = ProcessUtils.readProcessError(engineProc);
-			    processOutput = ProcessUtils.readProcessOutput(engineProc);
-			} catch (IOException ex) {
-			    Exceptions.printStackTrace(ex);
-			}
+                            List<String> processError = err.get();
+                            List<String> processOutput = out.get();
+                            try {
+                                processError = ProcessUtils.readProcessError(engineProc);
+                                processOutput = ProcessUtils.readProcessOutput(engineProc);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
 
-			String output = "";
-			output += String.format("Process exited with %d.\n", exitValue); // NOI18N
-			output += String.format("Output:\n"); // NOI18N
-			if (processOutput == null) {
-			    output += "\t<empty>\n"; // NOI18N
-			} else {
-			    for (String l : processOutput)
-				output += l + "\n"; // NOI18N
-			}
-			output += String.format("Error:\n"); // NOI18N
-			if (processError == null) {
-			    output += "\t<empty>\n"; // NOI18N
-			}  else {
-			    for (String l : processError)
-				output += l + "\n"; // NOI18N
-			}
+                            String output = "";
+                            output += String.format("Process exited with %d.\n", exitValue); // NOI18N
+                            output += String.format("Output:\n"); // NOI18N
+                            if (processOutput == null) {
+                                output += "\t<empty>\n"; // NOI18N
+                            } else {
+                                for (String l : processOutput)
+                                    output += l + "\n"; // NOI18N
+                            }
+                            output += String.format("Error:\n"); // NOI18N
+                            if (processError == null) {
+                                output += "\t<empty>\n"; // NOI18N
+                            }  else {
+                                for (String l : processError)
+                                    output += l + "\n"; // NOI18N
+                            }
 
-			final String foutput = output;
-			SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-			    public void run() {
-				IpeUtils.postError(foutput);
-			    }
-			});
+                            final String foutput = output;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    IpeUtils.postError(foutput);
+                                }
+                            });
+                        } catch (InterruptedException ex) {
+			} catch (ExecutionException ex) {
+                        }
 		    }
 		}
 	    }
@@ -347,7 +360,7 @@ import org.openide.util.Utilities;
     public String readlsof(long pid) {
         ExitStatus status = ProcessUtils.execute(exEnv, "lsof", "-p", "" + pid, "-Fn"); //NOI18N
         if (status.isOK()) {
-            return status.output.split("\n")[2].substring(1); //NOI18N
+            return status.getOutputString().split("\n")[2].substring(1); //NOI18N
         }
         return ""; //NOI18N
     }
@@ -360,7 +373,7 @@ import org.openide.util.Utilities;
     @Override
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N
-        return status.output.contains(" 64"); //NOI18N
+        return status.getOutputString().contains(" 64"); //NOI18N
     }
 	      
     @Override

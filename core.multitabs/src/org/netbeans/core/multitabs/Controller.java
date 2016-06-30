@@ -154,7 +154,7 @@ public final class Controller implements MouseListener {
             //maximize/restore
             TabActionEvent tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_MAXIMIZE, tabIndex );
             postActionEvent( tae );
-        } else if( e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON2 ) {
+        } else if( e.getButton() == MouseEvent.BUTTON2 ) {
             //close tab
             TabActionEvent tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE, tabIndex );
             postActionEvent( tae );

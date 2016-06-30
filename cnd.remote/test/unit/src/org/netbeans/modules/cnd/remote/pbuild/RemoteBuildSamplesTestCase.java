@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote.pbuild;
 import java.io.File;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;

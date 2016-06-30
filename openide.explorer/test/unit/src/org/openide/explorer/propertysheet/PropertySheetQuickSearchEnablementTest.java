@@ -1,6 +1,7 @@
-/* * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+/* 
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011, 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -34,9 +35,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Tom Wheeler
+ * Contributor(s): Tom Wheeler
  */
 
 package org.openide.explorer.propertysheet;

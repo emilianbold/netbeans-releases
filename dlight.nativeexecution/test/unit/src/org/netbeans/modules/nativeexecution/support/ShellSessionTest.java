@@ -102,10 +102,10 @@ public class ShellSessionTest extends NativeExecutionBaseTestCase {
         System.out.println("Result2 [actual]  : ======= END ======");
 
         assertNotSame(0, result1.exitCode);
-        assertNotSame("It is expected that error stream is empty", "", result1.error.isEmpty());
+        assertNotSame("It is expected that error stream is empty", "", result1.getErrorString().isEmpty());
 
         assertEquals(100, result2.exitCode);
-        assertEquals("out\n", result2.output);
-        assertEquals("error\n", result2.error);
+        assertEquals("out", result2.getOutputString());
+        assertEquals("error", result2.getErrorString());
     }
 }

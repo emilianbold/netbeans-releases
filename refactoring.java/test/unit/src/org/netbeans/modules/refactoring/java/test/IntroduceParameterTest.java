@@ -67,6 +67,45 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testAbstractMethod() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                + "public abstract class A {\n"
+                + "public abstract int cislo(int a);\n"
+                + "public void m() {\n"
+                + "    System.out.println(cislo(1);\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int cislo(int a) {\n"
+                + "        return 2;\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(cislo(1) + 1);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.lastIndexOf("int a") +4, Javadoc.NONE, false, false );
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public abstract class A {\n"
+                + "public abstract int cislo(int a, int introduced);\n"
+                + "public void m() {\n"
+                + "    System.out.println(cislo(1, 1));\n"
+                + "}\n"
+                + "}\n"),
+                new File("t/F.java", "package t;\n"
+                + "public class F extends A {\n"
+                + "    public int cislo(int a, int introduced) {\n"
+                + "        return 2;\n"
+                + "    }\n"
+                + "    public void bar() {\n"
+                + "        System.out.println(cislo(1, 1) + 1);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test238154() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,

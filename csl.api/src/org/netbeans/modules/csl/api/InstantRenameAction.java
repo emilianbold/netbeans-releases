@@ -160,7 +160,10 @@ public class InstantRenameAction extends BaseAction {
                                     }
                                     embeddedResults.put(parserResult.getSnapshot().getMimeType(),
                                             resultIterator.getParserResult());
-
+                                    String inheritedType = parserResult.getSnapshot().getMimePath().getInheritedType();
+                                    if (inheritedType != null) {
+                                        embeddedResults.put(inheritedType, resultIterator.getParserResult());
+                                    }
                                     Iterable<Embedding> embeddings = resultIterator.getEmbeddings();
                                     for(Embedding e : embeddings) {
                                         if(e.containsOriginalOffset(caret)) {

@@ -91,8 +91,8 @@ public final class CaretMoveContext {
      * Get list of carets at the time when transaction started
      * sorted by dot positions in ascending order.
      * <br>
-     * If some of the carets are {@link org.netbeans.api.editor.document.ShiftPositions}
-     * their order will reflect the increasing shift.
+     * If some of the carets are {@link org.netbeans.api.editor.document.ComplexPositions}
+     * their order will reflect the increasing split offset.
      * <br>
      * <b>Note</b>: information contained in the returned list will not reflect changes
      * performed by the dot/selection modification methods contained in this class.
@@ -125,9 +125,9 @@ public final class CaretMoveContext {
     }
     
     /**
-     * Move dot of the given getCaret so getCaret selection gets created or changed.
+     * Move dot of the given caret so caret selection gets created or changed.
      *
-     * @param caret Nebnon-null getCaret.
+     * @param caret non-null caret.
      * @param dotPos new dot position.
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})
      *  or true otherwise.
@@ -144,9 +144,9 @@ public final class CaretMoveContext {
     }
     
     /**
-     * Move dot of the given getCaret so getCaret selection gets created or changed.
+     * Move dot of the given caret so caret selection gets created or changed.
      *
-     * @param caret non-null getCaret.
+     * @param caret non-null caret.
      * @param dotPos new dot position.
      * @param markPos starting position of the selection or the same position like dotPos if there should be no selection.
      *  <br>

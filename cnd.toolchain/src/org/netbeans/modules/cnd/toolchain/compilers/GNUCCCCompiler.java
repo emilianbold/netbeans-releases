@@ -44,18 +44,14 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.dwarfdump.source.Driver;
-import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.spi.utils.CndNotifier;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,11 +96,12 @@ import org.openide.util.NbBundle;
             }  else {
                 errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
             }
-            if (CndUtils.isStandalone()) {
-                System.err.println(errormsg);
-            } else {
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            }
+            CndNotifier.getDefault().notifyErrorLater(errormsg);
+//            if (CndUtils.isStandalone()) {
+//                System.err.println(errormsg);
+//            } else {
+//                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+//            }
         }
         checkModel(res, getCallable());
         return res;

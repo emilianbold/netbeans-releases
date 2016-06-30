@@ -65,8 +65,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.setup.support.HostUpdatesRegistry;
+//import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -413,7 +414,7 @@ import org.openide.util.Utilities;
         } else if (os == HostInfo.OSFamily.UNKNOWN) {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
             if (res.isOK()) {
-                if (res.output.equals("FreeBSD")) { // NOI18N
+                if (res.getOutputString().equals("FreeBSD")) { // NOI18N
                     return true;
                 }
             }
@@ -430,11 +431,11 @@ import org.openide.util.Utilities;
             res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
         }
         if (res.isOK()) {
-           timeStampFile = res.output.trim();
+           timeStampFile = res.getOutputString().trim();
            return true;
         } else {
             timeStampFile = null;
-            String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.error, res.exitCode);
+            String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.getErrorString(), res.exitCode);
             logger.log(Level.INFO, errMsg);
             if (err != null) {
                 err.printf("%s%n", errMsg); // NOI18N
@@ -458,7 +459,7 @@ import org.openide.util.Utilities;
     public void shutDownNewFilesDiscovery() {
         try {
             if (!remoteUpdates.isEmpty()) {
-                HostUpdates.register(remoteUpdates, execEnv, fileData.getDataFile().getParent());
+                HostUpdatesRegistry.register(remoteUpdates, execEnv, fileData.getDataFile().getParent());
                 logger.log(Level.FINE, "registered  %d updated files", remoteUpdates.size());
             }
             if (timeStampFile != null) {

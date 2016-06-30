@@ -42,9 +42,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Andrei Badea
- *                 Petr Hrebejk
- *                 markiewb@netbeans.org
+ * Contributor(s): Andrei Badea, Petr Hrebejk, markiewb@netbeans.org
  */
 
 package org.netbeans.modules.jumpto.file;
@@ -261,8 +259,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     @Override
     public void closeDialog() {
-        dialog.setVisible( false );
-        cleanup();
+        cleanup(true);
     }
 
     @Override
@@ -408,7 +405,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         d.setBounds(Utilities.findCenterBounds(dim));
         d.addWindowListener(new WindowAdapter() {
             public @Override void windowClosed(WindowEvent e) {
-                cleanup();
+                cleanup(false);
             }
         });
 
@@ -437,10 +434,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
        return OpenProjects.getDefault().getMainProject();
     }
 
-    private void cleanup() {
+    private void cleanup(final boolean hide) {
         cancel();
         if ( dialog != null ) { // Closing event for some reson sent twice
             // Save dialog size only when changed
+            if (hide) {
+                dialog.setVisible(false);
+            }
             final int currentWidth = dialog.getWidth();
             final int currentHeight = dialog.getHeight();
             if (initialDimension != null && (initialDimension.width != currentWidth || initialDimension.height != currentHeight)) {

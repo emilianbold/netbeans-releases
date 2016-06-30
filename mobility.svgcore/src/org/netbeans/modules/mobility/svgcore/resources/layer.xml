@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -45,7 +45,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="Editors"> 
+    <folder name="Editors">
         <folder name="text">
             <folder name="svg+xml">
                 <folder name="Popup">
@@ -54,21 +54,21 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
                         <attr name="actionId" stringvalue="svg_zoom_fit"/>
                         <attr name="position" intvalue="10"/>
-                    </file>     
+                    </file>
 
                     <file name="ZoomInAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
                         <attr name="actionId" stringvalue="svg_zoom_in"/>
                         <attr name="position" intvalue="20"/>
-                    </file>     
+                    </file>
 
                     <file name="ZoomOutAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory.create"/>
                         <attr name="actionId" stringvalue="svg_zoom_out"/>
                         <attr name="position" intvalue="30"/>
-                    </file>     
+                    </file>
 
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapperFactory"/>

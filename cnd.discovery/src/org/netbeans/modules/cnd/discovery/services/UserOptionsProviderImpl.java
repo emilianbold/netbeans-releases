@@ -312,7 +312,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             }
         }
         ExitStatus status = ProcessUtils.executeInDir(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(), env, executable, args.toArray(new String[args.size()]));
-        final String flags = status.output;
+        final String flags = status.getOutputString();
         PackageConfiguration config = null;
         if (flags != null) {
             config = new MyPackageConfiguration(executable, flags);

@@ -73,6 +73,57 @@ made subject to such option by the copyright holder.
         </description>
         <class name="SourceUtils" package="org.netbeans.api.java.source"/>
     </change>
+    <change id="TypeUtilities.getDenotableType">
+        <api name="javasource_base"/>
+        <summary>Provide type suitable for declaration in source</summary>
+        <version major="1" minor="2.17"/>
+       <date day="16" month="5" year="2016"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Support method which allows to infer a type suitable for use in symbol
+            declaration in the source was added.
+        </description>
+        <class name="TypeUtilities" package="org.netbeans.api.java.source"/>
+        <issue number="262073"/>
+    </change>
+    <change id="utilities.findVisibleElements">
+        <api name="javasource_base"/>
+        <summary>List elements with their definining Scope</summary>
+        <version major="1" minor="2.16"/>
+        <date day="31" month="5" year="2016"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Allows to enumerate Elements matching passed <code>ElementFilter</code> according
+            to hiding and inheritance rules. The method may be useful to list elements matching certain
+            criteria, or to check whether an element exists and find what class/method defined it.
+        </description>
+        <class name="ElementUtilities" package="org.netbeans.api.java.source"/>
+        <issue number="262281"/>
+    </change>
+    <change id="utilities.implementAndOverride.defaultMethods">
+        <api name="javasource_base"/>
+        <summary>Allow to return also unimplemented default methods</summary>
+        <version major="1" minor="2.15"/>
+        <date day="10" month="5" year="2016"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                <code>findUnimplementedMethods</code> and <code>findOverridableMethods</code>
+                work better with interface default methods: they are treated as implemented,
+                but overridable.
+            </p>
+            <p>
+                Allow <code>ElementUtilities.findUnimplementedMethods</code> enumerate
+                also default methods whose implementations are not provided by class or
+                superclasses.
+            </p>
+        </description>
+        <class name="ElementUtilities" package="org.netbeans.api.java.source"/>
+        <issue number="258981"/>
+    </change>
     <change id="generator.insert.caretlocation">
         <api name="javasource_base"/>
         <summary>Code Generator uses caret location to insert members</summary>

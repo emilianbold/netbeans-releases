@@ -76,7 +76,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.actions.FastPasteAction;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.netbeans.modules.remote.api.ConnectionNotifier;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;

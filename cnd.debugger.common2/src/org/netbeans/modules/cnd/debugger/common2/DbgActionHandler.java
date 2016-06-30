@@ -70,10 +70,10 @@ import org.openide.windows.IOSelect;
  */
 
 public class DbgActionHandler implements ProjectActionHandler {
-    private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private final Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
-    private ProjectActionEvent pae;
-    private NativeDebuggerInfo ndi;
+    protected volatile ProjectActionEvent pae;
+    private volatile NativeDebuggerInfo ndi;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
@@ -128,7 +128,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 	});
     }
 
-    private void doExecute(final String executable, final NativeDebuggerManager dm, final InputOutput io) {
+    protected void doExecute(final String executable, final NativeDebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
         final String symbolFile = pae.getContext().lookup(String.class);
         final RunProfile profile;
@@ -186,7 +186,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 //	executionFinished(0);
     }
 
-    private void executionStarted() {
+    protected void executionStarted() {
         for (ExecutionListener listener : listeners) {
             listener.executionStarted(ExecutionListener.UNKNOWN_PID);
         }

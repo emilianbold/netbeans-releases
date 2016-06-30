@@ -68,7 +68,8 @@ import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
@@ -77,7 +78,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.DefaultMakeProjectLocationProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -143,7 +145,7 @@ public class CreateDependencies implements PropertyChangeListener {
                                 checkedDll.add(entry.getValue());
                                 final Map<String, Object> extMap = new HashMap<>();
                                 DiscoveryDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
-                                DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(extMap, CommonUtilities.resolveSymbolicLinks());
+                                DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(extMap, MakeProjectOptions.getResolveSymbolicLinks());
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
                                     List<String> dlls = DiscoveryDescriptor.DEPENDENCIES.fromMap(extMap);
@@ -254,7 +256,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         Map<String, Object> map = new HashMap<>();
                         DiscoveryDescriptor.BUILD_RESULT.toMap(map, executable);
                         DiscoveryDescriptor.ROOT_FOLDER.toMap(map, aProject.getProjectDirectory().getPath());
-                        DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+                        DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, MakeProjectOptions.getResolveSymbolicLinks());
                         process((DiscoveryExtension)extension, aProject, map);
                     }
                 }
@@ -291,7 +293,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
-                        configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
+                        configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(MakeProjectOptions.getResolveSymbolicLinks());
                         if (extension.canApply(map, lastSelectedProject, null)) {
                             try {
                                 extension.apply(map, lastSelectedProject, null);
@@ -335,8 +337,8 @@ public class CreateDependencies implements PropertyChangeListener {
     
     private Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
         Project project;
-        String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
-        String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(executablePath));
+        String projectParentFolder = DefaultMakeProjectLocationProvider.getDefault().getDefaultProjectFolder();
+        String projectName = ProjectGenerator.getDefault().getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(executablePath));
         String baseDir = projectParentFolder + CndFileUtils.getFileSeparatorChar(sourceFileSystem) + projectName;
         MakeConfiguration conf =  MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir, "Default"); // NOI18N
         // Working dir
@@ -353,7 +355,7 @@ public class CreateDependencies implements PropertyChangeListener {
         FSPath projectFolder = new FSPath(sourceFileSystem, projectParentFolder+CndFileUtils.getFileSeparatorChar(sourceFileSystem)+projectName);
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false).setConfiguration(conf).setImportantFiles(Collections.<String>singletonList(exe).iterator());
-        project = ProjectGenerator.createBlankProject(prjParams);
+        project = ProjectGenerator.getDefault().createBlankProject(prjParams);
         return project;
     }
 }

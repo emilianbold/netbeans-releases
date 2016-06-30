@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -119,6 +120,9 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
             for (FixInfo fixInfo : checkHints(allClasses, context)) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 final String className;
                 if (fixInfo.anonymousClass) {
                     className = Bundle.ImplementAbstractMethodsHintError_class_anonymous();
@@ -148,6 +152,9 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) {
         List<FixInfo> retval = new ArrayList<>();
         for (ClassScope classScope : allClasses) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return Collections.emptyList();
+            }
             if (!classScope.isAbstract()) {
                 Index index = context.getIndex();
                 Set<String> allValidMethods = new HashSet<>();
@@ -160,10 +167,14 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                 FileObject lastFileObject = null;
                 FileScope fileScope = null;
                 for (MethodElement methodElement : accessibleMethods) {
+                    if (CancelSupport.getDefault().isCancelled()) {
+                        return Collections.emptyList();
+                    }
                     final TypeElement type = methodElement.getType();
                     if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
                         FileObject fileObject = methodElement.getFileObject();
-                        if (lastFileObject != fileObject) {
+                        if (lastFileObject != fileObject
+                                && fileObject != null) {
                             lastFileObject = fileObject;
                             fileScope = getFileScope(fileObject);
                         }

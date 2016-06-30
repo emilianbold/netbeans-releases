@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.util.Collection;
+import java.util.Map;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -118,13 +119,17 @@ public final class PreBuildSupport {
         return res.allInstances();
     }
     
-    public static String expandMacros(String command, CompilerSet cs) {
+    public static String expandMacros(String command, CompilerSet cs, Map<String, String> env) {
         if (command.contains(CMAKE_MACRO)) {
             String path = getCmakePath(cs);
             command = command.replace(CMAKE_MACRO, path);
         }
         if (command.contains(C_COMPILER_MACRO)) {
             String path = getDefaultC(cs);
+            if (env != null && env.containsKey("__CND_C_WRAPPER__")) { //NOI18N
+                // use path from wrapper
+                path = env.get("__CND_C_WRAPPER__"); //NOI18N
+            }
             if (cs.getCompilerFlavor().isCygwinCompiler()) {
                 path = WindowsSupport.getInstance().convertToCygwinPath(path);
             }
@@ -132,6 +137,10 @@ public final class PreBuildSupport {
         }
         if (command.contains(CPP_COMPILER_MACRO)) {
             String path = getDefaultCpp(cs);
+            if (env != null && env.containsKey("__CND_CPP_WRAPPER__")) { //NOI18N
+                // use path from wrapper
+                path = env.get("__CND_CPP_WRAPPER__"); //NOI18N
+            }
             if (cs.getCompilerFlavor().isCygwinCompiler()) {
                 path = WindowsSupport.getInstance().convertToCygwinPath(path);
             }

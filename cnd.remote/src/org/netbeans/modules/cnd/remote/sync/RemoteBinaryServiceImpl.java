@@ -234,10 +234,8 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                         npb.setExecutable("cp").setArguments(remotePath, remoteCopyPath); // NOI18N
-                        Process copyProcess = npb.call();
-                        int copyProcessResult = copyProcess.waitFor();
-
-                        if (copyProcessResult != 0) {
+                        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+                        if (!res.isOK()) {
                             return false;
                         }
 
@@ -271,7 +269,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                 Pair<String, String[]> cmdAndArgs = getFullTimeLsCommand(remotePath); // NOI18N
                 ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, cmdAndArgs.first(), cmdAndArgs.second());
                 if (rc.isOK()) {
-                    return rc.output;
+                    return rc.getOutputString();
                 } else {
                     StringBuilder sb = new StringBuilder(cmdAndArgs.first());
                     for (String arg : cmdAndArgs.second()) {
@@ -280,7 +278,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                         }
                         sb.append(arg);
                     }
-                    throw new IOException("Cannot run #" + sb + ": " + rc.error); // NOI18N
+                    throw new IOException("Cannot run #" + sb + ": " + rc.getErrorString()); // NOI18N
                 }
             } catch (CancellationException ex) {
                 // TODO:CancellationException error processing

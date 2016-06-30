@@ -43,9 +43,10 @@
  */
 package org.netbeans.modules.cnd.utils.filters;
 
-import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
+
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.openide.util.NbBundle;
 
 public class CSourceFileFilter extends FileAndFileObjectFilter {

@@ -46,6 +46,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <apidef name="JavaHintsSPI">Java Hints SPI</apidef>
     </apidefs>
     <changes>
+        <change id="Hint.minSourceVersion">
+            <api name="JavaHintsSPI"/>
+            <summary>Hint can specify minimum source version for operation</summary>
+            <version major="1" minor="28"/>
+            <date day="24" month="5" year="2015"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Certain hints generate source code following newer language specifications.
+                    A hint may declare <code>minSourceVersion</code> in its <code>@Hint</code>
+                    annotation to specify a minimum source version. Such hint will be never
+                    invoked for files configured for earlier source level.
+                </p>
+            </description>
+        </change>
         <change id="TriggerOptions">
             <api name="JavaHintsSPI"/>
             <summary>Hint can choose to trigger for guarded code</summary>

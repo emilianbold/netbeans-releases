@@ -53,6 +53,7 @@ import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
@@ -78,8 +79,14 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 CheckVisitor checkVisitor = createVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 result.addAll(checkVisitor.getHints());
             }
         }
@@ -120,12 +127,18 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
             @Override
             public void visit(FunctionDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 checkBlock(node.getBody(), new OffsetRange(node.getFunctionName().getStartOffset(), node.getFunctionName().getEndOffset()));
             }
 
             @Override
             public void visit(LambdaFunctionDeclaration node) {
+                if (CancelSupport.getDefault().isCancelled()) {
+                    return;
+                }
                 super.visit(node);
                 checkBlock(node.getBody(), new OffsetRange(node.getStartOffset(), node.getBody().getStartOffset()));
             }

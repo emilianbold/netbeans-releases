@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -134,7 +135,7 @@ public abstract class CsmFileInfoQuery {
     /**
      * @return SORTED list of macro's usages in the file
      */
-    public abstract List<CsmReference> getMacroUsages(CsmFile file, Interrupter interrupter);
+    public abstract List<CsmReference> getMacroUsages(CsmFile file, Document doc, Interrupter interrupter);
 
     /**
      * @return dwarf block offset or null if there are no dwarf blocks in file
@@ -280,7 +281,7 @@ public abstract class CsmFileInfoQuery {
         }
 
         @Override
-        public List<CsmReference> getMacroUsages(CsmFile file, Interrupter interrupter) {
+        public List<CsmReference> getMacroUsages(CsmFile file, Document doc, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
 

@@ -155,6 +155,16 @@ public final class CloudSDKHelper {
             urls.add(new File(sdkDirectory, "lib/jersey-client.jar").toURI().toURL()); // NOI18N
             urls.add(new File(sdkDirectory, "lib/jersey-core.jar").toURI().toURL()); // NOI18N
             urls.add(new File(sdkDirectory, "lib/jersey-multipart.jar").toURI().toURL()); // NOI18N
+
+            File jerseyJson = new File(sdkDirectory, "lib/jersey-json.jar"); // NOI18N
+            if (jerseyJson.isFile()) {
+                urls.add(jerseyJson.toURI().toURL());
+            }
+            File jettison = new File(sdkDirectory, "lib/jettison.jar"); // NOI18N
+            if (jettison.isFile()) {
+                urls.add(jettison.toURI().toURL());
+            }
+
             ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}), 
                     CloudSDKHelper.class.getClassLoader()/*ClassLoader.getSystemClassLoader()*/);
             return classLoader;

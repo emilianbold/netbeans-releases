@@ -165,19 +165,19 @@ public class GoToPanel extends javax.swing.JPanel {
      */
     boolean setModel( final ListModel model) {
         assert SwingUtilities.isEventDispatchThread();
-       if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
-           matchesList.setModel(model);
-           matchesList.setSelectedIndex(0);
-           setListPanelContent(null,false);
-           if ( time != -1 ) {
-               GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
-               time = -1;
-           }
-           return true;
-       } else {
-           setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
-           return false;
-       }
+        matchesList.setModel(model);
+        if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
+            matchesList.setSelectedIndex(0);
+            setListPanelContent(null,false);
+            if ( time != -1 ) {
+                GoToTypeAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
+                time = -1;
+            }
+            return true;
+        } else {
+            setListPanelContent( NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+            return false;
+        }
     }
 
     boolean revalidateModel () {

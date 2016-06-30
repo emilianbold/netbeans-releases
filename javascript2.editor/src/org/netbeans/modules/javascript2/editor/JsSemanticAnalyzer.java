@@ -41,6 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.ExportSpecifierNode;
+import com.oracle.js.parser.ir.FromNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.ImportSpecifierNode;
+import com.oracle.js.parser.ir.LexicalContext;
+import com.oracle.js.parser.ir.NameSpaceImportNode;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.UnaryNode;
+import com.oracle.js.parser.ir.VarNode;
+import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +61,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -56,20 +70,19 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.JsReference;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
@@ -84,6 +97,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION);
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION_UNUSED = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_USE = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE);
+    public static final EnumSet<ColoringAttributes> GLOBAL_DEFINITION = EnumSet.of(ColoringAttributes.GLOBAL, ColoringAttributes.CLASS);
+    public static final EnumSet<ColoringAttributes> NUMBER_OXB_CHAR = EnumSet.of(ColoringAttributes.CUSTOM1);
+    public static final EnumSet<ColoringAttributes> SEMANTIC_KEYWORD = EnumSet.of(ColoringAttributes.CUSTOM2);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -110,14 +126,16 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
 
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
-        Model model = result.getModel();
+        Model model = Model.getModel(result, false);
         JsObject global = model.getGlobalObject();
-        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(result.getSnapshot(), -1);
+        Collection<Identifier> definedGlobal = ModelUtils.getDefinedGlobal(result.getSnapshot(), -1);
         for (Identifier iden: definedGlobal) {
             globalJsHintInlines.add(iden.getOffsetRange());
         }
         highlights = count(result, global, highlights, new ArrayList<String>());
-
+        highlights = processSemanticKeywords(result, highlights);
+        highlights = processNumbers(result, highlights);
+        
         if (highlights != null && highlights.size() > 0) {
             semanticHighlights = highlights;
         } else {
@@ -136,6 +154,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case CONSTRUCTOR:
                     case METHOD:
                     case FUNCTION:
+                    case GENERATOR:
                         if(object.isDeclared() && !object.isAnonymous() && !object.getDeclarationName().getOffsetRange().isEmpty()) {
                             EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
                             if (object.getModifiers().contains(Modifier.PRIVATE)) {
@@ -152,7 +171,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), coloring);
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
-                            if (!(object instanceof JsObjectReference && !((JsObjectReference)object).getOriginal().isAnonymous())) {
+                            if (!(object instanceof JsReference && !((JsReference)object).getOriginal().isAnonymous())) {
                                 count(result, param, highlights, processedObjects);
                             }
                             if (!hasSourceOccurences(result, param)) {
@@ -181,9 +200,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         break;
                     case OBJECT:
                     case OBJECT_LITERAL:
+                    case CLASS:    
                         if(!"UNKNOWN".equals(object.getName())) {
                              if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET); 
+                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), GLOBAL_DEFINITION); 
                                 for (Occurrence occurence : object.getOccurrences()) {
                                     addColoring(result, highlights, occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                 }
@@ -233,8 +253,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                         highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
                                     }
                                 }
-                            } else if (object instanceof JsObjectImpl && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
-                                if (object.getOccurrences().size() <= ((JsObjectImpl)object).getCountOfAssignments()) {
+                            } else if (object instanceof JsObject && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
+                                if (object.getOccurrences().size() <= ((JsObject)object).getAssignmentCount()) {
                                     // probably is used only on the left site => is unused
                                     if (object.getDeclarationName().getOffsetRange().getLength() > 0) {
                                         highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
@@ -261,7 +281,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 highlights = null;
                 break;
             }
-            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+            if (!(object instanceof JsReference && ModelUtils.isDescendant(object, ((JsReference)object).getOriginal()))) {
                 highlights = count(result, object, highlights, processedObjects);
             }
         }
@@ -269,6 +289,197 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         return highlights;
     }
 
+    private Map<OffsetRange, Set<ColoringAttributes>> processSemanticKeywords(final JsParserResult result,
+            final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+
+        FunctionNode root = result.getRoot();
+        if (root == null) {
+            return highlights;
+        }
+
+        NodeVisitor visitor = new NodeVisitor(new LexicalContext()) {
+
+            @Override
+            public boolean enterFunctionNode(FunctionNode functionNode) {
+                if (functionNode.isModule()) {
+                    functionNode.visitImports(this);
+                    functionNode.visitExports(this);
+                }
+
+                if (functionNode.isAsync() && !functionNode.isMethod()) {
+                    int pos = com.oracle.js.parser.Token.descPosition(functionNode.getFirstToken());
+                    if (functionNode.getKind() != FunctionNode.Kind.ARROW) {
+                        // in arrow function async is the first token
+                        pos--;
+                    }
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), pos);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.IDENTIFIER && "async".equals(token.text().toString())) {
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                return super.enterFunctionNode(functionNode);
+            }
+
+            @Override
+            public boolean enterImportSpecifierNode(ImportSpecifierNode importSpecifierNode) {
+                if (importSpecifierNode.getIdentifier() != null) {
+                    int start = importSpecifierNode.getIdentifier().getFinish();
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), start);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.IDENTIFIER && ts.offset() < importSpecifierNode.getBindingIdentifier().getStart()) {
+                            // it has to be "as"
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean enterExportSpecifierNode(ExportSpecifierNode exportSpecifierNode) {
+                if (exportSpecifierNode.getExportIdentifier() != null) {
+                    int start = exportSpecifierNode.getIdentifier().getFinish();
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), start);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.IDENTIFIER && ts.offset() < exportSpecifierNode.getExportIdentifier().getStart()) {
+                            // it has to be "as"
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean enterNameSpaceImportNode(NameSpaceImportNode nameSpaceImportNode) {
+                int start = nameSpaceImportNode.getBindingIdentifier().getStart();
+                if (start <= 0) {
+                    return false;
+                }
+
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), start - 1);
+                if (ts != null) {
+                    Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                    if (token != null && token.id() == JsTokenId.IDENTIFIER && ts.token().length() > 1) {
+                        // it has to be "as"
+                        highlights.put(LexUtilities.getLexerOffsets(result,
+                                new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean enterFromNode(FromNode fromNode) {
+                highlights.put(LexUtilities.getLexerOffsets(result,
+                                new OffsetRange(fromNode.getStart(), fromNode.getStart() + "from".length())), SEMANTIC_KEYWORD); // NOI18N
+                return false;
+            }
+
+            @Override
+            public boolean enterClassNode(ClassNode classNode) {
+                for (PropertyNode p : classNode.getClassElements()) {
+                    handleProperty(p, true);
+                }
+                return super.enterClassNode(classNode);
+            }
+
+            @Override
+            public boolean enterObjectNode(ObjectNode objectNode) {
+                for (PropertyNode p : objectNode.getElements()) {
+                    handleProperty(p, false);
+                }
+                return super.enterObjectNode(objectNode);
+            }
+
+            @Override
+            public boolean enterVarNode(VarNode varNode) {
+                if (varNode.isLet()) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), varNode.getStart() - 1);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.RESERVED_LET) {
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                return super.enterVarNode(varNode);
+            }
+
+            @Override
+            public boolean enterUnaryNode(UnaryNode unaryNode) {
+                if (unaryNode.isTokenType(TokenType.IDENT)) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), unaryNode.getStart());
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.RESERVED_AWAIT) {
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                return super.enterUnaryNode(unaryNode);
+            }
+
+            private void handleProperty(PropertyNode p, boolean classElement) {
+                int offset = -1;
+                if ((p.getValue() instanceof FunctionNode) && ((FunctionNode) p.getValue()).isAsync()) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), p.getStart() - 1);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.IDENTIFIER && "async".equals(token.text().toString())) {
+                            offset = ts.offset();
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+                if (classElement && p.isStatic()) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), offset >= 0 ? offset - 1 : p.getStart() - 1);
+                    if (ts != null) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token != null && token.id() == JsTokenId.RESERVED_STATIC) {
+                            highlights.put(LexUtilities.getLexerOffsets(result,
+                                    new OffsetRange(ts.offset(), ts.offset() + token.length())), SEMANTIC_KEYWORD);
+                        }
+                    }
+                }
+            }
+        };
+
+        root.accept(visitor);
+        return highlights;
+    }
+    
+    private Map<OffsetRange, Set<ColoringAttributes>> processNumbers(JsParserResult result, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), 0);
+        if (ts != null) {
+            ts.move(0);
+            
+            List<JsTokenId> lookFor = new ArrayList<JsTokenId>(3);
+            lookFor.add(JsTokenId.NUMBER);
+            Token<? extends JsTokenId> token;
+            while (ts.moveNext() && (token = LexUtilities.findNextToken(ts, lookFor)) != null) {
+                if (token.id() == JsTokenId.NUMBER) {
+                    String number = token.text().toString().toLowerCase(Locale.ENGLISH);
+                    if (number.startsWith("0b") || number.startsWith("0x") || number.startsWith("0o")) { //NOI18N
+                        highlights.put(LexUtilities.getLexerOffsets(result, new OffsetRange(ts.offset() + 1, ts.offset() + 2)), NUMBER_OXB_CHAR);
+                    }
+                }
+            }
+        }
+        return highlights;
+    }
+    
     private void addColoring(JsParserResult result, Map<OffsetRange, Set<ColoringAttributes>> highlights, OffsetRange astRange, Set<ColoringAttributes> coloring) {
         int start = result.getSnapshot().getOriginalOffset(astRange.getStart());
         int end = result.getSnapshot().getOriginalOffset(astRange.getEnd());
@@ -322,7 +533,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     private boolean isInComment(JsParserResult result, OffsetRange range) {
-        for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
+        for (JsComment comment : JsDocumentationSupport.getDocumentationHolder(result).getCommentBlocks().values()) {
             if (comment.getOffsetRange().containsInclusive(range.getStart())) {
                 return true;
             }

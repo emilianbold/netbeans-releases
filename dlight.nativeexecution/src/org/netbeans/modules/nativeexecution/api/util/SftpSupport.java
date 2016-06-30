@@ -357,7 +357,7 @@ class SftpSupport {
                             "/bin/sh", "-c", "cp \"" + parameters.dstFileName + "\" \"" + parameters.dstFileToRename + // NOI18N
                             "\" && rm \"" + parameters.dstFileName + '"'); // NOI18N
                     if (!rc.isOK()) {
-                        throw new ExecutionException(rc.error, null);
+                        throw new ExecutionException(rc.getErrorString(), null);
                     }
                     if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "cp&&rm {0} to {1} took {2}", new Object[]{parameters.dstFileName, parameters.dstFileToRename, System.currentTimeMillis() - time}); }
 

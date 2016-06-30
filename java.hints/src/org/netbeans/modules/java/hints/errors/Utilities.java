@@ -152,6 +152,7 @@ import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.ArgumentAttr;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -160,6 +161,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.Log;
 import java.net.URI;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.UnionType;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -406,7 +408,7 @@ public class Utilities {
         if (designedType == null) {
             return null;
         }
-        return resolveCapturedType(info, designedType);
+        return resolveTypeForDeclaration(info, designedType);
     }
 
     public static String getName(TypeMirror tm) {
@@ -553,9 +555,26 @@ public class Utilities {
         }
     }
     
+    public static TypeMirror resolveTypeForDeclaration(CompilationInfo info, TypeMirror tm) {
+        // TODO: should I convert the anonymous types to something more referenceable ?
+        TypeMirror captureResolved = resolveCapturedType(info, tm);
+        if (captureResolved == null) {
+            return null;
+        }
+        TypeMirror m = info.getTypeUtilities().getDenotableType(tm);
+        if (isValidType(m) || !isValidType(captureResolved)) {
+            return m;
+        } else {
+            return captureResolved;
+        }
+    }
+    
     public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
         if (tm == null) {
             return tm;
+        }
+        if (tm.getKind() == TypeKind.ERROR) {
+            tm = info.getTrees().getOriginalType((ErrorType) tm);
         }
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         if (type == null) {
@@ -1096,7 +1115,7 @@ public class Utilities {
                 return null;
             }
             
-            tm = resolveCapturedType(info, tm);
+            tm = resolveTypeForDeclaration(info, tm);
 
             if (!verifyTypeVarAccessible(method, tm, usedLocalTypeVariables, target)) return null;
 
@@ -1229,12 +1248,22 @@ public class Utilities {
         return efab.scan(from, null) == Boolean.TRUE;
     }
 
+    /**
+     * Determines whether the execution definitely escapes from the root of the search.
+     * Execution escapes, if the control could be transferred outside of the inspected area. Definitely escapes means
+     * that possible all code paths escape from the area: both if branches, all switch branches etc.
+     * <p/>
+     * Inidvidual visit() operations must return true, if they escape outside, false or null otherwise. Nodes are added to
+     * {@link #seenTrees} before processing, so if a break/continue targets such a node, such jump is not considered an exit.
+     * Jumps can register the target Tree in {@link #targetTrees} which causes false to be returned from that tree's inspection.
+     */
     private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
 
         private CompilationInfo info;
         private final Set<Tree> seenTrees = new HashSet<Tree>();
-        private final Stack<Set<TypeMirror>> caughtExceptions = new Stack<Set<TypeMirror>>();
-
+        private final Stack<Pair<Set<TypeMirror>, Tree>> caughtExceptions = new Stack<>();
+        private final Set<Tree> targetTrees = new HashSet<>();
+        
         public ExitsFromAllBranches(CompilationInfo info) {
             this.info = info;
         }
@@ -1242,15 +1271,36 @@ public class Utilities {
         @Override
         public Boolean scan(TreePath path, Void p) {
             seenTrees.add(path.getLeaf());
-            return super.scan(path, p);
+            Boolean ret = super.scan(path, p);
+            boolean pending = !targetTrees.isEmpty();
+            targetTrees.remove(path.getLeaf());
+            return pending ? Boolean.FALSE : ret;
         }
 
         @Override
         public Boolean scan(Tree tree, Void p) {
+            // if a jump to an outer statement is seen, do not bother with further processing.
+            if (!targetTrees.isEmpty()) {
+                return false;
+            }
             seenTrees.add(tree);
-            return super.scan(tree, p);
+            Boolean ret = super.scan(tree, p);
+            boolean pending = !targetTrees.isEmpty();
+            targetTrees.remove(tree);
+            return pending ? null : ret;
         }
 
+        /*
+        @Override
+        public Boolean reduce(Boolean r1, Boolean r2) {
+            if ((r1 == Boolean.FALSE) || (r2 == Boolean.FALSE)) {
+                return false;
+            } else {
+                // use the later statement
+                return r2;
+            }
+        }
+*/
         /**
          * Hardcoded check for System.exit(), Runtime.exit and Runtime.halt which also terminates the processing. 
          * TODO: some configuration (project-level ?) could add also different exit methods.
@@ -1265,10 +1315,79 @@ public class Utilities {
         }
 
         @Override
+        public Boolean visitArrayType(ArrayTypeTree node, Void p) {
+            return super.visitArrayType(node, p); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Boolean visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+            return scan(node.getStatement(), p);
+        }
+
+        /**
+         * Loops with a condition at the start may skip the body at all, so
+         */
+        @Override
+        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            return null;
+        }
+
+        @Override
+        public Boolean visitForLoop(ForLoopTree node, Void p) {
+            return null;
+        }
+
+        @Override
+        public Boolean visitWhileLoop(WhileLoopTree node, Void p) {
+            return null;
+        }
+        
+        @Override
         public Boolean visitIf(IfTree node, Void p) {
             return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
         }
-
+        
+        @Override
+        public Boolean visitSwitch(SwitchTree node, Void p) {
+            boolean lastCaseExit = false;
+            boolean defaultSeen = false;
+            Set<Element> enumValues = null;
+            
+            if (node.getExpression() != null) {
+                TypeMirror exprType = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
+                if (isValidType(exprType) && exprType.getKind() == TypeKind.DECLARED) {
+                    Element el = ((DeclaredType)exprType).asElement();
+                    enumValues = new HashSet<>();
+                    for (Element f : el.getEnclosedElements()) {
+                        if (f.getKind() == ElementKind.ENUM_CONSTANT) {
+                            enumValues.add(f);
+                        }
+                    }
+                }
+            }
+            for (CaseTree ct : node.getCases()) {
+                Boolean res = scan(ct, null);
+                if (res == Boolean.FALSE) {
+                    return res;
+                }
+                lastCaseExit = res == Boolean.TRUE;
+                if (ct.getExpression() == null) {
+                    defaultSeen = true;
+                } else if (enumValues != null ) {
+                    TreePath casePath = new TreePath(getCurrentPath(), ct);
+                    Element v = info.getTrees().getElement(new TreePath(
+                            casePath, ct.getExpression()));
+                    if (v != null) {
+                        enumValues.remove(v);
+                    }
+                }
+            }
+            if (enumValues != null && enumValues.isEmpty()) {
+                defaultSeen = true;
+            }
+            return lastCaseExit == Boolean.TRUE && defaultSeen;
+        }
+        
         @Override
         public Boolean visitReturn(ReturnTree node, Void p) {
             return true;
@@ -1276,12 +1395,17 @@ public class Utilities {
 
         @Override
         public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+            Tree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            boolean known = seenTrees.contains(target);
+            if (known) {
+                targetTrees.add(target);
+            }
+            return !known;
         }
 
         @Override
         public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+            return visitBreak(null, p);
         }
 
         @Override
@@ -1301,7 +1425,7 @@ public class Utilities {
                 }
             }
 
-            caughtExceptions.push(caught);
+            caughtExceptions.push(Pair.of(caught, node));
             
             try {
                 return scan(node.getBlock(), p) == Boolean.TRUE || scan(node.getFinallyBlock(), p) == Boolean.TRUE;
@@ -1315,10 +1439,12 @@ public class Utilities {
             TypeMirror type = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
             boolean isCaught = false;
 
-            OUTER: for (Set<TypeMirror> caught : caughtExceptions) {
+            OUTER: for (Pair<Set<TypeMirror>, Tree> pair : caughtExceptions) {
+                Set<TypeMirror> caught = pair.first();
                 for (TypeMirror c : caught) {
                     if (info.getTypes().isSubtype(type, c)) {
                         isCaught = true;
+                        targetTrees.add(pair.second());
                         break OUTER;
                     }
                 }
@@ -1739,6 +1865,8 @@ public class Utilities {
                 }
             }            
         };
+        ArgumentAttr argumentAttr = ArgumentAttr.instance(jti.getContext());
+        ArgumentAttr.LocalCacheContext cacheContext = argumentAttr.withLocalCacheContext();
         try {
             enter.shadowTypeEnvs(true);
             Attr attr = Attr.instance(jti.getContext());
@@ -1748,6 +1876,7 @@ public class Utilities {
             }
             return attr.attribStat((JCTree) tree,env);
         } finally {
+            cacheContext.leave();
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
             enter.shadowTypeEnvs(false);

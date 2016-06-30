@@ -64,15 +64,12 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", description = "#DESC_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", category="performance", suppressWarnings="StringBufferMayBeStringBuilder")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", description = "#DESC_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", category="performance", suppressWarnings="StringBufferMayBeStringBuilder",
+        minSourceVersion = "5")
 public class StringBuffer2Builder {
 
     @TriggerPattern(value="java.lang.StringBuffer $buffer = new java.lang.StringBuffer($args$);")
     public static ErrorDescription hint(final HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
-
         final Element el = ctx.getInfo().getTrees().getElement(ctx.getPath());
 
         if (el == null || el.getKind() != ElementKind.LOCAL_VARIABLE) {

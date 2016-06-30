@@ -114,12 +114,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
     private static final byte FLAGS_RVALREFERENCE = 1 << 4;
     private static final byte FLAGS_PACK_EXPANSION = 1 << 5;
-    protected static final int LAST_USED_FLAG_INDEX = 6;
+    private static final byte FLAGS_VOLOTALE = 1 << 6;
+    protected static final int LAST_USED_FLAG_INDEX = 7;
     
     private final byte pointerDepth;
     
     // bit mask of pointerDepth pointers for const qualifiers (supports only pointers with less than 32 depth)
     private final int constQualifiers; 
+    private final int volatileQualifiers; 
     
     private final byte arrayDepth;
     private byte flags;
@@ -146,6 +148,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this.arrayDepth = (byte) arrayDepth;
         boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
         this.constQualifiers = isTypeDefAST(ast) ? initConstQualifiers(ast.getFirstChild()) : initConstQualifiers(ast);
+        this.volatileQualifiers = isTypeDefAST(ast) ? initVolatileQualifiers(ast.getFirstChild()) : initVolatileQualifiers(ast);
         setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
             CndUtils.assertTrueInConsole(false, "why null classifier?");
@@ -168,11 +171,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
+    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
         this.constQualifiers = _const ? 1 : 0;
+        this.volatileQualifiers = _volatile ? 1 : 0;
         // nothing, & or && as reference specifier
         // too slow my typing is too slow
         assert reference >= 0 && reference <= 2 : "unexpected " + reference;
@@ -180,22 +184,24 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_VOLOTALE, _volatile);
         setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
         this.classifierText = classifier.getName();
         trimInstantiationParams();
     }  
     
     // package-local - for facory only
-    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        this(file, packExpansion, pointerDepth, reference, arrayDepth, _const ? 1 : 0, startOffset, endOffset);
+    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile, int startOffset, int endOffset) {
+        this(file, packExpansion, pointerDepth, reference, arrayDepth, _const ? 1 : 0, _volatile ? 1 : 0, startOffset, endOffset);
     }    
     
     // package-local - for facory only
-    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, int _constQualifiers, int startOffset, int endOffset) {
+    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, int _constQualifiers, int _volatileQualifiers, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         this.pointerDepth = (byte) pointerDepth;
         this.constQualifiers = _constQualifiers;
+        this.volatileQualifiers = _volatileQualifiers;
         // nothing, & or && as reference specifier
         // too slow my typing is too slow
         assert reference >= 0 && reference <= 2 : "unexpected " + reference;
@@ -203,16 +209,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, ((_constQualifiers & 1) != 0)); // this is mistake (first const qualifier is the deepest one)
+        setFlags(FLAGS_VOLOTALE, ((_volatileQualifiers & 1) != 0));
         setFlags(FLAGS_PACK_EXPANSION, packExpansion);
         trimInstantiationParams();
     }       
 
     // package-local - for factory only
-    TypeImpl(TypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+    TypeImpl(TypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean _volatile) {
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) pointerDepth;
         this.constQualifiers = _const ? 1 : 0;
+        this.volatileQualifiers = _volatile ? 1 : 0;
         // nothing, & or && as reference specifier
         // too slow my typing is too slow
         assert reference >= 0 && reference <= 2 : "unexpected " + reference;
@@ -220,6 +228,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_VOLOTALE, _volatile);
         setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
         
         this.classifierUID = type.classifierUID;
@@ -261,9 +270,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
         this.pointerDepth = (byte) type.getPointerDepth();
         this.constQualifiers = type.constQualifiers;
+        this.volatileQualifiers = type.volatileQualifiers;
         setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
         setFlags(FLAGS_CONST, type.isConst());
+        setFlags(FLAGS_VOLOTALE, type.isVolatile());
         setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
         setFlags(FLAGS_TYPE_WITH_CLASSIFIER, type.isTypeWithClassifier());
 
@@ -281,9 +292,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
         this.pointerDepth = (byte) type.getPointerDepth();
         this.constQualifiers = type.isConst() ? 1 : 0;
+        this.volatileQualifiers = type.isVolatile() ? 1 : 0;
         setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
         setFlags(FLAGS_CONST, type.isConst());
+        setFlags(FLAGS_VOLOTALE, type.isVolatile());
 
         if (type instanceof TypeImpl) {
             TypeImpl ti = (TypeImpl) type;
@@ -521,6 +534,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         return false;
     }
+
+    public static boolean initIsVolatile(AST node) {
+        if( node != null ) {
+            for( AST token = node; token != null; token = token.getNextSibling() ) {
+                int tokenType = token.getType();
+                if (AstRenderer.isVolatileQualifier(tokenType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     public static boolean initIsPackExpansion(AST node) {
         if (node != null) {
@@ -551,11 +576,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 if (AstRenderer.isConstQualifier(tokenType)) {
                     result |= constQualifierPosition;
                 } else if (tokenType == CPPTokenTypes.CSM_PTR_OPERATOR) {                    
-                    ASTPointerOperatorQualifiersCollector visitor = new ASTPointerOperatorQualifiersCollector(result, constQualifierPosition);
+                    ASTPointerOperatorQualifiersCollector visitor = new ASTPointerOperatorQualifiersCollector(result, constQualifierPosition, true);
                     
                     visitPointerOperator(visitor, token);
                     
-                    result = visitor.getConstQualifiers();                  
+                    result = visitor.getQualifiers();                  
                     
                     constQualifierPosition = visitor.getQualifierPosition();                    
                 } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
@@ -574,6 +599,42 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return result;        
     }
     
+    public static int initVolatileQualifiers(AST node) {
+        int result = 0;
+        
+        if (node != null) {
+            
+            int volatileQualifierPosition = 1;
+            
+            for (AST token = node; token != null; token = token.getNextSibling()) {
+                int tokenType = token.getType();                
+               
+                if (AstRenderer.isVolatileQualifier(tokenType)) {
+                    result |= volatileQualifierPosition;
+                } else if (tokenType == CPPTokenTypes.CSM_PTR_OPERATOR) {                    
+                    ASTPointerOperatorQualifiersCollector visitor = new ASTPointerOperatorQualifiersCollector(result, volatileQualifierPosition, false);
+                    
+                    visitPointerOperator(visitor, token);
+                    
+                    result = visitor.getQualifiers();                  
+                    
+                    volatileQualifierPosition = visitor.getQualifierPosition();                    
+                } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                           tokenType == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
+                           tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    return result;
+                } else if (tokenType == CPPTokenTypes.LPAREN) {
+                    // if two tokens in a row are LPAREN and RPAREN, it is probably cast operator: type ()
+                    if (checkTokensRow(token.getNextSibling(), CPPTokenTypes.RPAREN)) {
+                        return result;
+                    }
+                }
+            }
+        }
+        
+        return result;        
+    }
+
     /**
      * Visits tokens inside pointer operators
      * 
@@ -615,7 +676,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public boolean isConst() {
         return isConst(0);
     }
-    
+
     public boolean isConst(int pointerDepth) {
         return isConst(constQualifiers, pointerDepth);
     }
@@ -624,6 +685,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return (constQualifiers & (1 << pointerDepth)) != 0;
     }
 
+    public boolean isVolatile(int pointerDepth) {
+        return isVolatile(volatileQualifiers, pointerDepth);
+    }
+    
+    static boolean isVolatile(int volatileQualifiers, int pointerDepth) {
+        return (volatileQualifiers & (1 << pointerDepth)) != 0;
+    }
+
+    @Override
+    public boolean isVolatile() {
+        return hasFlags(FLAGS_VOLOTALE);
+    }
+    
     @Override
     public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
@@ -679,18 +753,23 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     public CharSequence decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
-        if (decorator.isConst() || decorator.getPointerDepth() > 0 || 
+        if (decorator.isConst() || decorator.isVolatile() || decorator.getPointerDepth() > 0 || 
             decorator.isReference() || decorator.getArrayDepth() > 0 ||
             variableNameToInsert != null) {
             StringBuilder sb = new StringBuilder();
             if( decorator.isConst() ) {
                 sb.append("const "); // NOI18N
             }
+            if( decorator.isVolatile() ) {
+                sb.append("volatile "); // NOI18N
+            }
             sb.append(classifierText);
             for( int i = 1; i <= decorator.getPointerDepth(); i++ ) {
                 sb.append('*');
                 if (isConst(i)) {
                     sb.append(" const"); // NOI18N
+                } else if (isVolatile(i)) {
+                    sb.append(" volatile"); // NOI18N
                 }
             }
             if (decorator.isRValueReference()) {
@@ -1144,6 +1223,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         super.write(output);
         output.writeByte(pointerDepth);
         output.writeInt(constQualifiers);
+        output.writeInt(volatileQualifiers);
         output.writeByte(arrayDepth);
         output.writeByte(flags);
         assert this.classifierText != null;
@@ -1158,7 +1238,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         UIDObjectFactory.getDefaultFactory().writeUID(uid, output);
     }
-    
+
     // Proxy list to be able to work with null instantiationParams collection
     private class ProxyParamsList extends AbstractList<CsmSpecializationParameter> {
         @Override
@@ -1190,6 +1270,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         super(input);
         this.pointerDepth = input.readByte();
         this.constQualifiers = input.readInt();
+        this.volatileQualifiers = input.readInt();
         this.arrayDepth= input.readByte();
         this.flags = input.readByte();
         this.classifierText = PersistentUtils.readUTF(input, NameCache.getManager());
@@ -1309,15 +1390,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     
     
     private static class ASTPointerOperatorQualifiersCollector implements AstUtil.ASTTokenVisitor {
-        
-        private int constQualifiers;
-        
+        private int qualifiers;
         private int qualifierPosition;
+        private final boolean isConst; // const or volatile
         
         
-        public ASTPointerOperatorQualifiersCollector(int constQualifiers, int qualifierPosition) {
-            this.constQualifiers = constQualifiers;
+        public ASTPointerOperatorQualifiersCollector(int constQualifiers, int qualifierPosition, boolean isConst) {
+            this.qualifiers = constQualifiers;
             this.qualifierPosition = qualifierPosition;
+            this.isConst = isConst;
         }        
 
         @Override
@@ -1326,8 +1407,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
             if (insideTokenType == CPPTokenTypes.STAR) {
                 qualifierPosition <<= 1;
-            } else if (AstRenderer.isConstQualifier(insideTokenType)) {
-                constQualifiers |= qualifierPosition;
+            } else if (isConst && AstRenderer.isConstQualifier(insideTokenType)) {
+                qualifiers |= qualifierPosition;
+            } else if (!isConst && AstRenderer.isVolatileQualifier(insideTokenType)) {
+                qualifiers |= qualifierPosition;
             }
             
             return Action.CONTINUE;
@@ -1337,8 +1420,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return qualifierPosition;
         }
         
-        public int getConstQualifiers() {
-            return constQualifiers;
+        public int getQualifiers() {
+            return qualifiers;
         }                                              
     }
 }

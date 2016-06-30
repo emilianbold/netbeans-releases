@@ -579,7 +579,7 @@ public class Term extends JComponent implements Accessible {
     public WordDelineator getWordDelineator() {
         return this.word_delineator;
     }
-    private WordDelineator default_word_delineator = new WordDelineator();
+    private WordDelineator default_word_delineator = WordDelineator.createNewlineDelineator();
     WordDelineator word_delineator = default_word_delineator;
 
     /**
@@ -2055,7 +2055,8 @@ public class Term extends JComponent implements Accessible {
 
                     } else if (e.getClickCount() == 3) {
                         BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
-                        sel.select_line(new Coord(bcoord, firsta));
+                        BExtent line = buf.find_line(bcoord);
+                        sel.select_line(line.toExtent(firsta));
                         repaint(false);
 
                     }
@@ -5318,7 +5319,7 @@ public class Term extends JComponent implements Accessible {
      */
     public void setSelectByWordDelimiters(String delimiters) {
         this.delimiters = delimiters;
-        word_delineator.setWordDelimiters(delimiters);
+        word_delineator = WordDelineator.createCustomDelineator(delimiters);
     }
 
     public String getSelectByWordDelimiters() {

@@ -216,14 +216,8 @@ public class CreateJREPanel extends javax.swing.JPanel {
                 cmdLine.add("--no-compression");   //NOI18N
             }
             final StringBuilder extensions = new StringBuilder();
-            if (panel.isFxGraphics()) {
-                extensions.append("fx:graphics");  //NOI18N
-            }
-            if (panel.isFxControls()) {
-                if (extensions.length() > 0) {
-                    extensions.append(","); //NOI18N
-                }
-                extensions.append("fx:controls");  //NOI18N
+            if (panel.isGcf()) {
+                extensions.append("gcf");  //NOI18N
             }
             if (panel.isSunec()) {
                 if (extensions.length() > 0) {
@@ -300,8 +294,6 @@ public class CreateJREPanel extends javax.swing.JPanel {
         comboBoxVM = new javax.swing.JComboBox();
         labelVM = new javax.swing.JLabel();
         labelExtensions = new javax.swing.JLabel();
-        checkBoxFxGraphics = new javax.swing.JCheckBox();
-        checkBoxFxControls = new javax.swing.JCheckBox();
         checkBoxSunec = new javax.swing.JCheckBox();
         checkBoxSunpkcs11 = new javax.swing.JCheckBox();
         checkBoxLocales = new javax.swing.JCheckBox();
@@ -316,6 +308,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
         remoteJREPath = new javax.swing.JTextField();
         labelRemoteJREInfo = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        checkBoxGcf = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(labelOptions, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelOptions.text")); // NOI18N
 
@@ -342,10 +335,6 @@ public class CreateJREPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(labelVM, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelVM.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(labelExtensions, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelExtensions.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxFxGraphics, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxFxGraphics.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxFxControls, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxFxControls.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxSunec, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxSunec.text")); // NOI18N
 
@@ -382,6 +371,8 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
         labelRemoteJREInfo.setFont(labelRemoteJREInfo.getFont().deriveFont((labelRemoteJREInfo.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(labelRemoteJREInfo, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelRemoteJREInfo.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxGcf, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxGcf.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -420,30 +411,27 @@ public class CreateJREPanel extends javax.swing.JPanel {
                                         .addComponent(buttonBrowse))
                                     .addComponent(remoteJREPath)))
                             .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(labelJRECreateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                                    .addComponent(labelRemoteJREInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(labelOptions)
                                     .addComponent(labelExtensions)
                                     .addComponent(labelError)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
+                                        .addGap(12, 12, 12)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(checkBoxGcf, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(checkBoxLocales)
+                                            .addComponent(checkBoxSunpkcs11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(checkBoxSunpkcs11)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(checkBoxFxGraphics)
-                                                    .addComponent(checkBoxFxControls)
-                                                    .addComponent(checkBoxSunec))
-                                                .addGap(18, 18, 18)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(checkBoxNashorn)
-                                                    .addComponent(checkBoxCharsets)
-                                                    .addComponent(checkBoxLocales))))))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(labelJRECreateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                                    .addComponent(labelRemoteJREInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
+                                            .addComponent(checkBoxNashorn)
+                                            .addComponent(checkBoxCharsets)
+                                            .addComponent(checkBoxSunec))))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -484,19 +472,17 @@ public class CreateJREPanel extends javax.swing.JPanel {
                 .addComponent(labelExtensions)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(checkBoxFxGraphics)
-                    .addComponent(checkBoxLocales))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(checkBoxFxControls)
+                    .addComponent(checkBoxSunpkcs11)
                     .addComponent(checkBoxCharsets))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(checkBoxSunec)
-                    .addComponent(checkBoxNashorn))
+                    .addComponent(checkBoxGcf))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(checkBoxSunpkcs11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(checkBoxNashorn)
+                    .addComponent(checkBoxLocales))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                 .addComponent(labelError))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -540,8 +526,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
     private javax.swing.JButton buttonBrowse;
     private javax.swing.JCheckBox checkBoxCharsets;
     private javax.swing.JCheckBox checkBoxDebug;
-    private javax.swing.JCheckBox checkBoxFxControls;
-    private javax.swing.JCheckBox checkBoxFxGraphics;
+    private javax.swing.JCheckBox checkBoxGcf;
     private javax.swing.JCheckBox checkBoxKeepDebugInfo;
     private javax.swing.JCheckBox checkBoxLocales;
     private javax.swing.JCheckBox checkBoxNashorn;
@@ -597,12 +582,8 @@ public class CreateJREPanel extends javax.swing.JPanel {
         return checkBoxNoCompression.isSelected();
     }
 
-    public boolean isFxGraphics() {
-        return checkBoxFxGraphics.isSelected();
-    }
-
-    public boolean isFxControls() {
-        return checkBoxFxControls.isSelected();
+    public boolean isGcf() {
+        return checkBoxGcf.isSelected();
     }
 
     public boolean isSunec() {

@@ -344,16 +344,12 @@ public abstract class QtInfoProvider {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(qmakePath);
             npb.setArguments("-query", "QT_INSTALL_HEADERS"); // NOI18N
-            try {
-                NativeProcess process = npb.call();
-                String output = ProcessUtils.readProcessOutputLine(process).trim();
-                if (process.waitFor() == 0 && 0 < output.length()) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+            if (res.isOK()) {
+                String output = res.getOutputString().trim();
+                if (!output.isEmpty()) {
                     return output;
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -362,16 +358,12 @@ public abstract class QtInfoProvider {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(qmakePath);
             npb.setArguments("-query", "QT_INSTALL_LIBS"); // NOI18N
-            try {
-                NativeProcess process = npb.call();
-                String output = ProcessUtils.readProcessOutputLine(process).trim();
-                if (process.waitFor() == 0 && 0 < output.length()) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
+            if (res.isOK()) {
+                String output = res.getOutputString().trim();
+                if (!output.isEmpty()) {
                     return output;
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, null, ex);
             }
             return null;
         }

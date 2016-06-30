@@ -73,6 +73,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -515,6 +516,15 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             }
             
             super.visitReturn(tree, EnumSet.of(UseTypes.READ));
+            return null;
+        }
+
+        @Override
+        public Void visitSwitch(SwitchTree node, EnumSet<UseTypes> p) {
+            scan(node.getExpression(), EnumSet.of(UseTypes.READ));
+            for (CaseTree ct : node.getCases()) {
+                scan(ct, null);
+            }
             return null;
         }
         

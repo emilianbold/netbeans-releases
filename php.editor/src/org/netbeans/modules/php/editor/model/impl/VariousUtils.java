@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,11 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -139,6 +141,12 @@ public final class VariousUtils {
     private static final Collection<String> STATIC_CLASS_NAMES = new LinkedList<>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
     private static final String SPACES_AND_TYPE_DELIMITERS = "[| ]*"; //NOI18N
+    private static final Pattern SEMI_TYPE_NAME_PATTERN = Pattern.compile("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); // NOI18N
+    private static final Pattern WS_PATTERN = Pattern.compile("\\s+"); // NOI18N
+    private static final Pattern SEMICOLON_PATTERN = Pattern.compile("\\;"); // NOI18N
+    private static final Pattern DOT_PATTERN = Pattern.compile("\\."); // NOI18N
+    private static final Pattern TYPE_SEPARATOR_PATTERN = Pattern.compile("\\|"); // NOI18N
+
 
     static {
         STATIC_CLASS_NAMES.add("self"); //NOI18N
@@ -202,7 +210,7 @@ public final class VariousUtils {
     }
 
     static String extractTypeFroVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
-        Stack<VariableBase> stack = new Stack<>();
+        ArrayDeque<VariableBase> stack = new ArrayDeque<>();
         String typeName = null;
         createVariableBaseChain(varBase, stack);
         while (!stack.isEmpty() && stack.peek() != null) {
@@ -285,10 +293,10 @@ public final class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind().equals(tagType)) {
-                    String[] parts = tag.getValue().trim().split("\\s+", 2); //NOI18N
+                    String[] parts = WS_PATTERN.split(tag.getValue().trim(), 2);
 
                     if (parts.length > 0) {
-                        String type = parts[0].split("\\;", 2)[0]; //NOI18N
+                        String type = SEMICOLON_PATTERN.split(parts[0], 2)[0];
                         return type;
                     }
 
@@ -368,7 +376,7 @@ public final class VariousUtils {
 
     public static String replaceVarNames(String semiTypeName, Map<String, String> var2Type) {
         StringBuilder retval = new StringBuilder();
-        String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
+        String[] fragments = SEMI_TYPE_NAME_PATTERN.split(semiTypeName);
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) {
@@ -406,7 +414,7 @@ public final class VariousUtils {
 
     public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName) {
         List<VariableName> retval = new ArrayList<>();
-        String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
+        String[] fragments = SEMI_TYPE_NAME_PATTERN.split(semiTypeName);
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) {
@@ -440,7 +448,7 @@ public final class VariousUtils {
 
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
-            String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
+            String[] fragments = SEMI_TYPE_NAME_PATTERN.split(semiTypeName);
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
                 oldRecentTypes = recentTypes;
@@ -509,10 +517,9 @@ public final class VariousUtils {
                         Set<TypeScope> newRecentTypes = new HashSet<>();
                         final Collection<? extends TypeScope> types;
                         final String fieldName;
-                        String[] frgs = frag.split("\\."); //NOI18N
+                        String[] frgs = DOT_PATTERN.split(frag);
                         if (frgs.length == 1) {
                             // uniform variable syntax
-                            assert !oldRecentTypes.isEmpty();
                             fieldName = frag;
                             types = oldRecentTypes;
                         } else {
@@ -535,10 +542,9 @@ public final class VariousUtils {
                         Set<TypeScope> newRecentTypes = new HashSet<>();
                         final Collection<? extends TypeScope> types;
                         final String methodName;
-                        String[] frgs = frag.split("\\."); //NOI18N
+                        String[] frgs = DOT_PATTERN.split(frag);
                         if (frgs.length == 1) {
                             // uniform variable syntax
-                            assert !oldRecentTypes.isEmpty();
                             methodName = frag;
                             types = oldRecentTypes;
                         } else {
@@ -698,15 +704,15 @@ public final class VariousUtils {
         return result;
     }
 
-    public static Stack<? extends ModelElement> getElements(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
-        Stack<ModelElement> emptyStack = new Stack<>();
-        Stack<ModelElement> retval = new Stack<>();
-        Stack<Collection<? extends TypeScope>> stack = new Stack<>();
+    public static ArrayDeque<? extends ModelElement> getElements(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
+        ArrayDeque<ModelElement> emptyStack = new ArrayDeque<>();
+        ArrayDeque<ModelElement> retval = new ArrayDeque<>();
+        ArrayDeque<Collection<? extends TypeScope>> stack = new ArrayDeque<>();
 
         TypeScope type;
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
-            String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
+            String[] fragments = SEMI_TYPE_NAME_PATTERN.split(semiTypeName);
             int len = fragments.length;
             for (int i = 0; i < len; i++) {
                 String frag = fragments[i];
@@ -787,7 +793,7 @@ public final class VariousUtils {
                         stack.push(Collections.singletonList(cls));
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
-                        String[] frgs = frag.split("\\."); //NOI18N
+                        String[] frgs = DOT_PATTERN.split(frag);
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName == null) {
@@ -883,7 +889,7 @@ public final class VariousUtils {
         return retval;
     }
 
-    private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {
+    private static void createVariableBaseChain(VariableBase node, ArrayDeque<VariableBase> stack) {
         stack.push(node);
         if (node instanceof MethodInvocation) {
             createVariableBaseChain(((MethodInvocation) node).getDispatcher(), stack);
@@ -1674,7 +1680,7 @@ public final class VariousUtils {
         final String typeSeparator = "|"; //NOI18N
         if (typeNames != null) {
             if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
-                for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
+                for (String typeName : TYPE_SEPARATOR_PATTERN.split(typeNames)) {
                     String typeRawPart = typeName;
                     String typeArrayPart = ""; //NOI18N
                     int indexOfArrayDelim = typeName.indexOf('[');

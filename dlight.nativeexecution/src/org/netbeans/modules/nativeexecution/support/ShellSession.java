@@ -46,7 +46,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -131,6 +134,8 @@ public final class ShellSession {
                     processes.put(env, process);
                 } else {
                     process = null;
+                    ProcessUtils.readProcessError(sh);
+                    ProcessUtils.readProcessOutput(sh);
                 }
             } catch (ConnectionManager.CancellationException ex) {
                 throw new CancellationException(ex.getMessage());
@@ -161,7 +166,7 @@ public final class ShellSession {
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
-                        return new ExitStatus(-1, "", ex.getMessage()); // NOI18N
+                        return new ExitStatus(-1, null, Arrays.asList(ex.getMessage().split("\n"))); // NOI18N
                     }
                 }
             }
@@ -188,42 +193,42 @@ public final class ShellSession {
         }
 
         final AtomicInteger rc = new AtomicInteger(-1);
-        Future<String> out = RP.submit(new Callable<String>() {
+        Future<List<String>> out = RP.submit(new Callable<List<String>>() {
 
             @Override
-            public String call() throws Exception {
-                StringBuilder result = new StringBuilder();
+            public List<String> call() throws Exception {
+                List<String> result = new ArrayList<>();
                 String line;
                 while ((line = process.out.readLine()) != null) {
                     if (line.startsWith(eop)) {
                         rc.set(Integer.parseInt(line.substring(eop.length())));
                         break;
                     } else {
-                        result.append(line).append('\n');
+                        result.add(line);
                     }
                 }
-                return result.toString();
+                return result;
             }
         });
 
-        Future<String> err = RP.submit(new Callable<String>() {
+        Future<List<String>> err = RP.submit(new Callable<List<String>>() {
 
             @Override
-            public String call() throws Exception {
-                StringBuilder result = new StringBuilder();
+            public List<String> call() throws Exception {
+                List<String> result = new ArrayList<>();
                 String line;
                 while ((line = process.err.readLine()) != null) {
                     if (line.startsWith(eop)) {
                         break;
                     } else {
-                        result.append(line).append('\n');
+                        result.add(line);
                     }
                 }
-                return result.toString();
+                return result;
             }
         });
 
-        String output, error;
+        List<String> output, error;
 
         try {
             output = out.get();

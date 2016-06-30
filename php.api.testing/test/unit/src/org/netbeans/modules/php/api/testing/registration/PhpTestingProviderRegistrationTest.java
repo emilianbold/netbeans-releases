@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpType;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -138,7 +138,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
+        public boolean isTestCase(PhpModule phpModule, PhpType.Method method) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

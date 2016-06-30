@@ -168,7 +168,18 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
 
     @Override
     public String asString(PrintAs as) {
-        return getName();
+        String str = ""; // NOI18N
+        switch (as) {
+            case NameAndSuperTypes:
+                str = getName();
+                break;
+            case SuperTypes:
+                // noop
+                break;
+            default:
+                assert false : as;
+        }
+        return str;
     }
 
     @Override

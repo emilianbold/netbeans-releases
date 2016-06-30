@@ -75,8 +75,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.ui.IOVisibility;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
 import org.openide.DialogDisplayer;
@@ -94,6 +93,7 @@ import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import static org.netbeans.lib.terminalemulator.Term.ExternalCommandsConstants.*;
+import org.netbeans.modules.terminal.api.ui.IOTerm;
 
 /**
  *
@@ -165,10 +165,12 @@ public final class TerminalSupportImpl {
                     }
                 };
 
+                RequestProcessor.Task task = RP.create(delegate);
+
                 private final HyperlinkAdapter retryLink = new HyperlinkAdapter() {
                     @Override
                     public void outputLineAction(OutputEvent ev) {
-                        RP.post(delegate);
+                        task.schedule(0);
                     }
                 };
 
@@ -180,7 +182,7 @@ public final class TerminalSupportImpl {
                 private void doWork() {
                     boolean verbose = env.isRemote(); // can use silentMode instead
                     OutputWriter out = ioRef.get().getOut();
-                    
+
                     long id = TerminalPinSupport.getDefault().createPinDetails(TerminalCreationDetails.create(IOTerm.term(ioRef.get()), termId, env.getDisplayName(), pwdFlag));
 
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
@@ -268,7 +270,7 @@ public final class TerminalSupportImpl {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
-                    
+
                     if (verbose) {
                         try {
                             // Erase "log" in case we successfully connected to host
@@ -325,7 +327,7 @@ public final class TerminalSupportImpl {
                              *  "$@"    "$1" "$2" "$3" ... "${N}"
                              */
                             final String promptCommand = "printf \"\033]3;${PWD}\007\"; " // NOI18N
-                                    + IDE_OPEN + "() { printf \"\033]10;" + COMMAND_PREFIX + IDE_OPEN + " $*;\007\";}";   // NOI18N
+                                    + IDE_OPEN + "() { printf \"\033]10;" + COMMAND_PREFIX + IDE_OPEN + " $*;\007\"; printf \"Opening $# file(s) ...\n\";}";   // NOI18N
                             final String commandName = "PROMPT_COMMAND";                                    // NOI18N
                             String usrPrompt = npb.getEnvironment().get(commandName);
                             npb.getEnvironment().put(commandName,

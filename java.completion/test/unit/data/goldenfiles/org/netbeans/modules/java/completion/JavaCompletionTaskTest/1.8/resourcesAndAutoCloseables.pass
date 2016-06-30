@@ -1,5 +1,4 @@
 final
-new
 AutoCloseable
 BufferedWriter
 FileWriter

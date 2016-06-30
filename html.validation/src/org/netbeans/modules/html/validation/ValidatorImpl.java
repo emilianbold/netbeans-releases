@@ -80,8 +80,8 @@ public class ValidatorImpl implements Validator {
         
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            ValidationTransaction validatorTransaction = 
-                    ValidationTransaction.create(context.getVersion()); //NOI18N
+            NbValidationTransaction validatorTransaction = 
+                    NbValidationTransaction.create(context.getVersion()); //NOI18N
 
 //            //simulate the "in body" mode if the code is a fragment
 //            if(context.getSyntaxAnalyzerResult().getDetectedHtmlVersion() == null) {

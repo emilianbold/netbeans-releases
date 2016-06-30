@@ -264,7 +264,11 @@ public class DebugSession extends SingleThread {
             try {
                 message = DbgpMessage.create(getSocket().getInputStream(), options.getProjectEncoding());
             } catch (SocketException ex) {
-                LOGGER.log(Level.INFO, "COMMAND: " + command.toString() + "; TRANS_ID: " + command.getTransactionId() + "; WANT_ACK: " + command.wantAcknowledgment(), ex);
+                if (command != null) {
+                    LOGGER.log(Level.INFO, "COMMAND: " + command.toString() + "; TRANS_ID: " + command.getTransactionId() + "; WANT_ACK: " + command.wantAcknowledgment(), ex);
+                } else {
+                    LOGGER.log(Level.INFO, "COMMAND: null", ex);
+                }
                 throw ex;
             }
             handleMessage(command, message);

@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -147,15 +148,21 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
             phpParseResult.getProgram().accept(checkVisitor);
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             hints.addAll(checkVisitor.getHints());
         }
     }
 
     private class CheckVisitor extends DefaultVisitor {
 
-        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final ArrayDeque<ASTNode> parentNodes = new ArrayDeque<>();
         private final Map<ASTNode, List<HintVariable>> unusedVariables = new HashMap<>();
         private final Map<ASTNode, List<HintVariable>> usedVariables = new HashMap<>();
         private final FileObject fileObject;
@@ -268,6 +275,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(Variable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Identifier identifier = getIdentifier(node);
             if (identifier != null && !isInGlobalContext()) {
                 process(HintVariable.create(node, identifier.getName()));
@@ -307,6 +317,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(Program node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -314,6 +327,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(NamespaceDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -321,6 +337,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getBody() != null) {
                 parentNodes.push(node);
                 super.visit(node);
@@ -330,6 +349,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(EchoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpressions());
             forceVariableAsUsed = false;
@@ -337,6 +359,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ExpressionStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (node.getExpression() instanceof Variable) { // just variable without anything: {  $var; }
                 forceVariableAsUnused = true;
                 scan(node.getExpression());
@@ -348,6 +373,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(Include node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -355,6 +383,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(FunctionInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             String functionName = CodeUtils.extractFunctionName(node);
             if ("compact".equals(functionName)) { //NOI18N
@@ -393,6 +424,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(MethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getDispatcher());
             forceVariableAsUsed = false;
@@ -401,6 +435,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(IfStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getCondition());
             forceVariableAsUsed = false;
@@ -410,6 +447,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(InstanceOfExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             scan(node.getClassName());
@@ -418,6 +458,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(PostfixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getVariable());
             forceVariableAsUsed = false;
@@ -425,6 +468,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(PrefixExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getVariable());
             forceVariableAsUsed = false;
@@ -432,6 +478,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ReflectionVariable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             Expression name = node.getName();
             if (name instanceof Scalar) {
@@ -444,6 +493,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(CloneExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -451,6 +503,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(CastExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -458,6 +513,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getLeftHandSide());
             forceVariableAsUsed = true;
             scan(node.getRightHandSide());
@@ -466,6 +524,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ConditionalExpression node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getCondition());
             scan(node.getIfTrue());
@@ -475,6 +536,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ReturnStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -482,6 +546,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(SwitchStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -490,6 +557,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ThrowStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -497,6 +567,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(UnaryOperation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -504,11 +577,17 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ClassDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getBody());
         }
 
         @Override
         public void visit(ClassInstanceCreation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getClassName());
             scan(node.ctorParams());
@@ -518,6 +597,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(DoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getCondition());
             forceVariableAsUsed = false;
@@ -526,11 +608,17 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(DeclareStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getBody());
         }
 
         @Override
         public void visit(CatchClause node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Block body = node.getBody();
             if (!body.getStatements().isEmpty()) {
                 scan(node.getVariable());
@@ -540,6 +628,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(FormalParameter node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkUnusedFormalParameters(preferences)) {
                 scan(node.getParameterName());
             } else {
@@ -551,6 +642,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ForEachStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getExpression());
             forceVariableAsUsed = false;
@@ -561,6 +655,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(ForStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getInitializers());
             scan(node.getConditions());
@@ -571,6 +668,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(StaticMethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getDispatcher());
             forceVariableAsUsed = false;
@@ -579,6 +679,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(WhileStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getCondition());
             forceVariableAsUsed = false;
@@ -587,6 +690,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             scan(node.getLexicalVariables());
             forceVariableAsUsed = false;
@@ -599,6 +705,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(StaticFieldAccess node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             forceVariableAsUsed = true;
             super.visit(node);
             forceVariableAsUsed = false;

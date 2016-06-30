@@ -57,11 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -122,10 +125,13 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
         return statement;
     }
     private final String guessedName;
+    private final TreePathHandle targetHandle;
 
-    public IntroduceVariableFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, IntroduceKind kind, int offset) {
+    public IntroduceVariableFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, IntroduceKind kind, 
+            TreePathHandle methodHandle, int offset) {
         super(js, handle, numDuplicates, offset);
         this.guessedName = guessedName;
+        this.targetHandle = methodHandle;
     }
 
     @Override
@@ -150,12 +156,18 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                 "introduceVariable", btnOk);
         String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_" + getKeyExt()); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        FieldValidator val = new FieldValidator(js, null);
+        panel.setNotifier(dd.createNotificationLineSupport());
+        panel.setValidator(val);
+        panel.setTarget(targetHandle);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
+        final boolean refactor = panel.isRefactorExisting();
         final String name = panel.getFieldName();
         final boolean replaceAll = panel.isReplaceAll();
         final boolean declareFinal = panel.isDeclareFinal();
+        final MemberSearchResult search = val.getLastResult();
         js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy parameter) throws Exception {
                 parameter.toPhase(JavaSource.Phase.RESOLVED);
@@ -167,9 +179,25 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                 if (tm == null) {
                     return; //TODO...
                 }
-                tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
+                tm = Utilities.convertIfAnonymous(Utilities.resolveTypeForDeclaration(parameter, tm));
                 if (!Utilities.isValidType(tm)) {
                     return; // TODO... 
+                }
+                Element targetEl = null;
+                TreePath targetPath = null;
+                if (targetHandle != null) {
+                    targetPath = targetHandle.resolve(parameter);
+                    if (targetPath == null) {
+                        return;
+                    }
+                    targetPath = TreeUtils.findClass(targetPath);
+                    if (targetPath == null) {
+                        return;
+                    }
+                    targetEl = parameter.getTrees().getElement(targetPath);
+                    if (targetEl == null || !(targetEl.getKind().isClass() || targetEl.getKind().isInterface())) {
+                        return;
+                    }
                 }
                 Tree original = resolved.getLeaf();
                 boolean variableRewrite = original.getKind() == Tree.Kind.VARIABLE;
@@ -226,6 +254,11 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                     Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), 
                             make.asNew(make.Identifier(name))));
                     parameter.rewrite(origParent, newParent);
+                }
+                
+                if (refactor) {
+                    new ReferenceTransformer(parameter, ElementKind.LOCAL_VARIABLE, 
+                            search, name, targetEl).scan(statement.getParentPath(), null);
                 }
             }
         }).commit();

@@ -90,7 +90,7 @@ public class X11ForwardingChecker {
         final String x11key = "X11Forwarding"; // NOI18N
         ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "grep", "-i", x11key, "/etc/ssh/sshd_config"); // NOI18N
         if (rc.isOK()) {
-            String[] lines = rc.output.split("\n"); //NOI18N
+            String[] lines = rc.getOutputString().split("\n"); //NOI18N
             for (String line : lines) {
                 if (line.startsWith(x11key)) {
                     String rest = line.substring(x11key.length()).trim();

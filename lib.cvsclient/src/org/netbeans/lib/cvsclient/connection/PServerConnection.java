@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,7 +79,7 @@ public class PServerConnection extends AbstractConnection {
      * The string that is sent at the end of the request to open a connection.
      */
     protected static final String OPEN_POSTAMBLE = "END AUTH REQUEST\n"; //NOI18N
-    
+
 
     /**
      * The string that is sent at the beginning of the request to

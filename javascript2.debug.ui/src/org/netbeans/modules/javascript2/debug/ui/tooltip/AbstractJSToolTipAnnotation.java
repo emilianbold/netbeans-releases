@@ -42,15 +42,11 @@
 
 package org.netbeans.modules.javascript2.debug.ui.tooltip;
 
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -59,14 +55,12 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.netbeans.spi.debugger.ui.EditorPin;
-import org.netbeans.spi.debugger.ui.PinWatchUISupport;
+import org.netbeans.spi.debugger.ui.ToolTipUI;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -75,7 +69,6 @@ import static org.openide.text.Annotation.PROP_SHORT_DESCRIPTION;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
@@ -83,7 +76,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Entlicher
  */
-public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerTooltipSupport> extends Annotation {
+public abstract class AbstractJSToolTipAnnotation extends Annotation {
     
     private static final Set<String> JS_KEYWORDS = new HashSet<>(Arrays.asList(new String[] {
         "break",    "case",     "catch",    "class",    "continue",
@@ -100,21 +93,6 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
     
     private static final RequestProcessor RP = new RequestProcessor(AbstractJSToolTipAnnotation.class);
     
-    public static Object getTooltipVariable() {
-        return ToolTipView.getVariable();
-    }
-
-    public static void openTooltipView(DebuggerTooltipSupport dbg, String expression, Object var) {
-        ToolTipView toolTipView = ToolTipView.createToolTipView(dbg, expression, var);
-        JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        EditorUI eui = Utilities.getEditorUI(currentEditor);
-        if (eui != null) {
-            toolTipView.setToolTipSupport(eui.getToolTipSupport());
-            eui.getToolTipSupport().setToolTipVisible(true, false);
-            eui.getToolTipSupport().setToolTip(toolTipView);
-        }
-    }
-
     @Override
     public String getShortDescription () {
         final Session session = DebuggerManager.getDebuggerManager ().getCurrentSession();
@@ -123,10 +101,6 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
         }
         final DebuggerEngine engine = session.getCurrentEngine();
         if (engine == null) {
-            return null;
-        }
-        final Debugger dbg = getEngineDebugger(session, engine);
-        if (dbg == null) {
             return null;
         }
 
@@ -149,7 +123,7 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
 
             @Override
             public void run() {
-                evaluate(session, engine, dbg, lp, ec);
+                evaluate(session, engine/*, dbg*/, lp, ec);
             }
         };
         RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
@@ -161,16 +135,16 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
         return null;
     }
     
-    protected abstract Debugger getEngineDebugger(Session session, DebuggerEngine engine);
+    protected abstract void handleToolTipClose(DebuggerEngine engine, ToolTipSupport tts);
     
-    protected abstract Pair<String, Object> evaluate(String expression, DebuggerEngine engine, Debugger dbg) throws CancellationException;
+    protected abstract Pair<String, Object> evaluate(String expression, DebuggerEngine engine) throws CancellationException;
 
     @Override
     public String getAnnotationType() {
         return null;
     }
 
-    private void evaluate(Session session, DebuggerEngine engine, final Debugger dbg,
+    private void evaluate(Session session, final DebuggerEngine engine, //final Debugger dbg,
                           Line.Part lp, EditorCookie ec) {
         final Line line = lp.getLine();
         if (line == null) {
@@ -209,70 +183,34 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
         
         Pair<String, Object> toolTipTextAndVar;
         try {
-            toolTipTextAndVar = evaluate(expression, engine, dbg);
+            toolTipTextAndVar = evaluate(expression, engine);
         } catch (CancellationException ex) {
+            return ;
+        }
+        if (toolTipTextAndVar == null) {
             return ;
         }
         final String toolTip = truncateLongText(toolTipTextAndVar.first());
         final Object var = toolTipTextAndVar.second();
-        final boolean expandable = var != null;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip, expandable);
-                if (expandable) {
-                    et.addExpansionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
-                            et.removeAll();
-                            et.setWidthCheck(false);
-                            final ToolTipView ttView = ToolTipView.createToolTipView(dbg, expression, var);
-                            et.add(ttView);
-                            et.revalidate();
-                            et.repaint();
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public @Override void run() {
-                                    EditorUI eui = Utilities.getEditorUI(ep);
-                                    if (eui != null) {
-                                        ttView.setToolTipSupport(eui.getToolTipSupport());
-                                        eui.getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
-                                    } else {
-                                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-                et.addPinListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        EditorUI eui = Utilities.getEditorUI(ep);
-                        Point location = et.getLocation();
-                        location = eui.getStickyWindowSupport().convertPoint(location);
-                        eui.getToolTipSupport().setToolTipVisible(false);
-                        DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
-                        Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
-                        final Watch w = dbMgr.createPinnedWatch(expression, pin);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                String valueProviderId = "org.netbeans.modules.javascript2.debug.PIN_VALUE_PROVIDER"; // NOI18N
-                                try {
-                                    PinWatchUISupport.getDefault().pin(w, valueProviderId);
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-                    }
-                });
                 EditorUI eui = Utilities.getEditorUI(ep);
-                if (eui != null) {
-                    eui.getToolTipSupport().setToolTip(et);
-                } else {
+                if (eui == null) {
                     firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                    return ;
+                }
+                ToolTipUI.Expandable expandable = (var != null) ?
+                        new ToolTipUI.Expandable(expression, var) :
+                        null;
+                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                        expression,
+                        line.getLineNumber(),
+                        "org.netbeans.modules.javascript2.debug.PIN_VALUE_PROVIDER"); // NOI18N
+                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                ToolTipSupport tts = toolTipUI.show(ep);
+                if (tts != null) {
+                    handleToolTipClose(engine, tts);
                 }
             }
         });

@@ -36,9 +36,19 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -52,7 +62,7 @@ import org.openide.util.Utilities;
  *
  * @author Jan Lahoda
  */
-public class IntroduceFieldPanel extends javax.swing.JPanel {
+public class IntroduceFieldPanel extends javax.swing.JPanel implements ChangeListener {
     public static final int FIELD = 0;
     public static final int CONSTANT = 1;
     public static final int VARIABLE = 2;
@@ -78,6 +88,12 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
      */
     private boolean allowAccess = true;
     
+    private NameChangeSupport changeSupport;
+    
+    private NotificationLineSupport notifier;
+    
+    private boolean refactorExisting;
+    
     /**
      * Constructs the dialog.
      * 
@@ -91,7 +107,8 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
      * @param type field/constant/variable
      * @param btnOk confirm button, to hook callbacks
      */
-    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, boolean variableRewrite, int type, String prefNode, JButton btnOk) {
+    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, 
+            boolean variableRewrite, int type, String prefNode, JButton btnOk) {
         this.elementType = type;
         this.btnOk = btnOk;
         
@@ -154,10 +171,85 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             accessDefault.setVisible(false);
             accessPrivate.setVisible(false);
         }
+        
+        changeSupport = new FieldNameSupport();
         resetAccess();
         resetInit();
         adjustInitializeIn();
         adjustFinal();
+    }
+    
+    public void setTarget(TreePathHandle target) {
+        changeSupport.setTarget(target);
+    }
+    
+    public void setValidator(MemberValidator v) {
+        changeSupport.setValidator(v);
+    }
+
+    public void setNotifier(NotificationLineSupport notifier) {
+        this.notifier = notifier;
+    }
+    
+    @NbBundle.Messages({
+        "ERR_LocalVarOrParameterHidden=Field would hide a local symbol of an enclosing method",
+        "ERR_ConflictingField=Field with that name already exists",
+        "WARN_InheritedFieldHidden=Inherited field will be hidden, class behaviour may change",
+        "INFO_FieldHidden=A variable, field or import will be hidden"
+    })
+    private class FieldNameSupport extends NameChangeSupport {
+        
+        public FieldNameSupport() {
+            super(name);
+        }
+
+        @Override
+        protected boolean updateUI(MemberSearchResult result) {
+            if (notifier == null) {
+                return false;
+            } 
+            boolean ok = false;
+            boolean refactor = false;
+            if (result == null) {
+                ok = true;
+            } else if (result.getConflicting() != null) {
+                if (result.getConflicting().getKind() != ElementKind.FIELD) {
+                    notifier.setErrorMessage(Bundle.ERR_LocalVarOrParameterHidden());
+                } else {
+                    notifier.setErrorMessage(Bundle.ERR_ConflictingField());
+                }
+            } else if (result.getOverriden() != null) {
+                // fields are not really overriden, but introducing a field which shadows
+                // a superclass may affect outside code.
+                notifier.setWarningMessage(Bundle.WARN_InheritedFieldHidden());
+            } else if (result.getShadowed() != null) {
+                notifier.setInformationMessage(Bundle.INFO_FieldHidden());
+                refactor = true;
+            } else {
+                ok = true;
+            }
+            if (ok) {
+                notifier.clearMessages();
+            }
+            if (refactor) {
+                checkRefactorExisting.setEnabled(true);
+                checkRefactorExisting.setSelected(refactor);
+            } else {
+                checkRefactorExisting.setEnabled(false);
+                checkRefactorExisting.setSelected(false);
+            }
+            return true;
+        }
+
+        @Override
+        protected void notifyNameError(String msg) {
+            if (notifier != null) {
+                notifier.setErrorMessage(msg);
+                btnOk.setEnabled(false);
+            }
+        }
+        
+        
     }
     
     private void resetInit() {
@@ -282,26 +374,14 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         }
     }
     
-        
-    private JLabel createErrorLabel() {
-        ErrorLabel.Validator validator = new ErrorLabel.Validator() {
+    public boolean isRefactorExisting() {
+        return checkRefactorExisting.isEnabled() && checkRefactorExisting.isSelected();
+    }
+    
 
-            public String validate(String text) {
-                if( null == text 
-                    || text.length() == 0 ) return "";
-                if (!Utilities.isJavaIdentifier(text))
-                    return getDefaultErrorMessage( text );
-                return null;
-            }
-        };
-        
-        final ErrorLabel errorLabel = new ErrorLabel( name.getDocument(), validator );
-        errorLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID,new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled(errorLabel.isInputTextValid());
-            }
-        });
-        return errorLabel;
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        btnOk.setEnabled(changeSupport.isValid());
     }
     
     String getDefaultErrorMessage( String inputText ) {
@@ -331,7 +411,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         accessProtected = new javax.swing.JRadioButton();
         accessDefault = new javax.swing.JRadioButton();
         accessPrivate = new javax.swing.JRadioButton();
-        errLabel = createErrorLabel();
+        checkRefactorExisting = new javax.swing.JCheckBox();
 
         lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceFieldPanel.class).getString("LBL_Name")); // NOI18N
@@ -412,7 +492,13 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         accessPrivate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         accessPrivate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(errLabel, "jLabel1");
+        org.openide.awt.Mnemonics.setLocalizedText(checkRefactorExisting, org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "IntroduceFieldPanel.checkRefactorExisting.text")); // NOI18N
+        checkRefactorExisting.setEnabled(false);
+        checkRefactorExisting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkRefactorExistingActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -421,7 +507,6 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(errLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblAccess)
@@ -437,15 +522,19 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
                                 .addComponent(accessDefault)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(accessPrivate))))
-                    .addComponent(declareFinal)
-                    .addComponent(replaceAll)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblInitializeIn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(initConstructors)
-                            .addComponent(initField)
-                            .addComponent(initMethod))))
+                            .addComponent(declareFinal)
+                            .addComponent(replaceAll)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblInitializeIn)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(initConstructors)
+                                    .addComponent(initField)
+                                    .addComponent(initMethod)))
+                            .addComponent(checkRefactorExisting))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -475,9 +564,9 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
                         .addComponent(initField)
                         .addGap(7, 7, 7)
                         .addComponent(initConstructors)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(errLabel)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkRefactorExisting)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         lblName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Name")); // NOI18N
@@ -513,6 +602,12 @@ private void initMethodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceAllActionPerformed
         adjustInitializeIn();
 }//GEN-LAST:event_replaceAllActionPerformed
+
+    private void checkRefactorExistingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkRefactorExistingActionPerformed
+        if (checkRefactorExisting.isEnabled()) {
+            refactorExisting = checkRefactorExisting.isSelected();
+        }
+    }//GEN-LAST:event_checkRefactorExistingActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -521,8 +616,8 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JRadioButton accessPrivate;
     private javax.swing.JRadioButton accessProtected;
     private javax.swing.JRadioButton accessPublic;
+    private javax.swing.JCheckBox checkRefactorExisting;
     private javax.swing.JCheckBox declareFinal;
-    private javax.swing.JLabel errLabel;
     private javax.swing.JRadioButton initConstructors;
     private javax.swing.JRadioButton initField;
     private javax.swing.JRadioButton initMethod;
@@ -594,6 +689,9 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     public boolean isDeclareFinal() {
         if (declareFinalTest != null) return declareFinalTest;
+        if (isConstant()) {
+            return true;
+        }
         boolean ret = declareFinal.isSelected();
         getPreferences().putBoolean( "declareFinal", ret ); //NOI18N
         return ret;

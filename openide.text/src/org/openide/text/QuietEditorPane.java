@@ -318,6 +318,13 @@ final class QuietEditorPane extends JEditorPane {
                     LOG.log(Level.FINE, null, ex);
                 } catch (ClassNotFoundException ex) {
                     LOG.log(Level.FINE, null, ex);
+                } catch (RuntimeException ex) {
+                    if ("java.lang.reflect.InaccessibleObjectException".equals(ex.getClass().getName())) {
+                        LOG.log(Level.FINE, null, ex); // On JDK9 the patch is not currently working until a better solution is found
+                    } else {
+                        throw ex; // Re-throw all other runtime exceptions
+                    }
+                    
                 }
             }
         };

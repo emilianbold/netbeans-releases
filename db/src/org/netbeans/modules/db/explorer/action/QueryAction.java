@@ -43,6 +43,8 @@ package org.netbeans.modules.db.explorer.action;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.node.*;
@@ -51,6 +53,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -58,6 +61,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class QueryAction extends BaseAction {
 
+    private static final Logger LOG = Logger.getLogger(QueryAction.class.getName());
+    
     @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean result;
@@ -175,15 +180,25 @@ public abstract class QueryAction extends BaseAction {
             SchemaNameProvider provider = activatedNodes[0].getLookup().lookup(SchemaNameProvider.class);
 
             boolean isColumn = activatedNodes[0].getLookup().lookup(ColumnNode.class) != null;
-
-            String onome;
+            
+            // This is hardcoded to avoid introducing a cyclic dependency into
+            // the module graph (dataview -> db -> dataview)
+            //
+            // The path, preference name and default value have to correspond to
+            // DataViewPageContext
+            int limit = NbPreferences.root().node("/org/netbeans/modules/db/dataview").getInt("storedPageSize", 100);
+            if(limit <= 0) {
+                limit = 100;
+            }
+            String tableName;
+            String columnList;
+            
             if (!isColumn) {
-                onome = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter, dmd);
-
-                return "SELECT * FROM " + onome; // NOI18N
+                tableName = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter, dmd);
+                columnList = "*";
             } else {
                 String parentName = activatedNodes[0].getLookup().lookup(ColumnNameProvider.class).getParentName();
-                onome = getQualifiedTableName(parentName, connection, provider, quoter, dmd);
+                tableName = getQualifiedTableName(parentName, connection, provider, quoter, dmd);
 
                 StringBuilder cols = new StringBuilder();
                 for (Node node : activatedNodes) {
@@ -194,8 +209,52 @@ public abstract class QueryAction extends BaseAction {
                     cols.append(quoter.quoteIfNeeded(node.getName()));
                 }
 
-                return "SELECT " + cols.toString() + " FROM " + onome; // NOI18N
+                columnList = cols.toString();
             }
+            
+            String dbname = dmd.getDatabaseProductName();
+            if(dbname == null) {
+                dbname = "";
+            }
+
+            if( dbname.startsWith("DB2/") 
+                    || dbname.equals("Apache Derby")
+                    ) {
+                // SQL2008 standard
+                return "SELECT " + columnList + " FROM " + tableName + " FETCH FIRST " + limit + " ROWS ONLY";
+            } else if (dbname.contains("MySQL") 
+                    || dbname.contains("MariaDB") 
+                    || dbname.equals("H2") 
+                    || dbname.startsWith("HSQL ") 
+                    || dbname.contains("Sybase") 
+                    || dbname.equals("Adaptive Server Anywhere")
+                    || dbname.equals("PostgreSQL")
+                    || dbname.equals("HypersonicSQL")
+                    ) {
+                // MySQL Style LIMIT
+                return "SELECT " + columnList + " FROM " + tableName + " LIMIT " + limit;
+            } else if (dbname.equals("Microsoft SQL Server") 
+                    || dbname.equals("ACCESS")
+                    ) {
+                // MSSQL style TOP
+                return "SELECT TOP " + limit + " " + columnList + " FROM " + tableName;
+            } else if (dbname.equals("INFORMIX-OnLine") 
+                    || dbname.equals("Informix Dynamic Server")
+                    || dbname.contains("Informix")
+                    || dbname.contains("Firebird")
+                    ) {
+                // Informix style FIRST
+                return "SELECT FIRST " + limit + " " + columnList + " FROM " + tableName;
+            } else if (dbname.contains("Oracle")) {
+                // Oracle ROWNUM
+                return "SELECT " + columnList + " FROM " + tableName + " WHERE ROWNUM <= " + limit;
+            } else {
+                LOG.log(Level.INFO, "Failed to generate limited SELECT for: DB Connection ''{0}'', DatabaseProductName ''{1}'', Table ''{2}''", // NOI18N
+                        new Object[] {connection.getDisplayName(), dbname, tableName});
+                return "SELECT " + columnList + " FROM " + tableName;
+            }
+            
+            
         } catch (SQLException ex) {
             String message = NbBundle.getMessage(QueryAction.class, "ShowDataError", ex.getMessage()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));

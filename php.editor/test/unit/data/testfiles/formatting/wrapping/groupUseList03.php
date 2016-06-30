@@ -8,3 +8,4 @@ use function Functions\{
 };
 use const    Constants\   {CONSTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANT_A, CONSTANT_B, CONSTANT_C,
     CONSTANT_D};
+use Mixed\ { ClassA, const      CONSTANT_A, function    functiooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooonA };

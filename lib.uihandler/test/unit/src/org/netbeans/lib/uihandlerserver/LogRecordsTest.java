@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,9 +24,20 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ * Portions Copyrighted 2006 Sun Microsystems, Inc.
  */
 
 package org.netbeans.lib.uihandlerserver;
@@ -67,11 +78,11 @@ import org.xml.sax.SAXException;
  */
 public class LogRecordsTest extends NbTestCase {
     private Logger LOG;
-    
+
     public LogRecordsTest(String testName) {
         super(testName);
     }
-    
+
     protected Level logLevel() {
         return Level.FINEST;
     }
@@ -84,7 +95,7 @@ public class LogRecordsTest extends NbTestCase {
     }
 
     public void testParamsGetCleared() throws Exception {
-        String r = 
+        String r =
             "<record>" +
             "<date>2006-11-17T10:16:14</date>" +
             "<millis>1163729774285</millis>" +
@@ -96,7 +107,7 @@ public class LogRecordsTest extends NbTestCase {
             "<catalog>a.bundle.somewhere</catalog>" +
             "<param>1</param>" +
             "</record>" +
-            
+
             "<record>" +
             "<date>2006-11-17T10:16:14</date>" +
             "<millis>1163729774285</millis>" +
@@ -108,10 +119,10 @@ public class LogRecordsTest extends NbTestCase {
             "<catalog>a.bundle.somewhere</catalog>" +
             "<param>2</param>" +
             "</record>";
-        
+
         class H extends Handler {
             int cnt;
-            
+
             public void publish(LogRecord arg0) {
                 cnt++;
                     assertNotNull("We have params " + cnt, arg0.getParameters());

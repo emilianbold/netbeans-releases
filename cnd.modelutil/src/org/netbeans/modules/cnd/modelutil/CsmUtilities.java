@@ -79,7 +79,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -394,7 +394,10 @@ public class CsmUtilities {
     public static CsmProject getCsmProject(Document bDoc) {
         CsmProject csmProject = null;
         try {
-            csmProject = getCsmFile(bDoc, false, false).getProject();
+            CsmFile csmFile = getCsmFile(bDoc, false, false);
+            if (csmFile != null) {
+                csmProject = csmFile.getProject();
+            }
         } catch (NullPointerException exc) {
             exc.printStackTrace(System.err);
         }
@@ -1460,6 +1463,7 @@ public class CsmUtilities {
         REFERENCE(CppTokenId.AMP),
         RVALUE_REFERENCE(CppTokenId.AMPAMP),
         CONST(CppTokenId.CONST),
+        VOLATILE(CppTokenId.VOLATILE),
         ARRAY(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
 
         private final CppTokenId tokens[];
@@ -1495,6 +1499,9 @@ public class CsmUtilities {
             }
             if (value.isConst()) {
                 qualificators.add(Qualificator.CONST);
+            }
+            if (value.isVolatile()) {
+                qualificators.add(Qualificator.VOLATILE);
             }
             return false;
         }

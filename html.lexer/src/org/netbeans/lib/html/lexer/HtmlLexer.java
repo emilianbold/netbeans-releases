@@ -84,7 +84,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private final TokenFactory<HTMLTokenId> tokenFactory;
 
-    private class CompoundState {
+    private static final class CompoundState {
         private int lexerState;
         private int lexerSubState;
         private int lexerEmbeddingState;

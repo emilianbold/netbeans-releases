@@ -66,20 +66,7 @@ final class DebuggerVisualizer {
     }
     
     static String getMethodName(RootNode rn) {
-        SourceSection ss = rn.getSourceSection();
-        if (ss == null) {
-            ss = rn.getEncapsulatingSourceSection();
-        }
-        if (ss != null) {
-            String method = ss.getIdentifier();
-            if (method == null) {
-                method = "";
-            }
-            return method;
-        } else {
-            //System.err.println("No source section for root node "+rn);
-            return "";
-        }
+        return rn.getName();
     }
     
     /** &lt;File name&gt;:&lt;line number&gt; */

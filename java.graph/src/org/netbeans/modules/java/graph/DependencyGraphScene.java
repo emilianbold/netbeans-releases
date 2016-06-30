@@ -650,6 +650,10 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         repaint();
     }
     
+    public void resetHighlight() {
+        highlightV = null;
+    }
+    
     private void highlightDepthIntern () {        
         int depth;
         if(highlightProvider == null) {

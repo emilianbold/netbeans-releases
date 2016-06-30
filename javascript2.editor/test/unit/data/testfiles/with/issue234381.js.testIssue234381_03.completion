@@ -5,26 +5,33 @@ var z = |test() * times;
 CLASS      MyObject234381                  [PUBLIC]   issue234381.js
 METHOD     test(): Number                  [PROTECTE  issue234381.js
 FIELD      times: Number                   [PUBLIC]   issue234381.js
-VARIABLE   z                               [PUBLIC]   issue234381.js
+VARIABLE   z: Number                       [PUBLIC]   issue234381.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
+KEYWORD    class                                      null
+KEYWORD    const                                      null
 KEYWORD    continue                                   null
 KEYWORD    debugger                                   null
 KEYWORD    default                                    null
 KEYWORD    delete                                     null
 KEYWORD    do                                         null
 KEYWORD    else                                       null
+KEYWORD    export                                     null
+KEYWORD    extends                                    null
 KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    function                                   null
 KEYWORD    if                                         null
+KEYWORD    import                                     null
 KEYWORD    in                                         null
 KEYWORD    instanceof                                 null
+KEYWORD    let                                        null
 KEYWORD    new                                        null
 KEYWORD    null                                       null
 KEYWORD    return                                     null
+KEYWORD    super                                      null
 KEYWORD    switch                                     null
 KEYWORD    this                                       null
 KEYWORD    throw                                      null
@@ -35,3 +42,4 @@ KEYWORD    var                                        null
 KEYWORD    void                                       null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
+KEYWORD    yield                                      null

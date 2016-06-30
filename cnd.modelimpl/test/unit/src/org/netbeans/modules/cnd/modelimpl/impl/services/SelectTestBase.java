@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -81,6 +82,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        super.clearWorkDir();
         File projectRoot = Manager.normalizeFile(getProjectRoot());
         assertTrue(projectRoot.exists());
 	traceModel = new  TraceModelBase(true);
@@ -93,6 +95,8 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        traceModel.shutdown(true);
+        TextIndexStorageManager.shutdown();
     }
 
     @Override

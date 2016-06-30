@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -71,8 +72,8 @@ public final class NavUtils {
 
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
-            private final Stack<ASTNode> result;
-            public Result(Stack<ASTNode> result) {
+            private final ArrayDeque<ASTNode> result;
+            Result(ArrayDeque<ASTNode> result) {
                 this.result = result;
             }
             @Override
@@ -82,7 +83,7 @@ public final class NavUtils {
         }
         try {
             new DefaultVisitor() {
-                private final Stack<ASTNode> s = new Stack<>();
+                private final ArrayDeque<ASTNode> s = new ArrayDeque<>();
                 @Override
                 public void scan(ASTNode node) {
                     if (node == null) {
@@ -97,7 +98,12 @@ public final class NavUtils {
                 }
             }.scan(Utils.getRoot(info));
         } catch (Result r) {
-            return new LinkedList<>(r.result);
+            List<ASTNode> list = new ArrayList<>();
+            Iterator<ASTNode> iterator = r.result.descendingIterator();
+            while (iterator.hasNext()) {
+                list.add(iterator.next());
+            }
+            return list;
         }
 
         return Collections.emptyList();

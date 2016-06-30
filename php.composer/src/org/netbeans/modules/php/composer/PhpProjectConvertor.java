@@ -54,24 +54,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleGenerator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.web.common.api.UsageLogger;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 @ProjectConvertor.Registration(requiredPattern = PhpProjectConvertor.COMPOSER_JSON_FILENAME, position = 500)
 public final class PhpProjectConvertor implements ProjectConvertor {
@@ -98,11 +96,9 @@ public final class PhpProjectConvertor implements ProjectConvertor {
             // should not happen often
             displayName = projectDirectory.getNameExt();
         }
-        final Lookup transientLkp = ProjectConvertors.createProjectConvertorLookup(
-            new ConvertorClassPathProvider(),
-            ProjectConvertors.createFileEncodingQuery());
+        final Lookup transientLkp = ProjectConvertors.createDelegateToOwnerLookup(projectDirectory);
         return new Result(
-                transientLkp,
+                Lookups.exclude(transientLkp, ProjectProblemsProvider.class),
                 new Factory(projectDirectory, displayName, (Closeable) transientLkp),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON)));
@@ -203,28 +199,4 @@ public final class PhpProjectConvertor implements ProjectConvertor {
         }
 
     }
-
-    private static final class ConvertorClassPathProvider implements ClassPathProvider {
-
-        @CheckForNull
-        @Override
-        public ClassPath findClassPath(@NonNull final FileObject file, @NonNull final String type) {
-            if (PhpSourcePath.BOOT_CP.equals(type)
-                    || PhpSourcePath.PROJECT_BOOT_CP.equals(type)
-                    || PhpSourcePath.SOURCE_CP.equals(type)) {
-                final Project project = ProjectConvertors.getNonConvertorOwner(file);
-                if (project != null) {
-                    ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-                    if (classPathProvider == null) { // #255912
-                        LOGGER.log(Level.INFO, "No ClassPathProvider found in lookup of project {0}", project.getClass().getName());
-                        return null;
-                    }
-                    return classPathProvider.findClassPath(file, type);
-                }
-            }
-            return null;
-        }
-
-    }
-
 }

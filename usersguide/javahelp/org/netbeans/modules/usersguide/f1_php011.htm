@@ -2,16 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Advanced Web Configuration Dialog Box</title>
+<title>Project Properties Window: Annotations</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced" name="org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"></a></p>
-<div id="NBCSH3541"><!-- infolevel="all" infotype="General" --><a id="sthref466" name="sthref466"></a>
-<h1>Advanced Web Configuration Dialog Box</h1>
+<p>Beta Draft: 2016-06-21</p>
+<p><a id="org.netbeans.modules.php.project.ui.customizer.CustomizerAnnotations" name="org.netbeans.modules.php.project.ui.customizer.CustomizerAnnotations"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref466" name="sthref466"></a>
+<h1>Project Properties Window: Annotations</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Advanced Web Configuration dialog box enables you to specify advanced debugging options for the Run configuration of your PHP project. You can set the following properties for the selected Run configuration.</p>
+<p>In this panel you can define custom PHP annotations for the given project. These annotations are then available in code-completion in PHPDoc comments. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1988">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>The Project Properties Annotations panel contains the following fields:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -25,53 +34,65 @@
 <tbody>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r2c1-t12" headers="r1c1-t12">
-<p>Debug URL</p>
+<p>Name</p>
 </td>
-<td style="text-align:left" headers="r2c1-t12 r1c2-t12">Specify the behavior of the IDE when debugging the application.</td>
+<td style="text-align:left" headers="r2c1-t12 r1c2-t12">Name of the custom annotation.</td>
 </tr>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r3c1-t12" headers="r1c1-t12">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Default</p>
+<p>For</p>
 </td>
-<td style="text-align:left" headers="r3c1-t12 r1c2-t12">When selected, the IDE uses the default project URL when debugging the application. This option is selected by default.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r4c1-t12" headers="r1c1-t12">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Ask Every Time</p>
+<td style="text-align:left" headers="r3c1-t12 r1c2-t12">The context associated with the annotation. Choose one from the following:
+<ul>
+<li>function</li>
+<li>class/interface (type)</li>
+<li>method</li>
+<li>field</li>
+</ul>
 </td>
-<td style="text-align:left" headers="r4c1-t12 r1c2-t12">When selected, you are prompted to supply the URL.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t12" headers="r1c1-t12">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Do Not Open Browser</p>
-</td>
-<td style="text-align:left" headers="r5c1-t12 r1c2-t12">When selected, no URL is opened in the browser.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r6c1-t12" headers="r1c1-t12">
-<p>Path Mapping</p>
-</td>
-<td style="text-align:left" headers="r6c1-t12 r1c2-t12">Specify any required mappings between the server path and the project path.
-<p>To create or edit a mapping, double-click in the text field in the Server Path column of the table and type the server path. Click the ellipsis (...) on the right side of the Project Path column and select the project folder that you want to map to the specified server path.</p>
-<p>Click New to create a new row in the table.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r7c1-t12" headers="r1c1-t12">
-<p>Debugger Proxy</p>
-</td>
-<td style="text-align:left" headers="r7c1-t12 r1c2-t12">Specify the name of the proxy host and port number if required for debugging.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3548" name="NBCSH3548"></a>
+<p>You can use the following buttons to the right of the table:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th style="text-align:left" valign="bottom" id="r1c1-t13">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t13">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r2c1-t13" headers="r1c1-t13">
+<p>Add</p>
+</td>
+<td style="text-align:left" headers="r2c1-t13 r1c2-t13">Click to add a custom annotation.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r3c1-t13" headers="r1c1-t13">Edit</td>
+<td style="text-align:left" headers="r3c1-t13 r1c2-t13">Click to edit the custom annotation.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r4c1-t13" headers="r1c1-t13">
+<p>Delete</p>
+</td>
+<td style="text-align:left" headers="r4c1-t13 r1c2-t13">Select an annotation in the table and click Delete to delete it.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref467" name="sthref467"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2001">
-<param name="text" value="<html><u>&quot;Debugging PHP Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1539">
+<param name="text" value="<html><u>&quot;Working with PHP Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -84,7 +105,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2016,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

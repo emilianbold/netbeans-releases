@@ -37,7 +37,7 @@ Other names may be trademarks of their respective owners.
       Notice in each file and include the License file at
       glassfish/bootstrap/legal/LICENSE.txt.  Sun designates this
       particular file as subject to the "Classpath" exception as
-      provided by Sun in the GPL Version 2 section of the License file
+      provided by Oracle in the GPL Version 2 section of the License file
       that accompanied this code.  If applicable, add the following
       below the License Header, with the fields enclosed by brackets []
       replaced by your own identifying information:
@@ -63,10 +63,10 @@ Other names may be trademarks of their respective owners.
   <xsd:annotation>
      <xsd:documentation><![CDATA[
 
-       This is the XML Schema for the persistence object-relational 
+       This is the XML Schema for the persistence object-relational
        mapping file.
-       The file may be named "META-INF/orm.xml" in the persistence 
-       archive or it may be named some other name which would be 
+       The file may be named "META-INF/orm.xml" in the persistence
+       archive or it may be named some other name which would be
        used to locate the file as resource on the classpath.
 
      ]]></xsd:documentation>
@@ -93,7 +93,7 @@ Other names may be trademarks of their respective owners.
         1. The persistence-unit-metadata element contains metadata
         for the entire persistence unit. It is undefined if this element
         occurs in multiple mapping files within the same persistence unit.
-        
+
         2. The package, schema, catalog and access elements apply to all of
         the entity, mapped-superclass and embeddable elements defined in
         the same file in which they occur.

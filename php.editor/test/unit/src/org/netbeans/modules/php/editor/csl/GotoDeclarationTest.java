@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.csl;
 
@@ -1246,6 +1246,38 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "echo MyFa^bc();", "    B\\C\\fabc AS ^MyFabc");
     }
 
+    public void testGroupUseMixed_01() throws Exception {
+        checkDeclaration(getTestPath(), "    My^A,", "class ^MyA {}");
+    }
+
+    public void testGroupUseMixed_02() throws Exception {
+        checkDeclaration(getTestPath(), "new M^yA();", "class ^MyA {}");
+    }
+
+    public void testGroupUseMixed_03() throws Exception {
+        checkDeclaration(getTestPath(), "    const CONST^ANT,", "const ^CONSTANT = \"CONSTANT\";");
+    }
+
+    public void testGroupUseMixed_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo CON^STANT; // CONSTANT", "const ^CONSTANT = \"CONSTANT\";");
+    }
+
+    public void testGroupUseMixed_05() throws Exception {
+        checkDeclaration(getTestPath(), "    function te^st,", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_06() throws Exception {
+        checkDeclaration(getTestPath(), "    function te^st AS mytest", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_07() throws Exception {
+        checkDeclaration(getTestPath(), "t^est(); // test", "function ^test() {");
+    }
+
+    public void testGroupUseMixed_08() throws Exception {
+        checkDeclaration(getTestPath(), "my^test(); // test", "    function test AS ^mytest");
+    }
+
     public void testUniformVariableSyntax_01() throws Exception {
         checkDeclaration(getTestPath(), "UV^S3::myStatic3()::myStatic2();", "class ^UVS3 {");
     }
@@ -1308,6 +1340,42 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 
     public void testUniformVariableSyntax_16() throws Exception {
         checkDeclaration(getTestPath(), "foo()::myStatic2()::myStati^c2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
+    public void testIssue247082_01() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::PAREN^T_CONST . PHP_EOL;", "    const ^PARENT_CONST = 'PARENT_CONST';");
+    }
+
+    public void testIssue247082_02() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::$paren^tFieldStatic . PHP_EOL;", "    public static $^parentFieldStatic = 'parentFieldStatic';");
+    }
+
+    public void testIssue247082_03() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::parent^TestInstance() . PHP_EOL;", "    public function ^parentTestInstance() {");
+    }
+
+    public void testIssue247082_04() throws Exception {
+        checkDeclaration(getTestPath(), "            echo parent::parentTes^tStatic() . PHP_EOL;", "    public static function ^parentTestStatic() {");
+    }
+
+    public void testIssue247082_05() throws Exception {
+        checkDeclaration(getTestPath(), "            echo $this->myFieldI^nstance . PHP_EOL;", "    public $^myFieldInstance = 'myFieldInstance';");
+    }
+
+    public void testIssue247082_06() throws Exception {
+        checkDeclaration(getTestPath(), "            echo $this->myTest^Instance() . PHP_EOL;", "    public function ^myTestInstance() {");
+    }
+
+    public void testIssue247082_07() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::MY_C^ONST . PHP_EOL;", "    const ^MY_CONST = 'MY_CONST';");
+    }
+
+    public void testIssue247082_08() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::$myFieldS^tatic . PHP_EOL;", "    public static $^myFieldStatic = 'myFieldStatic';");
+    }
+
+    public void testIssue247082_09() throws Exception {
+        checkDeclaration(getTestPath(), "            echo self::myTe^stStatic() . PHP_EOL;", "    public static function ^myTestStatic() {");
     }
 
     //TODO: these tests need to be checked, filtered , rewritten , enabled

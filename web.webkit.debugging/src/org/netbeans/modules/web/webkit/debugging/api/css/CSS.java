@@ -70,6 +70,9 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
  * @author Jan Stola
  */
 public class CSS {
+
+    private static final Logger LOG = Logger.getLogger(CSS.class.getName());
+
     /** Transport used by this instance. */
     private final TransportHelper transport;
     /** Callback for CSS event notifications. */
@@ -350,27 +353,29 @@ public class CSS {
             JSONObject result = response.getResult();
             if (result != null) {
                 matchedStyles = new MatchedStyles(result);
-                for (Rule rule : matchedStyles.getMatchedRules()) {
-                    returnHoverToSelector(rule);
-                    if (rule.getOrigin() != StyleSheetOrigin.USER_AGENT) { // Issue 234848
-                        String styleSheetId = rule.getStyle().getId().getStyleSheetId();
-                        StyleSheetBody body = getStyleSheet(styleSheetId);
-                        rule.setParentStyleSheet(body);
-                    }
-                }
+                processMatchedRule(matchedStyles.getMatchedRules());
                 for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
-                    for (Rule rule : entry.getMatchedRules()) {
-                        returnHoverToSelector(rule);
-                        if (rule.getOrigin() != StyleSheetOrigin.USER_AGENT) { // Issue 234848
-                            String styleSheetId = rule.getStyle().getId().getStyleSheetId();
-                            StyleSheetBody body = getStyleSheet(styleSheetId);
-                            rule.setParentStyleSheet(body);
-                        }
-                    }
+                    processMatchedRule(entry.getMatchedRules());
                 }
             }
         }
         return matchedStyles;
+    }
+
+    private void processMatchedRule(List<Rule> rules) {
+        for (Rule rule : rules) {
+            returnHoverToSelector(rule);
+            if (rule.getOrigin() != StyleSheetOrigin.USER_AGENT) { // Issue 234848
+                StyleId styleId = rule.getStyle().getId();
+                if (styleId == null) {
+                    LOG.info("null styleId for rule "+rule);
+                    continue;
+                }
+                String styleSheetId = styleId.getStyleSheetId();
+                StyleSheetBody body = getStyleSheet(styleSheetId);
+                rule.setParentStyleSheet(body);
+            }
+        }
     }
 
     /**

@@ -48,6 +48,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 
@@ -243,13 +244,15 @@ class LineBreakpointPanel extends BreakpointPanel {
         if (fileSystem != null) {
             environment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         } else {
-            environment = ExecutionEnvironmentFactory.getLocal();
+            environment = ServerList.getDefaultRecord().getExecutionEnvironment();
+            lb.setFilesystem(FileSystemProvider.getFileSystem(environment));
         }
         Session coreSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (coreSession != null) {
             NativeSession nativeSession = NativeSession.map(coreSession);
             if (nativeSession != null) {
                 environment = Host.byName(nativeSession.getSessionHost()).executionEnvironment();
+                lb.setFilesystem(FileSystemProvider.getFileSystem(environment));
             }
         }
         
@@ -286,8 +289,8 @@ class LineBreakpointPanel extends BreakpointPanel {
 		i = 1;
 	    }
 	} catch (NumberFormatException e) {
-	}	
-	lb.setFileAndLine(fileText.getText(), i);
+	}
+        lb.setFileAndLine(fileText.getText(), i);
     }
     
     @Override

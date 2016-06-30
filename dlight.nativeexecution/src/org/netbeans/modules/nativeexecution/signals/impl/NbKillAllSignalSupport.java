@@ -161,7 +161,7 @@ public final class NbKillAllSignalSupport extends HelperUtility implements Signa
 
             ExitStatus status = ShellSession.execute(env, cmd.toString());
 
-            if (status.error.length() > 0) {
+            if (status.getErrorString().length() > 0) {
                 log.log(Level.FINE, "doSignal: {0}", status.toString()); // NOI18N
             }
 

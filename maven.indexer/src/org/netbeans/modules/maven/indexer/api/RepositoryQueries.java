@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -55,10 +56,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.indexer.ResultImpl;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
@@ -146,7 +147,7 @@ public final class RepositoryQueries {
         
         private final List<ResultImplementation<T>> results;
         
-        public CompositeResult(List<ResultImplementation<T>> results) {
+        public CompositeResult(List<ResultImplementation<T>> results) {            
             this.results = results;
         }
     
@@ -155,8 +156,8 @@ public final class RepositoryQueries {
             for (ResultImplementation<T> result : results) {
                 if(result.isPartial()) {
                     return true;
+                }
             }
-        }
             return false;
         }
 
@@ -168,16 +169,19 @@ public final class RepositoryQueries {
         }
 
         @Override
-        public List<T> getResults() {
-            List<T> ret = new LinkedList<>();
-            for (ResultImplementation<T> result : results) {
-                ret.addAll(result.getResults());
-            }
-            return ret;
+        public List<T> getResults() {            
+            return Collections.unmodifiableList(results.stream()
+                    .flatMap((ResultImplementation<T> r) -> r.getResults().stream())
+                    .distinct()
+                    .collect(Collectors.toCollection(() -> new LinkedList<>())));
         }
 
         @Override
         public int getTotalResultCount() {
+            // XXX might be inaccurate considering that getResults returns a 
+            // distinct list of all results and some were dropped in the process.
+            // seems that this is used only for user info in cases 
+            // when absolute accuracy isn't essential            
             int ret = 0;
             for (ResultImplementation<T> result : results) {
                 ret += result.getTotalResultCount();
@@ -187,11 +191,11 @@ public final class RepositoryQueries {
 
         @Override
         public int getReturnedResultCount() {
-            int ret = 0;
-            for (ResultImplementation<T> result : results) {
-                ret += result.getReturnedResultCount();
-            }
-            return ret;
+            // XXX might differ from a agregated ResultImplemetation.getReturnedResultCount
+            // though this is used only for info in cases.
+            // seems that this is used only for user info in cases 
+            // when absolute accuracy isn't essential.      
+            return getResults().size();
         }
     }
 

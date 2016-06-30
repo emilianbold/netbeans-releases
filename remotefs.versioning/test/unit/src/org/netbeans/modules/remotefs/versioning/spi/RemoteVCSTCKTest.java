@@ -174,15 +174,15 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
             mkTempArgs = directory ? new String[] { "-d" } : new String[0];
         }        
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
-        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        return res.output;
+        assertEquals("mktemp failed: " + res.getErrorString(), 0, res.exitCode);
+        return res.getOutputString();
     }
 
     @Override
     public void move(String from, String to) throws IOException {
         ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
         if (res.exitCode != 0) {
-            throw new IOException("mv failed: " + res.error);
+            throw new IOException("mv failed: " + res.getErrorString());
         }
     }
 
@@ -190,7 +190,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     public void copy(String from, String to) throws IOException {
         ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "cp", "-r", from, to);
         if (res.exitCode != 0) {
-            throw new IOException("cp failed: " + res.error);
+            throw new IOException("cp failed: " + res.getErrorString());
         }
     }
 
@@ -198,7 +198,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     public void delete(String path) throws IOException {
         ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "rm", "-rf", getRootPath()+"/"+path);
         if (res.exitCode != 0) {
-            throw new IOException("rm failed: " + res.error);
+            throw new IOException("rm failed: " + res.getErrorString());
         }
     }
 
@@ -206,7 +206,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     protected void setReadOnly(String path) throws IOException {
         ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "chmod", "444", getRootPath()+"/"+path);
         if (res.exitCode != 0) {
-            throw new IOException("chmod failed: " + res.error);
+            throw new IOException("chmod failed: " + res.getErrorString());
         }
         FileObject fo = root.getFileObject(path);
         fo.getParent().refresh(true);

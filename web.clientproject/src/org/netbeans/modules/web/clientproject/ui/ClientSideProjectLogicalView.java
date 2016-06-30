@@ -50,6 +50,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -94,6 +95,8 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -965,6 +968,17 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     && !owner.equals(project)
                     && owner.getProjectDirectory().equals(folder)) {
                 originalIcon = ImageUtilities.icon2Image(ProjectUtils.getInformation(owner).getIcon());
+                try {
+                    final Set<FileObject> clds = new HashSet<>();
+                    Collections.addAll(clds, owner.getProjectDirectory().getChildren());
+                    originalIcon = FileUIUtils.getImageDecorator(owner.getProjectDirectory().getFileSystem())
+                            .annotateIcon(
+                                    originalIcon,
+                                    type,
+                                    clds);
+                } catch (FileStateInvalidException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
             } else {
                 originalIcon = opened ? super.getOpenedIcon(type) : super.getIcon(type);
             }

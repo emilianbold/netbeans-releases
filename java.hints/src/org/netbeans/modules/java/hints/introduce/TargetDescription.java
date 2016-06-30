@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.errors.Utilities;
 
 /**
@@ -57,17 +61,36 @@ public final class TargetDescription {
     public final boolean allowForDuplicates;
     public final boolean anonymous;
     public final boolean iface;
+    public final boolean canStatic;
+    public final TreePathHandle pathHandle;
 
-    private TargetDescription(String displayName, ElementHandle<TypeElement> type, boolean allowForDuplicates, boolean anonymous, boolean iface) {
+    private TargetDescription(String displayName, ElementHandle<TypeElement> type, TreePathHandle pathHandle, boolean allowForDuplicates, boolean anonymous, boolean iface, boolean canStatic) {
         this.displayName = displayName;
         this.type = type;
         this.allowForDuplicates = allowForDuplicates;
         this.anonymous = anonymous;
         this.iface = iface;
+        this.canStatic = canStatic;
+        this.pathHandle = pathHandle;
     }
 
-    public static TargetDescription create(CompilationInfo info, TypeElement type, boolean allowForDuplicates, boolean iface) {
-        return new TargetDescription(Utilities.target2String(type), ElementHandle.create(type), allowForDuplicates, type.getSimpleName().length() == 0, iface);
+    public static TargetDescription create(CompilationInfo info, TypeElement type, TreePath path, boolean allowForDuplicates, boolean iface) {
+        boolean canStatic = true;
+        if (iface) {
+            // interface cannot have static methods
+            canStatic = false;
+        } else {
+            if (type.getNestingKind() == NestingKind.ANONYMOUS || 
+                type.getNestingKind() == NestingKind.LOCAL ||
+                (type.getNestingKind() != NestingKind.TOP_LEVEL && !type.getModifiers().contains(Modifier.STATIC))) {
+                canStatic = false;
+            }
+        }
+        return new TargetDescription(Utilities.target2String(type), 
+                ElementHandle.create(type), 
+                TreePathHandle.create(path, info),
+                allowForDuplicates, 
+                type.getSimpleName().length() == 0, iface, canStatic);
     }
 
     public String toDebugString() {

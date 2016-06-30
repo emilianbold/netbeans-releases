@@ -197,7 +197,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             public @Override void popupMenuCanceled(PopupMenuEvent e) {}
         });
         configListCombo.setRenderer(new ConfigCellRenderer());
-        configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
+        configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label")));
         configListCombo.setFocusable(false);
         configListCombo.setMaximumRowCount(20);
         ProjectConfigurationProvider<?> _pcp;
@@ -318,19 +318,32 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     
     private synchronized void activeConfigurationSelected(final @NullAllowed ProjectConfiguration cfg, final @NullAllowed ProjectConfigurationProvider<?> ppcp) {
         final ProjectConfigurationProvider<?> lpcp = (ppcp != null) ? ppcp : pcp;
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
-                if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
-                    try {
-                        setActiveConfiguration(lpcp, cfg);
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, null, x);
+        if (lpcp != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
+                    final Collection<?> cfgs = lpcp.getConfigurations();
+                    if (cfgs.contains(cfg)) {
+                        if (cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
+                            try {
+                                setActiveConfiguration(lpcp, cfg);
+                            } catch (IOException x) {
+                                LOGGER.log(Level.WARNING, null, x);
+                            }
+                        }
+                    } else {
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Unknown configuration: {0}, active project configurations: {1}",
+                                new Object[]{
+                                    cfg,
+                                    cfgs
+                                });
                     }
                 }
-            }
-        });
+            });
+        }
     }
     
     public @Override HelpCtx getHelpCtx() {
@@ -338,7 +351,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     public @Override String getName() {
-        return NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label");
+        return "";
     }
 
     public @Override void performAction() {
@@ -369,7 +382,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             if (context != null) {
                 Mnemonics.setLocalizedText(this, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.context.label"));
             } else {
-                Mnemonics.setLocalizedText(this, ActiveConfigAction.this.getName());
+                Mnemonics.setLocalizedText(this, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label"));
             }
         }
 

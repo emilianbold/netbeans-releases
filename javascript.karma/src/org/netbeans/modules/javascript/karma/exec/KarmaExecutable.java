@@ -72,8 +72,8 @@ import org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanelControl
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -301,6 +301,8 @@ public class KarmaExecutable {
 
     private static final class ServerLineConvertor implements LineConvertor {
 
+        private static final boolean DEBUG = Boolean.getBoolean("nb.karma.debug"); // NOI18N
+
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
         private static final String KARMA_ERROR = "[31mERROR ["; // NOI18N
         private static final String KARMA_WARN = "[33mWARN ["; // NOI18N
@@ -355,6 +357,9 @@ public class KarmaExecutable {
             } else if (line.startsWith(TestRunner.NB_LINE)) {
                 // test result
                 testRunner.process(line);
+                if (DEBUG) {
+                    return Collections.singletonList(ConvertedLine.forText(line, null));
+                }
                 return Collections.emptyList();
             }
             // some error before browser startup?

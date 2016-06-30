@@ -733,4 +733,9 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/groupUseInNamespaceBlock.php", options);
     }
+
+    public void testIssue261521() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue261521.php", options);
+    }
 }

@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

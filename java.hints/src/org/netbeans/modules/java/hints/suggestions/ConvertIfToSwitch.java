@@ -50,6 +50,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.java.hints.errors.Utilities;
@@ -106,6 +109,31 @@ public class ConvertIfToSwitch {
             return null;
         }
         IfToSwitchSupport eval = new IfToSwitchSupport(ctx) {
+                boolean controlTypeChecked = false;
+                
+                @Override
+                protected TypeMirror acceptArgType(TypeMirror controlType, TypeMirror argType) {
+                    if (!controlTypeChecked) {
+                        // See issue #257809; although all constants may be enum values, the control expression
+                        // may be typed differently, i.e. an interface satisfied by those constants. In that case,
+                        // generating switch would require type-check and casting. Better exclude the situation from hint.
+                        if (!controlType.getKind().isPrimitive() &&
+                            !Utilities.isPrimitiveWrapperType(argType)) {
+                            // the contorl type must be an Enum; String is handled elsewhere
+                            if (controlType.getKind() != TypeKind.DECLARED) {
+                                return null;
+                            }
+                            Element el = ((DeclaredType)controlType).asElement();
+                            if (el == null || el.getKind() != ElementKind.ENUM) {
+                                return null;
+                            }
+                        }
+                        controlTypeChecked = true;
+                    }
+                    return super.acceptArgType(controlType, argType);
+                }
+            
+            
             protected TreePath matches(TreePath test, boolean initial) {
                 for (String pat : ConvertIfToSwitch.PATTERNS_INIT) {
                     if (MatcherUtilities.matches(ctx, test, pat, true)) {

@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jdk.ConvertToLambdaConverter;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -108,7 +109,8 @@ import org.openide.util.NbBundle.Messages;
  */
 public class Lambda {
     
-    @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_lambda2Class=Convert Lambda Expression to Anonymous Innerclass",
         "DESC_lambda2Class=Converts lambda expressions to anonymous inner classes",
@@ -125,7 +127,8 @@ public class Lambda {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2Class(), new Lambda2Anonymous(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
-    @Hint(displayName="#DN_lambda2MemberReference", description="#DESC_lambda2MemberReference", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_lambda2MemberReference", description="#DESC_lambda2MemberReference", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_lambda2MemberReference=Convert Lambda Expression to Member Reference",
         "DESC_lambda2MemberReference=Converts lambda expressions to member references",
@@ -191,7 +194,8 @@ public class Lambda {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2MemberReference(), new Lambda2MemberReference(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
-    @Hint(displayName="#DN_expression2Return", description="#DESC_expression2Return", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_expression2Return", description="#DESC_expression2Return", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_expression2Return=Convert Lambda Body to Use a Block",
         "DESC_expression2Return=Converts lambda bodies to use blocks rather than expressions",
@@ -463,34 +467,15 @@ public class Lambda {
                 }
             }
 
-            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
-                return;
+            Tree changed = null;
+            if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                changed = ConvertToLambdaConverter.methodInvocationToMemberReference(copy, tree, ctx.getPath(), lambda.getParameters(), false);
+            } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+                changed = ConvertToLambdaConverter.newClassToConstructorReference(copy, tree, ctx.getPath(), lambda.getParameters(), false);
             }
-
-            ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
-            Name name = null;
-            ExpressionTree expr = null;
-            TreeMaker make = copy.getTreeMaker();
-            if (ms.getKind() == Tree.Kind.IDENTIFIER) {
-                name = ((IdentifierTree)ms).getName();
-                expr = make.Identifier("this"); //NOI18N
-            } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
-                name = ((MemberSelectTree)ms).getIdentifier();
-                if (lambda.getParameters().size() == ((MethodInvocationTree)tree).getArguments().size()) {
-                    expr = ((MemberSelectTree)ms).getExpression();
-                } else {
-                    Element e = copy.getTrees().getElement(new TreePath(ctx.getPath(), ms));
-                    if (e != null && e.getKind() == ElementKind.METHOD) {
-                        expr = make.Identifier(e.getEnclosingElement());
-                    }
-                }
+            if (changed != null) {
+                copy.rewrite(lambda, changed);
             }
-            if (name == null || expr == null) {
-                return;
-            }
-
-            MemberReferenceTree referenceTree = make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList());
-            copy.rewrite(lambda, referenceTree);
         }
     }
 

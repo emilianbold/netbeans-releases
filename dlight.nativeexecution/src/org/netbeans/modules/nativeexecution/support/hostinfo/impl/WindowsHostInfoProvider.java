@@ -89,7 +89,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
                 pb.environment().put(pathKey, "/usr/local/bin;" + activeShell.bindir.getAbsolutePath() + ";/bin;" + pb.environment().get(pathKey)); // NOI18N
                 ExitStatus result = ProcessUtils.execute(pb);
                 if (!result.isOK()) {
-                    Logger.getInstance().log(Level.INFO, "Failed to call nbstart -- {0}.", result.error); // NOI18N
+                    Logger.getInstance().log(Level.INFO, "Failed to call nbstart -- {0}.", result.getErrorString()); // NOI18N
                 }
             }
         }

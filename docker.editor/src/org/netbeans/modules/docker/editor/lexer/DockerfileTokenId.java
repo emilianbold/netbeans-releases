@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.docker.editor.DockerfileResolver;
+import org.netbeans.modules.docker.editor.parser.Command;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -78,22 +79,22 @@ public enum DockerfileTokenId implements TokenId {
     COMMA(",", "separator"),                    //NOI18N
     ESCAPE("\\", "separator"),                  //NOI18N
 
-    ADD("ADD","keyword", true),                 //NOI18N
-    ARG("ARG","keyword", true),                 //NOI18N
-    CMD("CMD","keyword", true),                 //NOI18N
-    COPY("COPY","keyword", true),               //NOI18N
-    ENTRYPOINT("ENTRYPOINT","keyword", true),   //NOI18N
-    ENV("ENV","keyword", true),                 //NOI18N
-    EXPOSE("EXPOSE","keyword", true),           //NOI18N
-    FROM("FROM", "keyword"),                    //NOI18N
-    LABEL("LABEL","keyword", true),             //NOI18N
-    MAINTAINER("MAINTAINER","keyword"),         //NOI18N
-    ONBUILD("ONBUILD", "keyword", true),        //NOI18N
-    RUN("RUN","keyword", true),                 //NOI18N
-    STOPSIGNAL("STOPSIGNAL", "keyword", true),  //NOI18N
-    USER("USER","keyword", true),               //NOI18N
-    VOLUME("VOLUME","keyword", true),           //NOI18N
-    WORKDIR("WORKDIR","keyword", true)          //NOI18N
+    ADD(Command.ADD),
+    ARG(Command.ARG),
+    CMD(Command.CMD),
+    COPY(Command.COPY),
+    ENTRYPOINT(Command.ENTRYPOINT),
+    ENV(Command.ENV),
+    EXPOSE(Command.EXPOSE),
+    FROM(Command.FROM),
+    LABEL(Command.LABEL),
+    MAINTAINER(Command.MAINTAINER),
+    ONBUILD(Command.ONBUILD),
+    RUN(Command.RUN),
+    STOPSIGNAL(Command.STOPSIGNAL),
+    USER(Command.USER),
+    VOLUME(Command.VOLUME),
+    WORKDIR(Command.WORKDIR)
     ;
 
     private final String fixedText;
@@ -104,6 +105,13 @@ public enum DockerfileTokenId implements TokenId {
         @NullAllowed final String fixedText,
         @NonNull final String primaryCategory) {
         this(fixedText, primaryCategory, false);
+    }
+
+    private DockerfileTokenId(@NonNull Command cmd) {
+        this(
+                cmd.getName(),
+                "keyword",  //NOI18N
+                cmd.isOnBuildSupported());
     }
 
     private DockerfileTokenId(

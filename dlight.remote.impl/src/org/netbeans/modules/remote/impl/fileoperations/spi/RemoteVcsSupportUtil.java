@@ -275,7 +275,7 @@ public class RemoteVcsSupportUtil {
     private static void deleteExternally(ExecutionEnvironment env, String path) {
         final ExitStatus res = ProcessUtils.execute(env, "rm", "-rf", path); // NOI18N
         if (!res.isOK()) {
-            RemoteLogger.info("Error deleting {0}:{1} rc={2} {3}", env, path, res.exitCode, res.error); //NOI18N
+            RemoteLogger.info("Error deleting {0}:{1} rc={2} {3}", env, path, res.exitCode, res.getErrorString()); //NOI18N
         }
     }
 
@@ -339,7 +339,7 @@ public class RemoteVcsSupportUtil {
                 }
             } else {
                 RemoteLogger.info("Error setting timestamp for {0}:{1} from {2} rc={3} {4}", //NOI18N
-                        env, path, env, referenceFile, res.exitCode, res.error);
+                        env, path, env, referenceFile, res.exitCode, res.getErrorString());
             }
         }
     }

@@ -55,13 +55,13 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -209,6 +209,11 @@ public class JQueryModel {
         @Override
         public Collection<? extends TypeUsage> getAssignments() {
             return delegate.getAssignments();
+        }
+
+        @Override
+        public int getAssignmentCount() {
+            return delegate.getAssignmentCount();
         }
 
         @Override

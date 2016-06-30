@@ -8,3 +8,7 @@ CLASS      MyCls                           [PUBLIC]   A
 ------------------------------------
 PACKAGE    B                               [PUBLIC]   A
 CLASS      ClsA                            [PUBLIC]   A
+CLASS      MyA                             [PUBLIC]   A
+CLASS      MyAA                            [PUBLIC]   A
+KEYWORD    const                                      null
+KEYWORD    function                                   null

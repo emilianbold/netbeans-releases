@@ -93,7 +93,7 @@ public class FileSystemProviderTestCase extends RemoteFileTestBase {
                     "ln -s abrakadabra " +  brokenLinkName + "; ";
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             checkLink(baseDir, fileName, false);
             checkLink(baseDir, relLinkName1, true);
@@ -130,7 +130,7 @@ public class FileSystemProviderTestCase extends RemoteFileTestBase {
                     "ln -s abrakadabra " +  brokenLinkName + "; ";
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             checkResolveLink(baseDir, fileName, null);
             checkResolveLink(baseDir, relLinkName1, baseDir + '/' + fileName);

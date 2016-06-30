@@ -16,7 +16,7 @@ Other names may be trademarks of their respective owners.
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include parent License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates parent
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the GPL Version 2 section of the License file that
  * accompanied parent code. If applicable, add the following below the
@@ -51,17 +51,15 @@ import org.openide.util.NbBundle;
 
 /**
  * Holds data view page pointers and the current page data set
- * 
+ *
  * @author Ahimanikya Satapathy
  */
 class DataViewPageContext {
     public static final String PROP_pageSize = "pageSize";
-    public static final String PROP_totalRows = "totalRows";
     public static final String PROP_currentPos = "currentPos";
     public static final String PROP_tableMetaData = "tableMetaData";
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private int pageSize = 10;
-    private int totalRows = -1;
     private int currentPos = 1;
     private DataViewDBTable tableMetaData = null;
     private final DataViewTableUIModel model = new DataViewTableUIModel(new DBColumn[0]);
@@ -117,36 +115,8 @@ class DataViewPageContext {
         setCurrentPos(getCurrentPos() + pageSize);
     }
 
-    synchronized void last() {
-        if (pageSize < 1) {
-            return;
-        }
-
-        int rem = totalRows % pageSize;
-        int newCurrentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
-        setCurrentPos(newCurrentPos);
-    }
-
     DataViewTableUIModel getModel() {
         return model;
-    }
-
-    boolean isTotalRowCountAvailable() {
-        return totalRows >= 0;
-    }
-
-    int getTotalRows() {
-        return totalRows;
-    }
-
-    synchronized void setTotalRows(Integer totalCount) {
-        // Move logic from SQLExectionHelper
-        if (totalCount == null) {
-            totalCount = -1;
-        }
-        int oldTotalRows = this.totalRows;
-        this.totalRows = totalCount;
-        firePropertyChange(PROP_totalRows, oldTotalRows, totalCount);
     }
 
     boolean hasRows() {
@@ -157,11 +127,11 @@ class DataViewPageContext {
         if (pageSize == 0) {
             return false;
         }
-        return (((currentPos + pageSize) <= totalRows) && hasRows()) || (totalRows < 0 && getModel().getRowCount() >= pageSize);
+        return getModel().getRowCount() >= pageSize;
     }
 
     boolean hasOnePageOnly() {
-        return pageSize == 0 || (totalRows > 0 && totalRows < pageSize);
+        return pageSize == 0 || getModel().getRowCount() < pageSize;
     }
 
     boolean hasPrevious() {
@@ -169,48 +139,11 @@ class DataViewPageContext {
     }
 
     boolean isLastPage() {
-        return pageSize == 0 || (((currentPos + pageSize) > totalRows) && totalRows > 0);
+        return pageSize == 0 || getModel().getRowCount() < pageSize;
     }
 
     boolean refreshRequiredOnInsert() {
         return pageSize == 0 || (isLastPage() && model.getRowCount() <= pageSize);
-    }
-
-    String pageOf() {
-        String curPage = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
-        String totalPages = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
-
-        if (pageSize == 0) {
-            curPage = "1";
-            totalPages = "1";
-        }
-
-        if (pageSize > 0 && currentPos >= 0) {
-            curPage = Integer.toString(currentPos / pageSize + (pageSize == 1 ? 0 : 1));
-        }
-
-        if (pageSize > 0 && totalRows >= 0) {
-            totalPages = Integer.toString(totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0));
-        }
-        return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
-    }
-
-    synchronized void decrementRowSize(int count) {
-        setTotalRows(getTotalRows() - count);
-        if (pageSize == 0 || totalRows <= pageSize) {
-            first();
-        } else if (currentPos > totalRows) {
-            previous();
-        }
-    }
-
-    synchronized void incrementRowSize(int count) {
-        setTotalRows(getTotalRows() + count);
-        if (pageSize == 0 || totalRows <= pageSize) {
-            first();
-        } else if (currentPos > totalRows) {
-            previous();
-        }
     }
 
     /**

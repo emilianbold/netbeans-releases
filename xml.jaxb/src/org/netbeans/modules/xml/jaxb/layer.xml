@@ -21,7 +21,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -56,19 +56,19 @@ made subject to such option by the copyright holder.
                  <attr name="templateCategory" stringvalue="web-service-clients"/>
                  <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/JAXBWiz.html"/>
                  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.jaxb.Bundle"/>
-                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/XML_file.png"/> 
-             </file>                
+                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/XML_file.png"/>
+             </file>
         </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-java">  
+            <folder name="x-java">
                 <folder name="CodeTemplates">
                     <file name="org-netbeans-modules-editor-settingsCustom-CodeTemplates.xml" url="CodeTemplates.xml"/>
-                </folder>                                
+                </folder>
             </folder>
         </folder>
-    </folder> 
+    </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="JAXB-ENDORSED.xml" url="nbresloc:/org/netbeans/modules/xml/jaxb/jaxb-endorsed.xml">

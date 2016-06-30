@@ -49,7 +49,7 @@ import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.ShiftHighlightsSequence;
+import org.netbeans.spi.editor.highlighting.SplitOffsetHighlightsSequence;
 
 /**
  *
@@ -108,10 +108,10 @@ public class DirectMergeContainerTest {
         AttributeSet attrs1 = HighlightsMergeTesting.attrSets[1];
         AttributeSet attrs2 = HighlightsMergeTesting.attrSets[2];
         AttributeSet attrs3 = HighlightsMergeTesting.attrSets[3];
-        ShiftLayer sl0 = new ShiftLayer(1, 0, 2, 1, attrs0, 4, 2, 4, 5, attrs1);
-        ShiftLayer sl1 = new ShiftLayer(1, 1, 2, 0, attrs2, 3, 1, 4, 3, attrs3);
+        SplitOffsetLayer sl0 = new SplitOffsetLayer(1, 0, 2, 1, attrs0, 4, 2, 4, 5, attrs1);
+        SplitOffsetLayer sl1 = new SplitOffsetLayer(1, 1, 2, 0, attrs2, 3, 1, 4, 3, attrs3);
         DirectMergeContainer dmc = new DirectMergeContainer(new HighlightsContainer[]{ sl0, sl1 });
-        ShiftHighlightsSequence shs = (ShiftHighlightsSequence) dmc.getHighlights(0, Integer.MAX_VALUE);
+        SplitOffsetHighlightsSequence shs = (SplitOffsetHighlightsSequence) dmc.getHighlights(0, Integer.MAX_VALUE);
         assertHighlight(shs, 1, 0, 1, 1, attrs0);
         assertHighlight(shs, 1, 1, 2, 0, attrs2);
         assertHighlight(shs, 2, 0, 2, 1, attrs0);
@@ -121,24 +121,24 @@ public class DirectMergeContainerTest {
         
     }
     
-    private static void assertHighlight(ShiftHighlightsSequence shs, int startOffset, int startShift,
+    private static void assertHighlight(SplitOffsetHighlightsSequence shs, int startOffset, int startShift,
             int endOffset, int endShift, AttributeSet attrs)
     {
         assertTrue(shs.moveNext());
         assertEquals(startOffset, shs.getStartOffset());
-        assertEquals(startShift, shs.getStartShift());
+        assertEquals(startShift, shs.getStartSplitOffset());
         assertEquals(endOffset, shs.getEndOffset());
-        assertEquals(endShift, shs.getEndShift());
+        assertEquals(endShift, shs.getEndSplitOffset());
         assertEquals(attrs, shs.getAttributes());
     }
 
-    private static final class ShiftLayer implements HighlightsContainer {
+    private static final class SplitOffsetLayer implements HighlightsContainer {
         
         private final ListenerList<HighlightsChangeListener> listenerList = new ListenerList<>();
         
         private final Object[] highlights;
 
-        public ShiftLayer(Object... highlights) { // [startOffset, startShift, endOffset, endShift, attrs]...
+        public SplitOffsetLayer(Object... highlights) { // [startOffset, startShift, endOffset, endShift, attrs]...
             this.highlights = highlights;
         }
         
@@ -157,7 +157,7 @@ public class DirectMergeContainerTest {
             listenerList.remove(listener);
         }
         
-        private final class HS implements ShiftHighlightsSequence {
+        private final class HS implements SplitOffsetHighlightsSequence {
             
             private int index = -1;
 
@@ -177,7 +177,7 @@ public class DirectMergeContainerTest {
             }
 
             @Override
-            public int getStartShift() {
+            public int getStartSplitOffset() {
                 return (Integer) highlights[5 * index + 1];
             }
 
@@ -187,7 +187,7 @@ public class DirectMergeContainerTest {
             }
 
             @Override
-            public int getEndShift() {
+            public int getEndSplitOffset() {
                 return (Integer) highlights[5 * index + 3];
             }
 

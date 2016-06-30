@@ -53,10 +53,10 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
  */
 public class ConvertToLambdaTest extends NbTestCase {
     
-    private static final String lambdaConvDesc = "This anonymous inner class creation can be turned into a lambda expression.";
+    private static final String lambdaConvDesc = "MSG_AnonymousConvertibleToLambda";
     private static final String lambdaConvWarning = "verifier:" + lambdaConvDesc;
-    private static final String lambdaFix = "Use lambda expression";
-    private static final String memberReferenceFix = "Use member reference";
+    private static final String lambdaFix = "FIX_ConvertToLambda";
+    private static final String memberReferenceFix = "FIX_ConvertToMemberReference";
 
     public ConvertToLambdaTest(String name) {
         super(name);
@@ -134,6 +134,91 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "        Comparator<String> comp = String::compareTo;\n" +
                        "    }\n" +
                        "}\n");
+    }
+    
+    public void testConversionForStaticMemberReference() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "public class Test {\n" +
+                       "    public static int doCompare(String s1, String s2) { return 0; }\n" +
+                       "    {\n" +
+                       "        Comparator<String> comp = new Comparator<String>() {\n" +
+                       "            public int compare(String s0, String s1) { return doCompare(s0, s1); }\n" +
+                       "        };\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("5:38-5:56:" + lambdaConvWarning)
+                .applyFix(memberReferenceFix)
+                .assertOutput("package test;\n" +
+                       "import java.util.*;\n" +
+                       "public class Test {\n" +
+                       "    public static int doCompare(String s1, String s2) { return 0; }\n" +
+                       "    {\n" +
+                       "        Comparator<String> comp = Test::doCompare;\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    
+    public void testConvertToConstructorReference() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                        "import java.util.function.Supplier;\n" +
+                        "public class Test {\n" +
+                        "    static class R implements Runnable { public void run() {}}\n" +
+                        "    public void test() {\n" +
+                        "        Supplier<Runnable> sr = new Supplier<Runnable>() {\n" +
+                        "            @Override\n" +
+                        "            public Runnable get() {\n" +
+                        "                return new R();\n" +
+                        "            }\n" +
+                        "        };\n" +
+                        "    }\n" +
+                        "}")
+                .run(ConvertToLambda.class)
+                .findWarning("5:36-5:54:" + lambdaConvWarning)
+                .applyFix(memberReferenceFix)
+                .assertOutput("package test;\n"
+                        + "import java.util.function.Supplier;\n"
+                        + "public class Test {\n"
+                        + "    static class R implements Runnable { public void run() {}}\n"
+                        + "    public void test() {\n"
+                        + "        Supplier<Runnable> sr = R::new;\n"
+                        + "    }\n"
+                        + "}");
+    }
+    
+    public void testNoMemberReferenceForExplicitInstance() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n"
+                        + "import java.util.function.Supplier;\n"
+                        + "public class Test {\n"
+                        + "    class R implements Runnable { public void run() {}}\n"
+                        + "    public static void test(Test inst) {\n"
+                        + "        Supplier<Runnable> sr = new Supplier<Runnable>() {\n"
+                        + "            @Override\n"
+                        + "            public Runnable get() {\n"
+                        + "                return inst.new R();\n"
+                        + "            }\n"
+                        + "        };\n"
+                        + "    }\n"
+                        + "}")
+                .run(ConvertToLambda.class)
+                .findWarning("5:36-5:54:" + lambdaConvWarning)
+                .assertFixesNotPresent(memberReferenceFix)
+                .applyFix(lambdaFix)
+                .assertOutput("package test;\n"
+                        + "import java.util.function.Supplier;\n"
+                        + "public class Test {\n"
+                        + "    class R implements Runnable { public void run() {}}\n"
+                        + "    public static void test(Test inst) {\n"
+                        + "        Supplier<Runnable> sr = () -> inst.new R();\n"
+                        + "    }\n"
+                        + "}");
     }
     
     public void testThatSiteIsIgnoredWhenNoTypeIsFound() throws Exception {
@@ -863,11 +948,41 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n")
                 .run(ConvertToLambda.class)
                 .findWarning("3:25-3:49:" + lambdaConvWarning)
-                .applyFix()
+                .applyFix(lambdaFix)
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        doPrivileged((PrivilegedAction<String>) () -> new String());\n" +
+                       "    }\n" +
+                       "    private <T> void doPrivileged(PrivilegedAction<T> pa) { }\n" +
+                       "    private <T> void doPrivileged(PrivilegedExceptionAction<T> pa) { }\n" +
+                       "    private interface PrivilegedAction<T> { T run(); }\n" +
+                       "    private interface PrivilegedExceptionAction<T> { T run() throws Exception; }\n" +
+                       "}\n");
+    }
+    
+    public void testThatCastIsAddedWithAmbiguousLambdaWithGenericsReference() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        doPrivileged(new PrivilegedAction<String>() {\n" +
+                       "            public String run() { return new String(); }\n" +
+                       "        });\n" +
+                       "    }\n" +
+                       "    private <T> void doPrivileged(PrivilegedAction<T> pa) { }\n" +
+                       "    private <T> void doPrivileged(PrivilegedExceptionAction<T> pa) { }\n" +
+                       "    private interface PrivilegedAction<T> { T run(); }\n" +
+                       "    private interface PrivilegedExceptionAction<T> { T run() throws Exception; }\n" +
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("3:25-3:49:" + lambdaConvWarning)
+                .applyFix(memberReferenceFix)
+                .assertOutput("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        doPrivileged((PrivilegedAction<String>) String::new);\n" +
                        "    }\n" +
                        "    private <T> void doPrivileged(PrivilegedAction<T> pa) { }\n" +
                        "    private <T> void doPrivileged(PrivilegedExceptionAction<T> pa) { }\n" +

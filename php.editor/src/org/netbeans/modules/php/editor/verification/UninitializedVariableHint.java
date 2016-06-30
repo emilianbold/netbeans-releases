@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -57,6 +57,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -138,15 +139,21 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         if (fileObject == null) {
             return;
         }
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
         hints.addAll(checkVisitor.getHints());
     }
 
     private final class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
-        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final ArrayDeque<ASTNode> parentNodes = new ArrayDeque<>();
         private final Map<ASTNode, List<Variable>> initializedVariablesAll = new HashMap<>();
         private final Map<ASTNode, List<Variable>> uninitializedVariablesAll = new HashMap<>();
         private final List<Hint> hints = new ArrayList<>();
@@ -188,6 +195,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(Program node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -195,6 +205,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(NamespaceDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -202,6 +215,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(FunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -209,6 +225,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getLexicalVariables());
             parentNodes.push(node);
             initializeExpressions(node.getLexicalVariables());
@@ -219,6 +238,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             VariableBase leftHandSide = node.getLeftHandSide();
             initializeVariableBase(leftHandSide);
             scan(node.getRightHandSide());
@@ -226,6 +248,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(CatchClause node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             initializeVariable(node.getVariable());
             scan(node.getClassName());
             scan(node.getBody());
@@ -233,12 +258,18 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(DoStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getBody());
             scan(node.getCondition());
         }
 
         @Override
         public void visit(ForEachStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getExpression());
             initializeExpression(node.getKey());
             initializeExpression(node.getValue());
@@ -247,6 +278,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(ForStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             scan(node.getInitializers());
             scan(node.getConditions());
             scan(node.getBody());
@@ -255,6 +289,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(FormalParameter node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             Expression expression = node.getParameterName();
             if (expression instanceof Reference) {
                 Reference reference = (Reference) expression;
@@ -268,6 +305,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(GlobalStatement node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             for (Variable variable : node.getVariables()) {
                 initializeVariable(variable);
             }
@@ -275,6 +315,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(Variable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (isProcessableVariable(node)) {
                 addUninitializedVariable(node);
             }
@@ -282,6 +325,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(FunctionInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkVariablesInitializedByReference(preferences)) {
                 List<Expression> invocationParametersExp = node.getParameters();
                 String functionName = CodeUtils.extractFunctionName(node);
@@ -301,6 +347,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(MethodInvocation node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
             if (checkVariablesInitializedByReference(preferences)) {
                 List<Expression> invocationParametersExp = node.getMethod().getParameters();
                 if (invocationParametersExp.size() > 0) {

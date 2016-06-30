@@ -108,7 +108,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>-classpath</argument>\n"
                  + "        <classpath/>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop", args));
+                (args) -> assertEquals("-lollipop ___CP___", args));
     } 
 
     public void testExecArgsClasspathMainClass() throws Exception {
@@ -118,7 +118,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <classpath/>\n"
                  + "        <argument>org.project.Main</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop", args));
+                (args) -> assertEquals("-lollipop ___CP___ org.project.Main", args));
     } 
     
     public void testExecArgsClasspathDeps() throws Exception {
@@ -155,7 +155,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>org.project.Main</argument>\n"
                  + "        <argument>-lollipop2</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop -lollipop2", args));
+                (args) -> assertEquals("-lollipop org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsCP() throws Exception {
@@ -164,7 +164,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>-classpath</argument>\n"
                  + "        <classpath/>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop", args));
+                (args) -> assertEquals("-lollipop ___CP___", args));
     } 
 
     public void testExecArgsCPMainClass() throws Exception {
@@ -174,7 +174,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <classpath/>\n"
                  + "        <argument>org.project.Main</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop", args));
+                (args) -> assertEquals("-lollipop ___CP___ org.project.Main", args));
     } 
     
     public void testExecArgsAfterCP() throws Exception {    
@@ -185,7 +185,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>org.project.Main</argument>\n"
                  + "        <argument>-lollipop2</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop -lollipop2", args));
+                (args) -> assertEquals("-lollipop ___CP___ org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsUnresolvedProperty() throws Exception {    
@@ -196,7 +196,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>org.project.Main</argument>\n"
                  + "        <argument>-lollipop2</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop2", args));
+                (args) -> assertEquals("___CP___ org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsUnresolvedEmbProperty() throws Exception {    
@@ -207,7 +207,7 @@ public class ModelRunConfigTest extends NbTestCase {
                  + "        <argument>org.project.Main</argument>\n"
                  + "        <argument>-lollipop2</argument>\n"
                  + "    </arguments>\n", 
-                (args) -> assertEquals("-lollipop2", args));
+                (args) -> assertEquals("___CP___ org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsResolvedProperty() throws Exception {    
@@ -221,7 +221,7 @@ public class ModelRunConfigTest extends NbTestCase {
                    "    <properties>\n"
                  + "        <prop>-propValue</prop>\n"                         
                  + "    </properties>\n",
-                (args) -> assertEquals("-propValue -lollipop2", args));
+                (args) -> assertEquals("-propValue ___CP___ org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsResolvedEmbProperty() throws Exception {    
@@ -235,7 +235,7 @@ public class ModelRunConfigTest extends NbTestCase {
                    "    <properties>\n"
                  + "        <prop>PropValue</prop>\n"                         
                  + "    </properties>\n",
-                (args) -> assertEquals("-embPropValue -lollipop2", args));
+                (args) -> assertEquals("-embPropValue ___CP___ org.project.Main -lollipop2", args));
     } 
     
     public void testExecArgsNone() throws Exception {    

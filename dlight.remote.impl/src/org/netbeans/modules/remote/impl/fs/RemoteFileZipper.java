@@ -154,7 +154,7 @@ public class RemoteFileZipper {
             ProcessUtils.ExitStatus res = ProcessUtils.executeInDir("/", execEnv, "sh", "-c", script.toString()); //NOI18N
             if (!res.isOK()) {
                 RemoteLogger.info("Warmup: error zipping {0} at {1}: {2}", //NOI18N
-                        path, execEnv, res.error);
+                        path, execEnv, res.getErrorString());
                 return;
             }
             RemoteLogger.fine("zipping {0} at {1} took {2}", //NOI18N
@@ -163,10 +163,10 @@ public class RemoteFileZipper {
             // Output should be like the following:
             // ZIP=/tmp/tmp.xLDawcYe5M
             // RC=0
-            String[] lines = res.output.split("\n"); // NOI18N
+            String[] lines = res.getOutputString().split("\n"); // NOI18N
             if (lines.length < 2 || !lines[0].startsWith("ZIP=") || !lines[1].startsWith("RC=")) { // NOI18N
                 RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}",  //NOI18N
-                        path, execEnv, res.output); 
+                        path, execEnv, res.getOutputString()); 
                 return;                
             }
             int rc;
@@ -174,12 +174,12 @@ public class RemoteFileZipper {
                 rc = Integer.parseInt(lines[1].substring(3));
             } catch (NumberFormatException ex) {
                 RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}", //NOI18N
-                        path, execEnv, res.output);
+                        path, execEnv, res.getOutputString());
                 return;                                
             }
             
             if (rc != 0) {
-                RemoteLogger.info("Warmup: error zipping {0} at {1}: {2}", path, execEnv, res.error); //NOI18N
+                RemoteLogger.info("Warmup: error zipping {0} at {1}: {2}", path, execEnv, res.getErrorString()); //NOI18N
                 return;                
             }
             

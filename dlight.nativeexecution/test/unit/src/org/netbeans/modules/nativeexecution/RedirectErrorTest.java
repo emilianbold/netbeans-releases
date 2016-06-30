@@ -136,9 +136,9 @@ public final class RedirectErrorTest extends NativeExecutionBaseTestCase {
         System.out.println(status.toString());
 
         if (errorRedirect) {
-            assertTrue("Output is expected to be in the output stream", !status.output.isEmpty() && status.error.isEmpty()); // NOI18N
+            assertTrue("Output is expected to be in the output stream", !status.getOutputString().isEmpty() && status.getErrorString().isEmpty()); // NOI18N
         } else {
-            assertTrue("Output is expected to be in the error stream", status.output.isEmpty() && !status.error.isEmpty()); // NOI18N
+            assertTrue("Output is expected to be in the error stream", status.getOutputString().isEmpty() && !status.getErrorString().isEmpty()); // NOI18N
         }
     }
 

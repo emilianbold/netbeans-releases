@@ -43,11 +43,12 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.util.*;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Todo: Copied from parsing API, also in cnd - should be part of API?
  */
-class LongHashMap<K> //extends AbstractMap<K>
+public class LongHashMap<K> //extends AbstractMap<K>
 //implements Map<K>, Cloneable, Serializable
 {
 
@@ -152,6 +153,17 @@ class LongHashMap<K> //extends AbstractMap<K>
         Entry<K>[] ar = new Entry[DEFAULT_INITIAL_CAPACITY];
         table = ar;
         init();
+    }
+
+    /**
+     * Creates a new {@link LongHashMap} as a copy of given map.
+     * @param m the {@link LongHashMap} to copy.
+     */
+    public LongHashMap(@NonNull final LongHashMap<K> m) {
+        this(m.size(),DEFAULT_LOAD_FACTOR);
+        for (LongHashMap.Entry<K> e : m.entrySet()) {
+            put(e.getKey(), e.getValue());
+        }
     }
 
     // internal utilities
