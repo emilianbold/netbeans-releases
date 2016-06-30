@@ -29,8 +29,7 @@ FIELD      message: Message                [PUBLIC]   simpleModule.js
 FIELD      neco2: Number                   [PUBLIC]   literalRef.js
 FIELD      obj2: Runner2                   [PUBLIC]   literalRef.js
 FIELD      obj: Runner                     [PUBLIC]   literal.js
-FIELD      obj: Runner2                    [PUBLIC]   literalRef.js
 FIELD      pokus2: Date                    [PUBLIC]   literalRef.js
-FIELD      pokus: Date                     [PUBLIC]   literalRef.js
+FIELD      pokus: Date                     [PUBLIC]   literal.js
 FIELD      stDate: Date                    [PUBLIC,   func.js
 FIELD      stNumber: Number                [PUBLIC,   func.js

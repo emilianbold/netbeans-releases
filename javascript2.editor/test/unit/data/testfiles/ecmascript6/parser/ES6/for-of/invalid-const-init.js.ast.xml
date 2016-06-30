@@ -6,43 +6,9 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <BlockStatement start='0' end='23'>
-      <Block start='0' end='23'>
-        <isSynthetic/>
-        <!-- Block Statements -->
-        <VarNode name='x' start='11' end='16'>
-          <hasInit/>
-          <isAssignment/>
-          <isBlockScoped/>
-          <isConst/>
-          <!-- VarNode Assignment Dest -->
-          <IdentNode start='11' end='12'>
-            <name>x</name>
-            <isDeclaredHere/>
-            <isInitializedHere/>
-          </IdentNode>
-          <!-- VarNode Init -->
-          <NumberLiteralNode value='1' start='15' end='16'/>
-        </VarNode>
-        <ForNode start='0' end='23'>
-          <IdentNode start='11' end='12'>
-            <name>x</name>
-          </IdentNode>
-          <JoinPredecessorExpression start='0' end='0'>
-          </JoinPredecessorExpression>
-          <JoinPredecessorExpression start='20' end='21'>
-            <IdentNode start='20' end='21'>
-              <name>y</name>
-            </IdentNode>
-          </JoinPredecessorExpression>
-          <Block start='22' end='23'>
-            <isSynthetic/>
-            <!-- Block Statements -->
-            <EmptyNode start='22' end='23'>
-            </EmptyNode>
-          </Block>
-        </ForNode>
-      </Block>
-    </BlockStatement>
+    <ExpressionStatement start='17' end='23'>
+      <ErrorNode start='17' end='23'>
+      </ErrorNode>
+    </ExpressionStatement>
   </Block>
 </FunctionNode>

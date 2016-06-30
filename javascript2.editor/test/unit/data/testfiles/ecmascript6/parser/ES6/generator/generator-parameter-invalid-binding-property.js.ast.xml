@@ -15,7 +15,7 @@
           <isFunctionBody/>
           <!-- Block Statements -->
           <ExpressionStatement start='19' end='49'>
-            <FunctionNode name='L:1$L:2' kind='GENERATOR' start='19' end='49'>
+            <FunctionNode name='L:1#L:2' kind='GENERATOR' start='19' end='49'>
               <isAnonymous/>
               <isDeclared/>
               <!-- FunctionNode Parameters -->

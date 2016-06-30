@@ -34,7 +34,7 @@
               <isInitializedHere/>
             </IdentNode>
             <!-- VarNode Init -->
-            <FunctionNode name='g$z' kind='NORMAL' start='24' end='42'>
+            <FunctionNode name='g#z' kind='NORMAL' start='24' end='42'>
               <isAnonymous/>
               <!-- FunctionNode Parameters -->
               <IdentNode start='33' end='38'>

@@ -19,7 +19,7 @@
           <isTerminal/>
           <!-- Block Statements -->
           <ReturnNode start='18' end='28'>
-            <FunctionNode name='=>:1$=>:1' kind='ARROW' start='8' end='27'>
+            <FunctionNode name='=>:1#=>:1' kind='ARROW' start='8' end='27'>
               <isAnonymous/>
               <!-- FunctionNode Parameters -->
               <IdentNode start='9' end='10'>
