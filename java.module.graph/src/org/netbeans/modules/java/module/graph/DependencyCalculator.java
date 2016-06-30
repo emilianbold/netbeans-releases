@@ -69,7 +69,7 @@ final class DependencyCalculator {
                             final Map<String, ModuleNode> mods = new LinkedHashMap<>();
                             final Collection<DependencyEdge> deps = new ArrayList<>();    
                             String name = me.getQualifiedName().toString();
-                            ModuleNode node = new ModuleNode(name);
+                            ModuleNode node = new ModuleNode(name, me.isUnnamed());
                             mods.put(name, node);
                             collect(node, me, mods, deps);
                             nodes = mods.values();
@@ -103,12 +103,13 @@ final class DependencyCalculator {
         if (!me.isUnnamed()) {
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
-                    ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;                 
-                    String name = reqD.getDependency().getQualifiedName().toString();
+                    final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;
+                    final ModuleElement reqMod = reqD.getDependency();
+                    final String name = reqMod.getQualifiedName().toString();
                     boolean unseen;
                     ModuleNode n = mods.get(name);
                     if(n == null) {
-                        n = new ModuleNode(name);
+                        n = new ModuleNode(name, reqMod.isUnnamed());
                         mods.put(name, n);
                         unseen = true;
                     } else {
@@ -136,6 +137,11 @@ final class DependencyCalculator {
             this.node = node;
             this.unseen = unseen;
             this.reqD = reqD;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(reqD);
         }
     }
     

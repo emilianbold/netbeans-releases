@@ -11,6 +11,7 @@ import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
 import org.netbeans.modules.java.graph.GraphNodeImplementation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -18,19 +19,29 @@ import org.netbeans.modules.java.graph.GraphNodeImplementation;
  */
 final class ModuleNode implements GraphNodeImplementation {
     private final String moduleName;
+    private final boolean unnamed;
     private List<ModuleNode> children;
     private ModuleNode parent;
     
     ModuleNode(
-        @NonNull final String moduleName) {
+        @NonNull final String moduleName,
+        final boolean unnamed) {
         Parameters.notNull("moduleNode", moduleName);
         this.moduleName = moduleName;
+        this.unnamed = unnamed;
+        assert !unnamed || moduleName.isEmpty();
     }
 
     @NonNull
     @Override
     public String getName() {
-        return moduleName;
+        return unnamed ?
+                NbBundle.getMessage(ModuleNode.class, "LBL_UnnamedModule") :
+                moduleName;
+    }
+    
+    boolean isUnnamed() {
+        return unnamed;
     }
 
     @Override
@@ -52,6 +63,11 @@ final class ModuleNode implements GraphNodeImplementation {
         return moduleName == null ?
             0:
             moduleName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Module: %s", getName());  //NOI18N
     }
 
     @Override
