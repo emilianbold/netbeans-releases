@@ -5,12 +5,19 @@
  */
 package org.netbeans.modules.java.module.graph;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.openide.util.Parameters;
 import org.netbeans.modules.java.graph.GraphNodeImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -22,13 +29,18 @@ final class ModuleNode implements GraphNodeImplementation {
     private final boolean unnamed;
     private List<ModuleNode> children;
     private ModuleNode parent;
+    private final String toolTipText;
     
     ModuleNode(
         @NonNull final String moduleName,
-        final boolean unnamed) {
+        final boolean unnamed,
+        @NonNull final FileObject moduleInfo) {
         Parameters.notNull("moduleNode", moduleName);
         this.moduleName = moduleName;
         this.unnamed = unnamed;
+        this.toolTipText = unnamed ?
+                getUnnamedModuleToolTip(moduleInfo) :
+                null;
         assert !unnamed || moduleName.isEmpty();
     }
 
@@ -82,7 +94,9 @@ final class ModuleNode implements GraphNodeImplementation {
 
     @Override
     public String getTooltipText() {
-        return getName();
+        return toolTipText != null ?
+                toolTipText :
+                getName();
     }
 
     @Override
@@ -100,5 +114,17 @@ final class ModuleNode implements GraphNodeImplementation {
     void setParent(ModuleNode parent) {
         this.parent = parent;
     }
-
+    
+    @NonNull
+    private static String getUnnamedModuleToolTip(@NonNull final FileObject moduleInfo) {
+        return Optional.ofNullable(ClassPath.getClassPath(moduleInfo, JavaClassPathConstants.MODULE_CLASS_PATH))
+                .map((cp) -> {
+                    return cp.entries().stream()
+                            .map((e) -> FileUtil.archiveOrDirForURL(e.getURL()))
+                            .filter((f) -> f != null)
+                            .map((f) -> f.getName())
+                            .collect(Collectors.joining(File.pathSeparator));
+                })
+                .orElse("");    //NOI18N
+    }
 }

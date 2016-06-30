@@ -69,7 +69,7 @@ final class DependencyCalculator {
                             final Map<String, ModuleNode> mods = new LinkedHashMap<>();
                             final Collection<DependencyEdge> deps = new ArrayList<>();    
                             String name = me.getQualifiedName().toString();
-                            ModuleNode node = new ModuleNode(name, me.isUnnamed());
+                            ModuleNode node = new ModuleNode(name, me.isUnnamed(), moduleInfo);
                             mods.put(name, node);
                             collect(node, me, mods, deps);
                             nodes = mods.values();
@@ -109,7 +109,7 @@ final class DependencyCalculator {
                     boolean unseen;
                     ModuleNode n = mods.get(name);
                     if(n == null) {
-                        n = new ModuleNode(name, reqMod.isUnnamed());
+                        n = new ModuleNode(name, reqMod.isUnnamed(), moduleInfo);
                         mods.put(name, n);
                         unseen = true;
                     } else {
@@ -126,8 +126,8 @@ final class DependencyCalculator {
             }
         }
         return dependencies;
-    }
-    
+    }   
+
     private static class Dependency {
         final ModuleNode node;
         final boolean unseen;
