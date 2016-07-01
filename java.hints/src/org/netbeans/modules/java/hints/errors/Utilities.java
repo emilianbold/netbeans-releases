@@ -879,6 +879,9 @@ public class Utilities {
         operator2DN.put(NOT_EQUAL_TO, "!=");
     }
 
+    @NbBundle.Messages({
+        "DisplayName_Unknown=<missing>"
+    })
     private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
 
         private CompilationInfo info;
@@ -933,6 +936,9 @@ public class Utilities {
         }
 
         private String simpleName(Tree t) {
+            if (t == null) {
+                return Bundle.DisplayName_Unknown();
+            }
             if (t.getKind() == Kind.IDENTIFIER) {
                 return ((IdentifierTree) t).getName().toString();
             }
