@@ -546,8 +546,21 @@ public class ActionProviderImpl implements ActionProvider {
             if (projects.size() != 1) {
                 Collection<? extends FileObject> fobs = actionContext.lookupAll(FileObject.class);
                 if (fobs.size() == 1) {
-                    if ("pom.xml".equals(fobs.iterator().next().getNameExt())) {
-                        Project p = FileOwnerQuery.getOwner(fobs.iterator().next());
+                    FileObject fo = fobs.iterator().next();
+                    if ("pom.xml".equals(fo.getNameExt())) {
+                        Project p = null;
+                        // issue #262651 FileOwnerQuery.getOwner() might block, so lets see first
+                        // if the projects we got in the lookup do not own the pom.xml
+                        FileObject parent = fo.getParent();
+                        for (Project prj : projects) {
+                            if(prj.getProjectDirectory().equals(parent)) {
+                                p = prj;
+                                break;
+                            }
+                        }
+                        if(p == null) {
+                            p = FileOwnerQuery.getOwner(fo);
+                        }
                         if (p != null) {
                              triggeredOnFile = true;
                              triggeredOnPom = true;
@@ -555,12 +568,17 @@ public class ActionProviderImpl implements ActionProvider {
                              return a != null ? a : this;
                         }
                     } else {
-                       //other non-pom files
-                        FileObject fob = fobs.iterator().next();
-                        Project p = FileOwnerQuery.getOwner(fob);
+                        //other non-pom files
+                        
+                        // issue #262651 FileOwnerQuery.getOwner() might block, so lets see first
+                        // if the projects we got in the lookup do not own the pom.xml
+                        Project p = findOwner(projects, fo);
+                        if(p == null) {
+                            p = FileOwnerQuery.getOwner(fo);                            
+                        }                        
                         if (p != null) {
                              triggeredOnFile = true;
-                             Action a = forProject(p, fob);
+                             Action a = forProject(p, fo);
                              return a != null ? a : this;
                         }
                     }
@@ -571,6 +589,18 @@ public class ActionProviderImpl implements ActionProvider {
             return a != null ? a : this;
         }
 
+        private Project findOwner(Collection<? extends Project> projects, FileObject fo) {
+            FileObject parent = fo.getParent();
+            if(parent == null) {
+                return null;
+            }
+            for (Project prj : projects) {
+                if(prj.getProjectDirectory().equals(fo.getParent())) {
+                    return prj;
+                }
+            }
+            return null;
+        }
     }
 
     @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
