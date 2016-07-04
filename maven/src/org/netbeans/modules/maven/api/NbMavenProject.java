@@ -59,6 +59,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -365,7 +366,7 @@ public final class NbMavenProject {
      * Returns the raw pom model for the project.
      * @return 
      */
-    public Model getRawModel() {
+    public Model getRawModel() throws ModelBuildingException {
         return project.getRawModel();
     }
     

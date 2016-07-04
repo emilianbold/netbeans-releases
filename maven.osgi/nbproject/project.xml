@@ -111,7 +111,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.120</specification-version>
+                        <specification-version>2.121</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

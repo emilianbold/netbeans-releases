@@ -206,16 +206,12 @@ public final class NbMavenProjectImpl implements Project {
     
     private final Object MODEL_LOCK = new Object();
     private Model model;
-    public Model getRawModel() {
+    public Model getRawModel() throws ModelBuildingException {
         synchronized(MODEL_LOCK) {
             if(model == null) {
                 MavenEmbedder projectEmbedder = EmbedderFactory.getProjectEmbedder();
-                try {
-                    ModelBuildingResult br = projectEmbedder.executeModelBuilder(getPOMFile());
-                    model = br.getRawModel();
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(NbMavenProject.class.getName()).log(Level.WARNING, null, ex);
-                }
+                ModelBuildingResult br = projectEmbedder.executeModelBuilder(getPOMFile());
+                model = br.getRawModel();
             }
             return model;
         }

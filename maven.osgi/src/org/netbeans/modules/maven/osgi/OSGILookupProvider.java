@@ -46,14 +46,18 @@ package org.netbeans.modules.maven.osgi;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -107,7 +111,15 @@ public class OSGILookupProvider implements LookupProvider {
             // speed is essential during project init, so lets try to avoid
             // maven project loading if we can get the info faster from raw model.
             needToCheckFelixProjectTypes = false;
-            Model model = nbprj.getRawModel();
+            Model model;
+            try {
+                model = nbprj.getRawModel();
+            } catch (ModelBuildingException ex) {
+                // whatever happend, we can't use the model, 
+                // lets try to follow up with loading the maven project
+                model = null;
+                Logger.getLogger(OSGILookupProvider.class.getName()).log(Level.FINE, null, ex);
+            }
             Build build = model != null ? model.getBuild() : null;
             List<Plugin> plugins = build != null ? build.getPlugins() : null;
             if(plugins != null) {

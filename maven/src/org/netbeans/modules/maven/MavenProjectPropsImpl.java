@@ -50,12 +50,14 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.spi.PackagingProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
@@ -109,7 +111,15 @@ public class MavenProjectPropsImpl {
                     // due to unfortunate ProjectManager.findPorjetc calls in awt, 
                     // speed is essential during project init, so lets try to avoid
                     // maven project loading if we can get the info faster from raw model.
-                    Model model = nbprji.getProjectWatcher().getRawModel();  
+                    Model model;  
+                    try {
+                        model = nbprji.getProjectWatcher().getRawModel();
+                    } catch (ModelBuildingException ex) {
+                        // whatever happend, we can't use the model, 
+                        // lets try to follow up with loading the maven project
+                        model = null;
+                        LOG.log(Level.FINE, null, ex);
+                    }
                     String val = model != null ? model.getPackaging() : null;
                     if (val != null) {
                         return val;
