@@ -102,7 +102,7 @@ public class RepositoryTestSupport {
                 tracer.setTestUniqueName(false);
                 tracer.dumpModel(file);
             }        
-            dumpCsmProjectContainers(project, System.out);
+            dumpCsmProjectContainers(project, printStream);
         } finally {
             CsmCacheManager.leave();
         }
