@@ -49,6 +49,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.model.Model;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.spi.PackagingProvider;
@@ -103,6 +104,17 @@ public class MavenProjectPropsImpl {
                 return ret;
             }
             if (shared && usePom) {
+                if(Constants.HINT_PACKAGING.equals(key) && !nbprji.isMavenProjectLoaded()) {
+                    // issue #262646 
+                    // due to unfortunate ProjectManager.findPorjetc calls in awt, 
+                    // speed is essential during project init, so lets try to avoid
+                    // maven project loading if we can get the info faster from raw model.
+                    Model model = nbprji.getProjectWatcher().getRawModel();  
+                    String val = model != null ? model.getPackaging() : null;
+                    if (val != null) {
+                        return val;
+                    }   
+                }
                 String val = nbprji.getOriginalMavenProject().getProperties().getProperty(key);
                 if (val != null) {
                     return val;

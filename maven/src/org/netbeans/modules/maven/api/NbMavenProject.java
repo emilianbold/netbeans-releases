@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -59,6 +58,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -359,6 +359,14 @@ public final class NbMavenProject {
             }
         }
         return getMavenProject().getPackaging();
+    }
+    
+    /**
+     * Returns the raw pom model for the project.
+     * @return 
+     */
+    public Model getRawModel() {
+        return project.getRawModel();
     }
     
     /**

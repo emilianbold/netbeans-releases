@@ -75,7 +75,10 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Resource;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -197,6 +200,24 @@ public final class NbMavenProjectImpl implements Project {
                 LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident wth IDE log attached.");
                 return false;
             }
+        }
+    }
+
+    
+    private final Object MODEL_LOCK = new Object();
+    private Model model;
+    public Model getRawModel() {
+        synchronized(MODEL_LOCK) {
+            if(model == null) {
+                MavenEmbedder projectEmbedder = EmbedderFactory.getProjectEmbedder();
+                try {
+                    ModelBuildingResult br = projectEmbedder.executeModelBuilder(getPOMFile());
+                    model = br.getRawModel();
+                } catch (ModelBuildingException ex) {
+                    Logger.getLogger(NbMavenProject.class.getName()).log(Level.WARNING, null, ex);
+                }
+            }
+            return model;
         }
     }
 
@@ -436,6 +457,9 @@ public final class NbMavenProjectImpl implements Project {
     private @NonNull MavenProject loadOriginalMavenProject(boolean reload) {
         MavenProject newproject;
         try {
+            synchronized(MODEL_LOCK) {
+                model = null;
+            }
             newproject = MavenProjectCache.getMavenProject(this.getPOMFile(), reload);
             if (newproject == null) { //null when no pom.xml in project folder..
                 newproject = MavenProjectCache.getFallbackProject(projectFile);
