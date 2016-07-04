@@ -45,6 +45,10 @@ package org.netbeans.modules.maven.osgi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -95,11 +99,33 @@ public class OSGILookupProvider implements LookupProvider {
     private void checkContent(Project prj, InstanceContent ic, AccessQueryImpl access, ForeignClassBundlerImpl bundler, RecommendedTemplates templates) {
         NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
         String effPackaging = nbprj.getPackagingType();
-        String[] types = PluginPropertyUtils.getPluginPropertyList(prj, OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
-        if (types != null) {
-            for (String type : types) {
-                if (effPackaging.equals(type)) {
-                    effPackaging = NbMavenProject.TYPE_OSGI;
+        
+        boolean needToCheckFelixProjectTypes = true;
+        if(!nbprj.isMavenProjectLoaded()) { 
+            // issue #262646 
+            // due to unfortunate ProjectManager.findPorjetc calls in awt, 
+            // speed is essential during project init, so lets try to avoid
+            // maven project loading if we can get the info faster from raw model.
+            needToCheckFelixProjectTypes = false;
+            Model model = nbprj.getRawModel();
+            Build build = model != null ? model.getBuild() : null;
+            List<Plugin> plugins = build != null ? build.getPlugins() : null;
+            if(plugins != null) {
+                for (Plugin plugin : plugins) {
+                    if(OSGiConstants.GROUPID_FELIX.equals(plugin.getGroupId()) && OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN.equals(plugin.getArtifactId())) {
+                        needToCheckFelixProjectTypes = true;
+                        break;
+                    }
+                }
+            } 
+        }
+        if(needToCheckFelixProjectTypes) {
+            String[] types = PluginPropertyUtils.getPluginPropertyList(prj, OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
+            if (types != null) {
+                for (String type : types) {
+                    if (effPackaging.equals(type)) {
+                        effPackaging = NbMavenProject.TYPE_OSGI;
+                    }
                 }
             }
         }
