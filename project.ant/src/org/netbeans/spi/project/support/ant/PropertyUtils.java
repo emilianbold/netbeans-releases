@@ -443,6 +443,9 @@ public class PropertyUtils {
         }
         URI u = BaseUtilities.toURI(base).relativize(BaseUtilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
+        if(u.getPath().isEmpty()) {
+            return "."; // NOI18N
+        }
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {
             // file is an existing directory and file.toURI ends in /

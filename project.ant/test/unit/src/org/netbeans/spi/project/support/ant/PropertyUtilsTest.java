@@ -208,6 +208,7 @@ public class PropertyUtilsTest extends NbTestCase {
             assertNull(PropertyUtils.relativizeFile(f1, f2));
             
         }
+        assertEquals(".", PropertyUtils.relativizeFile(new File(new File(".").getAbsolutePath()), new File(".")));
     }
     
     public void testGlobalProperties() throws Exception {
