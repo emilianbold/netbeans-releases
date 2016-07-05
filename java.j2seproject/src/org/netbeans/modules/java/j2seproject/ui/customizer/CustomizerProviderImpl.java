@@ -52,9 +52,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -70,6 +72,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -86,9 +89,12 @@ public class CustomizerProviderImpl implements CustomizerProvider3, ProjectShara
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFileHelper;
 
+    private RequestProcessor rp = new RequestProcessor("customizer init",1);;
+    
     private static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-java-j2seproject/Customizer"; //NO18N
     
     private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>();
+    private boolean isOpening;
     
     public CustomizerProviderImpl(J2SEProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
@@ -109,38 +115,55 @@ public class CustomizerProviderImpl implements CustomizerProvider3, ProjectShara
     }
     
     @Override
-    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
-        
+    public void showCustomizer( final String preselectedCategory, final String preselectedSubCategory ) {        
         Dialog dialog = project2Dialog.get(project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
             return;
         }
         else {
-            try {
             WaitCursor.show();
-            J2SEProjectProperties uiProperties = createJ2SEProjectProperties();
-            Lookup context = Lookups.fixed(new Object[] {
-                project,
-                uiProperties,
-                new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
+            if(isOpening) {
+                return;
+            }
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    isOpening = true;
+                    try {
+                        J2SEProjectProperties uiProperties = createJ2SEProjectProperties();
+                        final Lookup context = Lookups.fixed(new Object[] {
+                            project,
+                            uiProperties,
+                            new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
+                        });
+                        final OptionListener listener = new OptionListener( project, uiProperties );
+                        final StoreListener storeListener = new StoreListener( project, uiProperties );
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Dialog dialog2 = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
+                                    dialog2.addWindowListener( listener );
+                                    dialog2.setTitle( MessageFormat.format(
+                                            NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N
+                                            new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
+                                    
+                                    project2Dialog.put(project, dialog2);
+                                    dialog2.setVisible(true);
+                                }
+                            });
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } finally {
+                        isOpening = false;
+                        WaitCursor.hide();
+                    }
+                }
             });
-
-            OptionListener listener = new OptionListener( project, uiProperties );
-            StoreListener storeListener = new StoreListener( project, uiProperties );
-            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
-            dialog.addWindowListener( listener );
-            dialog.setTitle( MessageFormat.format(                 
-                    NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
-
-            project2Dialog.put(project, dialog);
-            } finally {
-                WaitCursor.hide();
-            }
-            if (dialog != null) {
-                dialog.setVisible(true);
-            }
         }
     }
 

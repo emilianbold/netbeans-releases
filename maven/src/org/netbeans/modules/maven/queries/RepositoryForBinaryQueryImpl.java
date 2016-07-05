@@ -146,7 +146,11 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private void removeCoordinates(FileEvent fe) {
             File file = FileUtil.toFile(fe.getFile());
             if(file != null) {
-                coorCache.remove(file);
+                synchronized(coorCache) {
+                    if(coorCache.remove(file) != null) {
+                        FileUtil.removeFileChangeListener(binaryChangeListener, file);
+                    }
+                }
             }
         }
     };
@@ -601,10 +605,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }        
         synchronized (coorCache) {
             List<Coordinates> toRet = coorCache.get(binaryFile);
-            if(toRet == null && !coorCache.containsKey(binaryFile)) {
-                toRet = getJarMetadataCoordinates(binaryFile);                            
-                FileUtil.addFileChangeListener(binaryChangeListener, binaryFile);
-                coorCache.put(binaryFile, toRet);
+            if(toRet == null) {
+                toRet = getJarMetadataCoordinates(binaryFile);         
+                if(toRet != null) {
+                    FileUtil.addFileChangeListener(binaryChangeListener, binaryFile);
+                    coorCache.put(binaryFile, toRet);
+                }                
             } 
             return toRet;
         }
