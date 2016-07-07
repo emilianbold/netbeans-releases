@@ -315,6 +315,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private final Object lock = new Object();
     
     private String expandCanonicalPath(String potentiallyCanonicalPath) {
+        if (potentiallyCanonicalPath == null) {
+            return null;
+        }
         String ret = potentiallyCanonicalPath;
         
         Project project = getNDI().getProject();
