@@ -1554,23 +1554,42 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }
     
     public static CsmType unfoldInstantiatedType(CsmType type) {
+        return unfoldInstantiatedType(type, Integer.MAX_VALUE);
+    }    
+    
+    public static CsmType unfoldInstantiatedType(CsmType type, int iterations) {
         CsmType result = type;
-        while (result instanceof Type) {
+        while (result instanceof Type && iterations > 0) {
             result = ((Type) result).instantiatedType;
+            --iterations;
         }
         return result;
     }    
     
     public static CsmType unfoldOriginalType(CsmType type) {
+        return unfoldOriginalType(type, Integer.MAX_VALUE);
+    } 
+    
+    public static CsmType unfoldOriginalType(CsmType type, int iterations) {
         CsmType result = type;
-        while (result instanceof Type) {
+        while (result instanceof Type && iterations > 0) {
             result = ((Type) result).originalType;
+            --iterations;
         }
         return result;
-    }        
+    } 
     
     public static boolean isInstantiatedType(CsmType type) {
         return type instanceof Type;
+    }
+    
+    public static int getInstantiationDepth(CsmType type)  {
+        int depth = 0;
+        while (type instanceof Type) {
+            ++depth;
+            type = ((Type) type).originalType;
+        }
+        return depth;
     }
     
     public static CsmInstantiation getInstantiatedTypeInstantiation(CsmType type) {

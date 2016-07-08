@@ -858,13 +858,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 }
                 if (results.size() > 0) {
+                    int originalInstDepth = Instantiation.getInstantiationDepth(instType);
                     if (!specTemplateParam.isVarArgs()) {
-                        CsmType unfolded = Instantiation.unfoldInstantiatedType(results.get(0));
+                        CsmType unfolded = Instantiation.unfoldInstantiatedType(results.get(0), originalInstDepth);
                         return createTypeBasedSpecializationParameter(unfolded, specParam.getScope());
                     } else {
                         List<CsmSpecializationParameter> varArgs = new ArrayList<>();
                         for (CsmType result : results) {
-                            CsmType unfolded = Instantiation.unfoldInstantiatedType(result);
+                            CsmType unfolded = Instantiation.unfoldInstantiatedType(result, originalInstDepth);
                             varArgs.add(createTypeBasedSpecializationParameter(unfolded, specParam.getScope()));
                         }
                         return createVariadicSpecializationParameter(varArgs, specParam.getContainingFile(), 0, 0);
@@ -1372,10 +1373,24 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 } else if (isTemplateSpecParameter(instParam)) {
                     CsmTemplateParameterType paramType = (CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instParam).getType();
-                    CsmSpecializationParameter newTp = m.get(paramType.getParameter());
-                    if (newTp != null && newTp != instParam) {
-                        instantiations.clear();
-                        res.add(Pair.of(newTp, instantiations));
+                    CsmType asType;
+                    if (CsmKindUtilities.isType(paramType)) {
+                        asType = (CsmType) paramType;
+                    } else {
+                        asType = paramType.getTemplateType();
+                    }
+                    // TODO: if it is ok for performance, then no remapping of type should be done here!
+                    // Always execute res.add(pair) instruction.
+                    if (!asType.isPointer() && !asType.isConst() 
+                            && !asType.isVolatile() && !asType.isReference() 
+                            && !asType.isRValueReference()) {
+                        CsmSpecializationParameter newTp = m.get(paramType.getParameter());
+                        if (newTp != null && newTp != instParam) {
+                            instantiations.clear();
+                            res.add(Pair.of(newTp, instantiations));
+                        } else {
+                            res.add(pair);
+                        }
                     } else {
                         res.add(pair);
                     }
