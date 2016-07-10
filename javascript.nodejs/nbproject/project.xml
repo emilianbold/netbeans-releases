@@ -366,12 +366,9 @@ Contributor(s):
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
-                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
-                <friend>org.netbeans.modules.web.client.kit</friend>
+            <public-packages>
                 <package>org.netbeans.modules.javascript.nodejs.api</package>
-            </friend-packages>
+            </public-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>netbeans</word>
