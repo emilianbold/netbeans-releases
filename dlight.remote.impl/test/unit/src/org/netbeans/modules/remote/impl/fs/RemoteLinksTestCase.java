@@ -150,6 +150,9 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testDirectoryLinkExternalUpdate() throws Exception {
+        if (true) {
+            return; //disable test, see bug #262766
+        }
         String baseDir = null;
 
         final String dataFile = "test";
