@@ -2069,24 +2069,24 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             } else if (key instanceof LiteralNode) {
                 name = ModelElementFactory.create(parserResult, (LiteralNode)key);
             }
-            if (key instanceof IdentNode && value instanceof IdentNode) {
-                IdentNode iKey = (IdentNode)key;
-                IdentNode iValue = (IdentNode)value;
-                if (iKey.getName().equals(iValue.getName()) && iKey.getStart() == iValue.getStart() && iKey.getFinish() == iValue.getFinish()) {
-                    // it's object initializer shorthand property names
-                    // (ES6) var o = { a, b, c }; The variables a, b and c has to exists and properties are references to the orig var
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
-                    for (JsObject variable : variables) {
-                        if (name.getName().equals(variable.getName())) {
-                            parent.addProperty(variable.getName(), variable);
-                            variable.addOccurrence(name.getOffsetRange());
-                            // don't continue. 
-                            return false;
+            if (name != null) {
+                if (key instanceof IdentNode && value instanceof IdentNode) {
+                    IdentNode iKey = (IdentNode)key;
+                    IdentNode iValue = (IdentNode)value;
+                    if (iKey.getName().equals(iValue.getName()) && iKey.getStart() == iValue.getStart() && iKey.getFinish() == iValue.getFinish()) {
+                        // it's object initializer shorthand property names
+                        // (ES6) var o = { a, b, c }; The variables a, b and c has to exists and properties are references to the orig var
+                        Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                        for (JsObject variable : variables) {
+                            if (name.getName().equals(variable.getName())) {
+                                parent.addProperty(variable.getName(), variable);
+                                variable.addOccurrence(name.getOffsetRange());
+                                // don't continue. 
+                                return false;
+                            }
                         }
                     }
                 }
-            }
-            if (name != null) {
                 JsObjectImpl property = (JsObjectImpl)parent.getProperty(name.getName());
                 if (property == null) {
                     if (parent.getJSKind() == JsElement.Kind.OBJECT_LITERAL || parent.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
