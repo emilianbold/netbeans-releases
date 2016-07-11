@@ -79,6 +79,9 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testChangeDirectoryLink() throws Exception {
+        if (true) {
+            return; //disable test, see bug #262767
+        }
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);

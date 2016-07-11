@@ -1840,7 +1840,7 @@ public class ReformatterImpl {
             }
         }
     }
-
+ 
     private void newLinesBeforeDeclaration(int lines, int start) {
         int index = ts.index();
         int[] segment = ts.getNewLinesBeforeDeclaration(start);
@@ -1858,7 +1858,7 @@ public class ReformatterImpl {
                 }
                 ts.moveIndex(start);
                 ts.moveNext();
-                int indent = ts.getTokenPosition();
+                int indent = ts.getFirstLineTokenPosition();
                 ts.moveIndex(segment[0]);
                 Diff toReplace = null;
                 while (ts.moveNext()) {
