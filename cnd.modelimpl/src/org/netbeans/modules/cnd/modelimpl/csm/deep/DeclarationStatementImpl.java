@@ -168,7 +168,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                                 if (APTLanguageSupport.getInstance().isLanguageC(language)) {
                                     fddi = FunctionDDImpl.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
                                 } else {
-                                    fddi = LambdaFunction.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                                    fddi = LambdaFunction.create(token, getContainingFile(), null, getScope(), !isRenderingLocalContext());
                                 }
                                 declarators.add(fddi);
                             } catch (AstRendererException e) {
