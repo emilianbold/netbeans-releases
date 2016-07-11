@@ -128,4 +128,16 @@ public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
             "const int &"
         );
     }
+    
+    public void testBug261006() throws Exception {
+        // Bug 261006 - "using namespace std" breaks "introduce variable" in simple scenario
+        performPlainTooltipTest("bug261006.cpp", 12, 15,
+            "Variable var1\n" + 
+            "int"
+        );
+        performPlainTooltipTest("bug261006.cpp", 13, 15,
+            "Variable var2\n" + 
+            "bug261006::AAA261006"
+        );
+    }
 }

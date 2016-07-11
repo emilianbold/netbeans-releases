@@ -808,7 +808,8 @@ public final class CompletionSupport implements DocumentListener {
                                                                           boolean acceptIfSameNumberParams)
     {
         boolean mustBeTemplate = (exp != null) ? exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE : false;
-        Collection<T> result = filterMethods(ctx, methodList, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, false);
+        Collection<T> result = filterOverloadedOperators(ctx, methodList, paramsPerMethod);
+        result = filterMethods(ctx, result, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
             // it seems that this call couldn't filter anything
             result = filterMethods(ctx, result, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, true);
@@ -819,6 +820,61 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return result;
+    }
+    
+    private static <T extends CsmFunctional> Collection<T> filterOverloadedOperators(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod) {
+        List<T> filteredOut = null;
+        Map<CsmType, CsmClassifier> typesMap = new IdentityHashMap<>();
+        for (T m : methodList) {
+            if (m instanceof CsmFunction) {
+                CsmFunction func = (CsmFunction) m;
+                if (func.isOperator()) {
+                    switch (func.getOperatorKind()) {
+                        case PLUS:
+                        case MINUS:
+                        case DIV:
+                        case MUL:
+                        case MOD:
+                        case PLUS_PLUS:
+                        case MINUS_MINUS:
+                            List<CsmType> paramTypeList = paramTypesPerMethod.get(m);
+                            // Set to true if we have at least one parameter. Param will be checked and
+                            // variable is set to false if necessary
+                            boolean allParamsArePrimitive = !paramTypeList.isEmpty();
+                            for (CsmType paramType : paramTypeList) {
+                                CsmClassifier classifier = typesMap.get(paramType);
+                                if (classifier == null) {
+                                    if (ctx != null) {
+                                        classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                                    } else {
+                                        classifier = paramType.getClassifier();
+                                    }
+                                    if (classifier != null) {
+                                        typesMap.put(paramType, classifier);
+                                    }
+                                }
+                                allParamsArePrimitive &= CsmCompletion.safeIsPrimitiveClass(paramType, classifier);
+                            }
+                            if (allParamsArePrimitive) {
+                                // If all parameters are primitive, then default
+                                // arithmetic operator must be called. They cannot be
+                                // overloaded.
+                                if (filteredOut == null) {
+                                    filteredOut = new ArrayList<>();
+                                }
+                                filteredOut.add(m);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+        if (filteredOut != null) {
+            List<T> result = new ArrayList(methodList);
+            result.removeAll(filteredOut);
+            return result;
+        }
+        return methodList;
     }
 
     private static <T extends CsmFunctional> Collection<T> filterMethods(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod,
