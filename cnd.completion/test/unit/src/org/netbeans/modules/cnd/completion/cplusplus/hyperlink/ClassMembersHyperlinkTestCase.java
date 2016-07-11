@@ -1307,6 +1307,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug255898.c", 4, 17, "bug255898.h", 3, 9);
     }
     
+    public void testBug262407() throws Exception {
+        // Bug 262407 - unable to resolve type in aligned_storage
+        performTest("bug262407.cpp", 7, 59, "bug262407.cpp", 4, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
