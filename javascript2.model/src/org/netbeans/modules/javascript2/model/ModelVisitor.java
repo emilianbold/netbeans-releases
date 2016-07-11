@@ -943,7 +943,11 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 property = fncParent.getProperty(modelBuilder.getGlobal().getName() + modelBuilder.getFunctionName(functionNode));
             }
             if (property != null && property instanceof JsFunction) {
-                fncScope = (JsFunctionImpl)property;
+                if (property instanceof JsFunctionReference) {
+                    fncScope = (JsFunctionImpl)((JsFunctionReference)property).getOriginal();
+                } else {
+                    fncScope = (JsFunctionImpl)property;
+                }
             }
             if (property == null) {
                 LOGGER.log(Level.FINE, "FunctionNode: " + functionNode.toString() + " is not processed, because parent function " + fncParent.toString() + " doesn't contain such property."); //NOI18N
