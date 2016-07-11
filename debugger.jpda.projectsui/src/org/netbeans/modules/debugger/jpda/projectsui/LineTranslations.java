@@ -231,7 +231,12 @@ class LineTranslations {
                 //System.err.println("  original line = "+lineSet.getOriginalLineNumber(line));
                 //System.err.println("  original line2 = "+lineSet.getOriginal(currentLineNumber));
                 //System.err.println("Original line of "+currentLineNumber+" IS "+lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber)));
-                return lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber));
+                Line line = lineSet.getCurrent(currentLineNumber);
+                if (line != null) {
+                    return lineSet.getOriginalLineNumber(line);
+                } else {
+                    return currentLineNumber;
+                }
             } catch (IndexOutOfBoundsException ioobex) {
                 //ioobex.printStackTrace();
                 //System.err.println("  getOriginalLineNumber.return "+currentLineNumber);
