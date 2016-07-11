@@ -138,70 +138,70 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testArguments() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "Arguments", defaultConfs, "");
+        testSample(allAvailableCompilerSets, "Arguments", defaultConfs, "", 20);
     }
 
     @Test
     public void testInputOutput() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs, "");
+        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs, "", 20);
     }
 
     @Test
     public void testWelcome() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "Welcome", defaultConfs, "");
+        testSample(allAvailableCompilerSets, "Welcome", defaultConfs, "", 20);
     }
 
     @Test
     public void testQuote() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "Quote", defaultConfs, "");
+        testSample(allAvailableCompilerSets, "Quote", defaultConfs, "", 20);
     }
 
     @Test
     public void testSubProjects() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs, "");
+        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs, "", 20);
     }
 
     @Test
     public void testPi() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"}, "");
-            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"}, "");
+            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"}, "", 20);
+            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"}, "", 20);
         }
         else {
-            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"}, "");
+            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"}, "", 20);
         }
     }
 
     @Test
     public void testFreeway() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(allAvailableCompilerSets, "Freeway", defaultConfs, "");
+            testSample(allAvailableCompilerSets, "Freeway", defaultConfs, "", 30);
         }
     }
 
     @Test
     public void testFractal() throws IOException, InterruptedException, InvocationTargetException {
-        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"}, "");
+        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"}, "", 20);
     }
 
     @Test
     public void testLexYacc() throws IOException, InterruptedException, InvocationTargetException {
         if (!Utilities.isWindows()) {
-            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs, "");
+            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs, "", 20);
         }
     }
 
     @Test
     public void testMP() throws IOException, InterruptedException, InvocationTargetException {
         if (!Utilities.isWindows()) {
-            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"}, "");
+            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"}, "", 20);
         }
     }
 
     @Test
     public void testHello() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "Hello", defaultConfs, "");
+            testSample(SunStudioCompilerSet, "Hello", defaultConfs, "", 20);
         }
     }
 
@@ -261,17 +261,17 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         return setRef.get();
     }
 
-    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions) throws IOException, InterruptedException, InvocationTargetException {
+    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions, int timeout) throws IOException, InterruptedException, InvocationTargetException {
         for (CompilerSet set : sets) {
             if (set != null) {
                 for (String conf : confs) {
-                    testSample(set, sample, conf, makeOptions);
+                    testSample(set, sample, conf, makeOptions, timeout);
                 }
             }
         }
     }
 
-    public void testSample(CompilerSet set, String sample, String conf, String makeOptions) throws IOException, InterruptedException, InvocationTargetException {
+    public void testSample(CompilerSet set, String sample, String conf, String makeOptions, int timeout) throws IOException, InterruptedException, InvocationTargetException {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
@@ -353,7 +353,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 //        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
 //
         try {
-            done.await(20, TimeUnit.SECONDS);
+            done.await(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException ir) {
         }
         String shell = null;
