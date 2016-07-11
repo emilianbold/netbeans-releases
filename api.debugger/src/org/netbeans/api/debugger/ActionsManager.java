@@ -137,8 +137,8 @@ public final class ActionsManager {
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
     private boolean                 destroy = false;
-    private List<? extends ActionsProvider> aps;
-    private PropertyChangeListener  providersChangeListener;
+    private volatile List<? extends ActionsProvider> aps;
+    private volatile PropertyChangeListener  providersChangeListener;
     
     /**
      * Create a new instance of ActionManager.
@@ -715,8 +715,12 @@ public final class ActionsManager {
     }
     
     private void destroyIn () {
-        ((Customizer) aps).removePropertyChangeListener(providersChangeListener);
-        logger.log(Level.FINE, "{0}.destroyIn(): ProvidersChangeListener removed from {1}", new Object[] { this, aps });
+        Customizer caps = (Customizer) aps;
+        PropertyChangeListener pchl = providersChangeListener;
+        if (caps != null && pchl != null) {
+            caps.removePropertyChangeListener(pchl);
+            logger.log(Level.FINE, "{0}.destroyIn(): ProvidersChangeListener removed from {1}", new Object[] { this, caps });
+        }
         synchronized (this) {
             if (lazyListeners != null) {
                 int i, k = lazyListeners.size ();
