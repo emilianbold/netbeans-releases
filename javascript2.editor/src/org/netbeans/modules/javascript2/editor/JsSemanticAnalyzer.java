@@ -417,7 +417,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
 
             @Override
             public boolean enterUnaryNode(UnaryNode unaryNode) {
-                if (unaryNode.isTokenType(TokenType.IDENT)) {
+                if (unaryNode.isTokenType(TokenType.AWAIT)) {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(result.getSnapshot(), unaryNode.getStart());
                     if (ts != null) {
                         Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);

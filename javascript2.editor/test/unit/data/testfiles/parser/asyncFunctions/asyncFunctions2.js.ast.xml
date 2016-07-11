@@ -44,7 +44,7 @@
                   <isInitializedHere/>
                 </IdentNode>
                 <!-- VarNode Init -->
-                <UnaryNode type='IDENT' start='69' end='81'>
+                <UnaryNode type='AWAIT' start='69' end='81'>
                   <!-- UnaryNode Expression -->
                   <CallNode start='75' end='81'>
                     <!-- CallNode Arguments -->
