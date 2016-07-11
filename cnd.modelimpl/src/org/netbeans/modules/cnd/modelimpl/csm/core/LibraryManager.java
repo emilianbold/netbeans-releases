@@ -252,7 +252,7 @@ public final class LibraryManager {
                     }
                 } else {
                     if (CndUtils.isDebugMode() && baseProject.isValid()) {
-                        CndUtils.assertTrue(false, "Can not get library for artificial project; folder=" + folder + " curFile=" + //NOI18N
+                        CndUtils.assertTrue(false, "Can not get library for artificial project; ","folder=" + folder + " curFile=" + //NOI18N
                                 curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {

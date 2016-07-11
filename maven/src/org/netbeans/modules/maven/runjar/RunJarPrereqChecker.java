@@ -184,7 +184,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
     static void writeMapping(String actionName, Project project, String clazz) {
         try {
             M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
-            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, usr.getDefaultConfig());
+            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, usr.getActiveConfiguration());
             if (mapp == null) {
                 mapp = ModelHandle2.getDefaultMapping(actionName, project);
             }
@@ -197,7 +197,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
             //TODO we should definitely write to the mappings of active configuration here..
-            ModelHandle2.putMapping(mapp, project, usr.getDefaultConfig());
+            ModelHandle2.putMapping(mapp, project, usr.getActiveConfiguration());
         } catch (Exception e) {
             Exceptions.attachMessage(e, "Cannot persist action configuration.");
             Exceptions.printStackTrace(e);

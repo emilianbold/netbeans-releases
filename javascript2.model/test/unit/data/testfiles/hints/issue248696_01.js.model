@@ -2,13 +2,13 @@ FUNCTION issue248696_01 [ANONYMOUS: false, DECLARED: true - issue248696_01, MODI
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-issue248696_01L$1 : FUNCTION issue248696_01L$1 [ANONYMOUS: true, DECLARED: true - issue248696_01L$1, MODIFIERS: PUBLIC, FUNCTION]
+issue248696_01L#1 : FUNCTION issue248696_01L#1 [ANONYMOUS: true, DECLARED: true - issue248696_01L#1, MODIFIERS: PUBLIC, FUNCTION]
                   # RETURN TYPES
                   undefined, RESOLVED: true
                   # PARAMETERS
                   OBJECT Profile [ANONYMOUS: false, DECLARED: true - Profile, MODIFIERS: PUBLIC, PARAMETER]
                   # PROPERTIES
-                  L:1$initAuth : FUNCTION initAuth [ANONYMOUS: false, DECLARED: true - initAuth, MODIFIERS: PRIVATE, METHOD]
+                  L:1#initAuth : FUNCTION initAuth [ANONYMOUS: false, DECLARED: true - initAuth, MODIFIERS: PRIVATE, METHOD]
                                # RETURN TYPES
                                undefined, RESOLVED: true
                                # PROPERTIES

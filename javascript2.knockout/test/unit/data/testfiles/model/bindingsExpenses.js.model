@@ -58,9 +58,9 @@ init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PU
                        arguments                                     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                        bindingsExpensesAnonym$1                      : OBJECT bindingsExpensesAnonym$1 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                        bindingsExpensesAnonym$2                      : OBJECT bindingsExpensesAnonym$2 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
-                       bindingsExpensesinit$ExpensesModel$totalPrice : FUNCTION bindingsExpensesinit$ExpensesModel$totalPrice [ANONYMOUS: true, DECLARED: true - bindingsExpensesinit$ExpensesModel$totalPrice, MODIFIERS: PRIVATE, METHOD]
+                       bindingsExpensesinit#ExpensesModel#totalPrice : FUNCTION bindingsExpensesinit#ExpensesModel#totalPrice [ANONYMOUS: true, DECLARED: true - bindingsExpensesinit#ExpensesModel#totalPrice, MODIFIERS: PRIVATE, METHOD]
                                                                      # RETURN TYPES
-                                                                     @exp;init@pro;ExpensesModel@pro;bindingsExpensesinit$ExpensesModel$totalPrice@pro;total, RESOLVED: false
+                                                                     @exp;init@pro;ExpensesModel@pro;bindingsExpensesinit#ExpensesModel#totalPrice@pro;total, RESOLVED: false
                                                                      # PROPERTIES
                                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                      i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
@@ -114,9 +114,9 @@ ko       : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUBLIC,
                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                          bindingsExpensesAnonym$1                      : OBJECT bindingsExpensesAnonym$1 [ANONYMOUS: false, DECLARED: true - bindingsExpensesAnonym$1, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                          bindingsExpensesAnonym$2                      : OBJECT bindingsExpensesAnonym$2 [ANONYMOUS: false, DECLARED: true - bindingsExpensesAnonym$2, MODIFIERS: PRIVATE, OBJECT_LITERAL]
-                         bindingsExpensesinit$ExpensesModel$totalPrice : FUNCTION bindingsExpensesinit$ExpensesModel$totalPrice [ANONYMOUS: false, DECLARED: true - bindingsExpensesinit$ExpensesModel$totalPrice, MODIFIERS: PRIVATE, METHOD]
+                         bindingsExpensesinit#ExpensesModel#totalPrice : FUNCTION bindingsExpensesinit#ExpensesModel#totalPrice [ANONYMOUS: false, DECLARED: true - bindingsExpensesinit#ExpensesModel#totalPrice, MODIFIERS: PRIVATE, METHOD]
                                                                        # RETURN TYPES
-                                                                       @exp;init@pro;ExpensesModel@pro;bindingsExpensesinit$ExpensesModel$totalPrice@pro;total, RESOLVED: false
+                                                                       @exp;init@pro;ExpensesModel@pro;bindingsExpensesinit#ExpensesModel#totalPrice@pro;total, RESOLVED: false
                                                                        # PROPERTIES
                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                        i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]

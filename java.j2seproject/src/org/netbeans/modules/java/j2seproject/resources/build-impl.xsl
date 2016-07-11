@@ -2483,7 +2483,7 @@ is divided into following sections:
             <target name="profile-test-with-main" depends="-profile-check" description="Profile a selected class in the IDE." if="profiler.configured">
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <startprofiler/>
-                <antcal target="run-test-with-main"/>
+                <antcall target="run-test-with-main"/>
             </target>
             
             <target name="profile-applet" depends="-profile-check,-profile-applet-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">

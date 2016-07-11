@@ -105,15 +105,14 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
         return null;
     }
 
-    
-    public @Override Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException {
+    public @Override Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException { 
         if (!isProject(fileObject)) {
             return null;
         }
         FileObject projectFile = fileObject.getFileObject("pom.xml"); //NOI18N
         if (projectFile == null || !projectFile.isData()) {
             return null;
-            
+
         }
         atLeastOneMavenProjectAround.set(true);
         return new NbMavenProjectImpl(fileObject, projectFile, projectState);

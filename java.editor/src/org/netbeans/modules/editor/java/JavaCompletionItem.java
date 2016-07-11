@@ -3453,7 +3453,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (cancel.get()) {
                                     return;
                                 }
-                                if (CodeStyle.getDefault(doc).preferStaticImports()) {
+                                if (CodeStyle.getDefault(doc).preferStaticImports() && !"this".equals(memberName) && !"super".equals(memberName)) {
                                     Element e = getElementHandle().resolve(copy);
                                     if (e != null) {
                                         copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(e)));

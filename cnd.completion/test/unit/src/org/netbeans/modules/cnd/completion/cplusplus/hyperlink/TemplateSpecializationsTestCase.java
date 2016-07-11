@@ -313,6 +313,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug216095.cpp", 18, 14, "bug216095.cpp", 13, 9);
     }
     
+    public void testBug262586() throws Exception {
+        // Bug 262586 - Warnings in editor (check C++11 STL API) 
+        performTest("bug262586.cpp", 64, 17, "bug262586.cpp", 59, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

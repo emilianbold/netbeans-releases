@@ -94,11 +94,17 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
         npb.setExecutable(path);
         npb.setArguments(getVersionFlags());
         npb.redirectError();
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
-        final List<String> processOutput = res.getOutputLines();
-        if (processOutput != null && processOutput.size() > 0) {
-            version = processOutput.get(0);
+        try {
+            NativeProcess p = npb.call();
+            p.getOutputStream().close();
+            final List<String> processOutput = ProcessUtils.readProcessOutput(p);
+            if (processOutput != null && processOutput.size() > 0) {
+                version = processOutput.get(0);
+            }
+        } catch (Exception ex) {
+            // silently drop
         }
+        
         alreadyRun = true;
     }
 
