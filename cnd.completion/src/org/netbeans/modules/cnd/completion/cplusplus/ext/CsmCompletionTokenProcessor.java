@@ -1136,7 +1136,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
         if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER
                 || tokenID == CppTokenId.SIZEOF
-                || tokenID == CppTokenId.TYPEID) {
+                || tokenID == CppTokenId.TYPEID
+                || tokenID == CppTokenId.ALIGNOF
+                || tokenID == CppTokenId.__ALIGNOF
+                || tokenID == CppTokenId.__ALIGNOF__) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;

@@ -42,9 +42,13 @@
 package org.netbeans.modules.cnd.repository.layering;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,7 +71,9 @@ import org.netbeans.modules.cnd.repository.spi.UnitDescriptorsMatcherImplementat
 import org.netbeans.modules.cnd.repository.util.RepositoryTestSupport;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import static org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase.createTempFile;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -217,6 +223,7 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
             copyDirectory(projectSrc, projectSrcRoot1);
 
             File dump1 = new File(getWorkDir(), getName() + "_1.dat");
+            File dump12 = new File(getWorkDir(), getName() + "_12.dat");
             File dump2 = new File(getWorkDir(), getName() + "_2.dat");
 
             parseProject(projectSrcRoot1, dump1);
@@ -233,12 +240,35 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
 
             parseProject(projectSrcRoot2, dump2);
             assertEquals("Parse count after reloaction ", 0, parseCount.get());
+            {
+                // replace all "quote_nosyshdr_1" -> "quote_nosyshdr_2" in first dump
+                List<String> asLines = FileUtil.toFileObject(dump1).asLines();
+                List<String> toWrite = new ArrayList<String>();
+                for(String s : asLines) {
+                    if (s.indexOf("quote_nosyshdr_1") > 0) {
+                        s = s.replace("quote_nosyshdr_1", "quote_nosyshdr_2");
+                    }
+                    toWrite.add(s);
+                }
+                FileObject fo = FileUtil.toFileObject(getWorkDir()).createData(dump12.getName());
+                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
+                for(String s : toWrite) {
+                    w.write(s);
+                    w.newLine();
+                }
+                w.close();
+            }
 
-            if (CndCoreTestUtils.diff(dump1, dump2, null)) {
-                fail("OUTPUT Difference between diff " + dump1 + " " + dump2); // NOI18N
+            if (CndCoreTestUtils.diff(dump12, dump2, null)) {
+                StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + dump12 + " " + dump2);
+                File diffErrorFile = new File(dump12.getAbsolutePath() + ".diff");
+                CndCoreTestUtils.diff(dump12, dump2, diffErrorFile);
+                showDiff(diffErrorFile, buf);
+                fail(buf.toString());
             }
 
             dump1.delete();
+            dump12.delete();
             dump2.delete();
         } finally {
             removeDirectory(tempBaseDir);

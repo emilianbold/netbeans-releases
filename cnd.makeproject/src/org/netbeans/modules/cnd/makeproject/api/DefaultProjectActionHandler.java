@@ -144,12 +144,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 _execute(io, listener);
             } catch (Throwable th) {
                 try {
-                    io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                    if (io != null && io.getErr() != null) {
+                        io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                    }
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
                 }
                 try {
-                    io.getOut().close();
+                    if (io != null && io.getOut() != null) {
+                        io.getOut().close();
+                    }
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
                 }

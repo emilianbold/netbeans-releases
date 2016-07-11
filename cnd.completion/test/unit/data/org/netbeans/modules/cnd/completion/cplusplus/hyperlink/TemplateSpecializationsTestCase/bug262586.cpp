@@ -64,4 +64,22 @@ namespace bug262586 {
         iter1->foo();
         return 0;     
     }           
+    
+    // Part 2 - bug with using declarations
+
+    template <typename T>
+    struct CollectionBase262586 {
+        T get();
+    };
+
+    template <typename T>
+    struct Collection262586 : protected CollectionBase262586<T> {
+        using CollectionBase262586<T>::get;
+    };
+
+    int main262586_2() {
+        Collection262586<AAA262586> col;
+        col.get().foo();
+        return 0;
+    } 
 }

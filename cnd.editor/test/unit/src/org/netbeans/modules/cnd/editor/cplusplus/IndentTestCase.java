@@ -1279,4 +1279,27 @@ public class IndentTestCase extends EditorBase {
                 "           {|\n"
                 );
     }
+    
+    public void test2258589() {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "void foo() {\n" 
+              + "    return;\n" 
+              + "}\n"
+              + "\n"
+              + "/*static*/ void boo() {|\n"
+              + "    return;\n"
+              + "}\n",
+                "\n",
+                "void foo() {\n" 
+              + "    return;\n" 
+              + "}\n"
+              + "\n"
+              + "/*static*/ void boo() {\n"
+              + "    |\n"
+              + "    return;\n"
+              + "}\n"
+                );
+    }
+    
 }
