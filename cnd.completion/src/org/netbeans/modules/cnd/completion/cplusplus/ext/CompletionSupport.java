@@ -853,7 +853,7 @@ public final class CompletionSupport implements DocumentListener {
                                         typesMap.put(paramType, classifier);
                                     }
                                 }
-                                allParamsArePrimitive &= CsmCompletion.safeIsPrimitiveClass(paramType, classifier);
+                                allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
                             }
                             if (allParamsArePrimitive) {
                                 // If all parameters are primitive, then default

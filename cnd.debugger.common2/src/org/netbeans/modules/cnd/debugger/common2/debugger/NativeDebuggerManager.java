@@ -267,18 +267,8 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      * Default is per-debug-target bpts.
      */
     public static boolean isPerTargetBpts() {
-        if (!isStandalone()) {
-            return false;
-        }
-
-        String perTargetBpts = System.getProperty("dbxgui.pertargetbpts");
-        if ("true".equals(perTargetBpts)) { // NOI18N
-            return true;
-        } else if ("false".equals(perTargetBpts)) { // NOI18N
-            return false;
-        } else {
-            return true;
-        }
+        String perTargetBpts = System.getProperty("dbxgui.pertargetbpts");        
+        return isStandalone() && !"false".equals(perTargetBpts);//NOI18N
     }
 
     public static boolean isAsyncStart() {
