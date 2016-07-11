@@ -5990,4 +5990,28 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test2258589() {
+        setLoadDocumentText(
+                "void foo() {\n" 
+              + "    return;\n" 
+              + "}\n"
+              + "\n"
+              + "/*static*/ void boo() {\n"
+              + "    return;\n"
+              + "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        reformat();
+        assertDocumentText("Incorrect rvalue reference",
+                "void foo() {\n" 
+              + "    return;\n" 
+              + "}\n"
+              + "\n"
+              + "/*static*/ void boo() {\n"
+              + "    return;\n"
+              + "}\n");
+    }
 }

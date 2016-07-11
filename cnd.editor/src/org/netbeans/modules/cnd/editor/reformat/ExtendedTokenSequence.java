@@ -111,6 +111,69 @@ public class ExtendedTokenSequence {
         return null;
     }
     
+    /*package local*/ int getFirstLineTokenPosition(){
+        int index = ts.index();
+        try {
+            int column = 0;
+            while(ts.movePrevious()){
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.before != null){
+                        column+=diff.before.spaceLength();
+                        if (diff.before.hasNewLine()) {
+                            return column;
+                        }
+                    }
+                    if (diff.replace != null){
+                        column+=diff.replace.spaceLength();
+                        if (diff.replace.hasNewLine()) {
+                            return column;
+                        }
+                        continue;
+                    }
+                }
+                switch (ts.token().id()) {
+                    case NEW_LINE:
+                    case PREPROCESSOR_DIRECTIVE:
+                         return column;
+                    case DOXYGEN_COMMENT:
+                    case BLOCK_COMMENT:
+                    {
+                        String text = ts.token().text().toString();
+                        int i = text.lastIndexOf('\n');
+                        if (i < 0){
+                            column = 0;
+                            break;
+                        } 
+                        column += text.length()-i+1;
+                        return column;
+                    }
+                    case WHITESPACE:
+                    {
+                        String text = ts.token().text().toString();
+                        for(int i = 0; i < text.length(); i++){
+                            char c = text.charAt(i);
+                            if (c == '\t'){
+                                column = (column/tabSize+1)* tabSize;
+                            } else {
+                                column+=1;
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        column+=ts.token().length();
+                        break;
+                }
+            }
+            return column;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+
     /*package local*/ int getTokenPosition(){
         int index = ts.index();
         try {

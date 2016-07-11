@@ -1342,7 +1342,7 @@ public class IndentSupport {
                             String text = tokenSeq.token().text().toString();
                             int i = text.lastIndexOf('\n');
                             if (i < 0){
-                                column += text.length();
+                                column = 0;
                                 break;
                             }
                             column += text.length()-i+1;
