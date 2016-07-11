@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -585,7 +586,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
     
     private void initClassesModel() {
         
-        final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
+        final Collection<? extends FileObject> roots = JFXProjectUtils.getClassPathMap(project).keySet();
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -593,7 +594,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
 
                 final Set<String> appClassNames = isFXinSwing ? 
                         JFXProjectUtils.getMainClassNames(project) : 
-                        JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                        JFXProjectUtils.getAppClassNames(roots, "javafx.application.Application"); //NOI18N
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

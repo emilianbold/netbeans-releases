@@ -250,7 +250,7 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
                         final boolean barrier = SourceUtils.isScanInProgress();
                         final Set<String> appClassNames = isFXinSwing ?
                             JFXProjectUtils.getMainClassNames(project) :
-                            JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                            JFXProjectUtils.getAppClassNames(classpathMap.keySet(), "javafx.application.Application"); //NOI18N
                         LOG.log(
                             Level.FINE,
                             LOG_MAIN_CLASSES,

@@ -274,32 +274,29 @@ public final class JFXProjectUtils {
      * @param classType return only classes of this type
      * @return set of class names
      */
-    public static Set<String> getAppClassNames(@NonNull Map<FileObject,List<ClassPath>> classpathMap, final @NonNull String classType) {
-        final Set<String> appClassNames = new HashSet<String>();
-        for (FileObject fo : classpathMap.keySet()) {
-            List<ClassPath> paths = classpathMap.get(fo);
-            ClasspathInfo cpInfo = ClasspathInfo.create(paths.get(0), paths.get(1), paths.get(2));
-            final ClassIndex classIndex = cpInfo.getClassIndex();
+    public static Set<String> getAppClassNames(@NonNull Collection<? extends FileObject> roots, final @NonNull String classType) {
+        final Set<String> appClassNames = new HashSet<>();
+        for (FileObject fo : roots) {
+            final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
             final JavaSource js = JavaSource.create(cpInfo);
-            try { 
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    @Override
-                    public void run(CompilationController controller) throws Exception {
-                        Elements elems = controller.getElements();
-                        TypeElement fxAppElement = elems.getTypeElement(classType);
-                        ElementHandle<TypeElement> appHandle = ElementHandle.create(fxAppElement);
-                        Set<ElementHandle<TypeElement>> appHandles = classIndex.getElements(appHandle, kinds, scopes);
-                        for (ElementHandle<TypeElement> elemHandle : appHandles) {
-                            appClassNames.add(elemHandle.getQualifiedName());
+            if (js != null) {
+                try { 
+                    js.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController controller) throws Exception {
+                            final ClassIndex classIndex = cpInfo.getClassIndex();
+                            final Elements elems = controller.getElements();
+                            TypeElement fxAppElement = elems.getTypeElement(classType);
+                            ElementHandle<TypeElement> appHandle = ElementHandle.create(fxAppElement);
+                            Set<ElementHandle<TypeElement>> appHandles = classIndex.getElements(appHandle, kinds, scopes);
+                            for (ElementHandle<TypeElement> elemHandle : appHandles) {
+                                appClassNames.add(elemHandle.getQualifiedName());
+                            }
                         }
-                    }
-                    @Override
-                    public void cancel() {
+                    }, true);
+                } catch (Exception e) {
 
-                    }
-                }, true);
-            } catch (Exception e) {
-
+                }
             }
         }
         return appClassNames;

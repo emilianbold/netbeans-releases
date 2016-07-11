@@ -46,6 +46,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -375,7 +376,7 @@ public class JFXActionProvider implements ActionProvider {
         final JButton okButton = new JButton (NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
         final boolean FXinSwing = JFXProjectUtils.isFXinSwingProject(prj);
-        final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(prj);
+        final Collection<? extends FileObject> roots = JFXProjectUtils.getClassPathMap(prj).keySet();
         final Set<String> appClassNames;
         if (FXinSwing) {
             appClassNames = JFXProjectUtils.getMainClassNames(prj);
@@ -387,7 +388,7 @@ public class JFXActionProvider implements ActionProvider {
                 @Override
                 public void run() {
                     if (!cancel.get()) {
-                        final Set<String> appClasses = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                        final Set<String> appClasses = JFXProjectUtils.getAppClassNames(roots, "javafx.application.Application"); //NOI18N
                         result.set(appClasses);
                     }
                 }
