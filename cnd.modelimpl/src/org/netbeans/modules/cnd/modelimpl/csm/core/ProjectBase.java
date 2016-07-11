@@ -1839,7 +1839,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         // so newStatePair was accepted as candidate as well, but in this case we
                         // expect that startProject have seen newStatePair
                         if (!newStateFoundInStartProject.get()) {
-                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                            //CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
                         }
                     }
                 }
