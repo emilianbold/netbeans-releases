@@ -861,6 +861,26 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/statement/switch/switch02.js");
     }
 
+    public void testRestSpreadProperties01() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties1.js");
+    }
+
+    public void testRestSpreadProperties02() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties2.js");
+    }
+
+    public void testRestSpreadProperties03() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties3.js");
+    }
+
+    public void testRestSpreadProperties04() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties4.js");
+    }
+
+    public void testRestSpreadProperties05() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties5.js");
+    }
+
     public void testReturn04() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/statement/return/return04.js");
     }

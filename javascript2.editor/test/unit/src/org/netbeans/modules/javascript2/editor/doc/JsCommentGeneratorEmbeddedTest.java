@@ -49,17 +49,24 @@ import java.util.concurrent.Future;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsCommentGeneratorTest extends JsTestBase {
+public class JsCommentGeneratorEmbeddedTest extends JsTestBase {
 
-    public JsCommentGeneratorTest(String testName) {
+    public JsCommentGeneratorEmbeddedTest(String testName) {
         super(testName);
     }
 
@@ -68,76 +75,35 @@ public class JsCommentGeneratorTest extends JsTestBase {
         return null;
     }
 
-    public void testClass1() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/html";
     }
 
-    public void testClass2() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        AbstractIndenter.inUnitTestRun = true;
+
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.javascriptLanguage());
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
     }
 
-    public void testClass3() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
+    public void testIssue222094_1() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
     }
 
-    public void testGlobal1() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
+    public void testIssue222094_2() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
     }
 
-    public void testGlobal2() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
+    public void testIssue222650_1() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
     }
 
-    public void testGlobal3() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testGlobal4() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testProperty1() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testProperty2() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testProperty3() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testProperty4() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-    
-    public void testObject1() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testIssue218945() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testIssue218411_1() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testIssue218411_2() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-
-    public void testIssue230610() throws Exception {
-        insertBreak(getOriginalContent(), getExpectedContent());
-    }
-    
-    public void testIssue231420() throws Exception {
-        insertBreak(getOriginalContent("js"), getExpectedContent("js"));
-    }
-
-    public void testIssue238683() throws Exception {
-        insertBreak(getOriginalContent("js"), getExpectedContent("js"));
+    public void testIssue222650_2() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
     }
 
     @Override
@@ -183,17 +149,9 @@ public class JsCommentGeneratorTest extends JsTestBase {
         return "testfiles/doc/commentGenerator/"; //NOI18N
     }
 
-    private String getOriginalContent() throws IOException {
-        return getOriginalContent("js");
-    }
-
     private String getOriginalContent(String ext) throws IOException {
         File f = new File(getDataDir(), getTestPath(false, ext));
         return readFileAsString(f);
-    }
-
-    private String getExpectedContent() throws IOException {
-        return getExpectedContent("js");
     }
 
     private String getExpectedContent(String ext) throws IOException {
