@@ -2394,7 +2394,7 @@ abstract public class CsmCompletionQuery {
                                     }
                                     // check exact overloaded operator
                                     mtdList = instantiateFunctions(mtdList, null, typeList, new CsmFunctionsAcceptor());
-                                    Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, false, false);
+                                    Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, methodOpen, true);
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
