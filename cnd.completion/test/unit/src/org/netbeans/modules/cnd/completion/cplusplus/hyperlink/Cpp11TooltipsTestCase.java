@@ -140,4 +140,24 @@ public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
             "bug261006::AAA261006"
         );
     }
+    
+    public void testBug261517() throws Exception {
+        // Bug 261517 - Bad implicit type conversion
+        performPlainTooltipTest("bug261517.cpp", 3, 16,
+            "Variable var1\n" + 
+            "int"
+        );
+        performPlainTooltipTest("bug261517.cpp", 4, 16,
+            "Variable var2\n" + 
+            "unsigned long long"
+        );
+        performPlainTooltipTest("bug261517.cpp", 5, 16,
+            "Variable var3\n" + 
+            "long long"
+        );
+        performPlainTooltipTest("bug261517.cpp", 6, 16,
+            "Variable var4\n" + 
+            "int"
+        );
+    }
 }
