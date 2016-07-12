@@ -842,18 +842,25 @@ public final class CompletionSupport implements DocumentListener {
                             // variable is set to false if necessary
                             boolean allParamsArePrimitive = !paramTypeList.isEmpty();
                             for (CsmType paramType : paramTypeList) {
-                                CsmClassifier classifier = typesMap.get(paramType);
-                                if (classifier == null) {
-                                    if (ctx != null) {
-                                        classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
-                                    } else {
-                                        classifier = paramType.getClassifier();
+                                if (paramType != null) {
+                                    CsmClassifier classifier = typesMap.get(paramType);
+                                    if (classifier == null) {
+                                        if (ctx != null) {
+                                            classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                                        } else {
+                                            classifier = paramType.getClassifier();
+                                        }
+                                        if (classifier != null) {
+                                            typesMap.put(paramType, classifier);
+                                        }
                                     }
-                                    if (classifier != null) {
-                                        typesMap.put(paramType, classifier);
-                                    }
+                                    allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
+                                } else {
+                                    // Failed to resolve at least one type. 
+                                    // We cannot be sure that all parameters are primitive.
+                                    allParamsArePrimitive = false;
+                                    break;
                                 }
-                                allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
                             }
                             if (allParamsArePrimitive) {
                                 // If all parameters are primitive, then default
