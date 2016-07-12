@@ -60,6 +60,8 @@ import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.Token;
+import com.oracle.js.parser.ir.JsxAttributeNode;
+import com.oracle.js.parser.ir.JsxElementNode;
 import java.util.List;
 
 /**
@@ -388,8 +390,25 @@ public class AstXmlVisitor extends NodeVisitor {
         createCloseTag(node);
         return false;
     }
-    
-    
+
+    @Override
+    public boolean enterJsxElementNode(JsxElementNode node) {
+        createOpenTag(node, createTagAttribute("name", node.getName()));
+        
+        processWithComment(node.getAttributes(), "JSX Element Attributes");
+        processWithComment(node.getChildren(), "JSX Element Children");
+        createCloseTag(node);
+        return false;
+    }
+
+    @Override
+    public boolean enterJsxAttributeNode(JsxAttributeNode node) {
+        createOpenTag(node, createTagAttribute("name", node.getName()));
+        
+        processWithComment(node.getValue(), "JSX Attribute Value");
+        createCloseTag(node);
+        return false;
+    }
 
     @Override
     public boolean enterLiteralNode(LiteralNode node) {

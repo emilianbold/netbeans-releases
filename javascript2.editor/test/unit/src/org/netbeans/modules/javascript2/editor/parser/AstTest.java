@@ -1857,6 +1857,34 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/for-of/invalid_let_let.js");
     }
 
+    public void testJsx01() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx1.js");
+    }
+
+    public void testJsx02() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx2.js");
+    }
+
+    public void testJsx03() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx3.js");
+    }
+
+    public void testJsx04() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx4.js");
+    }
+
+    public void testJsx05() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx5.js");
+    }
+
+    public void testJsx06() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx6.js");
+    }
+
+    public void testJsx07() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx7.js");
+    }
+
     public void testLetOfOf() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/for-of/let-of-of.js");
     }
