@@ -723,6 +723,12 @@ public final class CompletionSupport implements DocumentListener {
             return type2;
         }
         // Convert the rest according to integral ranks
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_LONG_CLASS) ? type1 : type2;
+        }
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.LONG_LONG_CLASS) ? type1 : type2;
+        }
         if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_CLASS)) {
             return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_CLASS) ? type1 : type2;
         }
@@ -842,18 +848,25 @@ public final class CompletionSupport implements DocumentListener {
                             // variable is set to false if necessary
                             boolean allParamsArePrimitive = !paramTypeList.isEmpty();
                             for (CsmType paramType : paramTypeList) {
-                                CsmClassifier classifier = typesMap.get(paramType);
-                                if (classifier == null) {
-                                    if (ctx != null) {
-                                        classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
-                                    } else {
-                                        classifier = paramType.getClassifier();
+                                if (paramType != null) {
+                                    CsmClassifier classifier = typesMap.get(paramType);
+                                    if (classifier == null) {
+                                        if (ctx != null) {
+                                            classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                                        } else {
+                                            classifier = paramType.getClassifier();
+                                        }
+                                        if (classifier != null) {
+                                            typesMap.put(paramType, classifier);
+                                        }
                                     }
-                                    if (classifier != null) {
-                                        typesMap.put(paramType, classifier);
-                                    }
+                                    allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
+                                } else {
+                                    // Failed to resolve at least one type. 
+                                    // We cannot be sure that all parameters are primitive.
+                                    allParamsArePrimitive = false;
+                                    break;
                                 }
-                                allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
                             }
                             if (allParamsArePrimitive) {
                                 // If all parameters are primitive, then default

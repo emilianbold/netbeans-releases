@@ -681,6 +681,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getDeclarationsSorage().getDeclarationsRange(uniquNamePrefix, uniquNamePrefix + maxChar); // NOI18N
     }
 
+    public final Collection<CsmOffsetableDeclaration> findExternalDeclarations(CsmFile file) {
+        return getDeclarationsSorage().findExternalDeclarations(file);
+    }
+
     public final Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
         return getDeclarationsSorage().findFriends(decl);
     }

@@ -227,4 +227,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 255545 - decltype in initializer slightly breaks code model
         performTest("bug255545.cpp");
     }
+    
+    public void testBug254133() throws Exception {
+        // Bug 254133 - C++11 enums with visibility makes netbeans think the syntax is incorrect
+        performTest("bug254133.cpp");
+    }
 }
