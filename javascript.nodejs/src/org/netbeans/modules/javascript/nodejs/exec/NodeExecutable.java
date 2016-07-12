@@ -75,6 +75,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
@@ -311,9 +312,10 @@ public class NodeExecutable {
         assert project != null;
         String projectName = NodeJsUtils.getProjectDisplayName(project);
         AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
+        boolean[] useV8Debug = { false };
         final Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
-                .additionalParameters(getDebugParams(port, script, args))
-                .run(getDescriptor(taskRef, new DebugInfo(project, taskRef, port)));
+                .additionalParameters(getDebugParams(port, script, args, useV8Debug))
+                .run(getDescriptor(taskRef, useV8Debug[0] ? new DebugInfo(project, taskRef, port) : null));
         assert task != null : nodePath;
         taskRef.set(task);
         return taskRef;
@@ -385,9 +387,17 @@ public class NodeExecutable {
         return getParams(getScriptArgsParams(script, args));
     }
 
-    private List<String> getDebugParams(int port, File script, String args) {
+    private List<String> getDebugParams(int port, File script, String args, boolean[] useV8Debug) {
         List<String> params = new ArrayList<>();
-        params.add(String.format(getDebugCommand(), port));
+        List<StartupExtender> extenders = StartupExtender.getExtenders(project.getLookup(), StartupExtender.StartMode.DEBUG);
+        if (extenders.isEmpty()) {
+            params.add(String.format(getDebugCommand(), port));
+            useV8Debug[0] = true;
+        } else {
+            for (StartupExtender e : extenders) {
+                params.addAll(e.getArguments());
+            }
+        }
         params.addAll(getScriptArgsParams(script, args));
         return getParams(params);
     }
