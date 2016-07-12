@@ -49,9 +49,10 @@ import org.netbeans.modules.javascript2.editor.JsPreferences;
 import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class ECMAScriptPanel extends javax.swing.JPanel  {
+public class ECMAScriptPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     public static final String IDENTIFIER = "ecma"; // NOI18N
     
@@ -164,6 +165,11 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
     public void save() {
         JsPreferences.putECMAScriptVersion(project, ((DisplayVersion) cbVersion.getSelectedItem()).getVersion());
         JsonPreferences.forProject(project).setCommentSupported(allowJsonComments.isSelected());
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript2.editor.ui.ECMAScriptPanel"); // NOI18N
     }
 
     private static class DisplayVersion {
