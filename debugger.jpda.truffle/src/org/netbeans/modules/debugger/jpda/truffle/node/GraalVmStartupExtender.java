@@ -41,13 +41,17 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle.node;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.api.NodeJsSupport;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 @StartupExtenderImplementation.Registration(displayName = "Debug GraalVM Node.js", startMode = StartupExtender.StartMode.DEBUG)
 public class GraalVmStartupExtender implements StartupExtenderImplementation {
@@ -69,8 +73,17 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
         if (node == null || !node.endsWith("jre/bin/node")) {
             return Collections.emptyList();
         }
-        // TODO: Provide JVM parameters to start the debugger
-        return Collections.emptyList();
+        final String debugName = "GraalVM node Debugger";
+
+        InputOutput io = IOProvider.getDefault().getIO(debugName, false);
+        JPDAStart start = new JPDAStart(io, debugName);
+        String res = null;
+        try {
+            res = start.execute(p);
+        } catch (Throwable ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Arrays.asList("-J-Xrunjdwp:transport=dt_socket,address=" + res + ",server=n,suspend=n");
     }
 
 }
