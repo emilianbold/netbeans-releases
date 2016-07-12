@@ -381,6 +381,12 @@ public class Network {
 
         public List<ConsoleMessage.StackFrame> getInitiatorCallStack() {
             JSONArray stack = (JSONArray)getInitiator().get("stackTrace"); // NOI18N
+            if (stack == null) {
+                JSONObject stackObj = (JSONObject) getInitiator().get("stack"); // NOI18N
+                if (stackObj != null) {
+                    stack = (JSONArray) stackObj.get("callFrames");             // NOI18N
+                }
+            }
             if (stack != null && stack.size() > 0) {
                 List<ConsoleMessage.StackFrame> stackTrace = new ArrayList<>();
                 for (Object o : stack) {

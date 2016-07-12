@@ -117,6 +117,12 @@ public class ConsoleMessage {
         }
         if (!stackTraceLoaded) {
             JSONArray stack = (JSONArray)msg.get("stackTrace");
+            if (stack == null) {
+                JSONObject stackObj = (JSONObject) msg.get("stack");            // NOI18N
+                if (stackObj != null) {
+                    stack = (JSONArray) stackObj.get("callFrames");             // NOI18N
+                }
+            }
             if (stack != null && stack.size() > 0) {
                 stackTrace = new ArrayList<StackFrame>();
                 for (Object o : stack) {
