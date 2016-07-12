@@ -2633,6 +2633,7 @@ enum_head
         (LITERAL_class | LITERAL_struct)? 
         (s = enum_qualified_id)? 
         (strongly_typed_enum_type_specifier)?
+        (type_attribute_specification)?
     ;
 
 // for predicates
