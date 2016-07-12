@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -124,6 +125,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
+            } else if (snapshot.getMimeType().equals("text/javascript")){
+                return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), translators.get(REACTJS)));
             } else {
                 return Collections.<SchedulerTask>emptyList();
             }
@@ -147,12 +150,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 //    private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
 //    private static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-//    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 //    private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
 //    private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
     private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
     private static final String LATTE_MIME_TYPE = "text/x-latte"; // NOI18N
+    private static final String REACTJS = "reactjs"; //NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -168,6 +172,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
         translators.put(LATTE_MIME_TYPE, new LatteTranslator());
+        translators.put(REACTJS, new ReactJsTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -629,6 +634,69 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of RhtmlTranslator class
 
+    private static class ReactJsTranslator implements Translator {
+
+        private static final int MAX_EMBEDDING_LENGTH = 5000000; //cca 5M
+        public static final String GENERATED_CODE = "@@@"; //NOI18N
+
+        @Override
+        public List<Embedding> translate(Snapshot snapshot) {
+
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            TokenSequence<JsTokenId> sequence = th.tokenSequence(JsTokenId.javascriptLanguage());
+
+            sequence.moveStart();
+            List<Embedding> embeddings = new ArrayList<>();
+
+            //marek (workaround): there seems to be a bug in parsing api - if I create
+            //the embedding for each PHPTokenId.T_INLINE_HTML token separatelly then the offsets
+            //translation is broken
+            int from = -1;
+            int len = 0;
+            while (sequence.moveNext()) {
+                Token t = sequence.token();
+                if (t.id() == JsTokenId.JSX_TEXT) {
+                    if (from < 0) {
+                        from = sequence.offset();
+                    }
+                    len += t.length();
+                } else {
+                    if (from >= 0) {
+                        //lets suppose the text is always html :-(
+                        createHtmlEmbedding(embeddings, snapshot, from, len);
+                        //add only one virtual generated token for a sequence of PHP tokens
+                        embeddings.add(snapshot.create(GENERATED_CODE, HTML_MIME_TYPE));
+                    }
+
+                    from = -1;
+                    len = 0;
+                }
+            }
+
+            if (from >= 0) {
+                createHtmlEmbedding(embeddings, snapshot, from, len);
+            }
+
+            if (embeddings.isEmpty()) {
+                //always embed html even if there isn't any
+                //this causes the parsing api to run tasks registered to text/html
+                //even if there isn't any html content
+                return Collections.singletonList(snapshot.create("", HTML_MIME_TYPE));
+            } else {
+                return Collections.singletonList(Embedding.create(embeddings));
+            }
+        }
+
+        private static void createHtmlEmbedding(List<Embedding> embeddings, Snapshot snapshot, int from, int length) {
+            assert embeddings != null;
+            assert snapshot != null;
+            if (length <= MAX_EMBEDDING_LENGTH) {
+                embeddings.add(snapshot.create(from, length, HTML_MIME_TYPE)); //NOI18N
+            }
+
+        }
+    }
+    
     private static final class HtmlTranslator implements Translator {
 
         public List<Embedding> translate(Snapshot snapshot) {
