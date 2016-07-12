@@ -2305,6 +2305,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 {classForwardDeclaration(ts, ds, id);}
             )
         |
+            (base_clause)?
             (   
                 {checkClassDefinitionDepth(NESTED_CLASSES_LIMIT)}?
                     {action.class_body(LT(1));}
@@ -2608,21 +2609,22 @@ cast_array_initializer_head
 
 // so far this one is used in predicates only
 class_head     
-        { String s; StorageClass sc = scInvalid; }
-	:	// Used only by predicates	
-    (   LITERAL_struct  
-    |	LITERAL_union 
-    |	LITERAL_class)
-    (options {greedy=true;} : type_attribute_specification)?
-    (sc = storage_class_specifier)?
-	(
-        s = scope_override  
-        s = literal_ident	
-        (LESSTHAN template_argument_list GREATERTHAN)?
-        (LITERAL_final | LITERAL_explicit)?
+    { String s; StorageClass sc = scInvalid; }
+    :	// Used only by predicates	
+        (   LITERAL_struct  
+        |   LITERAL_union 
+        |   LITERAL_class)
+        (options {greedy=true;} : type_attribute_specification)?
+        (sc = storage_class_specifier)?
+        (
+            s = scope_override  
+            s = literal_ident	
+            (LESSTHAN template_argument_list GREATERTHAN)?
+            (LITERAL_final | LITERAL_explicit)? 
+        )? 
         (base_clause)? 
-	)? LCURLY
-	;
+        LCURLY
+    ;
 
 // for predicates
 enum_head
