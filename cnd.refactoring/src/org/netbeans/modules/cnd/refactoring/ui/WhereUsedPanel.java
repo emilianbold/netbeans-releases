@@ -240,7 +240,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             currentProjects = null;
             allProjects = null;
         }
-        final String labelText;
+        String labelText;
         String _isBaseClassText = null;
         boolean _needVirtualMethodPanel = false;
         boolean _needClassPanel = false;
@@ -330,6 +330,18 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             labelText = getString("DSC_ElNotAvail", this.name); // NOI18N
         }
 
+        final StringBuilder buf = new StringBuilder();
+        int col = 0;
+        for(int i = 0; i < labelText.length(); i++) {
+            char c = labelText.charAt(i);
+            col++;
+            buf.append(c);
+            if (col > 72 && (c == ' ' || c == ',')) { // NOI18N
+                buf.append("<br>"); // NOI18N
+                col = 0;
+            }
+        }
+
         if (refObject != null) {
             this.name = labelText;
         }
@@ -344,7 +356,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             public void run() {
                 remove(classesPanel);
                 remove(methodsPanel);
-                label.setText(labelText);
+                label.setText(buf.toString());
                 // WARNING for now since this feature is not ready yet
 //                String combinedLabelText = "<html><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>"; // NOI18N
 //                label.setText(combinedLabelText);
