@@ -1885,6 +1885,14 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/parser/jsx/jsx7.js");
     }
 
+    public void testJsx08() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx8.js");
+    }
+
+    public void testJsx09() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx9.js");
+    }
+
     public void testLetOfOf() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/for-of/let-of-of.js");
     }
@@ -3028,6 +3036,10 @@ public class AstTest extends CslTestBase {
     
     public void testIssue262469() throws Exception {
         checkAstResult("testfiles/markoccurences/issue262469.js");
+    }
+    
+    public void testRegexpInTemplate() throws Exception {
+        checkAstResult("testfiles/parser/regexpInTemplate.js");
     }
     
 //    public void testModelClass01() throws Exception {
