@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -126,15 +127,15 @@ public abstract class CsmVirtualInfoQuery {
     }
 
     public static final class CsmOverrideInfo {
-        private final CsmMethod method;
+        private final CsmFunction method;
         private final boolean virtual;
 
-        private CsmOverrideInfo(CsmMethod method, boolean virtual) {
+        public CsmOverrideInfo(CsmFunction method, boolean virtual) {
             this.method = method;
             this.virtual = virtual;
         }
 
-        public CsmMethod getMethod() {
+        public CsmFunction getMethod() {
             return method;
         }
 
@@ -143,7 +144,10 @@ public abstract class CsmVirtualInfoQuery {
         }
         
         public boolean hasVirtualKeyword() {
-            return method.isVirtual();
+            if (CsmKindUtilities.isMethod(method)) {
+                return ((CsmMethod)method).isVirtual();
+            }
+            return false;
         }        
     }    
     

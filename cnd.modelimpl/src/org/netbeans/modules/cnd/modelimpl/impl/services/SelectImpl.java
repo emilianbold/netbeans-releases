@@ -245,6 +245,12 @@ public class SelectImpl implements CsmSelectProvider {
         }
         return file.getDeclarations().iterator();
     }
+    
+    @Override
+    public Iterator<CsmOffsetableDeclaration> getExternalDeclarations(CsmFile file) {
+        CsmProject project = file.getProject();
+        return ((ProjectBase)project).findExternalDeclarations(file).iterator();
+    }
 
     private Iterator<CsmOffsetableDeclaration> analyzeFileFilter(FileImpl file, CsmFilter filter){
         if (filter instanceof FilterBuilder.InnerOffsetFilterImpl) {

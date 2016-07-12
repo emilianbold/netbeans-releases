@@ -52,15 +52,19 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -222,6 +226,41 @@ public abstract class DeclarationContainer extends ProjectComponent {
         return list;
     }
 
+    public Collection<CsmUID<CsmOffsetableDeclaration>> findExternalUIDsFile(CsmFile file) {
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
+        int fileID = UIDUtilities.getFileID(UIDs.get(file));
+        try {
+            declarationsLock.readLock().lock();
+            for (Map.Entry<CharSequence, Object> entry : declarations.entrySet()) {
+                Object o = entry.getValue();
+                if (o instanceof CsmUID<?>[]) {
+                    // we know the template type to be CsmOffsetableDeclaration
+                    @SuppressWarnings("unchecked") // checked
+                    final CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
+                    for(CsmUID<CsmOffsetableDeclaration> u : uids) {
+                        if (UIDUtilities.getFileID(u) == fileID) {
+                            if (CharSequenceUtilities.indexOf(UIDUtilities.getName(u, true), KeyUtilities.UID_INTERNAL_DATA_PREFIX) > 0) {
+                                list.add(u);
+                            }
+                        }
+                    }
+                } else if (o instanceof CsmUID<?>) {
+                    // we know the template type to be CsmOffsetableDeclaration
+                    @SuppressWarnings("unchecked") // checked
+                    final CsmUID<CsmOffsetableDeclaration> uid = (CsmUID<CsmOffsetableDeclaration>) o;
+                    if (UIDUtilities.getFileID(uid) == fileID) {
+                        if (CharSequenceUtilities.indexOf(UIDUtilities.getName(uid, true), KeyUtilities.UID_INTERNAL_DATA_PREFIX) > 0) {
+                            list.add(uid);
+                        }
+                    }
+                }
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return list;
+    }
+
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsFQN(CharSequence fqn, Kind[] kinds) {
         Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
         char maxChar = 255; //Character.MAX_VALUE;
@@ -276,6 +315,10 @@ public abstract class DeclarationContainer extends ProjectComponent {
 
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
         return UIDCsmConverter.UIDsToDeclarations(getUIDsFQN(fqn, kinds));
+    }
+
+    public Collection<CsmOffsetableDeclaration> findExternalDeclarations(CsmFile file) {
+        return UIDCsmConverter.UIDsToDeclarations(findExternalUIDsFile(file));
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarationsUIDs() {
