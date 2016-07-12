@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.breakpoints;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
@@ -61,8 +62,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -93,34 +96,23 @@ public class TruffleBreakpointsHandler {
     
     private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
-            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
+            "(Ljava/lang/String;IILjava/lang/String;)[Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
+    private static final String ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT =
+            "(Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/tools/debug/engine/LineBreakpoint;)V";    // NOI18N
     
     private final JPDADebugger debugger;
     private ClassType accessorClass;
     
-    private List<JSLineBreakpoint> breakpointsToSubmit = new ArrayList<>();
-    private final Object breakpointsToSubmitLock = new Object();
-    private final Map<JSLineBreakpoint, ObjectReference> breakpointsMap = new HashMap<>();
+    private volatile boolean initialBreakpointsSubmitted = false;
+    private final Map<JSLineBreakpoint, Set<ObjectReference>> breakpointsMap = new HashMap<>();
     private final JSBreakpointPropertyChangeListener breakpointsChangeListener = new JSBreakpointPropertyChangeListener();
     
     public TruffleBreakpointsHandler(JPDADebugger debugger) {
         this.debugger = debugger;
-        init();
     }
 
-    private void init() {
-        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        synchronized (breakpointsToSubmitLock) {
-            for (Breakpoint bp : breakpoints) {
-                if (bp instanceof JSLineBreakpoint) {
-                    breakpointsToSubmit.add((JSLineBreakpoint) bp);
-                }
-            }
-        }
-    }
-    
     public void destroy() {
         synchronized (breakpointsMap) {
             for (JSLineBreakpoint jsbp : breakpointsMap.keySet()) {
@@ -132,23 +124,20 @@ public class TruffleBreakpointsHandler {
     /**
      * Call in method invoking
      */
-    public void submitBreakpoints(ClassType accessorClass, JPDAThreadImpl t) throws InvocationException {
+    public void submitBreakpoints(ClassType accessorClass, ObjectReference debugManager, JPDAThreadImpl t) throws InvocationException {
         assert t.isMethodInvoking();
         this.accessorClass = accessorClass;
-        List<JSLineBreakpoint> breakpoints;
-        synchronized (breakpointsToSubmitLock) {
-            if (breakpointsToSubmit == null) {
-                return ;
-            }
-            breakpoints = new ArrayList<>(breakpointsToSubmit);
-            breakpointsToSubmit.clear();
-            breakpointsToSubmit = null;
-        }
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        initialBreakpointsSubmitted = true;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "DebugManagerHandler: Breakpoints to submit = {0}", breakpoints);
         }
         Map<JSLineBreakpoint, ObjectReference> bpsMap = new HashMap<>();
-        for (JSLineBreakpoint bp : breakpoints) {
+        for (Breakpoint breakpoint : breakpoints) {
+            if (!(breakpoint instanceof JSLineBreakpoint)) {
+                continue;
+            }
+            JSLineBreakpoint bp = (JSLineBreakpoint) breakpoint;
             FileObject fileObject = bp.getFileObject();
             if (fileObject == null) {
                 continue;
@@ -159,7 +148,7 @@ public class TruffleBreakpointsHandler {
             }
             ObjectReference bpImpl;
             if (bp.isEnabled()) {
-                bpImpl = setLineBreakpoint(t, uri, bp.getLineNumber(),
+                bpImpl = setLineBreakpoint(debugManager, t, uri, bp.getLineNumber(),
                                            getIgnoreCount(bp), bp.getCondition());
             } else {
                 bpImpl = null;
@@ -168,7 +157,14 @@ public class TruffleBreakpointsHandler {
             bp.addPropertyChangeListener(breakpointsChangeListener);
         }
         synchronized (breakpointsMap) {
-            breakpointsMap.putAll(bpsMap);
+            for (Map.Entry<JSLineBreakpoint, ObjectReference> bpEntry : bpsMap.entrySet()) {
+                Set<ObjectReference> impls = breakpointsMap.get(bpEntry.getKey());
+                if (impls == null) {
+                    impls = new HashSet<ObjectReference>();
+                    breakpointsMap.put(bpEntry.getKey(), impls);
+                }
+                impls.add(bpEntry.getValue());
+            }
         }
     }
     
@@ -180,7 +176,8 @@ public class TruffleBreakpointsHandler {
         return ignoreCount;
     }
     
-    private ObjectReference setLineBreakpoint(JPDAThreadImpl t, URI uri, int line,
+    private ObjectReference setLineBreakpoint(ObjectReference debugManager,
+                                              JPDAThreadImpl t, URI uri, int line,
                                               int ignoreCount, String condition) throws InvocationException {
         assert t.isMethodInvoking();
         ThreadReference tr = t.getThreadReference();
@@ -189,19 +186,19 @@ public class TruffleBreakpointsHandler {
             Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
                     accessorClass,
                     ACCESSOR_SET_LINE_BREAKPOINT,
-                    ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
+                    ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT);
             //if (path.indexOf("/src") > 0) {
             //    path = path.substring(path.indexOf("/src") + 1);
             //}
             if (setLineBreakpointMethod == null) {
-                throw new IllegalStateException("Method "+ACCESSOR_SET_LINE_BREAKPOINT+" with signature:\n"+ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT+"\nis not present in accessor class "+accessorClass);
+                throw new IllegalStateException("Method "+ACCESSOR_SET_LINE_BREAKPOINT+" with signature:\n"+ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT+"\nis not present in accessor class "+accessorClass);
             }
             //Variable uriVar = debugger.createMirrorVar(uri);
             Value uriRef = vm.mirrorOf(uri.toString());// ((JDIVariable) uriVar).getJDIValue();
             IntegerValue lineRef = vm.mirrorOf(line);
             IntegerValue icRef = vm.mirrorOf(ignoreCount);
             StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
-            List<? extends Value> args = Arrays.asList(new Value[] { uriRef, lineRef, icRef, conditionRef });
+            List<? extends Value> args = Arrays.asList(new Value[] { debugManager, uriRef, lineRef, icRef, conditionRef });
             ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
                     accessorClass,
                     tr,
@@ -233,13 +230,16 @@ public class TruffleBreakpointsHandler {
         final int line = bp.getLineNumber();
         final int ignoreCount = getIgnoreCount(bp);
         final String condition = bp.getCondition();
-        final ObjectReference[] bpRef = new ObjectReference[] { null };
+        final ArrayReference[] bpRef = new ArrayReference[] { null };
         if (bp.isEnabled()) {
             try {
                 final Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
                         accessorClass,
                         ACCESSOR_SET_LINE_BREAKPOINT,
                         ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
+                if (setLineBreakpointMethod == null) {
+                    throw new IllegalStateException("Method "+ACCESSOR_SET_LINE_BREAKPOINT+" with signature:\n"+ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT+"\nis not present in accessor class "+accessorClass);
+                }
                 TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                     @Override
                     public void callMethods(JPDAThread thread) throws InvocationException {
@@ -251,7 +251,7 @@ public class TruffleBreakpointsHandler {
                         StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
                         List<? extends Value> args = Arrays.asList(new Value[] { uriRef, lineRef, icRef, conditionRef });
                         try {
-                            ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
+                            ArrayReference ret = (ArrayReference) ClassTypeWrapper.invokeMethod(
                                     accessorClass,
                                     tr,
                                     setLineBreakpointMethod,
@@ -271,18 +271,27 @@ public class TruffleBreakpointsHandler {
             }
         }
         bp.addPropertyChangeListener(breakpointsChangeListener);
-        synchronized (breakpointsMap) {
-            breakpointsMap.put(bp, bpRef[0]);
+        List<Value> values = bpRef[0].getValues();
+        Set<ObjectReference> breakpoints = new HashSet<>();
+        for (Value v : values) {
+            if (v instanceof ObjectReference) {
+                breakpoints.add((ObjectReference) v);
+            }
+        }
+        if (!breakpoints.isEmpty()) {
+            synchronized (breakpointsMap) {
+                breakpointsMap.put(bp, breakpoints);
+            }
         }
     }
     
     private boolean removeBP(final JSLineBreakpoint bp) {
         bp.removePropertyChangeListener(breakpointsChangeListener);
-        final ObjectReference bpImpl;
+        final Set<ObjectReference> bpImpls;
         synchronized (breakpointsMap) {
-            bpImpl = breakpointsMap.remove(bp);
+            bpImpls = breakpointsMap.remove(bp);
         }
-        if (bpImpl == null) {
+        if (bpImpls == null) {
             return false;
         }
         final boolean[] successPtr = new boolean[] { false };
@@ -298,21 +307,25 @@ public class TruffleBreakpointsHandler {
                 @Override
                 public void callMethods(JPDAThread thread) throws InvocationException {
                     ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
-                    List<? extends Value> args = Arrays.asList(new Value[] { bpImpl });
                     try {
-                        ClassTypeWrapper.invokeMethod(
-                                accessorClass,
-                                tr,
-                                removeLineBreakpointMethod,
-                                args,
-                                ObjectReference.INVOKE_SINGLE_THREADED);
-                        successPtr[0] = true;
-                    } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException |
-                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
-                             ObjectCollectedExceptionWrapper ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                        for (ObjectReference bpImpl : bpImpls) {
+                            List<? extends Value> args = Arrays.asList(new Value[] { bpImpl });
+                            try {
+                                ClassTypeWrapper.invokeMethod(
+                                        accessorClass,
+                                        tr,
+                                        removeLineBreakpointMethod,
+                                        args,
+                                        ObjectReference.INVOKE_SINGLE_THREADED);
+                                successPtr[0] = true;
+                            } catch (InvalidTypeException | ClassNotLoadedException |
+                                     IncompatibleThreadStateException |
+                                     InternalExceptionWrapper |
+                                     ObjectCollectedExceptionWrapper ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    } catch (VMDisconnectedExceptionWrapper ex) {}
                 }
             });
         } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
@@ -324,11 +337,11 @@ public class TruffleBreakpointsHandler {
     private boolean setBreakpointProperty(JSLineBreakpoint bp,
                                           TruffleBPMethods method,
                                           final List<? extends Value> args) {
-        final ObjectReference bpImpl;
+        final Set<ObjectReference> bpImpls;
         synchronized (breakpointsMap) {
-            bpImpl = breakpointsMap.get(bp);
+            bpImpls = breakpointsMap.get(bp);
         }
-        if (bpImpl == null) {
+        if (bpImpls == null) {
             if (bp.isEnabled()) {
                 submitBP(bp);
                 return true;
@@ -339,7 +352,7 @@ public class TruffleBreakpointsHandler {
         final boolean[] successPtr = new boolean[] { false };
         try {
             final Method setBreakpointPropertyMethod = ClassTypeWrapper.concreteMethodByName(
-                    (ClassType) ObjectReferenceWrapper.referenceType(bpImpl),
+                    (ClassType) ObjectReferenceWrapper.referenceType(bpImpls.iterator().next()),
                     method.getMethodName(),
                     method.getMethodSignature());
             TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
@@ -347,19 +360,23 @@ public class TruffleBreakpointsHandler {
                 public void callMethods(JPDAThread thread) throws InvocationException {
                     ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
                     try {
-                        ObjectReferenceWrapper.invokeMethod(
-                                bpImpl,
-                                tr,
-                                setBreakpointPropertyMethod,
-                                args,
-                                ObjectReference.INVOKE_SINGLE_THREADED);
-                        successPtr[0] = true;
-                    } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException |
-                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
-                             ObjectCollectedExceptionWrapper ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                        for (ObjectReference bpImpl : bpImpls) {
+                            try {
+                                ObjectReferenceWrapper.invokeMethod(
+                                        bpImpl,
+                                        tr,
+                                        setBreakpointPropertyMethod,
+                                        args,
+                                        ObjectReference.INVOKE_SINGLE_THREADED);
+                                successPtr[0] = true;
+                            } catch (InvalidTypeException | ClassNotLoadedException |
+                                     IncompatibleThreadStateException |
+                                     InternalExceptionWrapper |
+                                     ObjectCollectedExceptionWrapper ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    } catch (VMDisconnectedExceptionWrapper ex) {}
                 }
             });
         } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
@@ -369,25 +386,17 @@ public class TruffleBreakpointsHandler {
     }
 
     public void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {
-        synchronized (breakpointsToSubmitLock) {
-            if (breakpointsToSubmit != null) {
-                breakpointsToSubmit.add(jsLineBreakpoint);
-                return ;
-            }
+        if (initialBreakpointsSubmitted) {
+            // Breakpoints were submitted already, submit this as well.
+            submitBP(jsLineBreakpoint);
         }
-        // Breakpoints were submitted already, submit this as well.
-        submitBP(jsLineBreakpoint);
     }
 
     public void breakpointRemoved(JSLineBreakpoint jsLineBreakpoint) {
-        synchronized (breakpointsToSubmitLock) {
-            if (breakpointsToSubmit != null) {
-                breakpointsToSubmit.remove(jsLineBreakpoint);
-                return ;
-            }
+        if (initialBreakpointsSubmitted) {
+            // Breakpoints were submitted already, remove this.
+            removeBP(jsLineBreakpoint);
         }
-        // Breakpoints were submitted already, remove this.
-        removeBP(jsLineBreakpoint);
     }
     
     private static enum TruffleBPMethods {

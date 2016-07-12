@@ -49,7 +49,8 @@ import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.vm.PolyglotEngine;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 /**
  *
@@ -57,30 +58,22 @@ import com.oracle.truffle.api.vm.PolyglotEngine;
  */
 class JPDATruffleDebugManager {
     
-    private final Debugger debugger;
-    private final PolyglotEngine tvm;
-    //private volatile ExecutionEvent execEvent;
+    private final Reference<Debugger> debugger;
     private volatile boolean prepareStepInto;
 
-    public JPDATruffleDebugManager(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
-        this.debugger = debugger; // DebugEngine.create(dbgClient, language);
-        this.tvm = tvm;
-        //this.execEvent = event;
+    public JPDATruffleDebugManager(Debugger debugger) {
+        this.debugger = new WeakReference<>(debugger);
     }
     
-    static JPDATruffleDebugManager setUp(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
+    static JPDATruffleDebugManager setUp(Debugger debugger) {
         //System.err.println("JPDATruffleDebugManager.setUp()");
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger, tvm, event);
+        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger);
         //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
         return debugManager;
     }
     
     Debugger getDebugger() {
-        return debugger;
-    }
-    
-    PolyglotEngine getPolyglotEngine() {
-        return tvm;
+        return debugger.get();
     }
     
     static SourcePosition getPosition(Node node) {
