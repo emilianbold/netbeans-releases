@@ -45,12 +45,17 @@ package org.netbeans.modules.cnd.navigation.overrides;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -58,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -92,20 +98,34 @@ public class ComputeAnnotations {
         }
         CsmCacheManager.enter();
         try {
-            computeAnnotations(csmFile.getDeclarations(), toAdd);
+            Map<Integer, List<CsmOffsetableDeclaration>> external = new HashMap<Integer, List<CsmOffsetableDeclaration>>();
+            Iterator<CsmOffsetableDeclaration> externalDeclarations = CsmSelect.getExternalDeclarations(csmFile);
+            if (externalDeclarations != null) {
+                while(externalDeclarations.hasNext()) {
+                    CsmOffsetableDeclaration next = externalDeclarations.next();
+                    int start = next.getStartOffset();
+                    List<CsmOffsetableDeclaration> list = external.get(start);
+                    if (list == null) {
+                        list = new ArrayList<CsmOffsetableDeclaration>();
+                        external.put(start, list);
+                    }
+                    list.add(next);
+                }
+            }
+            computeAnnotations(csmFile.getDeclarations(), toAdd, external);
         } finally {
             CsmCacheManager.leave();
         }
     }
 
-    private void computeAnnotations(Collection<? extends CsmOffsetableDeclaration> toProcess, Collection<BaseAnnotation> toAdd) {
+    private void computeAnnotations(Collection<? extends CsmOffsetableDeclaration> toProcess, Collection<BaseAnnotation> toAdd, Map<Integer, List<CsmOffsetableDeclaration>> external) {
         for (CsmOffsetableDeclaration decl : toProcess) {
             if (canceled.get()) {
                 return;
             }
             if (this.csmFile.equals(decl.getContainingFile())) {
                 if (CsmKindUtilities.isFunction(decl)) {
-                    computeAnnotation((CsmFunction) decl, toAdd);
+                    computeAnnotation((CsmFunction) decl, toAdd, external);
                 } else if (CsmKindUtilities.isClass(decl)) {
                     if (CsmKindUtilities.isTemplate(decl)) {
                         if (((CsmTemplate)decl).isExplicitSpecialization()) {
@@ -113,15 +133,15 @@ public class ComputeAnnotations {
                         }
                     }
                     computeAnnotation((CsmClass) decl, toAdd);
-                    computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
+                    computeAnnotations(((CsmClass) decl).getMembers(), toAdd, external);
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                    computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
+                    computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd, external);
                 }
             }
         }
     }
 
-    private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
+    private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd, Map<Integer, List<CsmOffsetableDeclaration>> external) {
         Collection<CsmVirtualInfoQuery.CsmOverrideInfo> baseMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
         Collection<CsmVirtualInfoQuery.CsmOverrideInfo> overriddenMethods = Collections.<CsmVirtualInfoQuery.CsmOverrideInfo>emptyList();
         CsmVirtualInfoQuery.CsmOverrideInfo thisMethod = null;
@@ -154,6 +174,22 @@ public class ComputeAnnotations {
         Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);
         if (canceled.get()) {
             return;
+        }
+        if (canceled.get()) {
+            return;
+        }
+        List<CsmOffsetableDeclaration> pseudoOverrides = external.get(func.getStartOffset());
+        if (pseudoOverrides != null) {
+            for(CsmOffsetableDeclaration e : pseudoOverrides) {
+                overriddenMethods = new ArrayList<CsmVirtualInfoQuery.CsmOverrideInfo>(overriddenMethods);
+                if (CsmKindUtilities.isFunction(e)) {
+                    CsmFunction f = (CsmFunction) e;
+                    CsmFunctionDefinition definition = f.getDefinition();
+                    if (definition != null && !definition.equals(f)) {
+                        overriddenMethods.add(new CsmVirtualInfoQuery.CsmOverrideInfo(definition, false));
+                    }
+                }
+            }
         }
         if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
             toAdd.add(new OverrideAnnotation(doc, func, thisMethod, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));

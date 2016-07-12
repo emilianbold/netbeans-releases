@@ -126,12 +126,12 @@ class NonVirtualMethod extends AbstractCodeAudit {
                 if (overriddenChain.getBaseMethods().size() > 0) {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getBaseMethods().iterator();
                     if (overriddenChain.getBaseMethods().size() == 1) {
-                        String name = iterator.next().getMethod().getContainingClass().getName().toString();
+                        String name = ((CsmMethod)iterator.next().getMethod()).getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.class", name); // NOI18N
                     } else {
                         List<String> list = new ArrayList<>();
                         while(iterator.hasNext()) {
-                            list.add(iterator.next().getMethod().getContainingClass().getName().toString());
+                            list.add(((CsmMethod)iterator.next().getMethod()).getContainingClass().getName().toString());
                         }
                         Collections.sort(list);
                         StringBuilder buf = new StringBuilder();
@@ -147,12 +147,12 @@ class NonVirtualMethod extends AbstractCodeAudit {
                 } else {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getDerivedMethods().iterator();
                     if (overriddenChain.getDerivedMethods().size() == 1) {
-                        String name = iterator.next().getMethod().getContainingClass().getName().toString();
+                        String name = ((CsmMethod)iterator.next().getMethod()).getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.class", name); // NOI18N
                     } else {
                         List<String> list = new ArrayList<>();
                         while(iterator.hasNext()) {
-                            list.add(iterator.next().getMethod().getContainingClass().getName().toString());
+                            list.add(((CsmMethod)iterator.next().getMethod()).getContainingClass().getName().toString());
                         }
                         Collections.sort(list);
                         StringBuilder buf = new StringBuilder();

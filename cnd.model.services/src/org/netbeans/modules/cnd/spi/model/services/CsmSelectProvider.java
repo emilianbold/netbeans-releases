@@ -74,6 +74,7 @@ public interface CsmSelectProvider {
     public Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter);
     public boolean hasDeclarations(CsmFile file);
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter);
+    public Iterator<CsmOffsetableDeclaration> getExternalDeclarations(CsmFile file);
     public Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter);
     public Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter);
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter);

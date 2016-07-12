@@ -723,6 +723,12 @@ public final class CompletionSupport implements DocumentListener {
             return type2;
         }
         // Convert the rest according to integral ranks
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_LONG_CLASS) ? type1 : type2;
+        }
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.LONG_LONG_CLASS) ? type1 : type2;
+        }
         if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_CLASS)) {
             return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_CLASS) ? type1 : type2;
         }
