@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.ExecutionEvent;
@@ -54,24 +53,15 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.impl.Accessor;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.LineLocation;
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.vm.PolyglotEngine;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Truffle accessor for JPDA debugger.
@@ -94,7 +84,7 @@ public class JPDATruffleAccessor extends Object {
     private static volatile boolean accessLoopRunning = false;
     //private static volatile AccessLoop accessLoopRunnable;
     private static volatile Thread accessLoopThread;
-    private static JPDATruffleDebugManager debugManager;
+    private static final Map<Debugger, JPDATruffleDebugManager> debugManagers = new WeakHashMap<>();
     /** Explicitly set this field to true to step into script calls. */
     static boolean isSteppingInto = false; // Step into was issued in JPDA debugger
     static int steppingIntoTruffle = 0; // = 0 no stepping change, > 0 set step into, < 0 unset stepping into
@@ -132,8 +122,10 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static void stopAccessLoop() {
-        if (debugManager != null) {
-            debugManager.dispose();
+        synchronized (debugManagers) {
+            for (JPDATruffleDebugManager debugManager : debugManagers.values()) {
+                debugManager.dispose();
+            }
         }
         accessLoopRunning = false;
         //accessLoopRunnable = null;
@@ -147,24 +139,21 @@ public class JPDATruffleAccessor extends Object {
         //System.err.println("setUpDebugManagerFor("+event+", "+doStepInto+")");
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
-        PolyglotEngine tvm;
-        try {
-            Field vmField = debugger.getClass().getDeclaredField("engine");
-            vmField.setAccessible(true);
-            tvm = (PolyglotEngine) vmField.get(debugger);
-        } catch (IllegalAccessException | IllegalArgumentException |
-                 NoSuchFieldException | SecurityException ex) {
-            throw new RuntimeException(ex);
-        }
         if (doStepInto) {
             execEvent.prepareStepInto();
         }
-        if (debugManager == null || debugManager.getDebugger() != debugger) {
-            debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
-        } else {
-            debugManager.setExecutionEvent((ExecutionEvent) event);
+        JPDATruffleDebugManager debugManager;
+        synchronized (debugManagers) {
+            debugManager = debugManagers.get(debugger);
+            if (debugManager == null) {
+                debugManager = JPDATruffleDebugManager.setUp(debugger);//, tvm, (ExecutionEvent) event);
+                debugManagers.put(debugger, debugManager);
+                return debugManager;
+            } else {
+                debugManager.setExecutionEvent((ExecutionEvent) event);
+                return null;    // Nothing new
+            }
         }
-        return debugManager;
     }
     
     /*
@@ -209,56 +198,6 @@ public class JPDATruffleAccessor extends Object {
                     break;
             default:
                     throw new IllegalStateException("Unknown step command: "+stepCmd);
-        }
-    }
-    
-    private static TruffleLanguage getLanguage(Node node) {
-        try {
-            Field spiField = Accessor.class.getDeclaredField("SPI");
-            spiField.setAccessible(true);
-            Object spi = spiField.get(null);
-            Field nodesField = Accessor.class.getDeclaredField("NODES");
-            nodesField.setAccessible(true);
-            Object nodes = nodesField.get(null);
-            Method findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", RootNode.class);
-            findLanguageMethod.setAccessible(true);
-            Node rootNode = node.getRootNode();
-            if (rootNode == null) {
-                rootNode = node;
-            }
-            Class languageClass = (Class) findLanguageMethod.invoke(nodes, rootNode);
-            /*
-            System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+node.getRootNode());
-            System.err.println("root node's class = "+node.getRootNode().getClass());
-            Field rnLangField = RootNode.class.getDeclaredField("language");
-            rnLangField.setAccessible(true);
-            Object rnLangClass = rnLangField.get(node.getRootNode());
-            System.err.println("Root node's language class = "+rnLangClass);
-            */
-            if (languageClass == null) {
-                System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+rootNode);
-                System.err.println("root node's class = "+rootNode.getClass());
-                return null;
-            }
-            
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class, String.class);
-            findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass, null);
-            
-            if (tl instanceof TruffleLanguage) {
-                return (TruffleLanguage) tl;
-            } else {
-                return null;
-            }
-        } catch (IllegalAccessException | IllegalArgumentException |
-                 NoSuchFieldException | NoSuchMethodException |
-                 SecurityException | InvocationTargetException ex) {
-            //throw new RuntimeException(ex);
-            // Do not break debugging:
-            ex.printStackTrace();
-            return null;
-        } catch (StackOverflowError soe) {
-            throw new IllegalStateException(node.toString(), soe);
         }
     }
     
@@ -434,94 +373,64 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static Breakpoint setLineBreakpoint(String uriStr, int line,
-                                        int ignoreCount, String condition) throws URISyntaxException {
+    static Breakpoint[] setLineBreakpoint(String uriStr, int line,
+                                          int ignoreCount, String condition) throws URISyntaxException {
         return doSetLineBreakpoint(new URI(uriStr), line, ignoreCount, condition, false);
     }
     
-    static Breakpoint setLineBreakpoint(URL url, int line,
-                                            int ignoreCount, String condition) {
-        return doSetLineBreakpoint(url, line, ignoreCount, condition, false);
+    static Breakpoint setLineBreakpoint(JPDATruffleDebugManager debugManager, String uriStr, int line,
+                                        int ignoreCount, String condition) throws URISyntaxException {
+        try {
+            return doSetLineBreakpoint(debugManager.getDebugger(), new URI(uriStr), line, ignoreCount, condition, false);
+        } catch (IOException ex) {
+            System.err.println("setLineBreakpoint("+uriStr+", "+line+"): "+ex);
+            return null;
+        }
     }
     
-    static Breakpoint setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
+    static Breakpoint[] setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
         return doSetLineBreakpoint(new URI(uriStr), line, 0, null, true);
     }
     
-    static Breakpoint setOneShotLineBreakpoint(URL url, int line) {
-        return doSetLineBreakpoint(url, line, 0, null, true);
-    }
-    
-    private static Breakpoint doSetLineBreakpoint(String path, int line,
-                                                  int ignoreCount, String condition,
-                                                  boolean oneShot) {
-        /*
-        try {
-            return doSetLineBreakpoint(new File(path).toURI().toURL(), line,
-                                       ignoreCount, condition, oneShot);
-        } catch (MalformedURLException muex) {
-            System.err.println(muex.getLocalizedMessage());
-            muex.printStackTrace();
+    private static Breakpoint[] doSetLineBreakpoint(URI uri, int line,
+                                                    int ignoreCount, String condition,
+                                                    boolean oneShot) {
+        Breakpoint[] lbs;
+        JPDATruffleDebugManager[] managers;
+        synchronized (debugManagers) {
+            managers = debugManagers.values().toArray(new JPDATruffleDebugManager[] {});
         }
-        */
-        Source source;
-        try {
-            source = Source.fromFileName(path);
-        } catch (IOException ioex) {
-            //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
-            return null;
-        }
-        return doSetLineBreakpoint(source, line, ignoreCount, condition, oneShot);
-    }
-    
-    private static Breakpoint doSetLineBreakpoint(URL url, int line,
-                                                  int ignoreCount, String condition,
-                                                  boolean oneShot) {
-        Source source;
-        try {
-            source = Source.fromURL(url, url.getPath());
-        } catch (IOException ioex) {
-            return null;
-        }
-        return doSetLineBreakpoint(source, line, ignoreCount, condition, oneShot);
-    }
-    
-    private static Breakpoint doSetLineBreakpoint(Source source, int line,
-                                                  int ignoreCount, String condition,
-                                                  boolean oneShot) {
-        LineLocation bpLineLocation = source.createLineLocation(line);
-        Breakpoint lb;
-        try {
-            lb = debugManager.getDebugger().setLineBreakpoint(0, bpLineLocation, oneShot);
-        } catch (IOException dex) {
-            System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
-            return null;
-        }
-        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
-        if (ignoreCount != 0) {
-            lb.setIgnoreCount(ignoreCount);
-        }
-        if (condition != null) {
-            try {
-                lb.setCondition(condition);
-            } catch (IOException dex) {
-                System.err.println("Wrong condition "+condition+" : "+dex);
+        lbs = new Breakpoint[managers.length];
+        int i = 0;
+        for (JPDATruffleDebugManager debugManager : managers) {
+            Debugger debugger = debugManager.getDebugger();
+            if (debugger == null) {
+                lbs = Arrays.copyOf(lbs, lbs.length - 1);
+                synchronized (debugManagers) {
+                    debugManagers.remove(debugger);
+                }
+                continue;
             }
+            Breakpoint lb;
+            try {
+                lb = doSetLineBreakpoint(debugger, uri, line,
+                                         ignoreCount, condition, oneShot);
+            } catch (IOException dex) {
+                System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
+                lbs = Arrays.copyOf(lbs, lbs.length - 1);
+                continue;
+            }
+            lbs[i++] = lb;
         }
-        return lb;
+        return lbs;
     }
     
-    private static Breakpoint doSetLineBreakpoint(URI uri, int line,
+    private static Breakpoint doSetLineBreakpoint(Debugger debugger,
+                                                  URI uri, int line,
                                                   int ignoreCount, String condition,
-                                                  boolean oneShot) {
-        Breakpoint lb;
-        try {
-            lb = debugManager.getDebugger().setLineBreakpoint(0, uri, line, oneShot);
-        } catch (IOException dex) {
-            System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
-            return null;
-        }
-        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+                                                  boolean oneShot) throws IOException {
+        Breakpoint lb = debugger.setLineBreakpoint(0, uri, line, oneShot);
+        //System.err.println("JPDATruffleAccessor.setLineBreakpoint("+uri+", "+line+"): lb = "+lb);
         if (ignoreCount != 0) {
             lb.setIgnoreCount(ignoreCount);
         }
@@ -610,11 +519,10 @@ public class JPDATruffleAccessor extends Object {
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
                         if (!stepIntoPrepared) {
-                            try {
-                                debugManager.prepareExecStepInto();
-                            } catch (IllegalStateException isex) {
-                                //forceStepInto();
-                                isex.printStackTrace();
+                            synchronized (debugManagers) {
+                                for (JPDATruffleDebugManager debugManager : debugManagers.values()) {
+                                    debugManager.prepareExecStepInto();
+                                }
                             }
                             stepIntoPrepared = true;
                             //System.err.println("Prepared step into and continue.");
@@ -622,7 +530,11 @@ public class JPDATruffleAccessor extends Object {
                         isSteppingInto = true;
                     } else {
                         // un-prepare step into, if possible.
-                        debugManager.prepareExecContinue();
+                        synchronized (debugManagers) {
+                            for (JPDATruffleDebugManager debugManager : debugManagers.values()) {
+                                debugManager.prepareExecContinue();
+                            }
+                        }
                         isSteppingInto = false;
                         stepIntoPrepared = false;
                     }
