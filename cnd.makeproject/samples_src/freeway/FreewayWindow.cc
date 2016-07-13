@@ -179,7 +179,7 @@ FwyZoneObjects::objects_initialize()
         for (int j = 0; j < NSPEEDS; j++) {
             gtk_combo_box_append_text((GtkComboBox *) z[i].spop, SPEED_STR[j]);
             gtk_combo_box_set_active((GtkComboBox *) z[i].spop, 1);
-            g_signal_connect(G_OBJECT(z[i].spop), "changed", G_CALLBACK(zone_speed), (gpointer) (i + 1));
+            g_signal_connect(G_OBJECT(z[i].spop), "changed", G_CALLBACK(zone_speed), (gpointer) (gint64) (i + 1));
         }
         GtkWidget *sep = gtk_vseparator_new();
         gtk_fixed_put((GtkFixed *) fixed, sep, 100, 40);

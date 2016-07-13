@@ -66,7 +66,7 @@ import org.openide.windows.TopComponent;
     @ActionReference(path = "Projects/org-netbeans-modules-apisupport-project/Actions", position = 3050),
     @ActionReference(path = "Projects/org-netbeans-modules-apisupport-project-suite/Actions", position = 2450)
 })
-@Messages("CTL_ApplyPatternAction=Inspect and Transform...")
+@Messages("CTL_ApplyPatternAction=Inspect and &Transform...")
 public final class ApplyPatternAction implements ActionListener {
 
     @Override

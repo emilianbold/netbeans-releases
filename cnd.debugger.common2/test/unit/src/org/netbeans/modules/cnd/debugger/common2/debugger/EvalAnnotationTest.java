@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import org.junit.Test;
 import org.netbeans.modules.cnd.debugger.common2.debugger.test.CndBaseTestCase;
+import org.openide.text.Line;
 
 /**
  *
@@ -53,16 +54,40 @@ public class EvalAnnotationTest extends CndBaseTestCase {
     public EvalAnnotationTest(String name) {
         super(name);
     }
+    
+    private Line.Part getLinePart(final int col) {
+        return new Line.Part() {
+            @Override
+            public int getColumn() {
+                return col;
+            }
+
+            @Override
+            public int getLength() {
+                return 0;
+            }
+
+            @Override
+            public Line getLine() {
+                return null;
+            }
+
+            @Override
+            public String getText() {
+                return "";
+            }
+        };
+    }
 
     @Test
     public void test206740() {
-        String expr = EvalAnnotation.extractExpr(11, "case ABC::DEF:");
+        String expr = EvalAnnotation.extractExpr(getLinePart(11), "case ABC::DEF:");
         assertEquals("ABC::DEF", expr);
     }
     
     @Test
     public void test206740_2() {
-        String expr = EvalAnnotation.extractExpr(6, "case ABC::DEF:");
+        String expr = EvalAnnotation.extractExpr(getLinePart(6), "case ABC::DEF:");
         assertEquals("ABC::DEF", expr);
     }
 }

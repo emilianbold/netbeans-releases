@@ -108,6 +108,219 @@ public class LambdaTest {
     }
     
     @Test
+    public void testLambda2ClassShadowedMethod() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return (A a, B b, C c) -^> {\n"
+                        + "            return after.apply(apply(a, b, c));\n"
+                        + "        };\n"
+                        + "    }\n"
+                        + "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("11:32-11:32:verifier:ERR_lambda2Class")
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return new Test<A, B, C, V>() {\n"
+                        + "            @Override\n"
+                        + "            public V apply(A a, B b, C c) {\n"
+                        + "                return after.apply(Test.this.apply(a, b, c));\n"
+                        + "            }\n"
+                        + "        };\n"
+                        + "    }\n"
+                        + "}\n");
+    }
+    
+    @Test
+    public void testLambda2ClassShadowedStaticSameField() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return (A a, B b, C c) -^> {\n"
+                        + "            System.err.println(EE);\n"
+                        + "            return after.apply(apply(a, b, c));\n"
+                        + "        };\n"
+                        + "    }\n"
+                        + "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("11:32-11:32:verifier:ERR_lambda2Class")
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return new Test<A, B, C, V>() {\n"
+                        + "            @Override\n"
+                        + "            public V apply(A a, B b, C c) {\n"
+                        + "                System.err.println(EE);\n"
+                        + "                return after.apply(Test.this.apply(a, b, c));\n"
+                        + "            }\n"
+                        + "        };\n"
+                        + "    }\n"
+                        + "}\n");
+    }
+    
+    @Test
+    public void testLambda2ClassShadowedInheritedMethod() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test2<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return (A a, B b, C c) -^> {\n"
+                        + "            return after.apply(apply(a, b, c));\n"
+                        + "        };\n"
+                        + "    \n"
+                        + "        \n"
+                        + "    }\n"
+                        + "}\n"
+                        + "\n"
+                        + "interface Test2<A, B, C, R> extends Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 2;\n"
+                        + "}")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("11:32-11:32:verifier:ERR_lambda2Class")
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test2<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return new Test2<A, B, C, V>() {\n"
+                        + "            @Override\n"
+                        + "            public V apply(A a, B b, C c) {\n"
+                        + "                return after.apply(Test.this.apply(a, b, c));\n"
+                        + "            }\n"
+                        + "        };\n"
+                        + "    \n"
+                        + "        \n"
+                        + "    }\n"
+                        + "}\n"
+                        + "\n"
+                        + "interface Test2<A, B, C, R> extends Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 2;\n"
+                        + "}"
+                );
+    }
+    
+    @Test
+    public void testLambda2ClassShadowedUnrelatedField() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test2<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return (A a, B b, C c) -^> {\n"
+                        + "            System.err.println(EE);\n"
+                        + "            return null;\n"
+                        + "        };\n"
+                        + "    \n"
+                        + "        \n"
+                        + "    }\n"
+                        + "}\n"
+                        + "\n"
+                        + "interface Test2<A, B, C, R> extends Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 2;\n"
+                        + "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("11:32-11:32:verifier:ERR_lambda2Class")
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                        + "import java.util.Objects;\n"
+                        + "import java.util.function.Function;\n"
+                        + "\n"
+                        + "@FunctionalInterface\n"
+                        + "interface Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 1;\n"
+                        + "    public R apply(A a, B b, C c);\n"
+                        + "\n"
+                        + "    default <V> Test2<A, B, C, V> andThen(Function<? super R, ? extends V> after) {\n"
+                        + "        Objects.requireNonNull(after);\n"
+                        + "        return new Test2<A, B, C, V>() {\n"
+                        + "            @Override\n"
+                        + "            public V apply(A a, B b, C c) {\n"
+                        + "                System.err.println(Test.EE);\n"
+                        + "                return null;\n"
+                        + "            }\n"
+                        + "        };\n"
+                        + "    \n"
+                        + "        \n"
+                        + "    }\n"
+                        + "}\n"
+                        + "\n"
+                        + "interface Test2<A, B, C, R> extends Test<A, B, C, R> {\n"
+                        + "    public static final int EE = 2;\n"
+                        + "}\n");
+    }
+    
+    @Test
     public void testLambda2ClassExpression() throws Exception {
         HintTest.create()
                 .setCaretMarker('^')

@@ -336,4 +336,38 @@ public class ThrowableNotThrownTest extends NbTestCase {
                 .run(ThrowableNotThrown.class)
                 .assertWarnings();
     }
+    
+    /**
+     * Checks that passing throwable to throw statement through exception parameter works - does not report a warning
+     * See issue #262558
+     */
+    public void testThrowableAssignedToExceptionParameter() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "import java.io.FileInputStream;\n" +
+                "import java.io.FileNotFoundException;\n" +
+                "import java.io.IOException;\n" +
+                "\n" +
+                "public class Test {    \n" +
+                "    void test(Exception ex2) throws Exception {\n" +
+                "        try {\n" +
+                "            new FileInputStream(\"/foo\");\n" +
+                "        } catch (FileNotFoundException ex) {\n" +
+                "            ex2 = processException(ex);\n" +
+            "                throw ex2;\n" +
+                "        } catch (IOException ex) {\n" +
+                "            ex = (IOException)processException(ex);\n" +
+            "                throw ex;\n" +
+                "        }\n" +
+                "    } \n" +
+                "    \n" +
+                "    private Exception processException(Exception ex) {\n" +
+                "        return null;\n" +
+                "    }\n" +
+                "}"
+                )
+                .run(ThrowableNotThrown.class)
+                .assertWarnings();
+    }
 }

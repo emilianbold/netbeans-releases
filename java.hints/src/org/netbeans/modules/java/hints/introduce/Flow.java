@@ -1670,7 +1670,10 @@ public class Flow {
         }
 
         public Boolean visitCatch(CatchTree node, ConstructorData p) {
-            super.visitCatch(node, p);
+            inParameters = true;
+            scan(node.getParameter(), p);
+            inParameters = false;
+            scan(node.getBlock(), p);
             return null;
         }
 
