@@ -55,7 +55,7 @@ id = "org.netbeans.modules.analysis.RunAnalysisAction")
 @ActionReferences({
     @ActionReference(path = "Menu/Source", position = 8950, separatorAfter = 8975)
 })
-@Messages("CTL_RunAnalysisAction=Inspect...")
+@Messages("CTL_RunAnalysisAction=Insp&ect...")
 public final class RunAnalysisAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
