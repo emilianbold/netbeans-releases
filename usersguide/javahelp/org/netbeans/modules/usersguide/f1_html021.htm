@@ -2,99 +2,74 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: HTML/JS: Node.js</title>
+<title>New HTML5/JS Application Wizard: Cordova Support</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2016-06-21</p>
-<p><a id="org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanel" name="org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref585" name="sthref585"></a>
-<h1>Options Window: HTML/JS: Node.js</h1>
+<p>Beta Draft: 2016-07-12</p>
+<p><a id="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel" name="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel"></a></p>
+<div id="NBCSH4400"><!-- infolevel="all" infotype="General" --><a id="sthref586" name="sthref586"></a>
+<h1>New HTML5/JS Application Wizard: Cordova Support</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel in the Options window to configure the IDE to run Node.js executable files. 
+<p>The New HTML5/JS Application wizard creates a new project for developing an HTML5/JS application with HTML, CSS and JavaScript. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG3009">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>This panel contains the following elements.</p>
+<p>In the Cordova Support page you can specify the details that are saved in the <code dir="ltr">config.xml</code> file of the project. You can edit the <code dir="ltr">config.xml</code> details later in the source editor or in the Cordova category of the Project Properties window. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2504">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>This panel contains the following elements:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t26">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t26">Option</th>
 <th style="text-align:left" valign="bottom" id="r1c2-t26">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r2c1-t26" headers="r1c1-t26">
-<p>Node Path</p>
+<p>Application ID</p>
 </td>
-<td style="text-align:left" headers="r2c1-t26 r1c2-t26">Specify the path to the Node.js launch command (for example, node.exe for Windows, node or nodejs for Linux).</td>
+<td style="text-align:left" headers="r2c1-t26 r1c2-t26">Type the the unique identifier for the application.
+<p>Use reverse domain syntax (<code dir="ltr">com.coolappz.HTML5Application</code>) to ensure the widest possible platform support.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r3c1-t26" headers="r1c1-t26">&nbsp;&nbsp;&nbsp;&nbsp;Install Node.js</td>
-<td style="text-align:left" headers="r3c1-t26 r1c2-t26">Click to display 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="https://nodejs.org/">
-<param name="text" value="<html><u>the Node.js download page</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
- and install Node.js on your machine.</td>
+<td style="text-align:left" id="r3c1-t26" headers="r1c1-t26">
+<p>Application Name</p>
+</td>
+<td style="text-align:left" headers="r3c1-t26 r1c2-t26">Type the name of the application.</td>
 </tr>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r4c1-t26" headers="r1c1-t26">
-<p>Sources</p>
+<p>Version</p>
 </td>
-<td style="text-align:left" headers="r4c1-t26 r1c2-t26">Click Download or Browse to specify the path to Node.js core sources to configure them as a JavaScript library and associate it with your project.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t26" headers="r1c1-t26">
-<p>Apply Code Changes On Save (Live Edit)</p>
-</td>
-<td style="text-align:left" headers="r5c1-t26 r1c2-t26">When selected the IDE automatically updates your Node.js application when saving.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r6c1-t26" headers="r1c1-t26">
-<p>npm</p>
-</td>
-<td style="text-align:left" headers="r6c1-t26 r1c2-t26"></td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r7c1-t26" headers="r1c1-t26">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;npm Path</p>
-</td>
-<td style="text-align:left" headers="r7c1-t26 r1c2-t26">Click Browse or Search to add the Node Package Manager (npm) so that the IDE can run the tool.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r8c1-t26" headers="r1c1-t26">Express Generator</td>
-<td style="text-align:left" headers="r8c1-t26 r1c2-t26"></td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r9c1-t26" headers="r1c1-t26">&nbsp;&nbsp;&nbsp;&nbsp;Express</td>
-<td style="text-align:left" headers="r9c1-t26 r1c2-t26">Click Browse or Search to add express file so that the IDE can run the tool.</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r10c1-t26" headers="r1c1-t26">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install Generator</td>
-<td style="text-align:left" headers="r10c1-t26 r1c2-t26">Click to display the Express application generator page with details on how to install Express Generator on your machine.</td>
+<td style="text-align:left" headers="r4c1-t26 r1c2-t26">Specify the version of the application.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref586" name="sthref586"></a>
+<a id="NBCSH4404" name="NBCSH4404"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG117">
-<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
+<param name="text" value="<html><u>&quot;Creating an HTML5/JS Application Project&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
