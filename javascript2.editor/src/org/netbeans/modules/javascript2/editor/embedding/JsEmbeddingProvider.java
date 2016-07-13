@@ -172,7 +172,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
         translators.put(LATTE_MIME_TYPE, new LatteTranslator());
-        translators.put(JSX, new ReactJsTranslator());
+        translators.put(JSX, new JsxJsTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -634,7 +634,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of RhtmlTranslator class
 
-    private static class ReactJsTranslator implements Translator {
+    private static class JsxJsTranslator implements Translator {
 
         private static final int MAX_EMBEDDING_LENGTH = 5000000; //cca 5M
         public static final String GENERATED_CODE = "@@@"; //NOI18N
