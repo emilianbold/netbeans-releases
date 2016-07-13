@@ -371,7 +371,12 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
             
             @Override
             public boolean equals(Object obj) {
-                return (obj instanceof DebugActionItem) && Objects.equals(prjRoot, ((DebugActionItem) obj).prjRoot);
+                if (!(obj instanceof DebugActionItem)) {
+                    return false;
+                }
+                DebugActionItem dai = (DebugActionItem) obj;
+                return Objects.equals(prjRoot, dai.prjRoot) &&
+                       Objects.equals(getDisplayName(), dai.getDisplayName());
             }
 
             @Override
