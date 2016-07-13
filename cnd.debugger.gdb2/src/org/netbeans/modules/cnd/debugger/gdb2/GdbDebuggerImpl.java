@@ -2861,7 +2861,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     public void run() {
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final Object objectVariable = watch;
-                        final String toolTip = expr + "=" + watch.getAsText();
+                        final String toolTip = expr + "=" + watch.getAsText();//NOI18N
                         final String expression = expr;
                         //get var
                         SwingUtilities.invokeLater(new Runnable() {
