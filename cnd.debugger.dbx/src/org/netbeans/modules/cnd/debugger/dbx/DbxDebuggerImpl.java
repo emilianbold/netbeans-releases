@@ -3246,7 +3246,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             return ;
         }      
         final DbxWatch watch = new DbxWatch(this, localUpdater, 0, false, lhs, rhs);
-        final String toolTip = lhs + "=" + rhs;
+        final String toolTip = lhs + "=" + rhs;//NOI18N
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
