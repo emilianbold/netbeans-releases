@@ -677,14 +677,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 createHtmlEmbedding(embeddings, snapshot, from, len);
             }
 
-            if (embeddings.isEmpty()) {
-                //always embed html even if there isn't any
-                //this causes the parsing api to run tasks registered to text/html
-                //even if there isn't any html content
-                return Collections.singletonList(snapshot.create("", HTML_MIME_TYPE));
-            } else {
+            if (!embeddings.isEmpty()) {
                 return Collections.singletonList(Embedding.create(embeddings));
             }
+            return Collections.<Embedding>emptyList();
         }
 
         private static void createHtmlEmbedding(List<Embedding> embeddings, Snapshot snapshot, int from, int length) {
