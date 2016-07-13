@@ -121,7 +121,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
     private ClassType accessorClass;
     private JPDAClassType accessorJPDAClass;
     private final Object accessorClassLock = new Object();
-    private ObjectReference debugManager;
+    //private ObjectReference debugManager;
     private final TruffleBreakpointsHandler breakpointsHandler;
     
     public DebugManagerHandler(JPDADebugger debugger) {
@@ -196,12 +196,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     List<Value> dmArgs = Arrays.asList(engineValue, doStepInto);
                     LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
                     Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (!(ret instanceof ObjectReference)) {
-                        LOG.log(Level.WARNING, "Could not start up debugger manager for "+engineValue);
-                        return ;
+                    if (ret instanceof ObjectReference) {   // Can be null when an existing debug manager is reused.
+                        //debugManager = (ObjectReference) ret;
+                        breakpointsHandler.submitBreakpoints(accessorClass, (ObjectReference) ret, thread);
                     }
-                    debugManager = (ObjectReference) ret;
-                    breakpointsHandler.submitBreakpoints(accessorClass, thread);
                 } catch (VMDisconnectedExceptionWrapper vmd) {
                 } catch (InvocationException iex) {
                     iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
@@ -289,7 +287,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     accessorJPDAClass = serviceJPDAClass;
                 }
                 if (debugManagerMethod != null) {
-                    debugManager = (ObjectReference) ret;
+                    //debugManager = (ObjectReference) ret;
                 }
             } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
