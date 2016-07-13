@@ -395,8 +395,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             actionType == PredefinedType.BUILD ||
             actionType == PredefinedType.CLEAN) {
             // CR 19816163
-            io.getOut().println("cd '"+workingDirectory+"'"); //NOI18N
-            io.getOut().println(buf.toString());
+            if (io != null && io.getOut() != null) {
+                io.getOut().println("cd '"+workingDirectory+"'"); //NOI18N
+                io.getOut().println(buf.toString());
+            } else {
+                System.out.println("cd '"+workingDirectory+"'"); //NOI18N
+                System.out.println(buf.toString());
+            }
         }
 
         NativeExecutionService es =
