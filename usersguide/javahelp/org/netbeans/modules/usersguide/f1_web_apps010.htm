@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2016-06-21</p>
+<p>Beta Draft: 2016-07-12</p>
 <p><a id="dd_multiview_references_envEntriesNode" name="dd_multiview_references_envEntriesNode"></a></p>
 <div id="NBCSH3846"><!-- infolevel="all" infotype="General" --><a id="sthref510" name="sthref510"></a>
 <h1>web.xml Visual Editor: Environment Entries</h1>
@@ -22,7 +22,7 @@
 </p>
 <p>You access application environment variables in the <code dir="ltr">java:comp/env</code> context through a JNDI lookup, unlike context parameters, which you access via a <code dir="ltr">ServletContext</code> object. So, you would extract the value of an application environment variable as shown in <a href="#CHDFAHIH">Example: Extracting the value of an application environment variable</a>.</p>
 <div id="NBCSH3847"><a id="CHDFAHIH" name="CHDFAHIH"></a>
-<p>Example 18-2 Extracting the value of an application environment variable</p>
+<p>Example : Extracting the value of an application environment variable</p>
 <pre xml:space="preserve" dir="ltr">
 InitialContext context = new InitialContext();
 String header = (String) context.lookup("java:comp/env/headerPage");
