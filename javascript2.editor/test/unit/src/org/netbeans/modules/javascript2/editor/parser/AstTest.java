@@ -1893,6 +1893,22 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/parser/jsx/jsx9.js");
     }
 
+    public void testJsx10() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx10.js");
+    }
+
+    public void testJsx11() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx11.js");
+    }
+
+    public void testJsx12() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx12.js");
+    }
+
+    public void testJsx13() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx13.js");
+    }
+
     public void testLetOfOf() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/for-of/let-of-of.js");
     }
