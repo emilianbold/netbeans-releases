@@ -44,6 +44,10 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.ImageIcon;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ValuePaintComponent;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
@@ -53,7 +57,6 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class ValueResultItem extends CompletionResultItem {
-        
     /**
      * Creates a new instance of ValueResultItem
      */
@@ -63,6 +66,51 @@ public class ValueResultItem extends CompletionResultItem {
         this.icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_VALUE));
     }
+
+    @Override
+    protected int removeTextLength(JTextComponent component, int offset, int removeLength) {
+        TokenSequence<XMLTokenId> s = createTokenSequence(component);
+        s.move(offset);
+        if (!s.moveNext()) {
+            return super.removeTextLength(component, offset, removeLength);
+        }
+        TokenId id = s.token().id();
+        if (id == XMLTokenId.VALUE) {
+            // check up to the end of tag, that there's not an error, e.g. an unterminated attribute
+            int off = s.offset();
+            String t = s.token().text().toString();
+            char c = t.charAt(t.length() - 1);
+            int len = t.length();
+            boolean error = false;
+            
+            L: if (s.moveNext()) {
+                XMLTokenId tid = s.token().id();
+                if (tid != XMLTokenId.ARGUMENT && tid != XMLTokenId.TAG) {
+                    error = true;
+                    // only replace up to and excluding the first whitespace:
+                    for (int i = 0; i < len; i++) {
+                        if (Character.isWhitespace(t.charAt(i))) {
+                            len = i;
+                            break L;
+                        }
+                    }
+                }
+            }
+            
+            int l = off + t.length() - offset;
+            if (t.isEmpty()) {
+                return 0;
+            }
+            if (c == '\'' || c == '"') {
+                return t.length() == -1 ? 0 : l - 1;
+            } else {
+                return 0;
+            }
+        }
+        return super.removeTextLength(component, offset, removeLength);
+    }
+    
+    
     
     /**
      * Overwrites getReplacementText of base class.

@@ -443,7 +443,7 @@ class AssignComments extends TreeScanner<Void, Void> {
         return (token.id() == JavaTokenId.JAVADOC_COMMENT) &&
                (mixedJDocTokenIndexes.contains(seq.index()));
     }
-
+    
     private void lookForTrailing(TokenSequence<JavaTokenId> seq, Tree tree) {
         //TODO: [RKo] This does not work correctly... need improvemetns.
         seq.move((int) positions.getEndPosition(unit, tree));
@@ -489,10 +489,30 @@ class AssignComments extends TreeScanner<Void, Void> {
         maxLines = Math.max(maxLines, newlines);
 
         for (TrailingCommentsDataHolder h : comments) {
+            boolean assign = false;
+            
             if (h.newlines < maxLines) {
+                // if the comment is a javadoc one and there IS a valid declaration at seq.index(), the javadoc should
+                // not be eaten although separated by many lines:
+                assign = true;
+                
+                if (index >= 0 && maxLines < Integer.MAX_VALUE && seq.token().length() > 0 && h.comment.id() == JavaTokenId.JAVADOC_COMMENT) {
+                    TreePath tp = info.getTreeUtilities().pathFor(seq.offset() + 1);
+                    // traverse up to last parent that claims the position
+                    while (tp.getParentPath() != null && 
+                           positions.getStartPosition(info.getCompilationUnit(), tp.getParentPath().getLeaf()) == seq.offset()) {
+                        tp = tp.getParentPath();
+                    }
+                    if (tp != null && JAVADOC_KINDS.contains(tp.getLeaf().getKind())) {
+                        assign = false;
+                    }
+                }
+            }
+            if (assign) {
                 attachComments(Collections.singleton(h.comment), tree, CommentSet.RelativePosition.TRAILING);
             } else {
                 index = h.index - 1;
+                seq.moveIndex(h.index);
                 break;
             }
         }
