@@ -5,6 +5,8 @@
  */
 package org.netbeans.modules.cnd.debugger.dbx;
 
+import javax.swing.Action;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativePinWatchValueProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -20,4 +22,11 @@ public class DbxPinWatchValueProvider extends NativePinWatchValueProvider {
     public DbxPinWatchValueProvider(ContextProvider lookupProvider) {
         super(lookupProvider);
     }
+
+    @Override
+    public Action[] getHeadActions(Watch watch) {
+        return new Action[]{new ExpandAction(getDebugger(), watch)};
+    }
+    
+    
 }

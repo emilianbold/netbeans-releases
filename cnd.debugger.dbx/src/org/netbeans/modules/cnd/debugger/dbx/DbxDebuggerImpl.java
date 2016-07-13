@@ -71,10 +71,14 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 
 import com.sun.tools.swdev.glue.dbx.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.LinkedList;
+import javax.swing.JEditorPane;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ToolTipSupport;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 
@@ -155,8 +159,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.ToolTipUI;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.DataEditorSupport;
+import static org.openide.text.DataEditorSupport.toolTip;
 
 /**
  * A "service" for DebuggerEngine
@@ -3136,7 +3147,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return optionDebug;
     }
 
-    public void balloonEvaluate(final int pos, final String expr) {
+    public void balloonEvaluate(final Line.Part lp, final String expr) {
         if (!DebuggerOption.BALLOON_EVAL.isEnabled(manager().globalOptions())) {
             return;
         }
@@ -3147,7 +3158,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    balloonEvaluate(pos, expr);
+                    balloonEvaluate(lp, expr);
                 }
             });
             return;
@@ -3168,8 +3179,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         
         String text = expr;
-        if (pos >= 0) {
-            text = EvalAnnotation.extractExpr(pos, expr);
+        if (lp.getColumn() >= 0) {
+            text = EvalAnnotation.extractExpr(lp, expr);
         }
         if (Disassembly.isInDisasm()) {
             // probably a register - append $ at the beginning
@@ -3181,7 +3192,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         } else {
             // remember to pathmap if file ever becomes non-null
-            dbx.expr_line_eval(0, 0, expr, pos, null, 0, GPDbxLineEval.COMBO_ALL);
+            dbx.expr_line_eval(lp.getLine().getLineNumber(), 0, expr, lp.getColumn(), null, 0, GPDbxLineEval.COMBO_ALL);
         }
 
         // result will be sent to us asynchronously via expr_line_eval_result()
@@ -3210,15 +3221,51 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    public void balloonResult(int rt1, int rt2, int flags,
+    public void balloonResult(final int lineNumber, int rt2, int flags,
             final String lhs, final String rhs,
-            String rhs2, String rhs3) {
+        String rhs2, String rhs3) {
 //        EvalAnnotation.postResult(rt1, rt2, flags, lhs, rhs, rhs2, rhs3);
+        //final int lineNumber = 0;//= lp.getLine();
+//        DataObject dob = DataEditorSupport.findDataObject(line);
+//        if (dob == null) {
+//            return;
+//        }
+//        final EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+//        if (ec == null) {
+//            return;
+//            // Only for editable dataobjects
+//        }
+//        StyledDocument doc;
+//        try {
+//            doc = ec.openDocument();
+//        } catch (IOException ex) {
+//            return;
+//        }
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (ep == null){// || ep.getDocument() != doc) {
+            return ;
+        }      
+        final DbxWatch watch = new DbxWatch(this, localUpdater, 0, false, lhs, rhs);
+        final String toolTip = lhs + "=" + rhs;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(DbxDebuggerImpl.this, lhs, rhs);
-                expTooltip.showTooltip();
+//                final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(DbxDebuggerImpl.this, lhs, rhs);
+//                expTooltip.showTooltip();
+                EditorUI eui = Utilities.getEditorUI(ep);
+                if (eui == null) {
+                    //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                    return;
+                }
+                ToolTipUI.Expandable expandable = !(watch.isLeaf())
+                        ? new ToolTipUI.Expandable(lhs, watch)
+                        : null;
+                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                        lhs,
+                        lineNumber,
+                        "NativePinWatchValueProvider");   // NOI18N
+                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                ToolTipSupport tts = toolTipUI.show(ep);
             }
         });
     }
