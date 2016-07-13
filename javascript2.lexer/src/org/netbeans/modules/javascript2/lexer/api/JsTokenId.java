@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -204,7 +205,9 @@ public enum JsTokenId implements TokenId {
     
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
-    KEYWORD_NULL("null", "keyword"); // NOI18N
+    KEYWORD_NULL("null", "keyword"), // NOI18N
+    
+    JSX_TEXT(null, "jsx_text"); //NOI18N
 
     // JavaScript mimetypes
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
@@ -281,6 +284,8 @@ public enum JsTokenId implements TokenId {
 
                     if (id == DOC_COMMENT || id == BLOCK_COMMENT) {
                         return LanguageEmbedding.create(JsDocumentationTokenId.language(), 0, 0);
+                    } else if (id == JSX_TEXT) {
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     }
 
                     return null; // No embedding
