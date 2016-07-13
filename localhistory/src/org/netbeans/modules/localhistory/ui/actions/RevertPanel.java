@@ -131,13 +131,13 @@ public class RevertPanel extends javax.swing.JPanel {
 
     void setRootNode(final TreeNode root) {
         if(root != null) {
-            tree.setModel(new DefaultTreeModel(root));
-            for (int i = 0; i < tree.getRowCount(); i++) {
-                tree.expandRow(i);
-            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    tree.setModel(new DefaultTreeModel(root));
+                    for (int i = 0; i < tree.getRowCount(); i++) {
+                        tree.expandRow(i);
+                    }
                     listScrollPane.setVisible(true);
                     titleLabel.setVisible(true);
                     initPanel.setVisible(false);

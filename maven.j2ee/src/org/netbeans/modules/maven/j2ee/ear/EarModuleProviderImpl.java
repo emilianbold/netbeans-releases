@@ -49,6 +49,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -148,6 +150,10 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
     public J2eeModuleProvider[] getChildModuleProviders() {
         List<J2eeModuleProvider> provs = new ArrayList<J2eeModuleProvider>();
         for (Project prj : earimpl.getProjects()) {
+            if(prj.getProjectDirectory().equals(project.getProjectDirectory())) {
+                Logger.getLogger(EarModuleProviderImpl.class.getName()).log(Level.WARNING, "EarImpl.getProjects() for project {0} returns itself as a child project!", project.getProjectDirectory());
+                continue;
+            }
             J2eeModuleProvider prv = prj.getLookup().lookup(J2eeModuleProvider.class);
             if (prv != null) {
                 provs.add(prv);

@@ -97,7 +97,7 @@ public class MavenProjectPropsImpl {
         return get(key, shared, true);
     }
 
-    public synchronized String get(String key, boolean shared, boolean usePom) {
+    public String get(String key, boolean shared, boolean usePom) {
         return getMutex().readAccess((Mutex.Action<String>) () -> {
             TreeMap<String, String> props = readProperties(getAuxConf(), shared);
             //TODO optimize
@@ -134,7 +134,7 @@ public class MavenProjectPropsImpl {
         });                       
     }
 
-    public synchronized void put(String key, String value, boolean shared) {
+    public void put(String key, String value, boolean shared) {
         getMutex().writeAccess((Mutex.Action<Void>) () -> {
             if (shared) {
                 //TODO put props to project.. shall we actually do it here?
@@ -144,7 +144,7 @@ public class MavenProjectPropsImpl {
         });
     }
 
-    public synchronized Iterable<String> listKeys(boolean shared) {
+    public Iterable<String> listKeys(boolean shared) {
         return getMutex().readAccess((Mutex.Action<Iterable<String>>) () -> {
             TreeMap<String, String> props = readProperties(getAuxConf(), shared);
             if (shared) {
@@ -231,24 +231,26 @@ public class MavenProjectPropsImpl {
 
 
     private TreeMap<String, String> readProperties(AuxiliaryConfiguration aux, boolean shared) {
-        TreeMap<String, String> props = new TreeMap<String, String>();
-        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
-        if (el != null) {
-            NodeList list = el.getChildNodes();
-            if (list.getLength() > 0) {
-                for (int i = 0; i < list.getLength(); i++) {
-                    Node nd = list.item(i);
-                    if (nd instanceof Element) {
-                        Element enEl = (Element)nd;
-                        props.put(enEl.getNodeName(), enEl.getTextContent());
+        return getMutex().readAccess((Mutex.Action<TreeMap<String, String>>) () -> {
+            TreeMap<String, String> props = new TreeMap<>();
+            Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
+            if (el != null) {
+                NodeList list = el.getChildNodes();
+                if (list.getLength() > 0) {
+                    for (int i = 0; i < list.getLength(); i++) {
+                        Node nd = list.item(i);
+                        if (nd instanceof Element) {
+                            Element enEl = (Element)nd;
+                            props.put(enEl.getNodeName(), enEl.getTextContent());
+                        }
                     }
                 }
             }
-        }
-        return props;
+            return props;
+        });    
     }
 
-    public synchronized TreeMap<String, String> getRawProperties(boolean shared) {
+    public TreeMap<String, String> getRawProperties(boolean shared) {
         return readProperties(getAuxConf(), shared);
     }
 
