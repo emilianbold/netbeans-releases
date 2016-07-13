@@ -458,4 +458,22 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug257616.cpp", 10, 51, "bug257616.cpp", 10, 34);
         performTest("bug257616.cpp", 10, 56, "bug257616.cpp", 8, 9);
     }
+    
+    public void testBug247031() throws Exception {
+        // Bug 247031 - Cannot resolve identifier if uniform initialization syntax is used
+        performTest("bug247031.cpp", 43, 39, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 44, 16, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 45, 31, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 46, 34, "bug247031.cpp", 11, 9);
+        performTest("bug247031.cpp", 47, 59, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 47, 81, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 48, 25, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 49, 27, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 51, 22, "bug247031.cpp", 17, 13);
+        performTest("bug247031.cpp", 52, 37, "bug247031.cpp", 17, 13);
+        performTest("bug247031.cpp", 54, 22, "bug247031.cpp", 5, 9);
+        performTest("bug247031.cpp", 55, 41, "bug247031.cpp", 11, 9);
+        performTest("bug247031.cpp", 56, 48, "bug247031.cpp", 25, 9);
+        performTest("bug247031.cpp", 57, 32, "bug247031.cpp", 5, 9);
+    }
 }

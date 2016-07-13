@@ -300,10 +300,6 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
 
-    public static boolean areLambdasEnabled(CsmFile csmFile) {
-        return CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
-    }
-
     public static boolean areTemplatesEnabled(CsmFile csmFile) {
         if (csmFile != null) {
             switch (csmFile.getFileType()) {
@@ -314,6 +310,11 @@ public final class CompletionSupport implements DocumentListener {
         }
         return true;
     }
+    
+    // When getting separator from model, it is the max amount of characters 
+    // to process with token processor. If it is neccessary to parse more, then
+    // cached separator is used in most cases.
+    private static final int MAX_EXPRESSION_LENGTH_TO_REPARSE = 1024;
 
     private static int tryGetSeparatorFromModel(CsmFile file, int pos, FileReferencesContext fileReferences) {
         // Enable only for cpp11 ant later because for previous standards simple
@@ -332,16 +333,26 @@ public final class CompletionSupport implements DocumentListener {
                 CsmVariable v = (CsmVariable)lastObj;
                 CsmExpression initialValue = v.getInitialValue();
                 if (CsmOffsetUtilities.isInObject(initialValue, pos)) {
-                    List<CsmStatement> lambdas = initialValue.getLambdas();
-                    if (lambdas == null || lambdas.isEmpty()) {
-                        return -1; // cached last separaror offset must be used
+                    lastObj = initialValue;
+                }
+            }
+            if (CsmKindUtilities.isExpression(lastObj)) {
+                CsmExpression expression = (CsmExpression) lastObj;
+                if (expression.getStartOffset() < pos && expression.getEndOffset() > pos) {
+                    List<CsmStatement> lambdas = expression.getLambdas();
+                    if (lambdas != null && !lambdas.isEmpty()) {
+                        // Think about restriction on max expression length.
+                        return ((CsmOffsetable) lastObj).getStartOffset();
                     }
                 }
             }
             if (CsmKindUtilities.isOffsetable(lastObj)) {
                 CsmOffsetable offs = (CsmOffsetable) lastObj;
                 if (offs.getStartOffset() < pos && offs.getEndOffset() > pos) {
-                    return ((CsmOffsetable) lastObj).getStartOffset();
+                    int distance = pos - offs.getStartOffset();
+                    if (distance < MAX_EXPRESSION_LENGTH_TO_REPARSE) {
+                        return offs.getStartOffset();
+                    }
                 }
             }
         }
