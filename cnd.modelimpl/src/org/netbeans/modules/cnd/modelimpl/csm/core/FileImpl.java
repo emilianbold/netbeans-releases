@@ -355,8 +355,21 @@ public final class FileImpl implements CsmFile,
 
     /** For test purposes only */
     private static TraceModel.TestHook hook = null;
+    
+    public static FileImpl createFileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
+        FileImpl fileImpl = new FileImpl(fileBuffer, project, fileType, nativeFileItem);
+        fileImpl.currentFileContent = FileContent.createFileContent(fileImpl, fileImpl);
+        if (nativeFileItem != null) {
+            project.putNativeFileItem(fileImpl.getUID(), nativeFileItem);
+        }
+        Notificator.instance().registerNewFile(fileImpl);
+        if (TraceFlags.TRACE_CPU_CPP && fileImpl.getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(fileImpl) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(fileImpl.projectUID) + fileImpl.projectUID).printStackTrace(System.err); // NOI18N
+        }
+        return fileImpl;
+    }
 
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
+    private FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         CndPathUtilities.assertNoUrl(fileBuffer.getAbsolutePath());
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
@@ -368,19 +381,11 @@ public final class FileImpl implements CsmFile,
         this.projectDisposed = project.getDisposingFlag();
 
         hasBrokenIncludes = new AtomicBoolean(false);
-        this.currentFileContent = FileContent.createFileContent(FileImpl.this, FileImpl.this);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
-            new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
-        }
         this.projectRef = new WeakReference<>(project); // Suppress Warnings
         if (fileType == FileType.UNDEFINED_FILE && nativeFileItem != null) {
             fileType = Utils.getFileType(nativeFileItem);
         }
         this.fileType = fileType;
-        if (nativeFileItem != null) {
-            project.putNativeFileItem(getUID(), nativeFileItem);
-        }
-        Notificator.instance().registerNewFile(FileImpl.this);
     }
 
     /** For test purposes only */
@@ -1066,7 +1071,7 @@ public final class FileImpl implements CsmFile,
         RepositoryUtils.remove(uids);
     }
 
-    /**enapsulates all parameters which should be used during parse or reparse of the file */
+    /**encapsulates all parameters which should be used during parse or reparse of the file */
     /*package*/static final class ParseDescriptor implements CsmParserProvider.CsmParserParameters {
 
         private final CsmParserProvider.CsmParseCallback callback;

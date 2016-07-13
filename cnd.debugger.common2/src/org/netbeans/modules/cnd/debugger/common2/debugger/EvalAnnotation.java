@@ -173,7 +173,7 @@ public final class EvalAnnotation extends Annotation {
             NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
             if (debugger != null) {
                 lastAnnotation = this;
-                debugger.balloonEvaluate(pos, expr);
+                debugger.balloonEvaluate(lp, expr);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -210,12 +210,12 @@ public final class EvalAnnotation extends Annotation {
      *  called from GdbDebuggerImpl
      *
      */
-    public static String extractExpr(int pos, String text) {
-        int bp = pos; // beginning of the exp
-        int ep = pos; // end of the expr
+    public static String extractExpr(Line.Part lp, String text) {
+        int bp = lp.getColumn(); // beginning of the exp
+        int ep = lp.getColumn(); // end of the expr
         int len = text.length();
 
-        if (pos >= len) {
+        if (lp.getColumn() >= len) {
             return null; // pointed outside the current line
         }
         char[] str = new char[len + 1];   // leave room for '\0'
@@ -284,7 +284,7 @@ public final class EvalAnnotation extends Annotation {
                     if ((bp < ep) && (Character.isLetterOrDigit(str[bp + 1]) || str[bp + 1] == '_')) {
                         // It's a cast
                         pbalance = 0;
-                        while (bp >= pos) {
+                        while (bp >= lp.getColumn()) {
                             if (str[bp] == ')') {
                                 pbalance++;
                             } else if (str[bp] == '(') {
@@ -324,7 +324,7 @@ public final class EvalAnnotation extends Annotation {
                     break;
                 case '>':
                     // for example "foo->bar"
-                    if ((bp == pos) || (str[bp - 1] != '-')) {
+                    if ((bp == lp.getColumn()) || (str[bp - 1] != '-')) {
                         foundEnd = true;
                         break;
                     } else {

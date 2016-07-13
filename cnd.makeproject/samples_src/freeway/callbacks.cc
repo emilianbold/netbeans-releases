@@ -36,6 +36,8 @@
 #include "traffic.h"
 #include "about.h"
 
+#define _GPOINTER_TO_INT(p)	((gint)  (gint64) (p))
+
 // Handler for "Load..." menu item
 void 
 file_load()
@@ -163,7 +165,7 @@ void
 randx(GtkWidget *w, gpointer user_data)
 {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))) {
-        traffic_randomize(GPOINTER_TO_INT(user_data));
+        traffic_randomize(_GPOINTER_TO_INT(user_data));
     }
 }
 
@@ -171,7 +173,7 @@ randx(GtkWidget *w, gpointer user_data)
 void 
 zone_speed(GtkWidget *w, gpointer user_data )
 {
-    int zone = GPOINTER_TO_INT(user_data) - 1;
+    int zone = _GPOINTER_TO_INT(user_data) - 1;
     int i = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
     
     if (zone >= 0 && zone < NZONES && i >= 0 && i < NSPEEDS) {
