@@ -103,7 +103,7 @@ import org.openide.util.Pair;
  */
 public final class JavaContextSupport {
     
-    private static final int TIMEOUT = 10000;
+    private static final int TIMEOUT = 60;
     
     public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task) {
         if (fObj != null && fObj.isValid() && fObj.isData()) {
@@ -113,7 +113,7 @@ public final class JavaContextSupport {
             }
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
-                f.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                f.get(TIMEOUT, TimeUnit.SECONDS);
                 if (f.isDone()){
                     return task.getResult();
                 }
@@ -132,7 +132,7 @@ public final class JavaContextSupport {
             }
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
-                f.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                f.get(TIMEOUT, TimeUnit.SECONDS);
                 if (f.isDone()){
                     return task.getResult();
                 }
