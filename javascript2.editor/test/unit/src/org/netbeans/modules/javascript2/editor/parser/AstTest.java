@@ -156,6 +156,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions6.js");
     }
 
+    public void testAsyncFunction07() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions7.js");
+    }
+
     public void testBinary01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/binary/binary01.js");
     }

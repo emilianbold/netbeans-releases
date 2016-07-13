@@ -75,6 +75,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions6.js");
     }
 
+    public void testAsyncFunction07() throws Exception {
+        checkSemantic("testfiles/parser/asyncFunctions/asyncFunctions7.js");
+    }
+
     public void testObjectAsParam() throws Exception {
         // TODO arguments can not be handled as global 
         checkSemantic("testfiles/model/objectAsParameter.js");
