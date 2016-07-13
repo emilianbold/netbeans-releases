@@ -96,7 +96,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     
     /** Creates a new instance of AddOverrideAnnotation */
     public ExportNonAccessibleElement() {
-        super( true, true, AbstractHint.HintSeverity.WARNING );
+        super( true, true, AbstractHint.HintSeverity.WARNING, "NonPublicExported" );
     }
     
     public Set<Kind> getTreeKinds() {

@@ -141,7 +141,7 @@ public class EndTagResultItem extends CompletionResultItem {
                     // we cannot rely on the stored one - see #181711. Performance suffers a little.
                     TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                     tokenSequence = tokenHierarchy.tokenSequence();
-                    String insertingText = getInsertingText(component, text, len);
+                    String insertingText = getInsertingText(component, offset, text, len);
                     if (len > 0) doc.remove(offset, len);
                     doc.insertString(offset, insertingText, null);
                     // fix for issue #186916

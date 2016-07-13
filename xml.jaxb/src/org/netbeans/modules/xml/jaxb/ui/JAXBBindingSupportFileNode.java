@@ -90,11 +90,13 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
             }
             
             public void fileDeleted(FileEvent fileAttributeEvent) {
-                JAXBWizardSchemaNodeChildren xsdChildren =
-                        (JAXBWizardSchemaNodeChildren)JAXBBindingSupportFileNode.
-                        this.getParentNode().getChildren();
-                xsdChildren.refreshChildren();
-                JAXBBindingSupportFileNode.this.fireNodeDestroyed();
+                Node parent = JAXBBindingSupportFileNode.this.getParentNode();
+                if (parent != null) {
+                    JAXBWizardSchemaNodeChildren xsdChildren =
+                            (JAXBWizardSchemaNodeChildren)getChildren();
+                    xsdChildren.refreshChildren();
+                    JAXBBindingSupportFileNode.this.fireNodeDestroyed();
+                }
             }
             
             public void fileFolderCreated(FileEvent fe) {
