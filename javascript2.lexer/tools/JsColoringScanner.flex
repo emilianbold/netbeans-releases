@@ -119,9 +119,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean canFollowJSX(JsTokenId token) {
         if (token == JsTokenId.BRACKET_LEFT_PAREN
                 || token == JsTokenId.BRACKET_LEFT_CURLY
+                || token == JsTokenId.BRACKET_LEFT_BRACKET
                 || token == JsTokenId.OPERATOR_ASSIGNMENT
                 || token == JsTokenId.OPERATOR_COLON
-                || token == JsTokenId.OPERATOR_TERNARY) {
+                || token == JsTokenId.OPERATOR_TERNARY
+                || token == JsTokenId.KEYWORD_RETURN) {
             return true;
         }
         return false;
