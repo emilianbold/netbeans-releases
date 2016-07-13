@@ -66,6 +66,10 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
         NativeDebuggerManager.get().registerPinnedWatchesUpdater(debugger, this);
     }
     
+    protected final NativeDebugger getDebugger() {
+        return debugger;
+    }
+    
     @Override
     public String getId() {
         return ID;
@@ -88,9 +92,23 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
     public String getEditableValue(Watch watch) {
         return null;
     }
+    
+    private boolean isExpandable(Watch watch) {
+        for (WatchVariable watchVar : debugger.getWatches()) {
+            if (watchVar.getNativeWatch().watch().getExpression().equals(watch.getExpression())) {
+                Variable v = ((Variable) watchVar);                
+                return !v.isLeaf;
+            }
+        }
+        return false;
+    }
 
     @Override
     public Action[] getHeadActions(Watch watch) {
+        //return head action IF it is expandabe
+        if (!isExpandable(watch)) {
+            return new Action[0];
+        }
         return new Action[]{new ExpandAction(debugger, watch)};
     }
     
@@ -116,12 +134,12 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
         }
     }
     
-    private static class ExpandAction extends AbstractExpandToolTipAction {
+    protected static class ExpandAction extends AbstractExpandToolTipAction {
 
         private final NativeDebugger debugger;
         private final Watch watch;
 
-        ExpandAction(NativeDebugger debugger, Watch watch) {
+        public ExpandAction(NativeDebugger debugger, Watch watch) {
             this.debugger = debugger;
             this.watch = watch;
         }
