@@ -88,6 +88,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private int endScanOffset;
     private boolean supportTemplates;
     private boolean supportLambdas;
+    private boolean supportUniformInitialization;
     private int nrQuestions = 0;
 
     // isMacro callback
@@ -125,6 +126,15 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
      */
     void enableLambdaSupport(boolean supportLambdas) {
         this.supportLambdas = supportLambdas;
+    }
+    
+    /**
+     * Set whether uniform initialization syntax should be enabled.
+     *
+     * @param supportUniformInitialization true to parse expression as being in syntax with uniform initialization 
+     */
+    void enableUniformInitializationSupport(boolean supportUniformInitialization) {
+        this.supportUniformInitialization = supportUniformInitialization;
     }
 
     /** Get the expression stack from the bottom to top */
@@ -588,7 +598,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         tplLookaheadLtgtsLevel--;
                         break;
 //                    case GTGT:
-//                        lookaheadTokensLtgtsLevel -= 2;
+//                        tplLookaheadLtgtsLevel -= 2;
 //                        break;
                     case LPAREN:
                         tplLookaheadParensLevel++;
@@ -1346,6 +1356,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case SPECIAL_PARENTHESIS_OPEN:
                         case METHOD_OPEN:
                         case LAMBDA_CALL_OPEN:
+                        case UNIFORM_INITIALIZATION_OPEN:
+                        case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                         case MEMBER_POINTER_OPEN:
                         case NEW:
                         case GOTO:
@@ -1492,6 +1504,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case MEMBER_POINTER_OPEN: // next is operator as well
                         case METHOD_OPEN:
                         case LAMBDA_CALL_OPEN:
+                        case UNIFORM_INITIALIZATION_OPEN:
+                        case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                         case ARRAY_OPEN:
                         case PARENTHESIS_OPEN:
                         case SPECIAL_PARENTHESIS_OPEN:
@@ -1927,6 +1941,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GENERIC_TYPE_OPEN:
                     case METHOD_OPEN:
                     case LAMBDA_CALL_OPEN:
+                    case UNIFORM_INITIALIZATION_OPEN:
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                     case ARRAY_OPEN:
                     case PARENTHESIS_OPEN:
                     case SPECIAL_PARENTHESIS_OPEN:
@@ -2001,6 +2017,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GENERIC_TYPE_OPEN:
                     case METHOD_OPEN:
                     case LAMBDA_CALL_OPEN:
+                    case UNIFORM_INITIALIZATION_OPEN:
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                     case ARRAY_OPEN:
                     case PARENTHESIS_OPEN:
                     case SPECIAL_PARENTHESIS_OPEN:
@@ -2026,6 +2044,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GENERIC_TYPE_OPEN:
                     case METHOD_OPEN:
                     case LAMBDA_CALL_OPEN:
+                    case UNIFORM_INITIALIZATION_OPEN:
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                     case ARRAY_OPEN:
                     case PARENTHESIS_OPEN:
                     case SPECIAL_PARENTHESIS_OPEN:
@@ -2068,6 +2088,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case ARRAY:
                     case METHOD:
                     case LAMBDA_CALL:
+                    case UNIFORM_INITIALIZATION:
                     case CONSTRUCTOR:
                     case PARENTHESIS:
                     case CONVERSION:
@@ -2121,6 +2142,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GENERIC_TYPE_OPEN:
                     case METHOD_OPEN:
                     case LAMBDA_CALL_OPEN:
+                    case UNIFORM_INITIALIZATION_OPEN:
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                     case PARENTHESIS_OPEN:
                     case SPECIAL_PARENTHESIS_OPEN:
                     case OPERATOR:
@@ -2160,6 +2183,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case METHOD:
                     case LAMBDA_CALL:
                     case LAMBDA_FUNCTION: // apart from call, lambda itself can be parameter
+                    case UNIFORM_INITIALIZATION: // ..., AAA{}, ...
+                    case IMPLICIT_UNIFORM_INITIALIZATION: // ..., {1}, ...
                     case GENERIC_TYPE: // can be "HashMap<List<String>" plus "," state
                     case GENERIC_WILD_CHAR: // chack for "HashMap<?" plus "," case
                         CsmCompletionExpression top2 = peekExp2();
@@ -2186,6 +2211,14 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 break;
 
                             case LAMBDA_CALL_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+                                
+                            case UNIFORM_INITIALIZATION_OPEN:
+                            case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                                 popExp();
                                 top2.addParameter(top);
                                 addTokenTo(top2);
@@ -2222,6 +2255,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case LAMBDA_CALL_OPEN:
                         addTokenTo(top);
                         break;
+                        
+                    case UNIFORM_INITIALIZATION_OPEN:
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
+                        addTokenTo(top);
+                        break;
 
                     default:
                         errorState = true;
@@ -2233,7 +2271,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             case SEMICOLON:
                 errorState = true;
                 break;
-
+                
             case LPAREN:
                 switch (topID) {
                     case VARIABLE:
@@ -2298,6 +2336,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case SPECIAL_PARENTHESIS_OPEN: // if((
                     case METHOD_OPEN:      // a((
                     case LAMBDA_CALL_OPEN: // [](){return 0;}((
+                    case UNIFORM_INITIALIZATION_OPEN: // AAA{(
+                    case IMPLICIT_UNIFORM_INITIALIZATION_OPEN: // {(
                     case NO_EXP:
                     case OPERATOR:         // 3+(
                     case CONVERSION:       // (int)(
@@ -2351,6 +2391,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case INSTANCEOF:
                     case METHOD:
                     case LAMBDA_CALL:
+                    case UNIFORM_INITIALIZATION:
+                    case IMPLICIT_UNIFORM_INITIALIZATION:
                     case LAMBDA_FUNCTION:
                     case GENERIC_TYPE:
                         CsmCompletionExpression top2 = peekExp2();
@@ -2686,6 +2728,35 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 break;
 
             case LBRACE:
+                if (supportUniformInitialization) {
+                    CsmCompletionExpression uniformExp = null;
+                    switch (topID) {
+                        case TYPE: // int{5}
+                        case VARIABLE: // AAA{5}
+                        case SCOPE:    // ns::AAA{5}
+                        case GENERIC_TYPE: // AAA<int>{5}
+                        case CONVERSION: // (AAA){5} - in fact this is compound literal. But let's handle it as uniform initialization syntax
+                            popExp();
+                            uniformExp = createTokenExp(UNIFORM_INITIALIZATION_OPEN);
+                            uniformExp.addParameter(top);
+                            pushExp(uniformExp);
+                            break;
+                            
+                        case METHOD_OPEN:
+                            uniformExp = createTokenExp(IMPLICIT_UNIFORM_INITIALIZATION_OPEN);
+                            pushExp(uniformExp);
+                            break;
+                            
+                        case UNIFORM_INITIALIZATION_OPEN:
+                        case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
+                            uniformExp = createTokenExp(IMPLICIT_UNIFORM_INITIALIZATION_OPEN);
+                            pushExp(uniformExp);
+                            break;
+                    }
+                    if (uniformExp != null) {
+                        break;
+                    }
+                }
                 if (topID == ARRAY) {
                     CsmCompletionExpression top2 = peekExp2();
                     if (getValidExpID(top2) == NEW) {
@@ -2702,6 +2773,56 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 break;
 
             case RBRACE:
+                if (supportUniformInitialization) {
+                    CsmCompletionExpression uniformExp = null;
+                    switch (topID) {
+                        case UNIFORM_INITIALIZATION_OPEN:
+                        case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
+                            uniformExp = top;
+                            break;
+                            
+                        case CONSTANT:
+                        case VARIABLE:
+                        case ARRAY:
+                        case DOT:
+                        case ARROW:
+                        case SCOPE:
+                        case TYPE:
+                        case CONSTRUCTOR:
+                        case CONVERSION:
+                        case PARENTHESIS:
+                        case OPERATOR:
+                        case UNARY_OPERATOR:
+                        case TERNARY_OPERATOR:
+                        case MEMBER_POINTER:
+                        case TYPE_REFERENCE:
+                        case INSTANCEOF:
+                        case METHOD:
+                        case LAMBDA_CALL:
+                        case LAMBDA_FUNCTION:
+                        case GENERIC_TYPE:
+                        case UNIFORM_INITIALIZATION:
+                        case IMPLICIT_UNIFORM_INITIALIZATION:
+                            CsmCompletionExpression top2 = peekExp2();
+                            if (getValidExpID(top2) == UNIFORM_INITIALIZATION_OPEN
+                                    || getValidExpID(top2) == IMPLICIT_UNIFORM_INITIALIZATION_OPEN) {
+                                popExp();
+                                top2.addParameter(top);
+                                uniformExp = top2;
+                            }
+                            break;
+                    }
+                    if (uniformExp != null) {
+                        if (uniformExp.getExpID() == UNIFORM_INITIALIZATION_OPEN) {
+                            uniformExp.setExpID(UNIFORM_INITIALIZATION);
+                        } else {
+                            assert uniformExp.getExpID() == IMPLICIT_UNIFORM_INITIALIZATION_OPEN;
+                            uniformExp.setExpID(IMPLICIT_UNIFORM_INITIALIZATION);
+                        }
+                        addTokenTo(uniformExp);
+                        break;
+                    }
+                }
                 errorState = true;
                 break;
 
@@ -2805,6 +2926,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 case ARRAY_OPEN:
                 case PARENTHESIS_OPEN:
                 case SPECIAL_PARENTHESIS_OPEN:
+                case UNIFORM_INITIALIZATION_OPEN:
+                case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
                 case PARENTHESIS: // can be conversion
                 case METHOD_OPEN:
                 case ANNOTATION_OPEN:
@@ -3159,6 +3282,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         break;
 
                     case LAMBDA_CALL:
+                    case UNIFORM_INITIALIZATION:
                         switch (top2ID) {
                             case DOT_OPEN:
                             case ARROW_OPEN:
