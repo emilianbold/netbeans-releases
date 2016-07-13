@@ -62,7 +62,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -100,6 +103,8 @@ import org.openide.util.Pair;
  */
 public final class JavaContextSupport {
     
+    private static final int TIMEOUT = 10000;
+    
     public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task) {
         if (fObj != null && fObj.isValid() && fObj.isData()) {
             JavaSource js = JavaSource.forFileObject(fObj);
@@ -108,10 +113,11 @@ public final class JavaContextSupport {
             }
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
+                f.get(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (f.isDone()){
                     return task.getResult();
                 }
-            } catch (IOException ex) {
+            } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -126,10 +132,11 @@ public final class JavaContextSupport {
             }
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
+                f.get(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (f.isDone()){
                     return task.getResult();
                 }
-            } catch (IOException ex) {
+            } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
