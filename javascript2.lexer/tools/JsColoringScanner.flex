@@ -746,7 +746,9 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "</"                          { jsxBalances.push(jsxBalances.pop() - 1);}
   "{"                           {  yypushback(1);
                                    yybegin(INITIAL);
-                                   return JsTokenId.JSX_TEXT;
+                                   if (yylength() > 0) {
+                                     return JsTokenId.JSX_TEXT;
+                                   }
                                 }
   {JSXCharacter}                {}
   
