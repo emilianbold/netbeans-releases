@@ -879,6 +879,9 @@ public class Utilities {
         operator2DN.put(NOT_EQUAL_TO, "!=");
     }
 
+    @NbBundle.Messages({
+        "DisplayName_Unknown=<missing>"
+    })
     private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
 
         private CompilationInfo info;
@@ -933,6 +936,9 @@ public class Utilities {
         }
 
         private String simpleName(Tree t) {
+            if (t == null) {
+                return Bundle.DisplayName_Unknown();
+            }
             if (t.getKind() == Kind.IDENTIFIER) {
                 return ((IdentifierTree) t).getName().toString();
             }
@@ -2177,10 +2183,29 @@ public class Utilities {
      * @return detected conflicts.
      */
     public static Map<? extends ExecutableElement, ? extends ExecutableElement>  findConflictingMethods(CompilationInfo info, TypeElement clazz, Iterable<? extends ExecutableElement> methods) {
+        return findConflictingMethods(info, clazz, false, methods);
+    }
+    
+    /**
+     * Finds conflicting declarations of methods. Unlike {@link #findConflictingMethods(org.netbeans.api.java.source.CompilationInfo, javax.lang.model.element.TypeElement, java.lang.Iterable)},
+     * it also considers visible methods inherited from supertypes, if `inherited' parameter is true.
+     * 
+     * @param info context
+     * @param clazz class to inspect
+     * @param inherited if true, inspects also inherited methods
+     * @param methods methods to check
+     * @return list of conflicting methods
+     */
+    public static Map<? extends ExecutableElement, ? extends ExecutableElement>  findConflictingMethods(CompilationInfo info, TypeElement clazz, boolean inherited, Iterable<? extends ExecutableElement> methods) {
         final Map<Name, Collection<ExecutableElement>> currentByName = new HashMap<>();
         Map<ExecutableElement, ExecutableElement> ret = new HashMap<>();
-        
-        for (Element e : clazz.getEnclosedElements()) {
+        Iterable<? extends Element> col;
+        if (inherited) {
+            col = info.getElementUtilities().getMembers(clazz.asType(), null);
+        } else {
+            col = clazz.getEnclosedElements();
+        }
+        for (Element e : col) {
             if (e.getKind() != ElementKind.METHOD) {
                 continue;
             }

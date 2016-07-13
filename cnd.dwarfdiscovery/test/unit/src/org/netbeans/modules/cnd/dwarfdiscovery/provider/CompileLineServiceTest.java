@@ -120,11 +120,15 @@ public class CompileLineServiceTest extends NativeExecutionBaseTestCase {
     private List<String> javaPaths() {
         List<String> res = new ArrayList<String>();
         try {
-            res.add(NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_5"));
-            res.add(NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_6"));
-            String path = NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_7");
-            if (path != null) {
-                res.add(path);
+            for(String s: new String[]{"java1_5","java1_6", "java1_7", "java1_8", "java1_9"}) {
+                String path = NativeExecutionTestSupport.getRcFile().get("jdk.paths", s);
+                if (path != null) {
+                    if (!new File(path).exists()) {
+                        System.err.println("Skip test because "+s+" ("+path+") not found");
+                        continue;
+                    }
+                    res.add(path);
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

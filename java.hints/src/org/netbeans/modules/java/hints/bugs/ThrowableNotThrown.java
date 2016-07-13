@@ -50,6 +50,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -111,6 +112,13 @@ public class ThrowableNotThrown {
         }
         return null;
     }
+    
+    private static final EnumSet<ElementKind> LOCAL_VARIABLES = EnumSet.of(
+            ElementKind.LOCAL_VARIABLE,
+            ElementKind.PARAMETER,
+            ElementKind.RESOURCE_VARIABLE,
+            ElementKind.EXCEPTION_PARAMETER
+    );
     
     private static TreePath findEnclosingMethodPath(TreePath path) {
         TreePath enclosingMethodPath = path;
@@ -318,7 +326,7 @@ public class ThrowableNotThrown {
                         Element el = info.getTrees().getElement(new TreePath(excPath, var));
                         if (el == null || el.getKind() == ElementKind.FIELD) {
                             return true;
-                        } else if (el.getKind() == ElementKind.LOCAL_VARIABLE) {
+                        } else if (LOCAL_VARIABLES.contains(el.getKind())) {
                             varAssignments.add(as.getExpression());
                         }
                         process = true;

@@ -470,7 +470,14 @@ public class CompletionContextImpl extends CompletionContext {
         try {
             if (isTagAttributeRequired(tokenSequence)) {
                 completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                typedChars = token.getTokenID().equals(XMLDefaultTokenContext.WS) ? null : token.getImage();
+                if (token.getTokenID().equals(XMLDefaultTokenContext.WS)) {
+                    typedChars = null;
+                } else {
+                    String str = token.getImage();
+                    int e = str.length();
+                    int l = Math.min(completionAtOffset - token.getOffset() /* initial quote */, e);
+                    typedChars = str.substring(0, l);
+                }
                 createPathFromRoot(element);
                 return true;
             }
@@ -607,7 +614,9 @@ public class CompletionContextImpl extends CompletionContext {
                         if( str != null && !str.equals("\"\"") && !str.equals("\'\'") &&
                             (str.startsWith("\"") || str.startsWith("\'")) &&
                             (str.endsWith("\"") || str.endsWith("\'")) ) {
-                            typedChars = str.substring(1, str.length()-1);
+                            int e = str.length() - 1;
+                            int l = Math.min(completionAtOffset - token.getOffset() /* initial quote */, e);
+                            typedChars = str.substring(1, l);
                             if(completionAtOffset == token.getOffset()+1)
                                 typedChars = "";
                         }
@@ -631,7 +640,13 @@ public class CompletionContextImpl extends CompletionContext {
                     if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
                         //no attr completion for end tags
-                        if (prev.getImage().startsWith("</")) break;
+                        if (prev.getImage().startsWith("</")) {
+                            break;
+                        } else {
+                            completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                            createPathFromRoot(element);
+                        }
+                        
 //***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
 //***???pathFromRoot = getPathFromRoot(element);
                     }
@@ -1026,6 +1041,15 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean isPrefixBeingUsed(String prefix) {
         return getDeclaredNamespaces().
                 get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix) != null;
+    }
+    
+    public Boolean prefixConflicts(String prefix, String namespaceURI) {
+        String n = getDeclaredNamespaces().get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
+        if (n == null) {
+            return null;
+        } else {
+            return n.equals(namespaceURI);
+        }
     }
     
     public boolean isSpecialCompletion() {

@@ -2762,7 +2762,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
                     try {
-                        impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                        impl = FileImpl.createFileImpl(fileBuffer, this, fileType, nativeFileItem);
                         if (nativeFileItem != null) {
                             putNativeFileItem(impl.getUID(), nativeFileItem);
                         }
@@ -2820,7 +2820,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(absPath, true);
                 if (impl == null) {
                     assert preprocHandler != null;
-                    impl = new FileImpl(buf, this, fileType, nativeFile);
+                    impl = FileImpl.createFileImpl(buf, this, fileType, nativeFile);
                     putFile(impl, preprocHandler.getState());
                 } else {
                     aUid = impl.getUID();
