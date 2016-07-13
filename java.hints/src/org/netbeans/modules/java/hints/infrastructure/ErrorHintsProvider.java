@@ -570,14 +570,14 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (dObj == null)
             return new Position[] {null, null};
         int originalStartOffset = info.getSnapshot().getOriginalOffset(startOffset);
-        
+        int soff = startOffset;
         boolean rangePrepared = false;
 
         if (INVALID_METHOD_INVOCATION.contains(d.getCode())) {
-            int[] span = translatePositions(info, handlePossibleMethodInvocation(info, d, doc, startOffset, endOffset));
+            int[] span = translatePositions(info, handlePossibleMethodInvocation(info, d, doc, soff, endOffset));
             
             if (span != null) {
-                startOffset = span[0];
+                soff = span[0];
                 endOffset = span[1];
                 rangePrepared = true;
             }
@@ -587,7 +587,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             int[] span = translatePositions(info, findUnresolvedElementSpan(info, (int) getPrefferedPosition(info, d)));
             
             if (span != null) {
-                startOffset = span[0];
+                soff = span[0];
                 endOffset   = span[1];
                 rangePrepared = true;
             }
@@ -624,7 +624,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     int[] span = translatePositions(info, new int[] {ts.offset(), ts.offset() + t.length()});
                     
                     if (span != null) {
-                        startOffset = span[0];
+                        soff = span[0];
                         endOffset   = span[1];
                         rangePrepared = true;
                     }
@@ -632,7 +632,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             }
         }
         
-        PosExtractor ex = new PosExtractor(info, sdoc, startOffset, endOffset, dObj, rangePrepared);
+        PosExtractor ex = new PosExtractor(info, sdoc, soff, endOffset, dObj, rangePrepared);
         // getText also fetches lineOffset
         final String text = ex.getText();
         final int lineOffset = ex.lineOffset;
@@ -645,19 +645,19 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             int originalEndOffset = info.getSnapshot().getOriginalOffset(endOffset);
 
             if (originalEndOffset <= lineOffset + text.length() && originalStartOffset != (-1) && originalEndOffset != (-1)) {
-                startOffset = originalStartOffset;
+                soff = originalStartOffset;
                 endOffset = originalEndOffset;
                 rangePrepared = true;
             }
         }
         
         if (!rangePrepared && USE_PROVIDED_SPAN.contains(d.getCode())) {
-            startOffset = originalStartOffset;
+            soff = originalStartOffset;
             endOffset = info.getSnapshot().getOriginalOffset(endOffset);
             rangePrepared = true;
         }
         
-        if (!rangePrepared || endOffset < startOffset) {
+        if (!rangePrepared || endOffset < soff) {
             int column = 0;
             int length = text.length();
 
@@ -668,18 +668,26 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 length--;
 
             if(length == 0) //whitespace only
-                startOffset = lineOffset;
+                soff = lineOffset;
             else
-                startOffset = lineOffset + column;
+                soff = lineOffset + column;
 
             endOffset = lineOffset + length;
         }
         
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "startOffset = " + startOffset );
+            ERR.log(ErrorManager.INFORMATIONAL, "startOffset = " + soff );
             ERR.log(ErrorManager.INFORMATIONAL, "endOffset = " + endOffset );
         }
-        return ex.getResult(startOffset, endOffset);
+        if (soff < 0) {
+            LOG.log(Level.WARNING, "Incorrect offsets computed, add report to https://netbeans.org/bugzilla/show_bug.cgi?id=242191");
+            LOG.log(Level.WARNING, "Diagnostic: {0}, code: {1} ", new Object[] { d, d.getCode() });
+            LOG.log(Level.WARNING, "Start: {0}, End: {1}, Soff: {2}, RangePrepared: {3}", new Object[] { startOffset, endOffset, soff, rangePrepared });
+            LOG.log(Level.WARNING, "Source text:\n--------------------------------------------------------\n" 
+                    + info.getSnapshot().getText() + 
+                    "\n--------------------------------------------------------");
+        }
+        return ex.getResult(soff, endOffset);
     }
     
     private boolean cancel;
