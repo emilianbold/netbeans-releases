@@ -1406,6 +1406,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/parser/trailingCommas/trailingCommas8.js");
     }
 
+    public void testTrailingComma09() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas9.js");
+    }
+
     public void testVarForIn() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/binding-pattern/array-pattern/var-for-in.js");
     }
