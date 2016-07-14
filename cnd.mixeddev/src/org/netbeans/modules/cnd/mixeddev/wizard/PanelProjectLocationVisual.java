@@ -631,6 +631,9 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
             projectNameTextField.selectAll();
         }
         String hostUID = WizardConstants.PROPERTY_HOST_UID.get(settings);
+        if (hostUID == null) {
+            hostUID = ExecutionEnvironmentFactory.toUniqueID(env);
+        }
         CompilerSet cs = WizardConstants.PROPERTY_TOOLCHAIN.get(settings);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(settings));
         Boolean readOnlyToolchain = WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.get(settings);
