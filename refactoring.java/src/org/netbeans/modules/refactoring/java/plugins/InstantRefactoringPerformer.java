@@ -94,7 +94,6 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.BaseDocument;
@@ -110,6 +109,7 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import static org.netbeans.modules.refactoring.java.ui.ContextAnalyzer.SHOW;
 import org.netbeans.modules.refactoring.java.ui.InstantRefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.SyncDocumentRegion;
+import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.java.ui.instant.CompletionLayout;
 import org.netbeans.modules.refactoring.java.ui.instant.InstantOption;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -249,11 +249,11 @@ public final class InstantRefactoringPerformer implements DocumentListener, KeyL
                 
                 @Override
                 public void run() {
-                    ScanDialog.runWhenScanFinished(task, "Instant Refactoring");
+                    UIUtilities.runWhenScanFinished(task, "Instant Refactoring");
                 }
             });
         } else {
-            ScanDialog.runWhenScanFinished(task, "Instant Refactoring");
+            UIUtilities.runWhenScanFinished(task, "Instant Refactoring");
         }
     }
 

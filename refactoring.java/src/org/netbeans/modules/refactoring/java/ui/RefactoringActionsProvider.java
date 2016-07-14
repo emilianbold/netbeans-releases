@@ -57,7 +57,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -147,11 +146,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
                 @Override
                 public void run() {
-                    ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+                    UIUtilities.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
                 }
             });
         } else {
-            ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+            UIUtilities.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
         }
     }
     
@@ -196,7 +195,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public void doCopy(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, CopyClassRefactoringUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
+        UIUtilities.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
     /**
@@ -297,7 +296,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public void doDelete(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, SafeDeleteUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
+        UIUtilities.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
     public static FileObject getTarget(Lookup look) {
@@ -439,7 +438,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public void doMove(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, MoveClassUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
+        UIUtilities.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
     }
     private static boolean isSelectionHeterogeneous(Collection<? extends Node> nodes) {
         boolean folderSelected = false;
