@@ -26,7 +26,7 @@
           <isFunctionBody/>
           <!-- Block Statements -->
           <ExpressionStatement start='50' end='58'>
-            <UnaryNode type='IDENT' start='50' end='57'>
+            <UnaryNode type='AWAIT' start='50' end='57'>
               <!-- UnaryNode Expression -->
               <NumberLiteralNode value='1' start='56' end='57'/>
             </UnaryNode>
@@ -128,7 +128,7 @@
               <isFunctionBody/>
               <!-- Block Statements -->
               <ExpressionStatement start='116' end='124'>
-                <UnaryNode type='IDENT' start='116' end='123'>
+                <UnaryNode type='AWAIT' start='116' end='123'>
                   <!-- UnaryNode Expression -->
                   <IdentNode start='122' end='123'>
                     <name>x</name>

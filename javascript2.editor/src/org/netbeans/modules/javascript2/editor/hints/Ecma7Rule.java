@@ -169,6 +169,14 @@ public class Ecma7Rule extends EcmaLevelRule {
             for (Expression decorator : propertyNode.getDecorators()) {
                 addHint(context, hints, new OffsetRange(decorator.getStart(), decorator.getFinish()));
             }
+            Expression key = propertyNode.getKey();
+            if (key.isTokenType(TokenType.SPREAD_OBJECT)) {
+                long token = key.getToken();
+                int position = Token.descPosition(token);
+                addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+                key.accept(this);
+                return false;
+            }
             return super.enterPropertyNode(propertyNode);
         }
 
@@ -185,7 +193,7 @@ public class Ecma7Rule extends EcmaLevelRule {
 
         @Override
         public boolean enterUnaryNode(UnaryNode unaryNode) {
-            if (unaryNode.isTokenType(TokenType.IDENT)) {
+            if (unaryNode.isTokenType(TokenType.AWAIT)) {
                 long token = unaryNode.getToken();
                 int position = Token.descPosition(token);
                 addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
