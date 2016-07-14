@@ -236,7 +236,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
                 }
             }
             if (doFullRename) {
-                doFullRename(dobj, target);
+                doFullRename(dobj, target, ref);
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
@@ -263,7 +263,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
         }
     }
     
-    private static void doFullRename(DataObject dobj, JTextComponent target) {
+    private static void doFullRename(DataObject dobj, JTextComponent target, CsmReference ref) {
         EditorCookie ec = dobj.getCookie(EditorCookie.class);
         Node n = dobj.getNodeDelegate();
         if (n == null) {
@@ -275,6 +275,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
             ic.add(ec);
         }
         ic.add(n);
+        ic.add(ref);
         Lookup actionContext = new AbstractLookup(ic);
         
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);

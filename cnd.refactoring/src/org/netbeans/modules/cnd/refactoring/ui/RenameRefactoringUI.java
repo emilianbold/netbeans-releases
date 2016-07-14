@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -81,6 +82,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private boolean byPassPakageRename;
     
     public RenameRefactoringUI(CsmObject csmObject, String newName) {
+        String name = CsmRefactoringUtils.getSimpleText(csmObject);
+        if ((csmObject instanceof CsmReference) &&
+            (name.startsWith("\"") && name.endsWith("\"") || name.startsWith("<") && name.endsWith(">"))) { // NOI18N
+            CsmObject referencedObject = ((CsmReference)csmObject).getReferencedObject();
+            if (CsmKindUtilities.isFile(referencedObject)) {
+                csmObject = referencedObject;
+            }
+        }
         this.origObject = csmObject;
         this.dispOldName = this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);
         this.newName = newName;
