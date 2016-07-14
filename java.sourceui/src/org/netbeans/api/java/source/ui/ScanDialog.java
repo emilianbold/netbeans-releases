@@ -42,10 +42,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -124,23 +122,17 @@ public class ScanDialog {
                 ClassPathSupport.createClassPath(new URL[0]));
             final JavaSource js = JavaSource.create(info);
             try {
-                Future<Void> monitor = js.runWhenScanFinished(new Task<CompilationController>() {
-                    public void run(CompilationController parameter) throws Exception {
-                        
-                        final Runnable r = new Runnable () {
-                            public void run () {
-                                listener.close();
-                                runnable.run();
-                            }
+                final Future<Void> monitor = js.runWhenScanFinished((cc) -> {                        
+                        final Runnable r = () -> {
+                            listener.close();
+                            runnable.run();
                         };
                         if (SwingUtilities.isEventDispatchThread()) {
                             r.run();
-                        }
-                        else {
+                        } else {
                             SwingUtilities.invokeLater(r);         
                         }
-                    }
-                }, true);
+                    }, true);
                 if (!monitor.isDone()) {
                     listener.start(monitor);
                 }                

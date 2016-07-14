@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.openide.util.Lookup;
@@ -62,7 +61,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doExtractInterface(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, ExtractInterfaceRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
     }
 
     @Override
@@ -73,7 +72,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doExtractSuperclass(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, ExtractSuperclassRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
     }
 
     @Override
@@ -84,7 +83,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doPushDown(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, PushDownRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
     }
 
     @Override
@@ -95,7 +94,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doPullUp(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, PullUpRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
     }
 
     @Override
@@ -111,7 +110,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doUseSuperType(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, UseSuperTypeRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
     }
     
     @Override
@@ -122,7 +121,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doChangeParameters(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, ChangeParametersUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }
     
     @Override
@@ -133,7 +132,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doIntroduceParameter(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, IntroduceParameterUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }    
     
     @Override
@@ -144,7 +143,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doInnerToOuter(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, InnerToOuterRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
     }
 
     @Override
@@ -155,7 +154,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doEncapsulateFields(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, EncapsulateFieldUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
 
     @Override
@@ -166,7 +165,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doIntroduceLocalExtension(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, IntroduceLocalExtensionUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.introduceLocalExtensionAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.introduceLocalExtensionAction()));
     }
     
     @Override
@@ -177,6 +176,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doInline(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, InlineRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
+        UIUtilities.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
     }
 }
