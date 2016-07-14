@@ -592,31 +592,49 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 tplLookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
                 switch ((CppTokenId) token.id()) {
                     case LT:
-                        tplLookaheadLtgtsLevel++;
+                        if (tplLookaheadBracketsLevel == 0 && tplLookaheadParensLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadLtgtsLevel++;
+                        }
                         break;
                     case GT:
-                        tplLookaheadLtgtsLevel--;
+                        if (tplLookaheadBracketsLevel == 0 && tplLookaheadParensLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadLtgtsLevel--;
+                        }
                         break;
-//                    case GTGT:
-//                        tplLookaheadLtgtsLevel -= 2;
-//                        break;
+                    case GTGT:
+                        if (tplLookaheadBracketsLevel == 0 && tplLookaheadParensLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadLtgtsLevel = Math.max(tplLookaheadLtgtsLevel - 2, 0);
+                        }
+                        break;
                     case LPAREN:
-                        tplLookaheadParensLevel++;
+                        if (tplLookaheadBracketsLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadParensLevel++;
+                        }
                         break;
                     case RPAREN:
-                        tplLookaheadParensLevel--;
+                        if (tplLookaheadBracketsLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadParensLevel--;
+                        }
                         break;
                     case LBRACKET:
-                        tplLookaheadBracketsLevel++;
+                        if (tplLookaheadParensLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadBracketsLevel++;
+                        }
                         break;
                     case RBRACKET:
-                        tplLookaheadBracketsLevel--;
+                        if (tplLookaheadParensLevel == 0 && tplLookaheadBracesLevel == 0) {
+                            tplLookaheadBracketsLevel--;
+                        }
                         break;
                     case LBRACE:
-                        tplLookaheadBracesLevel++;
+                        if (tplLookaheadParensLevel == 0 && tplLookaheadBracketsLevel == 0) {
+                            tplLookaheadBracesLevel++;
+                        }
                         break;
                     case RBRACE:
-                        tplLookaheadBracesLevel--;
+                        if (tplLookaheadParensLevel == 0 && tplLookaheadBracketsLevel == 0) {
+                            tplLookaheadBracesLevel--;
+                        }
                         break;
                 }
             }
@@ -649,31 +667,49 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
         switch ((CppTokenId) token.id()) {
             case LT:
-                tempLookaheadTokensLtgtsLevel++;
+                if (tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensLtgtsLevel++;
+                }
                 break;
             case GT:
-                tempLookaheadTokensLtgtsLevel--;
+                if (tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensLtgtsLevel--;
+                }
                 break;
-//            case GTGT:
-//                tempLookaheadTokensLtgtsLevel -= 2;
-//                break;
+            case GTGT:
+                if (tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensLtgtsLevel = Math.max(tempLookaheadTokensLtgtsLevel - 2, 0);
+                }
+                break;
             case LPAREN:
-                tempLookaheadTokensParensLevel++;
+                if (tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensParensLevel++;
+                }
                 break;
             case RPAREN:
-                tempLookaheadTokensParensLevel--;
+                if (tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensParensLevel--;
+                }
                 break;
             case LBRACKET:
-                tempLookaheadTokensBracketsLevel++;
+                if (tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensBracketsLevel++;
+                }
                 break;
             case RBRACKET:
-                tempLookaheadTokensBracketsLevel--;
+                if (tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracesLevel == 0) {
+                    tempLookaheadTokensBracketsLevel--;
+                }
                 break;
             case LBRACE:
-                tempLookaheadTokensBracesLevel++;
+                if (tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0) {
+                    tempLookaheadTokensBracesLevel++;
+                }
                 break;
             case RBRACE:
-                tempLookaheadTokensBracesLevel--;
+                if (tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0) {
+                    tempLookaheadTokensBracesLevel--;
+                }
                 break;
         }
         if (!tplLookaheadTokens.isEmpty()) {
@@ -1793,6 +1829,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case CONSTANT: // check for "List<const" plus ">" case
                         case VARIABLE: // check for "List<var" plus ">" case
                         case TYPE: // check for "List<int" plus ">" case
+                        case TYPE_REFERENCE: // check for "List<int*" plus ">" case
                         case DOT: // check for "List<var.var2" plus ">" case
                         case ARROW: // check for "List<var.var2" plus ">" case
                         case SCOPE: // check for "List<NS::Class" plus ">" case
