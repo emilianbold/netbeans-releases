@@ -65,7 +65,6 @@ import javax.swing.tree.TreePath;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.annotations.common.StaticResource;
 import static org.netbeans.modules.maven.dependencies.Bundle.*;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -114,7 +113,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         
         SwingUtilities.invokeLater(() -> trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode())));
 
-        RequestProcessor.getDefault().post(() -> {
+        new RequestProcessor(ExcludeDependencyPanel.class.getName()).post(() -> {
             if (!isSingle) {
                 rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
             } else {
