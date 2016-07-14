@@ -1374,6 +1374,38 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/binding-pattern/array-pattern/tailing-hold.js");
     }
 
+    public void testTrailingComma01() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas1.js");
+    }
+
+    public void testTrailingComma02() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas2.js");
+    }
+
+    public void testTrailingComma03() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas3.js");
+    }
+    
+    public void testTrailingComma04() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas4.js");
+    }
+    
+    public void testTrailingComma05() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas5.js");
+    }
+    
+    public void testTrailingComma06() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas6.js");
+    }
+    
+    public void testTrailingComma07() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas7.js");
+    }
+    
+    public void testTrailingComma08() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas8.js");
+    }
+
     public void testVarForIn() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/binding-pattern/array-pattern/var-for-in.js");
     }
