@@ -111,7 +111,7 @@ public final class Utils {
                         if (text == null || !text.startsWith("HTTP/")) { // NOI18N
                             return false; // not an http response
                         }
-                        Map headerFileds = new HashMap();
+                        Map<String, List<String>> headerFileds = new HashMap();
                         while ((text = in.readLine()) != null && text.length() > 0) {
                             int colon = text.indexOf(':');
                             if (colon <= 0) {
@@ -119,27 +119,24 @@ public final class Utils {
                             }
                             String name = text.substring(0, colon).trim();
                             String value = text.substring(colon + 1).trim();
-                            List list = (List)headerFileds.get(name);
+                            List<String> list = headerFileds.get(name);
                             if (list == null) {
                                 list = new ArrayList();
                                 headerFileds.put(name, list);
                             }
                             list.add(value);
                         }
-                        List/*<String>*/ server = (List/*<String>*/)headerFileds.get("Server"); // NIO18N
+                        List<String> server = headerFileds.get("Server"); // NIO18N
                         if (server != null) {
                             if (server.contains(serverHeader)) { // NOI18N
-// in recent JBoss version there is no X-Powered-By anyway
-//                                if (headerFileds.get("X-Powered-By") == null) { // NIO18N
-                                    // if X-Powered-By header is set, it is probably jboss
-                                    return true;
-//                                }
+                                return true;
                             } else if (server.contains("Sun-Java-System/Web-Services-Pack-1.4")) {  // NOI18N
                                 // it is probably Tomcat with JWSDP installed
                                 return true;
-                            } else if (managerUrl != null) {
-                                return pingTomcatManager(managerUrl, port, timeout);
                             }
+                        }
+                        if (managerUrl != null) {
+                            return pingTomcatManager(managerUrl, port, timeout);
                         }
                         return false;
                     } finally {
