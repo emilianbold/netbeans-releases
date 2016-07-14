@@ -173,4 +173,10 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         // Bug 257038 - C++14: make_unique and unresolved identifier
         performTest("bug257038.cpp", 45, 14, "bug257038.cpp", 40, 9);
     }
+    
+    public void testBug262801() throws Exception {
+        // Bug 262801 - Errors when parsing conditional expression inside template
+        performTest("bug262801.cpp", 15, 15, "bug262801.cpp", 10, 9);
+        performTest("bug262801.cpp", 16, 42, "bug262801.cpp", 4, 9);
+    }
 }
