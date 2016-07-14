@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -110,23 +111,26 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         trRef.addKeyListener(l);
         trRef.setToggleClickCount(0);
         trRef.setRootVisible(false);
-        trTrans.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
-        trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
+        
+        SwingUtilities.invokeLater(() -> trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode())));
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
+        RequestProcessor.getDefault().post(() -> {
+            if (!isSingle) {
+                rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+            } else {
+                rootnode = root;
+            }
+            SwingUtilities.invokeLater(() -> {
                 if (!isSingle) {
-                    rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     trTrans.setModel(new DefaultTreeModel(createTransitiveDependenciesList()));
                 } else {
-                    rootnode = root;
                     CheckNode nd = new CheckNode(single, null, null);
                     DefaultTreeModel dtm = new DefaultTreeModel(createReferenceModel(directs, nd));
                     modelCache.put(single, dtm);
                     setReferenceTree(nd);
+                    trTrans.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
                 }
-            }            
+            });            
         });
         trTrans.addFocusListener(new FocusListener() {
             @Override
