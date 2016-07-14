@@ -311,6 +311,8 @@ public final class CsmRefactoringUtils {
            if (CsmKindUtilities.isFile(obj)) {
                // try to find something smaller
                file = (CsmFile) obj;
+           } else if (CsmKindUtilities.isInclude(obj)) {
+               file = ((CsmInclude) obj).getIncludeFile();
            } else {
                out = obj;
                break;
