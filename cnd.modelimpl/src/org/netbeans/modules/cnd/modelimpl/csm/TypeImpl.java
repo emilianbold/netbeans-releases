@@ -1154,12 +1154,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
         } else {
             FileImpl file = (FileImpl) getContainingFile();
-            CsmReference typeReference = file.getResolvedReference(new CsmTypeReferenceImpl(this));
-            if (typeReference != null) {
-                CsmObject referencedObject = typeReference.getReferencedObject();
-                if (CsmKindUtilities.isClassifier(referencedObject)) {
-                    classifier = (CsmClassifier) referencedObject;
-                    //System.out.println("Hit "+classifier);
+            if (file != null) {
+                CsmReference typeReference = file.getResolvedReference(new CsmTypeReferenceImpl(this));
+                if (typeReference != null) {
+                    CsmObject referencedObject = typeReference.getReferencedObject();
+                    if (CsmKindUtilities.isClassifier(referencedObject)) {
+                        classifier = (CsmClassifier) referencedObject;
+                        //System.out.println("Hit "+classifier);
+                    }
                 }
             }
         }

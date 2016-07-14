@@ -268,7 +268,22 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 Collection<CsmInclude> includes = csmFile.getIncludes();
                 for (CsmInclude csmInclude : includes) {
                     if (includedFile.equals(csmInclude.getIncludeFile())) {
-                        refs.add(CsmReferenceSupport.createObjectReference(includedFile, csmInclude));
+                        if (csmInclude.getStartOffset() < 0) {
+                            // -inclide directive from item properties
+                            // unsupported rename
+                            Problem problem = new Problem(false, NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "ERR_IcludedByCompileOption", csmFile.getAbsolutePath(), includedFile.getAbsolutePath())); //NOI18N
+                            Problem parent = outProblem.get();
+                            if (parent == null) {
+                                outProblem.set(problem);
+                            } else {
+                                while(parent.getNext() != null) {
+                                    parent = parent.getNext();
+                                }
+                                parent.setNext(problem);
+                            }
+                        } else {
+                            refs.add(CsmReferenceSupport.createObjectReference(includedFile, csmInclude));
+                        }
                     }
                 }
             } else {
