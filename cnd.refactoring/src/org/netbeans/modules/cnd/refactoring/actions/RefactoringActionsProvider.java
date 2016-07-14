@@ -44,9 +44,11 @@
 package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -138,7 +140,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 if (CsmKindUtilities.isFile(ctx)) {
                     // propose refactoring only for files included somewhere,
                     // so sources will do usual rename without extra dialogs
-                    Collection<? extends CsmFile> allFiles = lookup.lookupAll(CsmFile.class);
+                    List<CsmFile> allFiles = new ArrayList(lookup.lookupAll(CsmFile.class));
+                    if (allFiles.isEmpty()) {
+                        allFiles.add((CsmFile)ctx);
+                    }
                     boolean included = false;
                     for (CsmFile csmFile : allFiles) {
                         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(csmFile);
