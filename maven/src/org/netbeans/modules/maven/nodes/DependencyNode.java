@@ -64,6 +64,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
@@ -1029,7 +1031,8 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 DistributionManagement dm = r.getProject().getDistributionManagement();
                 return dm != null ? dm.getRelocation() : null;
             } catch (ProjectBuildingException ex) {
-                Exceptions.printStackTrace(ex);
+                // just log and hope for the best ...
+                Logger.getLogger(DependencyNode.class.getName()).log(Level.INFO, version, ex);                
             }
         }
         return null;

@@ -62,9 +62,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.Lookup;
@@ -1198,6 +1200,18 @@ public final class UIUtilities {
         }
 
         return sb.toString();
+    }
+    
+    public static boolean runWhenScanFinished (final Runnable runnable, final String actionName) {
+            return ScanDialog.runWhenScanFinished(
+                () -> {
+                    if (ParserManager.isParsing()) {
+                        SwingUtilities.invokeLater(runnable);
+                    } else {
+                        runnable.run();
+                    }
+                },
+                actionName);
     }
 
     private static String printBounds(List<? extends TypeMirror> bounds, boolean html) {

@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -64,7 +65,6 @@ import javax.swing.tree.TreePath;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.annotations.common.StaticResource;
 import static org.netbeans.modules.maven.dependencies.Bundle.*;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -110,23 +110,26 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         trRef.addKeyListener(l);
         trRef.setToggleClickCount(0);
         trRef.setRootVisible(false);
-        trTrans.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
-        trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
+        
+        SwingUtilities.invokeLater(() -> trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode())));
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
+        new RequestProcessor(ExcludeDependencyPanel.class.getName()).post(() -> {
+            if (!isSingle) {
+                rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+            } else {
+                rootnode = root;
+            }
+            SwingUtilities.invokeLater(() -> {
                 if (!isSingle) {
-                    rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     trTrans.setModel(new DefaultTreeModel(createTransitiveDependenciesList()));
                 } else {
-                    rootnode = root;
                     CheckNode nd = new CheckNode(single, null, null);
                     DefaultTreeModel dtm = new DefaultTreeModel(createReferenceModel(directs, nd));
                     modelCache.put(single, dtm);
                     setReferenceTree(nd);
+                    trTrans.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
                 }
-            }            
+            });            
         });
         trTrans.addFocusListener(new FocusListener() {
             @Override

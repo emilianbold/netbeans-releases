@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
@@ -85,6 +84,6 @@ public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
     @Override
     public void performAction(Lookup context) {
         Runnable task = ContextAnalyzer.createTask(context, InvertBooleanRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, getName());
+        UIUtilities.runWhenScanFinished(task, getName());
     }
 }
