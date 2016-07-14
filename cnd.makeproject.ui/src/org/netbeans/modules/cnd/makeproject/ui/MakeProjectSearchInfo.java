@@ -98,7 +98,7 @@ final class MakeProjectSearchInfo extends SearchInfoDefinition {
                 configurationDescriptor.getAbsoluteSourceRoots().forEach((root) -> {
                     try {
                         FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
-                        if (fo != null) {
+                        if (fo != null && !baseDirFileObject.equals(fo)) {
                             roots.add(new SearchRoot(fo, null));
                         }
                     } catch (FileStateInvalidException ex) {
