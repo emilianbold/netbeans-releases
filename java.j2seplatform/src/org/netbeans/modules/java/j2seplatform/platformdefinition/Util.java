@@ -135,18 +135,9 @@ public class Util {
                 }
             }
         }
-        if (!modules.isEmpty()) {
-            //The jfxrt.jar is not modular but it's automatically added to ext
-            //class loader by java launcher
-            final PathResourceImplementation jfx = getJfxRt(installFolders);
-            if (jfx != null) {
-                modules.add(jfx);
-            }
-            addPath(getExtensions(J2SEPlatformImpl.SYSPROP_JAVA_EXT_PATH), modules);
-            return ClassPathSupport.createClassPath(modules);
-        } else {
-            return null;
-        }
+        return modules.isEmpty() ?
+                null :
+                ClassPathSupport.createClassPath(modules);
     }
 
     // XXX this method could probably be removed... use standard FileUtil stuff

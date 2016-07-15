@@ -162,7 +162,6 @@ final class ModuleClassPaths {
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
         private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
-        private static final String PROTOCOL_NBJRT = "nbjrt";   //NOI18N
 
         private final PropertyEvaluator eval;
         private final String platformType;
@@ -223,7 +222,6 @@ final class ModuleClassPaths {
             getPlatforms()
                 .flatMap((plat)->plat.getBootstrapLibraries().entries().stream())
                 .map((entry) -> entry.getURL())
-                .filter((root) -> (PROTOCOL_NBJRT.equals(root.getProtocol())))
                 .forEach((root)->{res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(root));});
             return res;
         }
