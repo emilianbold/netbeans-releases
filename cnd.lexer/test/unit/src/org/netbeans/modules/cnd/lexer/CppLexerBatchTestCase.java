@@ -179,6 +179,17 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "yZ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\r\n");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "z");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testStrangeIdentifiers() {
+        String text = "$a àà";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "$a");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "àà");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void testCharLiterals() {
