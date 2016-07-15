@@ -171,7 +171,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         inspect = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
         next.setVisible(!isPreviewRequired());
-        
+        label.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         label.addHyperlinkListener(new HyperlinkListener() {
 
             @Override
