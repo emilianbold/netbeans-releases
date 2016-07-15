@@ -247,6 +247,44 @@ public class ScannerTestCase extends NbTestCase {
         }
     }
 
+    public void testGNUpatterns_08() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "main.f90:1.29:";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.f90"));
+                assertTrue(m.group(2).equals("1"));
+                assertTrue(m.group(3).indexOf("error")<0);
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
+    public void testGNUpatterns_09() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "main.f90:2:";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.f90"));
+                assertTrue(m.group(2).equals("2"));
+                assertTrue(m.groupCount()==2);
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
     public void testSUNpatternAten() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleSolarisStudio_12.2", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertTrue(Pattern.compile(toolchain.getCpp().getVersionPattern()).matcher("CC: Sun C++ 5.11 SunOS_i386 2010/06/09").find());
