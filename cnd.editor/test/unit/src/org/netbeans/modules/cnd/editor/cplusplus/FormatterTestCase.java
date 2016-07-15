@@ -6014,4 +6014,25 @@ public class FormatterTestCase extends EditorBase {
               + "    return;\n"
               + "}\n");
     }
+
+    public void test253386() {
+        setLoadDocumentText(
+                "int main() {\n" 
+              + "    B::A<T...>{}.loop(std::forward<F>(body), std::make<sizeof...(T)> {}, std::forward<T>(objects)...);\n" 
+              + "    int a{1};\n"
+              + "    return {0};\n"
+              + "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        reformat();
+        assertDocumentText("Incorrect rvalue reference",
+                "int main() {\n" 
+              + "    B::A<T...>{}.loop(std::forward<F>(body), std::make<sizeof...(T)>{}, std::forward<T>(objects)...);\n" 
+              + "    int a{1};\n"
+              + "    return {0};\n"
+              + "}\n");
+    }
+    
 }
