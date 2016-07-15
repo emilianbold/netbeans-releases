@@ -316,6 +316,7 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
     public void testBug262586() throws Exception {
         // Bug 262586 - Warnings in editor (check C++11 STL API) 
         performTest("bug262586.cpp", 64, 17, "bug262586.cpp", 59, 9);
+        performTest("bug262586.cpp", 82, 20, "bug262586.cpp", 59, 9);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

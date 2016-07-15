@@ -64,6 +64,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private LinkedList<Integer> templateBalances = new LinkedList<Integer>();
 
+    private boolean canFollowJSX = true;
+
+    private LinkedList<Integer> jsxBalances = new LinkedList<Integer>();
+
     public JsColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
@@ -79,10 +83,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     public LexerState getState() {
         if (zzState == YYINITIAL && zzLexicalState == YYINITIAL
-                && canFollowLiteral && canFollowKeyword) {
+                && canFollowLiteral && canFollowKeyword && canFollowJSX) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances, canFollowJSX, jsxBalances);
     }
 
     public void setState(LexerState state) {
@@ -91,6 +95,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.canFollowLiteral = state.canFollowLiteral;
         this.canFollowKeyword = state.canFollowKeyword;
         this.templateBalances = new LinkedList<Integer>(state.templateBalances);
+        this.canFollowJSX = state.canFollowJSX;
+        this.jsxBalances = new LinkedList<Integer>(state.jsxBalances);
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -103,10 +109,28 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && !JsTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
             if (!JsTokenId.EOL.equals(token)) {
+                canFollowJSX = canFollowJSX(token);
                 canFollowKeyword = canFollowKeyword(token);
             }
         }
         return token;
+    }
+
+    private boolean canFollowJSX(JsTokenId token) {
+        if ("operator".equals(token.primaryCategory())) {
+            return true;
+        }
+        if (token == JsTokenId.BRACKET_LEFT_PAREN
+                || token == JsTokenId.BRACKET_LEFT_CURLY
+                || token == JsTokenId.BRACKET_LEFT_BRACKET
+                || token == JsTokenId.OPERATOR_ASSIGNMENT
+                || token == JsTokenId.OPERATOR_COLON
+                || token == JsTokenId.OPERATOR_COMMA
+                || token == JsTokenId.OPERATOR_TERNARY
+                || token == JsTokenId.KEYWORD_RETURN) {
+            return true;
+        }
+        return false;
     }
 
     private JsTokenId getErrorToken() {
@@ -159,13 +183,18 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final boolean canFollowKeyword;
         /** are we in template expression */
         final LinkedList<Integer> templateBalances;
+        /** are we in jsx primary expression */
+        final boolean canFollowJSX;
+        final LinkedList<Integer> jsxBalances;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances, boolean canFollowJSX, LinkedList<Integer> jsxBalances) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
             this.canFollowKeyword = canFollowKeyword;
             this.templateBalances = new LinkedList<Integer>(templateBalances);
+            this.canFollowJSX = canFollowJSX;
+            this.jsxBalances = new LinkedList<Integer>(jsxBalances);
         }
 
         @Override
@@ -189,11 +218,22 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.canFollowKeyword != other.canFollowKeyword) {
                 return false;
             }
+            if (this.canFollowJSX != other.canFollowJSX) {
+                return false;
+            }
             if (this.templateBalances.size() != other.templateBalances.size()) {
                 return false;
             }
             for (int i = 0; i < this.templateBalances.size(); i++) {
                 if (this.templateBalances.get(i).equals(other.templateBalances.get(i))) {
+                    return false;
+                }
+            }
+            if (this.jsxBalances.size() != other.jsxBalances.size()) {
+                return false;
+            }
+            for (int i = 0; i < this.jsxBalances.size(); i++) {
+                if (this.jsxBalances.get(i).equals(other.jsxBalances.get(i))) {
                     return false;
                 }
             }
@@ -210,6 +250,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             for (int i = 0; i < this.templateBalances.size(); i++) {
                 hash = 29 * hash + this.templateBalances.get(i);
             }
+            hash = 29 * hash + (this.canFollowJSX ? 1 : 0);
+            for (int i = 0; i < this.jsxBalances.size(); i++) {
+                hash = 29 * hash + this.jsxBalances.get(i);
+            }
             return hash;
         }
 
@@ -217,7 +261,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         public String toString() {
             return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState
                 + ", canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword
-                + ", templateBalances=" + templateBalances + '}';
+                + ", templateBalances=" + templateBalances
+                + ", canFollowJSX=" + canFollowJSX + ", jsxBalances=" + jsxBalances + '}';
         }
     }
 
@@ -271,6 +316,7 @@ Exponent = [eE] [+-]? [0-9]+
 TemplateCharacter = [^`$\\]
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
+JSXCharacter = [^<>/{]
 
 RegexpBackslashSequence = \\{InputCharacter}
 RegexpClass = "["([^\x5d\r\n\\] | {RegexpBackslashSequence})*"]"
@@ -289,6 +335,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 %state REGEXP
 %state REGEXPEND
 %state LCOMMENTEND
+%state JSX
 %state ERROR
 
 %%
@@ -405,9 +452,15 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                             yybegin(TEMPLATEEXPEND);
                                         } else {
                                             templateBalances.push(balance - 1);
+                                            if (!jsxBalances.isEmpty()) {
+                                                yybegin(JSX);
+                                            }
                                             return JsTokenId.BRACKET_RIGHT_CURLY;
                                         }
-                                     } else {                                     
+                                     } else {
+                                        if (!jsxBalances.isEmpty()) {
+                                            yybegin(JSX);
+                                        } 
                                         return JsTokenId.BRACKET_RIGHT_CURLY;
                                      }
                                  }
@@ -419,7 +472,14 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "..."                          { return JsTokenId.OPERATOR_REST; }
   "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
   ">"                            { return JsTokenId.OPERATOR_GREATER; }
-  "<"                            { return JsTokenId.OPERATOR_LOWER; }
+  "<"                            { if (!canFollowJSX) {
+                                        return JsTokenId.OPERATOR_LOWER; 
+                                   } else {
+                                        jsxBalances.push(0);
+                                        yypushback(1);
+                                        yybegin(JSX);
+                                   }
+                                 }
   "!"                            { return JsTokenId.OPERATOR_NOT; }
   "~"                            { return JsTokenId.OPERATOR_BITWISE_NOT; }
   "?"                            { return JsTokenId.OPERATOR_TERNARY; }
@@ -665,6 +725,39 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                          return JsTokenId.EOL;
                                      }
                                  }
+}
+
+<JSX> {
+  "<"                           { 
+                                  jsxBalances.push(jsxBalances.pop() + 1);
+                                }
+  ">"                           { 
+                                  Integer jsxBalance = jsxBalances.pop();  
+                                  if(jsxBalance == 0) {
+                                    yybegin(INITIAL);
+                                    return JsTokenId.JSX_TEXT;
+                                  }
+                                  jsxBalances.push(jsxBalance);
+                                }
+  "/>"                          { 
+                                  Integer jsxBalance = jsxBalances.pop();
+                                  jsxBalance--;
+                                  if(jsxBalance == 0) {
+                                    yybegin(INITIAL);
+                                    return JsTokenId.JSX_TEXT;
+                                  } else {
+                                    jsxBalances.push(jsxBalance);
+                                  }
+                                }
+  "</"                          { jsxBalances.push(jsxBalances.pop() - 1);}
+  "{"                           {  yypushback(1);
+                                   yybegin(INITIAL);
+                                   if (yylength() > 0) {
+                                     return JsTokenId.JSX_TEXT;
+                                   }
+                                }
+  {JSXCharacter}|"/"            {}
+  
 }
 
 /* error fallback */

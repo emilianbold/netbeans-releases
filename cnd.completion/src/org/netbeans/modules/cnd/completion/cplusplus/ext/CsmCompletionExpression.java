@@ -197,8 +197,16 @@ public class CsmCompletionExpression {
     public static final int LAMBDA_CALL_OPEN = 52;
     /** Finished call of lambda function */
     public static final int LAMBDA_CALL = 53;
+    /** Unfinished uniform initialization */
+    public static final int UNIFORM_INITIALIZATION_OPEN = 54;
+    /** Finished uniform initialization */
+    public static final int UNIFORM_INITIALIZATION = 55;
+    /** Unfinished implicit uniform initialization ({...} without type name before) */
+    public static final int IMPLICIT_UNIFORM_INITIALIZATION_OPEN = 56;
+    /** Finished implicit uniform initialization ({...} without type name before) */
+    public static final int IMPLICIT_UNIFORM_INITIALIZATION = 57;
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = LAMBDA_CALL;
+    private static final int LAST_ID = IMPLICIT_UNIFORM_INITIALIZATION;
     private static final int cppTokenIDsLength = EnumSet.allOf(CppTokenId.class).size();
     /** Array that holds the precedence of the operator
      * and whether it's right associative or not.
@@ -634,6 +642,14 @@ public class CsmCompletionExpression {
                 return "LAMBDA_CALL_OPEN"; // NOI18N
             case LAMBDA_CALL:
                 return "LAMBDA_CALL"; // NOI18N
+            case UNIFORM_INITIALIZATION_OPEN:
+                return "UNIFORM_INITIALIZATION_OPEN"; // NOI18N
+            case UNIFORM_INITIALIZATION:
+                return "UNIFORM_INITIALIZATION"; // NOI18N
+            case IMPLICIT_UNIFORM_INITIALIZATION_OPEN:
+                return "IMPLICIT_UNIFORM_INITIALIZATION_OPEN"; // NOI18N
+            case IMPLICIT_UNIFORM_INITIALIZATION:
+                return "IMPLICIT_UNIFORM_INITIALIZATION"; // NOI18N
             default:
                 return "Unknown expID " + expID; // NOI18N
         }

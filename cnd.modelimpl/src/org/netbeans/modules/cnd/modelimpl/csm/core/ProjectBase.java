@@ -681,6 +681,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getDeclarationsSorage().getDeclarationsRange(uniquNamePrefix, uniquNamePrefix + maxChar); // NOI18N
     }
 
+    public final Collection<CsmOffsetableDeclaration> findExternalDeclarations(CsmFile file) {
+        return getDeclarationsSorage().findExternalDeclarations(file);
+    }
+
     public final Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
         return getDeclarationsSorage().findFriends(decl);
     }
@@ -1839,7 +1843,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         // so newStatePair was accepted as candidate as well, but in this case we
                         // expect that startProject have seen newStatePair
                         if (!newStateFoundInStartProject.get()) {
-                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                            //CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
                         }
                     }
                 }
@@ -2758,7 +2762,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
                     try {
-                        impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                        impl = FileImpl.createFileImpl(fileBuffer, this, fileType, nativeFileItem);
                         if (nativeFileItem != null) {
                             putNativeFileItem(impl.getUID(), nativeFileItem);
                         }
@@ -2816,7 +2820,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(absPath, true);
                 if (impl == null) {
                     assert preprocHandler != null;
-                    impl = new FileImpl(buf, this, fileType, nativeFile);
+                    impl = FileImpl.createFileImpl(buf, this, fileType, nativeFile);
                     putFile(impl, preprocHandler.getState());
                 } else {
                     aUid = impl.getUID();
@@ -3027,9 +3031,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             disposeLock.writeLock().lock();
             if (platformProject != null) {
-                if (CndUtils.isDebugMode()) {
-                    checkConsistency(false);
-                }
+                //if (CndUtils.isDebugMode()) {
+                //    checkConsistency(false);
+                //}
                 getUnresolved().dispose();
                 RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
                 onDispose();

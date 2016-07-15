@@ -225,7 +225,11 @@ public final class BreakpointBag {
 					       NativeDebugger debugger) {
 
 	for (NativeBreakpoint b : breakpoints) {
-	    assert b.isToplevel();
+            //assert b.isToplevel();
+            //do not use hidden asserts. use if here
+	    if (!b.isToplevel()) {
+                continue;
+            }
 
 	    if (debugger != null) {
 		for (NativeBreakpoint m : b.getChildren()) {
@@ -286,16 +290,20 @@ public final class BreakpointBag {
     }
 
     void remove(NativeBreakpoint oldBpt) {
-	assert oldBpt.isToplevel();
-	assert oldBpt.nChildren() == 0;
+//	assert oldBpt.isToplevel();
+//	assert oldBpt.nChildren() == 0;
+        //do not use hidden asserts
+        if (!oldBpt.isToplevel() || oldBpt.nChildren() > 0) {
+            return;
+        }
 
 	oldBpt.cleanup();
 	oldBpt.setDisposed(true);
-	boolean removed = breakpoints.remove(oldBpt);
-	assert removed :
-	       "BB.remove(): bpt to be removed not in bag"; // NOI18N
-	assert !breakpoints.contains(oldBpt) :
-	       "BB.remove(): bpt still there after removal"; // NOI18N
+	breakpoints.remove(oldBpt);
+//	assert removed :
+//	       "BB.remove(): bpt to be removed not in bag"; // NOI18N
+//	assert !breakpoints.contains(oldBpt) :
+//	       "BB.remove(): bpt still there after removal"; // NOI18N
 	manager().removeBreakpoint(oldBpt);
 	breakpointUpdater().treeChanged();	// causes a pull
 
@@ -307,8 +315,6 @@ public final class BreakpointBag {
      * with 'debugger'.
      */
     private List<NativeBreakpoint> sessionBreakpoints(NativeDebugger debugger) {
-	assert NativeDebuggerManager.isPerTargetBpts();
-
 	List<NativeBreakpoint> bpts = new ArrayList<NativeBreakpoint>();
 
 	// for each top-level

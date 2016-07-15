@@ -144,12 +144,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 _execute(io, listener);
             } catch (Throwable th) {
                 try {
-                    io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                    if (io != null && io.getErr() != null) {
+                        io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                    }
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
                 }
                 try {
-                    io.getOut().close();
+                    if (io != null && io.getOut() != null) {
+                        io.getOut().close();
+                    }
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -391,8 +395,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             actionType == PredefinedType.BUILD ||
             actionType == PredefinedType.CLEAN) {
             // CR 19816163
-            io.getOut().println("cd '"+workingDirectory+"'"); //NOI18N
-            io.getOut().println(buf.toString());
+            if (io != null && io.getOut() != null) {
+                io.getOut().println("cd '"+workingDirectory+"'"); //NOI18N
+                io.getOut().println(buf.toString());
+            } else {
+                System.out.println("cd '"+workingDirectory+"'"); //NOI18N
+                System.out.println(buf.toString());
+            }
         }
 
         NativeExecutionService es =

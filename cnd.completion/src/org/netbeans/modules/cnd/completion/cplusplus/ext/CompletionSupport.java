@@ -300,10 +300,6 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
 
-    public static boolean areLambdasEnabled(CsmFile csmFile) {
-        return CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
-    }
-
     public static boolean areTemplatesEnabled(CsmFile csmFile) {
         if (csmFile != null) {
             switch (csmFile.getFileType()) {
@@ -314,6 +310,11 @@ public final class CompletionSupport implements DocumentListener {
         }
         return true;
     }
+    
+    // When getting separator from model, it is the max amount of characters 
+    // to process with token processor. If it is neccessary to parse more, then
+    // cached separator is used in most cases.
+    private static final int MAX_EXPRESSION_LENGTH_TO_REPARSE = 1024;
 
     private static int tryGetSeparatorFromModel(CsmFile file, int pos, FileReferencesContext fileReferences) {
         // Enable only for cpp11 ant later because for previous standards simple
@@ -332,16 +333,26 @@ public final class CompletionSupport implements DocumentListener {
                 CsmVariable v = (CsmVariable)lastObj;
                 CsmExpression initialValue = v.getInitialValue();
                 if (CsmOffsetUtilities.isInObject(initialValue, pos)) {
-                    List<CsmStatement> lambdas = initialValue.getLambdas();
-                    if (lambdas == null || lambdas.isEmpty()) {
-                        return -1; // cached last separaror offset must be used
+                    lastObj = initialValue;
+                }
+            }
+            if (CsmKindUtilities.isExpression(lastObj)) {
+                CsmExpression expression = (CsmExpression) lastObj;
+                if (expression.getStartOffset() < pos && expression.getEndOffset() > pos) {
+                    List<CsmStatement> lambdas = expression.getLambdas();
+                    if (lambdas != null && !lambdas.isEmpty()) {
+                        // Think about restriction on max expression length.
+                        return ((CsmOffsetable) lastObj).getStartOffset();
                     }
                 }
             }
             if (CsmKindUtilities.isOffsetable(lastObj)) {
                 CsmOffsetable offs = (CsmOffsetable) lastObj;
                 if (offs.getStartOffset() < pos && offs.getEndOffset() > pos) {
-                    return ((CsmOffsetable) lastObj).getStartOffset();
+                    int distance = pos - offs.getStartOffset();
+                    if (distance < MAX_EXPRESSION_LENGTH_TO_REPARSE) {
+                        return offs.getStartOffset();
+                    }
                 }
             }
         }
@@ -723,6 +734,12 @@ public final class CompletionSupport implements DocumentListener {
             return type2;
         }
         // Convert the rest according to integral ranks
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_LONG_CLASS) ? type1 : type2;
+        }
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.LONG_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.LONG_LONG_CLASS) ? type1 : type2;
+        }
         if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_CLASS)) {
             return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_CLASS) ? type1 : type2;
         }
@@ -808,7 +825,8 @@ public final class CompletionSupport implements DocumentListener {
                                                                           boolean acceptIfSameNumberParams)
     {
         boolean mustBeTemplate = (exp != null) ? exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE : false;
-        Collection<T> result = filterMethods(ctx, methodList, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, false);
+        Collection<T> result = filterOverloadedOperators(ctx, methodList, paramsPerMethod);
+        result = filterMethods(ctx, result, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
             // it seems that this call couldn't filter anything
             result = filterMethods(ctx, result, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, true);
@@ -819,6 +837,68 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return result;
+    }
+    
+    private static <T extends CsmFunctional> Collection<T> filterOverloadedOperators(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod) {
+        List<T> filteredOut = null;
+        Map<CsmType, CsmClassifier> typesMap = new IdentityHashMap<>();
+        for (T m : methodList) {
+            if (m instanceof CsmFunction) {
+                CsmFunction func = (CsmFunction) m;
+                if (func.isOperator()) {
+                    switch (func.getOperatorKind()) {
+                        case PLUS:
+                        case MINUS:
+                        case DIV:
+                        case MUL:
+                        case MOD:
+                        case PLUS_PLUS:
+                        case MINUS_MINUS:
+                            List<CsmType> paramTypeList = paramTypesPerMethod.get(m);
+                            // Set to true if we have at least one parameter. Param will be checked and
+                            // variable is set to false if necessary
+                            boolean allParamsArePrimitive = !paramTypeList.isEmpty();
+                            for (CsmType paramType : paramTypeList) {
+                                if (paramType != null) {
+                                    CsmClassifier classifier = typesMap.get(paramType);
+                                    if (classifier == null) {
+                                        if (ctx != null) {
+                                            classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                                        } else {
+                                            classifier = paramType.getClassifier();
+                                        }
+                                        if (classifier != null) {
+                                            typesMap.put(paramType, classifier);
+                                        }
+                                    }
+                                    allParamsArePrimitive &= (CsmCompletion.safeIsPrimitiveClass(paramType, classifier) || CsmBaseUtilities.isPointer(paramType));
+                                } else {
+                                    // Failed to resolve at least one type. 
+                                    // We cannot be sure that all parameters are primitive.
+                                    allParamsArePrimitive = false;
+                                    break;
+                                }
+                            }
+                            if (allParamsArePrimitive) {
+                                // If all parameters are primitive, then default
+                                // arithmetic operator must be called. They cannot be
+                                // overloaded.
+                                if (filteredOut == null) {
+                                    filteredOut = new ArrayList<>();
+                                }
+                                filteredOut.add(m);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+        if (filteredOut != null) {
+            List<T> result = new ArrayList(methodList);
+            result.removeAll(filteredOut);
+            return result;
+        }
+        return methodList;
     }
 
     private static <T extends CsmFunctional> Collection<T> filterMethods(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod,

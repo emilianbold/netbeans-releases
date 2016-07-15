@@ -48,6 +48,7 @@ import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
 import com.oracle.js.parser.ir.PropertyNode;
 import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
@@ -55,7 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
@@ -63,6 +64,8 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.JsPreferences;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -83,11 +86,15 @@ public class Ecma7Rule extends EcmaLevelRule {
     }
 
     private void addHint(JsHintsProvider.JsRuleContext context, List<Hint> hints, OffsetRange range) {
+        addDocumenHint(context, hints, ModelUtils.documentOffsetRange(context.getJsParserResult(),
+                range.getStart(), range.getEnd()));
+    }
+
+    private void addDocumenHint(JsHintsProvider.JsRuleContext context, List<Hint> hints, OffsetRange range) {
         hints.add(new Hint(this, Bundle.Ecma7Desc(),
                 context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                ModelUtils.documentOffsetRange(context.getJsParserResult(),
-                        range.getStart(), range.getEnd()), Collections.singletonList(
-                                new SwitchToEcma7Fix(context.getJsParserResult().getSnapshot())), 600));
+                range, Collections.singletonList(
+                        new SwitchToEcma7Fix(context.getJsParserResult().getSnapshot())), 600));
     }
 
     @Override
@@ -135,6 +142,11 @@ public class Ecma7Rule extends EcmaLevelRule {
             if (functionNode.isAsync()) {
                 addHint(context, hints, new OffsetRange(Token.descPosition(functionNode.getFirstToken()), functionNode.getStart()));
             }
+            List<IdentNode> params = functionNode.getParameters();
+            if (params != null && !params.isEmpty()) {
+                IdentNode last = params.get(params.size() - 1);
+                checkTrailingComma(last.getFinish());
+            }
             return super.enterFunctionNode(functionNode);
         }
 
@@ -169,6 +181,14 @@ public class Ecma7Rule extends EcmaLevelRule {
             for (Expression decorator : propertyNode.getDecorators()) {
                 addHint(context, hints, new OffsetRange(decorator.getStart(), decorator.getFinish()));
             }
+            Expression key = propertyNode.getKey();
+            if (key.isTokenType(TokenType.SPREAD_OBJECT)) {
+                long token = key.getToken();
+                int position = Token.descPosition(token);
+                addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+                key.accept(this);
+                return false;
+            }
             return super.enterPropertyNode(propertyNode);
         }
 
@@ -179,18 +199,37 @@ public class Ecma7Rule extends EcmaLevelRule {
             if (TokenType.ASSIGN_EXP == type || TokenType.EXP == type) {
                 int position = Token.descPosition(token);
                 addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
+            } else if (TokenType.COMMARIGHT == type) {
+                Expression rhs = binaryNode.rhs();
+                if (!rhs.isTokenType(TokenType.COMMARIGHT)) {
+                    checkTrailingComma(rhs.getFinish());
+                }
             }
             return super.enterBinaryNode(binaryNode);
         }
 
         @Override
         public boolean enterUnaryNode(UnaryNode unaryNode) {
-            if (unaryNode.isTokenType(TokenType.IDENT)) {
+            if (unaryNode.isTokenType(TokenType.AWAIT)) {
                 long token = unaryNode.getToken();
                 int position = Token.descPosition(token);
                 addHint(context, hints, new OffsetRange(position, position + Token.descLength(token)));
             }
             return super.enterUnaryNode(unaryNode);
+        }
+
+        private void checkTrailingComma(int offset) {
+            int fileOffset = context.parserResult.getSnapshot().getOriginalOffset(offset);
+            if (fileOffset >= 0) {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                        context.parserResult.getSnapshot(), offset, JsTokenId.javascriptLanguage());
+                if (ts != null) {
+                    org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(ts);
+                    if (next != null && next.id() == JsTokenId.OPERATOR_COMMA) {
+                        addDocumenHint(context, hints, new OffsetRange(ts.offset(), ts.offset() + next.length()));
+                    }
+                }
+            }
         }
     }
 

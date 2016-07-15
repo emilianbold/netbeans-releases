@@ -48,11 +48,11 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.impl.actions.clipboardhistory.CompletionLayoutPopup;
 
 @EditorActionRegistration(
-        name = "clipboard-history",
+        name = ClipboardHistoryAction.NAME,
         menuPath = "Edit",
         menuPosition = 1350)
 public final class ClipboardHistoryAction extends AbstractEditorAction {
-
+    public static final String NAME = "clipboard-history"; // NOI18N
     private static final long serialVersionUID = 1L;
 
     @Override

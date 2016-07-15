@@ -195,7 +195,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                 if (avf != null) {
                     Lookup l = null;
                     try {
-                        avf.createLookup(p);
+                        l = avf.createLookup(p);
                     } catch (InvalidArtifactRTException e) {
                         // issue #258898 
                         LOG.log(Level.WARNING, "problems while creating lookup for {"  + p + "} : " + e.getMessage(), e);

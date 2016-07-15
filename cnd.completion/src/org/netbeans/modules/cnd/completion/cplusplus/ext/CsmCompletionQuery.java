@@ -133,7 +133,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
-import static org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport.areLambdasEnabled;
 import static org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport.areTemplatesEnabled;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isAutoType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -731,7 +730,9 @@ abstract public class CsmCompletionQuery {
         if(etp instanceof CsmExpandedTokenProcessor) {
             tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
         }
-        tp.enableLambdaSupport(areLambdasEnabled(csmFile));
+        boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
+        tp.enableLambdaSupport(isCpp11OrLater);
+        tp.enableUniformInitializationSupport(isCpp11OrLater);
         tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
         doc.render(new Runnable() {
             @Override
@@ -776,7 +777,9 @@ abstract public class CsmCompletionQuery {
         if (cppts != null) {
             final TokenSequence<TokenId> cppTokenSequence = cppts;
             CsmFile csmFile = expression.getContainingFile();
-            tp.enableLambdaSupport(areLambdasEnabled(csmFile));
+            boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
+            tp.enableLambdaSupport(isCpp11OrLater);
+            tp.enableUniformInitializationSupport(isCpp11OrLater);
             tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
             CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);
         }
@@ -2394,7 +2397,7 @@ abstract public class CsmCompletionQuery {
                                     }
                                     // check exact overloaded operator
                                     mtdList = instantiateFunctions(mtdList, null, typeList, new CsmFunctionsAcceptor());
-                                    Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, false, false);
+                                    Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, methodOpen, true);
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
@@ -3078,6 +3081,17 @@ abstract public class CsmCompletionQuery {
                                 List<CsmType> typeList = getTypeList(item, 1);
                                 lastType = CompletionSupport.extractFunctionType(this, Arrays.asList(lambda), null, typeList);
                             }
+                        }
+                    }
+                    break;
+                    
+                case CsmCompletionExpression.UNIFORM_INITIALIZATION:
+                    if (!last || findType) {
+                        if (item.getParameterCount() > 0) {
+                            lastType = resolveType(item.getParameter(0));
+                        } else {
+                            lastType = null;
+                            cont = false;
                         }
                     }
                     break;

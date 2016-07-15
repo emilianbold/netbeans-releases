@@ -156,6 +156,10 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions6.js");
     }
 
+    public void testAsyncFunction07() throws Exception {
+        checkAstResult("testfiles/parser/asyncFunctions/asyncFunctions7.js");
+    }
+
     public void testBinary01() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/expression/binary/binary01.js");
     }
@@ -861,6 +865,26 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/statement/switch/switch02.js");
     }
 
+    public void testRestSpreadProperties01() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties1.js");
+    }
+
+    public void testRestSpreadProperties02() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties2.js");
+    }
+
+    public void testRestSpreadProperties03() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties3.js");
+    }
+
+    public void testRestSpreadProperties04() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties4.js");
+    }
+
+    public void testRestSpreadProperties05() throws Exception {
+        checkAstResult("testfiles/parser/restSpreadProperties/restSpreadProperties5.js");
+    }
+
     public void testReturn04() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/statement/return/return04.js");
     }
@@ -1350,6 +1374,42 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/binding-pattern/array-pattern/tailing-hold.js");
     }
 
+    public void testTrailingComma01() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas1.js");
+    }
+
+    public void testTrailingComma02() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas2.js");
+    }
+
+    public void testTrailingComma03() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas3.js");
+    }
+    
+    public void testTrailingComma04() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas4.js");
+    }
+    
+    public void testTrailingComma05() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas5.js");
+    }
+    
+    public void testTrailingComma06() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas6.js");
+    }
+    
+    public void testTrailingComma07() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas7.js");
+    }
+    
+    public void testTrailingComma08() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas8.js");
+    }
+
+    public void testTrailingComma09() throws Exception {
+        checkAstResult("testfiles/parser/trailingCommas/trailingCommas9.js");
+    }
+
     public void testVarForIn() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/binding-pattern/array-pattern/var-for-in.js");
     }
@@ -1835,6 +1895,58 @@ public class AstTest extends CslTestBase {
 
     public void testInvalidLetLet() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/for-of/invalid_let_let.js");
+    }
+
+    public void testJsx01() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx1.js");
+    }
+
+    public void testJsx02() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx2.js");
+    }
+
+    public void testJsx03() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx3.js");
+    }
+
+    public void testJsx04() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx4.js");
+    }
+
+    public void testJsx05() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx5.js");
+    }
+
+    public void testJsx06() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx6.js");
+    }
+
+    public void testJsx07() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx7.js");
+    }
+
+    public void testJsx08() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx8.js");
+    }
+
+    public void testJsx09() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx9.js");
+    }
+
+    public void testJsx10() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx10.js");
+    }
+
+    public void testJsx11() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx11.js");
+    }
+
+    public void testJsx12() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx12.js");
+    }
+
+    public void testJsx13() throws Exception {
+        checkAstResult("testfiles/parser/jsx/jsx13.js");
     }
 
     public void testLetOfOf() throws Exception {
@@ -2980,6 +3092,10 @@ public class AstTest extends CslTestBase {
     
     public void testIssue262469() throws Exception {
         checkAstResult("testfiles/markoccurences/issue262469.js");
+    }
+    
+    public void testRegexpInTemplate() throws Exception {
+        checkAstResult("testfiles/parser/regexpInTemplate.js");
     }
     
 //    public void testModelClass01() throws Exception {

@@ -308,13 +308,20 @@ public final class CsmRefactoringUtils {
         CsmObject out = null;
         Collection<? extends CsmObject> coll = lookup.lookupAll(CsmObject.class);
         for (CsmObject obj : coll) {
-           if (CsmKindUtilities.isFile(obj)) {
-               // try to find something smaller
-               file = (CsmFile) obj;
-           } else {
-               out = obj;
-               break;
-           }
+            if (CsmKindUtilities.isFile(obj)) {
+                // try to find something smaller
+                file = (CsmFile) obj;
+            } else if (CsmKindUtilities.isInclude(obj)) {
+                if (((CsmInclude) obj).getStartOffset() < 0) {
+                    // -inclide directive from item properties
+                    // unsupported rename
+                } else {
+                    file = ((CsmInclude) obj).getIncludeFile();
+                }
+            } else {
+                out = obj;
+                break;
+            }
         }
         if (out == null) {
             CsmUID<?> uid = lookup.lookup(CsmUID.class);

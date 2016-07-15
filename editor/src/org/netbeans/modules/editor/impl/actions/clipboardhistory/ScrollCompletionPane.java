@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.impl.actions.clipboardhistory;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 
@@ -63,6 +64,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.editor.impl.actions.ClipboardHistoryAction;
 
 /**
 * Pane displaying the completion view and accompanying components
@@ -245,6 +247,13 @@ public class ScrollCompletionPane extends JScrollPane {
         KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
         BaseKit.downAction
         );
+
+        // Register down key for clipboard history shortcut
+        KeyStroke defaultKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
+        KeyStroke[] findEditorKeys = findEditorKeys(component, ClipboardHistoryAction.NAME, defaultKeystroke);
+        for (KeyStroke ks : findEditorKeys) {
+            getInputMap().put(ks, COMPLETION_DOWN);
+        }
 
         // Register PgDn key
         registerKeybinding(component, ACTION_COMPLETION_PGDN, COMPLETION_PGDN,

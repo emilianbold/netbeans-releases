@@ -142,7 +142,8 @@ class ModelItem implements PropertyChangeListener {
 
     public boolean hasCallStack() {
         return request != null && request.getInitiator() != null &&
-                request.getInitiator().get("stackTrace") != null;
+                (request.getInitiator().get("stackTrace") != null ||
+                 request.getInitiator().get("stack") != null);
     }
 
     Project getProject() {

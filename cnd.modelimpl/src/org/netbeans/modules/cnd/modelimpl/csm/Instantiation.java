@@ -634,8 +634,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 // no need to instantiate enums?
                 return member;
             } else if (member instanceof CsmUsingDeclaration) {
-                // no need to instantiate usings?
-                return member;
+                return new UsingDeclaration((CsmUsingDeclaration) member, this);
             }
             assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;
@@ -1073,6 +1072,38 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         public boolean isStatic() {
             return ((CsmMember)declaration).isStatic();
         }
+    }
+    
+    private static class UsingDeclaration extends Instantiation<CsmUsingDeclaration> implements CsmUsingDeclaration, CsmMember {
+
+        public UsingDeclaration(CsmUsingDeclaration usingDeclaration, CsmInstantiation instantiation) {
+            super(usingDeclaration, instantiation.getMapping());
+        }
+
+        @Override
+        public CsmDeclaration getReferencedDeclaration() {
+            CsmDeclaration referenced = getTemplateDeclaration().getReferencedDeclaration();
+            // TODO: check if isTemplateScope(referenced.getScope())?
+            if (referenced instanceof CsmTemplate) {
+                return (CsmDeclaration) Instantiation.create((CsmTemplate) referenced, getMapping());
+            }
+            return referenced;
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }        
     }
             
     private static class TypeAlias extends Instantiation<CsmTypeAlias> implements CsmTypeAlias {

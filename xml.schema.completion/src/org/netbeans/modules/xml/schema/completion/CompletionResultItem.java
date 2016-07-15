@@ -91,7 +91,7 @@ public abstract class CompletionResultItem implements CompletionItem {
     protected int extraPaintGap = CompletionPaintComponent.DEFAULT_ICON_WIDTH;
     protected TokenSequence tokenSequence;
 
-    private CompletionContextImpl context;
+    protected final CompletionContextImpl context;
 
     /**
      * Creates a new instance of CompletionUtil
@@ -171,21 +171,25 @@ public abstract class CompletionResultItem implements CompletionItem {
     }
     
     protected int removeTextLength(JTextComponent component, int offset, int removeLength) {
-        if (removeLength <= 0) {
-            return 0;
-        }
-        TokenSequence s = createTokenSequence(component);
-        s.move(offset);
-        s.moveNext();
-        if (s.token().id() == XMLTokenId.TAG || s.token().id() == XMLTokenId.TEXT) {
-            // replace entire tag, minus starting >
-            if (s.token().text().toString().startsWith(CompletionUtil.TAG_FIRST_CHAR)) {
-                return s.token().length() - (offset - s.offset());
-            }
-        }
         return removeLength;
     }
+    
+    protected int caretOffset() {
+        return -1;
+    }
 
+    /**
+     * Prepares values in the item, by inspecting the Component, token sequence etc.
+     * The method is called before the text is changed, and is called under document write lock.
+     * 
+     * @param component the editing component
+     * @param proposedText the proposed text
+     * @param offset the offset where the completion occurs
+     */
+    protected void prepare(JTextComponent component, String proposedText, int offset) {
+        
+    }
+    
     /**
      * Actually replaces a piece of document by passes text.
      * @param component a document source
@@ -202,12 +206,14 @@ public abstract class CompletionResultItem implements CompletionItem {
                 try {
                     int caretPos = component.getCaretPosition();
                     if ((context != null) && (context.canReplace(text))) {
+                        prepare(component, text, offset);
                         int l2 = removeTextLength(component, offset, len);
-                        String insertingText = getInsertingText(component, text, l2);
+                        String insertingText = getInsertingText(component, offset, text, l2);
                         if (l2 > 0) doc.remove(offset, l2);
                         doc.insertString(offset, insertingText, null);
                         // fix for issue #186007
-                        caretPos = component.getCaretPosition(); // get the caret position
+                        caretPos = offset + getCaretPosition();
+                        caretPos -= text.length() - insertingText.length();
                     } else {
                         caretPos = offset + getCaretPosition(); // change the caret position
                     }
@@ -247,7 +253,7 @@ public abstract class CompletionResultItem implements CompletionItem {
         });
     }
     
-    private TokenSequence createTokenSequence(JTextComponent component) {
+    protected final TokenSequence createTokenSequence(JTextComponent component) {
         if (tokenSequence == null) {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(component.getDocument());
             this.tokenSequence = tokenHierarchy.tokenSequence();
@@ -267,11 +273,10 @@ public abstract class CompletionResultItem implements CompletionItem {
         tokenSequence = null;
     }
     
-    protected String getInsertingText(JTextComponent component, String primaryText, int removeLen) {
+    protected String getInsertingText(JTextComponent component, int textPos, String primaryText, int removeLen) {
         if ((primaryText == null) || (primaryText.length() < 1)) {
             return primaryText;
         }
-        int textPos = component.getCaret().getDot();
         createTokenSequence(component);
         if (tokenSequence.move(textPos) == 0) {
             tokenSequence.movePrevious();

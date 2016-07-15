@@ -108,6 +108,10 @@ public class CsmSelect {
         return getDefault().getDeclarations(file, filter);
     }
 
+    public static Iterator<CsmOffsetableDeclaration> getExternalDeclarations(CsmFile file) {
+        return getDefault().getExternalDeclarations(file);
+    }
+
     public static Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter)  {
         return getDefault().getStaticVariables(file, filter);
     }
@@ -402,6 +406,15 @@ public class CsmSelect {
             CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getDeclarations(file, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getExternalDeclarations(CsmFile file) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getExternalDeclarations(file);
             }
             return null;
         }

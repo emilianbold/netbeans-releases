@@ -98,30 +98,38 @@ abstract public class CsmCompletion {
     public static final int PRIVATE_LEVEL = 0;
     public static final SimpleClass BOOLEAN_CLASS = new SimpleClass("bool", ""); // NOI18N
     public static final SimpleClass BYTE_CLASS = new SimpleClass("byte", ""); // NOI18N
+    public static final SimpleClass SIGNED_CHAR_CLASS = new SimpleClass("signed char", ""); // NOI18N
     public static final SimpleClass CHAR_CLASS = new SimpleClass("char", ""); // NOI18N
+    public static final SimpleClass WCHAR_CLASS = new SimpleClass("wchar_t", ""); // NOI18N
     public static final SimpleClass DOUBLE_CLASS = new SimpleClass("double", ""); // NOI18N
     public static final SimpleClass FLOAT_CLASS = new SimpleClass("float", ""); // NOI18N
     public static final SimpleClass INT_CLASS = new SimpleClass("int", ""); // NOI18N
     public static final SimpleClass LONG_CLASS = new SimpleClass("long", ""); // NOI18N
+    public static final SimpleClass LONG_LONG_CLASS = new SimpleClass("long long", ""); // NOI18N
     public static final SimpleClass SHORT_CLASS = new SimpleClass("short", ""); // NOI18N
     public static final SimpleClass VOID_CLASS = new SimpleClass("void", ""); // NOI18N
     public static final SimpleClass NULLPTR_CLASS = new SimpleClass("nullptr", ""); // NOI18N
     public static final SimpleClass UNSIGNED_CHAR_CLASS = new SimpleClass("unsigned char", ""); // NOI18N
     public static final SimpleClass UNSIGNED_INT_CLASS = new SimpleClass("unsigned int", ""); // NOI18N
     public static final SimpleClass UNSIGNED_LONG_CLASS = new SimpleClass("unsigned long", ""); // NOI18N
+    public static final SimpleClass UNSIGNED_LONG_LONG_CLASS = new SimpleClass("unsigned long long", ""); // NOI18N
     public static final SimpleClass UNSIGNED_SHORT_CLASS = new SimpleClass("unsigned short", ""); // NOI18N
     public static final SimpleClass LONG_DOUBLE_CLASS = new SimpleClass("long double", ""); // NOI18N
     public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, 0, 0, false, false);
     public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, 0, 0, false, false);
+    public static final BaseType SIGNED_CHAR_TYPE = new BaseType(SIGNED_CHAR_CLASS, 0, 0, 0, false, false);
     public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, 0, 0, false, false);
+    public static final BaseType WCHAR_TYPE = new BaseType(WCHAR_CLASS, 0, 0, 0, false, false);
     public static final BaseType DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, 0, 0, false, false);
     public static final BaseType FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, 0, 0, false, false);
     public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, 0, 0, false, false);
     public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, 0, 0, false, false);
+    public static final BaseType LONG_LONG_TYPE = new BaseType(LONG_LONG_CLASS, 0, 0, 0, false, false);
     public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, 0, 0, false, false);
     public static final BaseType UNSIGNED_CHAR_TYPE = new BaseType(UNSIGNED_CHAR_CLASS, 0, 0, 0, false, false);
     public static final BaseType UNSIGNED_INT_TYPE = new BaseType(UNSIGNED_INT_CLASS, 0, 0, 0, false, false);
     public static final BaseType UNSIGNED_LONG_TYPE = new BaseType(UNSIGNED_LONG_CLASS, 0, 0, 0, false, false);
+    public static final BaseType UNSIGNED_LONG_LONG_TYPE = new BaseType(UNSIGNED_LONG_LONG_CLASS, 0, 0, 0, false, false);
     public static final BaseType UNSIGNED_SHORT_TYPE = new BaseType(UNSIGNED_SHORT_CLASS, 0, 0, 0, false, false);
     public static final BaseType LONG_DOUBLE_TYPE = new BaseType(LONG_DOUBLE_CLASS, 0, 0, 0, false, false);
     public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, 0, 0, false, false);
@@ -166,7 +174,8 @@ abstract public class CsmCompletion {
             BOOLEAN_TYPE, BYTE_TYPE, CHAR_TYPE, DOUBLE_TYPE, FLOAT_TYPE,
             INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE, NULLPTR_TYPE,
             UNSIGNED_CHAR_TYPE, UNSIGNED_INT_TYPE, UNSIGNED_LONG_TYPE, UNSIGNED_SHORT_TYPE,
-            LONG_DOUBLE_TYPE
+            LONG_DOUBLE_TYPE, SIGNED_CHAR_TYPE, LONG_LONG_TYPE, UNSIGNED_LONG_LONG_TYPE,
+            WCHAR_TYPE
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
@@ -250,6 +259,9 @@ abstract public class CsmCompletion {
 
     public static CsmType getPredefinedType(CsmFile containingFile, int start, int end, CsmCompletionExpression item) {
         BaseType baseType = getPrimitiveType(item.getType());
+        if (baseType == null && item.getType() != null && item.getType().contains("signed ")) { // NOI18N
+            baseType = getPrimitiveType(item.getType().replace("signed ", "")); // NOI18N
+        }
         if (baseType == null) {
             baseType = str2PredefinedType.get(item.getType());
         }
