@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
@@ -145,11 +146,20 @@ public class Ifs {
         protected void performRewrite(final TransformationContext ctx) throws Exception {
             IfTree toRewrite = (IfTree) ctx.getPath().getLeaf();
             StatementTree elseStatement = toRewrite.getElseStatement();
-            
+            if (toRewrite.getCondition() == null ||
+                toRewrite.getCondition().getKind() != Tree.Kind.PARENTHESIZED) {
+                return;
+            }
+            ParenthesizedTree ptt = (ParenthesizedTree)toRewrite.getCondition();
+            if (ptt.getExpression() == null) {
+                return;
+            }
             if (elseStatement == null) elseStatement = ctx.getWorkingCopy().getTreeMaker().Block(Collections.<StatementTree>emptyList(), false);
             
             ctx.getWorkingCopy().rewrite(toRewrite, ctx.getWorkingCopy().getTreeMaker().If(toRewrite.getCondition(), elseStatement, toRewrite.getThenStatement()));
-            negate(ctx.getWorkingCopy(), toRewrite.getCondition(), toRewrite);
+            ExpressionTree negated = Utilities.negate(
+                    ctx.getWorkingCopy().getTreeMaker(), ptt.getExpression(), ptt);
+            ctx.getWorkingCopy().rewrite(ptt.getExpression(), negated);
         }
         
         //TODO: should be done automatically:
@@ -165,7 +175,7 @@ public class Ifs {
                     newTree = ((UnaryTree) original).getExpression();
                     while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {
                         newTree = ((ParenthesizedTree) newTree).getExpression();
-                    }
+        }
                     break;
                 case NOT_EQUAL_TO:
                     newTree = negateBinaryOperator(copy, original, Kind.EQUAL_TO, false);
@@ -198,10 +208,10 @@ public class Ifs {
                     newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
                     if (JavaFixUtilities.requiresParenthesis(original, original, newTree)) {
                         newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
-                    }
+    }
                     break;
             }
-         
+
             if (JavaFixUtilities.requiresParenthesis(newTree, original, parent)) {
                 newTree = make.Parenthesized(newTree);
             }

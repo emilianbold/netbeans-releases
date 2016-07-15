@@ -52,6 +52,7 @@ import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -76,6 +77,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -1344,7 +1346,7 @@ public class JavaFixUtilities {
     }
 
     private static final Map<Kind, Integer> OPERATOR_PRIORITIES;
-
+    
     static {
         OPERATOR_PRIORITIES = new EnumMap<Kind, Integer>(Kind.class);
 
@@ -1415,6 +1417,7 @@ public class JavaFixUtilities {
         OPERATOR_PRIORITIES.put(Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, 15);
         OPERATOR_PRIORITIES.put(Kind.XOR_ASSIGNMENT, 15);
     }
+    
 
     /**Checks whether putting {@code inner} tree into {@code outter} tree,
      * when {@code original} is being replaced with {@code inner} requires parentheses.
@@ -1426,8 +1429,22 @@ public class JavaFixUtilities {
      *              to keep the original meaning.
      */
     public static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
-        if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
-        if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
+        if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface()) || outter == null) return false;
+        if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) {
+            boolean condition = false;
+            switch (outter.getKind()) {
+                case IF:
+                    condition = original == ((IfTree)outter).getCondition();
+                    break;
+                case WHILE_LOOP:
+                    condition = original == ((WhileLoopTree)outter).getCondition();
+                    break;
+                case DO_WHILE_LOOP:
+                    condition = original == ((DoWhileLoopTree)outter).getCondition();
+                    break;
+            }
+            return condition && inner.getKind() != Tree.Kind.PARENTHESIZED;
+        }
 
         if (outter.getKind() == Kind.PARENTHESIZED || inner.getKind() == Kind.PARENTHESIZED) return false;
 
