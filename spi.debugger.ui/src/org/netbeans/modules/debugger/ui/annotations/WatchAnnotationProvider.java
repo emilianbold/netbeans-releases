@@ -52,6 +52,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -371,7 +373,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             valueProvider.setChangeListener(watch, new ValueChangeListener() {
                 @Override
                 public void valueChanged(Watch w) {
-                    final String text = getWatchValueText(watch, valueProvider);
+                    final boolean[] isEvaluating = new boolean[] { false };
+                    final String text = getWatchValueText(watch, valueProvider, isEvaluating);
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -383,12 +386,15 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                             Dimension size = getPreferredSize();
                             Point loc = getLocation();
                             setBounds(loc.x, loc.y, size.width, size.height);
+                            if (!isEvaluating[0]) {
+                                adjustSize();
+                            }
                         }
                     });
                 }
             });
             
-            textComponent = createNonEditableSelectableLabel(expressionText + getWatchValueText(watch, valueProvider));
+            textComponent = createNonEditableSelectableLabel(expressionText + getWatchValueText(watch, valueProvider, null));
             
             if (font != null) {
                 textComponent.setFont(font);
@@ -414,7 +420,11 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 public void actionPerformed(ActionEvent e) {
                     String newValue = valueField.getText();
                     if (valueProvider.setValue(watch, newValue)) {
-                        textComponent.setText(expressionText + getWatchValueText(watch, valueProvider));
+                        boolean[] isEvaluating = new boolean[] { false };
+                        textComponent.setText(expressionText + getWatchValueText(watch, valueProvider, isEvaluating));
+                        if (!isEvaluating[0]) {
+                            adjustSize();
+                        }
                     }
                     hideValueField();
                 }
@@ -519,6 +529,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     ((EditorPin) watch.getPin()).move(line, p);
                     textComponent.setCaretPosition(0);   // Assure that we do not select anything
                     e.consume();
+                    adjustSize();
                 }
 
                 @Override
@@ -553,6 +564,19 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             addMouseMotionListener(mouseAdapter);
             textComponent.addMouseListener(mouseAdapter);
             textComponent.addMouseMotionListener(mouseAdapter);
+            adjustSize();
+            eui.getComponent().addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    adjustSize();
+                }
+                @Override
+                public void componentMoved(ComponentEvent e) {}
+                @Override
+                public void componentShown(ComponentEvent e) {}
+                @Override
+                public void componentHidden(ComponentEvent e) {}
+            });
         }
 
         private boolean canDrag(MouseEvent e) {
@@ -573,6 +597,53 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 preferredSize.height = minPreferredHeight;
             }
             return preferredSize;
+        }
+
+        private void adjustSize() {
+            int editorSize = eui.getComponent().getSize().width;
+            int maxSize = editorSize - getLocation().x;
+            Dimension prefSize = getPreferredSize();
+            if (prefSize.width > maxSize) {
+                int smallerBy = prefSize.width - maxSize;
+                Dimension textSize = textComponent.getPreferredSize();
+                int newTextSize = textSize.width - smallerBy;
+                if (newTextSize < textSize.height) { // too small
+                    newTextSize = textSize.height;
+                }
+                textSize.width = newTextSize;
+                textComponent.setSize(textSize);
+                textComponent.setPreferredSize(textSize);
+                Dimension size = getPreferredSize();
+                Point loc = getLocation();
+                if (loc.x + size.width > editorSize) {
+                    loc.x = editorSize - size.width;
+                    if (loc.x < 0) {
+                        loc.x = 0;
+                    }
+                }
+                setBounds(loc.x, loc.y, size.width, size.height);
+            } else if (prefSize.width < maxSize) {
+                if (textComponent.isPreferredSizeSet()) {
+                    textComponent.setPreferredSize(null);
+                    textComponent.setSize(textComponent.getPreferredSize());
+                    adjustSize();
+                    Dimension size = getPreferredSize();
+                    Point loc = getLocation();
+                    setBounds(loc.x, loc.y, size.width, size.height);
+                }
+            } else {    // pref size is equal to the max, we need to check if it can be shrinked
+                if (textComponent.isPreferredSizeSet()) {
+                    Dimension preferredSize = textComponent.getPreferredSize();
+                    Dimension uiPreferredSize = textComponent.getUI().getPreferredSize(textComponent);
+                    if (uiPreferredSize.width < preferredSize.width) {
+                        textComponent.setPreferredSize(null);
+                        textComponent.setSize(textComponent.getPreferredSize());
+                        Dimension size = getPreferredSize();
+                        Point loc = getLocation();
+                        setBounds(loc.x, loc.y, size.width, size.height);
+                    }
+                }
+            }
         }
 
         private void hideValueField() {
@@ -657,10 +728,13 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             ((EditorPin) watch.getPin()).setComment(commentField.getText());
         }
 
-        private String getWatchValueText(Watch watch, ValueProvider vp) {
+        private String getWatchValueText(Watch watch, ValueProvider vp, boolean[] isEvaluating) {
             String value = vp.getValue(watch);
             //System.err.println("WatchAnnotationProvider.getWatchText("+watch.getExpression()+"): value = "+value+", lastValue = "+lastValue);
             if (value == evaluatingValue) {
+                if (isEvaluating != null) {
+                    isEvaluating[0] = true;
+                }
                 return "<html>" + "<font color=\"red\">" + value + "</font>" + "</html>";
             }
             boolean bold = false;
