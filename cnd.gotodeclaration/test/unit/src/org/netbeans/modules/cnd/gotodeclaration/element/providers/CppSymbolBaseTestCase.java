@@ -112,8 +112,13 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
             // copy golden
             File goldenCopyFile = new File(getWorkDir(), getName() + ".ref.golden"); // NOI18N
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
+            File diffErrorFile = new File(getWorkDir(), getName() + ".diff");
+            CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
+            showDiff(diffErrorFile, buf);
+            fail(buf.toString());
         }
+        
     }
 
     private class TypeComparator implements Comparator<SymbolDescriptor> {
