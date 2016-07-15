@@ -1,0 +1,40 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE bug256516.cpp
+Includes:
+    <no includes>
+Macros:
+#define 'DEF' [2:5/26-2:74/95]
+NAMESPACE DEFINITOIN bug256516 [1:1/0-4:2/113] SCOPE: bug256516.cpp
+    STRUCT A256516 (bug256516::A256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: bug256516 
+        BASE CLASSES:
+        MEMBERS:
+            STRUCT B256516 (bug256516::A256516::B256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: A256516 
+                BASE CLASSES:
+                MEMBERS:
+                    STRUCT A256516 (bug256516::A256516::B256516::A256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: B256516 
+                        BASE CLASSES:
+                        MEMBERS:
+                            FIELD PUBLIC i [3:5/100-3:8/103]  TYPE: int TEXT=int  [3:5/100-3:8/103]  INIT: null  SCOPE: A256516 
+
+========== Dumping model of PROJECT DummyProject
+NAMESPACE DEFINITIONS for bug256516 (bug256516) 
+    bug256516.cpp  [1:1/0-4:2/113]
+NAMESPACE bug256516 (bug256516) 
+    STRUCT A256516 (bug256516::A256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: bug256516 
+        BASE CLASSES:
+        MEMBERS:
+            STRUCT B256516 (bug256516::A256516::B256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: A256516 
+                BASE CLASSES:
+                MEMBERS:
+                    STRUCT A256516 (bug256516::A256516::B256516::A256516 ) [3:5/100-3:8/103] lcurly=100 SCOPE: B256516 
+                        BASE CLASSES:
+                        MEMBERS:
+                            FIELD PUBLIC i [3:5/100-3:8/103]  TYPE: int TEXT=int  [3:5/100-3:8/103]  INIT: null  SCOPE: A256516 
+

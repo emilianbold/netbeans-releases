@@ -45,9 +45,13 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
@@ -219,7 +223,23 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
                 sb.append(funExtraSuffix);
                 return sb.toString();
             }
-        } 
+        }  else if (CsmKindUtilities.isClass(obj) && obj instanceof ClassImpl) {
+            ClassImpl cls = (ClassImpl) obj;
+            CsmScope scope = cls.getScope();
+            if (CsmKindUtilities.isOffsetable(scope)) {
+                CsmOffsetable offsetableScope = (CsmOffsetable) scope;
+                if (cls.getStartOffset() == offsetableScope.getStartOffset() 
+                        && cls.getEndOffset() == offsetableScope.getEndOffset()) {
+                    // This is a class defined via macro - it can be
+                    // indistinguishable from it's scope if there are other classes
+                    // with the same name. Example: #define MACRO struct A{struct B{struct A{};};};
+                    StringBuilder sb = new StringBuilder(cls.getName()); 
+                    sb.append(KeyUtilities.UID_INTERNAL_DATA_PREFIX);
+                    sb.append(cls.getQualifiedName());
+                    return sb.toString();
+                }
+            }
+        }
         return obj.getName();
     }       
     
