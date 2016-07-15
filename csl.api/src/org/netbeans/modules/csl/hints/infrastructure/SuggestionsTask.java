@@ -160,6 +160,7 @@ public final class SuggestionsTask extends ParserResultTask<ParserResult> {
 
                         for (int i = 0; i < hints.size(); i++) {
                             Hint hint = hints.get(i);
+                            assert hint != null : provider.getClass().getName();
                             if (cancel.isCancelled()) {
                                 return;
                             }
