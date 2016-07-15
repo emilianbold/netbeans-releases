@@ -50,6 +50,6 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     glyph='nbresloc:/org/netbeans/editor/resources/pin.png'
     type='line'
     severity='ok'
-    priority='100'
+    priority='0'
     custom_sidebar_color='0xFF8FD5'
 />
