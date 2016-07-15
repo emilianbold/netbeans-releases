@@ -307,15 +307,17 @@ public final class GCCErrorParser extends ErrorParser {
                     //FileObject fo = relativeDir.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeDir, file);
                     boolean important = false;
-                    if (isNumber(m.group(3))) {
-                        // group 3 contains column since GNU 4.x
-                        // description contains " severity: description"
-                        if (description != null) {
-                            important = description.trim().toLowerCase().indexOf("error:") == 0; // NOI18N
+                    if (m.groupCount() > 2) {
+                        if (isNumber(m.group(3))) {
+                            // group 3 contains column since GNU 4.x
+                            // description contains " severity: description"
+                            if (description != null) {
+                                important = description.trim().toLowerCase().indexOf("error:") == 0; // NOI18N
+                            }
+                        } else {
+                            // group 3 contains severity of the message for GNU 3.x
+                            important = m.group(3).toLowerCase().indexOf("error") != (-1); // NOI18N
                         }
-                    } else {
-                        // group 3 contains severity of the message for GNU 3.x
-                        important = m.group(3).toLowerCase().indexOf("error") != (-1); // NOI18N
                     }
                     if (fo != null && fo.isValid()) {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {

@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <scanner id="GNU">
         <error pattern="^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+)[\.:]([^:$]*):([^$]*)" severity="error" language="c,cpp,fortran,assembler"/>
+        <error pattern="^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+):$" severity="error" language="fortran"/>
         <error pattern="^([^:$]*):([0-9]+): ([a-zA-Z]*):(.*)" severity="error" language="c,cpp,fortran,assembler"/>
 	<!-- Intel -->
         <error pattern="^([^\($]*)\(([0-9]+)\): ([^:$]*): ([^$]*)" severity="error" language="c,cpp,fortran,assembler"/>

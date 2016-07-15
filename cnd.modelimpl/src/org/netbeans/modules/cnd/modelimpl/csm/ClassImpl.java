@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
@@ -746,10 +747,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         case CPPTokenTypes.CSM_CLASS_DECLARATION:
                         case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
                             CsmScope currentScope = ClassImpl.this;
+                            DeclarationsContainer currentContainer = ClassImpl.this;
                             if (APTLanguageSupport.getInstance().isLanguageC(language)) {
                                 currentScope = getContainingFile().getProject().getGlobalNamespace();
+                                currentContainer = getFileContent();
                             }
-                            ClassImpl innerClass = createClass(token, currentScope, ClassImpl.this);
+                            ClassImpl innerClass = createClass(token, currentScope, currentContainer);
                             processClassEnum(innerClass, token);
                             break;
                         }
@@ -971,13 +974,21 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected ClassImpl createClass(AST token, CsmScope currentScope, DeclarationsContainer container) throws AstRendererException {
+        protected ClassImpl createClass(AST token, CsmScope innerScope, DeclarationsContainer container) throws AstRendererException {
             ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
-                    ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
-                    : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
+                    ? ClassImplSpecialization.create(token, innerScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
+                    : ClassImpl.create(token, innerScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
             if (innerClass != null) {
                 innerClass.setVisibility(curentVisibility);
-                addMember(innerClass, !isRenderingLocalContext());
+                if (innerScope == ClassImpl.this) {
+                    addMember(innerClass, !isRenderingLocalContext());
+                } else {
+                    // In C language strutures are always members of global namespace
+                    assert APTLanguageSupport.getInstance().isLanguageC(language);
+                    if (container instanceof MutableDeclarationsContainer) {
+                        ((MutableDeclarationsContainer) container).addDeclaration(innerClass);
+                    }
+                }
             }
             return innerClass;
         }
