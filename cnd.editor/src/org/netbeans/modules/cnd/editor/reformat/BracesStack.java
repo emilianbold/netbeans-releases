@@ -304,9 +304,9 @@ class BracesStack implements Cloneable {
               entry.isLikeToArrayInitialization())) {
             if (peek() != null && peek().isLikeToArrayInitialization()){
                 // this is two dimensiomal arry initialization
-                entry.setLikeToArrayInitialization(true);
+                entry.setLikeToArrayInitialization();
                 if (parenDepth > 0) {
-                    entry.setLikeToArrayInitialization(true);
+                    entry.setLikeToArrayInitialization();
                 }
             }
         }
@@ -314,7 +314,7 @@ class BracesStack implements Cloneable {
             if(entry.isLikeToArrayInitialization()) {
                 if (parenDepth > 0) {
                     // This is array in paraneter
-                    entry.setLikeToArrayInitialization(true);
+                    entry.setLikeToArrayInitialization();
                 }
             } else {
                 clearLastStatementStart();

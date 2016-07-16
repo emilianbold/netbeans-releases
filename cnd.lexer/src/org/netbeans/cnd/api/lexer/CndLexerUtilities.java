@@ -299,7 +299,8 @@ public final class CndLexerUtilities {
 
     public static boolean isCppIdentifierStart(int ch) {
         //MS VC also supports $ as start or part of id
-        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || (ch == '_') || (ch == '$');
+//        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || (ch == '_') || (ch == '$');
+        return Character.isJavaIdentifierStart(ch);
     }
 
     public static boolean isCppIdentifierPart(int ch) {

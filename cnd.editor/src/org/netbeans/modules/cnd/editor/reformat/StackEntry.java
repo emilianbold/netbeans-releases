@@ -51,12 +51,19 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  * @author Alexander Simon
  */
 class StackEntry {
-
+    public enum LikeTo {
+        unknown,
+        function,
+        arrayInitialization,
+        unifiedInitialization
+    }
+    
     private int index;
     private CppTokenId kind;
     private CppTokenId importantKind;
-    private boolean likeToFunction = false;
-    private boolean likeToArrayInitialization = false;
+    //private boolean likeToFunction = false;
+    //private boolean likeToArrayInitialization = false;
+    private LikeTo likeTo = LikeTo.unknown;
     private String text;
     private int indent;
     private int selfIndent;
@@ -104,8 +111,7 @@ class StackEntry {
                     case TEMPLATE:
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            likeToArrayInitialization = false;
-                            likeToFunction = true;
+                            likeTo = LikeTo.function;
                         }
                         break;
                     }
@@ -119,12 +125,11 @@ class StackEntry {
                     case RPAREN: //(")", "separator"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            likeToFunction = true;
+                            likeTo = LikeTo.function;
                             Token<CppTokenId> next = ts.lookNextImportant();
                             if (next != null) {
                                 if (next.id() == COLON && prevID) {
-                                    likeToArrayInitialization = true;
-                                    likeToFunction = false;
+                                    likeTo = LikeTo.arrayInitialization;
                                     return;
                                 }
                             }
@@ -138,12 +143,11 @@ class StackEntry {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null) {
                                 if (prev.id() == OPERATOR) {
-                                    likeToArrayInitialization = false;
-                                    likeToFunction = true;
+                                    likeTo = LikeTo.function;
                                     return;
                                 }
                             }
-                            likeToArrayInitialization = true;
+                            likeTo = LikeTo.arrayInitialization;
                             return;
                         }
                         paren--;
@@ -157,20 +161,18 @@ class StackEntry {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null) {
                                 if (prev.id() == OPERATOR) {
-                                    likeToArrayInitialization = false;
-                                    likeToFunction = true;
+                                    likeTo = LikeTo.function;
                                     return;
                                 }
                                 if (prev.id() == IDENTIFIER) {
-                                    likeToArrayInitialization = true;
+                                    likeTo = LikeTo.arrayInitialization;
                                     return;
                                 }
                                 if (prev.id() == IDENTIFIER || prev.id() == RBRACKET || prev.id() == LBRACKET) {
                                     break;
                                 }
                             }
-                            likeToArrayInitialization = false;
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             importantKind = ARROW;
                             lambdaIndent = lambdaIndent(ts);
                             return;
@@ -187,8 +189,7 @@ class StackEntry {
                     case DEFAULT:
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            likeToArrayInitialization = false;
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             return;
                         }
                         break;
@@ -196,8 +197,8 @@ class StackEntry {
                     case RBRACE: //("}", "separator"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            if (hasID && !likeToFunction) {
-                                likeToArrayInitialization = true;
+                            if (hasID && likeTo != LikeTo.function) {
+                                likeTo = LikeTo.unifiedInitialization;
                             }
                             // undefined
                             return;
@@ -205,11 +206,19 @@ class StackEntry {
                         brace++;
                         break;
                     }
+                    case RETURN:
+                    {
+                        if (paren == 0 && triangle == 0 && brace == 0) {
+                            likeTo = LikeTo.unifiedInitialization;
+                            return;
+                        }
+                        break;
+                    }
                     case LBRACE: //("{", "separator"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            if (hasID && !likeToFunction) {
-                                likeToArrayInitialization = true;
+                            if (hasID && likeTo != LikeTo.function) {
+                                likeTo = LikeTo.unifiedInitialization;
                             }
                             // undefined
                             return;
@@ -220,8 +229,8 @@ class StackEntry {
                     case SEMICOLON: //(";", "separator"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            if (hasID && !likeToFunction) {
-                                likeToArrayInitialization = true;
+                            if (hasID && likeTo != LikeTo.function) {
+                                likeTo = LikeTo.unifiedInitialization;
                             }
                             // undefined
                             return;
@@ -233,12 +242,18 @@ class StackEntry {
                         if (paren == 0 && triangle == 0 && brace == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null && prev.id() == OPERATOR) {
-                                likeToArrayInitialization = false;
-                                likeToFunction = true;
+                                likeTo = LikeTo.function;
                                 return;
                             }
-                            likeToArrayInitialization = true;
-                            likeToFunction = false;
+                            likeTo = LikeTo.arrayInitialization;
+                            return;
+                        }
+                        break;
+                    }
+                    case NEW:
+                    {
+                        if (paren == 0 && triangle == 0 && brace == 0) {
+                            likeTo = LikeTo.arrayInitialization;
                             return;
                         }
                         break;
@@ -248,8 +263,7 @@ class StackEntry {
                         if (paren == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null && prev.id() == OPERATOR) {
-                                likeToArrayInitialization = false;
-                                likeToFunction = true;
+                                likeTo = LikeTo.function;
                                 return;
                             }
                             triangle++;
@@ -262,8 +276,7 @@ class StackEntry {
                             if (triangle == 0) {
                                 Token<CppTokenId> prev = ts.lookPreviousImportant();
                                 if (prev != null && prev.id() == OPERATOR) {
-                                    likeToArrayInitialization = false;
-                                    likeToFunction = true;
+                                    likeTo = LikeTo.function;
                                     return;
                                 }
                                 // undefined
@@ -277,7 +290,7 @@ class StackEntry {
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
                             importantKind = current.id();
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             return;
                         }
                         break;
@@ -291,7 +304,7 @@ class StackEntry {
                             } else {
                                 importantKind = current.id();
                             }
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             return;
                         }
                         break;
@@ -301,7 +314,8 @@ class StackEntry {
                     case UNION: //("union", "keyword"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            if (!likeToFunction) {
+                            if (likeTo != LikeTo.function) {
+                                likeTo = LikeTo.unknown;
                                 importantKind = current.id();
                                 return;
                             }
@@ -311,7 +325,8 @@ class StackEntry {
                     case EXTERN: //EXTERN("extern", "keyword"),
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
-                            if (!likeToFunction) {
+                            if (likeTo != LikeTo.function) {
+                                likeTo = LikeTo.unknown;
                                 importantKind = CppTokenId.NAMESPACE;
                                 return;
                             }
@@ -329,7 +344,7 @@ class StackEntry {
                     {
                         if (paren == 0 && triangle == 0 && brace == 0) {
                             importantKind = current.id();
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             return;
                         }
                         break;
@@ -339,12 +354,11 @@ class StackEntry {
                         if (paren == 0 && triangle == 0 && brace == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null && prev.id() == OPERATOR) {
-                                likeToArrayInitialization = false;
-                                likeToFunction = true;
+                                likeTo = LikeTo.function;
                                 return;
                             }
                             importantKind = current.id();
-                            likeToFunction = false;
+                            likeTo = LikeTo.unknown;
                             lambdaIndent = lambdaIndent(ts);
                             return;
                         }
@@ -431,19 +445,23 @@ class StackEntry {
     }
 
     public boolean isLikeToFunction() {
-        return likeToFunction;
+        return likeTo == LikeTo.function;
     }
 
-    public void setLikeToFunction(boolean likeToFunction) {
-        this.likeToFunction = likeToFunction;
+    public void setLikeToFunction() {
+        likeTo = LikeTo.function;
     }
 
     public boolean isLikeToArrayInitialization() {
-        return likeToArrayInitialization;
+        return likeTo == LikeTo.arrayInitialization || likeTo == LikeTo.unifiedInitialization;
     }
 
-    public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
-        this.likeToArrayInitialization = likeToArrayInitialization;
+    public boolean isUniformInitialization() {
+        return likeTo == LikeTo.unifiedInitialization;
+    }
+
+    public void setLikeToArrayInitialization() {
+        likeTo = LikeTo.arrayInitialization;
     }
 
     @Override
@@ -451,10 +469,12 @@ class StackEntry {
         StringBuilder buf = new StringBuilder(kind.name());
         if (importantKind != null && kind != importantKind){
             buf.append("(").append(importantKind.name()).append(")"); // NOI18N
-        } else if (likeToFunction) {
+        } else if (likeTo == LikeTo.function) {
             buf.append("(FUNCTION)"); // NOI18N
-        } else if (likeToArrayInitialization) {
+        } else if (likeTo == LikeTo.arrayInitialization) {
             buf.append("(ARRAY_INITIALIZATION)"); // NOI18N
+        } else if (likeTo == LikeTo.unifiedInitialization) {
+            buf.append("(UNIFORM_INITIALIZATION)"); // NOI18N
         }
         return buf.toString();
     }
