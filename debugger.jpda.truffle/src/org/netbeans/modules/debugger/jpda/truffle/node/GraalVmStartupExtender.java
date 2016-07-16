@@ -83,7 +83,7 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
         }
-        return Arrays.asList("-J-Xrunjdwp:transport=dt_socket,address=" + res + ",server=n,suspend=n");
+        return Arrays.asList("-J-Xrunjdwp:transport=dt_socket,address=" + res + ",server=n,suspend=y");
     }
 
 }
