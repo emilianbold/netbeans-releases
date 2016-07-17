@@ -137,6 +137,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         if (embedded) {
             return JsTokenId.UNKNOWN;
         }
+        if (yystate() == JSX) {
+            return JsTokenId.JSX_TEXT;
+        }
         return JsTokenId.ERROR;
     }
 
