@@ -93,6 +93,9 @@ Contributor(s):
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-javascript2-editor-JsCodeTemplateFilter$Factory.instance"/>
                 </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
+                </folder>
                 <!-- file popup menu -->
                 <folder name="Popup">
                     <file name="select-connection">
