@@ -64,8 +64,12 @@ public abstract class AttrValuesCompletion {
     private static final Map<String, ValueCompletion<HtmlCompletionItem>> ALL_TAG_SUPPORTS =
             new HashMap<>();
     public static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
-    private static final ValueCompletion<HtmlCompletionItem> CONTENT_TYPE_SUPPORT =
+    private static final ValueCompletion<HtmlCompletionItem> LINK_TYPE_SUPPORT =
             new ValuesSetSupport(new String[]{"text/css", "text/javascript"});
+    private static final ValueCompletion<HtmlCompletionItem> SCRIPT_TYPE_SUPPORT = 
+            new ValuesSetSupport(new String[]{"text/javascript"});
+    private static final ValueCompletion<HtmlCompletionItem> STYLE_TYPE_SUPPORT = 
+            new ValuesSetSupport(new String[]{"text/css"});
     private static final ValueCompletion<HtmlCompletionItem> TRUE_FALSE_SUPPORT =
             new ValuesSetSupport(new String[]{"true", "false"});
     private static final ValueCompletion<HtmlCompletionItem> SCOPE_SUPPORT =
@@ -146,9 +150,9 @@ public abstract class AttrValuesCompletion {
         putSupport("html", "manifest", FILE_NAME_SUPPORT); //NOI18N
         putSupport("video", "poster", FILE_NAME_SUPPORT); //NOI18N
 
-        putSupport("script", "type", CONTENT_TYPE_SUPPORT); //NOI18N
-        putSupport("style", "type", CONTENT_TYPE_SUPPORT); //NOI18N
-        putSupport("link", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("script", "type", SCRIPT_TYPE_SUPPORT); //NOI18N
+        putSupport("style", "type", STYLE_TYPE_SUPPORT); //NOI18N
+        putSupport("link", "type", LINK_TYPE_SUPPORT); //NOI18N
 
         putSupport("form", "autocomplete", ON_OFF_SUPPORT); //NOI18N
         putSupport("input", "autocomplete", ON_OFF_SUPPORT); //NOI18N

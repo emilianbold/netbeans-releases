@@ -59,6 +59,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.xml.XMLUtil;
@@ -195,7 +196,10 @@ class NotificationImpl extends Notification implements Comparable<NotificationIm
         btn.setContentAreaFilled(false);
         btn.addActionListener(action);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setForeground(Color.blue);
+        Color c = UIManager.getColor("nb.html.link.foreground"); //NOI18N
+        if (c != null) {
+            btn.setForeground(c);
+        }
         return btn;
     }
 }
