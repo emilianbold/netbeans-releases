@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -506,8 +507,29 @@ public class ClipboardHandler {
                                         return super.visitVariable(node, p);
                                     }
                                 }
+                                
+                                boolean ignoreSynthetic;
+                                
                                 @Override public Void scan(Tree tree, Void p) {
-                                    if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                                    if (tree == null) {
+                                        return null;
+                                    }
+                                    if (parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree)) && !ignoreSynthetic) {
+                                        // exception: annotation 'value' field assignment may be synthetic, but the assignment expression may be not:
+                                        if (tree.getKind() == Tree.Kind.ASSIGNMENT && getCurrentPath().getLeaf().getKind() == Tree.Kind.ANNOTATION) {
+                                            AssignmentTree at = (AssignmentTree)tree;
+                                            if (at.getVariable()!=  null && at.getVariable().getKind() == Tree.Kind.IDENTIFIER) {
+                                                if (((IdentifierTree)at.getVariable()).getName().contentEquals("value")) { // NOI18N
+                                                    // not 100% OK, there may be synthetic constructs down the tree.
+                                                    ignoreSynthetic = true;
+                                                    super.scan(tree, p);
+                                                    ignoreSynthetic = false;
+                                                    return null;
+                                                }
+                                            }
+                                        }
+                                        return null;
+                                    }
                                     return super.scan(tree, p);
                                 }
                             }.scan(parameter.getCompilationUnit(), null);
