@@ -47,10 +47,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.ojet.OJETUtils;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -187,5 +192,14 @@ public class DataProviderImpl extends DataProvider {
             // reset the cache
             data.clear();
         }
+    }
+
+    @Override
+    @NbBundle.Messages("label_ojet=OJET")
+    public Collection<JsObject> getGlobalObjects(ModelElementFactory factory) {
+        JsFunction global = factory.newGlobalObject(null, 0);
+        JsObject oj = factory.newObject(global, "oj", OffsetRange.NONE, true, Bundle.label_ojet()); //NOI18N
+        factory.putGlobalProperty(global, oj);
+        return Collections.singletonList((JsObject)global);
     }
 }
