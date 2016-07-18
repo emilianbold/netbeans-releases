@@ -178,6 +178,8 @@ public class GeneratedSourceRootTest extends NbTestCase {
         FileObject d = p.getProjectDirectory();
         FileObject src = d.getFileObject("src");
         URL classes = new URL(d.toURL(), "build/classes/");
+        URL distJar = FileUtil.getArchiveRoot(BaseUtilities.toURI(FileUtil.normalizeFile(
+                new File(FileUtil.toFile(d), "dist/x.jar".replace('/', File.separatorChar)))).toURL()); //NOI18N
         ClassPath sourcePath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertEquals(Arrays.asList(src), Arrays.asList(sourcePath.getRoots()));
         assertEquals(Arrays.asList(src), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
@@ -187,7 +189,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(sourcePath.getRoots()));
         assertEquals(ClassPath.getClassPath(src, ClassPath.COMPILE), ClassPath.getClassPath(stuff, ClassPath.COMPILE));
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
+        assertEquals(Arrays.asList(classes, distJar), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
         FileBuiltQuery.Status status = FileBuiltQuery.getStatus(xgen);
         assertNotNull(status);
         assertFalse(status.isBuilt());
