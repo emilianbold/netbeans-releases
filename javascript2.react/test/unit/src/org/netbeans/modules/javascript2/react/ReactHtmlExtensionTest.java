@@ -41,36 +41,16 @@
  */
 package org.netbeans.modules.javascript2.react;
 
-import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Petr Pisl
  */
-@MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
-public class ReactEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
+public class ReactHtmlExtensionTest extends NbTestCase{
 
-    public ReactEmbeddingProviderPlugin() {
+    public ReactHtmlExtensionTest(String name) {
+        super(name);
     }
-    
-    
-    
-    @Override
-    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        return true;
-    }
-
-    @Override
-    public boolean processToken() {
-        return false;
-    }
-    
     
 }
