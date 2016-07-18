@@ -214,4 +214,12 @@ public @interface EditorActionRegistration {
      */
     int weight() default 0;
 
+    /**
+     * Name of the keymap-category. 
+     * Analog to org.openide.awt.ActionID#category
+     * 
+     * @return string representing programmatic name of the category
+     * @since 2.15
+     */
+    String category() default "";
 }

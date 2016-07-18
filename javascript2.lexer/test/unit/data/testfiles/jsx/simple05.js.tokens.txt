@@ -5,11 +5,9 @@ IDENTIFIER      "render", la=1, st=LexerState{zzState=24, zzLexicalState=2, canF
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=52, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 EOL             "\n", st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-JSX_TEXT        "<CommentBox url="/api/comments" pollInterval=", la=1, st=LexerState{zzState=96, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[1]}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[1]}
+JSX_TEXT        "<CommentBox url="/api/comments" pollInterval={", st=LexerState{zzState=96, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[1]}
 NUMBER          "2000", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[1]}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=55, zzLexicalState=26, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[1]}
-JSX_TEXT        " />", st=LexerState{zzState=181, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+JSX_TEXT        "} />", st=LexerState{zzState=181, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 OPERATOR_COMMA  ",", st=LexerState{zzState=57, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 EOL             "\n", st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}

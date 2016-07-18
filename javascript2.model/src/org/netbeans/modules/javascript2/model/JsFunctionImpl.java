@@ -133,10 +133,11 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             // global function
             return JsElement.Kind.FILE;
         }
-        if (getName().startsWith("get ")) { //NOI18N
+        String name = getName();
+        if (name != null && name.startsWith("get ")) { //NOI18N
             return JsElement.Kind.PROPERTY_GETTER;
         }
-        if (getName().startsWith("set ")) { //NOI18N
+        if (name != null && name.startsWith("set ")) { //NOI18N
             return JsElement.Kind.PROPERTY_SETTER;
         }
         if (getParent() != null /*&& getParent() instanceof JsFunction*/) {

@@ -299,7 +299,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     for (String method : methods.values()) {
                         pw.print(method);
                     }
-                    pw.println("    private void Bundle() {}");
+                    pw.println("    private Bundle() {}");
                     pw.println("}");
                     pw.flush();
                     pw.close();

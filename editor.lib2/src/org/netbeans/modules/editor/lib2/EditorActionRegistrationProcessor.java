@@ -178,13 +178,18 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         }
 
         String actionName = annotation.name();
+        String category = annotation.category();
         StringBuilder actionFilePathBuilder = new StringBuilder(50);
         String mimeType = annotation.mimeType();
         actionFilePathBuilder.append("Editors");
         if (mimeType.length() > 0) {
             actionFilePathBuilder.append("/").append(mimeType);
         }
-        actionFilePathBuilder.append("/Actions/").append(actionName).append(".instance");
+        actionFilePathBuilder.append("/Actions/");
+        if (null != category && !category.isEmpty()) {
+            actionFilePathBuilder.append(category).append("/");
+        }
+        actionFilePathBuilder.append(actionName).append(".instance");
         LayerBuilder layer = layer(e);
         String actionFilePath = actionFilePathBuilder.toString();
         LayerBuilder.File actionFile = layer.file(actionFilePath);
