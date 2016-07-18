@@ -587,14 +587,6 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                                           MouseEvent.SHIFT_DOWN_MASK)) == 0;
         }
 
-        private boolean canDrag(MouseEvent e) {
-            return (e.getModifiersEx() & (MouseEvent.ALT_DOWN_MASK |
-                                          MouseEvent.ALT_GRAPH_DOWN_MASK |
-                                          MouseEvent.CTRL_DOWN_MASK |
-                                          MouseEvent.META_DOWN_MASK |
-                                          MouseEvent.SHIFT_DOWN_MASK)) == 0;
-        }
-
         @Override
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
