@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2013, 2016 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -42,23 +42,15 @@ Contributor(s):
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.javascript2.lexer</code-name-base>
+            <code-name-base>org.netbeans.modules.javascript2.react</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.antlr4.runtime</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.54</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -80,20 +72,39 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>2.33</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.38</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.javascript2.json</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -114,30 +125,32 @@ Contributor(s):
                         <specification-version>9.6</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.10</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.extjs</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.csl.types</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.model</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>
@@ -147,28 +160,50 @@ Contributor(s):
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.nb</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.html.angular</friend>
-                <friend>org.netbeans.modules.html.knockout</friend>
-                <friend>org.netbeans.modules.html.ojet</friend>
-                <friend>org.netbeans.modules.javascript2.doc</friend>
-                <friend>org.netbeans.modules.javascript2.editor</friend>
-                <friend>org.netbeans.modules.javascript2.extdoc</friend>
-                <friend>org.netbeans.modules.javascript2.extjs</friend>
-                <friend>org.netbeans.modules.javascript2.jade</friend>
-                <friend>org.netbeans.modules.javascript2.jquery</friend>
-                <friend>org.netbeans.modules.javascript2.jsdoc</friend>
-                <friend>org.netbeans.modules.javascript2.knockout</friend>
-                <friend>org.netbeans.modules.javascript2.react</friend>
-                <friend>org.netbeans.modules.javascript2.model</friend>
-                <friend>org.netbeans.modules.javascript2.nodejs</friend>
-                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
-                <friend>org.netbeans.modules.javascript2.requirejs</friend>
-                <friend>org.netbeans.modules.javascript2.sdoc</friend>
-                <package>org.netbeans.modules.javascript2.lexer.api</package>
-            </friend-packages>
+            <public-packages/>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>netbeans</word>
+            <word>org</word>
+            <word>jsx</word>
+            <word>react</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>
