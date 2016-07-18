@@ -37,15 +37,33 @@
  */
 package org.netbeans.modules.java.hints.control;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -54,13 +72,18 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -92,16 +115,16 @@ public class RemoveUnnecessary {
     @Hint(id="org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
     @TriggerPattern("return $val$;")
     public static ErrorDescription unnecessaryReturn(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, null, "UnnecessaryReturnStatement");
+        return unnecessaryReturnContinue(ctx, null, "UnnecessaryReturnStatement", true);
     }
     
     @Hint(displayName="#DN_RemoveUnnecessaryContinue", description="#DESC_RemoveUnnecessaryContinue", category="general", suppressWarnings="UnnecessaryContinue")
     @TriggerPattern("continue $val$;")
     public static ErrorDescription unnecessaryContinue(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, ctx.getInfo().getTreeUtilities().getBreakContinueTarget(ctx.getPath()), "UnnecessaryContinueStatement");
+        return unnecessaryReturnContinue(ctx, ctx.getInfo().getTreeUtilities().getBreakContinueTarget(ctx.getPath()), "UnnecessaryContinueStatement", false);
     }
     
-    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, StatementTree targetLoop, String key) {
+    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, StatementTree targetLoop, String key, boolean isReturn) {
         TreePath tp = ctx.getPath();
 
         OUTER: while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
@@ -200,13 +223,248 @@ public class RemoveUnnecessary {
                 return null;
             }
         }
+        Fix toExpression = null;
+        
+        if (isReturn) {
+            ExpressionToStatement scanner = new ExpressionToStatement(null, ctx.getInfo());
+            scanner.scan(ctx.getPath(), null);
+            if (!scanner.remove) {
+                toExpression = new MakeExpressionStatement(ctx.getInfo(), ctx.getPath()).toEditorFix();
+            }
+        }
 
         String displayName = NbBundle.getMessage(RemoveUnnecessary.class, "ERR_" + key);
         String fixDisplayName = NbBundle.getMessage(RemoveUnnecessary.class, "FIX_" + key);
         
-        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, 
+                JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()), toExpression);
     }
 
+    @NbBundle.Messages({
+        "FIX_MakeExpressionStatement=Retain expression as statement"
+    })
+    private static class MakeExpressionStatement extends JavaFix {
+        public MakeExpressionStatement(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
+
+        @Override
+        protected String getText() {
+            return Bundle.FIX_MakeExpressionStatement();
+        }
+
+        @Override
+        protected void performRewrite(TransformationContext ctx) throws Exception {
+            TreePath retPath = ctx.getPath();
+            if (retPath.getLeaf().getKind() != Tree.Kind.RETURN) {
+                return;
+            }
+            ReturnTree rtt = (ReturnTree)retPath.getLeaf();
+            if (rtt.getExpression() == null) {
+                return;
+            }
+            WorkingCopy wc = ctx.getWorkingCopy();
+            ExpressionToStatement st = new ExpressionToStatement(wc.getTreeMaker(), wc);
+            st.scan(new TreePath(retPath, rtt.getExpression()), null);
+            if (st.remove || st.statements.isEmpty()) {
+                // error, but I don't have an utility to properly remove the statement
+                // from its parent now.
+                return;
+            }
+            Utilities.replaceStatement(wc, retPath, st.statements);
+        }
+    }
+    
+    /**
+     * Transforms expression tree into series of statements.
+     * 
+     */
+    static class ExpressionToStatement extends TreePathScanner {
+        private boolean remove = true;
+        private List<StatementTree>    statements = new ArrayList<>(); 
+        private final TreeMaker mk;
+        private final CompilationInfo cinfo;
+
+        public ExpressionToStatement(TreeMaker mk, CompilationInfo cinfo) {
+            this.mk = mk;
+            this.cinfo = cinfo;
+        }
+        
+        private Object addExpressionStatement(ExpressionTree node, Object p) {
+            if (mk != null) {
+                statements.add(mk.ExpressionStatement(node));
+            }
+            remove = false;
+            return null;
+        }
+        
+        @Override
+        public Object visitLiteral(LiteralTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitIdentifier(IdentifierTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitMemberReference(MemberReferenceTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitMemberSelect(MemberSelectTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitInstanceOf(InstanceOfTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitLambdaExpression(LambdaExpressionTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitNewArray(NewArrayTree node, Object p) {
+            return null;
+        }
+
+        @Override
+        public Object visitTypeCast(TypeCastTree node, Object p) {
+            return scan(node.getExpression(), p);
+        }
+        
+        public Object transformLogAndOr(BinaryTree node, Object p) {
+            List<StatementTree> saveStats = this.statements;
+            boolean saveRemove = this.remove;
+            this.remove = true;
+            this.statements = new ArrayList<>();
+            scan(node.getRightOperand(), p);
+            
+            if (remove) {
+                // the if statement would be empty; attempt to transform the
+                // left operand if it has at least something. Omit the left operand
+                // at all.
+                this.statements = saveStats;
+                scan(node.getLeftOperand(), p);
+                if (remove) {
+                    this.remove &= saveRemove;
+                    return null;
+                }
+                this.remove &= saveRemove;
+            } else {
+                List<StatementTree> elseStats = this.statements;
+                this.statements = saveStats;
+                remove = false;
+                if (mk != null) {
+                    ExpressionTree condition;
+                    if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
+                        condition = node.getLeftOperand();
+                    } else {
+                        condition = Utilities.negate(mk, node.getLeftOperand(), node);
+                    }
+                    statements.add(
+                            mk.If(condition, 
+                                  elseStats.size() == 1 ?
+                                          elseStats.get(0) :
+                                          mk.Block(elseStats, false),
+                                  null
+                            )
+                    );
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Object visitBinary(BinaryTree node, Object p) {
+            switch (node.getKind()) {
+                case CONDITIONAL_AND:
+                case CONDITIONAL_OR:
+                    return transformLogAndOr(node, p);
+            }
+            scan(node.getLeftOperand(), p);
+            scan(node.getRightOperand(), p);
+            return null;
+        }
+
+        @Override
+        public Object visitUnary(UnaryTree node, Object p) {
+            scan(node.getExpression(), p);
+            return null;
+        }
+
+        @Override
+        public Object visitAssignment(AssignmentTree node, Object p) {
+            return addExpressionStatement(node, p);
+        }
+
+        @Override
+        public Object visitCompoundAssignment(CompoundAssignmentTree node, Object p) {
+            return addExpressionStatement(node, p);
+        }
+
+        @Override
+        public Object visitNewClass(NewClassTree node, Object p) {
+            return addExpressionStatement(node, p);
+        }
+
+        @Override
+        public Object visitMethodInvocation(MethodInvocationTree node, Object p) {
+            return addExpressionStatement(node, p);
+        }
+
+        /**
+         * Conditional expression can be turned into an if-statement
+         */
+        @Override
+        public Object visitConditionalExpression(ConditionalExpressionTree node, Object p) {
+            List<StatementTree> saveStat = this.statements;
+            boolean saveRemove = this.remove;
+            statements = new ArrayList<>();
+            
+            scan(node.getTrueExpression(), p);
+            
+            List<StatementTree> trueStat = statements;
+            statements = new ArrayList<>();
+            
+            scan(node.getFalseExpression(), p);
+            List<StatementTree> falseStat = statements;
+            
+            this.statements = saveStat;
+            this.remove = saveRemove && remove;
+            
+            if (trueStat.isEmpty()) {
+                if (falseStat.isEmpty()) {
+                    return null;
+                }
+                statements.add(mk.If(
+                        mk.Unary(Tree.Kind.LOGICAL_COMPLEMENT, node.getCondition()),
+                        falseStat.size() == 1 ? 
+                                falseStat.get(0) :
+                                mk.Block(falseStat, false),
+                        null
+                ));
+            } else {
+                statements.add(mk.If(node.getCondition(),
+                        trueStat.size() == 1 ? 
+                                trueStat.get(0) :
+                                mk.Block(trueStat, false),
+                        falseStat.isEmpty() ? null :
+                            falseStat.size() == 1 ? 
+                                    falseStat.get(0) :
+                                    mk.Block(falseStat, false)
+                                
+                ));
+            }
+            return null;
+        }
+    }
+    
     @Hint(id="unnecessaryContinueLabel", displayName="#DN_RemoveUnnecessaryContinueLabel", description="#DESC_RemoveUnnecessaryContinueLabel", category="general", suppressWarnings="UnnecessaryLabelOnContinueStatement")
     @TriggerPattern("continue $val;")
     public static ErrorDescription unnecessaryContinueLabel(HintContext ctx) {

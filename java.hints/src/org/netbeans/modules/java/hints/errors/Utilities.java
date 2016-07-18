@@ -119,7 +119,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -145,10 +144,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import com.sun.source.tree.UnaryTree;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Type;
@@ -168,7 +167,9 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyleUtils;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.Pair;
 
 /**
@@ -2257,4 +2258,213 @@ public class Utilities {
         return ret;
     }
 
+    /**
+     * Replaces statement for one or more statements. If the replaced statement
+     * is a direct child of if, while etc, an intermediate BlockTree is created.
+     * If the replacement contains VariableTrees, the caller must ensure they do not conflict with
+     * existing declarations in scope.
+     * 
+     * @param wc working copy
+     * @param tp path to replace
+     * @param stats new statements to appear at the position
+     * @return the parent of the replaced statement.
+     */
+    public static StatementTree replaceStatement(WorkingCopy wc, 
+            TreePath tp, List<? extends StatementTree> stats) {
+        if (!StatementTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
+            throw new IllegalArgumentException();
+        }
+        if (stats.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        List<? extends StatementTree> statements;
+        Tree parent = tp.getParentPath().getLeaf();
+        
+        boolean trueBranch = false;
+        
+        switch (parent.getKind()) {
+            case IF:
+                trueBranch = ((IfTree)parent).getThenStatement() == tp.getLeaf();
+                statements = Collections.singletonList(
+                    trueBranch ?
+                        ((IfTree)parent).getThenStatement() :
+                        ((IfTree)parent).getElseStatement()
+                );
+                break;
+                
+            case WHILE_LOOP:
+                statements = Collections.singletonList(
+                    ((WhileLoopTree)parent).getStatement()
+                );
+                break;
+            case DO_WHILE_LOOP:
+                statements = Collections.singletonList(
+                    ((DoWhileLoopTree)parent).getStatement()
+                );
+                break;
+            case FOR_LOOP:
+                statements = Collections.singletonList(
+                    ((ForLoopTree)parent).getStatement()
+                );
+                break;
+            case ENHANCED_FOR_LOOP:
+                statements = Collections.singletonList(
+                    ((EnhancedForLoopTree)parent).getStatement()
+                );
+                break;
+            case BLOCK: statements = ((BlockTree) parent).getStatements(); break;
+            case CASE: statements = ((CaseTree) parent).getStatements(); break;
+            default: throw new IllegalStateException(parent.getKind().name());
+        }
+
+        StatementTree var = (StatementTree) tp.getLeaf();
+        int current = statements.indexOf(tp.getLeaf());
+        TreeMaker make = wc.getTreeMaker();
+        List<StatementTree> newStatements = new ArrayList<StatementTree>();
+
+        newStatements.addAll(statements.subList(0, current));
+        newStatements.add(
+            make.asReplacementOf(stats.get(0), 
+                var)
+        );
+        newStatements.addAll(stats.subList(1, stats.size()));
+        newStatements.addAll(statements.subList(current + 1, statements.size()));
+
+        Tree target;
+        
+        StatementTree blockOrStat;
+        
+        if (newStatements.size() == 1) {
+            Tree t = newStatements.get(0);
+            if (t.getKind() == Tree.Kind.VARIABLE) {
+                blockOrStat = make.Block(newStatements, false);
+            } else {
+                blockOrStat = (StatementTree)t;
+            }
+        } else {
+            blockOrStat = make.Block(newStatements, false);
+        }
+
+        switch (parent.getKind()) {
+            case IF:
+                target = make.If(
+                        ((IfTree)parent).getCondition(),
+                        trueBranch ? blockOrStat : ((IfTree)parent).getThenStatement(),
+                        !trueBranch ? blockOrStat : ((IfTree)parent).getElseStatement()
+                    );
+                break;
+            case WHILE_LOOP:
+                target = make.WhileLoop(
+                        ((WhileLoopTree)parent).getCondition(),
+                        blockOrStat
+                );
+                break;
+            case DO_WHILE_LOOP:
+                target = make.DoWhileLoop(
+                        ((DoWhileLoopTree)parent).getCondition(),
+                        blockOrStat
+                );
+                break;
+            case FOR_LOOP:
+                target = make.ForLoop(
+                        ((ForLoopTree)parent).getInitializer(),
+                        ((ForLoopTree)parent).getCondition(),
+                        ((ForLoopTree)parent).getUpdate(),
+                        blockOrStat
+                );
+                break;
+            case ENHANCED_FOR_LOOP:
+                target = make.EnhancedForLoop(
+                        ((EnhancedForLoopTree)parent).getVariable(),
+                        ((EnhancedForLoopTree)parent).getExpression(),
+                        blockOrStat
+                );
+                break;
+            case BLOCK: target = 
+                    make.Block(newStatements, ((BlockTree) parent).isStatic()); break;
+            case CASE: target = 
+                    make.Case(((CaseTree) parent).getExpression(), newStatements); break;
+            default: throw new IllegalStateException(parent.getKind().name());
+        }
+        StatementTree ret  = (StatementTree)make.asReplacementOf(target, parent);
+        wc.rewrite(parent, ret);
+        return ret;
+    }
+
+    /**
+     * Negates an expression, returns negated Tree. The `original` should be a direct child 
+     * of `parent' or parent must be {@code null}. With a non-null parent, surrounding parenthesis
+     * will be added if the language syntax requires it.
+     * 
+     * @param make factory for Trees, obtain from WorkingCopy
+     * @param original the tree to be negated
+     * @param parent the parent of the negated tree.
+     * @return negated expression, possibly parenthesized
+     */
+    public static ExpressionTree negate(TreeMaker make, ExpressionTree original, Tree parent) {
+        ExpressionTree newTree;
+        switch (original.getKind()) {
+            case PARENTHESIZED:
+                ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
+                newTree = negate(make, expr, original);
+                break;
+            case LOGICAL_COMPLEMENT:
+                newTree = ((UnaryTree) original).getExpression();
+                while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {
+                    newTree = ((ParenthesizedTree) newTree).getExpression();
+                }
+                break;
+            case NOT_EQUAL_TO:
+                newTree = negateBinaryOperator(make, original, Kind.EQUAL_TO, false);
+                break;
+            case EQUAL_TO:
+                newTree = negateBinaryOperator(make, original, Kind.NOT_EQUAL_TO, false);
+                break;
+            case BOOLEAN_LITERAL:
+                newTree = make.Literal(!(Boolean) ((LiteralTree) original).getValue());
+                break;
+            case CONDITIONAL_AND:
+                newTree = negateBinaryOperator(make, original, Kind.CONDITIONAL_OR, true);
+                break;
+            case CONDITIONAL_OR:
+                newTree = negateBinaryOperator(make, original, Kind.CONDITIONAL_AND, true);
+                break;
+            case LESS_THAN:
+                newTree = negateBinaryOperator(make, original, Kind.GREATER_THAN_EQUAL, false);
+                break;
+            case LESS_THAN_EQUAL:
+                newTree = negateBinaryOperator(make, original, Kind.GREATER_THAN, false);
+                break;
+            case GREATER_THAN:
+                newTree = negateBinaryOperator(make, original, Kind.LESS_THAN_EQUAL, false);
+                break;
+            case GREATER_THAN_EQUAL:
+                newTree = negateBinaryOperator(make, original, Kind.LESS_THAN, false);
+                break;
+            default:
+                newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                if (JavaFixUtilities.requiresParenthesis(original, original, newTree)) {
+                    newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
+                }
+                break;
+        }
+
+        if (JavaFixUtilities.requiresParenthesis(newTree, original, parent)) {
+            newTree = make.Parenthesized(newTree);
+        }
+
+        return newTree;
+    }
+
+    private static ExpressionTree negateBinaryOperator(TreeMaker make, Tree original, Kind newKind, boolean negateOperands) {
+        BinaryTree bt = (BinaryTree) original;
+        ExpressionTree left = bt.getLeftOperand();
+        ExpressionTree right = bt.getRightOperand();
+        if (negateOperands) {
+            left = negate(make, left, original);
+            right = negate(make, right, original);
+        }
+        return make.Binary(newKind, left, right);
+    }
 }
