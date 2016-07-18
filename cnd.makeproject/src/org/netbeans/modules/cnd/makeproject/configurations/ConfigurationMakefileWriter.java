@@ -1089,15 +1089,16 @@ public class ConfigurationMakefileWriter {
                     bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
                 }
                 bw.write(target + ": "); // NOI18N
+                // source is first see IZ #253292
+                bw.write(file);
+                if (additionalDep != null && !additionalDep.isEmpty()) {
+                    bw.write(" " + additionalDep); // NOI18N
+                }
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (conf.getRebuildPropChanged().getValue()) {
-                    bw.write("nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk "); // NOI18N
+                    bw.write(" nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk"); // NOI18N
                 }
-                if (additionalDep != null) {
-                    bw.write(file + " " + additionalDep + "\n"); // NOI18N
-                } else {
-                    bw.write(file + "\n"); // NOI18N
-                }
+                bw.write("\n"); // NOI18N
 
                 if (folders != null && folders.length() > 0) {
                     bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
