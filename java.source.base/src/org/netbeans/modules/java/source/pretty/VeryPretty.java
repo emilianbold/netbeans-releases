@@ -70,6 +70,7 @@ import com.sun.source.doctree.DocTreeVisitor;
 import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
 import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.HiddenTree;
 import com.sun.source.doctree.IdentifierTree;
 import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
@@ -2271,6 +2272,18 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public Void visitErroneous(ErroneousTree node, Void p) {
         print(node.getBody());
+        return null;
+    }
+
+    @Override
+    public Void visitHidden(HiddenTree node, Void p) {
+        printTagName(node);
+        if (!node.getBody().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getBody()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 

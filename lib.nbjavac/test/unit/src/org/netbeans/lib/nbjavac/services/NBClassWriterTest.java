@@ -44,7 +44,7 @@ package org.netbeans.lib.nbjavac.services;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javadoc.JavadocClassFinder;
+import com.sun.tools.javadoc.main.JavadocClassFinder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

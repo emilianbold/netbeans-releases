@@ -52,6 +52,7 @@ import com.sun.source.doctree.DocRootTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.HiddenTree;
 import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
@@ -1813,6 +1814,10 @@ public class TreeFactory {
 
     public com.sun.source.doctree.IdentifierTree DocIdentifier(CharSequence name) {
         return docMake.at(NOPOS).newIdentifierTree((Name) names.fromString(name.toString()));
+    }
+
+    public HiddenTree Hidden(List<? extends DocTree> text) {
+        return docMake.at(NOPOS).newHiddenTree(text);
     }
 
     public InheritDocTree InheritDoc() {

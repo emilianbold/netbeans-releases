@@ -52,6 +52,7 @@ import com.sun.source.doctree.DocTreeVisitor;
 import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
 import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.HiddenTree;
 import com.sun.source.doctree.IdentifierTree;
 import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
@@ -185,6 +186,15 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
 
     protected final ErroneousTree rewriteChildren(ErroneousTree tree) {
         return tree; // XXX: Not implemented yet
+    }
+
+    protected final HiddenTree rewriteChildren(HiddenTree tree) {
+        HiddenTree value = tree;
+        List<? extends DocTree> body = translateDoc(tree.getBody());
+        if (body != tree.getBody()) {
+            value = make.Hidden(body);
+        }
+        return value;
     }
 
     protected final IdentifierTree rewriteChildren(IdentifierTree tree) {
@@ -408,6 +418,11 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
 
     @Override
     public DocTree visitErroneous(ErroneousTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+
+    @Override
+    public DocTree visitHidden(HiddenTree tree, Object p) {
         return rewriteChildren(tree);
     }
 

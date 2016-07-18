@@ -69,7 +69,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
-import com.sun.tools.javadoc.JavadocClassFinder;
+import com.sun.tools.javadoc.main.JavadocClassFinder;
 
 import java.io.File;
 import java.io.FileOutputStream;

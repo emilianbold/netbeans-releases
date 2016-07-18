@@ -70,7 +70,7 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javadoc.DocEnv;
+import com.sun.tools.javadoc.main.DocEnv;
 import java.util.ArrayDeque;
 
 import java.util.ArrayList;
@@ -86,7 +86,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
