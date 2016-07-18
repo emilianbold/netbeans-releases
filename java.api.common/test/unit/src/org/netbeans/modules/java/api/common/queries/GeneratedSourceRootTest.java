@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.api.common.queries;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -57,15 +58,20 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.TestProject;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.BaseUtilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -114,22 +120,35 @@ public class GeneratedSourceRootTest extends NbTestCase {
     }
 
     public void testMiscellaneousQueries() throws Exception {
-        Project p = createTestProject(true);
+        final Project p = createTestProject(true);
+        ProjectManager.mutex().writeAccess(() -> {
+            try {
+                final UpdateHelper h = p.getLookup().lookup(TestProject.class).getUpdateHelper();
+                final EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty("encoding", "ISO-8859-2");   //NOI18N
+                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(p);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+        });
         FileObject d = p.getProjectDirectory();
         FileObject src = d.getFileObject("src");
         FileObject test = d.getFileObject("test");
         FileObject stuff = d.getFileObject("build/generated-sources/stuff");
         URL classes = new URL(d.toURL(), "build/classes/");
         URL testClasses = new URL(d.toURL(), "build/test/classes/");
+        URL distJar = FileUtil.getArchiveRoot(BaseUtilities.toURI(FileUtil.normalizeFile(
+                new File(FileUtil.toFile(d), "dist/x.jar".replace('/', File.separatorChar)))).toURL()); //NOI18N
         FileObject xgen = stuff.getFileObject("net/nowhere/XGen.java");
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
         assertEquals(Arrays.asList(test), Arrays.asList(SourceForBinaryQuery.findSourceRoots(testClasses).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
+        assertEquals(Arrays.asList(classes, distJar), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
         assertEquals(Collections.singletonList(testClasses), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(test.toURL()).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
+        assertEquals(Arrays.asList(classes, distJar), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
         assertEquals(Collections.singletonList(src.toURL()), Arrays.asList(UnitTestForSourceQuery.findSources(test)));
         assertEquals(Collections.singletonList(test.toURL()), Arrays.asList(UnitTestForSourceQuery.findUnitTests(src)));
-        assertEquals("1.5", SourceLevelQuery.getSourceLevel(stuff));
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(stuff));
         FileBuiltQuery.Status status = FileBuiltQuery.getStatus(xgen);
         assertNotNull(status);
         assertFalse(status.isBuilt());
@@ -141,9 +160,9 @@ public class GeneratedSourceRootTest extends NbTestCase {
         FileObject ygen = FileUtil.createData(moreStuff, "net/nowhere/YGen.java");
         assertEquals(new HashSet<FileObject>(Arrays.asList(src, stuff, moreStuff)),
                 new HashSet<FileObject>(Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots())));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(moreStuff.toURL()).getRoots()));
+        assertEquals(Arrays.asList(classes, distJar), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(moreStuff.toURL()).getRoots()));
         // XXX should previously created Result objects fire changes? ideally yes, but probably unnecessary
-        assertEquals("1.5", SourceLevelQuery.getSourceLevel(moreStuff));
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(moreStuff));
         status = FileBuiltQuery.getStatus(ygen);
         assertNotNull(status);
         assertFalse(status.isBuilt());
