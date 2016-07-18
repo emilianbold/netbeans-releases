@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.ojet.data;
+package org.netbeans.modules.html.ojet.javascript;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import org.netbeans.modules.html.ojet.data.DataProviderImpl;
 import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.model.spi.ModelInterceptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public abstract class DataProvider {
+@ModelInterceptor.Registration(priority=108)
+public class OJETModelInterceptor implements ModelInterceptor {
 
-    public abstract Collection<DataItem> getBindingOptions();
+    private static Collection<JsObject> globals = null;
     
-    public abstract Collection<DataItem> getModuleProperties();
-
-    public abstract Collection<DataItem> getComponents();
-
-    public abstract Collection<DataItem> getComponentOptions(String compName);
+    @Override
+    public Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo) {
+        return getGlobalObjects(factory, fo);
+    }
     
-    public abstract Collection<DataItem> getComponentEvents(String compName);
-    
-    public abstract Collection<String> getAvailableVersions();
-    
-    public abstract String getCurrentVersion();
-    
-    public abstract void setCurrentVersion(String version);
-    
-    public abstract Collection<JsObject> getGlobalObjects(ModelElementFactory factory);
-
-    public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
-        List<DataItem> result = new ArrayList<>();
-        if (prefix == null || prefix.isEmpty()) {
-            result.addAll(data);
-        } else {
-            for (DataItem dataItem : data) {
-                if (dataItem.getName().startsWith(prefix)) {
-                    result.add(dataItem);
-                }
-            }
+    private Collection<JsObject> getGlobalObjects(ModelElementFactory factory, FileObject fo) {
+        if (globals == null) {
+            globals = DataProviderImpl.getInstance().getGlobalObjects(factory);
         }
-        return result;
+        return globals;
     }
 }
