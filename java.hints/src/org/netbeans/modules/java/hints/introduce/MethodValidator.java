@@ -126,6 +126,7 @@ final class MethodValidator implements MemberValidator {
         
         @Override
         public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.RESOLVED);
             this.cinfo = parameter;
             TreePath targetPath = targetHandle.resolve(cinfo);
             if (targetPath == null) {

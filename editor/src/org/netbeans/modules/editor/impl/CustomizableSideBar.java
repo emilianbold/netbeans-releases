@@ -332,7 +332,12 @@ public final class CustomizableSideBar {
             if (as == null) {
                 // backwards - compatible behaviour: use the line number stuff:
                 as = fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING);
-                back = (Color)as.getAttribute(StyleConstants.Background);
+                if (as == null) {
+                    // should not happen, except tests
+                    back = Color.black;
+                } else {
+                    back = (Color)as.getAttribute(StyleConstants.Background);
+                }
                 line = null;
             } else {
                 back = (Color)as.getAttribute(StyleConstants.Background);
