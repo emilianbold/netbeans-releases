@@ -616,6 +616,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.javascript2.gj.bootstrap</friend>
                 <friend>org.netbeans.modules.javascript2.gj.react</friend>
                 <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
+                <friend>org.netbeans.modules.javascript2.react</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.kendo</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
