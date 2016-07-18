@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.index.Term;
 import org.netbeans.api.java.source.ElementHandle;
@@ -178,7 +179,7 @@ public class LucenePerformanceTest extends NbTestCase {
             }
             String name = String.format("pkg%d.Class%dC",r.nextInt(pkgLimit),i);
             result.add(Pair.<Pair<BinaryName,String>,Object[]>of(
-                    Pair.<BinaryName,String>of(BinaryName.create(name),null),
+                    Pair.<BinaryName,String>of(BinaryName.create(name, ElementKind.CLASS),null),
                     new Object[]{l,null,null}));
             refs.add (name);                    
         }

@@ -422,9 +422,8 @@ public final class SourceAnalyzerFactory {
                 //Empty file
                 final String className = getResourceName(node);
                 if (className != null) {
-                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                     name = Pair.<BinaryName,String>of(
-                            BinaryName.create(classNameType),
+                            BinaryName.create(className, ElementKind.CLASS),
                             null);
                 }
                 addAndClearImports(name,p);
@@ -435,9 +434,8 @@ public final class SourceAnalyzerFactory {
                 if (name == null) {
                     final String className = getResourceName(node);
                     if (className != null) {
-                        final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                         name = Pair.of(
-                                BinaryName.create(classNameType),
+                                BinaryName.create(className, ElementKind.CLASS),
                                 null);
                         for (Pair<Symbol,ClassIndexImpl.UsageType> usage : packageAnnotations) {
                             addUsage(usage.first(), name, p, usage.second());
@@ -608,9 +606,8 @@ public final class SourceAnalyzerFactory {
                         topLevel = true;
                         className = getResourceName (this.cu);
                         if (className != null && !className.isEmpty()) {
-                            final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<BinaryName,String>of(
-                                    BinaryName.create(classNameType),
+                                    BinaryName.create(className, ElementKind.CLASS),
                                     null);
                             simpleName = className.substring(className.lastIndexOf('.') + 1);
                             nameFrom = 1;
@@ -628,10 +625,8 @@ public final class SourceAnalyzerFactory {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
-                    int simpleNameStart = className.length() - sym.getSimpleName().length();
                     if (!className.isEmpty()) {
-                        classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind(), sym.isLocal()));
-                        final String classNameType = classNameBuilder.toString();
+                        int simpleNameStart = className.length() - sym.getSimpleName().length();
                         String resourceName = null;
                         topLevel = activeClass.isEmpty();
                         if (topLevel) {
@@ -653,7 +648,7 @@ public final class SourceAnalyzerFactory {
                             resourceName = activeClass.peek().second();
                         }
                         name = Pair.<BinaryName,String>of(
-                                BinaryName.create(classNameType, simpleNameStart),
+                                BinaryName.create(className, sym.getKind(), sym.isLocal(), simpleNameStart),
                                 resourceName);
                         nameFrom = 2;
                         simpleName = sym.getSimpleName().toString();

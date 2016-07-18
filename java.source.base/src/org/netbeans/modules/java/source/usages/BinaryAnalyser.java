@@ -105,6 +105,7 @@ import org.netbeans.modules.classfile.ConstantPool;
 import org.netbeans.modules.classfile.ElementValue;
 import org.netbeans.modules.classfile.EnumElementValue;
 import org.netbeans.modules.classfile.Field;
+import org.netbeans.modules.classfile.InnerClass;
 import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.classfile.LocalVariableTableEntry;
 import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
@@ -669,10 +670,13 @@ public class BinaryAnalyser {
         final ClassFileProcessor cfp = cfg.createProcessor(classFile);
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
-        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile), isLocal(classFile));
         final Pair<BinaryName,String> pair = Pair.of(
-                //XXX:TODO
-                BinaryName.create(classNameType),
+                BinaryName.create(
+                        cfp.getClassName(),
+                        getElementKind(classFile),
+                        isLocal(classFile),
+                        getSimpleNameIndex(classFile)
+                        ),
                 null);
         addReferences (pair, usages);
     }
@@ -704,6 +708,21 @@ public class BinaryAnalyser {
 
     private static boolean isLocal(@NonNull final ClassFile cf) {
         return cf.getEnclosingMethod() != null;
+    }
+
+    private static int getSimpleNameIndex(@NonNull final ClassFile cf) {
+        final ClassName me = cf.getName();
+        int len = me.getSimpleName().length();
+        for (InnerClass ic : cf.getInnerClasses()) {
+            if (me.equals(ic.getName())) {
+                String simpleName = ic.getSimpleName();
+                len = simpleName == null ?
+                        me.getInternalName().length() - me.getInternalName().lastIndexOf('$') - 1:  //NOI18N
+                        simpleName.length();
+                break;
+            }
+        }
+        return me.getInternalName().length() - len;
     }
     //</editor-fold>
 

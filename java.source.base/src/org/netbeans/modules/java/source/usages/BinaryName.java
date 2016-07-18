@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.util.Objects;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -70,7 +71,12 @@ final class BinaryName {
     
     @NonNull
     String getBinaryName() {
-        return binaryName;
+        return binaryName.substring(0, binaryName.length()-1);
+    }
+    
+    @NonNull
+    char getKind() {
+        return binaryName.charAt(binaryName.length()-1);
     }
     
     @NonNull
@@ -83,14 +89,21 @@ final class BinaryName {
     @NonNull 
     String getClassName() {
         return pkgEnd > 0 ?
+                binaryName.substring(pkgEnd+1, binaryName.length()-1) :
+                binaryName.substring(0, binaryName.length()-1);
+                
+    }
+    
+    @NonNull 
+    String getClassNameKind() {
+        return pkgEnd > 0 ?
                 binaryName.substring(pkgEnd+1) :
                 binaryName;
-                
     }
     
     @NonNull
     String getSimpleName() {
-        return binaryName.substring(simpleNameStart);
+        return binaryName.substring(simpleNameStart, binaryName.length()-1);
     }
 
     @Override
@@ -135,22 +148,30 @@ final class BinaryName {
     
     @NonNull
     static BinaryName create(
-            @NonNull final String binaryName) {
+            @NonNull final String binaryName,
+            @NonNull final ElementKind kind) {
         final int pkgEnd = binaryName.lastIndexOf(PKG_SEPARATOR);
         int simpleNameStart = binaryName.lastIndexOf('$');      //NOI18N
         if (simpleNameStart < pkgEnd) {
             simpleNameStart = pkgEnd;
         }
         simpleNameStart += 1;
-        return new BinaryName(binaryName, pkgEnd, simpleNameStart);
+        return new BinaryName(
+                binaryName+DocumentUtil.encodeKind(kind),
+                pkgEnd,
+                simpleNameStart);
     }
     
     @NonNull
     static BinaryName create(
             @NonNull final String binaryName,
+            @NonNull final ElementKind kind,
+            final boolean isLocal,
             final int simpleNameStart) {
         final int pkgEnd = binaryName.lastIndexOf(PKG_SEPARATOR);
-        return new BinaryName(binaryName, pkgEnd, simpleNameStart);
+        return new BinaryName(
+                binaryName+DocumentUtil.encodeKind(kind, isLocal),
+                pkgEnd,
+                simpleNameStart);
     }
-    
 }

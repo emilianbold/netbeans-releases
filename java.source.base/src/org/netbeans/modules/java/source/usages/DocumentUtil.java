@@ -278,13 +278,12 @@ public class DocumentUtil {
             String source) {
         assert references != null;
         
-        final String fileName = name.getClassName();      //name with no package and appended type character
         final String pkgName = name.getPackage();         //Package
+        final String fileName = name.getClassNameKind();  //name with no package and appended type character
         assert fileName.length() > 1 : "BinaryName with type char: " + name +
                                        ", Package: " + pkgName +
                                        ", FileName with type char: " + fileName;
         String  simpleName = name.getSimpleName();
-        simpleName = simpleName.substring(0, simpleName.length()-1);
         final String caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
         Document doc = new Document ();
         Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);

@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
@@ -199,7 +200,8 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
                             PKG_NAME,
                             i,
                             CLZ_NAME,
-                            j)),
+                            j),
+                            ElementKind.CLASS),
                         null);
                     final Object[] usagesData = new Object[] {
                         Collections.emptyList(),
