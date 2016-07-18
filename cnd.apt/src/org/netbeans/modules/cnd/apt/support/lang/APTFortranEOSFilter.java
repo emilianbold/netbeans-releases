@@ -84,11 +84,16 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
                 return currentToken;
             }
             Token newToken = orig.nextToken();
-            if (currentToken != null && (newToken.getLine() != currentToken.getLine() || newToken.getType() == APTTokenTypes.EOF)) {
-                Token eos = new EOSToken((APTToken) currentToken);
-                currentToken = newToken;
-                newLine = true;
-                return eos;
+            if (currentToken != null) {
+                if (currentToken.getType() == APTTokenTypes.EOF) {
+                    assert newToken.getType() == APTTokenTypes.EOF;
+                    return currentToken;
+                } else if (newToken.getType() == APTTokenTypes.EOF || newToken.getLine() != currentToken.getLine()) {
+                    Token eos = new EOSToken((APTToken) currentToken);
+                    currentToken = newToken;
+                    newLine = true;
+                    return eos;
+                }
             }
             if (newToken.getType() == APTTokenTypes.SEMICOLON) {
                 currentToken = newToken;
@@ -99,7 +104,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
         }
     }
 
-    public static final class EOSToken implements APTToken {
+    static final class EOSToken implements APTToken {
 
         int offset;
         int endOffset;
