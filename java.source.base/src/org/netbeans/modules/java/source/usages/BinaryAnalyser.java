@@ -346,8 +346,8 @@ public class BinaryAnalyser {
 
     private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
-    private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
-    private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
+    private final List<Pair<Pair<BinaryName,String>,Object[]>> refs = new ArrayList<>();
+    private final Set<Pair<String,String>> toDelete = new HashSet<> ();
     private final LowMemoryWatcher lmListener;
     private final Config cfg;
     //@NotThreadSafe
@@ -670,12 +670,15 @@ public class BinaryAnalyser {
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
         final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile), isLocal(classFile));
-        final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
+        final Pair<BinaryName,String> pair = Pair.of(
+                //XXX:TODO
+                BinaryName.create(classNameType),
+                null);
         addReferences (pair, usages);
     }
 
     private void addReferences (
-        @NonNull final Pair<String,String> name,
+        @NonNull final Pair<BinaryName,String> name,
         @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
         assert usages != null;
@@ -684,7 +687,7 @@ public class BinaryAnalyser {
             usages.featureIdentsToString(),
             usages.identsToString()
         };
-        this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
+        this.refs.add(Pair.<Pair<BinaryName,String>,Object[]>of(name, cr));
     }
 
     private static ElementKind getElementKind(@NonNull final ClassFile cf) {

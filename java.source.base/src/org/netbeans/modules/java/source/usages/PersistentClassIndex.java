@@ -497,7 +497,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         }
 
         @Override
-        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndFlush(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
             if (index instanceof Index.Transactional) {
                 ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
@@ -523,7 +523,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
 
 
         @Override
-        public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<BinaryName,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
             index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(), true);
         }
@@ -649,8 +649,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                 });
                     }
                 }
-                final List<Pair<Pair<String, String>, Object[]>> data =
-                        (List<Pair<Pair<String, String>, Object[]>>) dataHolder[0];
+                final List<Pair<Pair<BinaryName, String>, Object[]>> data =
+                        (List<Pair<Pair<BinaryName, String>, Object[]>>) dataHolder[0];
                 if (data != null) {
                     if (filter == null) {
                         try {

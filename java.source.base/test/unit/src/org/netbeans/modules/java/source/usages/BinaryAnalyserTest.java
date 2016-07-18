@@ -218,7 +218,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         BinaryAnalyser a = new BinaryAnalyser(
             new IndexWriter(index) {
                 @Override
-                public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                public void deleteAndFlush(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
                     super.deleteAndFlush(refs, toDelete);
                 try {
                     dataFlushed(index);
@@ -281,11 +281,11 @@ public class BinaryAnalyserTest extends NbTestCase {
             index.clear();
         }
         @Override
-        public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
         }
         @Override
-        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndFlush(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
         }
 

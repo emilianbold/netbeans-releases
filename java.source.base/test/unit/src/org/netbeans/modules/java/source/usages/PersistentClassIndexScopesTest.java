@@ -191,15 +191,15 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         final File indexFolder = new File(JavaIndex.getIndex(root), "refs");    //NOI18N
         final Index index = IndexManager.createIndex(indexFolder, DocumentUtil.createAnalyzer());
         try {
-            final List<Pair<Pair<String,String>,Object[]>> docs = new ArrayList<>(PKG_COUNT * CLZ_IN_PKG_COUNT);
+            final List<Pair<Pair<BinaryName,String>,Object[]>> docs = new ArrayList<>(PKG_COUNT * CLZ_IN_PKG_COUNT);
             for (int i = 0; i < PKG_COUNT; i++) {
                 for (int j = 0; j < CLZ_IN_PKG_COUNT; j++ ) {
-                    final Pair<String,String> name = Pair.of(String.format(
+                    final Pair<BinaryName,String> name = Pair.of(BinaryName.create(String.format(
                             BIN_FORMAT,
                             PKG_NAME,
                             i,
                             CLZ_NAME,
-                            j),
+                            j)),
                         null);
                     final Object[] usagesData = new Object[] {
                         Collections.emptyList(),

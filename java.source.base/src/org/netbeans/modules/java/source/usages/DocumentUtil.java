@@ -103,7 +103,6 @@ public class DocumentUtil {
     private static final String FIELD_SOURCE = "source";                //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
 
-    private static final char PKG_SEPARATOR = '.';                      //NOI18N
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
     private static final char WILDCARD_QUERY_WILDCARD = '?';            //NOI18N
@@ -152,7 +151,7 @@ public class DocumentUtil {
         return new SourceNameConvertor();
     }
 
-    static Convertor<Pair<Pair<String,String>,Object[]>,Document> documentConvertor() {
+    static Convertor<Pair<Pair<BinaryName,String>,Object[]>,Document> documentConvertor() {
         return new DocumentConvertor();
     }
 
@@ -192,7 +191,7 @@ public class DocumentUtil {
         if (pkg.length() == 0) {
             return snName;
         }
-        return  pkg + PKG_SEPARATOR + snName;   //NO I18N
+        return  pkg + BinaryName.PKG_SEPARATOR + snName;   //NO I18N
     }
 
     public static String getSimpleBinaryName (final Document doc) {
@@ -234,7 +233,7 @@ public class DocumentUtil {
     //Term and query factories
     static Query binaryNameQuery (final String resourceName) {
         final BooleanQuery query = new BooleanQuery ();
-        int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
+        int index = resourceName.lastIndexOf(BinaryName.PKG_SEPARATOR);  // NOI18N
         String pkgName, sName;
         if (index < 0) {
             pkgName = "";   // NOI18N
@@ -272,35 +271,20 @@ public class DocumentUtil {
     }
 
     //Factories for lucene document
-    private static Document createDocument (final String binaryName,
+    private static Document createDocument (final BinaryName name,
             List<String> references,
             String featureIdents,
             String idents,
             String source) {
-        assert binaryName != null;
         assert references != null;
-        int index = binaryName.lastIndexOf(PKG_SEPARATOR);  //NOI18N
-        final String fileName;      //name with no package and appended type character
-        final String pkgName;       //Package
-        if (index<0) {
-            fileName = binaryName;
-            pkgName = "";                           //NOI18N
-        }
-        else {
-            fileName = binaryName.substring(index+1);
-            pkgName = binaryName.substring(0,index);
-        }
-        assert fileName.length() > 1 : "BinaryName with type char: " + binaryName +
+        
+        final String fileName = name.getClassName();      //name with no package and appended type character
+        final String pkgName = name.getPackage();         //Package
+        assert fileName.length() > 1 : "BinaryName with type char: " + name +
                                        ", Package: " + pkgName +
                                        ", FileName with type char: " + fileName;
-        final String  simpleName;
-        index = fileName.lastIndexOf('$');  //NOI18N
-        if (index<0) {
-            simpleName = fileName.substring(0, fileName.length()-1);
-        }
-        else {
-            simpleName = fileName.substring(index+1,fileName.length()-1);
-        }
+        String  simpleName = name.getSimpleName();
+        simpleName = simpleName.substring(0, simpleName.length()-1);
         final String caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
         Document doc = new Document ();
         Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
@@ -621,11 +605,11 @@ public class DocumentUtil {
         }
     }
 
-    private static class DocumentConvertor implements Convertor<Pair<Pair<String,String>,Object[]>,Document> {
+    private static class DocumentConvertor implements Convertor<Pair<Pair<BinaryName,String>,Object[]>,Document> {
         @Override
-        public Document convert(Pair<Pair<String, String>, Object[]> entry) {
-            final Pair<String,String> pair = entry.first();
-            final String cn = pair.first();
+        public Document convert(Pair<Pair<BinaryName, String>, Object[]> entry) {
+            final Pair<BinaryName,String> pair = entry.first();
+            final BinaryName cn = pair.first();
             final String srcName = pair.second();
             final Object[] data = entry.second();
             final List<String> cr = (List<String>) data[0];
@@ -678,7 +662,7 @@ public class DocumentUtil {
         private static BooleanQuery createFQNQuery(final String resourceName) {
             String pkgName;
             String sName;
-            int index = resourceName.lastIndexOf(DocumentUtil.PKG_SEPARATOR);
+            int index = resourceName.lastIndexOf(BinaryName.PKG_SEPARATOR);
             if (index < 0) {
                 pkgName = "";       //NOI18N
                 sName = resourceName;
