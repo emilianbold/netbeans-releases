@@ -70,6 +70,10 @@ public abstract class DashboardProvider<P> {
     public abstract SourceAccessor<P> getSourceAccessor();
     public abstract QueryAccessor<P> getQueryAccessor();
     public abstract BuilderAccessor<P> getBuilderAccessor();
+    
+    public RemoteMachineAccessor<P> getRemoteMachineAccessor() {
+        return null;
+    }
 
     public abstract Collection<ProjectHandle<P>> getMyProjects(); // XXX move to accessor
 
@@ -96,6 +100,16 @@ public abstract class DashboardProvider<P> {
     public SourceAccessor<P> getSourceAccessor(Class<P> p) {
         Collection<? extends SourceAccessor> c = Lookup.getDefault().lookupAll(SourceAccessor.class);
         for (SourceAccessor a : c) {
+            if(a.type().equals(p)) {
+                return a;
+            }
+        }
+        return null;
+    }    
+    
+    protected RemoteMachineAccessor<P> getRemoteMachineAccessor(Class<P> p) {
+        Collection<? extends RemoteMachineAccessor> c = Lookup.getDefault().lookupAll(RemoteMachineAccessor.class);
+        for (RemoteMachineAccessor a : c) {
             if(a.type().equals(p)) {
                 return a;
             }

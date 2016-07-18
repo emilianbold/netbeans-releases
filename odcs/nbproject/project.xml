@@ -174,6 +174,7 @@ Contributor(s):
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <friend>org.netbeans.modules.odcs.hudson</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>

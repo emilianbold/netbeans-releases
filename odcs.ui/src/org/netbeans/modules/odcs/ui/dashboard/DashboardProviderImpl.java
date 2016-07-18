@@ -61,6 +61,8 @@ import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.server.ui.spi.SourceHandle;
 import org.netbeans.modules.team.commons.treelist.LeafNode;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.netbeans.modules.team.server.ui.common.RemoteMachineListNode;
+import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
 import org.openide.util.Exceptions;
 
 /**
@@ -100,7 +102,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     public TreeListNode createSourceNode(SourceHandle s, SourceListNode sln) {
         return new SourceNode(s, sln, this);
     }
-
+   
     @Override
     public ProjectAccessorImpl getProjectAccessor() {
         if(projectAccessor == null) {
@@ -123,7 +125,12 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     public SourceAccessor getSourceAccessor() {
         return getSourceAccessor(ODCSProject.class);
     }
-
+    
+    @Override
+    public RemoteMachineAccessor getRemoteMachineAccessor() {        
+        return getRemoteMachineAccessor(ODCSProject.class);
+    }
+    
     @Override
     public QueryAccessor<ODCSProject> getQueryAccessor() {
         return getQueryAccessor(ODCSProject.class);
