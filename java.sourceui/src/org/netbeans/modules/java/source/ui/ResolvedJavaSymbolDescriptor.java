@@ -70,10 +70,11 @@ final class ResolvedJavaSymbolDescriptor extends JavaSymbolDescriptorBase {
             @NonNull final JavaSymbolDescriptorBase base,
             @NonNull final String simpleName,
             @NullAllowed final String simpleNameSuffix,
+            @NullAllowed final String ownerName,
             @NonNull final ElementKind kind,
             @NonNull final Set<Modifier> modifiers,
             @NonNull final ElementHandle<?> me) {
-        super(base);
+        super(base, ownerName);
         assert simpleName != null;
         assert kind != null;
         assert modifiers != null;

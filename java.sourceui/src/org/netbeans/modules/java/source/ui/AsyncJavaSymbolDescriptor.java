@@ -247,6 +247,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                             AsyncJavaSymbolDescriptor.this,
                             simpleName,
                             simpleNameSuffix,
+                            te.getQualifiedName().toString(),
                             kind,
                             modifiers,
                             me));
@@ -263,6 +264,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                                 AsyncJavaSymbolDescriptor.this,
                                 simpleName,
                                 simpleNameSuffix,
+                                te.getQualifiedName().toString(),
                                 kind,
                                 modifiers,
                                 me));
