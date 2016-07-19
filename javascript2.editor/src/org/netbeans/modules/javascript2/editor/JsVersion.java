@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,61 +36,49 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.openide.util.NbBundle;
 
+/**
+ *
+ * @author Petr Hejl
+ */
+public enum JsVersion {
 
-public class JsPreferences {
+    @NbBundle.Messages("LBL_ECMA5=ECMAScript 5.1")
+    ECMA5(Bundle.LBL_ECMA5()),
 
-    private static final JsVersion DEFAULT_JS_VERSION = JsVersion.ECMA6;
+    @NbBundle.Messages("LBL_ECMA6=ECMAScript 6")
+    ECMA6(Bundle.LBL_ECMA6()),
 
-    private static final String JS_PREF_TAG = "jsversion"; // NOI18N
+    @NbBundle.Messages("LBL_ECMA7=ECMAScript 7 (Experimental)")
+    ECMA7(Bundle.LBL_ECMA7());
 
-    public static List<JsVersion> getECMAScriptAvailableVersions() {
-        return new ArrayList<>(EnumSet.allOf(JsVersion.class));
+    private final String displayName;
+
+    private JsVersion(String displayName) {
+        this.displayName = displayName;
     }
 
-    public static JsVersion getECMAScriptVersion(Project project) {
-        if (project != null) {
-            String strValue = getPreferences(project).get(JS_PREF_TAG, null);
-            JsVersion version = JsVersion.fromString(strValue);
-            if (version == null) {
-                version = DEFAULT_JS_VERSION;
-            }
-            return version;
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @CheckForNull
+    public static JsVersion fromString(String str) {
+        if (str == null) {
+            return null;
         }
-        return DEFAULT_JS_VERSION;
-    }
-
-    public static void putECMAScriptVersion(Project project, JsVersion version) {
-        if (project != null) {
-            if (!version.equals(DEFAULT_JS_VERSION)) {
-                getPreferences(project).put(JS_PREF_TAG, version.toString());
-            } else {
-                getPreferences(project).remove(JS_PREF_TAG);
+        for (JsVersion v : EnumSet.allOf(JsVersion.class)) {
+            if (str.equals(v.name()) || str.equals(v.getDisplayName())) {
+                return v;
             }
         }
-    }
-
-    private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, JsPreferences.class, true);
-    }
-
-    public static boolean isPreECMAScript6(Project project) {
-        return getECMAScriptVersion(project).ordinal() < JsVersion.ECMA6.ordinal();
-    }
-
-    public static boolean isPreECMAScript7(Project project) {
-        return getECMAScriptVersion(project).ordinal() < JsVersion.ECMA7.ordinal();
+        return null;
     }
 
 }

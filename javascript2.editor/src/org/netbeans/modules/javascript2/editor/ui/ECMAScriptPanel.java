@@ -46,6 +46,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsPreferences;
+import org.netbeans.modules.javascript2.editor.JsVersion;
 import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.ChangeSupport;
@@ -71,7 +72,7 @@ public class ECMAScriptPanel extends javax.swing.JPanel implements HelpCtx.Provi
 
     private void initData() {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (JsPreferences.JSVersion version: JsPreferences.getECMAScriptAvailableVersions()) {
+        for (JsVersion version: JsPreferences.getECMAScriptAvailableVersions()) {
             model.addElement(new DisplayVersion(version));
         }
         model.setSelectedItem(new DisplayVersion(JsPreferences.getECMAScriptVersion(project)));
@@ -174,13 +175,13 @@ public class ECMAScriptPanel extends javax.swing.JPanel implements HelpCtx.Provi
 
     private static class DisplayVersion {
 
-        private final JsPreferences.JSVersion version;
+        private final JsVersion version;
 
-        public DisplayVersion(JsPreferences.JSVersion version) {
+        public DisplayVersion(JsVersion version) {
             this.version = version;
         }
 
-        public JsPreferences.JSVersion getVersion() {
+        public JsVersion getVersion() {
             return version;
         }
 
