@@ -237,7 +237,7 @@ public class RequireJsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "requirejs"; // NOI18N
-        public static final int VERSION = 1;
+        public static final int VERSION = 2;
         private static final int PRIORITY = 210;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
