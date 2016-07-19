@@ -1,7 +1,7 @@
-#changeset:   18989:841f7ab3d5cf
+#changeset:   19034:9e7b983e54e5
 #branch:      jclank
 #tag:         tip
 #user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Wed Jun 29 18:29:52 2016 +0300
-#summary:     llvmToClankType
-5F62670605D036468D158D3D02FDCC6FBAB5D20F clank_0.3.6.zip
+#date:        Tue Jul 19 18:06:38 2016 +0300
+#summary:     Fixed #257048 - Guard block hint issue
+A22324F86EB1673E0D54D0FFF5C8047FAED4A2BA clank_0.3.6.zip
