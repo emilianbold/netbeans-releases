@@ -455,7 +455,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testDynLib_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
+        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc\n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} \"$@.d\"\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
@@ -469,7 +469,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testDynLib_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
+        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc\n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
@@ -482,7 +482,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testDynLib_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
+        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc\n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} \"$@.d\"\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
@@ -496,7 +496,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testDynLib_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
+        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc\n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} \"$@.d\"\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
@@ -510,7 +510,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     public void testDynLib_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
+        golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc\n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
         golden.append("\t${RM} \"$@.d\"\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
