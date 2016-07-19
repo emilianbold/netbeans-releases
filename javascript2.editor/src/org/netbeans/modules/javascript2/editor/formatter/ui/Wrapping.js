@@ -22,5 +22,3 @@ function computeColor(limit) {
 }
 
 var a, b, c, x = function() {return "yes"}
-
-}

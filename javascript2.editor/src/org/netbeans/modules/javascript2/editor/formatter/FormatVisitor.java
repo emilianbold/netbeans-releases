@@ -1258,7 +1258,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void markPropertyFinish(int finish, int objectFinish, boolean checkDuplicity) {
-        FormatToken formatToken = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
+        FormatToken formatToken = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish - 1);
         if (formatToken != null) {
             TokenUtils.appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
