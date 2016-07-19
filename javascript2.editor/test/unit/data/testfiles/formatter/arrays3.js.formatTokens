@@ -197,7 +197,6 @@ FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=243, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_PROPERTY, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=244, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=245, text=            , id=WHITESPACE}
@@ -260,7 +259,6 @@ FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=299, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_PROPERTY, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=300, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=301, text=            , id=WHITESPACE}
@@ -323,7 +321,6 @@ FormatToken{kind=BEFORE_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=355, text=,, id=OPERATOR_COMMA}
 FormatToken{kind=AFTER_COMMA, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_PROPERTY, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=356, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=357, text=            , id=WHITESPACE}
