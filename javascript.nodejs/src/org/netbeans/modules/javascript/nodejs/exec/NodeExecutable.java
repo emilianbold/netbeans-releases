@@ -244,16 +244,7 @@ public class NodeExecutable {
 
     @CheckForNull
     public Version getVersion() {
-        Version version = getRealVersion();
-        if (version == null) {
-            return null;
-        }
-        // #255872 - for node.js, use latest 0.12
-//        if (!isIojs()
-//                && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
-//            return Version.fromDottedNotationWithFallback("0.12.9"); // NOI18N
-//        }
-        return version;
+        return getRealVersion();
     }
 
     @NbBundle.Messages({
