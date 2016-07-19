@@ -655,8 +655,6 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      }
                                  }
 
-  {TemplateCharacter}+           { }
-
   "$"\{                          { 
                                      yypushback(2);
                                      yybegin(TEMPLATEEXP);
@@ -664,6 +662,9 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                          return JsTokenId.TEMPLATE;
                                      }
                                  }
+
+  "$"                            |
+  {TemplateCharacter}+           { }
 
   \\.                            { }
 }

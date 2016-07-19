@@ -64,6 +64,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.JsPreferences;
+import org.netbeans.modules.javascript2.editor.JsVersion;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
@@ -255,7 +256,7 @@ public class Ecma7Rule extends EcmaLevelRule {
 
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
-                JsPreferences.putECMAScriptVersion(p, JsPreferences.JSVersion.ECMA7);
+                JsPreferences.putECMAScriptVersion(p, JsVersion.ECMA7);
             }
 
             refresh(fo);

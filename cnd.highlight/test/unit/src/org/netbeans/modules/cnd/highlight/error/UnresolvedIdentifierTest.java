@@ -419,6 +419,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 248749 - Template based identifier is marked as red instead of yellow
         performStaticTest("bug248749.cpp");
     }
+    
+    public void testBug257030() throws Exception {
+        // Bug 257030 - Unresolved identifiers in template if variable has 'auto' type
+        performStaticTest("bug257030.cpp");
+    }
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

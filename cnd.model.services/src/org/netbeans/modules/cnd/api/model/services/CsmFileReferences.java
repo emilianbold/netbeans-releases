@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.Lookup;
@@ -172,7 +174,13 @@ public abstract class CsmFileReferences {
                if (isTemplateParameterInvolved(refObj)) {
                    return true;
                } else {
-                   return hasTemplateBasedAncestors(getType(refObj), new ClassifiersAntiLoop());
+                   CsmType type = getType(refObj);
+                   if (CsmUtilities.isAutoType(type) && CsmKindUtilities.isOffsetable(refObj)) {
+                       GetTypeClassHandler handler = new GetTypeClassHandler();
+                       CsmExpressionResolver.resolveType((CsmOffsetable) refObj, null, handler);
+                       return hasTemplateBasedAncestors(handler.clazz, new ClassifiersAntiLoop());
+                   }
+                   return hasTemplateBasedAncestors(type, new ClassifiersAntiLoop());
                }
            }
        } else {
@@ -181,12 +189,31 @@ public abstract class CsmFileReferences {
        }
        return false;
    }
+   
+   private static class GetTypeClassHandler implements CsmExpressionResolver.ResolvedTypeHandler {
+
+        CsmClass clazz = null;
+       
+        @Override
+        public void process(CsmType resolvedType) {
+            if (resolvedType != null) {
+                CsmClassifier cls = resolvedType.getClassifier();
+                if (CsmKindUtilities.isClass(cls)) {
+                    clazz = (CsmClass) cls;
+                }
+            }
+        }
+   }
 
    private static CsmType getType(CsmObject obj) {
        if (CsmKindUtilities.isFunction(obj)) {
            return ((CsmFunction)obj).getReturnType();
        } else if (CsmKindUtilities.isVariable(obj)) {
-           return ((CsmVariable)obj).getType();
+           CsmType varType = ((CsmVariable)obj).getType();
+           // Do not check for auto type here because all the work 
+           // with resolved type should be done inside handler. 
+           // But the contract of this method requires to return it outside.
+           return varType;
        } else if(CsmKindUtilities.isTypedef(obj) || CsmKindUtilities.isTypeAlias(obj)) {
            return ((CsmTypedef) obj).getType();
        }
@@ -328,7 +355,24 @@ public abstract class CsmFileReferences {
            return true;
        }
        CsmType type = getType(obj);
+       if (CsmUtilities.isAutoType(type) && CsmKindUtilities.isOffsetable(obj)) {
+           IsTypeTemplateBasedHandler handler = new IsTypeTemplateBasedHandler();
+           CsmExpressionResolver.resolveType((CsmOffsetable) obj, null, handler);
+           return handler.isTemplateBased;
+       }
        return (type == null) ? false : type.isTemplateBased();
+   }
+   
+   private static final class IsTypeTemplateBasedHandler implements CsmExpressionResolver.ResolvedTypeHandler {
+       
+        boolean isTemplateBased = false;
+
+        @Override
+        public void process(CsmType resolvedType) {
+            if (resolvedType != null) {
+                isTemplateBased = resolvedType.isTemplateBased();
+            }
+        }
    }
 
    public static boolean isDereference(CppTokenId token) {
