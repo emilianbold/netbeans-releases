@@ -344,7 +344,7 @@ public class JavaTypeDescription extends TypeDescriptor {
         int i = 1;
         for (; i<name.length(); i++) {
             char c = name.charAt(i);
-            if (c == '$') {
+            if (c == '$') { //NOI18N
                 break;
             }
         }
