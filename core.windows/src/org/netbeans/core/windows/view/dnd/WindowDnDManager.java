@@ -1053,9 +1053,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     
                     // was probably forgotten to set the lastdrop target, was causing strange repaint side effects when 2 frames overlapped.
                     JComponent cp = (JComponent)droppable.getDropComponent();
-                    Component glass = cp.getRootPane().getGlassPane();
-                    if (glass instanceof DropTargetGlassPane) {
-                        windowDnDManager.setLastDropTarget((DropTargetGlassPane)glass);
+                    JRootPane rootPane = cp.getRootPane();
+                    if (rootPane != null) {
+                        Component glass = rootPane.getGlassPane();
+                        if (glass instanceof DropTargetGlassPane) {
+                            windowDnDManager.setLastDropTarget((DropTargetGlassPane)glass);
+                        }
                     }
                     Point p = new Point(location);
                     SwingUtilities.convertPointFromScreen(p, droppable.getDropComponent());

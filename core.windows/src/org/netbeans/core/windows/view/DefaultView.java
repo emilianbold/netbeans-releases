@@ -773,12 +773,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
-        ElementAccessor[] childrenAccessors = new ElementAccessor[childrenViews.length];
-        for( int i=0; i<childrenViews.length; i++ ) {
-            childrenAccessors[i] = hierarchy.getAccessorForView( childrenViews[i] );
+        // XXX PENDING #257467 Investigate how it could happen.
+        if (splitAccessor != null) {
+            ElementAccessor[] childrenAccessors = new ElementAccessor[childrenViews.length];
+            for( int i=0; i<childrenViews.length; i++ ) {
+                childrenAccessors[i] = hierarchy.getAccessorForView( childrenViews[i] );
+            }
+            ViewHelper.setSplitWeights(splitAccessor, childrenAccessors, splitWeights, controllerHandler);
         }
-        ViewHelper.setSplitWeights(splitAccessor, childrenAccessors, splitWeights, controllerHandler);
-        
         // XXX PENDING
 //        updateSeparateBoundsForView(splitView);
     }
