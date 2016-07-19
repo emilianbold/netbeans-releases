@@ -626,7 +626,18 @@ public final class SourceAnalyzerFactory {
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
                     if (!className.isEmpty()) {
-                        int simpleNameStart = className.length() - sym.getSimpleName().length();
+                        final int simpleNameStart;
+                        simpleName = sym.getSimpleName().toString();
+                        if (simpleName.isEmpty()) {
+                            //Annon
+                            int i = className.lastIndexOf('$'); //NOI18N
+                            assert i > 0 : className;
+                            simpleNameStart = i+1;
+                        } else {
+                            //Named
+                            simpleNameStart = className.length() - sym.getSimpleName().length();
+                        }
+                        
                         String resourceName = null;
                         topLevel = activeClass.isEmpty();
                         if (topLevel) {
@@ -651,7 +662,6 @@ public final class SourceAnalyzerFactory {
                                 BinaryName.create(className, sym.getKind(), sym.isLocal(), simpleNameStart),
                                 resourceName);
                         nameFrom = 2;
-                        simpleName = sym.getSimpleName().toString();
                     } else {
                         LOG.log(
                             Level.WARNING,
