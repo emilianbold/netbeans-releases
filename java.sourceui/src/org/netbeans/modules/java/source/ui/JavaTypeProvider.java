@@ -700,7 +700,7 @@ public class JavaTypeProvider implements TypeProvider {
                     typeName,
                     kind,
                     Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
-                    DocumentUtil.declaredTypesFieldSelector(true),
+                    DocumentUtil.declaredTypesFieldSelector(true, true),
                     new JavaTypeDescriptionConvertor(this),
                     collector);
             } catch (Index.IndexClosedException ice) {
@@ -813,7 +813,11 @@ public class JavaTypeProvider implements TypeProvider {
                 }
                 final ElementHandle<TypeElement> eh = HANDLE_CONVERTOR.convert(p);
                 final String sourceName = SOURCE_CONVERTOR.convert(p);
-                return eh == null ? null : new JavaTypeDescription(ci, eh, sourceName);
+                return eh == null ? null : new JavaTypeDescription(
+                        ci,
+                        eh,
+                        DocumentUtil.getSimpleName(p),
+                        sourceName);
             }
 
         }

@@ -204,6 +204,13 @@ public class DocumentUtil {
             return binName.substring(0, binName.length()-1);
         }
     }
+    
+    public static String getSimpleName(final Document doc) {
+        final Fieldable field = doc.getFieldable(FIELD_SIMPLE_NAME);
+        return field == null ?
+                null :
+                field.stringValue();
+    }
 
     public static boolean isLocal(@NonNull final Document doc) {
         Fieldable fld = doc.getFieldable(FIELD_BINARY_NAME);
@@ -399,10 +406,16 @@ public class DocumentUtil {
     }
 
 
-    public static FieldSelector declaredTypesFieldSelector (final boolean includeSource) {
+    public static FieldSelector declaredTypesFieldSelector (
+            final boolean includeSource,
+            final boolean includeSimpleName) {
         return includeSource ?
-            Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SOURCE) :
-            Queries.createFieldSelector(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
+            includeSimpleName ?
+                Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SIMPLE_NAME, FIELD_SOURCE) :
+                Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SOURCE) :
+            includeSimpleName ?
+                Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SIMPLE_NAME) :
+                Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME);
     }
 
     static FieldSelector sourceNameFieldSelector () {

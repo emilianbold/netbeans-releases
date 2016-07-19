@@ -252,9 +252,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                 QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
                                 scope);
                         if (q!=null) {
-                            index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), q);
+                            index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false, false), cancel.get(), q);
                             if (ctu.second() != null) {
-                                ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), q);
+                                ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false, false), cancel.get(), q);
                             }
                         }
                         return null;
@@ -278,9 +278,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                     QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
                                     scope);
                             if (usagesQuery != null) {
-                                index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), usagesQuery);
+                                index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(false, false), cancel.get(), usagesQuery);
                                 if (ctu.second() != null) {
-                                    ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false), cancel.get(), usagesQuery);
+                                    ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(false, false), cancel.get(), usagesQuery);
                                 }
                             }
                             return null;
@@ -357,7 +357,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             result,
                             ctu.first(),
                             t2s,
-                            DocumentUtil.declaredTypesFieldSelector(false),
+                            DocumentUtil.declaredTypesFieldSelector(false, false),
                             cancel.get(),
                             query);
                     if (ctu.second() != null) {
@@ -365,7 +365,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             result,
                             convertor,
                             t2s,
-                            DocumentUtil.declaredTypesFieldSelector(false),
+                            DocumentUtil.declaredTypesFieldSelector(false, false),
                             cancel.get(),
                             query);
                     }
@@ -664,7 +664,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                 index.query(
                                         filter,
                                         DocumentUtil.binaryNameConvertor(),
-                                        DocumentUtil.declaredTypesFieldSelector(false),
+                                        DocumentUtil.declaredTypesFieldSelector(false, false),
                                         null,
                                         DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
                             } else {

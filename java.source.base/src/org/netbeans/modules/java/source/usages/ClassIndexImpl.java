@@ -144,7 +144,7 @@ public abstract class ClassIndexImpl {
             name,
             kind,
             scope,
-            DocumentUtil.declaredTypesFieldSelector(false),
+            DocumentUtil.declaredTypesFieldSelector(false, false),
             convertor,
             result);
     }
