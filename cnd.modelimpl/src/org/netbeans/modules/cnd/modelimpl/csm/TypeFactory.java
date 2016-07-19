@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.isCVQualifier;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
@@ -370,6 +371,7 @@ public class TypeFactory {
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
                         List<CharSequence> l = new ArrayList<>();
                         int templateDepth = 0;
+                        AST templateTypeQuals = null;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT ) {
@@ -420,7 +422,7 @@ public class TypeFactory {
                                     if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                             || AstUtil.isElaboratedKeyword(namePart)) {
-                                        CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
+                                        CsmType t = AstRenderer.renderType(templateTypeQuals != null ? templateTypeQuals : namePart, file, true, scope, true);
                                         type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(t, scope), scope));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
@@ -428,6 +430,15 @@ public class TypeFactory {
                                                 type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }
+                            }
+                            
+                            // Handle const/volatile quals for template parameter
+                            if (templateDepth > 0 && isCVQualifier(namePart.getType())) {
+                                if (templateTypeQuals == null) {
+                                    templateTypeQuals = namePart;
+                                }
+                            } else {
+                                templateTypeQuals = null; // Maybe too cautious.
                             }
                         }
                         if (!type.isInitedClassifierText()) {

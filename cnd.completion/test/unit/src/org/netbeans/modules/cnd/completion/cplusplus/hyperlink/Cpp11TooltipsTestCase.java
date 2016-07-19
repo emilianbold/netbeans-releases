@@ -160,4 +160,20 @@ public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
             "int"
         );
     }
+    
+    public void testBug257827() throws Exception {
+        // Bug 257827 - Auto insert function stubs not copying all const keywords
+        performPlainTooltipTest("bug257827.cpp", 8, 48,
+            "Variable var1\n" + 
+            "AAA257827<const bug257827::BBB257827> var1"
+        );
+        performPlainTooltipTest("bug257827.cpp", 9, 42,
+            "Variable var2\n" + 
+            "AAA257827<volatile BBB257827*> var2"
+        );
+        performPlainTooltipTest("bug257827.cpp", 10, 46,
+            "Variable var3\n" + 
+            "AAA257827<const volatile BBB257827> var3"
+        );
+    }
 }
