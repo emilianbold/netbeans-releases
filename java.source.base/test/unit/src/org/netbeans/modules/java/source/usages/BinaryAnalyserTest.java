@@ -218,7 +218,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         BinaryAnalyser a = new BinaryAnalyser(
             new IndexWriter(index) {
                 @Override
-                public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                public void deleteAndFlush(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
                     super.deleteAndFlush(refs, toDelete);
                 try {
                     dataFlushed(index);
@@ -251,7 +251,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 names,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(false),
+                DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 QueryUtil.createUsagesQuery("java.util.List", EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         names.retainAll(
@@ -281,11 +281,11 @@ public class BinaryAnalyserTest extends NbTestCase {
             index.clear();
         }
         @Override
-        public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
         }
         @Override
-        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndFlush(List<Pair<Pair<BinaryName, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
         }
 
@@ -394,7 +394,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 result,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(false),
+                DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         assertTrue(result.containsAll(Arrays.asList(in)));
@@ -437,7 +437,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         index.query(
                 result,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(false),
+                DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 Queries.createQuery(
                 DocumentUtil.FIELD_SIMPLE_NAME,
@@ -519,7 +519,7 @@ public class BinaryAnalyserTest extends NbTestCase {
             index.query(
                 res,
                 DocumentUtil.binaryNameConvertor(),
-                DocumentUtil.declaredTypesFieldSelector(false),
+                DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 Queries.createQuery("simpleName", "ciName", "", Queries.QueryKind.PREFIX)); //NOI18N
             index.close();
