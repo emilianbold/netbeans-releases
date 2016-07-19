@@ -94,12 +94,14 @@ public class JavaTypeDescription extends TypeDescriptor {
     JavaTypeDescription(
             @NonNull final JavaTypeProvider.CacheItem cacheItem,
             @NonNull final ElementHandle<TypeElement> handle,
+            @NullAllowed final String simpleName,
             @NullAllowed final String relativePath) {
        this.cacheItem = cacheItem;
        this.handle = handle;
        this.cachedRelPath = relativePath == null ?
             PATH_FROM_HANDLE :
             relativePath;
+       this.simpleName = simpleName;
        init();
     }
 
@@ -300,29 +302,64 @@ public class JavaTypeDescription extends TypeDescriptor {
     private void init() {
         final String typeName = this.handle.getBinaryName();
         int lastDot = typeName.lastIndexOf('.'); // NOI18N
-        int lastDollar = typeName.lastIndexOf('$'); // NOI18N
         if ( lastDot == -1 ) {
-            if ( lastDollar == -1 ) {
-                simpleName = typeName;
-            }
-            else {
-                simpleName = typeName.substring(lastDollar + 1);
-                outerName = typeName.substring(0, lastDollar ).replace( '$', '.');  //NOI18N;
-            }
-        }
-        else {
-            packageName = typeName.substring( 0, lastDot );
-
-            if (lastDollar < lastDot) {
-                simpleName = typeName.substring( lastDot + 1 ).replace( '$', '.');  //NOI18N
-            }
-            else {
-                simpleName = typeName.substring(lastDollar + 1);
-                outerName = typeName.substring(lastDot + 1, lastDollar ).replace( '$', '.');  //NOI18N;
-            }
-
+            final String[] nms = parseName(typeName,0,simpleName);
+            outerName = nms[0];
+            simpleName = nms[1];
+        } else {
+            packageName = typeName.substring(0, lastDot);
+            final String[] nms = parseName(typeName,lastDot+1,simpleName);
+            outerName = nms[0];
+            simpleName = nms[1];
         }
         icon = Icons.getElementIcon (handle.getKind(), null);
+    }
+    
+    @NonNull
+    private static String[] parseName(
+            @NonNull final String binaryName,
+            final int clzNameStart,
+            @NullAllowed final String simpleName) {
+        final String[] res = new String[2];
+        if (simpleName != null) {
+            res[1] = simpleName;
+            int index = binaryName.length() - simpleName.length() -1;
+            if (index > clzNameStart) {
+                res[0] = replace(binaryName.substring(clzNameStart, index));
+            }
+        } else {
+            final int lastDollar = binaryName.lastIndexOf('$'); // NOI18N
+            if (lastDollar == -1) {
+                res[1] = replace(binaryName.substring(clzNameStart));
+            } else {
+                res[1] = binaryName.substring(lastDollar + 1);
+                res[0] = replace(binaryName.substring(clzNameStart, lastDollar));
+            }
+        }
+        return res;
+    }
+    
+    @NonNull
+    private static String replace(@NonNull String name) {
+        int i = 1;
+        for (; i<name.length(); i++) {
+            char c = name.charAt(i);
+            if (c == '$') {
+                break;
+            }
+        }
+        if (i < name.length()) {
+            final char[] data = name.toCharArray();
+            for (; i<name.length(); i++) {
+                char c = name.charAt(i);
+                if (c == '$') { //NOI18N
+                    c = '.';    //NOI18N
+                }
+                data[i] = c;
+            }
+            name = new String(data);
+        }
+        return name;
     }
 
     private String getRelativePath(
