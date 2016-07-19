@@ -539,12 +539,17 @@ public class JsCompletionItem implements CompletionProposal {
     }
     
     static class KeywordItem extends JsCompletionItem {
+        
         private static  ImageIcon keywordIcon = null;
-        private String keyword = null;
+        
+        private final String keyword;
+        
+        private final JsKeywords.CompletionDescription description;
 
-        public KeywordItem(String keyword, CompletionRequest request) {
+        public KeywordItem(String keyword, JsKeywords.CompletionDescription description, CompletionRequest request) {
             super(null, request);
             this.keyword = keyword;
+            this.description = description;
         }
 
         @Override
@@ -567,6 +572,11 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
+            JsVersion since = description.getVersion();
+            if (since != null) {
+                formatter.appendText(since.getDisplayName());
+                return formatter.getText();
+            }
             return null;
         }
 
@@ -587,7 +597,7 @@ public class JsCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             
-            JsKeyWords.CompletionType type = JsKeyWords.KEYWORDS.get(getName());
+            JsKeywords.CompletionType type = description.getType();
             if (type == null) {
                 return getName();
             }

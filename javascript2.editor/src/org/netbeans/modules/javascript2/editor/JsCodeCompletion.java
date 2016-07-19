@@ -1172,9 +1172,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     }
     
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
-        for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
-            if (startsWith(keyword, request.prefix)) {
-                resultList.add(new JsCompletionItem.KeywordItem(keyword, request));
+        for (Map.Entry<String, JsKeywords.CompletionDescription> entry : JsKeywords.KEYWORDS.entrySet()) {
+            if (startsWith(entry.getKey(), request.prefix)) {
+                resultList.add(new JsCompletionItem.KeywordItem(entry.getKey(), entry.getValue(), request));
             }
         }
     }
