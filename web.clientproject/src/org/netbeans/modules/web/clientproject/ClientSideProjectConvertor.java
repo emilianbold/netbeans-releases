@@ -66,6 +66,7 @@ import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -176,10 +177,19 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         public Project call() throws Exception {
             transientLkp.close();
             PROJECT_CONVERTOR_USAGE_LOGGER.log(fileName);
+            deleteNbProject();
             return ClientSideProjectGenerator.createProject(new CreateProjectProperties(projectDirectory, displayName)
                     .setSourceFolder("") // NOI18N
                     .setSiteRootFolder(detectSiteRoot())
                     .setAutoconfigured(true));
+        }
+
+        private void deleteNbProject() throws IOException {
+            FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+            if (nbproject != null
+                    && nbproject.isValid()) {
+                nbproject.delete();
+            }
         }
 
         private String detectSiteRoot() {
