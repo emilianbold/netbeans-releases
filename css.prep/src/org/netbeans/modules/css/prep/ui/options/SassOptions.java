@@ -63,6 +63,7 @@ public class SassOptions implements CssPreprocessorUIImplementation.Options {
 
 
     public SassOptions(SassCssPreprocessor sassCssPreprocessor) {
+        assert sassCssPreprocessor != null;
         this.sassCssPreprocessor = sassCssPreprocessor;
     }
 
