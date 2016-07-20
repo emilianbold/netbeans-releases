@@ -202,7 +202,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         configurationsButton = new javax.swing.JButton();
         customizerPanel = new javax.swing.JPanel();
 
-        setPreferredSize(new java.awt.Dimension(800, 500));
+        setPreferredSize(new java.awt.Dimension(900, 520));
         setLayout(new java.awt.GridBagLayout());
 
         categoryLabel.setLabelFor(categoryPanel);

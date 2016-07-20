@@ -1318,6 +1318,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug242719.cpp", 25, 18, "bug242719.cpp", 14, 9);
     }
     
+    public void testBug257822() throws Exception {
+        // Bug 257822 - Unresolved identifier in designated initializer of compound literal
+        performTest("bug257822.c", 8, 8, "bug257822.c", 3, 5);
+        performTest("bug257822.c", 18, 8, "bug257822.c", 3, 5);
+        performTest("bug257822.c", 23, 8, "bug257822.c", 3, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

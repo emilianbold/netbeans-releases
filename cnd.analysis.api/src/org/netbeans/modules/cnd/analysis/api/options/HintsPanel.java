@@ -53,7 +53,10 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -707,14 +710,24 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                 @Override
                 public void preferenceChange(PreferenceChangeEvent evt) {
                     Collection<CodeAudit> current = proxy.getAudits();
-                    if (!audits.equals(current)) {
-                        audits.clear();
-                        for (CodeAudit a : current) {
-                            audits.add(CodeAuditProxy.create(a, supportChanges));
-                        }
-                        for (ActionListener listener : listeners) {
-                            listener.actionPerformed(null);
-                        }
+                    if (audits.size() == current.size()) {
+                        return;
+                    }
+                    audits.clear();
+                    for (CodeAudit a : current) {
+                        audits.add(CodeAuditProxy.create(a, supportChanges));
+                    }
+                    Collections.sort(audits, new AuditIdComparator());
+                    for (ActionListener listener : listeners) {
+                        listener.actionPerformed(null);
+                    }
+                }
+
+                class AuditIdComparator implements Comparator<CodeAudit> {
+
+                    @Override
+                    public int compare(CodeAudit o1, CodeAudit o2) {
+                        return o1.getID().compareTo(o2.getID());
                     }
                 }
             });
