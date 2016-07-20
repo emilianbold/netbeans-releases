@@ -52,15 +52,11 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
-import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -69,9 +65,9 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.SplitOffsetHighlightsSequence;
 
 /**
  * Utilities related to HighlightsView and TextLayout management.
@@ -86,9 +82,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
  */
 
 public class HighlightsViewUtils {
-
-    // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewUtils.level=FINE
-    private static final Logger LOG = Logger.getLogger(HighlightsViewUtils.class.getName());
 
     private HighlightsViewUtils() {
     }
@@ -255,10 +248,10 @@ public class HighlightsViewUtils {
      */
     static void paintHiglighted(Graphics2D g, Shape textLayoutAlloc, Rectangle clipBounds,
             DocumentView docView, EditorView view, int viewStartOffset,
-            boolean newline, TextLayout textLayout, int textLayoutOffset,
+            TextLayout textLayout, int textLayoutOffset,
             int startIndex, int endIndex)
     {
-        Rectangle2D textLayoutRect = ViewUtils.shape2Bounds(textLayoutAlloc);
+        Rectangle2D textLayoutRectReadonly = ViewUtils.shapeAsRect(textLayoutAlloc);
         PaintState paintState = PaintState.save(g);
         Shape origClip = g.getClip();
         try {
@@ -275,16 +268,12 @@ public class HighlightsViewUtils {
             JTextComponent textComponent = docView.getTextComponent();
             HighlightsSequence highlights = docView.getPaintHighlights(view,
                     textLayoutOffset + startIndex - viewStartOffset);
-            TextLayout renderTextLayout = textLayout;
-            Boolean showNonPrintingChars = null;
-            // For regular textLayout do aggregation of rendered parts into compound area
-            // to decrease TL.draw() invocations.
+            // There was an aggregation of rendered parts with the same foreground color
+            // into a compound java.awt.geom.Area. All areas were rendered at the end of the process.
+            // That decreased TL.draw() invocations 
             // Unfortunately using java.awt.geom.Area on Mac OSX results in white horizontal lines
             // throughout the rendered text (when dragging vertical scrollbar slowly).
-            // Therefore the aggregation optimization is currently disabled.
-            Map<Color,Area> foreColor2Area = (false && textLayout != null && !newline)
-                    ? new HashMap<Color,Area>()
-                    : null;
+            // Therefore the aggregation optimization was abandoned and removed from the code.
             boolean done = false;
             while (!done && highlights.moveNext()) {
                 int hiStartOffset = highlights.getStartOffset();
@@ -300,50 +289,19 @@ public class HighlightsViewUtils {
                     Shape renderPartAlloc;
                     // For nonPrinting TABs display use a special text-layout rectangle
                     Rectangle2D specialTextLayoutRect = null;
-                    if (textLayout != null) {
-                        TextHitInfo startHit = TextHitInfo.leading(hiStartOffset - textLayoutOffset);
-                        TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
-                        renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRect, startHit, endHit);
-                        if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
-                            ViewHierarchyImpl.PAINT_LOG.finer("      View-Id=" + view.getDumpId() + // NOI18N
-                                    ", startOffset=" + view.getStartOffset() + // NOI18N
-                                    ", Fragment: hit<" + // NOI18N
-                                    startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
-                                    ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
-                                    hiStartOffset, renderEndOffset) + "', fAlloc=" + // NOI18N
-                                    ViewUtils.toString(renderPartAlloc.getBounds()) + ", Ascent=" + // NOI18N
-                                    ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + ", Color=" + // NOI18N
-                                    ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
-                        }
-                    } else { // No text layout => Newline or TAB(s)
-                        if (showNonPrintingChars == null) {
-                            showNonPrintingChars = docView.op.isNonPrintableCharactersVisible();
-                        }
-                        if (newline) {
-                            renderPartAlloc = textLayoutAlloc; // Single '\n' => render whole alloc
-                            renderTextLayout = showNonPrintingChars
-                                    ? docView.op.getNewlineCharTextLayout()
-                                    : null;
-                        } else { // It's TAB(s)
-                            if (showNonPrintingChars) {
-                                // Render just single TAB char's text layout
-                                renderEndOffset = hiStartOffset + 1;
-                            }
-                            Shape renderStartAlloc = view.modelToViewChecked(hiStartOffset, textLayoutRect, Bias.Forward);
-                            Rectangle2D.Double r = ViewUtils.shape2Bounds(renderStartAlloc);
-                            // Tab view should support doing modelToView() for its ending offset
-                            Shape renderEndAlloc = view.modelToViewChecked(renderEndOffset, textLayoutRect, Bias.Forward);
-                            Rectangle2D rEnd = ViewUtils.shapeAsRect(renderEndAlloc);
-                            r.width = rEnd.getX() - r.x;
-                            renderPartAlloc = r;
-                            specialTextLayoutRect = r;
-                            
-                            if (showNonPrintingChars) {
-                                renderTextLayout = docView.op.getTabCharTextLayout(r.width);
-                            } else {
-                                renderTextLayout = null;
-                            }
-                        }
+                    TextHitInfo startHit = TextHitInfo.leading(hiStartOffset - textLayoutOffset);
+                    TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
+                    renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRectReadonly, startHit, endHit);
+                    if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
+                        ViewHierarchyImpl.PAINT_LOG.finer("      View-Id=" + view.getDumpId() + // NOI18N
+                                ", startOffset=" + view.getStartOffset() + // NOI18N
+                                ", Fragment: hit<" + // NOI18N
+                                startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
+                                ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
+                                hiStartOffset, renderEndOffset) + "', fAlloc=" + // NOI18N
+                                ViewUtils.toString(renderPartAlloc.getBounds()) + ", Ascent=" + // NOI18N
+                                ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + ", Color=" + // NOI18N
+                                ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                     }
                     Rectangle2D renderPartBounds = renderPartAlloc.getBounds();
                     boolean hitsClip = (clipBounds == null) || renderPartAlloc.intersects(clipBounds);
@@ -360,44 +318,12 @@ public class HighlightsViewUtils {
                         Object strikeThroughValue = (attrs != null)
                                 ? attrs.getAttribute(StyleConstants.StrikeThrough)
                                 : null;
-                        if (renderTextLayout != null) {
-                            // Strikethrough must be rendered over the text => do not aggregate in that case
-                            if (foreColor2Area != null && strikeThroughValue == null) { // Allow aggregation
-                                Area renderArea = new Area(renderPartAlloc);
-                                Area compoundArea = foreColor2Area.get(g.getColor());
-                                if (compoundArea == null) {
-                                    compoundArea = renderArea;
-                                    foreColor2Area.put(g.getColor(), compoundArea);
-                                } else {
-                                    compoundArea.add(renderArea);
-                                }
-    //                            // Check if the path is closed (Area closes unclosed paths automatically)
-    //                            if (renderPartAlloc instanceof java.awt.geom.Path2D) {
-    //                                java.awt.geom.Path2D path = (java.awt.geom.Path2D) renderPartAlloc;
-    //                                float[] coords = new float[6];
-    //                                boolean closedPath = true; // Empty path is closed
-    //                                for (java.awt.geom.PathIterator pathIt = path.getPathIterator(null);
-    //                                        !pathIt.isDone(); pathIt.next())
-    //                                {
-    //                                    int type = pathIt.currentSegment(coords);
-    //                                    closedPath = (type == java.awt.geom.PathIterator.SEG_CLOSE);
-    //                                }
-    //                                if (!closedPath) {
-    //                                    System.err.println("Unclosed PATH!! " + path);
-    //                                }
-    //                            }
-
-                            } else { // Aggregation not done => regular painting
-                                if (renderTextLayout != null) {
-                                    Rectangle2D tlRect = (specialTextLayoutRect != null)
-                                            ? specialTextLayoutRect
-                                            : textLayoutRect;
-                                    paintTextLayout(g, tlRect, renderTextLayout, docView);
-                                }
-                            }
-                        }
+                        Rectangle2D tlRect = (specialTextLayoutRect != null)
+                                ? specialTextLayoutRect
+                                : textLayoutRectReadonly;
+                        paintTextLayout(g, tlRect, textLayout, docView);
                         if (strikeThroughValue != null) {
-                            paintStrikeThrough(g, textLayoutRect, strikeThroughValue, attrs, docView);
+                            paintStrikeThrough(g, textLayoutRectReadonly, strikeThroughValue, attrs, docView);
                         }
                         g.setClip(origClip);
 
@@ -411,17 +337,206 @@ public class HighlightsViewUtils {
                 } while (!done && renderEndOffset < hiEndOffset);
             }
 
-            if (foreColor2Area != null) {
-                for (Map.Entry<Color, Area> entry : foreColor2Area.entrySet()) {
-                    Color foreColor = entry.getKey();
-                    g.setColor(foreColor);
-                    Area compoundArea = entry.getValue();
-                    g.clip(compoundArea);
-                    paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
-                    g.setClip(origClip);
+        } finally {
+            g.setClip(origClip);
+            paintState.restore();
+        }
+    }
+
+    static void paintNewline(Graphics2D g, Shape viewAlloc, Rectangle clipBounds,
+            DocumentView docView, EditorView view, int viewStartOffset)
+    {
+        Rectangle2D viewRectReadonly = ViewUtils.shape2Bounds(viewAlloc);
+        PaintState paintState = PaintState.save(g);
+        Shape origClip = g.getClip();
+        try {
+            JTextComponent textComponent = docView.getTextComponent();
+            SplitOffsetHighlightsSequence highlights = docView.getPaintHighlights(view, 0);
+            boolean showNonPrintingChars = docView.op.isNonPrintableCharactersVisible();
+            float charWidth = docView.op.getDefaultCharWidth();
+            boolean logFiner = ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER);
+            if (logFiner) {
+                ViewHierarchyImpl.PAINT_LOG.finer("      Newline-View-Id=" + view.getDumpId() + // NOI18N
+                        ", startOffset=" + viewStartOffset + ", alloc=" + viewAlloc + '\n' // NOI18N
+                );
+
+            }
+            while (highlights.moveNext()) {
+                int hiStartOffset = highlights.getStartOffset();
+                int hiStartSplitOffset = highlights.getStartSplitOffset();
+                int hiEndOffset = Math.min(highlights.getEndOffset(), viewStartOffset + 1); // TBD
+                int hiEndSplitOffset = highlights.getEndSplitOffset();
+                AttributeSet attrs = highlights.getAttributes();
+                if (hiStartOffset > viewStartOffset) { // HL above newline
+                    break;
+                }
+
+                double startX = viewRectReadonly.getX() + hiStartSplitOffset * charWidth;
+                double endX = (hiEndOffset > viewStartOffset)
+                        ? viewRectReadonly.getMaxX()
+                        : Math.min(viewRectReadonly.getX() + hiEndSplitOffset * charWidth, viewRectReadonly.getMaxX());
+                Rectangle2D.Double renderPartRect = new Rectangle2D.Double(startX, viewRectReadonly.getY(), endX - startX, viewRectReadonly.getHeight());
+                fillBackground(g, renderPartRect, attrs, textComponent);
+                if (showNonPrintingChars && hiStartSplitOffset == 0) { // First part => render newline char visible representation
+                    TextLayout textLayout = docView.op.getNewlineCharTextLayout();
+                    boolean hitsClip = (clipBounds == null) || renderPartRect.intersects(clipBounds);
+                    if (hitsClip) {
+                        // First render background and background related highlights
+                        // Do not g.clip() before background is filled since otherwise there would be
+                        // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
+                        // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
+                        g.clip(renderPartRect);
+                        paintBackgroundHighlights(g, renderPartRect, attrs, docView);
+                        // Render foreground with proper color
+                        g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
+                        Object strikeThroughValue = (attrs != null)
+                                ? attrs.getAttribute(StyleConstants.StrikeThrough)
+                                : null;
+                        if (textLayout != null) {
+                            paintTextLayout(g, renderPartRect, textLayout, docView);
+                        }
+                        if (strikeThroughValue != null) {
+                            paintStrikeThrough(g, viewRectReadonly, strikeThroughValue, attrs, docView);
+                        }
+                        g.setClip(origClip);
+                    }
+
+                }
+                if (logFiner) {
+                    ViewHierarchyImpl.PAINT_LOG.finer("        Highlight <" + 
+                            hiStartOffset + '_' + hiStartSplitOffset + "," + // NOI18N
+                            hiEndOffset + '_' + hiEndSplitOffset + ">, Color=" + // NOI18N
+                            ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                }
+                if (clipBounds != null && (renderPartRect.getX() > clipBounds.getMaxX())) {
+                    break;
                 }
             }
+        } finally {
+            g.setClip(origClip);
+            paintState.restore();
+        }
+    }
 
+    static void paintTabs(Graphics2D g, Shape viewAlloc, Rectangle clipBounds,
+            DocumentView docView, EditorView view, int viewStartOffset)
+    {
+        Rectangle2D viewRectReadonly = ViewUtils.shape2Bounds(viewAlloc);
+        PaintState paintState = PaintState.save(g);
+        Shape origClip = g.getClip();
+        try {
+            JTextComponent textComponent = docView.getTextComponent();
+            SplitOffsetHighlightsSequence highlights = docView.getPaintHighlights(view, 0);
+            boolean showNonPrintingChars = docView.op.isNonPrintableCharactersVisible();
+            float charWidth = docView.op.getDefaultCharWidth();
+            int viewEndOffset = viewStartOffset + view.getLength();
+            boolean logFiner = ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER);
+            if (logFiner) {
+                ViewHierarchyImpl.PAINT_LOG.finer("      Tab-View-Id=" + view.getDumpId() + // NOI18N
+                        ", startOffset=" + viewStartOffset + ", alloc=" + viewAlloc + '\n' // NOI18N
+                );
+            }
+            int tabCharOffset = viewStartOffset; // Currently processed offset
+            double tabCharX = viewRectReadonly.getX();
+            Rectangle2D nextTabCharRectReadonly = ViewUtils.shapeAsRect(view.modelToViewChecked(tabCharOffset + 1, viewAlloc, Bias.Forward));
+            double nextTabCharX = nextTabCharRectReadonly.getX();
+            boolean done = false;
+            while (!done && highlights.moveNext()) {
+                int hiStartOffset = highlights.getStartOffset();
+                int hiStartSplitOffset = highlights.getStartSplitOffset();
+                int hiEndOffset = Math.min(highlights.getEndOffset(), viewEndOffset); // TBD
+                int hiEndSplitOffset = highlights.getEndSplitOffset();
+                AttributeSet attrs = highlights.getAttributes();
+                int fragStartOffset = hiStartOffset;
+                int fragStartSplitOffset = hiStartSplitOffset;
+                int fragEndOffset;
+                int fragEndSplitOffset;
+                boolean fetchNextTab;
+                boolean hiDone = false;
+                while (!hiDone) {
+                    if (hiEndOffset > tabCharOffset + 1 || (hiEndOffset == tabCharOffset + 1 && hiEndSplitOffset > 0)) {
+                        // Highlight spans tabs
+                        fragEndOffset = tabCharOffset + 1;
+                        fragEndSplitOffset = 0;
+                        fetchNextTab = true;
+                    } else { // Highlight within current tab char
+                        fragEndOffset = hiEndOffset;
+                        fragEndSplitOffset = hiEndSplitOffset;
+                        fetchNextTab = (hiEndOffset == tabCharOffset + 1);
+                        hiDone = true;
+                    }
+                    double fragX = tabCharX + fragStartSplitOffset * charWidth;
+                    double fragEndX = (fragEndOffset != tabCharOffset) // frag starts at next char
+                        ? nextTabCharX
+                        : Math.min(tabCharX + hiEndSplitOffset * charWidth, nextTabCharX);
+                    Rectangle2D fragRect = new Rectangle2D.Double(fragX, viewRectReadonly.getY(), fragEndX - fragX, viewRectReadonly.getHeight());
+                    boolean hitsClip = (clipBounds == null) || fragRect.intersects(clipBounds);
+                    String logInfo = logFiner
+                            ? "<" + fragStartOffset + '_' + fragStartSplitOffset + "," + // NOI18N
+                                    fragEndOffset + '_' + fragEndSplitOffset + ">  Rect=" + ViewUtils.toString(fragRect) // NOI18N
+                            : null;
+                    boolean clipNarrow = false;
+                    if (hitsClip) {
+                        fillBackground(g, fragRect, attrs, textComponent);
+                        if (logFiner) {
+                            ViewHierarchyImpl.PAINT_LOG.finer("            Fragment-fill-background " +
+                                    logInfo + " Color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                        }
+                        // First render background and background related highlights
+                        // Do not g.clip() before background is filled since otherwise there would be
+                        // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
+                        // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
+                        g.clip(fragRect);
+                        clipNarrow = true;
+                        paintBackgroundHighlights(g, fragRect, attrs, docView);
+                    } else {
+                        if (logFiner) {
+                            ViewHierarchyImpl.PAINT_LOG.finer("            Fragment-skipped-no-clip-hit " + logInfo + '\n'); // NOI18N
+                        }
+                    }
+                    if (hitsClip && showNonPrintingChars && fragStartSplitOffset == 0) { // First part => render newline char visible representation
+                        TextLayout textLayout = docView.op.getTabCharTextLayout(fragRect.getWidth());
+                        // Render foreground with proper color
+                        g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
+                        Object strikeThroughValue = (attrs != null)
+                                ? attrs.getAttribute(StyleConstants.StrikeThrough)
+                                : null;
+                        if (textLayout != null) {
+                            if (logFiner) {
+                                ViewHierarchyImpl.PAINT_LOG.finer("            Render TAB char textLayout with color=" + // NOI18N
+                                        ViewUtils.toString(g.getColor()) + ", Rect=" + fragRect + '\n'); // NOI18N
+                            }
+                            paintTextLayout(g, fragRect, textLayout, docView);
+                        }
+                        if (strikeThroughValue != null) {
+                            paintStrikeThrough(g, viewRectReadonly, strikeThroughValue, attrs, docView);
+                        }
+                    }
+                    if (clipNarrow) {
+                        g.setClip(origClip);
+                    }
+                    if (fetchNextTab) {
+                        fetchNextTab = false;
+                        tabCharOffset++;
+                        if (tabCharOffset == viewEndOffset) {
+                            hiDone = true;
+                            done = true;
+                        } else {
+                            tabCharX = nextTabCharX;
+                            nextTabCharX = (tabCharOffset == viewEndOffset - 1)
+                                    ? viewRectReadonly.getMaxX()
+                                    : (nextTabCharRectReadonly = ViewUtils.shapeAsRect(view.modelToViewChecked(tabCharOffset + 1,
+                                            viewAlloc, Bias.Forward))).getX();
+                        }
+                    }
+                    fragStartOffset = fragEndOffset;
+                    fragStartSplitOffset = fragEndSplitOffset;
+                    if (clipBounds != null && (fragRect.getX() > clipBounds.getMaxX())) {
+                        hiDone = true;
+                        done = true;
+                    }
+                } // fragments-while
+            } // highlights-while
         } finally {
             g.setClip(origClip);
             paintState.restore();

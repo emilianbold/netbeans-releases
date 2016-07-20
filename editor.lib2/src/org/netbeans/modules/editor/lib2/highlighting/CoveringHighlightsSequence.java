@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import javax.swing.text.AttributeSet;
+import org.netbeans.spi.editor.highlighting.SplitOffsetHighlightsSequence;
 
 /**
- * Immutable single item for highlighting without a specified start (it's derived from end of previous item).
+ * Split-offsets highlights sequence that can cover text by highlights without "gaps".
  *
  * @author Miloslav Metelka
  */
-public class HighlightItem {
+public interface CoveringHighlightsSequence extends SplitOffsetHighlightsSequence {
     
-    /** End offset of the highlight. Start offset is derived from end of previous item. */
-    private final int endOffset; // 8 + 4 = 12 bytes
-
-    /** Attributes of highlight. Null for no highlight in the particular area. */
-    private final AttributeSet attrs; // 12 + 4 = 16 bytes
-
-    public HighlightItem(int endOffset, AttributeSet attrs) {
-        this.endOffset = endOffset;
-        this.attrs = attrs;
-    }
-  
     /**
-     * End offset of the highlighting item.
+     * For true this highlights sequence will return highlights so that a subsequent highlight
+     * starts where the previous one ended and {@link #getAttributes()}
+     * method will return null in case the particular area has no highlight.
+     * <br>
+     * When false this HS works like a regular one and {@link #getAttributes() }
+     * is expected to always return non-null.
      * 
-     * @return end offset of the highlight
+     * @return true if this is a covering highlights sequence or false for regular HS.
      */
-    public int getEndOffset() {
-        return endOffset;
-    }
+    boolean isCovering();
     
-    public int getEndSplitOffset() {
-        return 0;
-    }
-
-    /**
-     * Attributes of the highlight.
-     *
-     * @return attributes or null if this area has no highlighting.
-     */
-    public AttributeSet getAttributes() {
-        return attrs;
-    }
-
-    @Override
-    public String toString() {
-        return "<?," + endOffset + ">: " + attrs; // NOI18N
-    }
-
-    public String toString(int startOffset) {
-        return "<" + startOffset + "," + endOffset + ">: " + attrs; // NOI18N
-    }
-
 }

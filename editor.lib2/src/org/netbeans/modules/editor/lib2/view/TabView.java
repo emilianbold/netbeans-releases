@@ -248,9 +248,8 @@ public final class TabView extends EditorView implements TabableView {
         int viewStartOffset = getStartOffset();
         DocumentView docView = getDocumentView();
         // TODO render only necessary parts
-        HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
-                docView, this, viewStartOffset,
-                false, null, viewStartOffset, 0, getLength());
+        HighlightsViewUtils.paintTabs(g, alloc, clipBounds,
+                docView, this, viewStartOffset);
     }
 
     @Override

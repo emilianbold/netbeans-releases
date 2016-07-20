@@ -104,7 +104,7 @@ public class HighlightsMergeTesting {
         } catch (BadLocationException ex) {
             throw new IllegalStateException(ex);
         }
-        container.putProperty(DirectMergeContainer.class, new DirectMergeContainer(new HighlightsContainer[0]));
+        container.putProperty(DirectMergeContainer.class, new DirectMergeContainer(new HighlightsContainer[0], false));
         container.putProperty(CompoundHighlightsContainer.class,
                 new CompoundHighlightsContainer(doc, new HighlightsContainer[0]));
 
@@ -192,7 +192,7 @@ public class HighlightsMergeTesting {
         }
         compoundHighlightsContainer.setLayers(doc, newLayers);
         DirectMergeContainer directMergeContainer = directMergeContainer(context);
-        directMergeContainer = new DirectMergeContainer(newLayers);
+        directMergeContainer = new DirectMergeContainer(newLayers, false);
         context.putProperty(DirectMergeContainer.class, directMergeContainer);
     }
 
@@ -215,7 +215,7 @@ public class HighlightsMergeTesting {
         compoundHighlightsContainer.setLayers(doc, newLayers);
 
         DirectMergeContainer directMergeContainer = directMergeContainer(context);
-        directMergeContainer = new DirectMergeContainer(newLayers);
+        directMergeContainer = new DirectMergeContainer(newLayers, false);
         context.putProperty(DirectMergeContainer.class, directMergeContainer);
     }
     
