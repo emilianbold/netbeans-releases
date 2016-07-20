@@ -648,7 +648,7 @@ public class CsmContextUtilities {
                     // it is bound to the text on screen, not expanded one.
                     CharSequence expressionText = expression.getText();
                     if (!fastCheckCanBeInnerContext(expressionText)) {
-                        return CsmKindUtilities.isClass(varCls) ? (CsmClass) varCls : null;
+                        return null;
                     } else if (!fastCheckCanBeCompoundLiteral(expressionText) && !CsmKindUtilities.isClass(varCls)) {
                         // Variable is not a class and no compund literal in initializer. Context is global.
                         return null;
