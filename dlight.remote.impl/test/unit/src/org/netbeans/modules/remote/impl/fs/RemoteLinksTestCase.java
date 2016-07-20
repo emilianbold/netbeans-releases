@@ -150,9 +150,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testDirectoryLinkExternalUpdate() throws Exception {
-        if (true) {
-            return; //disable test, see bug #262766
-        }
         String baseDir = null;
 
         final String dataFile = "test";
@@ -192,6 +189,40 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             readContent = readFile(dataFileFO);
             assertEquals("File content differ", content2 + '\n', readContent.toString());
 
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testCorrectPaths() throws Exception {
+        String baseDir = null;
+
+        final String dataFile = "test";
+        final String dirLink = "dir";
+        final String content1 = "123";
+        final String content2 = "321";
+
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String script =
+                    "cd " + baseDir + ";"
+                    + "mkdir -p " + baseDir + "/ade_autofs/111;"
+                    + "mkdir -p " + baseDir + "/ade_autofs/222;"
+//                    + "mkdir -p " + baseDir + "/ade_autofs/222/subdir;"
+                    + "echo " + content1 + " > " + baseDir + "/ade_autofs/111/" + dataFile + ";"
+                    + "echo " + content2 + " > " + baseDir + "/ade_autofs/222/" + dataFile + ";"
+                    + "ln -s " + baseDir + "/ade_autofs/111 " + baseDir + "/" + dirLink + ';';
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
+            FileObject dataFileFO = getFileObject(dirLinkFO, dataFile);
+            final String path = dirLinkFO.getPath() + "/" + dataFile;
+            assertEquals("child path differs!", dataFileFO.getPath(), path);
+            dataFileFO = getFileObject(baseDirFO, dirLink + "/" + dataFile);
+            assertEquals("child path differs!", dataFileFO.getPath(), path);
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
