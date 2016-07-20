@@ -6,3 +6,5 @@ CLASS      ale                             [PRIVATE]  issue249500.js
 VARIABLE   aaa: Module newjavascript       [PUBLIC]   test_01.js
 VARIABLE   arguments: Arguments            [PRIVATE]  issue249500.js
 VARIABLE   as: Module address              [PUBLIC]   testAddress.js
+KEYWORD    async                                      ECMAScript 7 (Experimental)
+KEYWORD    await                                      ECMAScript 7 (Experimental)
