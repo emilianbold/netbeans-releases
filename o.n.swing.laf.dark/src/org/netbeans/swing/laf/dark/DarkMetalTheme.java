@@ -130,9 +130,6 @@ public class DarkMetalTheme extends MetalTheme {
         UIManager.put( "nb.startpage.tab.border2.color", new Color(64,64,64) );
         UIManager.put( "nb.startpage.rss.details.color", new Color(222, 222, 222) );
         UIManager.put( "nb.startpage.rss.header.color", new Color(164,164,255) );
-        UIManager.put( "nb.startpage.tab.imagename.selected", "org/netbeans/modules/welcome/resources/tab_selected_dark.png" ); //NOI18N
-        UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/modules/welcome/resources/tab_rollover_dark.png" ); //NOI18N
-        UIManager.put( "nb.startpage.imagename.contentheader", "org/netbeans/modules/welcome/resources/content_banner_dark.png" ); //NOI18N
         UIManager.put( "nb.startpage.contentheader.color1", new Color(12,33,61) ); //NOI18N
         UIManager.put( "nb.startpage.contentheader.color2", new Color(16,24,42) ); //NOI18N
 
