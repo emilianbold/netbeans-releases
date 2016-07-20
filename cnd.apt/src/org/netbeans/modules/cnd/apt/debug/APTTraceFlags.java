@@ -70,9 +70,9 @@ public class APTTraceFlags {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
                 case CND:
-                case PROJECT_CREATOR:
                     val = true;
                     break;
+                case PROJECT_CREATOR:
                 case OSS_IDE:
                 case DBXTOOL:
                 case DLIGHTTOOL:
