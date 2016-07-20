@@ -246,14 +246,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             } else {
                 if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
                     if (CndPathUtilities.isPathAbsolute(path)) {
-                        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                        String nPath = CndFileUtils.normalizeAbsolutePath(path);
+                        FileObject fo = CndFileUtils.toFileObject(nPath);
                         if (fo == null || !fo.isValid()) {
-                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound", nPath));  // NOI18N
                         } else {
-                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary", nPath));  // NOI18N
                         }
                     } else {
-                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                        controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound", path));  // NOI18N
                     }
                 }
             }

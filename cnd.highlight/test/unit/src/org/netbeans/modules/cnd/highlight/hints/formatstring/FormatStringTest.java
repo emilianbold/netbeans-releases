@@ -140,4 +140,8 @@ public class FormatStringTest extends ErrorHighlightingBaseTestCase {
     public void testBug257545() throws Exception {
         performStaticTest("src/bug257545.c"); // NOI18N
     }
+    
+    public void testBug259130() throws Exception {
+        performStaticTest("src/bug259130.cpp"); // NOI18N
+    }
 }
