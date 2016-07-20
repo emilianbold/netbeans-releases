@@ -159,7 +159,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(name, ext, antiLoop);
-            if (fo != null && fo.getImplementor().getParent() == this) {
+            if (fo != null && fo.getImplementor().getParent() == delegate) {
                 fo = wrapFileObject(fo, null);
             }
             return fo;
@@ -172,7 +172,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(relativePath, antiLoop);
-            if (fo != null  && fo.getImplementor().getParent() == this) {
+            if (fo != null  && fo.getImplementor().getParent() == delegate) {
                 fo = wrapFileObject(fo, relativePath);
             }
             return fo;
