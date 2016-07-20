@@ -490,7 +490,7 @@ public final class ConnectionManager {
                         if (problem.cause instanceof Error) {
                             log.log(Level.INFO, "Error when connecting " + env, problem.cause); //NOI18N
                         }
-                        throw new IOException(problem.type.name(), problem.cause);
+                        throw new IOException(problem.type.name()+" "+env, problem.cause);
                 }
             }
 

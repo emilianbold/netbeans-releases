@@ -590,10 +590,10 @@ public class CsmContextUtilities {
 
             CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(var.getType().getClassifier(), var.getContainingFile());
 
-            if (classifier != null && CsmKindUtilities.isClass(classifier)) {
+            if (classifier != null) {
                 FileObject fObj = var.getContainingFile().getFileObject();
                 CsmFinder finder = (fObj != null) ? CsmFinderFactory.getDefault().getFinder(fObj) : null;
-                clazz = getContextClassInInitializer(var, (CsmClass) classifier, context.getOffset(), finder);
+                clazz = getContextClassInInitializer(var, classifier, context.getOffset(), finder);
             }
         }
 
@@ -633,7 +633,7 @@ public class CsmContextUtilities {
         return clazz;
     }
     
-    public static CsmClass getContextClassInInitializer(CsmVariable var, CsmClass varCls, int offset, CsmFinder finder) {
+    public static CsmClass getContextClassInInitializer(CsmVariable var, CsmClassifier varCls, int offset, CsmFinder finder) {
         CsmExpression expression = var.getInitialValue();
         if (expression != null) {
             CsmClass result = null;
@@ -647,6 +647,12 @@ public class CsmContextUtilities {
                     // expression.getText() here is used because we have offset - 
                     // it is bound to the text on screen, not expanded one.
                     CharSequence expressionText = expression.getText();
+                    if (!fastCheckCanBeInnerContext(expressionText)) {
+                        return CsmKindUtilities.isClass(varCls) ? (CsmClass) varCls : null;
+                    } else if (!fastCheckCanBeCompoundLiteral(expressionText) && !CsmKindUtilities.isClass(varCls)) {
+                        // Variable is not a class and no compund literal in initializer. Context is global.
+                        return null;
+                    }
                     TokenHierarchy<CharSequence> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
                     List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
                     // Go from inner to outer TSes
@@ -666,7 +672,7 @@ public class CsmContextUtilities {
                         cachedPathSequence.listIterator(cachedPathSequence.size()) 
                         : cachedPathSequence.listIterator();
                     
-                    CsmClass contextClass = varCls;
+                    CsmClass contextClass = CsmKindUtilities.isClass(varCls) ? (CsmClass) varCls : null;
                     int contextArrayDepth = var.getType().getArrayDepth();
                     List<InitPathItem> pathSequence = new ArrayList<InitPathItem>(); // for example: { a : { .b= { c : ...
 
@@ -724,6 +730,16 @@ public class CsmContextUtilities {
             return result;
         }
         return null;
+    }
+    
+    // = {..., {...}}
+    private static boolean fastCheckCanBeInnerContext(CharSequence expression) {
+        return expression != null && CharSequenceUtils.indexOf(expression, '{') != -1; // NOI18N
+    }
+    
+    // = {..., (Type) {...}}
+    private static boolean fastCheckCanBeCompoundLiteral(CharSequence expression) {
+        return expression != null && CharSequenceUtils.indexOf(expression, '(') != -1; // NOI18N
     }
     
     private static boolean canMergePaths(ListIterator<InitPathItem> lastPathIter, int currentOffset) {
@@ -874,7 +890,7 @@ public class CsmContextUtilities {
                     ++level;
                 }
                 if (level > 0) {
-                    if (!isTokenOneOf(cppts.token(), CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT)) {
+                    if (isTokenOneOf(cppts.token(), CppTokenId.IDENTIFIER, CppTokenId.SCOPE)) {
                         nameTokens.add(0, cppts.token());
                     }
                 }
