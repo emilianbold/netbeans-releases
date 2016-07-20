@@ -129,6 +129,8 @@ class Utilities {
         } else {
             if (type.contains("signed char")) {                           // NOI18N
                 return Arrays.asList("hhd", "hhi");                       // NOI18N
+            } else if (type.contains("wchar_t")) {                        // NOI18N
+                return Arrays.asList("lc", "C");                               // NOI18N
             } else if (type.contains("char")) {                           // NOI18N
                 return Arrays.asList("c");                                // NOI18N
             } else if (type.contains("short")) {                          // NOI18N
