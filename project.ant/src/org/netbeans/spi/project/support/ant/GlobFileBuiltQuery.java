@@ -222,7 +222,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         private Boolean built = null;
         private final ProjectIDEServicesImplementation.FileBuiltQuerySource source;
         private File target;
-        private FileChangeListener targetListener;
+        private final FileChangeListener targetListener;
         
         @SuppressWarnings("LeakingThisInConstructor")
         StatusImpl(ProjectIDEServicesImplementation.FileBuiltQuerySource source, FileObject sourceFO, File target) {
@@ -241,6 +241,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                     update();
                 }
                 public @Override void fileDeleted(FileEvent fe) {
+                    recalcTarget();
                     update();
                 }
                 public @Override void fileRenamed(FileRenameEvent fe) {
@@ -337,17 +338,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         public @Override void fileRenamed(FileRenameEvent fe) {
-            File target2 = findTarget(source.getFileObject());
-            if (!BaseUtilities.compareObjects(target, target2)) {
-                // #45694: source file moved, recalculate target.
-                if (target != null) {
-                    FileUtil.removeFileChangeListener(targetListener, target);
-                }
-                if (target2 != null) {
-                    FileUtil.addFileChangeListener(targetListener, target2);
-                }
-                target = target2;
-            }
+            recalcTarget();
             update();
         }
         
@@ -361,6 +352,22 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         
         public @Override void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
+        }
+
+        private void recalcTarget() {
+            File target2 = findTarget(source.getFileObject());
+            if (!BaseUtilities.compareObjects(target, target2)) {
+                synchronized(targetListener) {
+                    // #45694: source file moved, recalculate target.
+                    if (target != null) {
+                        FileUtil.removeFileChangeListener(targetListener, target);
+                    }
+                    if (target2 != null) {
+                        FileUtil.addFileChangeListener(targetListener, target2);
+                    }
+                }
+                target = target2;
+            }
         }
         
         @Override

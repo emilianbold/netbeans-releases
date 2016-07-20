@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
+import javax.swing.text.AttributeSet;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
@@ -54,18 +55,21 @@ public final class HighlightsReader {
     
     private final HighlightsList highlightsList;
 
-    private final HighlightsSequence highlightsSequence;
+    private final CoveringHighlightsSequence cHighlightsSequence;
     
     private final int endOffset;
     
     public HighlightsReader(HighlightsContainer highlightsContainer, int startOffset, int endOffset) {
-        this.highlightsSequence = highlightsContainer.getHighlights(startOffset, endOffset);
+        // Expecting that highlights are either bottomHighlights or topHighlights of HighlightingManager which are both
+        // DirectMergeContainer instances
+        this.cHighlightsSequence = (CoveringHighlightsSequence) highlightsContainer.getHighlights(startOffset, endOffset);
+        assert cHighlightsSequence.isCovering() : "Non-covering HS=" + cHighlightsSequence;
         this.highlightsList = new HighlightsList(startOffset);
         this.endOffset = endOffset;
     }
     
     public HighlightsSequence highlightsSequence() {
-        return highlightsSequence;
+        return cHighlightsSequence;
     }
     
     public HighlightsList highlightsList() {
@@ -74,13 +78,29 @@ public final class HighlightsReader {
     
     public void readUntil(int offset) {
         int hlEndOffset = highlightsList.endOffset();
-        while (highlightsSequence.moveNext()) {
-            int hlStartOffset = highlightsSequence.getStartOffset();
-            if (hlStartOffset > hlEndOffset) {
-                highlightsList.add(new HighlightItem(hlStartOffset, null));
+        int hlEndSplitOffset = highlightsList.endSplitOffset();
+        while (cHighlightsSequence.moveNext()) {
+            int hlStartOffset = cHighlightsSequence.getStartOffset();
+            int hlStartSplitOffset = cHighlightsSequence.getStartSplitOffset();
+            if (hlStartOffset > hlEndOffset || hlStartOffset == hlEndOffset && hlStartSplitOffset > hlEndSplitOffset) {
+                HighlightItem fillItem;
+                if (hlStartSplitOffset != 0) {
+                    fillItem = new SplitOffsetHighlightItem(hlStartOffset, hlStartSplitOffset, null);
+                } else {
+                    fillItem = new HighlightItem(hlStartOffset, null);
+                }
+                highlightsList.add(fillItem);
             }
-            hlEndOffset = highlightsSequence.getEndOffset();
-            highlightsList.add(new HighlightItem(hlEndOffset, highlightsSequence.getAttributes()));
+            hlEndOffset = cHighlightsSequence.getEndOffset();
+            hlEndSplitOffset = cHighlightsSequence.getEndSplitOffset();
+            HighlightItem item;
+            AttributeSet attrs = cHighlightsSequence.getAttributes();
+            if (hlEndSplitOffset != 0) {
+                item = new SplitOffsetHighlightItem(hlEndOffset, hlEndSplitOffset, attrs);
+            } else {
+                item = new HighlightItem(hlEndOffset, attrs);
+            }
+            highlightsList.add(item);
             if (hlEndOffset >= offset) {
                 return;
             }

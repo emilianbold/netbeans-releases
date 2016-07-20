@@ -247,7 +247,7 @@ public final class HighlightingManager {
 
                 containers.add(layerAccessor.getContainer());
             }
-            return new DirectMergeContainer(containers.toArray(new HighlightsContainer[containers.size()]));
+            return new DirectMergeContainer(containers.toArray(new HighlightsContainer[containers.size()]), true);
                 
         }
         
@@ -471,9 +471,9 @@ public final class HighlightingManager {
                 origBottomHighlights = bottomHighlights;
                 origTopHighlights = topHighlights;
                 bottomHighlights = new DirectMergeContainer(bottomContainers.toArray(
-                        new HighlightsContainer[bottomContainers.size()]));
+                        new HighlightsContainer[bottomContainers.size()]), true);
                 topHighlights = new DirectMergeContainer(topContainers.toArray(
-                        new HighlightsContainer[topContainers.size()]));
+                        new HighlightsContainer[topContainers.size()]), true);
             } finally {
                 inRebuildAllLayers = false;
             }

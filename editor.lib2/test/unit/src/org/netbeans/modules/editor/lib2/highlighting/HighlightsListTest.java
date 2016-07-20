@@ -49,6 +49,7 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.StyleConstants;
 import org.junit.Test;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
@@ -167,7 +168,8 @@ public class HighlightsListTest {
         bag.addHighlight(2, 4, attrSets[0]);
         bag.addHighlight(6, 8, attrSets[1]);
 
-        HighlightsReader reader = new HighlightsReader(bag, 0, 10);
+        DirectMergeContainer dmc = new DirectMergeContainer(new HighlightsContainer[]{ bag }, true);
+        HighlightsReader reader = new HighlightsReader(dmc, 0, 10);
         reader.readUntil(10);
         return reader.highlightsList();
     }

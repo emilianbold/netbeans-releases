@@ -110,7 +110,7 @@ public class DirectMergeContainerTest {
         AttributeSet attrs3 = HighlightsMergeTesting.attrSets[3];
         SplitOffsetLayer sl0 = new SplitOffsetLayer(1, 0, 2, 1, attrs0, 4, 2, 4, 5, attrs1);
         SplitOffsetLayer sl1 = new SplitOffsetLayer(1, 1, 2, 0, attrs2, 3, 1, 4, 3, attrs3);
-        DirectMergeContainer dmc = new DirectMergeContainer(new HighlightsContainer[]{ sl0, sl1 });
+        DirectMergeContainer dmc = new DirectMergeContainer(new HighlightsContainer[]{ sl0, sl1 }, false);
         SplitOffsetHighlightsSequence shs = (SplitOffsetHighlightsSequence) dmc.getHighlights(0, Integer.MAX_VALUE);
         assertHighlight(shs, 1, 0, 1, 1, attrs0);
         assertHighlight(shs, 1, 1, 2, 0, attrs2);

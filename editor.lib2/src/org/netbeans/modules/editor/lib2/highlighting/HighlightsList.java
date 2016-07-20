@@ -43,6 +43,7 @@
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.awt.Font;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
@@ -54,6 +55,9 @@ import org.netbeans.modules.editor.lib2.view.ViewUtils;
  */
 public final class HighlightsList {
     
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightsList.level=FINE
+    private static final Logger LOG = Logger.getLogger(HighlightsList.class.getName());
+
     /**
      * List of highlight items. First highlights item starts at startOffset.
      * <br>
@@ -85,17 +89,16 @@ public final class HighlightsList {
         return startOffset;
     }
     
-//    public void setStartOffset(int startOffset) {
-//        int firstItemEndOffset;
-//        assert (startOffset < (firstItemEndOffset = highlightItems[startIndex].getEndOffset())) :
-//                "startOffset=" + startOffset + " >= firstItemEndOffset=" + firstItemEndOffset; // NOI18N
-//        this.startOffset = startOffset;
-//    }
-    
     public int endOffset() {
         return (endIndex - startIndex > 0)
                 ? highlightItems[endIndex - 1].getEndOffset()
                 : startOffset;
+    }
+    
+    public int endSplitOffset() {
+        return (endIndex - startIndex > 0)
+                ? highlightItems[endIndex - 1].getEndSplitOffset()
+                : 0;
     }
     
     public int size() {

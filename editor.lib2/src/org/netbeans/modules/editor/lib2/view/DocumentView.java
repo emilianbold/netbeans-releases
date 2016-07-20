@@ -68,7 +68,7 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.SplitOffsetHighlightsSequence;
 
 /**
  * View representing the whole document.
@@ -495,7 +495,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      * @param shift shift inside the view where the returned highlights should start.
      * @return highlights sequence containing the merged highlights of the view and painting highlights.
      */
-    public HighlightsSequence getPaintHighlights(EditorView view, int shift) {
+    public SplitOffsetHighlightsSequence getPaintHighlights(EditorView view, int shift) {
         return children.getPaintHighlights(view, shift);
     }
 

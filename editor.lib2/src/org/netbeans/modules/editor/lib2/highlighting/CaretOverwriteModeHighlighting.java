@@ -265,7 +265,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
 
         private int caretOffset = -1;
         
-        private int caretOffsetEndShift;
+        private int caretSplitOffset;
 
         private int caretIndex;
         
@@ -293,9 +293,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
                     // Check for case if sorted carets would not be truly sorted or there would be duplicates
                     if (offset > caretOffset) {
                         caretOffset = offset;
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "," + (caretOffset + 1) + ">\n");
-                        }
+                        checkLogHighlight();
                         return true;
                     }
                     if (offset >= endOffset) {
@@ -304,21 +302,25 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
                 }
             }
             if (ret) {
-                caretOffsetEndShift = 0;
+                caretSplitOffset = 0;
                 CharSequence text = docText;
                 if (text != null) {
                     char ch = text.charAt(caretOffset);
                     if (ch == '\t' || ch == '\n') {
-                        caretOffsetEndShift = 1;
+                        caretSplitOffset = 1;
                     }
                 }
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "(sh=0)," +
-                            (caretOffset + 1) + "(sh=" + caretOffsetEndShift + ")>\n");
-                }
+                checkLogHighlight();
                 return true;
             }
             return false;
+        }
+        
+        private void checkLogHighlight() {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + getStartOffset() + "_" +
+                        getStartSplitOffset() + "," + getEndOffset() + "_" + getEndSplitOffset() + ">\n");
+            }
         }
 
         @Override
@@ -327,25 +329,25 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         }
 
         @Override
-        public int getEndOffset() {
-            return caretOffset + 1;
-        }
-
-        @Override
-        public AttributeSet getAttributes() {
-            return coloringAttrs;
-        }
-
-        @Override
         public int getStartSplitOffset() {
             return 0;
         }
 
         @Override
+        public int getEndOffset() {
+            // Either cover whole char or just a single "virtual" char for newlines and tabs
+            return (caretSplitOffset == 0) ? caretOffset + 1 : caretOffset;
+        }
+
+        @Override
         public int getEndSplitOffset() {
-            return caretOffsetEndShift;
+            return caretSplitOffset;
         }
         
-        
+        @Override
+        public AttributeSet getAttributes() {
+            return coloringAttrs;
+        }
+
     }
 }
