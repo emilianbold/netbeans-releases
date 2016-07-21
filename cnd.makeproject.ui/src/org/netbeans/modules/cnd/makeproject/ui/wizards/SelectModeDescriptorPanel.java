@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -119,7 +120,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         }
     }
 
-    private void validate(){
+    protected boolean validate(){
         int gen;
         synchronized (lock) {
             gen = generation;
@@ -133,13 +134,19 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
             }
         }
         if (fire) {
-            fireChangeEvent();
+            if (SwingUtilities.isEventDispatchThread()) {
+                fireChangeEvent();
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    fireChangeEvent();
+                });
+            }
         }
+        return tmpValid;
     }
 
     private void setMode(boolean isSimple) {
         WizardConstants.PROPERTY_SIMPLE_MODE.put(wizardDescriptor, isSimple);
-        validate();
     }
 
     private final Set<ChangeListener> listeners = new HashSet<>(1);
@@ -323,13 +330,14 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         @Override
         public void setProjectPath(String path) {
             this.projectPath = path.trim();
-            validate();
         }
 
         @Override
         public void setSourcesFileObject(FileObject fileObject) {
+            if (sourceFileObject != null && sourceFileObject.equals(fileObject)) {
+                return;
+            }
             this.sourceFileObject = fileObject;
-            validate();
         }
 
         @Override
@@ -389,7 +397,6 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         @Override
         public void setFlags(String flags) {
             this.flags = flags;
-            validate();
         }
 
         /**
@@ -428,7 +435,6 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         @Override
         public void setSetMain(boolean setMain) {
             this.setMain = setMain;
-            validate();
         }
 
         /**
@@ -445,7 +451,6 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         @Override
         public void setBuildProject(boolean buildProject) {
             this.buildProject = buildProject;
-            validate();
         }
 
         @Override
