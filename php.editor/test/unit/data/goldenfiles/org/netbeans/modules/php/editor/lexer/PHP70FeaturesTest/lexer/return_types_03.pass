@@ -13,7 +13,7 @@ token #11 PHP_TOKEN (
 token #12 PHP_TOKEN )
 token #13 PHP_TOKEN :
 token #14 WHITESPACE  
-token #15 PHP_STRING int
+token #15 PHP_TYPE_INT int
 token #16 WHITESPACE  
 token #17 PHP_CURLY_OPEN {
 token #18 WHITESPACE \n    

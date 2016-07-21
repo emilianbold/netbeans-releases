@@ -896,7 +896,16 @@ final class CompletionContextFinder {
 
     private static boolean isAcceptedPrefix(Token<PHPTokenId> token) {
         return isVariable(token) || isReference(token)
-                || isRightBracket(token) || isString(token) || isWhiteSpace(token) || isNamespaceSeparator(token); //NOI18N
+                || isRightBracket(token) || isString(token) || isWhiteSpace(token) || isNamespaceSeparator(token)
+                || isType(token);
+    }
+
+    private static boolean isType(Token<PHPTokenId> token) {
+        PHPTokenId id = token.id();
+        return id.equals(PHPTokenId.PHP_TYPE_BOOL)
+                || id.equals(PHPTokenId.PHP_TYPE_FLOAT)
+                || id.equals(PHPTokenId.PHP_TYPE_INT)
+                || id.equals(PHPTokenId.PHP_TYPE_STRING);
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
