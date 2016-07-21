@@ -141,7 +141,7 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testIssue249500_02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "k^;", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "ke^;", false);
     }
     
     public void testIssue249500_03() throws Exception {
