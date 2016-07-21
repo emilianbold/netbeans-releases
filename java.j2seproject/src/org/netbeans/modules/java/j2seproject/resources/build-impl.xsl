@@ -2640,7 +2640,7 @@ is divided into following sections:
                         <length length="0" string="${{test.module.name}}" when="greater"/>
                     </and>
                 </condition>
-                <dirset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="*"/>
+                <dirset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="**"/>
                 <property name="build.test.classes.dir.abs.internal" location="${{build.test.classes.dir}}"/>
                 <pathconvert refid="run.test.packages.internal" property="run.test.addexports.internal" pathsep=" ">
                     <chainedmapper>
