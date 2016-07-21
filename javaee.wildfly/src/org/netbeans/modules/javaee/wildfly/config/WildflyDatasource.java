@@ -91,7 +91,7 @@ public final class WildflyDatasource implements Datasource {
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (JDBCDriver jdbcDriver : drivers) {
             try {
-                if (jdbcDriver.getDriver().acceptsURL(url)) {
+                if (!"name.dougmcneil.plsql.jdbc.Driver".equals(jdbcDriver.getDriver().getClass().getName()) && jdbcDriver.getDriver().acceptsURL(url)) {
                     return jdbcDriver.getClassName();
                 }
             } catch (DatabaseException ex) {
