@@ -298,7 +298,9 @@ public final class PathsCustomizer extends javax.swing.JPanel {
                 if (obj instanceof ClassPathSupport.Item) {
                     DefaultMutableTreeNode node = toTreeNode(obj);
                     treeModel.insertNodeInto(node, (MutableTreeNode)treeModel.getRoot(), e.getIndex0());
-                    tree.makeVisible(new TreePath(node.getPath()));
+                    TreePath path = new TreePath(node.getPath());
+                    tree.setSelectionPath(path);
+                    tree.makeVisible(path);
                 }
             }
         }
