@@ -318,9 +318,12 @@ public final class PathsCustomizer extends javax.swing.JPanel {
     
     private static class JoinModel extends DefaultListModel {
 
+        private static final byte MP_ACTIVE = 1;
+        private static final byte CP_ACTIVE = 2;
+        
         private final DefaultListModel mpModel;
         private final DefaultListModel cpModel;
-        private boolean mpActive;
+        private byte active = 0;
 
         public JoinModel(DefaultListModel mpModel, DefaultListModel cpModel) {
             this.mpModel = mpModel;
@@ -387,13 +390,13 @@ public final class PathsCustomizer extends javax.swing.JPanel {
         @Override
         public int indexOf(Object elem) {
             int idx = mpModel.indexOf(elem);
-            return idx < 0 ? cpModel.indexOf(elem) + 1 : idx;
+            return idx < 0 ? cpModel.indexOf(elem) + mpModel.getSize() + 1 : idx;
         }
 
         @Override
         public int indexOf(Object elem, int index) {
             int idx = mpModel.indexOf(elem, index);
-            return idx < 0 ? cpModel.indexOf(elem, index - mpModel.size()) + 1 : idx;
+            return idx < 0 ? cpModel.indexOf(elem, index - mpModel.getSize()) + mpModel.getSize() + 1 : idx;
         }
 
         @Override
@@ -404,7 +407,7 @@ public final class PathsCustomizer extends javax.swing.JPanel {
 
         @Override
         public int lastIndexOf(Object elem, int index) {
-            int idx = cpModel.lastIndexOf(elem, index - mpModel.size());
+            int idx = cpModel.lastIndexOf(elem, index - mpModel.getSize());
             return idx < 0 ? mpModel.lastIndexOf(elem, index) : idx + mpModel.getSize() + 1;
         }
 
@@ -432,6 +435,7 @@ public final class PathsCustomizer extends javax.swing.JPanel {
             } else {
                 cpModel.setElementAt(element, index - mpModel.getSize() - 1);
             }
+            active = 0;
         }
 
         @Override
@@ -441,6 +445,7 @@ public final class PathsCustomizer extends javax.swing.JPanel {
             } else if (index > mpModel.getSize()) {
                 cpModel.removeElementAt(index - mpModel.getSize() - 1);
             }
+            active = 0;
         }
 
         @Override
@@ -450,19 +455,22 @@ public final class PathsCustomizer extends javax.swing.JPanel {
             } else {
                 cpModel.insertElementAt(element, index - mpModel.getSize());
             }
+            active = 0;
         }
 
         @Override
         public void addElement(Object element) {
-            if (mpActive) {
+            if (active == MP_ACTIVE) {
                 mpModel.addElement(element);
             } else {
                 cpModel.addElement(element);
             }
+            active = 0;
         }
 
         @Override
         public boolean removeElement(Object obj) {
+            active = 0;
             return mpModel.removeElement(obj) || cpModel.removeElement(obj);
         }
 
@@ -470,6 +478,7 @@ public final class PathsCustomizer extends javax.swing.JPanel {
         public void removeAllElements() {
             mpModel.removeAllElements();
             cpModel.removeAllElements();
+            active = 0;
         }
 
         @Override
@@ -494,22 +503,32 @@ public final class PathsCustomizer extends javax.swing.JPanel {
 
         @Override
         public Object set(int index, Object element) {
+            active = 0;
             return index <= mpModel.getSize() ? mpModel.set(index, element) : cpModel.set(index - mpModel.getSize() - 1, element);
         }
 
         @Override
         public void add(int index, Object element) {
-            if (index == getSize() && mpActive) {
-                mpModel.add(mpModel.getSize(), element);
-            } else if (index <= mpModel.getSize()) {
-                mpModel.add(index, element);
-            } else {
-                cpModel.add(index - mpModel.getSize() - 1, element);
+            switch(active) {
+                case CP_ACTIVE:
+                    cpModel.add(Math.max(index - mpModel.getSize() - 1, 0), element);
+                    break;
+                case MP_ACTIVE:
+                    mpModel.add(Math.min(index, mpModel.getSize()), element);
+                    break;
+                default:
+                    if (index <= mpModel.getSize()) {
+                        mpModel.add(index, element);
+                    } else {
+                        cpModel.add(index - mpModel.getSize() - 1, element);
+                    }
             }
+            active = 0;
         }
 
         @Override
         public Object remove(int index) {
+            active = 0;
             return index < mpModel.getSize()
                     ? mpModel.remove(index)
                     : index == mpModel.getSize() ? null : cpModel.remove(index - mpModel.getSize() - 1);
@@ -517,6 +536,7 @@ public final class PathsCustomizer extends javax.swing.JPanel {
 
         @Override
         public void clear() {
+            active = 0;
             mpModel.clear();
             cpModel.clear();
         }
@@ -596,12 +616,12 @@ public final class PathsCustomizer extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mpAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mpAddButtonActionPerformed
-        model.mpActive = true;
+        model.active = JoinModel.MP_ACTIVE;
         menu.show(mpAddButton, 0, mpAddButton.getHeight());        
     }//GEN-LAST:event_mpAddButtonActionPerformed
 
     private void cpAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cpAddButtonActionPerformed
-        model.mpActive = false;
+        model.active = JoinModel.CP_ACTIVE;
         menu.show(cpAddButton, 0, cpAddButton.getHeight());
     }//GEN-LAST:event_cpAddButtonActionPerformed
 

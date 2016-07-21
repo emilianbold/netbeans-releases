@@ -139,10 +139,7 @@ public final class ClassPathUiSupport {
             Object item = listModel.get( indices[i] );
             listModel.remove( indices[i] );
             listModel.add( indices[i] - 1, item ); 
-        }
-        
-        // Keep the selection a before
-        for( int i = 0; i < indices.length; i++ ) {
+            // Keep the selection a before
             indices[i] -= 1;
         }
         
@@ -167,12 +164,9 @@ public final class ClassPathUiSupport {
         for( int i = indices.length -1 ; i >= 0 ; i-- ) {
             Object item = listModel.get( indices[i] );
             listModel.remove( indices[i] );
-            listModel.add( indices[i] + 1, item ); 
-        }
-        
-        // Keep the selection a before
-        for( int i = 0; i < indices.length; i++ ) {
-            indices[i] += 1;
+            listModel.add( indices[i] + 1, item );
+            // Keep the selection a before
+            indices[i] = listModel.indexOf( item );
         }
         
         return indices;
@@ -203,12 +197,15 @@ public final class ClassPathUiSupport {
             if ( selectedIndex > listModel.size() - 1) {
                 selectedIndex = listModel.size() - 1;
             }
-            return new int[] { selectedIndex };
+            while (selectedIndex >= 0) {
+                if (listModel.get(selectedIndex) != null) {
+                    return new int[] { selectedIndex };
+                }
+                selectedIndex--;
+            }
         }
-        else {
-            return new int[] {};
-        }
-        
+
+        return new int[] {};
     }
     
     public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, 
@@ -277,11 +274,8 @@ public final class ClassPathUiSupport {
             }
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
-                indexes[i] = current;
-            }
-            else {
-                indexes[i] = listModel.indexOf( item );
             }            
+            indexes[i] = listModel.indexOf( item );
         }
         return indexes;
     }
