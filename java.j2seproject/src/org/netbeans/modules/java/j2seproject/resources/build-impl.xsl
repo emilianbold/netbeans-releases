@@ -2641,11 +2641,15 @@ is divided into following sections:
                     </and>
                 </condition>
                 <dirset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="*"/>
+                <property name="build.test.classes.dir.abs.internal" location="${{build.test.classes.dir}}"/>
                 <pathconvert refid="run.test.packages.internal" property="run.test.addexports.internal" pathsep=" ">
-                   <chainedmapper>
-                       <flattenmapper/>
-                       <globmapper from="*" to="-XaddExports:${{run.test.addexport.source.module.internal}}/*=ALL-UNNAMED"/>
-                   </chainedmapper>
+                    <chainedmapper>
+                        <filtermapper>
+                            <replacestring from="${{build.test.classes.dir.abs.internal}}" to=""/>
+                        </filtermapper>
+                        <cutdirsmapper dirs="1"/>
+                        <packagemapper from="*" to="-XaddExports:${{run.test.addexport.source.module.internal}}/*=ALL-UNNAMED"/>
+                    </chainedmapper>
                 </pathconvert>
                 <condition property ="run.test.jvmargs" value="-addmods ${{test.module.name}} -XaddReads:${{test.module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}" else="-Xpatch:${{module.name}}=${{build.test.classes.dir}} -addmods ${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}">
                     <and>
