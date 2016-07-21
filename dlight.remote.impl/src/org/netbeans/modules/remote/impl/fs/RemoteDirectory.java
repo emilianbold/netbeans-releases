@@ -366,7 +366,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         Parameters.notNull("path", relativePath);
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
-        if ("".equals(relativePath)) { // NOI18N
+        if ("".equals(relativePath)|| ".".equals(relativePath)) { // NOI18N
             return getOwnerFileObject();
         }
         if (relativePath.startsWith("..")) { //NOI18N

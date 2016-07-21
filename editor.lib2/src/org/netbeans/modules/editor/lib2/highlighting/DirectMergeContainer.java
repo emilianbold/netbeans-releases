@@ -86,14 +86,24 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
 
     private final HighlightsContainer[] layers;
     
+    private final boolean covering;
+    
     private final List<HighlightsChangeListener> listeners = new CopyOnWriteArrayList<HighlightsChangeListener>();
     
     private final List<Reference<HlSequence>> activeHlSeqs = new ArrayList<Reference<HlSequence>>();
     
     private HighlightsChangeEvent layerEvent;
-    
-    public DirectMergeContainer(HighlightsContainer[] layers) {
+
+    /**
+     * Construct new direct merge container.
+     *
+     * @param layers highlight containers to be merged ordered by their importance (subsequent one is over previous one).
+     * @param covering whether the highlights of the returned highlights sequence should cover the whole offset range or not.
+     * @see CoveringHighlightsSequence
+     */
+    public DirectMergeContainer(HighlightsContainer[] layers, boolean covering) {
         this.layers = layers;
+        this.covering = covering;
         for (int i = 0; i < layers.length; i++) {
             HighlightsContainer layer = layers[i];
             layer.addHighlightsChangeListener(WeakListeners.create(HighlightsChangeListener.class, this, layer));
@@ -106,7 +116,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        HlSequence hs = new HlSequence(layers, startOffset, endOffset);
+        HlSequence hs = new HlSequence(layers, startOffset, endOffset, covering);
         synchronized (activeHlSeqs) {
             activeHlSeqs.add(new WeakReference<HlSequence>(hs));
         }
@@ -181,41 +191,55 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         }
     }
     
-    static final class HlSequence implements SplitOffsetHighlightsSequence {
+    static final class HlSequence implements CoveringHighlightsSequence {
 
         /**
          * Wrappers around layers used to compute merged highlights.
          */
         private final Wrapper[] wrappers;
         
+        private final boolean covering;
+        
         private int topWrapperIndex;
         
         final int endOffset;
         
-        int mergedHighlightStartOffset;
+        private int mergedHighlightStartOffset;
         
-        int mergedHighlightStartSplitOffset;
+        private int mergedHighlightStartSplitOffset;
         
-        int mergedHighlightEndOffset;
+        private int mergedHighlightEndOffset;
         
-        int mergedHighlightEndSplitOffset;
+        private int mergedHighlightEndSplitOffset;
         
         AttributeSet mergedAttrs;
         
         volatile boolean finished; // Either no more highlights or layers were changed;
         
-        public HlSequence(HighlightsContainer[] layers, int startOffset, int endOffset) {
+        public HlSequence(HighlightsContainer[] layers, int startOffset, int endOffset, boolean covering) {
+            this.covering = covering;
             this.endOffset = endOffset;
             // Initially set an empty highlight (the values are undefined anyway)
             this.mergedHighlightStartOffset = startOffset;
             this.mergedHighlightEndOffset = startOffset;
+            boolean log = LOG.isLoggable(Level.FINE);
+            if (log) {
+                LOG.fine(dumpId() + " NEW HlSequence for <" + startOffset + "," + endOffset + "> for layers:\n"); // NOI18N
+            }
             wrappers = new Wrapper[layers.length];
             for (int i = 0; i < layers.length; i++) {
                 HighlightsContainer container = layers[i];
                 HighlightsSequence hlSequence = container.getHighlights(startOffset, endOffset);
-                Wrapper wrapper = new Wrapper(container, hlSequence, endOffset);
+                Wrapper wrapper = new Wrapper(this, container, hlSequence, endOffset);
                 if (wrapper.init(startOffset)) { // For no-highlight wrapper do not include it at all in the array
+                    if (log) {
+                        LOG.fine("    " + dumpId() + " layer[" + topWrapperIndex + "]: " + container + '\n');
+                    }
                     wrappers[topWrapperIndex++] = wrapper;
+                } else { // Ignore layer - no highlights in the requested offset range
+                    if (log) {
+                        LOG.fine("    " + dumpId() + " Skipped layer (no highlights in the requested offset range) " + container + '\n');
+                    }
                 }
             }
             topWrapperIndex--;
@@ -231,24 +255,33 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             int nextHighlightStartOffset = mergedHighlightEndOffset;
             int nextHighlightStartSplitOffset = mergedHighlightEndSplitOffset;
             while ((topWrapper = nextMerge(nextHighlightStartOffset, nextHighlightStartSplitOffset)) != null) {
-                int nextChangeOffset = topWrapper.mergedNextChangeOffset;
-                int nextChangeSplitOffset = topWrapper.mergedNextChangeSplitOffset;
-                AttributeSet attrs = topWrapper.mAttrs;
-                if (attrs != null) { // Do not return regions with empty attrs (they are not highlights)
+                // If HS is running in covering mode then return everything including areas with null attrs
+                if (covering || topWrapper.mAttrs != null) {
                     mergedHighlightStartOffset = nextHighlightStartOffset;
                     mergedHighlightStartSplitOffset = nextHighlightStartSplitOffset;
-                    mergedHighlightEndOffset = nextChangeOffset;
-                    mergedHighlightEndSplitOffset = nextChangeSplitOffset;
-                    mergedAttrs = attrs;
+                    mergedHighlightEndOffset = topWrapper.mergedNextChangeOffset;
+                    mergedHighlightEndSplitOffset = topWrapper.mergedNextChangeSplitOffset;
+                    mergedAttrs = topWrapper.mAttrs;
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine(dumpId() + ".moveNext: highlight <" + getStartOffset() + "_" + // NOI18N
+                            getStartSplitOffset() + "," + getEndOffset() + "_" + getEndSplitOffset() +
+                            "> attrs=" + getAttributes() + "\n"); // NOI18N
+
+                    }
                     return true;
                 }
-                nextHighlightStartOffset = nextChangeOffset;
-                nextHighlightStartSplitOffset = nextChangeSplitOffset;
+                nextHighlightStartOffset = topWrapper.mergedNextChangeOffset;
+                nextHighlightStartSplitOffset = topWrapper.mergedNextChangeSplitOffset;
             }
             finished = true;
             return false;
         }
 
+        @Override
+        public boolean isCovering() {
+            return covering;
+        }
+        
         @Override
         public int getStartOffset() {
             return mergedHighlightStartOffset;
@@ -369,10 +402,10 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             if (finished) {
                 sb.append("; FINISHED");
             } else {
-                sb.append(" Merged <").append(mergedHighlightStartOffset).append('('). // NOI18N
+                sb.append(" Merged <").append(mergedHighlightStartOffset).append('_'). // NOI18N
                         append(mergedHighlightStartSplitOffset).append(// NOI18N
-                        "),").append(mergedHighlightEndOffset).append('('). // NOI18N
-                        append(mergedHighlightEndSplitOffset).append(")>"); // NOI18N
+                        ",").append(mergedHighlightEndOffset).append('_'). // NOI18N
+                        append(mergedHighlightEndSplitOffset).append(">"); // NOI18N
             }
             sb.append('\n');
             int digitCount = ArrayUtilities.digitCount(topWrapperIndex + 1);
@@ -384,11 +417,17 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             }
             return sb.toString();
         }
+        
+        String dumpId() {
+            return "DMC$HS@" + Integer.toHexString(System.identityHashCode(this));
+        }
 
     }
 
 
     static final class Wrapper {
+        
+        private final HlSequence parentSequence; // For logging purposes only
 
         /**
          * Layer over which layerSequence is constructed (for debugging purposes).
@@ -480,10 +519,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         private int emptyHighlightCount;
         
         
-        public Wrapper(HighlightsContainer layer, HighlightsSequence hlSequence, int endOffset) {
+        public Wrapper(HlSequence parent, HighlightsContainer layer, HighlightsSequence layerSequence, int endOffset) {
+            this.parentSequence = parent;
             this.layer = layer;
-            this.layerSequence = hlSequence;
-            this.splitOffsetLayerSequence = (hlSequence instanceof SplitOffsetHighlightsSequence) ? (SplitOffsetHighlightsSequence) hlSequence : null;
+            this.layerSequence = layerSequence;
+            this.splitOffsetLayerSequence = (layerSequence instanceof SplitOffsetHighlightsSequence) ? (SplitOffsetHighlightsSequence) layerSequence : null;
             this.endOffset = endOffset;
         }
         
@@ -492,7 +532,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 if (!fetchNextHighlight()) {
                     return false;
                 }
-            } while (hlEndOffset <= startOffset); // Exclude any possible highlights ending below startOffset
+            } while (hlEndOffset < startOffset || hlEndOffset == startOffset && hlEndSplitOffset == 0); // Exclude any possible highlights ending below startOffset
             updateCurrentState(startOffset, 0);
             return true;
         }
@@ -585,8 +625,8 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 if (hlStartOffset < hlEndOffset) { // Invalid layer: next highlight overlaps previous one
                     // To prevent infinite loops finish this HL
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
-                            " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                        LOG.fine(parentSequence.dumpId() + ".wrapper.fetchNextHighlight: Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                            " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer + '\n'); // NOI18N
                     }
                     return false;
                 }
@@ -602,8 +642,8 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                     if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
                         // To prevent infinite loops finish this HL
                         if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
-                                " > hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                            LOG.fine(parentSequence.dumpId() + ".wrapper.fetchNextHighlight: Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                                " > hlEndOffset=" + hlEndOffset + " for layer=" + layer + "\n"); // NOI18N
                         }
                         return false;
                     }
@@ -611,7 +651,8 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                         emptyHighlightCount++;
                         if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
                             if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                                LOG.fine(parentSequence.dumpId() + ".wrapper.fetchNextHighlight: Disabled an invalid highlighting layer: too many empty highlights=" + // NOI18N
+                                        + emptyHighlightCount + "\n"); // NOI18N
                             }
                             return false;
                         }
@@ -626,8 +667,8 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 }
                 hlAttrs = layerSequence.getAttributes();
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.fine("Fetched highlight: <" + hlStartOffset + // NOI18N
-                            "," + hlEndOffset + "> for layer=" + layer + '\n'); // NOI18N
+                    LOG.fine("  " + parentSequence.dumpId() + " layer-highlight: <" + hlStartOffset + '_' + hlStartSplitOffset + // NOI18N
+                            "," + hlEndOffset + '_' + hlEndSplitOffset + "> for " + layer + '\n'); // NOI18N
                 }
                 return true; // Valid highlight fetched
             }

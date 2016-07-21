@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import javax.swing.text.AttributeSet;
 
 /**
- * Immutable single item for highlighting without a specified start (it's derived from end of previous item).
+ * Highlight item supporting complex positions.
  *
  * @author Miloslav Metelka
  */
-public class HighlightItem {
+public final class SplitOffsetHighlightItem extends HighlightItem {
     
-    /** End offset of the highlight. Start offset is derived from end of previous item. */
-    private final int endOffset; // 8 + 4 = 12 bytes
+    /**
+     * Ending split offset of the highlight.
+     * Start split offset is derived from end split offset of the previous item.
+     */
+    private final int endSplitOffset; // 12 + 4 = 16 bytes
 
-    /** Attributes of highlight. Null for no highlight in the particular area. */
-    private final AttributeSet attrs; // 12 + 4 = 16 bytes
+    private final CharSequence viewCustomText; // 20 + 4 = 24 bytes
 
-    public HighlightItem(int endOffset, AttributeSet attrs) {
-        this.endOffset = endOffset;
-        this.attrs = attrs;
+    public SplitOffsetHighlightItem(int endOffset, int endSplitOffset, AttributeSet attrs) {
+        super(endOffset, attrs);
+        this.endSplitOffset = endSplitOffset;
+        this.viewCustomText = null; // Not actively used yet
     }
   
-    /**
-     * End offset of the highlighting item.
-     * 
-     * @return end offset of the highlight
-     */
-    public int getEndOffset() {
-        return endOffset;
-    }
-    
-    public int getEndSplitOffset() {
-        return 0;
-    }
-
-    /**
-     * Attributes of the highlight.
-     *
-     * @return attributes or null if this area has no highlighting.
-     */
-    public AttributeSet getAttributes() {
-        return attrs;
-    }
-
     @Override
-    public String toString() {
-        return "<?," + endOffset + ">: " + attrs; // NOI18N
-    }
-
-    public String toString(int startOffset) {
-        return "<" + startOffset + "," + endOffset + ">: " + attrs; // NOI18N
+    public int getEndSplitOffset() {
+        return endSplitOffset;
     }
 
 }

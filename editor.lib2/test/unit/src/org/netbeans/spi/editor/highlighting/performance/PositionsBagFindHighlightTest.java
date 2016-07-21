@@ -86,11 +86,13 @@ public class PositionsBagFindHighlightTest extends NbTestCase {
 //        System.out.println("cnt = " + cnt + " : startOffset = " + startOffset + " : endOffset = " + endOffset);
     }
     
-    public void testFindHighlight10() {
-        HighlightsSequence seq = bag.getHighlights(startOffset, endOffset);
-    }
-    
     public void testFindHighlight10000() {
         HighlightsSequence seq = bag.getHighlights(startOffset, endOffset);
+        while (seq.moveNext()) { }
+    }
+    
+    public void testFindHighlight100000() {
+        HighlightsSequence seq = bag.getHighlights(startOffset, endOffset);
+        while (seq.moveNext()) { }
     }
 }

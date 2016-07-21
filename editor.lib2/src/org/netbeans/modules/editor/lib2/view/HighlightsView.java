@@ -244,7 +244,7 @@ public class HighlightsView extends EditorView {
         // TODO render only necessary parts
         HighlightsViewUtils.paintHiglighted(g, hViewAlloc, clipBounds,
                 docView, this, viewStartOffset,
-                false, textLayout, viewStartOffset, 0, getLength());
+                textLayout, viewStartOffset, 0, getLength());
     }
     
     @Override

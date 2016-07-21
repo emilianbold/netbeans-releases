@@ -101,8 +101,8 @@ made subject to such option by the copyright holder.
 
     <bind key="O-I" actionName="generate-code"/>
     
-    <bind key="D-J" remove="true"/>
-    <bind actionName="addCaretSelectNext" key="C-G"/>
+<!--    <bind key="D-J" remove="true"/>
+    <bind actionName="addCaretSelectNext" key="C-G"/> Conflict with D-G for "goto" -->
     <bind key="DS-J" remove="true"/>
     <bind actionName="remove-last-caret" key="CS-G"/>
     <bind key="DSO-J" remove="true"/>

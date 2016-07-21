@@ -136,7 +136,7 @@ public class HighlightingManagerTest extends NbTestCase {
         bag.addHighlight(10, 20, attributes);
         
         HighlightsSequence highlights = hc.getHighlights(0, Integer.MAX_VALUE);
-        assertTrue("Highlight has not been added", highlights.moveNext());
+        assertTrue("Highlight has not been added", moveNextSkipNullAttrs(highlights));
         assertEquals("Wrong start offset", 10, highlights.getStartOffset());
         assertEquals("Wrong end offset", 20, highlights.getEndOffset());
         assertEquals("Can't find attribute", "value", highlights.getAttributes().getAttribute("attrib-A"));
@@ -214,21 +214,21 @@ public class HighlightingManagerTest extends NbTestCase {
         // Check fixed-size leyers sequence - should be C, D
         HighlightsSequence fixed = fixedHC.getHighlights(0, Integer.MAX_VALUE);
         // Check 1. highlight
-        assertTrue("Wrong number of highlights", fixed.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
         assertEquals("Wrong start offset", 10, fixed.getStartOffset());
         assertEquals("Wrong end offset", 15, fixed.getEndOffset());
         assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "commonAttribute");
         assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B", "set-D");
         assertEquals("Wrong commonAttribute value", "set-C-value", fixed.getAttributes().getAttribute("commonAttribute"));
         // Check 2. highlight
-        assertTrue("Wrong number of highlights", fixed.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
         assertEquals("Wrong start offset", 15, fixed.getStartOffset());
         assertEquals("Wrong end offset", 20, fixed.getEndOffset());
         assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "set-D", "commonAttribute");
         assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B");
         assertEquals("Wrong commonAttribute value", "set-D-value", fixed.getAttributes().getAttribute("commonAttribute"));
         // Check 3. highlight
-        assertTrue("Wrong number of highlights", fixed.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
         assertEquals("Wrong start offset", 20, fixed.getStartOffset());
         assertEquals("Wrong end offset", 25, fixed.getEndOffset());
         assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-D", "commonAttribute");
@@ -239,21 +239,21 @@ public class HighlightingManagerTest extends NbTestCase {
         // Check variable-size leyers sequence - should be A, B
         HighlightsSequence variable = variableHC.getHighlights(0, Integer.MAX_VALUE);
         // Check 1. highlight
-        assertTrue("Wrong number of highlights", variable.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
         assertEquals("Wrong start offset", 10, variable.getStartOffset());
         assertEquals("Wrong end offset", 15, variable.getEndOffset());
         assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "commonAttribute");
         assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-C", "set-D", "set-B");
         assertEquals("Wrong commonAttribute value", "set-A-value", variable.getAttributes().getAttribute("commonAttribute"));
         // Check 2. highlight
-        assertTrue("Wrong number of highlights", variable.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
         assertEquals("Wrong start offset", 15, variable.getStartOffset());
         assertEquals("Wrong end offset", 20, variable.getEndOffset());
         assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "set-B", "commonAttribute");
         assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-C", "set-D");
         assertEquals("Wrong commonAttribute value", "set-B-value", variable.getAttributes().getAttribute("commonAttribute"));
         // Check 3. highlight
-        assertTrue("Wrong number of highlights", variable.moveNext());
+        assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
         assertEquals("Wrong start offset", 20, variable.getStartOffset());
         assertEquals("Wrong end offset", 25, variable.getEndOffset());
         assertAttribContains("Can't find attribute", variable.getAttributes(), "set-B", "commonAttribute");
@@ -380,14 +380,14 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence fixed = hm.getHighlights(FIXED_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 10, fixed.getStartOffset());
             assertEquals("Wrong end offset", 20, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-A", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-B", "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-A-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 2. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 55, fixed.getStartOffset());
             assertEquals("Wrong end offset", 65, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-D", "commonAttribute");
@@ -401,21 +401,21 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence variable = hm.getHighlights(VARIABLE_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 10, variable.getStartOffset());
             assertEquals("Wrong end offset", 15, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-B", "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-A-value", variable.getAttributes().getAttribute("commonAttribute"));
             // Check 2. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 15, variable.getStartOffset());
             assertEquals("Wrong end offset", 20, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "set-B", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-B-value", variable.getAttributes().getAttribute("commonAttribute"));
             // Check 3. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 20, variable.getStartOffset());
             assertEquals("Wrong end offset", 25, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-B", "commonAttribute");
@@ -426,7 +426,7 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence fixed = hm.getHighlights(FIXED_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 55, fixed.getStartOffset());
             assertEquals("Wrong end offset", 65, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-D", "commonAttribute");
@@ -440,21 +440,21 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence variable = hm.getHighlights(VARIABLE_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 10, variable.getStartOffset());
             assertEquals("Wrong end offset", 15, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-B", "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-A-value", variable.getAttributes().getAttribute("commonAttribute"));
             // Check 2. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 15, variable.getStartOffset());
             assertEquals("Wrong end offset", 20, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-A", "set-B", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-B-value", variable.getAttributes().getAttribute("commonAttribute"));
             // Check 3. highlight
-            assertTrue("Wrong number of highlights", variable.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(variable));
             assertEquals("Wrong start offset", 20, variable.getStartOffset());
             assertEquals("Wrong end offset", 25, variable.getEndOffset());
             assertAttribContains("Can't find attribute", variable.getAttributes(), "set-B", "commonAttribute");
@@ -465,21 +465,21 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence fixed = hm.getHighlights(FIXED_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 50, fixed.getStartOffset());
             assertEquals("Wrong end offset", 55, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B", "set-D");
             assertEquals("Wrong commonAttribute value", "set-C-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 2. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 55, fixed.getStartOffset());
             assertEquals("Wrong end offset", 60, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "set-D", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B");
             assertEquals("Wrong commonAttribute value", "set-D-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 3. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 60, fixed.getStartOffset());
             assertEquals("Wrong end offset", 65, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-D", "commonAttribute");
@@ -498,28 +498,28 @@ public class HighlightingManagerTest extends NbTestCase {
         {
             HighlightsSequence fixed = hm.getHighlights(FIXED_SIZE_LAYERS).getHighlights(0, Integer.MAX_VALUE);
             // Check 1. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 10, fixed.getStartOffset());
             assertEquals("Wrong end offset", 20, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-A", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-B", "set-C", "set-D");
             assertEquals("Wrong commonAttribute value", "set-A-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 2. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 50, fixed.getStartOffset());
             assertEquals("Wrong end offset", 55, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B", "set-D");
             assertEquals("Wrong commonAttribute value", "set-C-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 3. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 55, fixed.getStartOffset());
             assertEquals("Wrong end offset", 60, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-C", "set-D", "commonAttribute");
             assertAttribNotContains("The attribute should not be there", fixed.getAttributes(), "set-A", "set-B");
             assertEquals("Wrong commonAttribute value", "set-D-value", fixed.getAttributes().getAttribute("commonAttribute"));
             // Check 4. highlight
-            assertTrue("Wrong number of highlights", fixed.moveNext());
+            assertTrue("Wrong number of highlights", moveNextSkipNullAttrs(fixed));
             assertEquals("Wrong start offset", 60, fixed.getStartOffset());
             assertEquals("Wrong end offset", 65, fixed.getEndOffset());
             assertAttribContains("Can't find attribute", fixed.getAttributes(), "set-D", "commonAttribute");
@@ -779,6 +779,15 @@ public class HighlightingManagerTest extends NbTestCase {
         System.out.println("} end of Lookup for " + mimePath + " ----");
     }
     
+    static boolean moveNextSkipNullAttrs(HighlightsSequence hs) {
+        while (hs.moveNext()) {
+            if (hs.getAttributes() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final class SingletonLayerFactory implements HighlightsLayerFactory
     {
         private String id;
