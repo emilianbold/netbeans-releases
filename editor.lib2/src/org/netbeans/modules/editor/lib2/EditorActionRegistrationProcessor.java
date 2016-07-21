@@ -178,7 +178,6 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         }
 
         String actionName = annotation.name();
-        String category = annotation.category();
         StringBuilder actionFilePathBuilder = new StringBuilder(50);
         String mimeType = annotation.mimeType();
         actionFilePathBuilder.append("Editors");
@@ -186,15 +185,21 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
             actionFilePathBuilder.append("/").append(mimeType);
         }
         actionFilePathBuilder.append("/Actions/");
-        if (null != category && !category.isEmpty()) {
-            actionFilePathBuilder.append(category).append("/");
-        }
         actionFilePathBuilder.append(actionName).append(".instance");
         LayerBuilder layer = layer(e);
         String actionFilePath = actionFilePathBuilder.toString();
         LayerBuilder.File actionFile = layer.file(actionFilePath);
         String preferencesKey = annotation.preferencesKey();
 
+	// Resolve category for keymap
+	String category = annotation.category();
+	if (null != category && !category.isEmpty()) {
+            StringBuilder pathBuilder = new StringBuilder(50);
+	    pathBuilder.append("OptionsDialog/Actions/").append(category).append("/").append(annotation.name());
+	    LayerBuilder.File file = layer.file(pathBuilder.toString());
+	    file.write();
+	}
+        
         // Resolve icon resource
         String iconResource = annotation.iconResource();
         if (iconResource.length() > 0) {

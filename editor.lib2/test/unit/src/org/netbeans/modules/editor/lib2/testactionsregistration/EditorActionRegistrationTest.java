@@ -99,10 +99,13 @@ public class EditorActionRegistrationTest extends NbTestCase {
         assertEquals("Menu Text3", fo.getAttribute("menuText"));
         assertEquals("Popup Text3", fo.getAttribute("popupText"));
 
-        fo = FileUtil.getConfigFile("/Editors/Actions/NAME5#CATEGORY/" + NAME5 + ".instance");
+        fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME5 + ".instance");
         assertNotNull(fo);
         assertEquals(fo.getAttribute(Action.SHORT_DESCRIPTION), fo.getAttribute("displayName"));
         assertEquals("Short Desc5", fo.getAttribute(Action.SHORT_DESCRIPTION));
+        fo = FileUtil.getConfigFile("/OptionsDialog/Actions/NAME5#CATEGORY/" + NAME5);
+        assertNotNull(fo);
+        assertFalse(fo.getAttributes().hasMoreElements());
     }
 
     public void testRegistrationNoIconAndKeyBinding() throws Exception {
