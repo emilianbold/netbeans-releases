@@ -224,7 +224,7 @@ public final class ClassPathUiSupport {
         List<Integer> indexes = new ArrayList<Integer>();
         for (int i=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get(i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
+            if (item != null && item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
                 if (addedLibs.contains(item.getLibrary())) {
                     indexes.add(i);
                 }
@@ -250,7 +250,7 @@ public final class ClassPathUiSupport {
             }
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
-                indexes[delta + i] = current;
+                indexes[delta + i] = listModel.indexOf( item );
                 i++;
             }
             else {
