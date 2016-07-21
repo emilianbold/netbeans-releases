@@ -458,6 +458,8 @@ public class AstRenderer {
                         return true;
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                         return true;
+                    } else if (child.getType() == CPPTokenTypes.CSM_TYPE_ATOMIC) {
+                        return true;
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         if (!isAbstractDeclarator(child.getNextSibling())) {
                             CsmType type = TypeFactory.createType(child, file, null, 0);
@@ -817,6 +819,7 @@ public class AstRenderer {
                     token = getFirstSiblingSkipQualifiers(token);
                 }
                 if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                        token.getType() == CPPTokenTypes.CSM_TYPE_ATOMIC ||
                         token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         token.getType() == CPPTokenTypes.LITERAL_struct ||
                         token.getType() == CPPTokenTypes.LITERAL_class ||
@@ -1139,6 +1142,7 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                            case CPPTokenTypes.CSM_TYPE_ATOMIC:
                                 if (!cpp11StyleFunction) {
                                     classifier = typeQuals != null ? typeQuals : curr;
                                     typeBeginning = classifier;
@@ -1269,7 +1273,8 @@ public class AstRenderer {
                                 templateParams = curr;
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                            case CPPTokenTypes.CSM_TYPE_BUILTIN: {
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN: 
+                            case CPPTokenTypes.CSM_TYPE_ATOMIC: {
                                 classifier = typeQuals != null ? typeQuals : curr;
                                 typeToken = curr.getType();
                                 break;
@@ -1596,8 +1601,8 @@ public class AstRenderer {
         return renderType(tokType, file, false, scope, global);
     }
 
-    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams, CsmScope scope, boolean global) {
-        return renderType(tokType, file, null, inSpecializationParams, scope, global);
+    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecOrFunParams, CsmScope scope, boolean global) {
+        return renderType(tokType, file, null, inSpecOrFunParams, scope, global);
     }
 
     /**
@@ -1605,17 +1610,18 @@ public class AstRenderer {
      * @param tokType - ast for type
      * @param file - containing file
      * @param fileContent - content of the file
-     * @param inSpecializationParams - if it is a type inside spec params
+     * @param inSpecOrFunParams - if it is a type inside spec or function params
      * @param scope - scope of type usage/declaration
      * @param global - if we are in global context
      * @return type
      */
-    public static TypeImpl renderType(AST tokType, CsmFile file, FileContent fileContent,  boolean inSpecializationParams, CsmScope scope, boolean global) {
+    public static TypeImpl renderType(AST tokType, CsmFile file, FileContent fileContent, boolean inSpecOrFunParams, CsmScope scope, boolean global) {
         AST typeAST = tokType;
         tokType = getFirstSiblingSkipQualifiers(tokType);
 
         if (tokType != null) {
             if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                    tokType.getType() == CPPTokenTypes.CSM_TYPE_ATOMIC ||
                     tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                 AST next = getFirstSiblingSkipQualifiers(
                     getFirstSiblingSkipFunctionSpecifiers(
@@ -1623,7 +1629,7 @@ public class AstRenderer {
                     )
                 );
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-                if(inSpecializationParams) {
+                if (inSpecOrFunParams) {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
                 } else {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
@@ -1899,6 +1905,7 @@ public class AstRenderer {
         }
         if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+                tokType.getType() == CPPTokenTypes.CSM_TYPE_ATOMIC ||
                 tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference ||
                 tokType.getType() == CPPTokenTypes.IDENT && isThisReference||
                 tokType.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
@@ -2783,6 +2790,7 @@ public class AstRenderer {
                 int type = token.getType();
                 switch( type ) {
                     case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                    case CPPTokenTypes.CSM_TYPE_ATOMIC:
                     case CPPTokenTypes.CSM_TYPE_COMPOUND:
                     case CPPTokenTypes.LITERAL_typename:
                     case CPPTokenTypes.LITERAL_struct:
