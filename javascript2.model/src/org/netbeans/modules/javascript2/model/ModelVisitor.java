@@ -1270,7 +1270,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         
         DeclarationScopeImpl fnScope = (DeclarationScopeImpl)jsFunction;
         DeclarationScope parentScope = fnScope.getParentScope();
-        parentScope.addDeclaredScope(fnScope);
+        if (parentScope != null) {
+            parentScope.addDeclaredScope(fnScope);
+        }
     }
     
     private boolean isFunctionAnonymous(FunctionNode fn) {
