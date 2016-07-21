@@ -819,6 +819,25 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                                 indent = getTokenIndent(t);// + getShiftWidth();
                                         }
                                     }
+                                } else {
+                                    // it looks like label
+                                    TokenItem previousToken = getPreviousToken(t);
+                                    if (previousToken != null) {
+                                        TokenItem statStart = findStatement(previousToken);
+                                        if (statStart != null) {
+                                            TokenId statStartkenID = statStart.getTokenID();
+                                            if(statStartkenID instanceof CppTokenId) {
+                                                switch ((CppTokenId)statStartkenID) {
+                                                    case LBRACE:
+                                                        indent = getTokenIndent(statStart) + getShiftWidth();
+                                                        break;
+                                                    default:
+                                                        indent =  getTokenIndent(statStart);
+                                                        break;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             break;
