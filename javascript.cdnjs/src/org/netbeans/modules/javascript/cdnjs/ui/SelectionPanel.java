@@ -385,6 +385,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
         removeButton = new javax.swing.JButton();
         folderLabel = new javax.swing.JLabel();
         folderField = new javax.swing.JTextField();
+        folderInfoLabel = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         updateButton = new javax.swing.JButton();
@@ -402,6 +403,8 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
         removeButton.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(folderLabel, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.folderLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(folderInfoLabel, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.folderInfoLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(formListener);
@@ -421,11 +424,15 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(librariesScrollPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(folderLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(folderField))
-                    .addComponent(librariesScrollPane))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(folderInfoLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(folderField))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -453,13 +460,14 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(updateButton)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(librariesScrollPane))
+                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(folderLabel)
                     .addComponent(folderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseButton))
-                .addGap(0, 0, 0))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(folderInfoLabel))
         );
     }
 
@@ -511,6 +519,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton browseButton;
     private javax.swing.JButton editButton;
     private javax.swing.JTextField folderField;
+    private javax.swing.JLabel folderInfoLabel;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JScrollPane librariesScrollPane;
     private javax.swing.JTable librariesTable;

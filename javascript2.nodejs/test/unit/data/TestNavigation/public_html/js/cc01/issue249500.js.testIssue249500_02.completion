@@ -1,6 +1,5 @@
 Code completion result for source line:
-k|;
+ke|;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   kes: Number                     [PRIVATE]  issue249500.js
-VARIABLE   kocka: Module fi                [PUBLIC]   maingt.js

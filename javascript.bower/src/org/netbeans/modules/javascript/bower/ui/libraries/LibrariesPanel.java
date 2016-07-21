@@ -416,7 +416,7 @@ public class LibrariesPanel extends JPanel implements HelpCtx.Provider {
                         } else {
                             versionParameter = name + "#" + versionToInstall; // NOI18N
                         }
-                        Future<Integer> future = executable.install(saveParameter, versionParameter);
+                        Future<Integer> future = executable.install(true, saveParameter, versionParameter);
                         if (future != null) {
                             result = future.get();
                         }

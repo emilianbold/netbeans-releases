@@ -111,4 +111,9 @@ public class PHP70FeaturesTest extends PHPLexerTestBase {
         performTest("lexer/yield_from_06");
     }
 
+    // #262631
+    public void testScalarTypes01() throws Exception {
+        performTest("lexer/scalar_types_01");
+    }
+
 }

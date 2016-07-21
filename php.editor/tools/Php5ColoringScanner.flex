@@ -262,10 +262,11 @@ HEREDOC_CHARS=([^$\\{]|("\\"{ANY_CHAR}))({HEREDOC_LABEL_NO_NEWLINE} | {HEREDOC_N
 NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR="=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"<<"|">>"|"**"|"**="|"..."|"="|"+"|"-"|"/"|"*"|"%"|"<"|">"|"!"|"@"|"^"|"&"|"|"|"~"|"<=>"|"??"
 PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
-PHP_TYPE_INT=int
-PHP_TYPE_FLOAT=float
-PHP_TYPE_STRING=string
-PHP_TYPE_BOOL=bool
+// XXX how to define case sensitive patterns?
+PHP_TYPE_INT=[i][n][t]
+PHP_TYPE_FLOAT=[f][l][o][a][t]
+PHP_TYPE_STRING=[s][t][r][i][n][g]
+PHP_TYPE_BOOL=[b][o][o][l]
 
 
 
