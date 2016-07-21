@@ -1301,5 +1301,33 @@ public class IndentTestCase extends EditorBase {
               + "}\n"
                 );
     }
+
+    public void testIZ_245131() {
+        setDefaultsOptions();
+        typeCharactersInText(
+            "void foo(int i){\n" +
+            "    i++;\n" +
+            "label:|\n" +
+            "}\n",
+            "\n",
+            "void foo(int i){\n" +
+            "    i++;\n" +
+            "label:\n" +
+            "    |\n" +
+            "}\n");
+    }
+    
+    public void testIZ_245131_2() {
+        setDefaultsOptions();
+        typeCharactersInText(
+            "void foo(int i){\n" +
+            "label:|\n" +
+            "}\n",
+            "\n",
+            "void foo(int i){\n" +
+            "label:\n" +
+            "    |\n" +
+            "}\n");
+    }
     
 }
