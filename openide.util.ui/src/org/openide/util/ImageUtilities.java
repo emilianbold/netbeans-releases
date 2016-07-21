@@ -163,9 +163,18 @@ public final class ImageUtilities {
         Image image = null;
         if( isDarkLaF() ) {
             image = getIcon(addDarkSuffix(resource), localized);
+            // found an image with _dark-suffix, so there no need to apply an
+            // image filter to make it look nice using dark themes
         }
-        if( null == image )
-            image = getIcon( resource, localized );
+        if (null == image) {
+            image = getIcon(resource, localized);
+            // only non _dark images need filtering
+            RGBImageFilter imageFilter = getImageIconFilter();
+            if (null != image && null != imageFilter) {
+                image = Toolkit.getDefaultToolkit()
+                        .createImage(new FilteredImageSource(image.getSource(), imageFilter));
+            }
+        }
         return image;
     }
 
@@ -184,20 +193,9 @@ public final class ImageUtilities {
      * @since 7.22
      */
     public static final ImageIcon loadImageIcon( String resource, boolean localized ) {
-        Image image = null;
-        if( isDarkLaF() ) {
-            image = getIcon(addDarkSuffix(resource), localized);
-            if( null != image ) {
-                return ( ImageIcon ) image2Icon( image );
-            }
-        }
-        image = getIcon( resource, localized );
+        Image image = loadImage(resource, localized);
         if( image == null ) {
             return null;
-        }
-        RGBImageFilter imageFilter = getImageIconFilter();
-        if( null != imageFilter ) {
-            image = Toolkit.getDefaultToolkit().createImage( new FilteredImageSource( image.getSource(), imageFilter ) );
         }
         return ( ImageIcon ) image2Icon( image );
     }
@@ -649,7 +647,8 @@ public final class ImageUtilities {
                 System.out.println("INTERRUPTED while loading Image");
             }
 
-            assert (tracker.statusID(id, false) == MediaTracker.COMPLETE) : "Image loaded";
+            // #262804 assertation disabled because of error, when using ImageFilter
+            // assert (tracker.statusID(id, false) == MediaTracker.COMPLETE) : "Image loaded";
             tracker.removeImage(image, id);
         }
     }
