@@ -230,7 +230,7 @@ public final class CsmRefactoringUtils {
     } 
 
     private static final Lookup.Result<CsmRefactoringNameProvider> renameProviders = Lookup.getDefault().lookupResult(CsmRefactoringNameProvider.class);
-    
+
     public static String getReplaceText(CsmReference ref, String newName, AbstractRefactoring refactoring) {
         for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
             String newText = provider.getReplaceText(ref, newName, refactoring);
@@ -273,16 +273,21 @@ public final class CsmRefactoringUtils {
             if (text.startsWith("~")) { // NOI18N
                 text = text.substring(1);
             }
-            for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
-                String newName = provider.getRefactoredName(element, text);
-                if (newName != null) {
-                    text = newName;
-                }
+            text = getRefactoredName(element, text);
+        }
+        return text;
+    }
+
+    public static String getRefactoredName(CsmObject element, String text) {
+        for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
+            String newName = provider.getRefactoredName(element, text);
+            if (newName != null) {
+                text = newName;
             }
         }
         return text;
     }
-    
+
     public static ModificationResult.Difference rename(int startOffset, int endOffset, CloneableEditorSupport ces,
             String oldName, String newName, String descr) {
         assert oldName != null;

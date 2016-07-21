@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.discovery.projectimport.DoubleFile;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
@@ -285,10 +286,13 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                 assertEquals("Failed configure", ImportProject.State.Successful, configureStep);
             }
             if (!ImportProject.State.Successful.equals(importer.getState().get(ImportProject.Step.Make))) {
-                FileObject makeLog = importer.getMakeLog().getLocalFileObject();
-                if (makeLog != null && makeLog.isValid()) {
-                    System.err.println("Build log:");
-                    System.err.println(makeLog.asText());
+                DoubleFile file = importer.getMakeLog();
+                if (file != null) {
+                    FileObject makeLog = importer.getMakeLog().getLocalFileObject();
+                    if (makeLog != null && makeLog.isValid()) {
+                        System.err.println("Build log:");
+                        System.err.println(makeLog.asText());
+                    }
                 }
                 assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
             }

@@ -264,7 +264,8 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                         name = ((CsmGotoStatement)referencedObject).getLabel();
                     }
                 }
-                
+
+                name = CsmRefactoringUtils.getRefactoredName(referencedObject, name.toString());
                 final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
                 relevantFiles.addAll(xRef.findRelevantFiles(relevantPrjs, name));
             } else {
