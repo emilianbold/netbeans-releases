@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
-/* this is stub code written based on Apple EAWT package javadoc published at
- * http://developer.apple.com.  It makes compiling code which uses Apple EAWT
- * on non-Mac platforms possible.  The compiled stub classes should never be
- * included in the final product.
+/* This is stub code written based on java.awt package javadoc published for
+ * JDK 9. It makes possible to compile code, which uses new JDK 9 features,
+ * on JDK 8. The compiled stub classes should never be included in the final
+ * product.
  */
 
-package com.apple.eawt;
+package java.awt;
 
-import java.awt.Image;
-import java.awt.PopupMenu;
-import javax.swing.JMenuBar;
+import java.awt.desktop.PreferencesHandler;
+import java.awt.desktop.QuitHandler;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.AboutHandler;
 
-public class Application
-{
-    public static Application getApplication() { return null; }
-    public void addAppEventListener(final AppEventListener listener) {}
-    public void removeAppEventListener(final AppEventListener listener) {}
+public class Desktop {    
+    public static Desktop getDesktop() {return null;}
     public void setAboutHandler(final AboutHandler aboutHandler) {}
     public void setPreferencesHandler(final PreferencesHandler preferencesHandler) {}
     public void setOpenFileHandler(final OpenFilesHandler openFileHandler) {}
-    public void setPrintFileHandler(final PrintFilesHandler printFileHandler) {}
-    public void setOpenURIHandler(final OpenURIHandler openURIHandler) {}
     public void setQuitHandler(final QuitHandler quitHandler) {}
-    public void setQuitStrategy(final QuitStrategy strategy) {}
-    public void enableSuddenTermination() {}
-    public void disableSuddenTermination() {}
-    public void requestForeground(final boolean allWindows) {}
-    public void requestUserAttention(final boolean critical) {}
-    public void openHelpViewer() {}
-    public void setDockMenu(final PopupMenu menu) {}
-    public PopupMenu getDockMenu() { return null; }
-    public void setDockIconImage(final Image image) {}
-    public Image getDockIconImage() { return null; }
-    public void setDockIconBadge(final String badge) {}
-    public void setDefaultMenuBar(final JMenuBar menuBar) {}
 }
-

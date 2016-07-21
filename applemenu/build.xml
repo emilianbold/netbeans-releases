@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
 
   <target name="compile" depends="projectized-common.compile">
     <delete dir="${build.classes.dir}/com"/> <!-- just stubs -->
+    <delete dir="${build.classes.dir}/java"/> <!-- just stubs -->
   </target>
 
 </project>
