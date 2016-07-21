@@ -50,33 +50,42 @@ import java.lang.reflect.*;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Utilities;
 
-/** Module installer that installs an com.apple.eawt.ApplicationListener on
- * the com.apple.eawt.Application object for this session, which will interpret
+/** Module installer that installs listeners, which will interpret
  * apple events and call the appropriate action from the actions pool.
  *
  * @author  Tim Boudreau
  */
 public class Install extends ModuleInstall {
     private CtrlClickHack listener;
+    private Class adapter;
 
     @Override
     public void restored () {
         listener = new CtrlClickHack();
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.FOCUS_EVENT_MASK);
-        if (Utilities.isMac() ) { // NOI18N
-            try {
-                Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
-                Method m = adapter.getDeclaredMethod("install", new Class[0] );
-                m.invoke(adapter, new Object[0]);
-            } catch (NoClassDefFoundError e) {
-            } catch (ClassNotFoundException e) {
-            } catch (Exception e) {
-            }
+        if (Utilities.isMac() ) {
             String pn = "apple.laf.useScreenMenuBar"; // NOI18N
             if (System.getProperty(pn) == null) {
                 System.setProperty(pn, "true"); // NOI18N
             }
+            if (!installAdapter("org.netbeans.modules.applemenu.NbApplicationAdapterJDK8")) {   // NOI18N
+                // JDK 8 failed, try JDK 9
+                installAdapter("org.netbeans.modules.applemenu.NbApplicationAdapterJDK9");      // NOI18N
+            }
         }
+    }
+
+    private boolean installAdapter(String className) {
+        try {
+            adapter = Class.forName(className);
+            Method m = adapter.getDeclaredMethod("install", new Class[0] ); // NOI18N
+            m.invoke(adapter, new Object[0]);
+            return true;
+        }catch (NoClassDefFoundError e) {
+        }catch (ClassNotFoundException e) {
+        }catch (Exception e) {
+        }
+        return false;
     }
     
     @Override
@@ -85,14 +94,11 @@ public class Install extends ModuleInstall {
             Toolkit.getDefaultToolkit().removeAWTEventListener(listener);
             listener = null;
          }
-        if (System.getProperty("mrj.version") != null) { // NOI18N
-
+        if (Utilities.isMac() && adapter != null) {
             try {
-                Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
-                Method m = adapter.getDeclaredMethod("uninstall", new Class[0] );
+                Method m = adapter.getDeclaredMethod("uninstall", new Class[0] );   // NOI18N
                 m.invoke(adapter, new Object[0]);
             } catch (NoClassDefFoundError e) {
-            } catch (ClassNotFoundException e) {
             } catch (Exception e) {
             }
         }
