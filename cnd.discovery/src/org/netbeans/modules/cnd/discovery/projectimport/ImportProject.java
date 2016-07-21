@@ -1376,6 +1376,10 @@ public class ImportProject implements PropertyChangeListener {
         this.configureLog = configureLog;
     }
 
+    public DoubleFile getMakeLog() {
+        return makeLog;
+    }
+    
     public void setMakeLog(File log) {
         this.makeLog = DoubleFile.createFile(log, executionEnvironment);
     }

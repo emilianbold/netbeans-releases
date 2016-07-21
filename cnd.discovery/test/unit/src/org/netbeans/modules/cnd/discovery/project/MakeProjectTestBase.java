@@ -284,7 +284,14 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             if (configureStep != null) {
                 assertEquals("Failed configure", ImportProject.State.Successful, configureStep);
             }
-            assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
+            if (!ImportProject.State.Successful.equals(importer.getState().get(ImportProject.Step.Make))) {
+                FileObject makeLog = importer.getMakeLog().getLocalFileObject();
+                if (makeLog != null && makeLog.isValid()) {
+                    System.err.println("Build log:");
+                    System.err.println(makeLog.asText());
+                }
+                assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
+            }
             CsmModel model = CsmModelAccessor.getModel();
             Project makeProject = importer.getProject();
             assertTrue("Not found model", model != null);
