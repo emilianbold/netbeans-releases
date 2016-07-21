@@ -10,6 +10,6 @@ var ale = {
 };
 
 exports.registerRoute = function (app) {
-    k;
+    ke;
     trip; // test 2
 };
