@@ -82,4 +82,16 @@ public class JavaClassPathConstants {
      * @since 1.59
      */
     public static final String MODULE_CLASS_PATH = "modules/classpath";
+    
+    /**
+     * Runtime module path for user modules.
+     * @since 1.63
+     */
+    public static final String MODULE_EXECUTE_PATH="modules/execute";   //NOI18N
+    
+    /**
+     * Runtime additional classpath for modular compilation.
+     * @since 1.63
+     */
+    public static final String MODULE_EXECUTE_CLASS_PATH = "modules/execute-classpath"; //NOI18N
 }
