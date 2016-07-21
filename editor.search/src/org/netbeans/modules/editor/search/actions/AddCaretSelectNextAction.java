@@ -61,7 +61,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
  */
 // NOI18N
 @EditorActionRegistration(
-        name = "addCaretSelectNext")
+        name = "addCaretSelectNext", category = "edit.multicaret")
 public class AddCaretSelectNextAction extends AbstractEditorAction {
     private static final Logger LOGGER = Logger.getLogger(AddCaretSelectNextAction.class.getName());
 

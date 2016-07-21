@@ -68,7 +68,7 @@ import org.openide.util.Pair;
  */
 // NOI18N
 @EditorActionRegistration(
-        name = "addCaretSelectAll")
+        name = "addCaretSelectAll", category = "edit.multicaret")
 public class AddCaretSelectAllAction extends AbstractEditorAction {
 
     private static final Logger LOGGER = Logger.getLogger(AddCaretSelectAllAction.class.getName());
