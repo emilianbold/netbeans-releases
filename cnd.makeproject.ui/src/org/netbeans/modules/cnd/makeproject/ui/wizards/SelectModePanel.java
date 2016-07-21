@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ExpandableEditableComboBox;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
@@ -122,24 +121,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         addListeners();
     }
     
-    private void refreshSourceFolder(boolean refresh) {
-        String path = ((ExpandableEditableComboBox)sourceFolder).getText();
-        if (refresh) {
-            FileObject fileObject;
-            if (path.isEmpty()) {
-                fileObject = null;
-            } else {
-                fileObject = fileSystem.findResource(path);
-            }
-            controller.getWizardStorage().setSourcesFileObject(fileObject);
-        } else {
-            FileObject oldFO = controller.getWizardStorage().getSourcesFileObject();
-            if (oldFO == null && !path.isEmpty()) {
-                controller.getWizardStorage().setSourcesFileObject(fileSystem.findResource(path));
-            }
-        }
-    }
-    
     private void addListeners(){
         ((ExpandableEditableComboBox)sourceFolder).addChangeListener((ActionEvent e) -> {
             refreshInstruction(true);
@@ -150,7 +131,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         advancedMode.addActionListener((ActionEvent e) -> {
             refreshInstruction(false);
         });
-        //refreshInstruction();
     }
     
     private void refreshInstruction(boolean refreshRoot) {
@@ -506,33 +486,42 @@ public class SelectModePanel extends javax.swing.JPanel {
         String path = ((ExpandableEditableComboBox)sourceFolder).getText().trim();
         try {
             if (path.length() == 0) {
+                controller.getWizardStorage().setSourcesFileObject(null);
                 return false;
             }
             if (!CndPathUtilities.isPathAbsolute(path)) {
+                controller.getWizardStorage().setSourcesFileObject(null);
                 messageKind = notAbsolute;
                 return false;
             }
             FileObject projectDirFO = fileSystem.findResource(path); // can be null
             if (projectDirFO == null || !projectDirFO.isValid()) {
+                controller.getWizardStorage().setSourcesFileObject(null);
                 messageKind = notExists;
                 return false;
             }
             if (!projectDirFO.isFolder()) {
+                controller.getWizardStorage().setSourcesFileObject(null);
                 messageKind = notFolder;
                 return false;
             }
             if (!projectDirFO.canRead()) {
+                controller.getWizardStorage().setSourcesFileObject(null);
                 messageKind = cannotReadFolder;
                 return false;
             }
             
-            if (simpleMode.isSelected()) {
+            boolean simple = simpleMode.isSelected();
+            SelectModePanel.this.controller.getWizardStorage().setMode(simple);            
+            if (simple) {
                 if (!projectDirFO.canWrite()) {
+                    controller.getWizardStorage().setSourcesFileObject(null);
                     messageKind = cannotWriteFolder;
                     return false;
                 }
                 FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
                 if (nbProjFO != null && nbProjFO.isValid()) {
+                    controller.getWizardStorage().setSourcesFileObject(null);
                     messageKind = alreadyNbPoject;
                     return false;
                 }
@@ -543,6 +532,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                         prj = ProjectManager.getDefault().findProject(projectDirFO);
                     }                        
                     if (prj != null) {
+                        controller.getWizardStorage().setSourcesFileObject(null);
                         messageKind = alreadyNbPoject;
                         return false;
                     }
@@ -550,6 +540,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            controller.getWizardStorage().setSourcesFileObject(projectDirFO);
             CompilerSet cs = null;
             Object tc = toolchainComboBox.getSelectedItem();
             if (tc != null && tc instanceof ToolCollectionItem) {
@@ -632,7 +623,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         refreshInstruction(false);
     }
 
-
     private class RefreshRunnable implements Runnable {
         private boolean refreshRoot = false;
         private int generation = 0;
@@ -653,20 +643,20 @@ public class SelectModePanel extends javax.swing.JPanel {
         @Override
         public void run() {
             int startCount;
-            boolean refresh;
             synchronized(lock) {
-                refresh = refreshRoot;
                 refreshRoot = false;
                 startCount = generation;
             }
-            boolean simple = simpleMode.isSelected();
-            SelectModePanel.this.controller.getWizardStorage().setMode(simple);            
-            refreshSourceFolder(refresh);
             synchronized(lock) {
                 if (startCount < generation) {
                     return;
                 }
             }
+            boolean validate = SelectModePanel.this.controller.validate();
+            if (!validate) {
+                return;
+            }
+            boolean simple = simpleMode.isSelected();
             if (simple) {
                 String tool = ""; // NOI18N
                 String toolsInfo = ""; // NOI18N

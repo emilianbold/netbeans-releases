@@ -171,6 +171,16 @@ public final class CsmTypes {
         public static int getReferenceType(TypeDescriptor td) {
             return td._reference;
         }
+        
+        public static int combineReferences(int ref1, int ref2) {
+            if (ref1 == REFERENCE || ref2 == REFERENCE) {
+                return REFERENCE;
+            }
+            if (ref1 == RVALUE_REFERENCE || ref2 == RVALUE_REFERENCE) {
+                return RVALUE_REFERENCE;
+            }
+            return NON_REFERENCE;
+        }
 
 
         private final boolean _const;
