@@ -3118,6 +3118,7 @@ public final class EditorCaret implements Caret {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 // Retain just the last caret
                 retainLastCaretOnly();
+                e.consume();
             }
         }
 

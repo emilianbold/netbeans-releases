@@ -65,8 +65,8 @@ import org.netbeans.spi.editor.caret.CaretMoveHandler;
  * @author Ralph Ruijs
  */
 @EditorActionRegistrations({
-    @EditorActionRegistration(name = EditorActionNames.addCaretUp),
-    @EditorActionRegistration(name = EditorActionNames.addCaretDown)
+    @EditorActionRegistration(name = EditorActionNames.addCaretUp, category = "edit.multicaret"),
+    @EditorActionRegistration(name = EditorActionNames.addCaretDown, category = "edit.multicaret")
 })
 public class AddCaretAction extends AbstractEditorAction {
 
