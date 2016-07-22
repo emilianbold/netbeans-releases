@@ -2,4 +2,4 @@
 commits@php.netbeans.org=php*/*,hudson.php/*,languages.ini/*,languages.neon/*,languages.apacheconf/*,languages.twig/*
 mentlicher@netbeans.org=web.webkit.debugging/*,web.javascript.debugger/*
 jstola@netbeans.org=web.webkit.debugging/*,web.inspect/*,javascript.cdnjs/*,javascript.nodejs/src/org/netbeans/modules/javascript/nodejs/ui/libraries/*,javascript.nodejs/src/org/netbeans/modules/javascript/nodejs/exec/*,javascript.bower/src/org/netbeans/modules/javascript/bower/ui/libraries/*,javascript.bower/src/org/netbeans/modules/javascript/bower/exec/*,extbrowser*/*
-tmysik@netbeans.org=web.clientproject/*,web.clientproject.api/*,javascript.karma/*,javascript.nodejs/*,javascript.bower/*,javascript.grunt/*,javascript.gulp/*
+tmysik@netbeans.org=web.clientproject/*,web.clientproject.api/*,javascript.karma/*,javascript.nodejs/*,javascript.bower/*,javascript.grunt/*,javascript.gulp/*,javascript.cdnjs/*
