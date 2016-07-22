@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.cdnjs.ui.logicalview;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +60,10 @@ import org.netbeans.modules.javascript.cdnjs.LibraryUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -109,7 +114,7 @@ public final class CdnjsLibraries {
 
     }
 
-    private static final class CdnjsLibrariesNodeList implements NodeList<Node>, LibraryListener {
+    private static final class CdnjsLibrariesNodeList implements NodeList<Node>, LibraryListener, FileChangeListener {
 
         private final Project project;
         private final CdnjsLibrariesChildren cdnjsLibrariesChildren;
@@ -155,6 +160,7 @@ public final class CdnjsLibraries {
         public void addNotify() {
             LibraryPersistence libraryPersistence = LibraryPersistence.getDefault();
             libraryPersistence.addLibraryListener(WeakListeners.create(LibraryListener.class, this, libraryPersistence));
+            FileUtil.addFileChangeListener(this, new File(LibraryUtils.getWebRoot(project), LibraryUtils.getLibraryFolder(project)));
         }
 
         @Override
@@ -171,6 +177,38 @@ public final class CdnjsLibraries {
         private void fireChange() {
             cdnjsLibrariesChildren.refreshLibraries();
             changeSupport.fireChange();
+        }
+
+        //~ FS changes
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
         }
 
     }
