@@ -2,65 +2,54 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Heap Walker Dialog</title>
+<title>Objects Snapshot Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2016-07-12</p>
-<p><a id="HeapWalker.HelpCtx" name="HeapWalker.HelpCtx"></a></p>
+<p>Beta Draft: 2016-07-22</p>
+<p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref453" name="sthref453"></a>
-<h1>Heap Walker Dialog</h1>
+<h1>Objects Snapshot Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view an analysis of a heap dump. The dialog displays detailed information about the heap when the heap dump was saved. 
+<p>Use to view and analyze data from an existing Objects snapshot. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG789">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u></u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG783">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>The dialog contains the following tabs for browsing information contained in the heap dump. Each tab contains additional buttons located on the right side of the dialog. These buttons enable you to modify information in the dialog.</p>
+<p>The snapshot toolbar contains the following options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t44">Tab</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t44">Element</th>
 <th style="text-align:left" valign="bottom" id="r1c2-t44">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r2c1-t44" headers="r1c1-t44">Summary</td>
-<td style="text-align:left" headers="r2c1-t44 r1c2-t44">Displays general information about the heap dump such as total numbers of classes and instances. The tab also provides information about the environment and system properties of the machine where the heap dump was taken.
-<p>Click the Inspect button to find objects by the retained size. You can click on an object returned by the query to view details about it in the Classes or Instances tab.</p>
+<td style="text-align:left" id="r2c1-t44" headers="r1c1-t44">
+<p><img width="20" height="20" src="img/export_snapshot.png" alt="Export snapshot icon" title="Export snapshot icon" />Export Selected Snapshot</p>
 </td>
+<td style="text-align:left" headers="r2c1-t44 r1c2-t44">Use to export the snapshot. You may export the snapshot data or the objects.</td>
 </tr>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r3c1-t44" headers="r1c1-t44">
-<p>Classes</p>
+<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshots icon" title="Compare snapshots icon" />Compare with another snapshot</p>
 </td>
-<td style="text-align:left" headers="r3c1-t44 r1c2-t44">Displays a list of classes with information about the number of instances of the class and the total size of the instances. You can click a class to view details in the Instances tab.
-<p>Click the Static Fields button to view the static fields of the selected class. Click Compare with another heap dump to select and then view the differences between two heap dumps.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r4c1-t44" headers="r1c1-t44">Instances</td>
-<td style="text-align:left" headers="r4c1-t44 r1c2-t44">Displays instances for a class you select in the Classes tab. For each instance, you can select an instance to browse:
-<ul>
-<li>the fields of the instance in the Fields browser.</li>
-<li>references to the instance in the Reference browser.</li>
-</ul>
-<p>You can hide or reveal individual panes by clicking the Instances, Fields and References buttons.</p>
-<p>You can right-click individual items in each of the panes to open a popup menu with additional commands.</p>
-<p>For objects that have a graphical representation such as UI elements, Heap Walker displays an image of the selected instance in addition to the textual values.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t44" headers="r1c1-t44">OQL Console</td>
-<td style="text-align:left" headers="r5c1-t44 r1c2-t44">Displays the OQL editor, saved queries, and a window that displays the query results.</td>
+<td style="text-align:left" headers="r3c1-t44 r1c2-t44">Use to compare two snapshots. When you click on this icon a Select Snapshot to Compare dialog with a list of your snapshots is displayed.</td>
 </tr>
 </tbody>
 </table>
@@ -77,7 +66,6 @@
 </object>
 </p>
 
-<!-- -->
 <!-- -->
 <!-- Start Footer -->
 
