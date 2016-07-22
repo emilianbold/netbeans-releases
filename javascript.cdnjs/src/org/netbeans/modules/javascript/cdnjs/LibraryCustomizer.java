@@ -46,7 +46,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -311,7 +310,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
                 Library.Version newVersion = newMap.get(libraryName);
                 Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
-                newMap.put(libraryName, versionToStore);
+                if (versionToStore != null) {
+                    newMap.put(libraryName, versionToStore);
+                }
             }
 
             reportErrors(errors);
@@ -405,8 +406,11 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             "LibraryCustomizer.updateFailed=Update of library {0} failed for file {1}.",
             "# {0} - library name",
             "# {1} - file name/path",
-            "LibraryCustomizer.deletingFile=Deleting file {1} of {0}."
+            "LibraryCustomizer.deletingFile=Deleting file {1} of {0}.",
+            "# {0} - library name",
+            "LibraryCustomizer.folderNotCreated=Folder for library {0} cannot be created.",
         })
+        @CheckForNull
         private Library.Version updateLibrary(FileObject librariesFolder,
                 Library.Version oldVersion, Library.Version newVersion,
                 List<String> errors) {
@@ -415,6 +419,17 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             LibraryProvider libraryProvider = LibraryProvider.getInstance();
             String libraryName = oldVersion.getLibrary().getName();
             FileObject libraryFolder = librariesFolder.getFileObject(libraryName);
+            if (libraryFolder == null) {
+                // #267246 - likely broken library
+                assert LibraryUtils.isBroken(project, oldVersion) : "This library should be broken: " + oldVersion.getLibrary().getName();
+                try {
+                    libraryFolder = FileUtil.createFolder(librariesFolder, libraryName);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Cannot created folder '" + libraryName + "' in '" + FileUtil.getFileDisplayName(librariesFolder) + "'", ex);
+                    errors.add(Bundle.LibraryCustomizer_folderNotCreated(libraryName));
+                    return null;
+                }
+            }
 
             // Install missing files
             Map<String,String> oldFilesMap = new HashMap<>();
@@ -459,7 +474,8 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 } catch (IOException ioex) {
                     String errorMessage = Bundle.LibraryCustomizer_updateFailed(libraryName, filePath);
                     errors.add(errorMessage);
-                    Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+                    LOGGER.log(Level.INFO, errorMessage, ioex);
+                    return null;
                 }
             }
 
@@ -471,8 +487,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
             }
 
-            Collection<String> emptySet = Collections.emptySet();
-            Library.Version versionToStore = newVersion.filterVersion(emptySet);
+            Library.Version versionToStore = newVersion.filterVersion(Collections.emptySet());
             versionToStore.setFileInfo(
                     fileList.toArray(new String[fileList.size()]),
                     localFileList.toArray(new String[localFileList.size()])
