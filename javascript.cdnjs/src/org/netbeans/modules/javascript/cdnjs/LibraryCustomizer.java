@@ -52,16 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
@@ -79,8 +75,6 @@ import org.openide.util.RequestProcessor;
  */
 public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
     public static final String CATEGORY_NAME = "CDNJS"; // NOI18N
-    private static final String DEFAULT_LIBRARY_FOLDER = "js/libs"; // NOI18N
-    private static final String PREFERENCES_LIBRARY_FOLDER = "js.libs.folder"; // NOI18N
 
     private final boolean checkWebRoot;
 
@@ -107,11 +101,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         Project project = context.lookup(Project.class);
         Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
-        File webRoot = getWebRoot(project);
-        if (webRoot == null) {
-            webRoot = FileUtil.toFile(project.getProjectDirectory());
-        }
-        String libraryFolder = getLibraryFolder(project);
+        File webRoot = LibraryUtils.getWebRoot(project);
+        assert webRoot != null : project;
+        String libraryFolder = LibraryUtils.getLibraryFolder(project);
         final SelectionPanel customizer = new SelectionPanel(project, libraries, webRoot, libraryFolder);
         category.setStoreListener(new StoreListener(project, webRoot, customizer));
         category.setCloseListener(new ActionListener() {
@@ -121,39 +113,6 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
         });
         return customizer;
-    }
-
-    @CheckForNull
-    private File getWebRoot(Project project) {
-        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
-            return FileUtil.toFile(webRoot);
-        }
-        return null;
-    }
-
-    private static Preferences getProjectPreferences(Project project) {
-        // Using class from web.clientproject.api for backward compatibility
-        return ProjectUtils.getPreferences(project, WebClientProjectConstants.class, true);
-    }
-
-    /**
-     * Returns the library folder for the given project.
-     *
-     * @param project project whose library folder should be returned.
-     * @return library folder for the given project.
-     */
-    static String getLibraryFolder(Project project) {
-        return getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, DEFAULT_LIBRARY_FOLDER);
-    }
-
-    /**
-     * Store the library folder for the given project.
-     *
-     * @param project project whose library folder should be stored.
-     * @param libraryFolder library folder to store.
-     */
-    static void storeLibraryFolder(Project project, String libraryFolder) {
-        getProjectPreferences(project).put(PREFERENCES_LIBRARY_FOLDER, libraryFolder);
     }
 
     static class StoreListener implements ActionListener, Runnable {
@@ -192,7 +151,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
 
                 String libraryFolder = customizer.getLibraryFolder();
-                storeLibraryFolder(project, libraryFolder);
+                LibraryUtils.storeLibraryFolder(project, libraryFolder);
             } finally {
                 progressHandle.finish();
             }
@@ -301,7 +260,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
             // Install/remove files in the versions that are kept
             String newLibraryFolder = customizer.getLibraryFolder();
-            String oldLibraryFolder = getLibraryFolder(project);
+            String oldLibraryFolder = LibraryUtils.getLibraryFolder(project);
             boolean libFolderChanged = !newLibraryFolder.equals(oldLibraryFolder);
             for (String libraryName : toKeep) {
                 Library.Version oldVersion = oldMap.get(libraryName);
