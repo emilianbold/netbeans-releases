@@ -54,16 +54,20 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -298,6 +302,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     private final class MenuBarFolder extends FolderInstance {
         /** List of the components this FolderInstance manages. */
         private ArrayList<Component> managed;
+        private List<Object> instances;
 
         /** Creates a new menubar folder on the specified <code>DataFolder</code>.
          * @param folder a <code>DataFolder</code> to work with
@@ -323,10 +328,37 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         /** Adds the component to the MenuBar after the last added one */
         private void addComponent (Component c) {
+            if (c == null) {
+                c = createNoComponent();
+            }
             synchronized (getTreeLock()) {
                 MenuBar.this.add(c, getManaged().size());
                 getManaged().add(c);
             }
+        }
+
+        private void addComponent (Component c, int index) {
+            if (c == null) {
+                c = createNoComponent();
+            }
+            synchronized (getTreeLock()) {
+                MenuBar.this.add(c, index);
+                getManaged().add(index, c);
+            }
+        }
+
+        private void removeComponent (int index) {
+            synchronized (getTreeLock()) {
+                getManaged().remove(index);
+                MenuBar.this.remove(index);
+            }
+        }
+
+        private Component createNoComponent() {
+            JComponent noComponent = new JComponent() {};
+            noComponent.setSize(0, 0);
+            noComponent.setEnabled(false);
+            return noComponent;
         }
 
         /** Full name of the data folder's primary file separated by dots.
@@ -385,29 +417,63 @@ public class MenuBar extends JMenuBar implements Externalizable {
          */
         protected Object createInstance(InstanceCookie[] cookies)
                 throws IOException, ClassNotFoundException {
-            final LinkedList<Object> ll = new LinkedList<Object>();
+            final List<Object> ll = new ArrayList<Object>(cookies.length);
             allInstances(cookies, ll);
 
             final MenuBar mb = MenuBar.this;
             
-            if (ll.equals(Arrays.asList(mb.getComponents()))) {
-                return mb;
+            List<Object> lo = instances;
+            if (lo == null) {
+                lo = Collections.EMPTY_LIST;
             }
-            
-            cleanUp(); //remove the stuff we've added last time
+            boolean modified = false;
+            int i = 0, j = 0;
             try {
-                // fill with new content
-                for (Object o: ll) {
-                    Component component = convertToComponent(o);
-                    if (component != null) {
-                        addComponent(component);
+                for ( ; i < lo.size() && j < ll.size(); i++, j++) {
+                    if (Objects.equals(lo.get(i), ll.get(j))) {
+                        continue;
                     }
+                    Object instance = ll.get(j);
+                    // has lo instance?
+                    int k;
+                    for (k = i+1; k < lo.size(); k++) {
+                        if (Objects.equals(lo.get(k), instance)) {
+                            break;
+                        }
+                    }
+                    if (k < lo.size()) {
+                        // Remove all components <i, k)
+                        while (i < k) {
+                            removeComponent(j);
+                            i++;
+                        }
+                    } else {
+                        // a new instance
+                        Component component = convertToComponent(instance);
+                        addComponent(component, j);
+                        i--;
+                    }
+                    modified = true;
+                }
+                while (i < lo.size()) {
+                    removeComponent(j);
+                    i++;
+                    modified = true;
+                }
+                while (j < ll.size()) {
+                    Component component = convertToComponent(ll.get(j));
+                    addComponent(component);
+                    j++;
+                    modified = true;
                 }
             } finally {
                 cookiesToObjects.clear();
             }
-            mb.validate();
-            mb.repaint();
+            instances = ll;
+            if (modified) {
+                mb.validate();
+                mb.repaint();
+            }
             return mb;
         }
 

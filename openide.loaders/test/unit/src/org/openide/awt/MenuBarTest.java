@@ -54,6 +54,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -63,9 +67,11 @@ import javax.swing.JPanel;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.actions.EditAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
@@ -166,28 +172,30 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         
         class Atom implements FileSystem.AtomicAction {
             FileObject m1, m2;
+            InstanceDataObject m3;
             
             public void run() throws IOException {
                 m1 = FileUtil.createFolder(df.getPrimaryFile(), "m1");
                 m2 = FileUtil.createFolder(df.getPrimaryFile(), "m2");
+                m3 = InstanceDataObject.create(df, "m3", OpenAction.class);
             }
         }
         Atom atom = new Atom();
         df.getPrimaryFile().getFileSystem().runAtomicAction(atom);
         mb.waitFinished();
         
-        assertEquals("Two children there", 2, mb.getComponentCount());
+        assertEquals("Three children there", 3, mb.getComponentCount());
         assertEquals("Programatic names deduced from the folder", "m1", mb.getComponent(0).getName());
         assertEquals("Programatic names deduced from the folder", "m2", mb.getComponent(1).getName());
         
         assertEquals("No removals", 0, remove);
-        assertEquals("Two additions", 2, add);
+        assertEquals("Three additions", 3, add);
         
         DataFolder f1 = DataFolder.findFolder(atom.m1);
         InstanceDataObject.create(f1, "Kuk", OpenAction.class);
         mb.waitFinished();
         
-        assertEquals("Two children there", 2, mb.getComponentCount());
+        assertEquals("Three children there", 3, mb.getComponentCount());
         Object o1 = mb.getComponent(0);
         if (!(o1 instanceof JMenu)) {
             fail("It has to be menu: " + o1);
@@ -197,8 +205,154 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         java.awt.Component[] content = m1.getPopupMenu().getComponents();
         assertEquals("Now it has one child", 1, content.length);
         
+        mb.waitFinished();
+        
         assertEquals("Still No removals in MenuBar", 0, remove);
-        assertEquals("Still Two additions in MenuBar", 2, add);
+        assertEquals("Still Two additions in MenuBar", 3, add);
+        
+        class Atom3 implements FileSystem.AtomicAction {
+            InstanceDataObject m3;
+            
+            @Override
+            public void run() throws IOException {
+                m3 = InstanceDataObject.create(df, "m4", EditAction.class);
+            }
+        }
+        Atom3 atom3 = new Atom3();
+        df.getPrimaryFile().getFileSystem().runAtomicAction(atom3);
+        mb.waitFinished();
+        assertEquals("Four children there", 4, mb.getComponentCount());
+        assertEquals("No removals", 0, remove);
+        assertEquals("Four additions", 4, add);
+    }
+    
+    public void testComponentsHeavyUpdates() throws Exception {
+        mb.addContainerListener(this);
+        assertEquals("No children now", 0, mb.getComponentCount());
+        
+        final List<FileObject> items = new ArrayList<FileObject>();
+        final List<String> toAdd = new ArrayList<String>();
+        final List<String> toRemove = new ArrayList<String>();
+        final AtomicInteger numAdds = new AtomicInteger(0);
+        final AtomicInteger numRemoves = new AtomicInteger(0);
+        class Atom implements FileSystem.AtomicAction {
+            @Override public void run() throws IOException {
+                FileObject root = df.getPrimaryFile();
+                for (String add : toAdd) {
+                    FileUtil.createFolder(root, add);
+                }
+                for (String remove : toRemove) {
+                    root.getFileObject(remove).delete();
+                }
+                numAdds.addAndGet(toAdd.size());
+                numRemoves.addAndGet(toRemove.size());
+                items.clear();
+                FileObject[] children = root.getChildren();
+                Arrays.sort(children, new Comparator<FileObject>() {
+                    @Override
+                    public int compare(FileObject o1, FileObject o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+                items.addAll(Arrays.asList(children));
+                toAdd.clear();
+                toRemove.clear();
+            }
+        }
+        final Atom atom = new Atom();
+        class Check {
+            public void check() throws FileStateInvalidException, IOException {
+                df.getPrimaryFile().getFileSystem().runAtomicAction(atom);
+                mb.waitFinished();
+                assertEquals("Correct number of components", items.size(), mb.getComponentCount());
+                List<String> itemNames = new ArrayList<String>(items.size());
+                for (int i = 0; i < items.size(); i++) {
+                    itemNames.add(items.get(i).getName());
+                }
+                List<String> componentNames = new ArrayList<String>(items.size());
+                for (int i = 0; i < items.size(); i++) {
+                    componentNames.add(mb.getComponent(i).getName());
+                }
+                for (int i = 0; i < items.size(); i++) {
+                    assertEquals("Correct component name ["+i+"]\n"+
+                                 "All items = "+itemNames+"\n"+
+                                 "All cmpnts= "+componentNames, items.get(i).getName(), mb.getComponent(i).getName());
+                }
+                assertEquals("Correct additions", numAdds.get(), add);
+                assertEquals("Correct removals", numRemoves.get(), remove);
+            }
+        }
+        Check check = new Check();
+        toAdd.add("m1");
+        check.check();
+        toRemove.add("m1");
+        check.check();
+        // Empty
+        for (int i = 0; i < 10; i++) {
+            toAdd.add("m"+i);
+        }
+        check.check();
+        for (int i = 0; i < 10; i++) {
+            if ((i % 2) == 0) {
+                toRemove.add("m"+i);
+            }
+        }
+        check.check();
+        for (int i = 0; i < 10; i++) {
+            if ((i % 2) != 0) {
+                toRemove.add("m"+i);
+            }
+        }
+        check.check();
+        // Empty
+        for (int i = 0; i < 10; i++) {
+            toAdd.add("m"+i);
+        }
+        check.check();
+        for (int i = 0; i < 10; i++) {
+            if ((i % 2) != 0) {
+                toRemove.add("m"+i);
+            }
+        }
+        check.check();
+        for (int i = 0; i < 10; i++) {
+            if ((i % 2) != 0) {
+                toAdd.add("m"+i);
+            }
+        }
+        check.check();
+        for (int i = 5; i < 10; i++) {
+            toRemove.add("m"+i);
+        }
+        check.check();
+        for (int i = 5; i <= 10; i++) {
+            if ((i % 2) == 0) {
+                toAdd.add("m"+i);
+            }
+        }
+        check.check();
+        for (int i = 0; i < 5; i++) {
+            if ((i % 2) != 0) {
+                toRemove.add("m"+i);
+            }
+        }
+        check.check();
+        for (int i = 0; i <= 10; i++) {
+            if ((i % 2) == 0) {
+                toRemove.add("m"+i);
+            }
+            check.check();
+        }
+        // Empty
+        for (int i = 0; i <= 10; i++) {
+            toAdd.add("m"+i);
+            check.check();
+        }
+        for (int i = 10; i >= 0; i--) {
+            toRemove.add("m"+i);
+            check.check();
+        }
+        // Empty
     }
     
     
