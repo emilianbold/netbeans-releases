@@ -71,9 +71,11 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -160,6 +162,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.Log;
 import java.net.URI;
+import java.util.concurrent.Callable;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.UnionType;
 import javax.tools.Diagnostic;
@@ -312,27 +315,6 @@ public class Utilities {
         return makeNameUnique(info, s, name, null, null);
     }
 
-    private static String guessLiteralName(String str) {
-        if(str.isEmpty())
-            return null;
-        
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < str.length(); i++) {
-            char ch = str.charAt(i);
-            if(ch == ' ') {
-                sb.append('_');
-            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch))
-                sb.append(ch);
-            if (sb.length() > 40)
-                break;
-        }
-        if (sb.length() == 0)
-            return null;
-        else
-            return sb.toString();
-    }
-    
     public static String toConstantName(String camelCaseName) {
         StringBuilder result = new StringBuilder();
         char[] chars = camelCaseName.toCharArray();
@@ -1000,6 +982,10 @@ public class Utilities {
      */
     @SuppressWarnings({"AssignmentToMethodParameter", "NestedAssignment"})
     public static TreePath findOwningExecutable(HintContext ctx, TreePath from, boolean lambdaOrInitializer) {
+        return findOwningExecutable(from, lambdaOrInitializer);
+    }
+    
+    public static TreePath findOwningExecutable(TreePath from, boolean lambdaOrInitializer) {
         Tree.Kind k = null;
         
         OUTER: while (from != null && !(TreeUtilities.CLASS_TREE_KINDS.contains(k = from.getLeaf().getKind()))) {
@@ -1063,6 +1049,14 @@ public class Utilities {
             from = from.getParentPath();
         }
         return null;
+    }
+    
+    public static boolean isInConstructor(TreePath path) {
+        TreePath method = findOwningExecutable(path, false);
+        if (method == null || method.getLeaf().getKind() != Tree.Kind.METHOD) {
+            return false;
+        }
+        return ((MethodTree)method.getLeaf()).getName().contentEquals("<init>"); // NOI18N
     }
 
     public static boolean isInConstructor(HintContext ctx) {
@@ -2002,14 +1996,14 @@ public class Utilities {
                 exp = previousPath;
                 break;
             }
-            if (StatementTree.class.isAssignableFrom(c)) {
+            if (isStatement(t)) {
                 statement = true;
                 break;
             }
         } while (exp.getParentPath()!= null);
         TreePath stPath = exp;
         if (!statement) {
-            while (stPath != null && !(stPath.getLeaf() instanceof StatementTree)) {
+            while (stPath != null && !(isStatement(stPath.getLeaf()))) {
                 stPath = stPath.getParentPath();
             }
         }
@@ -2257,6 +2251,463 @@ public class Utilities {
         }
         return ret;
     }
+    
+    private static boolean isSuperCtorInvocation(Tree t) {
+        if (t.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+            t = ((ExpressionStatementTree)t).getExpression();
+        }
+        if (t.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            return false;
+        }
+        MethodInvocationTree mit = (MethodInvocationTree)t;
+        if (mit.getMethodSelect() == null || 
+            mit.getMethodSelect().getKind() != Tree.Kind.IDENTIFIER) {
+            return false;
+        }
+        return ((IdentifierTree)mit.getMethodSelect()).getName().contentEquals("super");
+    }
+    
+    public static final int INSERT_POS_CHILD = 0;
+    public static final int INSERT_POS_THEN = 0;
+    public static final int INSERT_POS_ELSE = 1;
+    public static final int INSERT_POS_UPDATE = 2;
+    public static final int INSERT_POS_INIT = 1;
+    public static final int INSERT_POS_RESOURCES = 1;
+
+
+    /**
+     * Inserts a statement using an anchor. Only inserts to an existing tree is supported, this method variant should not be used
+     * to create tree branches which do not exist yet (i.e. insert into else part of `if', which does not exist yet).
+     * Statements are inserted immediately before, or after the given anchor. Anchor identifies a statement; if the anchor leaf Tree
+     * is not a statement, the methods uses the closest parent StatementTree as an anchor.
+     * <p/>
+     * Things which are handled automatically:
+     * <ul>
+     * <li>change to Block from single statement for if/cycle children
+     * <li>change from expression lambda to statement lambda
+     * <li>insertion into block, case or control statement structure
+     * <li>insertion into for init or update parts
+     * </ul>
+     * 
+     * @param wc working copy for creating Trees
+     * @param anchor anchor to insert before/after
+     * @param before code to insert before
+     * @param after code to insert after
+     * @return parent of the inserted code.
+     */
+    public static Tree insertStatement(WorkingCopy wc, TreePath anchor, List<? extends StatementTree> before, List<? extends StatementTree> after) {
+        anchor = findStatementOrExpression(anchor);
+        return insertStatement(wc, anchor.getParentPath(), anchor.getLeaf(), before, after, 0);
+    }
+    
+    /**
+     * Inserts a statement inside a block or before/after an anchor.
+     * To insert a statement into an empty block, specify the parentBlock, no anchor. Statements
+     * will be inserted at the start of the block. If no anchor is provided, `before' statements
+     * are inserted at the start of parentBlock, afterStatements at the end of it.
+     * <p/>
+     * Some controls flow statements have multiple parts where statements may be inserted. If
+     * no anchor is specified (which points exactly on the proper part), the `position' specifies
+     * where the new statements should be inserted.
+     * <ul>
+     * <li>for(<b>INSERT_POS_INIT</b>; ... ; <b>INSERT_POS_UPDATE</b>) <b>INSERT_POS_CHILD</b>
+     * <li>if (...) <b>INSERT_POS_THEN</b> else <b>INSERT_POS_ELSE</b>
+     * </ul>
+     * <p/>
+     * If the parentBlock (or parent of the anchor) is not a block, but a single child statement of a control flow tree, it
+     * will be replaced by a proper BlockTree.
+     * <p/>
+     * Note that the return value is somewhat fuzzy. The parent of the inserted statments will be returned, but
+     * the parent may be a control flow tree (i.e. for if update statement is changed) or it can be a surrounding BlockTree
+     * (i.e. body block of `for' or `try' statement)
+     * <p/>
+     * When inserting statements <b>at the start of constructors</b> the method checks whether the inserted code contains a super call.
+     * If it does not, it will actually insert the stament <i>after super() constructor call</i>. This allows generic code that inserts
+     * statements at start of (any) block to handle constructors gracefully without special cases. 
+     * 
+     * @param wc factory for Trees
+     * @param parentBlock parent tree, may be {@code null} if anchor is specified
+     * @param anchor anchor before/after which the statements are inserted, may be {@code null}
+     * @param after statements to insert after the anchor or at the end of block
+     * @param before statemtents to isnert before the anchor or at the start of block
+     * @param position for control flow commands, specifies the part where new statements should be inserted
+     * @return parent of the inserted statements
+     */
+    public static Tree insertStatement(WorkingCopy wc, TreePath parentBlock,
+            Tree anchor, List<? extends StatementTree> before, List<? extends StatementTree> after, int position) {
+        if (parentBlock == null) {
+            throw new IllegalArgumentException("One of parent/anchor must be specified");
+        }
+         List<StatementTree> list = new ArrayList<>();
+        Tree parent = wc.resolveRewriteTarget(parentBlock.getLeaf());
+        TreePath parentPath = parent == parentBlock ? parentBlock : new TreePath(parentBlock.getParentPath(), parent);
+        TreeMaker mk = wc.getTreeMaker();
+        Tree child = null;
+        List<? extends StatementTree> forInit = null;
+        List<? extends ExpressionStatementTree> forUpdate = null;
+        boolean superInvocationPresent = false;
+        boolean convertExpressionLambda = false;
+        
+        switch (parent.getKind()) {
+            case LAMBDA_EXPRESSION: {
+                LambdaExpressionTree let = (LambdaExpressionTree)parent;
+                // since it is a parent, it must be a expression lambda
+                child = let.getBody();
+                convertExpressionLambda = let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION;
+                break;
+            }
+            case TRY:
+                child = ((TryTree)parent).getFinallyBlock();
+                break;
+            case IF:
+                child = position != INSERT_POS_ELSE ? 
+                        ((IfTree)parent).getThenStatement() :
+                        ((IfTree)parent).getElseStatement();
+                break;
+            case DO_WHILE_LOOP:
+                child = ((DoWhileLoopTree)parent).getStatement();
+                break;
+            case WHILE_LOOP:
+                child = ((WhileLoopTree)parent).getStatement();
+                break;
+            case CASE:
+                // special case for now;
+                list.addAll(((CaseTree)parent).getStatements());
+                break;
+            case FOR_LOOP:
+                forInit = ((ForLoopTree)parent).getInitializer();
+                forUpdate = ((ForLoopTree)parent).getUpdate();
+                switch (position) {
+                    case INSERT_POS_INIT:
+                        list.addAll(forInit);
+                        break;
+                    case INSERT_POS_UPDATE:
+                        list.addAll(forUpdate);
+                        break;
+                    default:
+                        child = ((ForLoopTree)parent).getStatement();
+                }
+                break;
+            case ENHANCED_FOR_LOOP:
+                child = ((ForLoopTree)parent).getStatement();
+                break;
+            case BLOCK: {
+                // possible special case: if the block's parent is a constructor, the statements
+                // may start with a super constructor call:
+                List<? extends StatementTree> stats = getRealStatements(wc, parentPath);
+                if (parentBlock.getParentPath().getLeaf().getKind() == Tree.Kind.METHOD &&
+                    ((MethodTree)parentBlock.getParentPath().getLeaf()).getName().contentEquals("<init>")) {
+                    superInvocationPresent = !stats.isEmpty() && isSuperCtorInvocation(stats.get(0));
+                }
+                list.addAll(stats);
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Unsupported parent kind: " + parentBlock.getLeaf().getKind());
+        }
+        Tree result = null;
+        if (child == null) {
+            int indexAt = 0;
+            List<StatementTree> newList = new ArrayList<>(list.size());
+            if (anchor != null) {
+                indexAt = list.indexOf(anchor);
+                if (indexAt == -1) {
+                    throw new IllegalArgumentException("Anchor not proper child of its parent");
+                }
+            } else if (superInvocationPresent && before != null) {
+                if (indexAt == 0 && !isSuperCtorInvocation(before.get(0))) {
+                    indexAt = 1;
+                }
+            }
+            
+            // if no anchor is defined, either nothing, or ctor invocation will be inserted
+            newList.addAll(list.subList(0, indexAt));
+            if (before != null) {
+                newList.addAll(before);
+            }
+            if (anchor != null) {
+                newList.add((StatementTree)anchor);
+            } else {
+                newList.addAll(list.subList(indexAt, list.size()));
+            }
+            if (after != null) {
+                newList.addAll(after);
+            }
+            if (anchor != null) {
+                newList.addAll(list.subList(indexAt + 1, list.size()));
+            }
+            Tree newChild = newList.size() == 1 ? 
+                    newList.get(0) :
+                    mk.Block(newList, false);
+            switch (parent.getKind()) {
+                case TRY:
+                    switch (position) {
+                        case INSERT_POS_RESOURCES:
+                            wc.rewrite(parent,
+                                result = mk.Try(
+                                    newList,
+                                    ((TryTree)parent).getBlock(),
+                                    ((TryTree)parent).getCatches(),
+                                    ((TryTree)parent).getFinallyBlock()
+                            ));
+                            break;
+                        default:
+                            result = mk.Try(
+                                    ((TryTree)parent).getResources(),
+                                    ((TryTree)parent).getBlock(),
+                                    ((TryTree)parent).getCatches(),
+                                    mk.Block(newList, false)
+                            );
+                            wc.rewrite(parent, result);
+                            break;
+                    }
+                    break;
+                case IF:
+                    switch (position) {
+                        case INSERT_POS_ELSE:
+                            wc.rewrite(parent, 
+                                result = mk.If(
+                                    ((IfTree)parent).getCondition(),
+                                    ((IfTree)parent).getThenStatement(),
+                                    (StatementTree)newChild
+                                )
+                            );
+                            break;
+                        default:
+                            wc.rewrite(parent, 
+                                result = mk.If(
+                                    ((IfTree)parent).getCondition(),
+                                    (StatementTree)newChild,
+                                    ((IfTree)parent).getElseStatement()
+                                )
+                            );
+                            break;
+                    }
+                    break;
+                case CASE:
+                    wc.rewrite(parent, 
+                        result = mk.Case(((CaseTree)parent).getExpression(), newList)
+                    );
+                    break;
+                case FOR_LOOP:
+                    switch (position) {
+                        case INSERT_POS_INIT:
+                            wc.rewrite(
+                                parent,
+                                result = mk.ForLoop(
+                                    newList, 
+                                    ((ForLoopTree)parent).getCondition(),
+                                    forUpdate,
+                                    ((ForLoopTree)parent).getStatement()
+                            ));
+                            break;
+
+                        case INSERT_POS_UPDATE:
+                            wc.rewrite(parent,
+                                result = mk.ForLoop(
+                                    forInit,
+                                    ((ForLoopTree)parent).getCondition(),
+                                    (List<? extends ExpressionStatementTree>)(List)newList,
+                                    ((ForLoopTree)parent).getStatement()
+                            ));
+                            break;
+
+                        default:
+                            throw new IllegalArgumentException();
+                    }
+                    break;
+                case BLOCK:
+                    wc.rewrite(parent,
+                        mk.Block(
+                            newList, ((BlockTree)parent).isStatic()));
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        } else if (child.getKind() == Tree.Kind.BLOCK) {
+            list = (List)getRealStatements(wc, new TreePath(parentPath, child));
+            int indexAt = 0;
+            List<StatementTree> newList = new ArrayList<>(list.size());
+            if (anchor != null) {
+                indexAt = list.indexOf(anchor);
+                if (indexAt == -1) {
+                    throw new IllegalArgumentException("Anchor not proper child of its parent");
+                }
+            }
+            newList.addAll(list.subList(0, indexAt));
+            if (before != null) {
+                newList.addAll(before);
+            }
+            if (anchor != null) {
+                newList.add((StatementTree)anchor);
+            } else {
+                newList.addAll(list);
+            }
+            if (after != null) {
+                newList.addAll(after);
+            }
+            Tree newChild = mk.Block(newList, false);
+            wc.rewrite(child, newChild);
+        } else {
+            Tree toRewrite = child;
+            List<StatementTree> newList = new ArrayList<>();
+            if (before != null) {
+                newList.addAll(before);
+            }
+            // special cases for expression Lambdas, which become statement ones:
+            Tree ch = child;
+            if (convertExpressionLambda) {
+                LambdaExpressionTree let = (LambdaExpressionTree)parent;
+                TypeMirror oldType = wc.getTrees().getTypeMirror(new TreePath(parentBlock, let.getBody()));
+                // replace former expression with expression statement or return
+                if (!isStatement(child)) {
+                    if (oldType != null && oldType.getKind() != TypeKind.VOID) {
+                        newList.add(
+                            mk.asReplacementOf(
+                                    mk.Return((ExpressionTree)let.getBody()), child
+                        ));
+                    } else {
+                        newList.add(
+                            mk.ExpressionStatement((ExpressionTree)let.getBody())
+                        );
+                    }
+                }
+            } else {
+                newList.add((StatementTree)wc.resolveRewriteTarget(ch));
+            }
+            if (after != null) {
+                newList.addAll(after);
+            }
+            result = mk.Block(newList, false);
+            // special cases for expression Lambdas, which become statement ones:
+            if (convertExpressionLambda) {
+                LambdaExpressionTree let = (LambdaExpressionTree)parent;
+                toRewrite = mk.LambdaExpression(
+                    let.getParameters(),
+                    result
+                );
+            }
+            wc.rewrite(toRewrite, result);
+        }
+        return result;
+    }
+    
+    /**
+     * Removes the statement. If the statement is the only child statement of
+     * an if, while, do-while - replaces the statement with an empty block.
+     * 
+     * @param wc working copy for creating trees
+     * @param toRemove path to the statement to be removed
+     */
+    public static Tree removeStatement(WorkingCopy wc, TreePath toRemove) {
+        return removeStatements (wc, toRemove, null);
+    }
+    
+    /**
+     * Finds the entire statement up the tree. For code nested in blocks or control
+     * flow statements, find the statement (i.e ExpressionStatement for an ExpressionTree).
+     * For initializers and update statements, find that init/update statement nested in for cycle.
+     * For expression lambdas, returns the outermost expression.
+     * <p/>
+     * Returns {@code null} if it cannot find enclosing statement.
+     * 
+     * @param path where to start
+     * @return the nearest statement or entire expression
+     */
+    public static TreePath findStatementOrExpression(TreePath path) {
+        while (!isStatement(path.getLeaf())) {
+            Tree l = path.getLeaf();
+            TreePath next = path.getParentPath();
+            if (next == null) {
+                return null;
+            }
+            Tree t = next.getLeaf();
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                return null;
+            }
+            if (t.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                break;
+            }
+            path = next;
+        }
+        return path;
+    }
+    
+    public static Tree removeStatements(WorkingCopy wc, TreePath toRemove, Tree removeEnd) {
+        toRemove = findStatementOrExpression(toRemove);
+        TreePath parent = toRemove.getParentPath();
+        switch (parent.getLeaf().getKind()) {
+            case EXPRESSION_STATEMENT:
+                return removeStatement(wc, parent);
+
+            // removing last statement from lambda may introduce an error
+            // -- missing return statement.
+            case LAMBDA_EXPRESSION:
+            case WHILE_LOOP:
+            case DO_WHILE_LOOP:
+            case FOR_LOOP:
+            case ENHANCED_FOR_LOOP:
+            case IF:
+                // since direct child was removed, we need to add an empty statement.
+                // but since semicolon itself would be nearly invisible, I add an empty block
+                // instead.
+                return replaceStatement(wc, toRemove, 
+                        Collections.singletonList(
+                                wc.getTreeMaker().Block(Collections.emptyList(), false)
+                        ));
+                
+            case BLOCK: {
+                BlockTree bt = (BlockTree)parent.getLeaf();
+                List<? extends StatementTree> stats = getRealStatements(wc, parent);
+                int index = stats.indexOf(toRemove.getLeaf());
+                if (index == -1) {
+                    throw new IllegalArgumentException("Not proper child of the parent path");
+                }
+                int indexTo = index;
+                if (removeEnd != null) {
+                    indexTo = stats.indexOf(indexTo);
+                    if (indexTo == -1) {
+                        throw new IllegalArgumentException("Not proper child of the parent path");    
+                    }
+                }
+                List<StatementTree> sts = new ArrayList<>(stats.size() -1);
+                if (index > 0) {
+                    sts.addAll(stats.subList(0, index));
+                }
+                sts.addAll(stats.subList(indexTo + 1, stats.size()));
+                
+                BlockTree nb = wc.getTreeMaker().Block(sts, bt.isStatic());
+                
+                // TODO: special case for lambda expressions; if the block is a single return statement,
+                // the parent lambda may be rewritten to an expression lambda
+                wc.rewrite(parent.getLeaf(), nb);
+                return nb;
+            }
+        }
+        throw new IllegalArgumentException("Unknown parent type");
+    }
+    
+    private static List<? extends StatementTree> getRealStatements(CompilationInfo info, TreePath path) {
+        assert path.getLeaf().getKind() == Tree.Kind.BLOCK;
+        BlockTree bt = (BlockTree)path.getLeaf();
+        List<? extends StatementTree> stats = bt.getStatements();
+        if (stats.isEmpty()) {
+            return stats;
+        }
+        List<StatementTree> newStats = null;
+        for (int i = 0; i < stats.size(); i++) {
+            StatementTree t = stats.get(i);
+            TreePath stPath = new TreePath(path, t);
+            if (info.getTreeUtilities().isSynthetic(stPath)) {
+                newStats = new ArrayList<>(stats.size());
+            } else {
+                newStats = new ArrayList<>(stats.size());
+                newStats.addAll(stats.subList(i, stats.size()));
+                break;
+            }
+        }
+        return newStats == null ? stats : newStats;
+    }
 
     /**
      * Replaces statement for one or more statements. If the replaced statement
@@ -2269,21 +2720,72 @@ public class Utilities {
      * @param stats new statements to appear at the position
      * @return the parent of the replaced statement.
      */
-    public static StatementTree replaceStatement(WorkingCopy wc, 
+    public static Tree replaceStatement(WorkingCopy wc, 
             TreePath tp, List<? extends StatementTree> stats) {
-        if (!StatementTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
+        if (!isStatement(tp.getLeaf())) {
             throw new IllegalArgumentException();
         }
-        if (stats.isEmpty()) {
+        if (stats == null || stats.isEmpty()) {
+            return removeStatement(wc, tp);
+        }
+        return replaceStatements(wc, tp, null, stats);
+    }
+    
+    private static boolean isStatement(Tree t) {
+        return StatementTree.class.isAssignableFrom(t.getKind().asInterface());
+    }
+    
+    public static Tree replaceStatements(WorkingCopy wc, 
+            TreePath tp, Tree last, List<? extends StatementTree> stats) {
+        tp = findStatementOrExpression(tp);
+        if (tp == null) {
             throw new IllegalArgumentException();
+        }
+        if (stats == null || stats.isEmpty()) {
+            return removeStatements(wc, tp, last);
         }
 
-        List<? extends StatementTree> statements;
+        TreeMaker make = wc.getTreeMaker();
+        List<? extends Tree> statements;
         Tree parent = tp.getParentPath().getLeaf();
         
         boolean trueBranch = false;
         
         switch (parent.getKind()) {
+            case LAMBDA_EXPRESSION:
+                // special case: if replacing with a single replacement
+                if (stats.size() == 1) {
+                    LambdaExpressionTree let = (LambdaExpressionTree)parent;
+                    StatementTree st = stats.get(0);
+                    if (st.getKind() == Tree.Kind.RETURN) {
+                        Tree x = ((ReturnTree)st).getExpression();
+                        if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                            wc.rewrite(let.getBody(), x);
+                            return let;
+                        } else {
+                            Tree t = make.LambdaExpression(let.getParameters(), x);
+                            wc.rewrite(let, t);
+                            return let;
+                        }
+                    }
+                    // normal statement
+                    if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                        Tree t = make.LambdaExpression(let.getParameters(), 
+                                make.Block(stats, false));
+                        wc.rewrite(let, t);
+                        return let;
+                    } else {
+                        Tree t = make.Block(stats, false);
+                        wc.rewrite(let.getBody(), t);
+                        return let;
+                    }
+                }
+                
+                // this must be an expression lambda
+                statements = Collections.singletonList(
+                    ((LambdaExpressionTree)parent).getBody()
+                );
+                break;
             case IF:
                 trueBranch = ((IfTree)parent).getThenStatement() == tp.getLeaf();
                 statements = Collections.singletonList(
@@ -2313,40 +2815,65 @@ public class Utilities {
                     ((EnhancedForLoopTree)parent).getStatement()
                 );
                 break;
-            case BLOCK: statements = ((BlockTree) parent).getStatements(); break;
+            case BLOCK: statements = getRealStatements(wc, tp.getParentPath()); break;
             case CASE: statements = ((CaseTree) parent).getStatements(); break;
+            case METHOD:  {
+                // replacing entire body of the method
+                BlockTree methodBody;
+                if (stats.size() == 1 && stats.get(0).getKind() == Tree.Kind.BLOCK) {
+                    methodBody = (BlockTree)stats.get(0);
+                } else {
+                    methodBody = wc.getTreeMaker().Block(stats, false);
+                }
+                wc.rewrite(((MethodTree)parent).getBody(), methodBody);
+                return methodBody;
+            }
             default: throw new IllegalStateException(parent.getKind().name());
         }
-
-        StatementTree var = (StatementTree) tp.getLeaf();
+        
+        Tree var = (Tree) tp.getLeaf();
         int current = statements.indexOf(tp.getLeaf());
-        TreeMaker make = wc.getTreeMaker();
-        List<StatementTree> newStatements = new ArrayList<StatementTree>();
+        int upTo = current;
+        if (last != null) {
+            upTo = statements.indexOf(last);
+            if (upTo == -1) {
+                throw new IllegalArgumentException();
+            }
+        }
+        List<StatementTree> newStatements = new ArrayList<>();
 
-        newStatements.addAll(statements.subList(0, current));
+        newStatements.addAll((List)statements.subList(0, current));
         newStatements.add(
-            make.asReplacementOf(stats.get(0), 
-                var)
+            make.asReplacementOf(stats.get(0), var)
         );
         newStatements.addAll(stats.subList(1, stats.size()));
-        newStatements.addAll(statements.subList(current + 1, statements.size()));
+        newStatements.addAll((List)statements.subList(upTo + 1, statements.size()));
 
-        Tree target;
-        
         StatementTree blockOrStat;
         
+        Tree toRewrite = parent;
         if (newStatements.size() == 1) {
             Tree t = newStatements.get(0);
             if (t.getKind() == Tree.Kind.VARIABLE) {
-                blockOrStat = make.Block(newStatements, false);
+                blockOrStat = make.Block((List)newStatements, false);
             } else {
                 blockOrStat = (StatementTree)t;
             }
         } else {
-            blockOrStat = make.Block(newStatements, false);
+            blockOrStat = make.Block((List)newStatements, false);
         }
-
+        
+        Tree target = blockOrStat;
         switch (parent.getKind()) {
+            case LAMBDA_EXPRESSION: {
+                LambdaExpressionTree let = (LambdaExpressionTree)parent;
+                if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                    target = make.LambdaExpression(let.getParameters(), blockOrStat);
+                } else {
+                    toRewrite = let.getBody();
+                }
+                break;
+            }
             case IF:
                 target = make.If(
                         ((IfTree)parent).getCondition(),
@@ -2387,8 +2914,8 @@ public class Utilities {
                     make.Case(((CaseTree) parent).getExpression(), newStatements); break;
             default: throw new IllegalStateException(parent.getKind().name());
         }
-        StatementTree ret  = (StatementTree)make.asReplacementOf(target, parent);
-        wc.rewrite(parent, ret);
+        StatementTree ret  = (StatementTree)make.asReplacementOf(target, toRewrite);
+        wc.rewrite(toRewrite, ret);
         return ret;
     }
 
