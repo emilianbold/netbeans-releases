@@ -136,27 +136,26 @@ public class OptionsPanel extends JPanel {
     private boolean clearSearch = false;
     private CardLayout cLayout;
     
-    private int selectedTabIndex = -1;
-    private HashMap<String, JTabbedPane> categoryid2tabbedpane = new HashMap<String, JTabbedPane>();
-    private HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
+    private final HashMap<String, JTabbedPane> categoryid2tabbedpane = new HashMap<String, JTabbedPane>();
+    private final HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
     private HashMap<String, HashMap<Integer, TabInfo>> categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
-    private ArrayList<String> disabledCategories = new ArrayList<String>();
+    private final ArrayList<String> disabledCategories = new ArrayList<String>();
 
-    private ArrayList<FileObject> advancedFOs = new ArrayList<FileObject>();
-    private HashMap<String, Integer> dublicateKeywordsFOs = new HashMap<String, Integer>();
-    private HashMap<FileObject, Integer> fo2index = new HashMap<FileObject, Integer>();
+    //private final ArrayList<FileObject> advancedFOs = new ArrayList<FileObject>();
+    //private final HashMap<String, Integer> dublicateKeywordsFOs = new HashMap<String, Integer>();
+    //private final HashMap<FileObject, Integer> fo2index = new HashMap<FileObject, Integer>();
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
     private static final boolean isNimbus = UIManager.getLookAndFeel ().getID ().equals ("Nimbus");
     private static final boolean isMetal = UIManager.getLookAndFeel() instanceof MetalLookAndFeel;
     private final boolean isGTK = UIManager.getLookAndFeel ().getID ().equals ("GTK");
-    private Color selected = isMac ? new Color(221, 221, 221) : getSelectionBackground();
-    private Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
-    private Color highlighted = isMac ? new Color(221, 221, 221) : getHighlightBackground();
-    private Color highlightedB = new Color (152, 180, 226);
-    private Color iconViewBorder = new Color (127, 157, 185);
-    private ControllerListener controllerListener = new ControllerListener ();
+    private final Color selected = isMac ? new Color(221, 221, 221) : getSelectionBackground();
+    private final Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
+    private final Color highlighted = isMac ? new Color(221, 221, 221) : getHighlightBackground();
+    private final Color highlightedB = new Color (152, 180, 226);
+    //private final Color iconViewBorder = new Color (127, 157, 185);
+    private final ControllerListener controllerListener = new ControllerListener ();
     
     private final Color borderMac = new Color(141, 141, 141);
     private final Font labelFontMac = new Font("Lucida Grande", 0, 10);            
