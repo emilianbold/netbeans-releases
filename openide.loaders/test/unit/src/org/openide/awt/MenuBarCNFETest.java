@@ -44,6 +44,7 @@
 
 package org.openide.awt;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -103,7 +104,14 @@ public class MenuBarCNFETest extends NbTestCase implements ContainerListener {
         MenuBar menuBar = new MenuBar(dataFolder);
         menuBar.waitFinished();
 
-        assertEquals("No instances", 0, menuBar.getComponentCount());
+        int componentCount = 0;
+        for (Component c : menuBar.getComponents()) {
+            if (!c.isVisible()) {
+                continue;
+            }
+            componentCount++;
+        }
+        assertEquals("No instances", 0, componentCount);
         AWTTaskTest.waitEQ();
 
         

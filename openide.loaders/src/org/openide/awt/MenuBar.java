@@ -68,6 +68,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -357,7 +358,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         private Component createNoComponent() {
             JComponent noComponent = new JComponent() {};
             noComponent.setSize(0, 0);
-            noComponent.setEnabled(false);
+            noComponent.setVisible(false);
             return noComponent;
         }
 
