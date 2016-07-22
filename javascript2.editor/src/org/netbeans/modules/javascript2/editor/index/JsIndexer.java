@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -415,6 +416,13 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public void scanFinished(Context context) {
+            if (context.isAllFilesIndexing()) {
+                IndexChangeSupport changeSupport = Lookup.getDefault().lookup(IndexChangeSupport.class);
+                if (changeSupport != null) {
+                    // when the scan is finished, clear the index cache
+                    changeSupport.fireChange();
+                }
+            }
             try {
                 for (Runnable task : postScanTasks.get()) {
                     task.run();
