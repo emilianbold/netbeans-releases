@@ -564,7 +564,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
         SourceGroup sourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_MAIN);
         SourceGroup testSourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
-
+        
         Map<SourceGroup, Integer> list = new HashMap<>();
         if (isInTestSources) {
             //in test sources (f.e. src/test/java) -> return main sources and test sources

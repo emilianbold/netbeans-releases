@@ -834,10 +834,10 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             
             // generate new version of the statement list, with the method invocation.
             List<StatementTree> nueStatements = new LinkedList<StatementTree>();
-            nueStatements.addAll(statements.subList(0, from));
             generateMethodInvocation(nueStatements, IntroduceHint.realArguments(make, parameters), null);
-            nueStatements.addAll(statements.subList(to + 1, statements.size()));
-            IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
+            
+            Utilities.replaceStatements(copy, firstStatement, statements.get(to), nueStatements);
+            
             addReplacement(firstStatement.getParentPath().getLeaf(), from, to);
             if (replaceOther) {
                 //handle duplicates
@@ -856,7 +856,10 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
                         continue;
                     }
                     // FIXME - does this really work, in case of `case' contents ? Check on case X: stmt; and case X: { stmts; }
-                    List<? extends StatementTree> parentStatements = IntroduceHint.getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), IntroduceHint.resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
+                    Tree mapped = copy.resolveRewriteTarget(firstLeaf.getParentPath().getLeaf());
+                    TreePath mappedPath = new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), 
+                            mapped), firstLeaf.getLeaf());
+                    List<? extends StatementTree> parentStatements = IntroduceHint.getStatements(mappedPath);
                     int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
                     assert dupeStart > -1;
                     int dupeLast = dupeStart + statementsPaths.size() - 1;
@@ -886,10 +889,8 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
                         continue;
                     }
                     List<StatementTree> newStatements = new LinkedList<StatementTree>();
-                    newStatements.addAll(parentStatements.subList(0, dupeStart));
                     generateMethodInvocation(newStatements, makeArgumentsForDuplicate(desc), desc);
-                    newStatements.addAll(parentStatements.subList(dupeStart + statementsPaths.size(), parentStatements.size()));
-                    IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstLeaf, newStatements);
+                    Utilities.replaceStatements(copy, mappedPath, lastSt, newStatements);
                     addReplacement(firstLeaf.getParentPath().getLeaf(), dupeStart, dupeLast);
                     
                     isStatic |= IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstLeaf);
