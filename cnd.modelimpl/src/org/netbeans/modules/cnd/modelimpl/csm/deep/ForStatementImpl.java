@@ -149,6 +149,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
                             init = null;
                             break;
                         case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                        case CPPTokenTypes.CSM_TYPE_ATOMIC:
                         case CPPTokenTypes.CSM_TYPE_COMPOUND:
                         case CPPTokenTypes.LITERAL_struct:
                         case CPPTokenTypes.LITERAL_class:

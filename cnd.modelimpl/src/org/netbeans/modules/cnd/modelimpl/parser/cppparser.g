@@ -138,6 +138,7 @@ tokens {
 	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TYPE_ATOMIC<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
@@ -2003,7 +2004,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
               (postfix_cv_qualifier | LITERAL_constexpr)? 
               (literal_inline | storage_class_specifier | LITERAL_virtual)*
               declarator[declOther, 0]) => 
-            (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
+            (options {greedy=true;} : LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
             (   options {warnWhenFollowAmbig = false;} : 
                 {isCPlusPlus11()}? sc = cpp11_storage_class_specifier
@@ -2159,19 +2160,19 @@ common_storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     ;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
-	:  (literal_const|LITERAL_const_cast)	{tq = tqCONST;} 
-	|  literal_volatile			{tq = tqVOLATILE;}
-        |  LITERAL__Atomic              {tq = tqAtomic;}
-	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
+	:  (literal_const|LITERAL_const_cast)	        {tq = tqCONST;} 
+	|  literal_volatile			        {tq = tqVOLATILE;}
+	|  LITERAL__TYPE_QUALIFIER__                    {tq = tqOTHER;}
+        |  (LITERAL__Atomic ~LPAREN)=>LITERAL__Atomic   {tq = tqAtomic;}
 	;
 
 // C11 rule
 type_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid]
     :
-	   literal_const                {tq = tqCONST;} 
-	|  literal_volatile             {tq = tqVOLATILE;}
-    |  literal_restrict             {tq = tqOTHER;}
-	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
+           literal_const                {tq = tqCONST;} 
+        |  literal_volatile             {tq = tqVOLATILE;}
+        |  literal_restrict             {tq = tqOTHER;}
+        |  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
     ;
 
 ref_qualifier
@@ -2183,6 +2184,8 @@ type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int
 :   ts = simple_type_specifier[noTypeId]
 |   ts = class_specifier[ds]
 |   enum_specifier {ts=tsENUM;}
+|   LITERAL__Atomic! LPAREN! type_name RPAREN! {ts=tsOTHER;}
+    { #type_specifier = #([CSM_TYPE_ATOMIC, "CSM_TYPE_ATOMIC"], #type_specifier); }
 |   LITERAL_auto {ts=tsAUTO;}
     { #type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #type_specifier); }
 ;

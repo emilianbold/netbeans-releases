@@ -232,6 +232,7 @@ public class AstUtil {
                     type = type.getNextSibling();
                     continue;
                 case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                case CPPTokenTypes.CSM_TYPE_ATOMIC:
                 case CPPTokenTypes.CSM_TYPE_COMPOUND:
                     type = type.getNextSibling();
                     if (i == 0){
@@ -271,6 +272,9 @@ public class AstUtil {
             typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
             if (typeAst == null) {
                 typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+                if (typeAst == null) {
+                    typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_ATOMIC);
+                }
             }
         }        
         return typeAst;
@@ -280,7 +284,8 @@ public class AstUtil {
         return ast != null && 
             (ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
              ast.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
-             ast.getType() == CPPTokenTypes.CSM_TYPE_DECLTYPE);
+             ast.getType() == CPPTokenTypes.CSM_TYPE_DECLTYPE ||
+             ast.getType() == CPPTokenTypes.CSM_TYPE_ATOMIC);
     }
 
     public static boolean hasChildOfType(AST ast, int type) {
