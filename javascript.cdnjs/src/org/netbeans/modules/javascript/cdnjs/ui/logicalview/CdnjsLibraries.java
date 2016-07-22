@@ -55,6 +55,7 @@ import org.netbeans.modules.javascript.cdnjs.Library;
 import org.netbeans.modules.javascript.cdnjs.LibraryCustomizer;
 import org.netbeans.modules.javascript.cdnjs.LibraryListener;
 import org.netbeans.modules.javascript.cdnjs.LibraryPersistence;
+import org.netbeans.modules.javascript.cdnjs.LibraryUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -236,7 +237,7 @@ public final class CdnjsLibraries {
 
         @Override
         protected Node[] createNodes(Library.Version key) {
-            return new Node[] {new CdnjsLibraryNode(key)};
+            return new Node[] {new CdnjsLibraryNode(project, key)};
         }
 
         @Override
@@ -264,13 +265,18 @@ public final class CdnjsLibraries {
 
         @StaticResource
         private static final String LIBRARIES_ICON = "org/netbeans/modules/javascript/cdnjs/ui/resources/libraries.gif"; // NOI18N
+        @StaticResource
+        private static final String BROKEN_BADGE = "org/netbeans/modules/javascript/cdnjs/ui/resources/broken-badge.gif"; // NOI18N
 
+        private final Project project;
         private final Library.Version library;
 
 
-        CdnjsLibraryNode(Library.Version library) {
+        CdnjsLibraryNode(Project project, Library.Version library) {
             super(Children.LEAF);
+            assert project != null;
             assert library != null;
+            this.project = project;
             this.library = library;
         }
 
@@ -282,10 +288,16 @@ public final class CdnjsLibraries {
         @NbBundle.Messages({
             "# {0} - library name",
             "# {1} - library version",
-            "CdnjsLibraryNode.description={0}: {1}"
+            "CdnjsLibraryNode.description={0}: {1}",
+            "# {0} - library name",
+            "# {1} - library version",
+            "CdnjsLibraryNode.description.broken={0}: {1} (broken)",
         })
         @Override
         public String getShortDescription() {
+            if (LibraryUtils.isBroken(project, library)) {
+                return Bundle.CdnjsLibraryNode_description_broken(getName(), library.getName());
+            }
             return Bundle.CdnjsLibraryNode_description(getName(), library.getName());
         }
 
@@ -300,6 +312,10 @@ public final class CdnjsLibraries {
         }
 
         private Image getIcon() {
+            Image icon = ImageUtilities.loadImage(LIBRARIES_ICON, false);
+            if (LibraryUtils.isBroken(project, library)) {
+                return ImageUtilities.mergeImages(icon, ImageUtilities.loadImage(BROKEN_BADGE, false), 0, 7);
+            }
             return ImageUtilities.loadImage(LIBRARIES_ICON, false);
         }
 

@@ -160,7 +160,7 @@ public final class LibraryPersistence {
         String versionName = libraryElement.getAttribute(ATTR_VERSION_NAME);
         Library library = new Library();
         library.setName(libraryName);
-        Library.Version version = new Library.Version(library);
+        Library.Version version = new Library.Version(library, true);
         version.setName(versionName);
         library.setVersions(new Library.Version[] { version });
         NodeList fileList = libraryElement.getElementsByTagNameNS(NAMESPACE_URI, ELEMENT_FILE);
