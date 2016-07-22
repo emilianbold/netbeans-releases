@@ -78,6 +78,8 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 class SearchPanel extends javax.swing.JPanel {
+    /** Minimum length of the text to be searched. */
+    private static final int MIN_SEARCH_TEXT_LENGTH = 2;
     /** Data listener for CDNJS provider. */
     private final Listener listener = new Listener();
     /** The last search term. */
@@ -128,7 +130,7 @@ class SearchPanel extends javax.swing.JPanel {
             }
             private void processEvent(DocumentEvent e) {
                 String text = searchField.getText();
-                searchButton.setEnabled(text != null && text.trim().length() != 0);
+                searchButton.setEnabled(text != null && text.trim().length() >= MIN_SEARCH_TEXT_LENGTH);
             }
         });
     }
@@ -175,7 +177,7 @@ class SearchPanel extends javax.swing.JPanel {
     })
     private void startSearch() {
         String searchTerm = searchField.getText().trim();
-        if (searchTerm.length() == 0) {
+        if (searchTerm.length() < MIN_SEARCH_TEXT_LENGTH) {
             return;
         }
         librarySelected(null);
