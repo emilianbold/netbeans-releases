@@ -407,7 +407,7 @@ public final class LibraryProvider {
          * @return library version that corresponds to the given JSON data.
          */
         private Library.Version createVersion(Library library, JSONObject data) {
-            Library.Version version = new Library.Version(library);
+            Library.Version version = new Library.Version(library, false);
 
             String versionName = (String)data.get(PROPERTY_VERSION_NAME);
             version.setName(versionName);

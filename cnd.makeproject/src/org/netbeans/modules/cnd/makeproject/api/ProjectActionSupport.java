@@ -58,7 +58,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -98,6 +97,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ActionProgress;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -107,7 +107,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  * Most of the code here came from DefaultProjectActionHandler as result of
@@ -241,9 +240,12 @@ public class ProjectActionSupport {
     }
 
     public void fireActionPerformed(ProjectActionEvent[] paes, ProjectActionHandler preferredHandler) {
-        submitTask(new EventsProcessorImpl(paes, preferredHandler));
+        fireActionPerformed(paes, null, null);
     }
 
+    public void fireActionPerformed(ProjectActionEvent[] paes, ProjectActionHandler preferredHandler, ActionProgress actionProgress) {
+        submitTask(new EventsProcessorImpl(paes, preferredHandler, actionProgress));
+     }
     private static void submitTask(final EventsProcessorImpl eventsProcessor) {
         tasksProcessor.post(eventsProcessor);
     }
@@ -330,13 +332,15 @@ public class ProjectActionSupport {
         private final ProjectActionHandler customHandler;
         private final FileOperationsNotifier fon;
         private final EventsProcessorActions epa;
+        private final ActionProgress actionProgress;
 
-        public EventsProcessorImpl(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
+        public EventsProcessorImpl(ProjectActionEvent[] paes, ProjectActionHandler customHandler, ActionProgress actionProgress) {
             this.paes = paes;
             this.customHandler = customHandler;
             epa = EventsProcessorActions.getEventsProcessorActionsFactory().getEventsProcessorActions(this);
             fon = getFileOperationsNotifier(paes);
             tabs = IOTabsController.getDefault().openTabsGroup(getTabName(paes), MakeOptions.getInstance().getReuse());
+            this.actionProgress = actionProgress;
         }
 
         @Override
@@ -402,12 +406,14 @@ public class ProjectActionSupport {
 
             final AtomicInteger currentEventIndex = new AtomicInteger(-1);
             final AtomicReference<InputOutputTab> currentIORef = new AtomicReference<>(null);
+            final AtomicBoolean result = new AtomicBoolean(true);
 
             try {
                 for (final ProjectActionEvent currentEvent : paes) {
                     currentEventIndex.incrementAndGet();
 
                     if (!ProjectActionSupport.checkProject(currentEvent)) {
+                        result.set(false);
                         return;
                     }
 
@@ -425,6 +431,7 @@ public class ProjectActionSupport {
 
                     if ((isRunAction || type == PredefinedType.CHECK_EXECUTABLE)) {
                         if (!checkExecutable(currentEvent)) {
+                            result.set(false);
                             return;
                         }
                     }
@@ -518,6 +525,7 @@ public class ProjectActionSupport {
                             try {
                                 epa.setEnableStopAction(false);
                                 stepFailed.set(rc != 0);
+                                result.set(rc == 0);
                                 if (epa.getAdditional() != null) {
                                     epa.getAdditional().forEach((action) -> {
                                         try {
@@ -570,6 +578,9 @@ public class ProjectActionSupport {
                 epa.setEnableRerunModAction(true);
                 epa.setEnableStopAction(false);
                 fon.finishAll();
+                if (actionProgress != null) {
+                    actionProgress.finished(result.get());
+                }
             }
         }
 

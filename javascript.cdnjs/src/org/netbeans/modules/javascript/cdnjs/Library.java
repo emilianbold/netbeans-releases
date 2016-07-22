@@ -145,6 +145,8 @@ public final class Library {
     public final static class Version {
         /** Owning library. */
         private final Library library;
+        /** Whether this version is already part of the project. */
+        private final boolean persisted;
         /** Name or number of the version. */
         private String name;
         /** Files of this version (relative path as specified in CDNJS meta-data). */
@@ -155,8 +157,9 @@ public final class Library {
         /**
         * Creates a new {@code Version}.
         */
-        Version(Library library) {
+        Version(Library library, boolean persisted) {
             this.library = library;
+            this.persisted = persisted;
         }
 
         /**
@@ -166,6 +169,17 @@ public final class Library {
          */
         public Library getLibrary() {
             return library;
+        }
+
+        /**
+         * Checks whether the library already is part of the project.
+         * <p>
+         * In other words, whether the library already is saved in project's
+         * metadata (therefore its local files should be on the disk).
+         * @return {@code true} if the library already is part of the project.
+         */
+        boolean isPersisted() {
+            return persisted;
         }
 
         /**
@@ -229,7 +243,7 @@ public final class Library {
          * @return library version that doesn't contain the specified files.
          */
         public Library.Version filterVersion(Collection<String> refusedFiles) {
-            Library.Version clone = new Library.Version(library);
+            Library.Version clone = new Library.Version(library, persisted);
             clone.setName(name);
             List<String> fileList = new ArrayList<>();
             for (String file : files) {
