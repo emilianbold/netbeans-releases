@@ -231,6 +231,7 @@ class SearchPanel extends javax.swing.JPanel {
             }
         }
         librariesList.setSelectedIndex(index);
+        librariesList.ensureIndexIsVisible(index);
     }
 
     /**
