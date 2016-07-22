@@ -108,6 +108,7 @@ import org.w3c.dom.UserDataHandler;
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -330,7 +331,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                                 null;
                     })
                     .map((srcRoot) -> {
-                        final URL[] brts = BinaryForSourceQuery.findBinaryRoots(srcRoot.toURL()).getRoots();
+                        final URL[] brts = removeArchives(BinaryForSourceQuery.findBinaryRoots(srcRoot.toURL()).getRoots());
                         switch (brts.length) {
                             case 0:
                                 return null;
@@ -346,15 +347,48 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                 final String sl = SourceLevelQuery.getSourceLevel(binRoot);
                 if (sl != null && JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
                     modulesSupported = true;
+                    FileObject mainBinRoot = null;
+                    final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(binRoot.toURL()).getRoots();
+                    if (srcRoots.length > 0) {
+                        URL[] mainRootUrls = UnitTestForSourceQuery.findSources(srcRoots[0]);
+                        if (mainRootUrls.length > 0) {
+                            URL[] mainBinRoots = removeArchives(BinaryForSourceQuery.findBinaryRoots(mainRootUrls[0]).getRoots());
+                            switch (mainBinRoots.length) {
+                                case 0:
+                                    break;
+                                case 1:
+                                     mainBinRoot = URLMapper.findFileObject(mainBinRoots[0]);
+                                     break;
+                                default:
+                                     final ClassPath bcp = ClassPathSupport.createClassPath(mainBinRoots);
+                                     mainBinRoot = findOwnerRoot("module-info", bcp);
+                                     if (mainBinRoot == null) {
+                                         final FileObject[] brs = bcp.getRoots();
+                                         mainBinRoot = brs.length == 0 ?
+                                                 null :
+                                                 brs[0];
+                                     }
+                            }
+                        }
+                    }
                     setProperty(antProps, "modules.supported.internal", "true");
-                    String moduleName = binRoot.getFileObject("module-info.class") != null ?
+                    setProperty(antProps, "module.root", FileUtil.toFile(binRoot).getAbsolutePath());
+                    final String moduleName = binRoot.getFileObject("module-info.class") != null ?
                             SourceUtils.getModuleName(binRoot.toURL()) :
                             null;
+                    final String mainModuleName = Optional.ofNullable(mainBinRoot)
+                            .map((fo) -> SourceUtils.getModuleName(fo.toURL()))
+                            .orElse(null);
                     if (moduleName != null) {
                         setProperty(antProps, "module.name", moduleName);
                         setProperty(antProps, "named.module.internal", "true");
                     } else {
                         setProperty(antProps, "unnamed.module.internal", "true");
+                    }
+                    if (mainBinRoot != null) {
+                        if (mainModuleName != null) {
+                            setProperty(antProps, "related.module.name", mainModuleName);
+                        }
                     }
                 }
             }
@@ -404,6 +438,18 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             }
         }
         return null;
+    }
+    
+    private static URL[] removeArchives(@NonNull final URL... orig) {
+        final List<URL> res = new ArrayList<>(orig.length);
+        for (URL url : orig) {
+            if (!FileUtil.isArchiveArtifact(url)) {
+                res.add(url);
+            }
+        }
+        return res.isEmpty() ?
+                orig :
+                res.toArray(new URL[res.size()]);
     }
 
     private static ExecutorTask clean(Map<String, ?> properties) {
