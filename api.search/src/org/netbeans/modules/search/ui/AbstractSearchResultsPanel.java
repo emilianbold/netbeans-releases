@@ -177,7 +177,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.setRequestFocusEnabled(false);
         add(toolBar, java.awt.BorderLayout.WEST);
 
-        contentPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
+        contentPanel.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("controlShadow")));
         contentPanel.setLayout(new javax.swing.BoxLayout(contentPanel, javax.swing.BoxLayout.LINE_AXIS));
         add(contentPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents

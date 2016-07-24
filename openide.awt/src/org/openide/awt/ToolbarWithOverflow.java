@@ -58,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 
@@ -139,7 +140,7 @@ public class ToolbarWithOverflow extends JToolBar {
         popup.setBorder(BorderFactory.createEmptyBorder());
         overflowToolbar = new SafeToolBar("overflowToolbar", orientation == HORIZONTAL ? VERTICAL : HORIZONTAL);
         overflowToolbar.setFloatable(false);
-        overflowToolbar.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        overflowToolbar.setBorder(BorderFactory.createLineBorder(UIManager.getColor("controlShadow"), 1));
     }
 
     private ComponentListener getComponentListener() {

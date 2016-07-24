@@ -92,7 +92,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
-    private static final Color NOT_FOUND = Color.RED.darker();
+    private static final Color NOT_FOUND = UIManager.getColor("nb.errorForeground");
     private static final Color INVALID_REGEXP = Color.red;
     // Delay times for incremental search [ms]
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
