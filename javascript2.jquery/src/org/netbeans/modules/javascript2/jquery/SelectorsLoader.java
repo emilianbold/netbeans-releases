@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.jquery;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +73,14 @@ public class SelectorsLoader extends DefaultHandler {
     public static final String SELECTOR = "selector";   //NOI18N
     public static final String METHOD = "method";   //NOI18N
     public static final String RETURN = "return";   //NOI18N
-        
+    private static final Color PRE_BACKGROUNDCOLOR = new Color(254, 254, 202); // #fefeca
+    private static final Color TITLE_BACKGROUNDCOLOR = new Color(31, 111, 180); // #1f6fb4
+    private static final Color TITLE_COLOR = Color.WHITE;
+    private static final Color LINK_COLOR = Color.WHITE;
+    private static final Color TABLE_BACKGROUNDCOLOR = new Color(209, 209, 209);// #d1d1d1
+    private static final Color SIGNATURE_COLOR = new Color(102, 102, 102);// #666666
+    private static final Color SIGNATURE_VERSION = new Color(93, 176, 230);// #5DB0E6
+
     private static final Logger LOGGER = Logger.getLogger(SelectorsLoader.class.getName());
 
     private SelectorsLoader() {
@@ -162,7 +170,29 @@ public class SelectorsLoader extends DefaultHandler {
             inTag = Tag.notinterested;
         }
     }
-    
+
+    /**
+     * Copied from org.netbeans.modules.subversion.remote.ui.history.RevisionNode
+     * @param c
+     * @return 
+     */
+    private static String getColorString(Color c) {
+	return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); // NOI18N
+    }
+
+    /**
+     * Copied from org.netbeans.modules.subversion.remote.ui.history.RevisionNode
+     * @param c
+     * @return 
+     */
+    private static String getHex(int i) {
+	String hex = Integer.toHexString(i & 0x000000FF);
+	if (hex.length() == 1) {
+	    hex = "0" + hex; // NOI18N
+	}
+	return hex;
+    }
+
     private static class Signature {
         List<Argument> arguments;
         String fromVersion;
@@ -380,7 +410,7 @@ public class SelectorsLoader extends DefaultHandler {
             StringBuilder sb = new StringBuilder();
             sb.append('.'); // NOI18N
             if(link) {
-                sb.append(String.format("<a style='color: white' href='http://api.jquery.com/%s/'>%s</a>", elementName, elementName)); // NOI18N
+                sb.append(String.format("<a style='color: %s' href='http://api.jquery.com/%s/'>%s</a>", getColorString(LINK_COLOR), elementName, elementName)); // NOI18N
             } else {
                 sb.append(elementName);
             }
@@ -403,7 +433,7 @@ public class SelectorsLoader extends DefaultHandler {
         }
         
         private String addStyles(String text) {
-            String result = text.replace("<pre>", "<pre style='margin: 1em 0px; display: block; font-family: monospace;white-space: pre;background-color: #fefeca; padding:6px;'>"); // NOI18N
+            String result = text.replace("<pre>", "<pre style='margin: 1em 0px; display: block; font-family: monospace;white-space: pre;background-color: " + getColorString(PRE_BACKGROUNDCOLOR) + "; padding:6px;'>"); // NOI18N
             return result;
         }
 
@@ -419,21 +449,27 @@ public class SelectorsLoader extends DefaultHandler {
             documentation.append("</html>\n");                                  // NOI18N
         }
         private void htmlDocMethodTitle(){
-            documentation.append("<table style='width:100%; background-color:#1f6fb4; color:white; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n"); // NOI18N
+	    documentation.append("<table style='width:100%; background-color:")
+		    .append(getColorString(TITLE_BACKGROUNDCOLOR)).append("; color:")
+		    .append(getColorString(TITLE_COLOR))
+		    .append("; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n"); // NOI18N
             String firstSignature;
             if(signatures.isEmpty()) {
-                firstSignature = String.format(".<a style='color: white' href='http://api.jquery.com/%s/'>%s</a>( )", elementName, elementName); // NOI18N
+                firstSignature = String.format(".<a style='color: %s' href='http://api.jquery.com/%s/'>%s</a>( )", getColorString(LINK_COLOR), elementName, elementName); // NOI18N
             } else {
                 firstSignature = createSignatureText(signatures.get(0), true);
             }
             documentation.append("<td>").append(firstSignature).append("</td>\n"); // NOI18N
-            documentation.append("<td style='text-align: right;font-style: italic;'>").append(String.format("Returns: <a style='color:white;' href='http://api.jquery.com/Types/#'%s> %s</a>",returns, returns)).append("</td>\n"); // NOI18N
+            documentation.append("<td style='text-align: right;font-style: italic;'>").append(String.format("Returns: <a style='color:%s' href='http://api.jquery.com/Types/#'%s> %s</a>", getColorString(LINK_COLOR), returns, returns)).append("</td>\n"); // NOI18N
             documentation.append("</tr></table>");                              // NOI18N
         }
         
         private void htmlDocSelectorTitle(){
-            documentation.append("<table style='width:100%; background-color:#1f6fb4; color:white; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n");// NOI18N
-            String title= String.format("<a style='color: white' href='http://api.jquery.com/%s-selector/'>%s</a> selector", elementName, elementName); // NOI18N
+	    documentation.append("<table style='width:100%; background-color:")
+		    .append(getColorString(TITLE_BACKGROUNDCOLOR)).append("; color:")
+		    .append(getColorString(TITLE_COLOR))
+		    .append("; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n");// NOI18N
+            String title= String.format("<a style='color: %s' href='http://api.jquery.com/%s-selector/'>%s</a> selector", getColorString(LINK_COLOR), elementName, elementName); // NOI18N
             documentation.append("<td>").append(title).append("</td>\n");       // NOI18N
             documentation.append("</tr></table>");                              // NOI18N
         }
@@ -469,13 +505,13 @@ public class SelectorsLoader extends DefaultHandler {
         
         private void htmlSignatures() {    
             if (!signatures.isEmpty()) {
-                documentation.append("<table align='right' style='width:95%; background-color:#d1d1d1; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
+                documentation.append("<table align='right' style='width:95%; background-color:").append(getColorString(TABLE_BACKGROUNDCOLOR)).append("; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
                 for(Signature signature : signatures) {
-                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:#666666'><tr>\n"); // NOI18N
+                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:").append(getColorString(SIGNATURE_COLOR)).append("'><tr>\n"); // NOI18N
                     documentation.append("<td>");                               // NOI18N
                     documentation.append(createSignatureText(signature, false));
                     documentation.append("</td><td style='vertical-align: bottom; text-align: right;'>"); // NOI18N
-                    documentation.append(String.format("version added: <a style='color: #5DB0E6;' href='http://api.jquery.com/category/version/%s/'>%s</a>", signature.fromVersion, signature.fromVersion));// NOI18N
+                    documentation.append(String.format("version added: <a style='color: %s' href='http://api.jquery.com/category/version/%s/'>%s</a>", getColorString(SIGNATURE_VERSION), signature.fromVersion, signature.fromVersion));// NOI18N
                     documentation.append("</td>");                              // NOI18N    
                     documentation.append("</tr></table>\n");                    // NOI18N
                     documentation.append("<hr style='width: 100%; height: 2px'/>"); // NOI18N
@@ -492,13 +528,13 @@ public class SelectorsLoader extends DefaultHandler {
         
         private void htmlDocSelectorSignatures() {    
             if (!signatures.isEmpty()) {
-                documentation.append("<table align='right' style='width:95%; background-color:#d1d1d1; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
+                documentation.append("<table align='right' style='width:95%; background-color:").append(getColorString(TABLE_BACKGROUNDCOLOR)).append("; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
                 for(Signature signature : signatures) {
-                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:#666666'><tr>\n"); // NOI18N
+                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:").append(getColorString(SIGNATURE_COLOR)).append("'><tr>\n"); // NOI18N
                     documentation.append("<td>");                               // NOI18N
                     documentation.append(String.format("jQuery('%s')", sample));// NOI18N
                     documentation.append("</td><td style='vertical-align: bottom; text-align: right;'>");   // NOI18N
-                    documentation.append(String.format("version added: <a style='color: #5DB0E6;' href='http://api.jquery.com/category/version/%s/'>%s</a>", signature.fromVersion, signature.fromVersion));// NOI18N
+                    documentation.append(String.format("version added: <a style='color: %s' href='http://api.jquery.com/category/version/%s/'>%s</a>", getColorString(SIGNATURE_VERSION), signature.fromVersion, signature.fromVersion));// NOI18N
                     documentation.append("</td>");                              // NOI18N
                     documentation.append("</tr></table>\n");                    // NOI18N
                     documentation.append("<hr style='width: 100%; height: 2px'/>"); // NOI18N
