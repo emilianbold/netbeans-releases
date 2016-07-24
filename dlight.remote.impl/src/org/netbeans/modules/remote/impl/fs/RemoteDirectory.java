@@ -1168,6 +1168,21 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         return storage;
     }
 
+    private boolean isPendingDelivery(DirEntry entry) {
+        String name = entry.getName();
+        if (name.startsWith("#") && name.endsWith("#")) {
+            name = name.substring(1, name.length() - 1);
+            RemoteFileObject child = getFileObject(name, null);
+            if (child != null && child.getImplementor() instanceof RemotePlainFile) {
+                RemotePlainFile pf = (RemotePlainFile) child.getImplementor();
+                if (pf.isPendingRemoteDelivery()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private DirectoryStorage updateChildren(Map<String, DirEntry> newEntries, DirectoryStorage storage,
             boolean fromMemOrDiskCache, final String expectedName, final String childName,
             final boolean expected) throws IOException {
@@ -1182,17 +1197,24 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         List<DirEntry> entriesToFireCreated = new ArrayList<>();
         DirEntry expectedCreated = null;
         List<RemoteFileObject> filesToFireDeleted = new ArrayList<>();
+        Iterator<Map.Entry<String, DirEntry>> it = newEntries.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, DirEntry> mapEntry = it.next();
+            if (isPendingDelivery(mapEntry.getValue())) {
+                it.remove();
+            }
+        }
         for (DirEntry newEntry : newEntries.values()) {
             if (newEntry.isValid()) {
                 String cacheName;
                 DirEntry oldEntry = storage.getValidEntry(newEntry.getName());
                 if (oldEntry == null || !oldEntry.isValid()) {
-                    changed = true;
-                    cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
-                    if (fromMemOrDiskCache || newEntry.getName().equals(expectedName) || getFlag(CONNECTION_ISSUES)) {
-                        entriesToFireCreated.add(newEntry);
-                        expectedCreated = newEntry;
-                    }
+                        changed = true;
+                        cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                        if (fromMemOrDiskCache || newEntry.getName().equals(expectedName) || getFlag(CONNECTION_ISSUES)) {
+                            entriesToFireCreated.add(newEntry);
+                            expectedCreated = newEntry;
+                        }
                 } else {
                     if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();

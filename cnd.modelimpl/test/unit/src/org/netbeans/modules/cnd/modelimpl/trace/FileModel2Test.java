@@ -590,4 +590,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 258327 - Unresolved _Atomic in C11 when used with parens
         performTest("bug258327.c");
     }
+    
+    public void testBug255724() throws Exception {
+        // Bug 255724 - inaccuracy tests: regression in DDD
+        performTest("bug255724.c");
+    }
 }
