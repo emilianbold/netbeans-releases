@@ -228,7 +228,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
                 //really strange...
                 return false;
             }
-            insertStatement(parameter, statementPath.getParentPath(), index, assignment, true);
+            insertStatement(parameter, statementPath.getParentPath(), statement, assignment, true);
             return true;
         }
 
@@ -264,7 +264,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
                 ExpressionTree reference = hasParameterOfTheSameName ? make.MemberSelect(make.Identifier("this"), name) : make.Identifier(name); // NOI18N
                 ExpressionStatementTree assignment = make.ExpressionStatement(make.Assignment(reference, expression));
                 // insert as the 2nd statement, after potential super call.
-                insertStatement(parameter, new TreePath(constructor, constr.getBody()), 1, 
+                insertStatement(parameter, new TreePath(constructor, constr.getBody()), null, 
                         assignment, constructor.getLeaf() == method.getLeaf());
             }
             return true;
@@ -278,29 +278,12 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
          * @param assignment 
          */
         private void insertStatement(WorkingCopy parameter, 
-                TreePath target, int index, StatementTree assignment, boolean replace) {
-            TreeMaker make = parameter.getTreeMaker();
-
+                TreePath target, Tree anchor, StatementTree assignment, boolean replace) {
             if ((variableRewrite || expressionStatementRewrite) && replace) {
                 parameter.rewrite(toRemoveFromParent.getLeaf(), assignment);
                 toRemoveFromParent = null;
             } else {
-                BlockTree origBody = (BlockTree)target.getLeaf();
-                List<StatementTree> nueStatements = new LinkedList<StatementTree>();
-                List<? extends StatementTree> origStatements = origBody.getStatements();
-                StatementTree canBeSuper = origStatements.get(0);
-                int from = 0;
-                // for constructor
-                if (parameter.getTreeUtilities().isSynthetic(TreePath.getPath(target, canBeSuper))) {
-                    from = 1;
-                }
-                nueStatements.addAll(origStatements.subList(from, index));
-                nueStatements.add(assignment);
-                if (index < origStatements.size()) {
-                    nueStatements.addAll(origStatements.subList(index, origStatements.size()));
-                }
-                BlockTree nueBlock = make.Block(nueStatements, false);
-                parameter.rewrite(origBody, nueBlock);
+                Utilities.insertStatement(parameter, target, anchor, Collections.singletonList(assignment), null, 0);
             }
         }
 

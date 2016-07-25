@@ -895,51 +895,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
 
-    // used by IntroduceHint, from @doReplaceInBlockCatchSingleStatement
-    static Tree resolveRewritten(Map<Tree, Tree> rewritten, Tree t) {
-        while (rewritten.containsKey(t)) {
-            t = rewritten.get(t);
-        }
-        
-        return t;
-    }
-    
-    // used from IntroduceHint / Variable, IntroduceMethodFix
-    static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, Map<Tree, Tree> rewritten, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
-        TreeMaker make = copy.getTreeMaker();
-        Tree toReplace = resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf());
-        Tree nueTree;
-
-        switch (toReplace.getKind()) {
-            case METHOD:
-                toReplace = ((MethodTree) toReplace).getBody();
-                if (toReplace == null) {
-                    return;
-                }
-                //intentional fall-through
-            case BLOCK:
-                nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
-                break;
-            case CASE:
-                nueTree = make.Case(((CaseTree) toReplace).getExpression(), newStatements);
-                break;
-            case LAMBDA_EXPRESSION: {
-                LambdaExpressionTree let = (LambdaExpressionTree)toReplace;
-                nueTree = make.LambdaExpression(let.getParameters(), make.Block(newStatements, false));
-                break;
-            }
-            default:
-                assert getStatements(firstLeaf).size() == 1 : getStatements(firstLeaf).toString();
-                assert newStatements.size() == 1 : newStatements.toString();
-                toReplace = firstLeaf.getLeaf();
-                nueTree = newStatements.get(0);
-                break;
-        }
-        
-        copy.rewrite(toReplace, nueTree);
-        rewritten.put(toReplace, nueTree);
-    }
-
     // used by IntroduceMethod Fix / IntroduceExpressionBasedMethodFix; should be used by all, duplicates are
     // everywhere.
     static boolean shouldReplaceDuplicate(final Document doc, final int startOff, final int endOff) {

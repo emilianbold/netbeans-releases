@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.HintContext;
@@ -115,17 +116,7 @@ TreePathHandle.create (treePath, compilationInfo)
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
             TreePath tp = ctx.getPath();
-            Tree expressionStatementTree = tp.getParentPath ().getLeaf ();
-            Tree parent2 = tp.getParentPath ().getParentPath ().getLeaf ();
-            if (!(parent2 instanceof BlockTree)) return;
-            BlockTree blockTree = (BlockTree) parent2;
-            List<? extends StatementTree> statements = blockTree.getStatements ();
-            List<StatementTree> newStatements = new ArrayList<StatementTree> ();
-            for (StatementTree statement : statements)
-                if (statement != expressionStatementTree)
-                    newStatements.add (statement);
-            BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, blockTree.isStatic());
-            wc.rewrite (blockTree, newBlockTree);
+            Utilities.removeStatement(wc, tp.getParentPath ());
         }
     } // End of FixImpl class
 }
