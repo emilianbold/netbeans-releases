@@ -366,6 +366,9 @@ public final class CreateElement implements ErrorRule<Void> {
         List<TypeMirror> types = (List<TypeMirror>)resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
         
+        if (!ErrorFixesFakeHint.enabled(info.getFileObject(), FixKind.CREATE_LOCAL_VARIABLE)) {
+            fixTypes.remove(ElementKind.LOCAL_VARIABLE);
+        }
         final TypeMirror type;
         
         if (types != null && !types.isEmpty()) {
@@ -489,7 +492,7 @@ public final class CreateElement implements ErrorRule<Void> {
                                 modifiers.add(Modifier.FINAL);
                             }
                         }
-                        if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
+                        if (ErrorFixesFakeHint.enabled(info.getFileObject(), ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
                             result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         }
                     }
