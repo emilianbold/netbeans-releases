@@ -49,11 +49,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -72,6 +74,7 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -115,6 +118,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -323,7 +327,8 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             //Modules
             boolean modulesSupported = false;
             final String classNameFin = className;
-            final FileObject binRoot = Optional.ofNullable(toRun)
+            final ClassPath execFin = exec, execModuleFin = execModule;
+            final URL binRoot = Optional.ofNullable(toRun)
                     .map((src) -> {
                         final ClassPath scp = ClassPath.getClassPath(src, ClassPath.SOURCE);
                         return scp != null ?
@@ -336,19 +341,40 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                             case 0:
                                 return null;
                             case 1:
-                                return URLMapper.findFileObject(brts[0]);
+                                return brts[0];
                             default:
                                 final ClassPath bcp = ClassPathSupport.createClassPath(brts);
-                                return findOwnerRoot(classNameFin, bcp);
+                                final FileObject bcpOwner = findOwnerRoot(classNameFin, bcp);
+                                return bcpOwner != null ?
+                                        bcpOwner.toURL() :
+                                        null;
                         }
                     })
-                    .orElse(findOwnerRoot(className, exec, execModule));
+                    .orElseGet(() -> {
+                        final FileObject bcpOwner = findOwnerRoot(classNameFin, execFin, execModuleFin);
+                        return bcpOwner != null ?
+                                bcpOwner.toURL() :
+                                null;
+                    });
             if (binRoot != null) {
-                final String sl = SourceLevelQuery.getSourceLevel(binRoot);
+                final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(binRoot).getRoots();
+                FileObject slFo;
+                if (toRun != null) {
+                    slFo = toRun;
+                } else if (srcRoots.length > 0) {
+                    slFo = srcRoots[0];
+                } else if ((slFo = URLMapper.findFileObject(binRoot)) != null) {
+                } else if (project != null) {
+                    slFo = project.getProjectDirectory();
+                } else {
+                    slFo = null;
+                }
+                final String sl = slFo != null ?
+                        SourceLevelQuery.getSourceLevel(slFo) :
+                        null;
                 if (sl != null && JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
                     modulesSupported = true;
-                    FileObject mainBinRoot = null;
-                    final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(binRoot.toURL()).getRoots();
+                    URL mainBinRoot = null;
                     if (srcRoots.length > 0) {
                         URL[] mainRootUrls = UnitTestForSourceQuery.findSources(srcRoots[0]);
                         if (mainRootUrls.length > 0) {
@@ -357,28 +383,34 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                                 case 0:
                                     break;
                                 case 1:
-                                     mainBinRoot = URLMapper.findFileObject(mainBinRoots[0]);
+                                     mainBinRoot = mainBinRoots[0];
                                      break;
                                 default:
                                      final ClassPath bcp = ClassPathSupport.createClassPath(mainBinRoots);
-                                     mainBinRoot = findOwnerRoot("module-info", bcp);
-                                     if (mainBinRoot == null) {
+                                     final FileObject bcpOwner = findOwnerRoot("module-info", bcp);
+                                     if (bcpOwner != null) {
+                                         mainBinRoot = bcpOwner.toURL();
+                                     } else {
                                          final FileObject[] brs = bcp.getRoots();
                                          mainBinRoot = brs.length == 0 ?
                                                  null :
-                                                 brs[0];
+                                                 brs[0].toURL();
                                      }
                             }
                         }
                     }
                     setProperty(antProps, "modules.supported.internal", "true");
-                    setProperty(antProps, "module.root", FileUtil.toFile(binRoot).getAbsolutePath());
-                    final String moduleName = binRoot.getFileObject("module-info.class") != null ?
-                            SourceUtils.getModuleName(binRoot.toURL()) :
-                            null;
-                    final String mainModuleName = Optional.ofNullable(mainBinRoot)
-                            .map((fo) -> SourceUtils.getModuleName(fo.toURL()))
-                            .orElse(null);
+                    try {
+                        setProperty(antProps, "module.root",
+                                BaseUtilities.toFile(binRoot.toURI()).getAbsolutePath());
+                    } catch (URISyntaxException e) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Non local target folder:{0}",  //NOI18N
+                                binRoot);
+                    }
+                    final String moduleName = getModuleName(binRoot, srcRoots);
+                    final String mainModuleName = getModuleName(mainBinRoot);
                     if (moduleName != null) {
                         setProperty(antProps, "module.name", moduleName);
                         setProperty(antProps, "named.module.internal", "true");
@@ -438,6 +470,27 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             }
         }
         return null;
+    }
+    
+    @CheckForNull
+    private static String getModuleName(
+            @NullAllowed final URL binRoot) {
+        return binRoot == null ?
+                null :
+                getModuleName(
+                        binRoot,
+                        SourceForBinaryQuery.findSourceRoots(binRoot).getRoots());
+    }
+    
+    @CheckForNull
+    private static String getModuleName(
+            @NonNull final URL binRoot,
+            @NonNull final FileObject[] srcRoots) {
+        if (Arrays.stream(srcRoots).anyMatch((fo) -> fo.getFileObject("module-info.java") != null)) {
+            return SourceUtils.getModuleName(binRoot);
+        } else {
+            return null;
+        }
     }
     
     private static URL[] removeArchives(@NonNull final URL... orig) {
