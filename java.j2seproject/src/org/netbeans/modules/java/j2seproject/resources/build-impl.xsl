@@ -2640,11 +2640,13 @@ is divided into following sections:
                         <length length="0" string="${{test.module.name}}" when="greater"/>
                     </and>
                 </condition>
-                <dirset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="**"/>
+                <fileset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="**/*.class"/>
                 <property name="build.test.classes.dir.abs.internal" location="${{build.test.classes.dir}}"/>
                 <pathconvert refid="run.test.packages.internal" property="run.test.addexports.internal" pathsep=" ">
                     <chainedmapper>
+                        <regexpmapper from="^(.*)\Q${{file.separator}}\E.*\.class$$" to="\1"/>
                         <filtermapper>
+                            <uniqfilter/>
                             <replacestring from="${{build.test.classes.dir.abs.internal}}" to=""/>
                         </filtermapper>
                         <cutdirsmapper dirs="1"/>

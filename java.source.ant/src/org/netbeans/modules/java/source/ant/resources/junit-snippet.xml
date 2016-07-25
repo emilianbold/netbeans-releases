@@ -95,11 +95,13 @@ made subject to such option by the copyright holder.
                         <length length="0" string="${module.name}" when="greater"/>
                     </and>
                 </condition>
-                <dirset dir="${module.root}" id="run.test.packages.internal" includes="**"/>
+                <fileset dir="${module.root}" id="run.test.packages.internal" includes="**/*.class"/>
                 <property name="module.root.abs.internal" location="${module.root}"/>
                 <pathconvert pathsep=" " property="run.test.addexports.internal" refid="run.test.packages.internal">
                     <chainedmapper>
+                        <regexpmapper from="^(.*)\Q${file.separator}\E.*\.class$$" to="\1"/>
                         <filtermapper>
+                            <uniqfilter/>
                             <replacestring from="${module.root.abs.internal}" to=""/>
                         </filtermapper>
                         <cutdirsmapper dirs="1"/>
