@@ -275,32 +275,6 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.unlockOutsideTryFinally", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.unlockOutsideTryFinally", category="thread", suppressWarnings="LockAcquiredButNotSafelyReleased")
-    @TriggerPattern(value="$lock.lock(); $statements$; $lock.unlock();",
-                    constraints=@ConstraintVariableType(variable="$lock", type="java.util.concurrent.locks.Lock"))
-    public static ErrorDescription unlockOutsideTryFinally(HintContext ctx) {
-        if (ctx.getMultiVariables().get("$statements$").isEmpty()) return null; //#186434
-        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_UnlockOutsideTryFinally");
-        String lockString = ctx.getVariables().containsKey("$lock") ? "$lock." : ""; // NOI18N
-        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), lockString + "lock(); try {$statements$;} finally {" + lockString + "unlock();}");
-        String displayName = NbBundle.getMessage(Tiny.class, "ERR_UnlockOutsideTryFinally");
-
-        //XXX:
-        Tree mark;
-        Tree matched = ctx.getPath().getLeaf();
-
-        if (matched.getKind() == Kind.BLOCK) {
-            List<? extends StatementTree> s = ((BlockTree) matched).getStatements();
-            int count = ctx.getMultiVariables().get("$$1$").size();
-
-            mark = s.get(count);
-        } else {
-            mark = matched;
-        }
-
-        return ErrorDescriptionFactory.forName(ctx, mark, displayName, f);
-    }
-
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.unsyncWait", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.unsyncWait", category="thread", suppressWarnings="WaitWhileNotSynced", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.wait()",

@@ -162,39 +162,12 @@ public class ExtraCatch implements ErrorRule<Void> {
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             
             if (parent.getResources().isEmpty() && parent.getCatches().size() == 1) {
-                Tree parentParent = ctx.getPath().getParentPath().getParentPath().getLeaf();
-                List<StatementTree> statements;
-                BlockTree parentBlock = null;
-                CaseTree parentCase = null;
-                
-                switch (parentParent.getKind()) {
-                    case BLOCK: {
-                        parentBlock = (BlockTree) parentParent;
-                        statements = new ArrayList<StatementTree>(parentBlock.getStatements());
-                        break;
-                    }
-                    case CASE: {
-                        parentCase = (CaseTree) parentParent;
-                        statements = new ArrayList<StatementTree>(parentCase.getStatements());
-                        break;
-                    }
-                    default:
-                        throw new IllegalStateException();
-                }
-                int at = statements.indexOf(parent);
-                statements.addAll(at, parent.getBlock().getStatements());
+                List<StatementTree> repl = new ArrayList<>();
+                repl.addAll(parent.getBlock().getStatements());
                 if (parent.getFinallyBlock() != null) {
-                    statements.addAll(at + parent.getBlock().getStatements().size(), parent.getFinallyBlock().getStatements());
+                        repl.addAll(parent.getFinallyBlock().getStatements());
                 }
-                statements.remove(parent);
-                Tree stat;
-                
-                if (parentParent.getKind() == Tree.Kind.BLOCK) {
-                    stat = make.Block(statements, parentBlock.isStatic());
-                } else {
-                    stat = make.Case(parentCase.getExpression(), statements);
-                }
-                ctx.getWorkingCopy().rewrite(parentParent, stat);
+                Utilities.replaceStatement(ctx.getWorkingCopy(), ctx.getPath().getParentPath(), repl);
             } else {
                 ctx.getWorkingCopy().rewrite(parent, make.removeTryCatch(parent, toRemove));
             }
