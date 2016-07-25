@@ -1170,7 +1170,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private boolean isPendingDelivery(DirEntry entry) {
         String name = entry.getName();
-        if (name.startsWith("#") && name.endsWith("#")) {
+        if (name.startsWith("#") && name.endsWith("#")) { // NOI18N
             name = name.substring(1, name.length() - 1);
             RemoteFileObject child = getFileObject(name, null);
             if (child != null && child.getImplementor() instanceof RemotePlainFile) {
