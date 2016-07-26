@@ -574,49 +574,51 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
                 fmTx.delete(file);
             }
-            if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (!javaContext.getFQNs().check(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
-                    String fileName = file.getName();
-                    fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-                    final String[][] patterns = new String[][]{
-                        new String[]{fileName + '.', "", FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
-                        new String[]{fileName + '$', null, FileObjects.SIG}                                                       //NOI18N
-                    };
-                    File parent = file.getParentFile();
-                    FilenameFilter filter = new FilenameFilter() {
+            if (cont) {
+                file = new File(classFolder, withoutExt + '.' + FileObjects.SIG);
+                if (file.exists()) {
+                    if (!javaContext.getFQNs().check(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
+                        String fileName = file.getName();
+                        fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+                        final String[][] patterns = new String[][]{
+                            new String[]{fileName + '.', "", FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
+                            new String[]{fileName + '$', null, FileObjects.SIG}                                                       //NOI18N
+                        };
+                        File parent = file.getParentFile();
+                        FilenameFilter filter = new FilenameFilter() {
 
-                        @Override
-                        public boolean accept(File dir, String name) {
-                            for (final String[] pattern : patterns) {
-                                if (name.startsWith(pattern[0])) {
-                                    final String ext = FileObjects.getExtension(name);
-                                    for (int i = 2; i< pattern.length; i++) {
-                                        if (pattern[i].equals(ext) && (pattern[1] == null || name.length() == pattern[0].length() + pattern[i].length())) {
-                                            return true;
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                for (final String[] pattern : patterns) {
+                                    if (name.startsWith(pattern[0])) {
+                                        final String ext = FileObjects.getExtension(name);
+                                        for (int i = 2; i< pattern.length; i++) {
+                                            if (pattern[i].equals(ext) && (pattern[1] == null || name.length() == pattern[0].length() + pattern[i].length())) {
+                                                return true;
+                                            }
                                         }
                                     }
                                 }
+                                return false;
                             }
-                            return false;
-                        }
-                    };
-                    final File[] children = parent.listFiles(filter);
-                    if (children != null) {
-                        for (File f : children) {
-                            String className = FileObjects.getBinaryName(f, classFolder);
-                            javaContext.getFQNs().remove(className, relURLPair.second());
-                            toDelete.add(Pair.<String, String>of(className, null));
-                            removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
-                            removedFiles.add(f);
-                            fmTx.delete(f);
+                        };
+                        final File[] children = parent.listFiles(filter);
+                        if (children != null) {
+                            for (File f : children) {
+                                String className = FileObjects.getBinaryName(f, classFolder);
+                                javaContext.getFQNs().remove(className, relURLPair.second());
+                                toDelete.add(Pair.<String, String>of(className, null));
+                                removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
+                                removedFiles.add(f);
+                                fmTx.delete(f);
+                            }
                         }
                     }
-                } else if ("module-info.sig".contentEquals(file.getName())) { //NOI18N
+                }
+                if (FileObjects.MODULE_INFO.equals(withoutExt)) {
                     if (isModuleInfo != null) {
                         isModuleInfo[0] = true;
                     }
-                    removedFiles.add(file);
-                    fmTx.delete(file);
                 }
             }
         }
