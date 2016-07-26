@@ -54,6 +54,8 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -118,6 +120,8 @@ public final class CGSInfo {
     private boolean generateDoc;
     private boolean fluentSetter;
     private boolean isPublicModifier;
+    private PhpVersion phpVersion;
+
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<>();
@@ -209,6 +213,15 @@ public final class CGSInfo {
         return textComp;
     }
 
+    public PhpVersion getPhpVersion() {
+        return phpVersion;
+    }
+
+    // for unit tests
+    void setPhpVersion(PhpVersion phpVersion) {
+        this.phpVersion = phpVersion;
+    }
+
     public TypeNameResolver createTypeNameResolver(MethodElement method) {
         TypeNameResolver result;
         if (method.getParameters().isEmpty()) {
@@ -232,6 +245,7 @@ public final class CGSInfo {
         if (file == null) {
             return;
         }
+        phpVersion = CodeUtils.getPhpVersion(file);
         try {
             ParserManager.parse(Collections.singleton(Source.create(textComp.getDocument())), new UserTask() {
 

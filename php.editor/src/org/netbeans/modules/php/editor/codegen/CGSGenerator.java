@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.codegen;
 
@@ -55,10 +55,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.codegen.SinglePropertyMethodCreator.SingleGetterCreator;
-import org.netbeans.modules.php.editor.codegen.SinglePropertyMethodCreator.SingleSetterCreator;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -176,7 +172,7 @@ public final class CGSGenerator implements CodeGenerator {
 
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
-                return new SelectedPropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo));
+                return new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleGetters(), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo));
             }
 
         },
@@ -208,7 +204,7 @@ public final class CGSGenerator implements CodeGenerator {
 
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
-                return new SelectedPropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo));
+                return new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleSetters(), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo));
             }
 
         },
@@ -244,8 +240,8 @@ public final class CGSGenerator implements CodeGenerator {
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
                 final StringBuilder gettersAndSetters = new StringBuilder();
-                gettersAndSetters.append(new SelectedPropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo)));
-                gettersAndSetters.append(new SelectedPropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo)));
+                gettersAndSetters.append(new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleGetters(), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+                gettersAndSetters.append(new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleSetters(), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
                 return gettersAndSetters.toString();
             }
 
@@ -274,23 +270,7 @@ public final class CGSGenerator implements CodeGenerator {
 
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
-                final StringBuilder inheritedMethods = new StringBuilder();
-                for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
-                    if (methodProperty.isSelected()) {
-                        final MethodElement method = methodProperty.getMethod();
-                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
-                            inheritedMethods.append(method.asString(
-                                    PrintAs.DeclarationWithEmptyBody,
-                                    cgsInfo.createTypeNameResolver(method)).replace("abstract ", "")); //NOI18N;
-                        } else {
-                            inheritedMethods.append(method.asString(
-                                    PrintAs.DeclarationWithParentCallInBody,
-                                    cgsInfo.createTypeNameResolver(method)).replace("abstract ", "")); //NOI18N;
-                        }
-                        inheritedMethods.append(NEW_LINE);
-                    }
-                }
-                return inheritedMethods.toString();
+                return new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleMethods(), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo));
             }
 
         };

@@ -42,21 +42,60 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.util.ArrayList;
+import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+
+import static org.netbeans.modules.php.editor.codegen.CGSGenerator.NEW_LINE;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface SinglePropertyMethodCreator {
+public interface SinglePropertyMethodCreator<T extends Property> {
 
-    String create(Property property);
+    String create(T property);
 
-    public abstract static class SinglePropertyMethodCreatorImpl implements SinglePropertyMethodCreator {
+    //~ Inner classes
+
+    final class InheritedMethodCreator implements SinglePropertyMethodCreator<MethodProperty> {
+
+        private final CGSInfo cgsInfo;
+
+
+        public InheritedMethodCreator(CGSInfo cgsInfo) {
+            assert cgsInfo != null;
+            this.cgsInfo = cgsInfo;
+        }
+
+        @Override
+        public String create(MethodProperty property) {
+            final StringBuilder inheritedMethod = new StringBuilder();
+            final MethodElement method = property.getMethod();
+            if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
+                inheritedMethod.append(method.asString(
+                        BaseFunctionElement.PrintAs.DeclarationWithEmptyBody,
+                        cgsInfo.createTypeNameResolver(method),
+                        cgsInfo.getPhpVersion()).replace("abstract ", "")); //NOI18N;
+            } else {
+                inheritedMethod.append(method.asString(
+                        BaseFunctionElement.PrintAs.DeclarationWithParentCallInBody,
+                        cgsInfo.createTypeNameResolver(method),
+                        cgsInfo.getPhpVersion()).replace("abstract ", "")); //NOI18N;
+            }
+            inheritedMethod.append(NEW_LINE);
+            return inheritedMethod.toString();
+        }
+
+    }
+
+    abstract class SinglePropertyMethodCreatorImpl implements SinglePropertyMethodCreator<Property> {
         protected static final String TEMPLATE_NAME = "${TEMPLATE_NAME}"; //NOI18N
         protected static final String FUNCTION_MODIFIER = "${FUNCTION_MODIFIER}"; //NOI18N
         protected final CGSInfo cgsInfo;
 
         public SinglePropertyMethodCreatorImpl(CGSInfo cgsInfo) {
+            assert cgsInfo != null;
             this.cgsInfo = cgsInfo;
         }
 
@@ -76,7 +115,7 @@ public interface SinglePropertyMethodCreator {
 
     }
 
-    public static final class SingleGetterCreator extends SinglePropertyMethodCreatorImpl {
+    final class SingleGetterCreator extends SinglePropertyMethodCreatorImpl {
         private static final String GETTER_TEMPLATE
             = CGSGenerator.ACCESS_MODIFIER + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "() {"
             + CGSGenerator.NEW_LINE + "return " + CGSGenerator.ACCESSOR + CGSGenerator.PROPERTY + ";" + CGSGenerator.NEW_LINE + "}" + CGSGenerator.NEW_LINE;    //NOI18N
@@ -104,7 +143,7 @@ public interface SinglePropertyMethodCreator {
 
     }
 
-    public static final class SingleSetterCreator extends SinglePropertyMethodCreatorImpl {
+    final class SingleSetterCreator extends SinglePropertyMethodCreatorImpl {
         private static final String PARAM_TYPE = "${PARAM_TYPE}"; //NOI18N
         private static final String FLUENT_SETTER = "${FluentSetter}"; //NOI18N
         private static final String SETTER_TEMPLATE
@@ -144,7 +183,7 @@ public interface SinglePropertyMethodCreator {
         private static final class FluentSetterReturnPartCreator {
             private final boolean isStatic;
 
-            public FluentSetterReturnPartCreator(boolean isStatic) {
+            FluentSetterReturnPartCreator(boolean isStatic) {
                 this.isStatic = isStatic;
             }
 
