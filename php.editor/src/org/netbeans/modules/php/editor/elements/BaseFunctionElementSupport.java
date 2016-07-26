@@ -46,6 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
@@ -77,6 +80,10 @@ public class BaseFunctionElementSupport  {
     }
 
     public final String asString(PrintAs as, BaseFunctionElement element, TypeNameResolver typeNameResolver) {
+        return asString(as, element, typeNameResolver, null);
+    }
+
+    public final String asString(PrintAs as, BaseFunctionElement element, TypeNameResolver typeNameResolver, @NullAllowed PhpVersion phpVersion) {
         StringBuilder template = new StringBuilder();
         switch (as) {
             case NameAndParamsDeclaration:
@@ -95,20 +102,31 @@ public class BaseFunctionElementSupport  {
                     template.append(modifiers).append(" "); //NOI18N
                 }
                 template.append("function"); //NOI18N
-                template.append(asString(PrintAs.NameAndParamsDeclaration, element, typeNameResolver));
+                template.append(asString(PrintAs.NameAndParamsDeclaration, element, typeNameResolver, phpVersion));
+                if (phpVersion != null
+                        && phpVersion.compareTo(PhpVersion.PHP_70) >= 0) {
+                    Collection<TypeResolver> returns1 = getReturnTypes();
+                    if (returns1.size() == 1) {
+                        String returnType = asString(PrintAs.ReturnTypes, element, typeNameResolver, phpVersion);
+                        if (StringUtils.hasText(returnType)) {
+                            template.append(": "); // NOI18N
+                            template.append(returnType);
+                        }
+                    }
+                }
                 break;
             case DeclarationWithEmptyBody:
-                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
+                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver, phpVersion));
                 template.append("{\n}"); //NOI18N
                 break;
             case DeclarationWithParentCallInBody:
-                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
-                Collection<TypeResolver> returns = getReturnTypes();
-                String methdodInvocation = asString(PrintAs.NameAndParamsInvocation, element, typeNameResolver);
+                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver, phpVersion));
+                Collection<TypeResolver> returns2 = getReturnTypes();
+                String methdodInvocation = asString(PrintAs.NameAndParamsInvocation, element, typeNameResolver, phpVersion);
                 if (methdodInvocation.startsWith(" ")) {
                     methdodInvocation = methdodInvocation.substring(1);
                 }
-                if (returns.size() > 0) {
+                if (returns2.size() > 0) {
                     template.append(String.format("{%nreturn parent::%s;%n}", methdodInvocation)); //NOI18N
                 } else {
                     template.append(String.format("{%nparent::%s;%n}", methdodInvocation)); //NOI18N

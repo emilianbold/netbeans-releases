@@ -140,6 +140,11 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         }
     }
 
+    // for unit tests
+    protected PhpVersion getPhpVersion(FileObject file) {
+        return CodeUtils.getPhpVersion(file);
+    }
+
     private List<HintFix> createHintFixes(BaseDocument doc, FixInfo fixInfo) {
         List<HintFix> hintFixes = new ArrayList<>();
         hintFixes.add(new ImplementAllFix(doc, fixInfo));
@@ -181,15 +186,18 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                         if (fileScope != null) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                             List typeNameResolvers = new ArrayList<>();
-                            if (fileObject != null
-                                    && CodeUtils.isPhpVersion(fileObject, PhpVersion.PHP_5)) {
+                            PhpVersion phpVersion = PhpVersion.getDefault();
+                            if (fileObject != null) {
+                                phpVersion = getPhpVersion(fileObject);
+                            }
+                            if (phpVersion == PhpVersion.PHP_5) {
                                 typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                             } else {
                                 typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
                                 typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
                             }
                             TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
-                            String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
+                            String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver, phpVersion);
                             skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
                             methodSkeletons.add(skeleton);
                             lastMethodElement = methodElement;
