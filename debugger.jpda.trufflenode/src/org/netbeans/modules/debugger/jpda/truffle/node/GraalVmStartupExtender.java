@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle.node;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,14 +49,19 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.api.NodeJsSupport;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 @StartupExtenderImplementation.Registration(displayName = "Debug GraalVM Node.js", startMode = StartupExtender.StartMode.DEBUG)
 public class GraalVmStartupExtender implements StartupExtenderImplementation {
 
+    @NbBundle.Messages("CTL_DebugName=GraalVM node Debugger")
     @Override
     public List<String> getArguments(Lookup context, StartupExtender.StartMode mode) {
         Project p = context.lookup(Project.class);
@@ -70,10 +76,17 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
             return Collections.emptyList();
         }
         final String node = s.getNode(p);
-        if (node == null || !node.endsWith("jre/bin/node")) {
+        File nodeFile = new File(node);
+        nodeFile = FileUtil.normalizeFile(nodeFile);
+        FileObject nodeFO = FileUtil.toFileObject(nodeFile);
+        if (nodeFO == null) {
             return Collections.emptyList();
         }
-        final String debugName = "GraalVM node Debugger";
+        FileObject bin = nodeFO.getParent();
+        if (bin == null || !isJavaPlatformBinDir(bin)) {
+            return Collections.emptyList();
+        }
+        final String debugName = Bundle.CTL_DebugName();
 
         InputOutput io = IOProvider.getDefault().getIO(debugName, false);
         JPDAStart start = new JPDAStart(io, debugName);
@@ -84,6 +97,18 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
             Exceptions.printStackTrace(ex);
         }
         return Arrays.asList("-J-Xrunjdwp:transport=dt_socket,address=" + res + ",server=n,suspend=y");
+    }
+
+    private static boolean isJavaPlatformBinDir(FileObject dir) {
+        if (!"bin".equals(dir.getName())) {
+            return false;
+        }
+        FileObject file = dir.getFileObject("java", BaseUtilities.isWindows() ? "exe" : null);
+        if (file == null) {
+            return false;
+        }
+        file = dir.getFileObject("graalvm", BaseUtilities.isWindows() ? "exe" : null);
+        return file != null;
     }
 
 }
