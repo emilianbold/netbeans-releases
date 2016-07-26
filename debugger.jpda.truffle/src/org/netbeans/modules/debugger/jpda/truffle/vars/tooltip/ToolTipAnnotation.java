@@ -93,6 +93,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
     private Line.Part lp;
     private EditorCookie ec;
+    private final RequestProcessor RP = new RequestProcessor(ToolTipAnnotation.class);
 
     @Override
     public String getShortDescription () {
@@ -126,12 +127,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         this.lp = lp;
         this.ec = ec;
-        RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
-        if (rp == null) {
-            // Debugger is likely finishing...
-            rp = RequestProcessor.getDefault();
-        }
-        rp.post (this);
+        RP.post(this);
         return null;
     }
 
