@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,21 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
         for (Property property : properties) {
             property.setSelected(true);
         }
+        return properties;
+    }
+
+    private <T extends Property> List<T> selectProperties(List<T> properties, String... mask) {
+        boolean anySelected = false;
+        for (Property property : properties) {
+            String name = property.getName();
+            for (String string : mask) {
+                if (name.contains(string)) {
+                    anySelected = true;
+                    property.setSelected(true);
+                }
+            }
+        }
+        assertTrue("Something should be selected from " + Arrays.toString(mask), anySelected);
         return properties;
     }
 
@@ -163,16 +179,32 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
         checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
-    public void testInstanceImplementMethod01_a() throws Exception {
+    public void testInstanceImplementMethod_01() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
         cgsInfo.setPhpVersion(PhpVersion.PHP_70);
-        checkResult(new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleMethods(), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
     }
 
-    public void testInstanceImplementMethod01_b() throws Exception {
+    public void testInstanceImplementMethod_02() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
         cgsInfo.setPhpVersion(PhpVersion.PHP_55);
-        checkResult(new SelectedPropertyMethodsCreator().create(cgsInfo.getPossibleMethods(), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceOverrideMethod_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceOverrideMethod_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_56);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
     }
 
 }
