@@ -111,6 +111,15 @@ abstract class CompileWorker {
         final LowMemoryWatcher lm = LowMemoryWatcher.getInstance();
         lm.free(freeCaches);
     }
+    
+    static class ModuleName {
+        String name;
+        boolean assigned;
+        
+        ModuleName(final String name) {
+            this.name = name;
+        }
+    }
 
     static class ParsingOutput {
         final boolean success;
