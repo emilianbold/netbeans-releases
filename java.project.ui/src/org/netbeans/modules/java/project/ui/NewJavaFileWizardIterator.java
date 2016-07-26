@@ -87,6 +87,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.netbeans.spi.java.project.support.ui.templates.JavaFileWizardIteratorFactory;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Java file.
@@ -292,10 +293,8 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             createdFile = FileUtil.createFolder( dir, targetName );
         } else if (this.type == Type.MODULE_INFO) {
             Project project = Templates.getProject( wiz );
-            String name = ProjectUtils.getInformation(project).getName();
             URL[] srcs = UnitTestForSourceQuery.findSources(dir);
             if (srcs.length > 0) {
-                name += "Test";
                 requiredModuleNames = new LinkedHashSet<>();
                 for (int i = 0; i < srcs.length; i++) {
                     for (URL root : BinaryForSourceQuery.findBinaryRoots(srcs[i]).getRoots()) {
@@ -307,7 +306,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                 }
             }
             DataObject dTemplate = DataObject.find( template );                
-            DataObject dobj = dTemplate.createFromTemplate( df, targetName, Collections.singletonMap("moduleName", name) );
+            DataObject dobj = dTemplate.createFromTemplate( df, targetName, Collections.singletonMap("moduleName", createModuleName(ProjectUtils.getInformation(project).getDisplayName(), srcs.length > 0)));
             createdFile = dobj.getPrimaryFile();
         } else {
             DataObject dTemplate = DataObject.find( template );                
@@ -331,6 +330,52 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         }
         return Collections.unmodifiableSet(res);
     }
+
+    @Messages("TXT_Test=Test")
+    private static String createModuleName (final String projectName, boolean isTest) {
+        final StringBuilder name = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        boolean needsEscape = false;
+        String part;
+        for (int i=0; i< projectName.length(); i++) {
+            final char c = projectName.charAt(i);
+            if (first) {
+                if (!Character.isJavaIdentifierStart(c)) {
+                    if (Character.isJavaIdentifierPart(c)) {
+                        needsEscape = true;
+                        sb.append(c);
+                        first = false;
+                    }
+                } else {
+                    sb.append(c);
+                    first = false;
+                }
+            } else {
+                if (Character.isJavaIdentifierPart(c) ) {
+                    sb.append(c);
+                } else if (sb.length() > 0) {
+                    part = sb.toString();
+                    if (!needsEscape || name.length()>0) {
+                        name.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+                    }
+                    sb = new StringBuilder();
+                    first = true;
+                    needsEscape = false;
+                }
+            }
+        }
+        if (sb.length()>0) {
+            part = sb.toString();
+            if (!needsEscape || name.length()>0) {
+                name.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+            }
+        }
+        if (name.length() == 0) {
+            name.append(Bundle.TXT_Test());
+        }
+        return name.toString();
+    }    
     
     @NonNull
     private static Optional<WizardDescriptor.InstantiatingIterator<WizardDescriptor>> asInstantiatingIterator(
