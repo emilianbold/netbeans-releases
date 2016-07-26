@@ -195,8 +195,10 @@ public class CheckTreeView extends BeanTreeView  {
                     return true;
                 } else {
                     boolean newState = !description.isSelected();
-                    description.setSelected(newState);
                     toggleChildren( description.getSubs(), newState );
+                    // first toggle children, then itself. If children were not expanded,
+                    // the self-toggle will fire appropriate events and controls will be reevaluated.
+                    description.setSelected(newState);
                 }
             }
             
