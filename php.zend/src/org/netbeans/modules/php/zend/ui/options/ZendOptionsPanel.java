@@ -348,7 +348,7 @@ public final class ZendOptionsPanel extends JPanel {
 
     private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
         try {
-            URL url = new URL("http://framework.zend.com/manual/en/introduction.installation.html"); // NOI18N
+            URL url = new URL("https://framework.zend.com/learn"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
