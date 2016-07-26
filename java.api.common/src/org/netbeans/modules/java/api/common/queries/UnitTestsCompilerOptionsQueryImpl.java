@@ -138,7 +138,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         private final SourceRoots srcRoots;
         private final SourceRoots testRoots;
         private final ChangeSupport cs;
-        private final ThreadLocal<Boolean> reenter;
+        private final ThreadLocal<boolean[]> reenter;
         private final Collection</*@GuardedBy("this")*/File> moduleInfoListeners ;
         //@GuardedBy("this")
         private List<String> cache;
@@ -168,10 +168,12 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                 slq[0] = sourceLevel;
             }
             if (args == null) {
-                if (reenter.get() == Boolean.TRUE) {
+                boolean[] state;
+                if ((state = reenter.get()) != null) {
                     args = Collections.emptyList();
+                    state[0] = true;
                 } else {
-                    reenter.set(Boolean.TRUE);
+                    reenter.set(new boolean[1]);
                     try {
                         TestMode mode;
                         final Collection<File> allRoots = new HashSet<>();
@@ -229,7 +231,13 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                             }
                         }
                     } finally {
+                        final boolean fire = Optional.ofNullable(reenter.get())
+                                .map((ba) -> ba[0])
+                                .orElse(Boolean.FALSE);
                         reenter.remove();
+                        if (fire) {
+                            cs.fireChange();
+                        }
                     }
                 }
             }
