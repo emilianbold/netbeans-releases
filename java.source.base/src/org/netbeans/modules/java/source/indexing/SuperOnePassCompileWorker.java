@@ -200,18 +200,18 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 Exceptions.printStackTrace(ex);
             }
         }
-        final String[] moduleName = {javaContext.getModuleName()};
+        ModuleName moduleName = new ModuleName(javaContext.getModuleName());
         if (nop) {
-            return ParsingOutput.success(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (jt == null || units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
-            return ParsingOutput.failure(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.failure(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (context.isCancelled()) {
             return null;
         }
         if (isLowMemory(null)) {
-            return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         Iterable<? extends Processor> processors = jt.getProcessors();
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
@@ -221,7 +221,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             final Map<Element, CompileTuple> clazz2Tuple = new IdentityHashMap<Element, CompileTuple>();
             Enter enter = Enter.instance(jt.getContext());
@@ -240,7 +240,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
                 CompileTuple active = unit.getValue();
@@ -272,7 +272,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             final JavacTaskImpl jtFin = jt;
             final Future<Void> done = FileManagerTransaction.runConcurrent(new FileSystem.AtomicAction() {
@@ -291,11 +291,12 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             }
                         }
                     }
-                    if (moduleName[0] == null) {
+                    if (!moduleName.assigned) {
                         ModuleElement module = Modules.instance(jtFin.getContext()).getDefaultModule();
-                        moduleName[0] = module == null || module.isUnnamed() ?
+                        moduleName.name = module == null || module.isUnnamed() ?
                             null :
                             module.getQualifiedName().toString();
+                        moduleName.assigned = true;
                     }
                 }
             });
@@ -303,7 +304,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 finished.add(unit.getValue().indexable);
             }
             done.get();
-            return ParsingOutput.success(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -338,7 +339,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
@@ -361,6 +362,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
             }
         }
-        return ParsingOutput.failure(moduleName[0], file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
+        return ParsingOutput.failure(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

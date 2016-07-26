@@ -108,6 +108,7 @@ final class MultiPassCompileWorker extends CompileWorker {
             final Collection<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<>();
         final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<>();
+        final ModuleName moduleName = new ModuleName(javaContext.getModuleName());
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
@@ -116,7 +117,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
         if (toProcess.isEmpty()) {
             return ParsingOutput.success(
-                    javaContext.getModuleName(),
+                    moduleName.name,
                     previous.file2FQNs,
                     previous.addedTypes,
                     previous.addedModules,
@@ -133,8 +134,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         boolean aptEnabled = false;
         int state = 0;
         boolean isBigFile = false;
-        boolean[] flm = null;
-        String moduleName = null;
+        boolean[] flm = null;        
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
             if (context.isCancelled()) {
                 return null;
@@ -317,11 +317,12 @@ final class MultiPassCompileWorker extends CompileWorker {
                             }
                         }
                     }
-                    if (moduleName == null) {
+                    if (!moduleName.assigned) {
                         ModuleElement module = Modules.instance(jt.getContext()).getDefaultModule();
-                        moduleName = module == null || module.isUnnamed() ?
+                        moduleName.name = module == null || module.isUnnamed() ?
                                 null :
                                 module.getQualifiedName().toString();
+                        moduleName.assigned = true;
                     }
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
@@ -378,7 +379,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return ParsingOutput.failure(moduleName, previous.file2FQNs,
+                return ParsingOutput.failure(moduleName.name, previous.file2FQNs,
                         previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
                         previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
@@ -397,7 +398,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
-                return ParsingOutput.failure(moduleName, previous.file2FQNs,
+                return ParsingOutput.failure(moduleName.name, previous.file2FQNs,
                         previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
                         previous.modifiedTypes, previous.aptGenerated);
             } catch (Throwable t) {
@@ -435,10 +436,10 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         return (state & MEMORY_LOW) == 0?
-            ParsingOutput.success(moduleName, previous.file2FQNs,
+            ParsingOutput.success(moduleName.name, previous.file2FQNs,
                     previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
                     previous.modifiedTypes, previous.aptGenerated):
-            ParsingOutput.lowMemory(moduleName, previous.file2FQNs,
+            ParsingOutput.lowMemory(moduleName.name, previous.file2FQNs,
                     previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
                     previous.modifiedTypes, previous.aptGenerated);
     }
