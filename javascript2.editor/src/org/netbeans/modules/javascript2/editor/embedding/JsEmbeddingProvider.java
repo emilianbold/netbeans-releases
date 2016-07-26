@@ -126,7 +126,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
             } else if (snapshot.getMimeType().equals("text/javascript")){
-                return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), translators.get(JSX)));
+                return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), translators.get(JSX_MIME_TYPE)));
             } else {
                 return Collections.<SchedulerTask>emptyList();
             }
@@ -156,7 +156,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
     private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
     private static final String LATTE_MIME_TYPE = "text/x-latte"; // NOI18N
-    private static final String JSX = "jsx"; //NOI18N
+    private static final String JSX_MIME_TYPE = "text/x-jsx"; //NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -172,7 +172,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
         translators.put(LATTE_MIME_TYPE, new LatteTranslator());
-        translators.put(JSX, new JsxJsTranslator());
+        translators.put(JSX_MIME_TYPE, new JsxJsTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
