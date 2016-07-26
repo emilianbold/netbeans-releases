@@ -116,8 +116,9 @@ public interface SinglePropertyMethodCreator<T extends Property> {
     }
 
     final class SingleGetterCreator extends SinglePropertyMethodCreatorImpl {
+        private static final String RETURN_TYPE = "${returnType}"; // NOI18N
         private static final String GETTER_TEMPLATE
-            = CGSGenerator.ACCESS_MODIFIER + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "() {"
+            = CGSGenerator.ACCESS_MODIFIER + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "()" + RETURN_TYPE + " {"
             + CGSGenerator.NEW_LINE + "return " + CGSGenerator.ACCESSOR + CGSGenerator.PROPERTY + ";" + CGSGenerator.NEW_LINE + "}" + CGSGenerator.NEW_LINE;    //NOI18N
 
         public SingleGetterCreator(CGSInfo cgsInfo) {
@@ -128,6 +129,10 @@ public interface SinglePropertyMethodCreator<T extends Property> {
         public String create(Property property) {
             StringBuilder getter = new StringBuilder();
             String methodName = getMethodName(property);
+            String type = ""; // NOI18N
+            if (cgsInfo.getPhpVersion().compareTo(PhpVersion.PHP_70) >= 0) {
+                type = property.getType();
+            }
             getter.append(
                     GETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getGetterTemplate())
                     .replace(CGSGenerator.ACCESS_MODIFIER, getAccessModifier())
@@ -136,7 +141,8 @@ public interface SinglePropertyMethodCreator<T extends Property> {
                     .replace(CGSGenerator.ACCESSOR, property.getAccessor())
                     .replace(CGSGenerator.PROPERTY, property.getAccessedName())
                     .replace(CGSGenerator.UP_FIRST_LETTER_PROPERTY, methodName)
-                    .replace(CGSGenerator.UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                    .replace(CGSGenerator.UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
+                    .replace(RETURN_TYPE, type.isEmpty() ? "" : ": " + property.getTypeForTemplate())); // NOI18N
             getter.append(CGSGenerator.NEW_LINE);
             return getter.toString();
         }

@@ -207,4 +207,18 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
                 selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
     }
 
+    public void testGetterWithType_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
+    public void testGetterWithType_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_55);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
 }
