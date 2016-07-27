@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.api.elements;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 
@@ -78,4 +79,10 @@ public class AliasedFunction extends AliasedElement implements FunctionElement {
     public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
         return getRealFunction().asString(as, typeNameResolver);
     }
+
+    @Override
+    public String asString(PrintAs as, TypeNameResolver typeNameResolver, PhpVersion phpVersion) {
+        return getRealFunction().asString(as, typeNameResolver, phpVersion);
+    }
+
 }

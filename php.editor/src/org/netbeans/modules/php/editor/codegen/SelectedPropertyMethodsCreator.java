@@ -47,17 +47,11 @@ import java.util.List;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SelectedPropertyMethodsCreator {
-    private final List<Property> properties;
-    private final StringBuilder generatedMethods;
+public final class SelectedPropertyMethodsCreator {
 
-    public SelectedPropertyMethodsCreator(List<Property> properties) {
-        this.properties = properties;
-        generatedMethods = new StringBuilder();
-    }
-
-    public String create(SinglePropertyMethodCreator propertyCreator) {
-        for (Property property : properties) {
+    public <T extends Property> String create(List<T> properties, SinglePropertyMethodCreator<T> propertyCreator) {
+        StringBuilder generatedMethods = new StringBuilder();
+        for (T property : properties) {
             if (property.isSelected()) {
                 generatedMethods.append(propertyCreator.create(property));
             }

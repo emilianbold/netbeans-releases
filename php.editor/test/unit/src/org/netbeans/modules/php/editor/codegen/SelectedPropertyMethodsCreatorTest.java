@@ -42,12 +42,14 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JTextArea;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -84,73 +86,153 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
         return CGSInfo.getCGSInfo(ta);
     }
 
-    private List<Property> selectAllProperties(List<Property> properties) {
+    private <T extends Property> List<T> selectAllProperties(List<T> properties) {
         for (Property property : properties) {
             property.setSelected(true);
         }
         return properties;
     }
 
+    private <T extends Property> List<T> selectProperties(List<T> properties, String... mask) {
+        boolean anySelected = false;
+        for (Property property : properties) {
+            String name = property.getName();
+            for (String string : mask) {
+                if (name.contains(string)) {
+                    anySelected = true;
+                    property.setSelected(true);
+                }
+            }
+        }
+        assertTrue("Something should be selected from " + Arrays.toString(mask), anySelected);
+        return properties;
+    }
+
+    private String getBaseName() {
+        String name = getName();
+        int indexOf = name.indexOf('_');
+        if (indexOf == -1) {
+            return name;
+        }
+        return name.substring(0, indexOf);
+    }
+
     private String getTestFolderPath() {
-        return "testfiles/codegen/" + getName();
+        return "testfiles/codegen/" + getBaseName();
     }
 
     private String getTestPath() {
-        return getTestFolderPath() + "/" + getName() + ".php";
+        return getTestFolderPath() + "/" + getBaseName()+ ".php";
     }
 
     private void checkResult(String result) throws Exception {
-        assertDescriptionMatches(getTestPath(), result, false, ".codegen");
+        assertDescriptionMatches(getTestPath(), result, false, "." + getName() + ".codegen");
     }
 
     public void testInstancePropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
         cgsInfo.setPublicModifier(true);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertyGetterWithoutPublic() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(false);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetterWithoutPublic() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setPublicModifier(false);
-        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator().create(selectAllProperties(cgsInfo.getPossibleSetters()), new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+    }
+
+    public void testInstanceImplementMethod_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceImplementMethod_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_55);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceOverrideMethod_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceOverrideMethod_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_56);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testGetterWithType_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
+    public void testGetterWithType_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_55);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
+    public void testGetterWithMoreTypes_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_70);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+    }
+
+    public void testGetterWithMoreTypes_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_56);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
 }
