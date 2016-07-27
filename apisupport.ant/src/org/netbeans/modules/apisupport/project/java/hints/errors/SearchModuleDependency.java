@@ -35,6 +35,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
+ */
+/*
  * Contributor(s): theanuradha@netbeans.org, markiewb@netbeans.org
  */
 package org.netbeans.modules.apisupport.project.java.hints.errors;

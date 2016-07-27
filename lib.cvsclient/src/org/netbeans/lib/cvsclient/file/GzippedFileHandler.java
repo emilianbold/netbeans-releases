@@ -26,11 +26,16 @@
  *
  * Contributor(s):
  *
+ *
+ *****************************************************************************/
+/*
+ * Contributor(s): Robert Greig
+ *
  * The Original Software is the CVS Client Library.
  * The Initial Developer of the Original Software is Robert Greig.
- *
- * Contributor(s): Robert Greig, Milos Kleint.
- *****************************************************************************/
+ * Portions created by Robert Greig are Copyright (C) 2000.
+ * All Rights Reserved.
+ */
 package org.netbeans.lib.cvsclient.file;
 
 import java.io.*;

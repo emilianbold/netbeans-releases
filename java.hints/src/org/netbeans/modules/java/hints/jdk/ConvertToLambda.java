@@ -35,9 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Lyle Franklin <lylejfranklin@gmail.com>
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ */
+/*
+ * Contributor(s): Lyle Franklin <lylejfranklin@gmail.com>
  */
 package org.netbeans.modules.java.hints.jdk;
 
