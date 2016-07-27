@@ -66,7 +66,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTextDescription;
@@ -173,10 +176,29 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
     }
 
     private static Collection<? extends FileObject> findFiles(ClassPath cp) {
-        List<FileObject> result = new LinkedList<FileObject>();
+        List<FileObject> roots = new ArrayList<>();
 
-        for (FileObject folder : cp.findAllResources("META-INF/upgrade")) {
-            result.addAll(findFiles(folder));
+        for (Entry binaryEntry : cp.entries()) {
+            Result2 sources = SourceForBinaryQuery.findSourceRoots2(binaryEntry.getURL());
+
+            if (sources.preferSources()) {
+                roots.addAll(Arrays.asList(sources.getRoots()));
+            } else {
+                FileObject binaryRoot = binaryEntry.getRoot();
+
+                if (binaryRoot != null)
+                    roots.add(binaryRoot);
+            }
+        }
+
+        List<FileObject> result = new LinkedList<>();
+
+        for (FileObject root : roots) {
+            FileObject folder = root.getFileObject("META-INF/upgrade");
+
+            if (folder != null) {
+                result.addAll(findFiles(folder));
+            }
         }
 
         return result;
