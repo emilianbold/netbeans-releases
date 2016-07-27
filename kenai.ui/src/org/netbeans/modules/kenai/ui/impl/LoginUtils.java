@@ -112,9 +112,6 @@ public class LoginUtils {
         char[] newPassword = Keyring.read(passwordPref);
         if (scrambledPassword != null) {
             preferences.remove(passwordPref);
-            if (newPassword == null) {
-                return Scrambler.getInstance().descramble(scrambledPassword).toCharArray();
-            }
         }
         return newPassword;
     }
