@@ -52,5 +52,16 @@ Contributor(s):
                 <attr name="requireProject" boolvalue="false"/>
             </file>
         </folder>
+        <folder name="ClientSide">
+            <file name="reactjs.jsx" url="nbresloc:/org/netbeans/modules/javascript2/react/resources/jsxtemplate.jsx">
+                <attr name="position" intvalue="401"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.react.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="html5"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/react/resources/reactjs.html"/>
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>
