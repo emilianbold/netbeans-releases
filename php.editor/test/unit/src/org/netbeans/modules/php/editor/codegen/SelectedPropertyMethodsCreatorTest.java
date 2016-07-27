@@ -235,4 +235,10 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
                 selectAllProperties(cgsInfo.getPossibleGetters()), new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
+    public void testIssue267227() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class DerivedClass extends BaseClass {^");
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "__construct", "myMethod"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
 }

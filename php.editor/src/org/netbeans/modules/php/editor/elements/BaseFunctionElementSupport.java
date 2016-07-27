@@ -88,7 +88,7 @@ public class BaseFunctionElementSupport  {
         switch (as) {
             case NameAndParamsDeclaration:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), OutputType.SHORTEN_DECLARATION, typeNameResolver));
+                template.append(parameters2String(getParameters(), OutputType.COMPLETE_DECLARATION, typeNameResolver));
                 template.append(")"); //NOI18N
                 break;
             case NameAndParamsInvocation:
