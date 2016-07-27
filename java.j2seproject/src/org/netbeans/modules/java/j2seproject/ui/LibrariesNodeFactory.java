@@ -157,9 +157,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
                             ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE)). // NOI18N
-                    setModulePaths(
-                            project.getClassPathProvider().getProjectClassPaths(JavaClassPathConstants.MODULE_COMPILE_PATH)[0],
-                            project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
+                    addModulePathProperties(ProjectProperties.JAVAC_MODULEPATH).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
                     build();
             } else if (key == TEST_LIBRARIES) {
                 return  
