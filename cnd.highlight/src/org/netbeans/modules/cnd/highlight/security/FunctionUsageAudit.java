@@ -45,7 +45,10 @@ import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -57,6 +60,8 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.NbBundle;
@@ -116,20 +121,28 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
                     return;
                 }
                 CsmObject referencedObject = reference.getReferencedObject();
+                String altText = null;
                 if (CsmKindUtilities.isFunction(referencedObject)) {
-                    CsmFunction function = (CsmFunction) referencedObject;
-                    String altText = getAlternativesIfUnsafe(function);
-                    if (altText != null) {
-                        CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                        String id = level.getLevel() + category.getName(); // NOI18N
-                        String name = "(" + level + ") " + function.getName().toString(); // NOI18N
-                        String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
-                        if (response instanceof AnalyzerResponse) {
-                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, customType, reference.getStartOffset(), reference.getEndOffset())); // NOI18N
-                        } else {
-                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, customType, reference.getStartOffset(), reference.getEndOffset()));
+                    altText = getAlternativesIfUnsafe((CsmFunction) referencedObject);
+                } else {
+                    Object platformProject = file.getProject().getPlatformProject();
+                    if (platformProject instanceof NativeProject) {
+                        String platformName = NativeProjectSupport.getPlatformName((NativeProject) platformProject);
+                        if (platformName.equals("MacOSX") && CsmKindUtilities.isMacro(referencedObject)) { // NOI18N
+                            altText = getAlternativesIfUnsafe((CsmMacro) referencedObject);
                         }
+                    }
+                }
+                if (altText != null) {
+                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                    String id = level.getLevel() + category.getName(); // NOI18N
+                    String name = "(" + level + ") " + ((CsmNamedElement) referencedObject).getName().toString(); // NOI18N
+                    String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
+                    if (response instanceof AnalyzerResponse) {
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                            new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, customType, reference.getStartOffset(), reference.getEndOffset())); // NOI18N
+                    } else {
+                        response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, customType, reference.getStartOffset(), reference.getEndOffset()));
                     }
                 }
             }
@@ -151,14 +164,16 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
         return false;
     }
 
-    private String getAlternativesIfUnsafe(CsmFunction function) {
-        final CharSequence functionName = function.getName();
-        for (FunctionsXmlService.RvsdFunction unsafeFunction : category.getFunctions()) {
-            if (CharSequenceUtils.contentEquals(functionName, unsafeFunction.getName())) {
-                CsmFile srcFile = function.getContainingFile();
-                for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
-                    if (include.getIncludeName().toString().equals(unsafeFunction.getHeader())) {
-                        return unsafeFunction.getAlternativesString();
+    private String getAlternativesIfUnsafe(Object function) {
+        if (function instanceof CsmOffsetable && function instanceof CsmNamedElement) {
+            final CharSequence functionName = ((CsmNamedElement) function).getName();
+            for (FunctionsXmlService.RvsdFunction unsafeFunction : category.getFunctions()) {
+                if (CharSequenceUtils.contentEquals(functionName, unsafeFunction.getName())) {
+                    CsmFile srcFile = ((CsmOffsetable) function).getContainingFile();
+                    for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
+                        if (include.getIncludeName().toString().equals(unsafeFunction.getHeader())) {
+                            return unsafeFunction.getAlternativesString();
+                        }
                     }
                 }
             }
