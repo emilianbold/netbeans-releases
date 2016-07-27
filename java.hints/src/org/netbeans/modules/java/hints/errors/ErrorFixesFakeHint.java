@@ -148,6 +148,15 @@ public class ErrorFixesFakeHint extends AbstractHint {
         return getHint(kind).isEnabled();
     }
     
+    public static boolean enabled(FileObject forFile, FixKind fixKind) {
+        Preferences prefs = getPreferences(forFile, fixKind);
+        if (prefs == null) {
+            return enabled(fixKind);
+        }
+        String s = prefs.get("enabled", null);
+        return s == null  ? enabled(fixKind) : Boolean.parseBoolean(s);
+    }
+    
     public static Preferences getPreferences(FileObject forFile, FixKind fixKind) {
         return HintsSettings.getSettingsFor(forFile).getHintPreferences(HintMetadata.Builder.create(getHint(fixKind).getId()).build());
     }
