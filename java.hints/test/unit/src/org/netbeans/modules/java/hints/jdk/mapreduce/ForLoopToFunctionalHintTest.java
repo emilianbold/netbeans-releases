@@ -35,9 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Alexandru Gyori <Alexandru.Gyori at gmail.com>
- * 
+ *
  * Portions Copyrighted 2012-2013 Sun Microsystems, Inc.
+ */
+/*
+ * Contributor(s): Alexandru Gyori <Alexandru.Gyori at gmail.com>
  */
 package org.netbeans.modules.java.hints.jdk.mapreduce;
 

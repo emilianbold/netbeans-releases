@@ -26,11 +26,6 @@
  *
  * Contributor(s):
  *
- * The Original Software is the CVS Client Library.
- * The Initial Developer of the Original Software is Robert Greig.
- * Portions created by Robert Greig are Copyright (C) 2000.
- * All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -42,8 +37,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Robert Greig.
  *****************************************************************************/
+/*
+ * Contributor(s): Robert Greig.
+ *
+ * The Original Software is the CVS Client Library.
+ * The Initial Developer of the Original Software is Robert Greig.
+ * Portions created by Robert Greig are Copyright (C) 2000.
+ * All Rights Reserved.
+ */
 package org.netbeans.lib.cvsclient.file;
 
 /**

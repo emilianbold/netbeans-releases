@@ -35,9 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+/*
+ * Contributor(s): Sebastian Hörl
  */
 package org.netbeans.modules.php.twig.editor;
 
