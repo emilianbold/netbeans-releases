@@ -6,7 +6,7 @@
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
 <#include "${project.licensePath}">
-var Hello = Rreact.createClass({
+var Hello = React.createClass({
     render : function () {
         return (
                 <div></div>
