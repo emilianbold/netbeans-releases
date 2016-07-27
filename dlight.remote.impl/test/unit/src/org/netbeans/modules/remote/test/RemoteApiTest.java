@@ -88,7 +88,8 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            WritingQueueTestCase.class,
            RemoteFileSystemParallelReadTestCase.class,
            RemoteFileSystemParallelLsTestCase.class,
-           RemoteFileSystemOffilneTestCase.class
+           RemoteFileSystemOffilneTestCase.class,
+           TempFileRelatedExceptionsIZ_258285_testCase.class
         };
     }
     
