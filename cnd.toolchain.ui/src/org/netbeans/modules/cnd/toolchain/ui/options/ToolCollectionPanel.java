@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ui.PathEnvVariables;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
