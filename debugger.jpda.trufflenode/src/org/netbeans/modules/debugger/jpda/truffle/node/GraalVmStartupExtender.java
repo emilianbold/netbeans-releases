@@ -89,7 +89,7 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
         final String debugName = Bundle.CTL_DebugName();
 
         InputOutput io = IOProvider.getDefault().getIO(debugName, false);
-        JPDAStart start = new JPDAStart(io, debugName);
+        JPDAStart start = new JPDAStart(io, debugName, bin.getParent());
         String res = null;
         try {
             res = start.execute(p);
