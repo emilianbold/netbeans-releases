@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -203,6 +204,13 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
     public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
         return this.functionSupport.asString(as, this, typeNameResolver);
     }
+
+    @Override
+    public String asString(PrintAs as, TypeNameResolver typeNameResolver, PhpVersion phpVersion) {
+        return this.functionSupport.asString(as, this, typeNameResolver, phpVersion);
+    }
+
+    //~ Inner classes
 
     private static class FunctionSignatureParser {
         private final Signature signature;
