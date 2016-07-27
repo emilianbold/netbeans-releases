@@ -57,6 +57,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,6 +82,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -90,6 +92,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -104,6 +107,7 @@ import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Pair;
 
 /**
@@ -362,6 +366,9 @@ public final class CreateElement implements ErrorRule<Void> {
         List<TypeMirror> types = (List<TypeMirror>)resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
         
+        if (!ErrorFixesFakeHint.enabled(info.getFileObject(), FixKind.CREATE_LOCAL_VARIABLE)) {
+            fixTypes.remove(ElementKind.LOCAL_VARIABLE);
+        }
         final TypeMirror type;
         
         if (types != null && !types.isEmpty()) {
@@ -485,7 +492,7 @@ public final class CreateElement implements ErrorRule<Void> {
                                 modifiers.add(Modifier.FINAL);
                             }
                         }
-                        if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
+                        if (ErrorFixesFakeHint.enabled(info.getFileObject(), ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
                             result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         }
                     }
@@ -561,20 +568,44 @@ public final class CreateElement implements ErrorRule<Void> {
         if (null == p) {
             return Collections.emptyMap();
         }
-
-        SourceGroup sourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_MAIN);
-        SourceGroup testSourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
         
+        Sources src = p.getLookup().lookup(Sources.class);
+        SourceGroup[] sGroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        SourceGroup sourceGroup = null;
+        
+        Set<FileObject> testRoots = new HashSet<>();
+        SourceGroup linkedSources = null;
+        
+        for (SourceGroup sg : sGroups) {
+            URL[] urls = UnitTestForSourceQuery.findUnitTests(sg.getRootFolder());
+            for (URL u : urls) {
+                FileObject r = URLMapper.findFileObject(u);
+                if (r != null) {
+                    if (testRoots.add(r)) {
+                        if (FileUtil.isParentOf(r, fileObject)) {
+                            isInTestSources = true;
+                            linkedSources = sg;
+                        }
+                    }
+                }
+            }
+            if (FileUtil.isParentOf(sg.getRootFolder(), fileObject)) {
+                sourceGroup = sg;
+            }
+        }
+        
+
         Map<SourceGroup, Integer> list = new HashMap<>();
         if (isInTestSources) {
             //in test sources (f.e. src/test/java) -> return main sources and test sources
-            if (null != sourceGroup) {
-                list.put(sourceGroup, PRIO_MAINSOURCEGROUP);
+            if (null != linkedSources) {
+                list.put(linkedSources, PRIO_MAINSOURCEGROUP);
             }
 
-            if (null != testSourceGroup) {
+            if (null != sourceGroup) {
                 //test source group has a higher prio -> before main source group
-                list.put(testSourceGroup, PRIO_TESTSOURCEGROUP);
+                list.put(sourceGroup, PRIO_TESTSOURCEGROUP);
             }
 
         } else {
@@ -585,7 +616,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
         return list;
     }
-
+    
     private static Boolean isInTestSources(FileObject fileObject) {
         Project p = FileOwnerQuery.getOwner(fileObject);
         if (null == p) {
