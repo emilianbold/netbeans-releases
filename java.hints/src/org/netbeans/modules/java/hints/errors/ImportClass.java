@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file thatfake
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -138,7 +138,9 @@ public final class ImportClass implements ErrorRule<Void>{
         if (!expectedErr) {
             errorPosition++; //TODO: +1 required to work OK, rethink
         } 
-        
+        if (!ErrorFixesFakeHint.enabled(info.getFileObject(), ErrorFixesFakeHint.FixKind.IMPORT_CLASS)) {
+            return Collections.<Fix>emptyList();
+        }
         if (errorPosition == (-1)) {
             ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.create errorPosition=-1"); //NOI18N
             
