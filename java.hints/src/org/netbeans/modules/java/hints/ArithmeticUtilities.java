@@ -463,16 +463,16 @@ public class ArithmeticUtilities {
             }
             EVAL: if (obj == null) {
                 TreePath varPath = info.getTrees().getPath(el);
-                // #262309: if variable is errnoeously referenced from its own initializer, we must not recurse.
-                for (Tree t : path) {
-                    if (t == varPath.getLeaf()) {
-                        break EVAL;
-                    }
-                    if (StatementTree.class.isAssignableFrom(t.getKind().asInterface())) {
-                        break;
-                    }
-                }
                 if (varPath != null && varPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                    // #262309: if variable is errnoeously referenced from its own initializer, we must not recurse.
+                    for (Tree t : path) {
+                        if (t == varPath.getLeaf()) {
+                            break EVAL;
+                        }
+                        if (StatementTree.class.isAssignableFrom(t.getKind().asInterface())) {
+                            break;
+                        }
+                    }
                     VariableTree vt = (VariableTree)varPath.getLeaf();
                     if (vt.getInitializer() != null) {
                         VisitorImpl recurse = new VisitorImpl(info, true, enhanceProcessing);
