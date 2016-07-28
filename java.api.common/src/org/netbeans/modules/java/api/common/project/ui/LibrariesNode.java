@@ -178,6 +178,7 @@ public final class LibrariesNode extends AbstractNode {
                 null :
                 Pair.<Pair<String,String>,ClassPath>of(Pair.<String,String>of(platformProperty, null),null),
             null,
+            Collections.emptySet(),
             librariesNodeActions,
             webModuleElementName,
             cs,
@@ -194,12 +195,13 @@ public final class LibrariesNode extends AbstractNode {
             @NonNull final Collection<String> classPathIgnoreRef,
             @NullAllowed final Pair<Pair<String,String>, ClassPath> boot,
             @NullAllowed final Pair<Set<String>,ClassPath> modulePath,
+            @NonNull final Collection<String> modulePathIgnoreRef,
             @NullAllowed final Action[] librariesNodeActions,
             @NullAllowed final String webModuleElementName,
             @NonNull final ClassPathSupport cs,
             @NullAllowed final Callback extraKeys) {
         super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperties,
-                    classPathIgnoreRef, boot, modulePath,
+                    classPathIgnoreRef, boot, modulePath, modulePathIgnoreRef,
                     webModuleElementName, cs, extraKeys),
                 Lookups.fixed(project, new PathFinder()));
         this.displayName = displayName;
@@ -218,6 +220,7 @@ public final class LibrariesNode extends AbstractNode {
         private final ReferenceHelper refHelper;
         private final ClassPathSupport cs;
         private final Set<String> classPathIgnoreRef = new HashSet<String>();
+        private final Set<String> modulePathIgnoreRef = new HashSet<>();
         private final List<Action> librariesNodeActions = new ArrayList<Action>();
         private final List<String> classPathProperties = new ArrayList<String>();
         private String name = NbBundle.getMessage(LibrariesNode.class, "TXT_LibrariesNode");
@@ -399,6 +402,19 @@ public final class LibrariesNode extends AbstractNode {
             Collections.addAll(this.modulePath.first(), props);
             return this;
         }
+        
+        /**
+         * Adds references to ignore from the module path.
+         * @param refs the references to ignore
+         * @return the {@link Builder}
+         * @since 1.88
+         */
+        @NonNull
+        public Builder addModulePathIgnoreRefs(@NonNull final String... refs) {
+            Parameters.notNull("refs", refs);   //NOI18N
+            Collections.addAll(modulePathIgnoreRef, refs);
+            return this;
+        }
 
         /**
          * Creates configured {@link LibrariesNode}.
@@ -424,6 +440,7 @@ public final class LibrariesNode extends AbstractNode {
                 classPathIgnoreRef,
                 _boot,
                 modulePath,
+                modulePathIgnoreRef,
                 librariesNodeActions.toArray(new Action[librariesNodeActions.size()]),
                 webModuleElementName,
                 cs,
@@ -585,6 +602,7 @@ public final class LibrariesNode extends AbstractNode {
         private final Pair<Pair<String,String>, ClassPath> boot;
         private final Pair<Set<String>,ClassPath> modulePath;
         private final Set<String> classPathIgnoreRef;
+        private final Set<String> modulePathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
         
@@ -606,6 +624,7 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final Collection<String> classPathIgnoreRef,
                 @NullAllowed final Pair<Pair<String,String>, ClassPath> boot,
                 @NullAllowed final Pair<Set<String>,ClassPath> modulePath,
+                @NonNull final Collection<String> modulePathIgnoreRef,
                 @NullAllowed final String webModuleElementName,
                 @NonNull final ClassPathSupport cs,
                 @NullAllowed final Callback extraKeys) {
@@ -618,6 +637,7 @@ public final class LibrariesNode extends AbstractNode {
             this.modulePath = modulePath != null ?
                     modulePath :
                     Pair.<Set<String>,ClassPath>of(Collections.emptySet(), null);
+            this.modulePathIgnoreRef = new HashSet<>(modulePathIgnoreRef);
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
             this.extraKeys = extraKeys;
@@ -760,10 +780,10 @@ public final class LibrariesNode extends AbstractNode {
             List<URL> rootsList = new ArrayList<URL>();
             List<Key> result = new ArrayList<>();
             for (String classPathProperty : classPathProperties) {
-                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, CPMapper.INSTANCE, rootsList));
+                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, classPathIgnoreRef, CPMapper.INSTANCE, rootsList));
             }            
             for (String modulePathProperty : modulePath.first()) {
-                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, modulePathProperty, MPMapper.INSTANCE, rootsList));
+                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, modulePathProperty, modulePathIgnoreRef, MPMapper.INSTANCE, rootsList));
             }
             if (modulePath.second() != null) {
                 final Set<URI> filter = modulePath.second().entries().stream()
@@ -803,6 +823,7 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final EditableProperties projectPrivateProps,
                 @NonNull final EditableProperties privateProps,
                 @NonNull final String currentClassPath,
+                @NonNull final Set<String> toIgnre,
                 @NonNull final Function<Pair<File,Collection<? super URL>>,Collection<SourceGroup>> fileRefMapper,
                 @NonNull final List<URL> rootsList) {
             List<Key> result = new ArrayList<>();
@@ -820,7 +841,7 @@ public final class LibrariesNode extends AbstractNode {
             while (pe.size()>0){
                 String prop = pe.remove(0);
                 String propName = CommonProjectUtils.getAntPropertyName (prop);
-                if (classPathIgnoreRef.contains(propName)) {
+                if (toIgnre.contains(propName)) {
                     continue;
                 } else if (prop.startsWith( LIBRARY_PREFIX )) {
                     //Library reference
@@ -873,7 +894,7 @@ public final class LibrariesNode extends AbstractNode {
                     }
                 } else if (prop.startsWith(REF_PREFIX)) {
                     //Path reference
-                    result.addAll(getKeys(projectSharedProps, projectPrivateProps, privateProps,propName, fileRefMapper, rootsList));
+                    result.addAll(getKeys(projectSharedProps, projectPrivateProps, privateProps,propName, toIgnre, fileRefMapper, rootsList));
                 } else {
                     //file
                     File file = helper.getAntProjectHelper().resolveFile(prop);

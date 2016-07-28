@@ -158,10 +158,10 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             null,
                             ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE)). // NOI18N
                     addModulePathProperties(ProjectProperties.JAVAC_MODULEPATH).
+                    addModulePathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
                     setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
                     build();
             } else if (key == TEST_LIBRARIES) {
-                return  
                     new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
                         project, evaluator, helper, resolver, ProjectProperties.RUN_TEST_CLASSPATH,
                         new String[] {
@@ -181,6 +181,27 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         cs,
                         null
                     );
+                return new LibrariesNode.Builder(project,evaluator, helper, resolver, cs).
+                    setName(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode")).
+                    addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH).
+                    addClassPathIgnoreRefs(
+                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                            ProjectProperties.JAVAC_CLASSPATH,
+                            ProjectProperties.BUILD_CLASSES_DIR).
+                    addLibrariesNodeActions(
+                            LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
+                            null,
+                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS)). // NOI18N
+                    addModulePathProperties(ProjectProperties.JAVAC_TEST_MODULEPATH).
+                    addModulePathIgnoreRefs(
+                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                            ProjectProperties.JAVAC_MODULEPATH,
+                            ProjectProperties.BUILD_CLASSES_DIR).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[1]).
+                    build();
+                    
             }
             assert false: "No node for key: " + key;
             return null;
