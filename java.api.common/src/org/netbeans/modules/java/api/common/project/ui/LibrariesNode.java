@@ -77,6 +77,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -103,6 +105,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
@@ -125,6 +128,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
@@ -567,7 +571,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener {
+    private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener, ChangeListener {
 
         
         /**
@@ -587,13 +591,11 @@ public final class LibrariesNode extends AbstractNode {
          * Constant representing a prefix of ant property reference
          */
         private static final String REF_PREFIX = "${"; //NOI18N
-
+        private static final SpecificationVersion JDK9 = new SpecificationVersion("9");
         @StaticResource
         private static final String LIBRARIES_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/libraries.gif"; //NOI18N
         @StaticResource
         private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif";//NOI18N
-        @StaticResource
-        private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
 
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
@@ -605,6 +607,7 @@ public final class LibrariesNode extends AbstractNode {
         private final Set<String> modulePathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
+        private final SourceLevelQuery.Result slResult;
         
         private Callback extraKeys;
         private Project project;
@@ -642,6 +645,8 @@ public final class LibrariesNode extends AbstractNode {
             this.cs = cs;
             this.extraKeys = extraKeys;
             this.project = project;
+            this.slResult = SourceLevelQuery.getSourceLevel2(
+                    this.helper.getAntProjectHelper().getProjectDirectory());
         }
 
         @Override
@@ -653,30 +658,19 @@ public final class LibrariesNode extends AbstractNode {
                     || propRoots
                     || LibraryManager.PROP_LIBRARIES.equals(propName)
                     || ClassPath.PROP_ENTRIES.equals(propName)) {
-                synchronized (this) {
-                    if (fsListener!=null) {
-                        fsListener.removePropertyChangeListener (this);
-                        fsListener = null;
-                    }
-                }
-                rp.post (new Runnable () {
-                    @Override
-                    public void run () {
-                        setKeys(getKeys());
-                        if (propRoots) {
-                            LogicalViewProvider2 lvp = project.getLookup().lookup(LogicalViewProvider2.class);
-                            if (lvp != null) {
-                                lvp.testBroken();
-                            }
-                        }
-                    }
-                });                
+                reset(propRoots);
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            reset(false);
         }
 
         @Override
         protected void addNotify() {
             this.eval.addPropertyChangeListener (WeakListeners.propertyChange(this, this.eval));
+            this.slResult.addChangeListener(WeakListeners.change(this, this.slResult));
             LibraryManager lm = refHelper.getProjectLibraryManager();
             if (lm == null) {
                 lm = LibraryManager.getDefault();
@@ -781,26 +775,29 @@ public final class LibrariesNode extends AbstractNode {
             List<Key> result = new ArrayList<>();
             for (String classPathProperty : classPathProperties) {
                 result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, classPathIgnoreRef, CPMapper.INSTANCE, rootsList));
-            }            
-            for (String modulePathProperty : modulePath.first()) {
-                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, modulePathProperty, modulePathIgnoreRef, MPMapper.INSTANCE, rootsList));
             }
-            if (modulePath.second() != null) {
-                final Set<URI> filter = modulePath.second().entries().stream()
-                        .map((e) -> {
-                            try {
-                                return e.getURL().toURI();
-                            }catch (URISyntaxException exc) {
-                                Exceptions.printStackTrace(exc);
-                                return null;
-                            }
-                        })
-                        .filter((uri) -> uri != null)
-                        .collect(Collectors.toSet());
-                for (Iterator<Key> it = result.iterator(); it.hasNext();) {
-                    final Key key = it.next();
-                    if (!filter.contains(key.toURI())) {
-                        it.remove();
+            final String sl = slResult.getSourceLevel();
+            if (sl != null && JDK9.compareTo(new SpecificationVersion(sl))<=0) {
+                for (String modulePathProperty : modulePath.first()) {
+                    result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, modulePathProperty, modulePathIgnoreRef, MPMapper.INSTANCE, rootsList));
+                }
+                if (modulePath.second() != null) {
+                    final Set<URI> filter = modulePath.second().entries().stream()
+                            .map((e) -> {
+                                try {
+                                    return e.getURL().toURI();
+                                }catch (URISyntaxException exc) {
+                                    Exceptions.printStackTrace(exc);
+                                    return null;
+                                }
+                            })
+                            .filter((uri) -> uri != null)
+                            .collect(Collectors.toSet());
+                    for (Iterator<Key> it = result.iterator(); it.hasNext();) {
+                        final Key key = it.next();
+                        if (!filter.contains(key.toURI())) {
+                            it.remove();
+                        }
                     }
                 }
             }
@@ -932,18 +929,22 @@ public final class LibrariesNode extends AbstractNode {
             return null;
         }
 
-        private static SourceGroup createModuleSourceGroup(
-            final URL root,
-            final List<? super URL> rootsList) {
-            rootsList.add (root);
-            final Icon icon = ImageUtilities.loadImageIcon(MODULE_ICON, false),
-                    openedIcon = icon;
-            final String displayName = SourceUtils.getModuleName(root);
-            return displayName == null ?
-                null :
-                Optional.ofNullable(URLMapper.findFileObject(root))
-                    .map((fo) -> new LibrariesSourceGroup (fo,displayName,icon,openedIcon))
-                    .orElse(null);
+        private void reset(final boolean testBroken) {
+            synchronized (this) {
+                if (fsListener!=null) {
+                    fsListener.removePropertyChangeListener (this);
+                    fsListener = null;
+                }
+            }
+            rp.post (() -> {
+                setKeys(getKeys());
+                if (testBroken) {
+                    final LogicalViewProvider2 lvp = project.getLookup().lookup(LogicalViewProvider2.class);
+                    if (lvp != null) {
+                        lvp.testBroken();
+                    }
+                }
+            });   
         }
         
         private static final class CPMapper implements Function<Pair<File,Collection<? super URL>>,Collection<SourceGroup>> {
