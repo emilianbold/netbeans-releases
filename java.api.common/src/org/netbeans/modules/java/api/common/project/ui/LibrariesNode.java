@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.java.api.common.project.ui;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.DirectiveTree;
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.util.TreeScanner;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -80,6 +85,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -102,11 +108,14 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
@@ -128,6 +137,7 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
@@ -143,7 +153,7 @@ import org.openide.util.lookup.Lookups;
 */
 public final class LibrariesNode extends AbstractNode {
 
-    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N    
+    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N
     public static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
@@ -1103,9 +1113,7 @@ public final class LibrariesNode extends AbstractNode {
             if (sg != null) {
                 return sg.getRootFolder().toURI();
             } else if (antArtifact != null) {
-                final FileObject prj = antArtifact.getProject().getProjectDirectory();
-                final File f = BaseUtilities.toFile(prj.toURI().resolve(this.uri));
-                return Optional.ofNullable(FileUtil.urlForArchiveOrDir(f))
+                return Optional.ofNullable(resolveAntArtifact(antArtifact, uri))
                         .map((u) -> {
                             try {
                                 return u.toURI();
@@ -1211,8 +1219,15 @@ public final class LibrariesNode extends AbstractNode {
                 artifactURIs[i] = artifactItems[i].getArtifactURI();
             }
             try {
+                final FileObject moduleInfo = findModuleInfo(roots);
+                final String cpType =  moduleInfo != null ?
+                        JavaClassPathConstants.MODULE_COMPILE_PATH :
+                        ClassPath.COMPILE;
                 ProjectClassPathModifier.addAntArtifacts(artifacts, artifactURIs,
-                        projectSourcesArtifact, ClassPath.COMPILE);
+                        projectSourcesArtifact, cpType);
+                if (moduleInfo != null) {
+                    extendModuleInfo(moduleInfo, toURLs(artifactItems));
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } catch (UnsupportedOperationException e) {
@@ -1257,8 +1272,15 @@ public final class LibrariesNode extends AbstractNode {
             }
             final FileObject projectSourcesArtifact = roots[0];
             try {
+                final FileObject moduleInfo = findModuleInfo(roots);
+                final String cpType =  moduleInfo != null ?
+                        JavaClassPathConstants.MODULE_COMPILE_PATH :
+                        ClassPath.COMPILE;
                 ProjectClassPathModifier.addLibraries(libraries,
-                        projectSourcesArtifact, ClassPath.COMPILE);
+                        projectSourcesArtifact, cpType);
+                if (moduleInfo != null) {
+                    extendModuleInfo(moduleInfo, toURLs(libraries));
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } catch (UnsupportedOperationException e) {
@@ -1326,7 +1348,8 @@ public final class LibrariesNode extends AbstractNode {
             }
             try {
                 final FileObject projectSourcesArtifact = roots[0];
-                final List<URI> toAdd = new ArrayList<URI>(filePaths.length);            
+                final List<URI> toAdd = new ArrayList<>(filePaths.length);            
+                final List<URL> toAddURLs = new ArrayList<>(toAdd.size());
                 for (int i=0; i<filePaths.length;i++) {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
@@ -1334,6 +1357,8 @@ public final class LibrariesNode extends AbstractNode {
                     FileObject fo = FileUtil.toFileObject(fl);
                     assert fo != null || !fl.canRead(): fl;
                     if (fo != null && fileFilter.accept(fl)) {
+                        Optional.ofNullable(FileUtil.urlForArchiveOrDir(fl))
+                                .ifPresent(toAddURLs::add);
                         URI u;
                         boolean isArchiveFile = FileUtil.isArchiveFile(fo);
                         if (pathBasedVariables == null) {
@@ -1384,16 +1409,128 @@ public final class LibrariesNode extends AbstractNode {
                         prj,
                         FileUtil.getFileDisplayName(prj.getProjectDirectory())));
                 } else {
+                    final FileObject moduleInfo = findModuleInfo(roots);
+                    final String cpType =  moduleInfo != null ?
+                        JavaClassPathConstants.MODULE_COMPILE_PATH :
+                        ClassPath.COMPILE;
                     modifierImpl.addRoots(toAdd.toArray(new URI[toAdd.size()]),
                         findSourceGroup(projectSourcesArtifact, modifierImpl),
-                        ClassPath.COMPILE,
+                        cpType,
                         ClassPathModifier.ADD_NO_HEURISTICS);
+                    if (moduleInfo != null) {
+                        extendModuleInfo(moduleInfo, toAddURLs.toArray(new URL[toAddURLs.size()]));
+                    }
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
 
+    }
+    
+    @CheckForNull
+    private static FileObject findModuleInfo(@NonNull final FileObject... roots) {
+        for (FileObject root : roots) {
+            final FileObject fo = root.getFileObject("module-info.java");   //NOI18N
+            if (fo != null) {   //NOI18N
+                return fo;
+            }
+        }
+        return null;
+    }
+    
+    @CheckForNull
+    private static URL resolveAntArtifact(
+            @NonNull final AntArtifact art,
+            @NonNull final URI loc) {
+        final FileObject prj = art.getProject().getProjectDirectory();
+        final File f = BaseUtilities.toFile(prj.toURI().resolve(loc));
+        return FileUtil.urlForArchiveOrDir(f);
+    }
+    
+    @NonNull
+    private static URL[] toURLs(@NonNull final Library... libraries) {
+        final List<URL> res = new ArrayList<>();
+        for (Library library : libraries) {
+            res.addAll(library.getContent("classpath"));    //NOI18N
+        }
+        return res.toArray(new URL[res.size()]);
+    }
+    
+    @NonNull
+    private static URL[] toURLs(@NonNull final AntArtifactItem... artifacts) {
+        final List<URL> res = new ArrayList<>(artifacts.length);
+        for (AntArtifactItem ai : artifacts) {
+            final URL resolved = resolveAntArtifact(ai.getArtifact(), ai.getArtifactURI());
+            if (resolved != null) {
+                res.add(resolved);
+            }
+        }
+        return res.toArray(new URL[res.size()]);
+    }
+    
+    private static void extendModuleInfo(
+            @NonNull final FileObject info,
+            @NonNull final  URL... modules) throws IOException {
+        final Collection<String> moduleNames = Arrays.stream(modules)
+                .map((url) -> SourceUtils.getModuleName(url))
+                .filter((name) -> name != null)
+                .collect(Collectors.toList());
+        if (!moduleNames.isEmpty()) {
+            final JavaSource js = JavaSource.forFileObject(info);
+            if (js != null) {
+                js.runModificationTask((wc) -> {
+                    wc.toPhase(JavaSource.Phase.RESOLVED);
+                    final CompilationUnitTree cu = wc.getCompilationUnit();
+                    final Set<String> knownModules = new HashSet<>();
+                    final ModuleTree[] module = new ModuleTree[1];
+                    final RequiresTree[] lastRequires = new RequiresTree[1];
+                    cu.accept(new TreeScanner<Void, Void>() {
+                                @Override
+                                public Void visitModule(ModuleTree m, Void p) {
+                                    module[0] = m;
+                                    return super.visitModule(m, p);
+                                }
+                                @Override
+                                public Void visitRequires(RequiresTree r, Void p) {
+                                    lastRequires[0] = r;
+                                    knownModules.add(r.getModuleName().toString());
+                                    return super.visitRequires(r, p);
+                                }
+                            },
+                            null);
+                    if (module[0] != null) {
+                        moduleNames.removeAll(knownModules);
+                        final TreeMaker tm = wc.getTreeMaker();
+                        final List<RequiresTree> newRequires = moduleNames.stream()
+                                .map((name) -> tm.Requires(false, tm.QualIdent(name)))
+                                .collect(Collectors.toList());
+
+                        final List<DirectiveTree> newDirectives = new ArrayList<>(
+                                module[0].getDirectives().size() + newRequires.size());
+                        if (lastRequires[0] == null) {
+                            newDirectives.addAll(newRequires);
+                        }
+                        for (DirectiveTree dt : module[0].getDirectives()) {
+                            newDirectives.add(dt);
+                            if (dt == lastRequires[0]) {
+                                newDirectives.addAll(newRequires);
+                            }
+                        }
+                        final ModuleTree newModule = tm.Module(module[0].getName(), newDirectives);
+                        wc.rewrite(module[0], newModule);
+                    }                    
+                })
+                .commit();
+                try {
+                    final DataObject dobj = DataObject.find(info);
+                    final Savable save = dobj.getLookup().lookup(Savable.class);
+                    if (save != null) {
+                        save.save();
+                    }
+                } catch (IOException ioe) {}
+            }
+        }
     }
     
     private static SourceGroup findSourceGroup(FileObject fo, ClassPathModifier modifierImpl) {
