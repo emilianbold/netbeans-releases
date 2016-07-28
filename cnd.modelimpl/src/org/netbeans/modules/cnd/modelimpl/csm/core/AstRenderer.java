@@ -148,7 +148,7 @@ public class AstRenderer {
                             CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
                             if(o instanceof ClassImpl) {
                                 ClassImpl cls = (ClassImpl)o;
-                                cls.render(token, getContainingFile(), fileContent, language, isRenderingLocalContext());
+                                cls.render(token, getContainingFile(), fileContent, language, isRenderingLocalContext(), null);
                                 //container.addDeclaration(cls);
                                 addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                                 renderVariableInClassifier(token, cls, currentNamespace, container);

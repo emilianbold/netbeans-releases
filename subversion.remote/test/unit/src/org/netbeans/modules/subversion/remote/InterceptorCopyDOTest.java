@@ -71,12 +71,12 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorCopyDOTest.class, "copyAddedFile2VersionedFolder_DO");
 
         addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFile2UnversionedFolder_DO");
-        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFile2IgnoredFolder_DO");
-        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFolder2UnversionedFolder_DO");
+//        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFile2IgnoredFolder_DO");
+//        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFolder2UnversionedFolder_DO");
 
         addTest(suite, InterceptorCopyDOTest.class, "copyA2B2C_DO");
-        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFolder_DO");
-        addTest(suite, InterceptorCopyDOTest.class, "copyFileTree_DO");
+//        addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFolder_DO");
+//        addTest(suite, InterceptorCopyDOTest.class, "copyFileTree_DO");
         addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFile2Repos_DO");
         addTest(suite, InterceptorCopyDOTest.class, "copyVersionedFolder2Repos_DO");
         addTest(suite, InterceptorCopyDOTest.class, "copyFileTree2Repos_DO");
