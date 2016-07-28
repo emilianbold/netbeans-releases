@@ -834,6 +834,22 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects14.js", options, ".allEmptyLinesRemoval.formatted");
     }
     
+    public void testDestructuringAssignment1() throws Exception {
+        reformatFileContents("testfiles/formatter/destructuringAssignment1.js", new IndentPrefs(4, 4));
+    }
+
+    public void testDestructuringAssignment1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/destructuringAssignment1.js");
+    }
+
+    public void testDestructuringAssignment2() throws Exception {
+        reformatFileContents("testfiles/formatter/destructuringAssignment2.js", new IndentPrefs(4, 4));
+    }
+
+    public void testDestructuringAssignment2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/destructuringAssignment2.js");
+    }
+
     public void testObjects14Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/objects14.js");
     }
