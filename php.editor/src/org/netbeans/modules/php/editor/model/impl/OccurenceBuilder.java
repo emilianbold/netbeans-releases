@@ -106,6 +106,7 @@ import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -961,9 +962,13 @@ class OccurenceBuilder {
             occurences.clear();
             if (EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE,
                     Accuracy.UNIQUE, Accuracy.EXACT_TYPE, Accuracy.MORE_MEMBERS, Accuracy.MORE).contains(accuracy)) {
-                // we need to build also static methods on parent (syntax is always 'parent::...')
-                buildStaticMethodInvocations(elementInfo, fileScope, cachedOccurences, true);
                 buildMethodInvocations(elementInfo, fileScope, accuracy, cachedOccurences);
+                if (OptionsUtils.codeCompletionNonStaticMethods()) {
+                    buildStaticMethodInvocations(elementInfo, fileScope, cachedOccurences, false);
+                } else {
+                    // we need to build also static methods on parent (syntax is always 'parent::...')
+                    buildStaticMethodInvocations(elementInfo, fileScope, cachedOccurences, true);
+                }
                 buildMethodDeclarations(elementInfo, fileScope, cachedOccurences);
                 buildMagicMethodDeclarations(elementInfo, fileScope, cachedOccurences);
             } else if (!accuracy.equals(Accuracy.NO)) {
@@ -1013,6 +1018,9 @@ class OccurenceBuilder {
             if (elementInfo.setDeclarations(methods)) {
                 occurences.clear();
                 buildStaticMethodInvocations(elementInfo, fileScope, occurences, false);
+                if (OptionsUtils.codeCompletionStaticMethods()) {
+                    buildMethodInvocations(elementInfo, fileScope, Accuracy.UNIQUE, occurences);
+                }
                 buildMethodDeclarations(elementInfo, fileScope, occurences);
             }
         }
