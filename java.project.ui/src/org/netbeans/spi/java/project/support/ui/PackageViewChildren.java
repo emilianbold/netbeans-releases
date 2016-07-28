@@ -1207,7 +1207,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         @Override
         public void stateChanged(ChangeEvent e) {
             accessibility = null;
-            fireIconChange();
+            SwingUtilities.invokeLater(this::fireIconChange);
         }
     }
     
