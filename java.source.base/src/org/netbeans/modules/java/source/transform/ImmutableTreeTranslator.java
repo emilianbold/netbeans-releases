@@ -55,6 +55,7 @@ import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -1329,7 +1330,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     private Tree rewriteChildren(ExportsTree tree) {
         ExpressionTree name = (ExpressionTree) translate(tree.getExportName());
         List<? extends ExpressionTree> moduleNames = translate(tree.getModuleNames());
-    	if (name != tree.getExportName()|| !moduleNames.equals(tree.getModuleNames())) {
+    	if (name != tree.getExportName()|| !Objects.equals(moduleNames,tree.getModuleNames())) {
 	    ExportsTree n = make.Exports(name, moduleNames);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
