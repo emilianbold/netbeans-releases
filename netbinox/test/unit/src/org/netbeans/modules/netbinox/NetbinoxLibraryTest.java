@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -66,7 +66,7 @@ import org.osgi.framework.BundleContext;
 public class NetbinoxLibraryTest extends SetupHid {
     private static Module m1;
     private static ModuleManager mgr;
-    
+
     public NetbinoxLibraryTest(String name) {
         super(name);
     }
