@@ -71,6 +71,7 @@ import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
+import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.ImportNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1097,7 +1098,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private void handleBlockContent(List<Statement> statements, boolean markStatements) {
         // statements
-        //List<Statement> statements = block.getStatements();
+        boolean destructuring = false;
         for (int i = 0; i < statements.size(); i++) {
             Node statement = statements.get(i);
             statement.accept(this);
@@ -1114,6 +1115,10 @@ public class FormatVisitor extends NodeVisitor {
                  * last one and the proper finish token.
                  */
                 if (statement instanceof VarNode) {
+                    if (((VarNode) statement).isDestructuring()) {
+                        destructuring = true;
+                        continue;
+                    }
                     if (!isDeclaration((VarNode) statement)) {
                         int index = i + 1;
                         Node lastVarNode = statement;
@@ -1144,7 +1149,13 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                FormatToken formatToken = tokenUtils.getPreviousToken(start < finish ? finish - 1 : finish, null);
+                int searchOffset = start < finish ? finish - 1 : finish;
+                // if it is destructuring the finish is at the end
+                if (statement instanceof ExpressionStatement && destructuring) {
+                    searchOffset = finish;
+                }
+                destructuring = false;
+                FormatToken formatToken = tokenUtils.getPreviousToken(searchOffset, null);
                 while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
                         || formatToken.getKind() == FormatToken.Kind.WHITESPACE
                         || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
