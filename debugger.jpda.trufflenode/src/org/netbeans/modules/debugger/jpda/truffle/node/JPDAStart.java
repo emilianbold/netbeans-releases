@@ -59,7 +59,10 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -85,10 +88,12 @@ public class JPDAStart implements Runnable {
     private Project project;
     private final String actionName;
     private final InputOutput io;
+    private final FileObject javaHome;
 
-    JPDAStart(InputOutput inputOutput, String actionName) {
+    JPDAStart(InputOutput inputOutput, String actionName, FileObject javaHome) {
         io = inputOutput;
         this.actionName = actionName;
+        this.javaHome = javaHome;
     }
     
     /**
@@ -154,7 +159,8 @@ public class JPDAStart implements Runnable {
                 final Map properties = new HashMap();
 //                properties.put("sourcepath", sourcePath); //NOI18N
                 properties.put("name", getName()); //NOI18N
-//                properties.put("jdksources", jdkSourcePath); //NOI18N
+                JavaPlatform graalVM = J2SEPlatformCreator.createJ2SEPlatform(javaHome);
+                properties.put("jdksources", graalVM.getSourceFolders()); //NOI18N
                 properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory())); // NOI18N
                 
                 final ListeningConnector flc = lc;
