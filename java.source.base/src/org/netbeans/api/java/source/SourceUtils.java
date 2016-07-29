@@ -1279,39 +1279,41 @@ public class SourceUtils {
         final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
         if (sfbqRes.preferSources()) {
             //Project binary
-            return getProjectModuleName(
+            final String moduleName = getProjectModuleName(
                     Arrays.stream(sfbqRes.getRoots()).map(FileObject::toURL).collect(Collectors.toList()),
                     canUseSources);
-        } else {
-            //Binary
-            if (FileUtil.isArchiveArtifact(rootUrl)) {
-                //Archive
-                final FileObject root = URLMapper.findFileObject(rootUrl);
-                if (root != null) {
-                    final FileObject moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS);
-                    if (moduleInfo != null) {
-                        try {
-                            return readModuleName(moduleInfo);
-                        } catch (IOException ioe) {
-                            //Behave as javac: Pass to automatic module
-                        }
-                    }
-                    //Automatic module
-                    final FileObject file = FileUtil.getArchiveFile(root);
-                    if (file != null) {
-                        return autoName(file.getName());
-                    }
-                }
-            } else {
-                //Regular module folder//Folder
-                final FileObject root = URLMapper.findFileObject(rootUrl);
-                FileObject moduleInfo;
-                if (root != null && (moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS)) != null) {
+            if (moduleName != null) {
+                return moduleName;
+            }
+        }
+        //Binary
+        if (FileUtil.isArchiveArtifact(rootUrl)) {
+            //Archive
+            final FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null) {
+                final FileObject moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS);
+                if (moduleInfo != null) {
                     try {
                         return readModuleName(moduleInfo);
                     } catch (IOException ioe) {
-                        //pass to null
+                        //Behave as javac: Pass to automatic module
                     }
+                }
+                //Automatic module
+                final FileObject file = FileUtil.getArchiveFile(root);
+                if (file != null) {
+                    return autoName(file.getName());
+                }
+            }
+        } else {
+            //Regular module folder//Folder
+            final FileObject root = URLMapper.findFileObject(rootUrl);
+            FileObject moduleInfo;
+            if (root != null && (moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS)) != null) {
+                try {
+                    return readModuleName(moduleInfo);
+                } catch (IOException ioe) {
+                    //pass to null
                 }
             }
         }
