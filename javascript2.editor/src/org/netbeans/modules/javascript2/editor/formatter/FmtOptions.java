@@ -232,6 +232,7 @@ public class FmtOptions {
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
     public static final String wrapObjects = "wrapObjects"; // NOI18N
     public static final String wrapProperties = "wrapProperties"; // NOI18N
+    public static final String wrapDecorators = "wrapDecorators"; // NOI18N
     public static final String wrapClasses = "wrapClasses"; // NOI18N
     public static final String wrapElements = "wrapElements"; // NOI18N
     public static final String wrapClassExtends = "wrapClassExtends"; // NOI18N
@@ -421,6 +422,7 @@ public class FmtOptions {
             { wrapStatementsOnTheLine, TRUE},
             { wrapObjects, WRAP_NEVER},
             { wrapProperties, WRAP_NEVER},
+            { wrapDecorators, WRAP_ALWAYS},
             { wrapClasses, WRAP_ALWAYS},
             { wrapElements, WRAP_ALWAYS},
             { wrapClassExtends, WRAP_NEVER},
