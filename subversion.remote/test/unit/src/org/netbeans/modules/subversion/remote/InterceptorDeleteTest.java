@@ -76,7 +76,7 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorDeleteTest.class, "deleteVersionedFolder");
         addTest(suite, InterceptorDeleteTest.class, "deleteNotVersionedFolder");
         addTest(suite, InterceptorDeleteTest.class, "deleteWCRoot");
-        addTest(suite, InterceptorDeleteTest.class, "deleteVersionedFileTree");
+//        addTest(suite, InterceptorDeleteTest.class, "deleteVersionedFileTree");
         addTest(suite, InterceptorDeleteTest.class, "deleteNotVersionedFileTree");
         return(suite);
     }
