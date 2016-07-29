@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
+import org.openide.util.Pair;
 
 /**
  *
@@ -679,43 +680,31 @@ public class CsmContextUtilities {
                     cppts.move(offset - expression.getStartOffset());
                     cppts.movePrevious();
                     if (checkValidInitializerIdent(cppts) || (cppts.token() != null && !CppTokenId.IDENTIFIER.equals(cppts.token().id()))) {
-                        String innerClass = null; // { .ptr = & (MyClass) {.field = 0} }
-                                                  //             ^ 
-                                                  
                         MutableObject<Boolean> shouldPathsBeMerged = new MutableObject<Boolean>(false);
                         MutableObject<Integer> skipped = new MutableObject<Integer>(0);
                         boolean foundPosition = true;
-                        while (foundPosition && !shouldPathsBeMerged.value && innerClass == null) {
+                        boolean foundCompoundLiteral = false;
+                        while (foundPosition && !shouldPathsBeMerged.value && !foundCompoundLiteral) {
                             foundPosition = findInitializerStart(cppts);
                             int startOffset = cppts.offset();
                             Token<TokenId> startIdent = getInitializerIdentToken(cppts);
                             foundPosition |= findUpperInitializer(cppts, cachedPathIter, skipped, shouldPathsBeMerged);
-                            innerClass = getInitializerInnerClassName(cppts);
                             if (shouldPathsBeMerged.value) {
                                 mergePaths(pathSequence, cachedPathIter, startIdent, skipped.value, startOffset);
                             } else if (foundPosition) {
-                                pathSequence.add(0, new InitPathItem(startIdent, skipped.value, startOffset));
+                                // Check for compound literal:
+                                // { .ptr = & (MyClass) {.field = 0} }
+                                //             ^
+                                Pair<String, Integer> compoundLiteral = getInitializerCompoundLiteral(cppts); 
+                                pathSequence.add(0, new InitPathItem(startIdent, compoundLiteral, skipped.value, startOffset));
+                                foundCompoundLiteral = (compoundLiteral != null);
                             }
                         }
-                        final boolean finishedSuccessfully = shouldPathsBeMerged.value || !cppts.movePrevious() || innerClass != null;
+                        final boolean finishedSuccessfully = shouldPathsBeMerged.value || !cppts.movePrevious() || foundCompoundLiteral;
                         if (finishedSuccessfully && !pathSequence.isEmpty()) {
                             cachedPathSequence = pathSequence;
                             //pathSequence.remove(pathSequence.size() - 1); // remove last because we are providing context for it!
-                            if (innerClass != null) {
-                                if (finder != null) {
-                                    CsmClassifier castedCls = CompletionSupport.getClassFromName(finder, innerClass, true);
-                                    castedCls = CsmBaseUtilities.getOriginalClassifier(castedCls, var.getContainingFile());
-                                    if (CsmKindUtilities.isClass(castedCls)) {
-                                        contextClass = (CsmClass) castedCls;
-                                        contextArrayDepth = 0;
-                                    } else {
-                                        contextClass = null; // no class found!
-                                    }
-                                } else {
-                                    contextClass = null; // finder is not provided!
-                                }
-                            }
-                            result = resolveInitializerContext(pathSequence, contextClass, contextArrayDepth);
+                            result = resolveInitializerContext(pathSequence, contextClass, contextArrayDepth, var, finder);
                         }
                     }
                     
@@ -769,7 +758,7 @@ public class CsmContextUtilities {
     
     private static void mergePaths(List<InitPathItem> pathSequence, ListIterator<InitPathItem> lastPathIter, Token<TokenId> ident, int skipped, int offset) {
         InitPathItem lastPathItem = lastPathIter.previous();
-        pathSequence.add(0, new InitPathItem(ident, lastPathItem.position + skipped, offset));
+        pathSequence.add(0, new InitPathItem(ident, lastPathItem.compoundLiteral, lastPathItem.position + skipped, offset));
         while (lastPathIter.hasPrevious()) {
             lastPathItem = lastPathIter.previous();
             pathSequence.add(0, lastPathItem);
@@ -863,8 +852,12 @@ public class CsmContextUtilities {
         return ident;
     }
     
-    private static String getInitializerInnerClassName(TokenSequence<TokenId> cppts) {
+    private static Pair<String, Integer> getInitializerCompoundLiteral(TokenSequence<TokenId> cppts) {
         int index = cppts.index();
+        if (cppts.token() != null && cppts.token().id() == CppTokenId.COMMA) {
+            // Compound literal in initializer starts with LBRACE, not with COMMA
+            return null;
+        }
         Token<TokenId> rParen = findToken(
             cppts,
             true,
@@ -873,6 +866,7 @@ public class CsmContextUtilities {
             CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
         );
         if (rParen != null) {
+            int arrayDepth = 0;
             List<Token<TokenId>> nameTokens = new LinkedList<Token<TokenId>>();
             int level = 1;
             while (level > 0 && cppts.movePrevious() && cppts.token() != null) {
@@ -886,6 +880,9 @@ public class CsmContextUtilities {
                     ++level;
                 } else if (CppTokenId.LBRACKET.equals(cppts.token().id())) {
                     --level;
+                    if (level == 1) { // RPAREN is 1
+                        ++arrayDepth;
+                    }
                 } else if (CppTokenId.RBRACKET.equals(cppts.token().id())) {
                     ++level;
                 }
@@ -900,7 +897,7 @@ public class CsmContextUtilities {
                 for (Token<TokenId> nameToken : nameTokens) {
                     sb.append(nameToken.text());
                 }
-                return sb.toString();
+                return Pair.of(sb.toString(), arrayDepth);
             }
         }
         cppts.moveIndex(index);
@@ -933,64 +930,95 @@ public class CsmContextUtilities {
         return false;
     }
 
-    private static CsmClass resolveInitializerContext(List<InitPathItem> pathSequence, CsmClass initialContext, int initialArrayDepth) {
-        if (initialContext == null) {
-            return null;
-        }
+    private static CsmClass resolveInitializerContext(List<InitPathItem> pathSequence, CsmClass initialContext, int initialArrayDepth, CsmVariable var, CsmFinder finder) {
         CsmClass context = initialContext;
         int contextArrayDepth = initialArrayDepth;
-        int index = 0;
-        for (Iterator<InitPathItem> itemIter = pathSequence.iterator(); index < pathSequence.size() - 1; index++) {
+        int index = getStartIndexToResolveInitializerContext(pathSequence);
+        for (Iterator<InitPathItem> itemIter = pathSequence.listIterator(index); index < pathSequence.size(); index++) {
             InitPathItem item = itemIter.next();
-            CsmClassifier classifier = null;
-            int arrayDepth = 0;
-            if (item.isIdentBased()) {
-                String fieldName = item.ident.text().toString();
-                for (CsmMember csmMember : context.getMembers()) {
-                    if (CsmKindUtilities.isField(csmMember) && fieldName.equals(csmMember.getName().toString())) {
-                        CsmType fieldType = ((CsmField)csmMember).getType();
-                        if (fieldType != null) {
-                            classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
-                            arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
-                            arrayDepth += fieldType.isPointer() ? 1 : 0;
-                        }
-                        break;
+            // Adjust context if there was compound literal
+            if (item.compoundLiteral != null) {
+                if (finder != null) {
+                    CsmClassifier castedCls = CompletionSupport.getClassFromName(finder, item.compoundLiteral.first(), true);
+                    castedCls = CsmBaseUtilities.getOriginalClassifier(castedCls, var.getContainingFile());
+                    if (CsmKindUtilities.isClass(castedCls)) {
+                        context = (CsmClass) castedCls;
+                        contextArrayDepth = item.compoundLiteral.second();
+                    } else {
+                        context = null; // no class found!
                     }
-                }
-            } else {
-                if (contextArrayDepth > 0) {
-                    --contextArrayDepth;
-                    continue;
                 } else {
-                    int counter = 0;
-                    Iterator<CsmMember> memberIter = context.getMembers().iterator();
-                    while (counter < item.position && memberIter.hasNext()) {
-                        memberIter.next();
-                        ++counter;
-                    }
-                    if (memberIter.hasNext()) {
-                        CsmMember member = memberIter.next();
-                        if (CsmKindUtilities.isField(member)) {
-                            CsmType fieldType = ((CsmField) member).getType();
+                    context = null; // finder is not provided!
+                }
+            }
+            if (context == null) {
+                break; // Error happened! Cannot proceed resolving without context
+            }
+            // Dig deeper only if this is not the last element
+            if (index < pathSequence.size() - 1) {
+                CsmClassifier classifier = null;
+                int arrayDepth = 0;
+                if (item.isIdentBased()) {
+                    String fieldName = item.ident.text().toString();
+                    for (CsmMember csmMember : context.getMembers()) {
+                        if (CsmKindUtilities.isField(csmMember) && fieldName.equals(csmMember.getName().toString())) {
+                            CsmType fieldType = ((CsmField)csmMember).getType();
                             if (fieldType != null) {
                                 classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
                                 arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
                                 arrayDepth += fieldType.isPointer() ? 1 : 0;
                             }
+                            break;
+                        }
+                    }
+                } else {
+                    if (contextArrayDepth > 0) {
+                        --contextArrayDepth;
+                        continue;
+                    } else {
+                        int counter = 0;
+                        Iterator<CsmMember> memberIter = context.getMembers().iterator();
+                        while (counter < item.position && memberIter.hasNext()) {
+                            memberIter.next();
+                            ++counter;
+                        }
+                        if (memberIter.hasNext()) {
+                            CsmMember member = memberIter.next();
+                            if (CsmKindUtilities.isField(member)) {
+                                CsmType fieldType = ((CsmField) member).getType();
+                                if (fieldType != null) {
+                                    classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
+                                    arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
+                                    arrayDepth += fieldType.isPointer() ? 1 : 0;
+                                }
+                            }
                         }
                     }
                 }
-            }
-            if (CsmKindUtilities.isClass(classifier)) {
-                context = (CsmClass) classifier;
-                contextArrayDepth = arrayDepth;
-            }
-            if (classifier == null) {
-                context = null; // error happened
-                break;
+                if (CsmKindUtilities.isClass(classifier)) {
+                    context = (CsmClass) classifier;
+                    contextArrayDepth = arrayDepth;
+                }
+                if (classifier == null) {
+                    context = null; // error happened
+                    break;
+                }
             }
         }
         return context;
+    }
+    
+    private static int getStartIndexToResolveInitializerContext(List<InitPathItem> pathSequence) {
+        // Look for the most inner compound literal
+        int index = 0;
+        int lastCompoundLiteralIndex = 0;
+        for (Iterator<InitPathItem> itemIter = pathSequence.iterator(); index < pathSequence.size() - 1; index++) {
+            InitPathItem item = itemIter.next();
+            if (item.compoundLiteral != null) {
+                lastCompoundLiteralIndex = index;
+            }
+        }
+        return lastCompoundLiteralIndex;
     }
 
     private static Token<TokenId> findToken(TokenSequence<TokenId> ts,
@@ -1054,12 +1082,15 @@ public class CsmContextUtilities {
         
         public final Token<TokenId> ident;
         
+        public final Pair<String, Integer> compoundLiteral; 
+        
         public final int position;
         
         public final int offset;
 
-        public InitPathItem(Token<TokenId> ident, int position, int offset) {
+        public InitPathItem(Token<TokenId> ident, Pair<String, Integer> compoundLiteral, int position, int offset) {
             this.ident = ident;
+            this.compoundLiteral = compoundLiteral;
             this.position = position;
             this.offset = offset;
         }
@@ -1070,8 +1101,12 @@ public class CsmContextUtilities {
 
         @Override
         public String toString() {
-            return isIdentBased() ? ("[" + ident.text() + ", " + position + "]") // NOI18N
+            String posDescriptor = isIdentBased() ? ("[" + ident.text() + ", " + position + "]") // NOI18N
                 : "[" + position + "]"; // NOI18N
+            if (compoundLiteral != null) {
+                return "(" + compoundLiteral.first() + "[" + compoundLiteral.second() + "])" + posDescriptor; // NOI18N
+            }
+            return posDescriptor;
         }
     }
     
