@@ -1305,10 +1305,12 @@ public class SourceUtils {
             } else {
                 //Regular module folder//Folder
                 final FileObject root = URLMapper.findFileObject(rootUrl);
-                if (root != null && root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS) != null) {
-                    final String moduleName = root.getNameExt();
-                    if (SourceVersion.isName(moduleName)) {
-                        return moduleName;
+                FileObject moduleInfo;
+                if (root != null && (moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS)) != null) {
+                    try {
+                        return readModuleName(moduleInfo);
+                    } catch (IOException ioe) {
+                        //pass to null
                     }
                 }
             }
