@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,15 @@
  * single choice of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
-    public enum Operation {
-
-        CREATE("super.create(entity);", "PUT", "create"),
-        EDIT("{super.edit(entity);", "POST", "edit"),
-        REMOVE("super.remove(find(i));", "DELETE", "remove", "{i}"),
-        FIND("return super.find(i);", "GET", "find", "{i}"),
-        FIND_ALL("return super.findAll();", "GET", "findAll"),
-        FIND_RANGE("return super.findRange(new int[] {new Integer(from), new Integer(to)});", "GET", "findRange", "{from}/{to}"),
-        COUNT("return String.valueOf(super.count());", "GET", "count", "count");
-
-        private String body, method, methodName, uriPath;
-
-        private Operation(String body, String method, String methodName) {
-            this.body = body;
-            this.method = method;
-            this.methodName = methodName;
-        }
-
-        private Operation(String body, String method, String methodName, String uriPath) {
-            this.body = body;
-            this.method = method;
-            this.methodName = methodName;
-            this.uriPath = uriPath;
-        }
-        public String getMethod() {
-            return method;
-        }
-        public String getBody() {
-            return body;
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-
-        public String getUriPath() {
-            return uriPath;
-        }
-    }
-
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.websvc.rest.codegen;
