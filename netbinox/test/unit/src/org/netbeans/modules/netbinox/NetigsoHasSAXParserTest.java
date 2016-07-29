@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -60,7 +60,7 @@ public class NetigsoHasSAXParserTest extends NbTestCase {
     public NetigsoHasSAXParserTest(String name) {
         super(name);
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().addTest(
@@ -71,7 +71,7 @@ public class NetigsoHasSAXParserTest extends NbTestCase {
             .gui(false)
         );
     }
-    
+
 
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);

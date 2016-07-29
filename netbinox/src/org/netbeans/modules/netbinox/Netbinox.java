@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -68,7 +68,7 @@ import org.osgi.framework.ServiceRegistration;
  */
 class Netbinox extends Equinox {
     private final String installArea;
-    
+
     public Netbinox(Map configuration) {
         super(configuration);
         Object ia = configuration.get("osgi.install.area"); // NOI18N
