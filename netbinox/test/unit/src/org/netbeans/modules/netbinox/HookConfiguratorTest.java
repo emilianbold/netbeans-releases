@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -63,7 +63,7 @@ public class HookConfiguratorTest extends NbTestCase {
     static {
         System.setProperty("java.awt.headless", "true");
     }
-    
+
     public HookConfiguratorTest(String name) {
         super(name);
     }

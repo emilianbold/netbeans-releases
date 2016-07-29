@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class NetigsoHid extends SetupHid {
     File simpleModule;
-    
+
     public NetigsoHid(String name) {
         super(name);
     }
