@@ -1350,6 +1350,8 @@ public final class LibrariesNode extends AbstractNode {
                 final FileObject projectSourcesArtifact = roots[0];
                 final List<URI> toAdd = new ArrayList<>(filePaths.length);            
                 final List<URL> toAddURLs = new ArrayList<>(toAdd.size());
+                final Function<Pair<File,Collection<? super URL>>,Collection<SourceGroup>> moduleFinder
+                        = new LibrariesChildren.MPMapper();
                 for (int i=0; i<filePaths.length;i++) {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
@@ -1357,8 +1359,17 @@ public final class LibrariesNode extends AbstractNode {
                     FileObject fo = FileUtil.toFileObject(fl);
                     assert fo != null || !fl.canRead(): fl;
                     if (fo != null && fileFilter.accept(fl)) {
-                        Optional.ofNullable(FileUtil.urlForArchiveOrDir(fl))
-                                .ifPresent(toAddURLs::add);
+                        boolean isFolderOfModules = false;
+                        if (fo.isFolder()) {
+                            final Collection<SourceGroup> sgs = moduleFinder.apply(Pair.of(fl, new ArrayList<URL>()));
+                            if (sgs.size() != 1 || !fo.equals(sgs.iterator().next().getRootFolder())) {
+                                isFolderOfModules = true;
+                            }
+                        }
+                        if (!isFolderOfModules) {
+                            Optional.ofNullable(FileUtil.urlForArchiveOrDir(fl))
+                                    .ifPresent(toAddURLs::add);
+                        }
                         URI u;
                         boolean isArchiveFile = FileUtil.isArchiveFile(fo);
                         if (pathBasedVariables == null) {
