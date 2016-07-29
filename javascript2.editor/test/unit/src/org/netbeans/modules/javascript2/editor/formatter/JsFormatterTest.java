@@ -833,7 +833,41 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.maxPreservedObjectLines, 0);
         reformatFileContents("testfiles/formatter/objects14.js", options, ".allEmptyLinesRemoval.formatted");
     }
+
+    public void testDecorators1() throws Exception {
+        reformatFileContents("testfiles/formatter/decorators1.js", new IndentPrefs(4, 4));
+    }
+
+    public void testDecorators1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/decorators1.js");
+    }
     
+    public void testDecorators2() throws Exception {
+        reformatFileContents("testfiles/formatter/decorators2.js", new IndentPrefs(4, 4));
+    }
+
+    public void testDecorators2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/decorators2.js");
+    }
+
+    public void testDecorators3Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDecorators, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/decorators3.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testDecorators3Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDecorators, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/decorators3.js", options, ".wrapNever.formatted");
+    }
+
+    public void testDecorators3IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDecorators, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/decorators3.js", options, ".wrapIfLong.formatted");
+    }
+
     public void testDestructuringAssignment1() throws Exception {
         reformatFileContents("testfiles/formatter/destructuringAssignment1.js", new IndentPrefs(4, 4));
     }
