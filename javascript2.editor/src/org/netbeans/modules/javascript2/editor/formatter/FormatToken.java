@@ -557,6 +557,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_DECORATOR {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         BEFORE_OBJECT {
             @Override
