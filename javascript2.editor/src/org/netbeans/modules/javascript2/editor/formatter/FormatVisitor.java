@@ -583,6 +583,8 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterClassNode(ClassNode classNode) {
+        handleDecorators(classNode.getDecorators());
+        
         Expression heritage = classNode.getClassHeritage();
         if (heritage != null) {
             heritage.accept(this);
@@ -614,11 +616,13 @@ public class FormatVisitor extends NodeVisitor {
             // generated default constructor has range equal to class
             if (constructor.getStart() != classNode.getStart()
                     || constructor.getFinish() != classNode.getFinish()) {
+                handleDecorators(constructor.getDecorators());
                 handleClassElement(constructor, getStart(constructor));
             }
         }
         for (Node property : classNode.getClassElements()) {
             PropertyNode propertyNode = (PropertyNode) property;
+            handleDecorators(propertyNode.getDecorators());
             handleClassElement(propertyNode, getStart(propertyNode));
         }
 
@@ -1189,6 +1193,15 @@ public class FormatVisitor extends NodeVisitor {
         // mark property end
         markClassElementFinish(getStart(property), getFinish(property), start,
                 true, propertyNode.getValue());
+    }
+    
+    private void handleDecorators(List<Expression> decorators) {
+        for (Expression decorator : decorators) {
+            FormatToken formatToken = tokenUtils.getPreviousNonWhiteToken(getFinish(decorator) - 1, -1, null, true);
+            if (formatToken != null) {
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_DECORATOR));
+            }
+        }        
     }
 
     private void markSpacesWithinParentheses(SwitchNode node) {
