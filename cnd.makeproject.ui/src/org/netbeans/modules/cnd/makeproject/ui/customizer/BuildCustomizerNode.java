@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.ui.configurations.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.configurations.PrependToolCollectionPathNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.configurations.PlatformSpecificProp;
@@ -107,7 +108,7 @@ public class BuildCustomizerNode extends CustomizerNode {
             set.put(new BooleanNodeProp(conf.getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
         }
         set.put(new PlatformSpecificProp(conf, conf.getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
-        set.put(new BooleanNodeProp(conf.getPrependToolCollectionPath(), true, "PrependToolCollectionPath", getString("PrependToolCollectionPathTxt"), getString("PrependToolCollectionPathHint"))); // NOI18N
+        set.put(new PrependToolCollectionPathNodeProp(conf.getPrependToolCollectionPath(), conf.getCompilerSet(), conf.getDevelopmentHost(), true, "PrependToolCollectionPath", getString("PrependToolCollectionPathTxt"), getString("PrependToolCollectionPathHint"))); //NOI18N
         sheet.put(set);
 
         return sheet;
