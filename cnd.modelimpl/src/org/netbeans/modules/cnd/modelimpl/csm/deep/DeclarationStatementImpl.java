@@ -189,7 +189,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                         {
                             try {
-                                ClassImpl cls = createClass(token, null, null);
+                                ClassImpl cls = createClass(token, null, new StmtDeclsContainer());
                                 Pair typedefs = renderTypedef(token, cls, currentNamespace);
                                 if (!typedefs.getTypesefs().isEmpty()) {
                                     addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
@@ -303,14 +303,34 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
             }
             return impl;
         }
+        
+        private final class StmtDeclsContainer implements MutableDeclarationsContainer {
 
-        @Override
-        protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
-            ClassImpl cls = super.createClass(token, scope, container);
-            if (cls != null) {
-                declarators.add(cls);
+            @Override
+            public void addDeclaration(CsmOffsetableDeclaration declaration) {
+                declarators.add(declaration);
             }
-            return cls;
+
+            @Override
+            public void removeDeclaration(CsmOffsetableDeclaration declaration) {
+                throw new UnsupportedOperationException("Not supported."); // NOI18N
+            }
+
+            @Override
+            public Collection<CsmOffsetableDeclaration> getDeclarations() {
+                throw new UnsupportedOperationException("Not supported."); // NOI18N
+            }
+
+            @Override
+            public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
+                return null;
+            }
+
+            @Override
+            public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+                return null;
+            }
+            
         }
     }
     
