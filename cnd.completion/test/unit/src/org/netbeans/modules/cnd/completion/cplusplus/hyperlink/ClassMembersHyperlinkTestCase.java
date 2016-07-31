@@ -1325,6 +1325,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257822.c", 23, 8, "bug257822.c", 3, 5);
     }
     
+    public void testBug257821() throws Exception {
+        // Bug 257821 - Unresolved identifier in designated initializer following sizeof a typedef
+        performTest("bug257821.c", 13, 8, "bug257821.c", 7, 5);
+        performTest("bug257821.c", 19, 11, "bug257821.c", 2, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

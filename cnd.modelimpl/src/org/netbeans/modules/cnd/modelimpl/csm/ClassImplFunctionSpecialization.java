@@ -105,7 +105,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         if (clsImpl != null) {
             impl = clsImpl;
         } else {
-            impl.init(scope, ast, file, fileContent, language, register);
+            impl.init(scope, ast, file, fileContent, language, register, container);
             container.addDeclaration(impl);
         }
         nameHolder.addReference(fileContent, impl);
