@@ -381,13 +381,12 @@ public class NodeExecutable {
     private List<String> getDebugParams(int port, File script, String args, boolean[] useV8Debug) {
         List<String> params = new ArrayList<>();
         List<StartupExtender> extenders = StartupExtender.getExtenders(project.getLookup(), StartupExtender.StartMode.DEBUG);
-        if (extenders.isEmpty()) {
+        for (StartupExtender e : extenders) {
+            params.addAll(e.getArguments());
+        }
+        if (params.isEmpty()) {
             params.add(String.format(getDebugCommand(), port));
             useV8Debug[0] = true;
-        } else {
-            for (StartupExtender e : extenders) {
-                params.addAll(e.getArguments());
-            }
         }
         params.addAll(getScriptArgsParams(script, args));
         return getParams(params);
