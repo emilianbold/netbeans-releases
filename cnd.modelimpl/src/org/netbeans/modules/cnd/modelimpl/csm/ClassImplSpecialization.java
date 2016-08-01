@@ -89,14 +89,14 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
     
     @Override
-    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register) throws AstRendererException {
+    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register, DeclarationsContainer container) throws AstRendererException {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
-        render(ast, file, fileContent, language, !register);
+        render(ast, file, fileContent, language, !register, container);
 
         initQualifiedName(ast, scope, register, file);
 
@@ -149,7 +149,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
             nameHolder = NameHolder.createClassName(ast);
             impl = new ClassImplSpecialization(ast, nameHolder, file);
         }
-        impl.init(scope, ast, file, fileContent, language, register); 
+        impl.init(scope, ast, file, fileContent, language, register, container); 
         if (nameHolder != null) {
             nameHolder.addReference(fileContent, impl);
         }
