@@ -155,31 +155,12 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
                             ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE)). // NOI18N
-                    addModulePathProperties(ProjectProperties.JAVAC_MODULEPATH).
+                    addModulePathProperties(ProjectProperties.RUN_MODULEPATH).
                     addModulePathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
-                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[0]).
                     setSourceRoots(project.getSourceRoots()).
                     build();
             } else if (key == TEST_LIBRARIES) {
-                    new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
-                        project, evaluator, helper, resolver, ProjectProperties.RUN_TEST_CLASSPATH,
-                        new String[] {
-                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
-                            ProjectProperties.JAVAC_CLASSPATH,
-                            ProjectProperties.BUILD_CLASSES_DIR,
-                        },
-                        null,
-                        new Action[] {
-                            LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
-                            LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
-                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
-                            null,
-                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                        },
-                        null,
-                        cs,
-                        null
-                    );
                 return new LibrariesNode.Builder(project,evaluator, helper, resolver, cs).
                     setName(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode")).
                     addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH).
@@ -193,12 +174,12 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
                             ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS)). // NOI18N
-                    addModulePathProperties(ProjectProperties.JAVAC_TEST_MODULEPATH).
+                    addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH).
                     addModulePathIgnoreRefs(
                             ProjectProperties.BUILD_TEST_CLASSES_DIR,
                             ProjectProperties.JAVAC_MODULEPATH,
                             ProjectProperties.BUILD_CLASSES_DIR).
-                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[1]).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[1]).
                     setSourceRoots(project.getTestSourceRoots()).
                     build();
                     
