@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -165,11 +165,11 @@ public class PathEnvVariables extends javax.swing.JPanel {
         }
     }
     
-    String getModifyBuildPath() {
+    public String getModifyBuildPath() {
         return buildTextField.getText().trim();
     }
 
-    String getModifyRunPath() {
+    public String getModifyRunPath() {
         return runTextField.getText().trim();
     }
 
