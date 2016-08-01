@@ -510,7 +510,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     private void initNextPrevActions() {
-        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))) {  //NOI18N
+        nextAction = new AbstractAction(null, org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-next.png", false)) {  //NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.nextButton.toolTipText")); //NOI18N
             }
@@ -519,7 +519,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 onNextButton();
             }
         };
-        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))) { //NOI18N
+        prevAction = new AbstractAction(null, org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-prev.png", false)) { //NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.prevButton.toolTipText")); //NOI18N
             }

@@ -91,7 +91,7 @@ class VersioningPanel extends JPanel {
         jPanel2.setRollover(true);
 
         btnGroupModes.add(tgbHeadVsWorking);
-        tgbHeadVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png"))); // NOI18N
+        tgbHeadVsWorking.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/head_vs_working.png", false)); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/status/Bundle"); // NOI18N
         tgbHeadVsWorking.setToolTipText(bundle.getString("CTL_Synchronize_Action_HeadVsWorking_Tooltip")); // NOI18N
         tgbHeadVsWorking.setFocusable(false);
@@ -99,14 +99,14 @@ class VersioningPanel extends JPanel {
         tgbHeadVsWorking.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_HeadVsWorking_Text")); // NOI18N
 
         btnGroupModes.add(tgbHeadVsIndex);
-        tgbHeadVsIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png"))); // NOI18N
+        tgbHeadVsIndex.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/head_vs_index.png", false)); // NOI18N
         tgbHeadVsIndex.setToolTipText(bundle.getString("CTL_Synchronize_Action_HeadVsIndex_Tooltip")); // NOI18N
         tgbHeadVsIndex.setFocusable(false);
         jPanel2.add(tgbHeadVsIndex);
         tgbHeadVsIndex.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_HeadVsIndex_Text")); // NOI18N
 
         btnGroupModes.add(tgbIndexVsWorking);
-        tgbIndexVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/index_vs_working.png"))); // NOI18N
+        tgbIndexVsWorking.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/index_vs_working.png", false)); // NOI18N
         tgbIndexVsWorking.setToolTipText(bundle.getString("CTL_Synchronize_Action_IndexVsWorking_Tooltip")); // NOI18N
         tgbIndexVsWorking.setFocusable(false);
         jPanel2.add(tgbIndexVsWorking);
@@ -117,14 +117,14 @@ class VersioningPanel extends JPanel {
         jPanel2.add(jPanel4);
 
         viewButtonGroup.add(listButton);
-        listButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/file_view.png"))); // NOI18N
+        listButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/file_view.png", false)); // NOI18N
         listButton.setToolTipText(bundle.getString("CTL_listButton.toolTipText")); // NOI18N
         listButton.setFocusable(false);
         listButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jPanel2.add(listButton);
 
         viewButtonGroup.add(treeButton);
-        treeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/logical_view.png"))); // NOI18N
+        treeButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/logical_view.png", false)); // NOI18N
         treeButton.setToolTipText(bundle.getString("CTL_treeButton.toolTipText")); // NOI18N
         treeButton.setFocusable(false);
         treeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -134,14 +134,14 @@ class VersioningPanel extends JPanel {
         jPanel5.setOpaque(false);
         jPanel2.add(jPanel5);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/refresh.png", false)); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setFocusable(false);
         btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jPanel2.add(btnRefresh);
         btnRefresh.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Text")); // NOI18N
 
-        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff.png"))); // NOI18N
+        btnDiff.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff.png", false)); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setFocusable(false);
         jPanel2.add(btnDiff);
@@ -151,13 +151,13 @@ class VersioningPanel extends JPanel {
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnRevert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/get_clean.png"))); // NOI18N
+        btnRevert.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/get_clean.png", false)); // NOI18N
         btnRevert.setToolTipText(bundle.getString("CTL_Synchronize_Action_CheckoutPaths_Tooltip")); // NOI18N
         btnRevert.setFocusable(false);
         jPanel2.add(btnRevert);
         btnRevert.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_CheckoutPaths_Text")); // NOI18N
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/commit.png"))); // NOI18N
+        btnCommit.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/commit.png", false)); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_Synchronize_Action_Commit_Tooltip")); // NOI18N
         btnCommit.setFocusable(false);
         jPanel2.add(btnCommit);

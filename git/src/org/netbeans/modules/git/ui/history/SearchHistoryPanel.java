@@ -239,7 +239,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             tbDiff.setPreferredSize(d1);
         }
         
-        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))) { // NOI18N
+        nextAction = new AbstractAction(null, org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-next.png", false)) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "CTL_DiffPanel_Next_Tooltip")); // NOI18N
             }
@@ -248,7 +248,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 diffView.onNextButton();
             }
         };
-        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))) { // NOI18N
+        prevAction = new AbstractAction(null, org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-prev.png", false)) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "CTL_DiffPanel_Prev_Tooltip")); // NOI18N
             }
@@ -517,12 +517,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jSeparator2.setMaximumSize(new java.awt.Dimension(2, 32767));
         jToolBar1.add(jSeparator2);
 
-        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))); // NOI18N
+        bNext.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-next.png", false)); // NOI18N
         jToolBar1.add(bNext);
         bNext.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_NextDifference")); // NOI18N
         bNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_NextDifference")); // NOI18N
 
-        bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))); // NOI18N
+        bPrev.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-prev.png", false)); // NOI18N
         jToolBar1.add(bPrev);
         bPrev.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_PrevDifference")); // NOI18N
         bPrev.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_PrevDifference")); // NOI18N

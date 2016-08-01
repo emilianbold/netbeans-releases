@@ -81,7 +81,7 @@ public class CreateBranchPanel extends JPanel {
 
         branchNameField.setText(org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "CreateBranchPanel.branchNameField.text")); // NOI18N
 
-        lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
+        lblError.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/info.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "MSG_CreateBranch.errorBranchExists")); // NOI18N
 
         cbCheckoutBranch.setSelected(true);
