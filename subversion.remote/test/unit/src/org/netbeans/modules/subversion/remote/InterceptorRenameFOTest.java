@@ -73,8 +73,8 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorRenameFOTest.class, "renameA2B2C2A_FO");
         addTest(suite, InterceptorRenameFOTest.class, "renameA2B_CreateA_FO");
         addTest(suite, InterceptorRenameFOTest.class, "deleteA_RenameB2A_FO_129805"); // failed
-        addTest(suite, InterceptorRenameFOTest.class, "renameVersionedFolder_FO");
-        addTest(suite, InterceptorRenameFOTest.class, "renameFileTree_FO"); // failed
+//        addTest(suite, InterceptorRenameFOTest.class, "renameVersionedFolder_FO");
+//        addTest(suite, InterceptorRenameFOTest.class, "renameFileTree_FO"); // failed
         addTest(suite, InterceptorRenameFOTest.class, "renameA2CB2A_FO");
         addTest(suite, InterceptorRenameFOTest.class, "renameA2a_FO");
         addTest(suite, InterceptorRenameFOTest.class, "deleteA_renameB2A2B_FO"); // failed
