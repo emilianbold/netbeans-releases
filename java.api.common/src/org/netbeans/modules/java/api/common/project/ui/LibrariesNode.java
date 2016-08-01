@@ -760,12 +760,6 @@ public final class LibrariesNode extends AbstractNode {
                     result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
                 }
-                case Key.TYPE_MODULE:
-                {
-                    final Node afn = ActionFilterNode.forPackage(PackageView.createPackageView(key.getSourceGroup()));
-                    result = afn == null ? new Node[0] : new Node[] {afn};
-                    break;
-                }
                 case Key.TYPE_OTHER:
                     result = extraKeys.createNodes(key);
                     break;
@@ -1019,7 +1013,6 @@ public final class LibrariesNode extends AbstractNode {
         static final int TYPE_PROJECT = 3;          //project
         static final int TYPE_OTHER = 4;            //extension provided by Callback
         static final int TYPE_FILE = 5;             //direct file not added by ReferenceHelper
-        static final int TYPE_MODULE = 6;           //Used module on module path
 
         private int type;
         private String classPathId;
@@ -1050,10 +1043,6 @@ public final class LibrariesNode extends AbstractNode {
             return new Key(TYPE_FILE, sg, classPathId, entryId);
         }
 
-        private static Key module(SourceGroup sg) {
-            return new Key(TYPE_MODULE, sg, null, null);
-        }
-
         public Key (String anID) {
             this.type = TYPE_OTHER;
             this.anID = anID;
@@ -1065,7 +1054,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private Key (int type, SourceGroup sg, String classPathId, String entryId) {
-            assert type == TYPE_LIBRARY || type == TYPE_FILE_REFERENCE || type == TYPE_FILE || type == TYPE_MODULE;
+            assert type == TYPE_LIBRARY || type == TYPE_FILE_REFERENCE || type == TYPE_FILE;
             this.type = type;
             this.sg = sg;
             this.classPathId = classPathId;
@@ -1135,7 +1124,6 @@ public final class LibrariesNode extends AbstractNode {
                 case TYPE_LIBRARY:
                 case TYPE_FILE_REFERENCE:
                 case TYPE_FILE:
-                case TYPE_MODULE:
                     hashCode ^= this.sg == null ? 0 : this.sg.hashCode();
                     break;
                 case TYPE_PROJECT:
@@ -1172,8 +1160,6 @@ public final class LibrariesNode extends AbstractNode {
                     return true;
                 case TYPE_OTHER:
                     return anID.equals(other.anID);
-                case TYPE_MODULE:
-                    return this.sg == null ? other.sg == null : this.sg.equals(other.sg);
                 default:
                     throw new IllegalStateException();
             }
