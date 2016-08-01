@@ -89,7 +89,7 @@ import org.openide.util.Union2;
  */
 class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFactory {
     private final Collection<QualifiedName> possibleFQSuperClassNames;
-    private final Collection<QualifiedName> usedTraits;
+    private final Collection<QualifiedName> usedTraits = new HashSet<>();
     private final Set<? super TypeScope> superRecursionDetection = new HashSet<>();
     private final Set<? super TypeScope> subRecursionDetection = new HashSet<>();
     private Union2<String, List<ClassScopeImpl>> superClass;
@@ -128,7 +128,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
         }
-        usedTraits = nodeInfo.getUsedTraits();
+        for (QualifiedName usedTrait : nodeInfo.getUsedTraits()) {
+            usedTraits.add(VariousUtils.getFullyQualifiedName(usedTrait, nodeInfo.getOriginalNode().getStartOffset(), inScope));
+        }
     }
 
     ClassScopeImpl(Scope inScope, ClassInstanceCreationInfo nodeInfo, boolean isDeprecated) {
@@ -149,7 +151,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
         }
-        usedTraits = nodeInfo.getUsedTraits();
+        for (QualifiedName usedTrait : nodeInfo.getUsedTraits()) {
+            usedTraits.add(VariousUtils.getFullyQualifiedName(usedTrait, nodeInfo.getOriginalNode().getStartOffset(), inScope));
+        }
     }
 
     ClassScopeImpl(IndexScope inScope, ClassElement indexedClass) {
@@ -157,7 +161,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         final QualifiedName superClassName = indexedClass.getSuperClassName();
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.toString() : null);
         this.possibleFQSuperClassNames = indexedClass.getPossibleFQSuperClassNames();
-        usedTraits = indexedClass.getUsedTraits();
+        usedTraits.addAll(indexedClass.getUsedTraits());
     }
     //old contructors
 
