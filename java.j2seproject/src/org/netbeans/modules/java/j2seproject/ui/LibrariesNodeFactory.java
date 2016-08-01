@@ -97,8 +97,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private static final String LIBRARIES = "Libs"; //NOI18N
         private static final String TEST_LIBRARIES = "TestLibs"; //NOI18N
 
-        private SourceRoots testSources;
-        private J2SEProject project;
+        private final J2SEProject project;        
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         private PropertyEvaluator evaluator;
@@ -109,7 +108,6 @@ public final class LibrariesNodeFactory implements NodeFactory {
         LibrariesNodeList(@NonNull final J2SEProject proj) {
             Parameters.notNull("proj", proj);   //NOI18N
             project = proj;
-            testSources = project.getTestSourceRoots();
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
             resolver = project.getReferenceHelper();
@@ -119,7 +117,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
             result.add(LIBRARIES);
-            URL[] testRoots = testSources.getRootURLs();
+            URL[] testRoots = project.getTestSourceRoots().getRootURLs();
             boolean addTestSources = false;
             for (int i = 0; i < testRoots.length; i++) {
                 File f = Utilities.toFile(URI.create(testRoots[i].toExternalForm()));
@@ -160,6 +158,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     addModulePathProperties(ProjectProperties.JAVAC_MODULEPATH).
                     addModulePathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
                     setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
+                    setSourceRoots(project.getSourceRoots()).
                     build();
             } else if (key == TEST_LIBRARIES) {
                     new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
@@ -200,6 +199,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             ProjectProperties.JAVAC_MODULEPATH,
                             ProjectProperties.BUILD_CLASSES_DIR).
                     setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[1]).
+                    setSourceRoots(project.getTestSourceRoots()).
                     build();
                     
             }
@@ -209,11 +209,11 @@ public final class LibrariesNodeFactory implements NodeFactory {
         }
 
         public void addNotify() {
-            testSources.addPropertyChangeListener(this);
+            project.getTestSourceRoots().addPropertyChangeListener(this);
         }
 
         public void removeNotify() {
-            testSources.removePropertyChangeListener(this);
+            project.getTestSourceRoots().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

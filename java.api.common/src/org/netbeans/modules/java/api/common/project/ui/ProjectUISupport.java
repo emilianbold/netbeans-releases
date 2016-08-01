@@ -103,7 +103,16 @@ public final class ProjectUISupport{
             assert entryId == null;
             return ActionFilterNode.forPackage(original);
         } else {
-            return  ActionFilterNode.forRoot(original, helper, classPathId, entryId, webModuleElementName, cs, rh);
+            return  ActionFilterNode.forRoot(
+                    original,
+                    helper,
+                    classPathId,
+                    entryId,
+                    webModuleElementName,
+                    cs,
+                    rh,
+                    null,
+                    null);
         }
     }
 

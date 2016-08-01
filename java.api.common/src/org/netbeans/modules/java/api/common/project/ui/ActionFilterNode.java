@@ -52,9 +52,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -62,7 +62,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
-
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +71,6 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -82,7 +80,6 @@ import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.impl.ClassPathPackageAccessor;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -99,6 +96,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -191,7 +189,9 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull String entryId,
             final @NullAllowed String webModuleElementName,     //xxx: remove
             final @NonNull ClassPathSupport cs,
-            final @NonNull ReferenceHelper rh) {
+            final @NonNull ReferenceHelper rh,
+            @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("classPathId", classPathId); //NOI18N
@@ -203,7 +203,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
                 new JavadocProvider(root,root)));
     }
 
@@ -215,7 +215,9 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull String entryId,
             final @NullAllowed String webModuleElementName,     //xxx: remove
             final @NonNull ClassPathSupport cs,
-            final @NonNull ReferenceHelper rh) {
+            final @NonNull ReferenceHelper rh,
+            @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("classPathId", classPathId); //NOI18N
@@ -227,7 +229,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
                 new LibraryEditable(entryId, rh),
                 new JavadocProvider(root,root)));
     }
@@ -241,7 +243,9 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull String entryId,
             final @NullAllowed String webModuleElementName,     //xxx: remove
             final @NonNull ClassPathSupport cs,
-            final @NonNull ReferenceHelper rh) {
+            final @NonNull ReferenceHelper rh,
+            @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("eval", eval);           //NOI18N
@@ -254,7 +258,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
                 new ArchiveEditable(entryId, helper, eval, rh),
                 new JavadocProvider(root,root)));
     }
@@ -506,16 +510,27 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
        private final String entryId;
        private final String webModuleElementName;
        private final ClassPathSupport cs;
-       private ReferenceHelper rh;
+       private final ReferenceHelper rh;
+       private final Consumer<Pair<String,String>> preRemoveAction;
+       private final Consumer<Pair<String,String>> postRemoveAction;
 
-       Removable (UpdateHelper helper, String classPathId, String entryId,
-               String webModuleElementName, ClassPathSupport cs, ReferenceHelper rh) {
+       Removable (
+               @NonNull final UpdateHelper helper,
+               @NonNull final String classPathId,
+               @NonNull final String entryId,
+               @NullAllowed final String webModuleElementName,
+               @NonNull final ClassPathSupport cs,
+               @NonNull final ReferenceHelper rh,
+               @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+               @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
            this.helper = helper;
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            this.cs = cs;
            this.rh = rh;
+           this.preRemoveAction = preRemoveAction;
+           this.postRemoveAction = postRemoveAction;
        }
 
 
@@ -530,23 +545,27 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
        public Project remove() {
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.
-            boolean removed = false;
+            String ref = null;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);
             List<ClassPathSupport.Item> resources = cs.itemsList( raw, webModuleElementName );
             for (Iterator i = resources.iterator(); i.hasNext();) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
+                    ref = item.getReference();
+                    preRemoveAction.accept(Pair.of(classPathId, ref));
                     i.remove();
                     ClassPathPackageAccessor.getInstance().removeUnusedReference(item, classPathId, helper, rh);
-                    removed = true;
                 }
             }
-            if (removed) {
+            if (ref != null) {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                if (postRemoveAction != null) {
+                    postRemoveAction.accept(Pair.of(classPathId,ref));
+                }
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;

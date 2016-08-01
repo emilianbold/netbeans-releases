@@ -53,8 +53,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
@@ -78,6 +81,7 @@ import org.netbeans.spi.project.ui.PathFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 
@@ -96,11 +100,21 @@ class ProjectNode extends AbstractNode {
     private final URI artifactLocation;
     private Image cachedIcon;
 
-    public ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
-            String classPathId, String entryId, String webModuleElementName, 
-            ClassPathSupport cs, ReferenceHelper rh) {
-        super (Children.LEAF, createLookup (antArtifact, artifactLocation, 
-                helper, classPathId, entryId, webModuleElementName, cs, rh));
+    ProjectNode (
+                @NonNull final AntArtifact antArtifact,
+                @NonNull final URI artifactLocation,
+                @NonNull final UpdateHelper helper,
+                @NonNull final String classPathId,
+                @NonNull final String entryId,
+                @NullAllowed final String webModuleElementName, 
+                @NonNull final ClassPathSupport cs,
+                @NonNull final ReferenceHelper rh,
+                @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+        super (Children.LEAF, createLookup (
+                antArtifact, artifactLocation, 
+                helper, classPathId, entryId, webModuleElementName,
+                cs, rh, preRemoveAction, postRemoveAction));
         this.antArtifact = antArtifact;
         this.artifactLocation = artifactLocation;
     }
@@ -180,11 +194,17 @@ class ProjectNode extends AbstractNode {
         return null;
     }
     
-    private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
-            UpdateHelper helper, 
-            String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs,
-            ReferenceHelper rh) {
+    private static Lookup createLookup (
+            @NonNull final AntArtifact antArtifact,
+            @NonNull final URI artifactLocation, 
+            @NonNull final UpdateHelper helper, 
+            @NonNull final String classPathId,
+            @NonNull final String entryId,
+            @NullAllowed final String webModuleElementName,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final ReferenceHelper rh,
+            @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
         Project p = antArtifact.getProject();
         Object[] content;
         if (p == null) {
@@ -196,7 +216,9 @@ class ProjectNode extends AbstractNode {
             content[2] = p;
             content[3] = new PathFinderImpl();  //Needed by Source Inspect View to display errors in project reference
         }
-        content[0] = new ActionFilterNode.Removable(helper, classPathId, entryId, webModuleElementName, cs, rh);
+        content[0] = new ActionFilterNode.Removable(
+                helper, classPathId, entryId, webModuleElementName,
+                cs, rh, preRemoveAction, postRemoveAction);
         Lookup lkp = Lookups.fixed(content);
         return lkp;
     }
