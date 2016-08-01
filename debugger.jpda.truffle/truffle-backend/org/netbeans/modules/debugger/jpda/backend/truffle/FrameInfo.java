@@ -40,27 +40,24 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.frame.Frame;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.debug.DebugStackFrame;
+import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 final class FrameInfo {
-    final FrameInstance frame;  // the top frame instance
-    final FrameSlot[] slots;
-    final String[] slotNames;
-    final String[] slotTypes;
-    final FrameInstance[] stackTrace;
+    final DebugStackFrame frame;  // the top frame instance
+    //final FrameSlot[] slots;
+    //final String[] slotNames;
+    //final String[] slotTypes;
+    final DebugStackFrame[] stackTrace;
     final String topFrame;
-    final Object thisObject;
+    final Object[] topVariables;
+    //final Object thisObject;
 
+    /*
     public FrameInfo(MaterializedFrame frame, Node astNode,
                      List<FrameInstance> stack) {
         //System.err.println("new FrameInfo("+frame+" ("+frame.getFrameDescriptor().toString()+"), "+stack+")");
@@ -85,7 +82,7 @@ final class FrameInfo {
         }
         //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
         //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
-        if (false /* TODO: frame instanceof VirtualFrame*/) {
+        if (false /* TODO: frame instanceof VirtualFrame*//*) {
             /* TODO: Find "this"
             Object thisObj;
             try {
@@ -96,7 +93,7 @@ final class FrameInfo {
             }
             //System.err.println("           this = "+thisObj);
             thisObject = thisObj;
-            */
+            *//*
         } else if (arguments.length > 1) {
             thisObject = arguments[0];
         } else {
@@ -114,7 +111,7 @@ final class FrameInfo {
         for (int i = 0; i < slots.length; i++) {
         System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
         }
-         */
+         *//*
         List<FrameInstance> frames = null;
         int n = stack.size();
         if (n > 0) {
@@ -127,7 +124,7 @@ final class FrameInfo {
             /*
             Frame iFrame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
             System.err.println("stack("+i+"): fi = "+fi+", frame = "+iFrame+" ("+frame.getFrameDescriptor().toString()+"), call node = "+fi.getCallNode());
-            */
+            *//*
             // Filter frames with null call node. How should we display them?
             Node node = fi.getCallNode();
             SourceSection ss;
@@ -155,7 +152,7 @@ final class FrameInfo {
         for (int i = 0; i < stackTrace.length; i++) {
         //stackNames[i] = stackTrace[i].getCallNode().getDescription();
         stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
-        }*/
+        }*//*
         //System.err.println("  stack trace = "+java.util.Arrays.toString(stackTrace));
         //System.err.println("  stack names = "+Arrays.toString(stackNames));
         topFrame = DebuggerVisualizer.getDisplayName(astNode.getRootNode().getCallTarget()) + "\n" +
@@ -164,6 +161,28 @@ final class FrameInfo {
                    position.id + "\n" + position.name + "\n" + position.path + "\n" +
                    position.uri.toString() + "\n" + position.line;
         //System.err.println("  top frame = \n'"+topFrame+"'");
+    }
+    */
+
+    FrameInfo(DebugStackFrame topStackFrame, Iterable<DebugStackFrame> stackFrames) {
+        SourceSection topSS = topStackFrame.getSourceSection();
+        SourcePosition position = JPDATruffleDebugManager.getPosition(topSS);
+        ArrayList<DebugStackFrame> stackFramesArray = new ArrayList<>();
+        for (DebugStackFrame sf : stackFrames) {
+            SourceSection ss = sf.getSourceSection();
+            // Ignore frames without sources:
+            if (ss == null || ss.getSource() == null) {
+                continue;
+            }
+            stackFramesArray.add(sf);
+        }
+        frame = topStackFrame;
+        stackTrace = stackFramesArray.toArray(new DebugStackFrame[stackFramesArray.size()]);
+        topFrame = topStackFrame.getName() + "\n" +
+                   DebuggerVisualizer.getSourceLocation(topSS) + "\n" +
+                   position.id + "\n" + position.name + "\n" + position.path + "\n" +
+                   position.uri.toString() + "\n" + position.line;
+        topVariables = JPDATruffleAccessor.getVariables(topStackFrame);
     }
     
 }

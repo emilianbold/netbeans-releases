@@ -106,10 +106,9 @@ class DebugManagerHandler implements JPDABreakpointListener {
     
     private static final Logger LOG = Logger.getLogger(DebugManagerHandler.class.getName());
     
-    private static final String TRUFFLE_JS_ENGINE_CLASS_NAME = "com.oracle.truffle.js.engine.TruffleJSEngine"; // NOI18N
     private static final String ACCESSOR_START_ACCESS_LOOP = "startAccessLoop"; // NOI18N
     private static final String ACCESSOR_STOP_ACCESS_LOOP = "stopAccessLoop";   // NOI18N
-    private static final String ACCESSOR_SET_UP_DEBUG_MANAGER = "setUpDebugManager";    // NOI18N
+    //private static final String ACCESSOR_SET_UP_DEBUG_MANAGER = "setUpDebugManager";    // NOI18N
     private static final String ACCESSOR_SET_UP_DEBUG_MANAGER_FOR = "setUpDebugManagerFor"; // NOI18N
     private static final String ACCESSOR_DEBUGGER_ACCESS = "debuggerAccess";    // NOI18N
     private static final String ACCESSOR_EXECUTION_HALTED = "executionHalted";  // NOI18N
@@ -142,6 +141,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
         return stepInto != null && stepInto;
     }
     
+    // PolyglotEngine$Builder.build() method exit
     @Override
     public void breakpointReached(JPDABreakpointEvent event) {
         LOG.log(Level.FINE, "Engine created breakpoint hit: {0}", event);
@@ -161,17 +161,18 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 }*/
                 //event.getThread();
                 JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
+                Variable engine = event.getVariable();
                 InvocationExceptionTranslated iextr = null;
                 try {
                     thread.notifyMethodInvoking();
                     //This engine = thread.getCallStack(0, 1)[0].getThisVariable();
-                    CallStackFrame csf = thread.getCallStack(0, 1)[0];
-                    LocalVariable[] args = ((CallStackFrameImpl) csf).getMethodArguments();
+                    //CallStackFrame csf = thread.getCallStack(0, 1)[0];
+                    /*LocalVariable[] args = ((CallStackFrameImpl) csf).getMethodArguments();
                     if (args.length == 0) {
                         LOG.warning("No arguments to "+event.getSource());
                         return ;
-                    }
-                    Variable engine = args[0];//event.getVariable();
+                    }*/
+                    //Variable engine = args[0];//event.getVariable();
                     Value engineValue = ((JDIVariable) engine).getJDIValue();
                     LOG.log(Level.FINE, "breakpointReached({0}): engineValue = {1}", new Object[]{event, engineValue});
                     if (!(engineValue instanceof ObjectReference)) {
@@ -272,6 +273,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass);
                     return ;
                 }
+                /*
                 Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                 if (debugManagerMethod != null) {
                     ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -280,15 +282,18 @@ class DebugManagerHandler implements JPDABreakpointListener {
                         return ;
                     }
                 }
+                */
                 TruffleAccess.assureBPSet(debugger, serviceClass);
                 JPDAClassType serviceJPDAClass = ((JPDADebuggerImpl) debugger).getClassType(serviceClass);
                 synchronized (accessorClassLock) {
                     accessorClass = serviceClass;
                     accessorJPDAClass = serviceJPDAClass;
                 }
+                /*
                 if (debugManagerMethod != null) {
                     //debugManager = (ObjectReference) ret;
                 }
+                */
             } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
                 iextr = new InvocationExceptionTranslated(iex, t.getDebugger());

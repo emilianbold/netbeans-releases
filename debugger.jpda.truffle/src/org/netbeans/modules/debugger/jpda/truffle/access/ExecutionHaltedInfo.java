@@ -39,43 +39,51 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.backend.truffle;
+package org.netbeans.modules.debugger.jpda.truffle.access;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
+import com.sun.jdi.ArrayReference;
+import com.sun.jdi.BooleanValue;
+import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 /**
  *
  * @author Martin
  */
-final class DebuggerVisualizer {
+class ExecutionHaltedInfo {
     
-    private DebuggerVisualizer() {}
+    final ObjectVariable debugManager;
+    final ObjectVariable sourcePositions;
+    final boolean haltedBefore;
+    final ObjectVariable returnValue;
+    final ObjectVariable frameInfo;
+    final ObjectVariable[] breakpointsHit;
+    final ObjectVariable[] breakpointConditionExceptions;
+    final LocalVariable stepCmd;
     
-    static String getDisplayName(CallTarget ct) {
-        if (ct instanceof RootCallTarget) {
-            RootNode rn = ((RootCallTarget) ct).getRootNode();
-            return getMethodName(rn);
-        } else {
-            //System.err.println("Unexpected CallTarget: "+ct.getClass());
-            return ct.toString();
+    private ExecutionHaltedInfo(LocalVariable[] vars) {
+        this.debugManager = (ObjectVariable) vars[0];
+        this.sourcePositions = (ObjectVariable) vars[1];
+        this.haltedBefore = (Boolean) vars[2].createMirrorObject();
+        this.returnValue = (ObjectVariable) vars[3];
+        this.frameInfo = (ObjectVariable) vars[4];
+        this.breakpointsHit = getObjectArray((ObjectVariable) vars[5]);
+        this.breakpointConditionExceptions = getObjectArray((ObjectVariable) vars[6]);
+        this.stepCmd = vars[7];
+    }
+    
+    static ExecutionHaltedInfo get(LocalVariable[] vars) {
+        return new ExecutionHaltedInfo(vars);
+    }
+    
+    private static ObjectVariable[] getObjectArray(ObjectVariable var) {
+        Field[] fields = var.getFields(0, Integer.MAX_VALUE);
+        int n = fields.length;
+        ObjectVariable[] arr = new ObjectVariable[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = (ObjectVariable) fields[i];
         }
+        return arr;
     }
-    
-    static String getMethodName(RootNode rn) {
-        return rn.getName();
-    }
-    
-    /** &lt;File name&gt;:&lt;line number&gt; */
-    static String getSourceLocation(SourceSection ss) {
-        if (ss == null) {
-            //System.err.println("No source section for node "+n);
-            return "unknown";
-        }
-        return ss.getSource().getName() + ":" + ss.getStartLine();
-    }
-
 }

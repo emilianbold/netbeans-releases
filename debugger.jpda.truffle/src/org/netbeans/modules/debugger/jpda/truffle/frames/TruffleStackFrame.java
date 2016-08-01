@@ -45,15 +45,12 @@ package org.netbeans.modules.debugger.jpda.truffle.frames;
 import com.sun.jdi.StringReference;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 
 /**
  *
@@ -62,11 +59,11 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 public class TruffleStackFrame {
 
     private final JPDADebugger debugger;
-    private final Variable suspendedInfo;
+    //private final Variable suspendedInfo;
     private final int depth;
     private final ObjectVariable frameInstance;
-    private final ObjectVariable stackTrace;
-    private final String callTargetName;
+    //private final ObjectVariable stackTrace;
+    //private final String callTargetName;
     private final String methodName;
     private final String sourceLocation;
     
@@ -76,7 +73,7 @@ public class TruffleStackFrame {
     private final URI    sourceURI;
     private final int    sourceLine;
     private final StringReference codeRef;
-    private TruffleSlotVariable[] vars;
+    private TruffleVariable[] vars;
     private final ObjectVariable thisObject;
     
     /*
@@ -88,10 +85,10 @@ public class TruffleStackFrame {
     }
     */
 
-    public TruffleStackFrame(JPDADebugger debugger, Variable suspendedInfo, int depth,
-                             ObjectVariable frameInstance, ObjectVariable stackTrace,
+    public TruffleStackFrame(JPDADebugger debugger, int depth,
+                             ObjectVariable frameInstance,// ObjectVariable stackTrace,
                              String frameDefinition, StringReference codeRef,
-                             TruffleSlotVariable[] vars, ObjectVariable thisObject) {
+                             TruffleVariable[] vars, ObjectVariable thisObject) {
         /*
         try {
             System.err.println("new TruffleStackFrame("+depth+", "+frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName());
@@ -99,16 +96,16 @@ public class TruffleStackFrame {
             iex.printStackTrace();
         }*/
         this.debugger = debugger;
-        this. suspendedInfo = suspendedInfo;
+        //this. suspendedInfo = suspendedInfo;
         this.depth = depth;
         this.frameInstance = frameInstance;
-        this.stackTrace = stackTrace;
+        //this.stackTrace = stackTrace;
         try {
             int i1 = 0;
             int i2 = frameDefinition.indexOf('\n');
-            callTargetName = frameDefinition.substring(i1, i2);
-            i1 = i2 + 1;
-            i2 = frameDefinition.indexOf('\n', i1);
+            //callTargetName = frameDefinition.substring(i1, i2);
+            //i1 = i2 + 1;
+            //i2 = frameDefinition.indexOf('\n', i1);
             methodName = frameDefinition.substring(i1, i2);
             i1 = i2 + 1;
             i2 = frameDefinition.indexOf('\n', i1);
@@ -147,9 +144,9 @@ public class TruffleStackFrame {
         return depth;
     }
     
-    public String getCallTargetName() {
-        return callTargetName;
-    }
+    //public String getCallTargetName() {
+    //    return callTargetName;
+    //}
 
     public String getMethodName() {
         return methodName;
@@ -180,9 +177,9 @@ public class TruffleStackFrame {
         return frameInstance;// also is: (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
     }
     
-    public TruffleSlotVariable[] getVars() {
+    public TruffleVariable[] getVars() {
         if (vars == null) {
-            vars = TruffleAccess.createVars(debugger, suspendedInfo, getStackFrameInstance());
+            vars = TruffleAccess.createFrameVars(debugger, /*suspendedInfo,*/ getStackFrameInstance());
         }
         return vars;
     }

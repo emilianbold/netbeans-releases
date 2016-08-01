@@ -82,8 +82,8 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
     //private static final String SCRIPT_CREATION_BP_CLASS = "com.oracle.truffle.api.script.TruffleScriptEngineFactory";
     //private static final String SCRIPT_CREATION_BP_METHOD = "engineCreated";
-    private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";
-    private static final String SESSION_CREATION_BP_METHOD = "dispatchExecutionEvent";
+    private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine$Builder";
+    private static final String SESSION_CREATION_BP_METHOD = "build";
     
     private JPDABreakpoint debugManagerLoadBP;
     private static final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
@@ -106,7 +106,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
 //                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
         //debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
         debugManagerLoadBP = MethodBreakpoint.create(SESSION_CREATION_BP_CLASS, SESSION_CREATION_BP_METHOD);
-        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         debugManagerLoadBP.setHidden(true);
         
         LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}", debugManagerLoadBP);

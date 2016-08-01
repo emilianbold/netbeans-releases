@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
+import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.Debugger;
-import com.oracle.truffle.api.debug.ExecutionEvent;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.debug.DebuggerSession;
+import com.oracle.truffle.api.debug.SuspendedCallback;
+import com.oracle.truffle.api.debug.SuspendedEvent;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import java.lang.ref.Reference;
@@ -56,27 +58,43 @@ import java.lang.ref.WeakReference;
  *
  * @author martin
  */
-class JPDATruffleDebugManager {
+class JPDATruffleDebugManager implements SuspendedCallback {
     
     private final Reference<Debugger> debugger;
-    private volatile boolean prepareStepInto;
+    private final Reference<DebuggerSession> session;
+    //private volatile boolean prepareStepInto;
+    private volatile SuspendedEvent currentSuspendedEvent;
 
-    public JPDATruffleDebugManager(Debugger debugger) {
+    public JPDATruffleDebugManager(Debugger debugger, boolean doStepInto) {
         this.debugger = new WeakReference<>(debugger);
+        DebuggerSession debuggerSession = debugger.startSession(this);
+        if (doStepInto) {
+            debuggerSession.suspendNextExecution();
+        }
+        this.session = new WeakReference<>(debuggerSession);
     }
     
-    static JPDATruffleDebugManager setUp(Debugger debugger) {
+    /*static JPDATruffleDebugManager setUp(Debugger debugger) {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger);
         //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
         return debugManager;
-    }
+    }*/
     
     Debugger getDebugger() {
         return debugger.get();
     }
     
-    static SourcePosition getPosition(Node node) {
+    DebuggerSession getDebuggerSession() {
+        return session.get();
+    }
+    
+    SuspendedEvent getCurrentSuspendedEvent() {
+        return currentSuspendedEvent;
+    }
+    
+    static SourcePosition getPosition(SourceSection sourceSection) {
+        /*
         SourceSection sourceSection = node.getSourceSection();
         if (sourceSection == null) {
             sourceSection = node.getEncapsulatingSourceSection();
@@ -84,7 +102,7 @@ class JPDATruffleDebugManager {
         if (sourceSection == null) {
             System.err.println("Node without sourceSection! node = "+node+", of class: "+node.getClass());
             throw new IllegalStateException("Node without sourceSection! node = "+node+", of class: "+node.getClass());
-        }
+        }*/
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
         //System.err.println("source of "+node+" = "+source);
@@ -92,7 +110,7 @@ class JPDATruffleDebugManager {
         //System.err.println("  short name = "+source.getShortName());
         //System.err.println("  path = "+source.getPath());
         //System.err.println("  code at line = "+source.getCode(line));
-        String name = source.getShortName();
+        String name = source.getName();
         String path = source.getPath();
         if (path == null) {
             path = name;
@@ -104,20 +122,27 @@ class JPDATruffleDebugManager {
     void dispose() {
         /*
         endExecution();
-        */
+         */
+        DebuggerSession ds = session.get();
+        if (ds != null) {
+            ds.close();
+            session.clear();
+        }
     }
     
+    /*
     void setExecutionEvent(ExecutionEvent execEvent) {
         //this.execEvent = execEvent;
         if (prepareStepInto) {
             execEvent.prepareStepInto();
             prepareStepInto = false;
         }
-    }
+    }*/
 
     void prepareExecStepInto() {
         //System.err.println("prepareExecStepInto()...");
-        prepareStepInto = true;
+        session.get().suspendNextExecution();
+        //prepareStepInto = true;
         // Do not call methods on ExecutionEvent asynchronously.
         /* Rely on another ExecutionEvent comes when needed
         try {
@@ -134,7 +159,8 @@ class JPDATruffleDebugManager {
 
     void prepareExecContinue() {
         //System.err.println("prepareExecContinue()...");
-        prepareStepInto = false;
+        // TODO: HOW?
+        //prepareStepInto = false;
         // Do not call methods on ExecutionEvent asynchronously.
         /* Rely on another ExecutionEvent comes when needed
         try {
@@ -147,6 +173,43 @@ class JPDATruffleDebugManager {
         }
         */
         //System.err.println("prepareExecContinue() DONE.");
+    }
+
+    @Override
+    public void onSuspend(SuspendedEvent event) {
+        System.err.println("JPDATruffleDebugManager.onSuspend("+event+")");
+        Breakpoint[] breakpointsHit = new Breakpoint[event.getBreakpoints().size()];
+        breakpointsHit = event.getBreakpoints().toArray(breakpointsHit);
+        Throwable[] breakpointConditionExceptions = new Throwable[breakpointsHit.length];
+        for (int i = 0; i < breakpointsHit.length; i++) {
+            breakpointConditionExceptions[i] = event.getBreakpointConditionException(breakpointsHit[i]);
+        }
+        currentSuspendedEvent = event;
+        try {
+            SourcePosition position = getPosition(event.getSourceSection());
+            int stepCmd = JPDATruffleAccessor.executionHalted(
+                    this, position,
+                    event.isHaltedBefore(),
+                    event.getReturnValue(),
+                    new FrameInfo(event.getTopStackFrame(), event.getStackFrames()),
+                    breakpointsHit,
+                    breakpointConditionExceptions,
+                    0);
+            switch (stepCmd) {
+                case 0: event.prepareContinue();
+                        break;
+                case 1: event.prepareStepInto(1);
+                        break;
+                case 2: event.prepareStepOver(1);
+                        break;
+                case 3: event.prepareStepOut();
+                        break;
+                default:
+                        throw new IllegalStateException("Unknown step command: "+stepCmd);
+            }
+        } finally {
+            currentSuspendedEvent = null;
+        }
     }
     
 }

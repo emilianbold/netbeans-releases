@@ -59,8 +59,8 @@ public class TruffleStrataProvider implements StrataProvider {
     
     public static final String TRUFFLE_STRATUM = "TruffleScript";
     
-    private static final String TRUFFLE_ACCESS_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";   // TruffleAccess.BASIC_CLASS_NAME
-    private static final Pattern TRUFFLE_ACCESS_METHOD_REGEX = Pattern.compile("dispatch.*Event");
+    private static final String TRUFFLE_ACCESS_CLASS = TruffleAccess.BASIC_CLASS_NAME;//"com.oracle.truffle.api.vm.PolyglotEngine";   // TruffleAccess.BASIC_CLASS_NAME
+    private static final String TRUFFLE_ACCESS_METHOD = "executionHalted";//Pattern.compile("dispatch.*Event");
     
     private static final String VAR_LINE = "line";
 
@@ -82,7 +82,7 @@ public class TruffleStrataProvider implements StrataProvider {
     
     private boolean isInTruffleAccessPoint(CallStackFrameImpl csf) {
         return TRUFFLE_ACCESS_CLASS.equals(csf.getClassName()) &&
-               TRUFFLE_ACCESS_METHOD_REGEX.matcher(csf.getMethodName()).matches();
+               TRUFFLE_ACCESS_METHOD.equals(csf.getMethodName());
     }
 
     @Override

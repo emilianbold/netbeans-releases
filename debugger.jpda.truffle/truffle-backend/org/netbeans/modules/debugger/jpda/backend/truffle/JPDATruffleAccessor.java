@@ -43,7 +43,10 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.debug.Breakpoint;
+import com.oracle.truffle.api.debug.DebugStackFrame;
+import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.debug.Debugger;
+import com.oracle.truffle.api.debug.DebuggerSession;
 import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.debug.SuspendedEvent;
 import com.oracle.truffle.api.frame.Frame;
@@ -54,11 +57,13 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -91,6 +96,7 @@ public class JPDATruffleAccessor extends Object {
     /** A field to test for whether the access loop is sleeping and can be interrupted. */
     static boolean accessLoopSleeping = false;
     private static boolean stepIntoPrepared;
+
     /** A step command:
      * 0 no step (continue)
      * 1 step into
@@ -135,13 +141,20 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
+    static JPDATruffleDebugManager setUpDebugManagerFor(/*PolyglotEngine*/Object engineObj, boolean doStepInto) {
         //System.err.println("setUpDebugManagerFor("+event+", "+doStepInto+")");
-        ExecutionEvent execEvent = (ExecutionEvent) event;
-        Debugger debugger = execEvent.getDebugger();
+        PolyglotEngine engine = (PolyglotEngine) engineObj;
+        Debugger debugger = Debugger.find(engine);
+        JPDATruffleDebugManager tdm = new JPDATruffleDebugManager(debugger, doStepInto);
+        synchronized (debugManagers) {
+            debugManagers.put(debugger, tdm);
+        }
+        /*
         if (doStepInto) {
             execEvent.prepareStepInto();
         }
+        */
+        /*
         JPDATruffleDebugManager debugManager;
         synchronized (debugManagers) {
             debugManager = debugManagers.get(debugger);
@@ -154,6 +167,8 @@ public class JPDATruffleAccessor extends Object {
                 return null;    // Nothing new
             }
         }
+        */
+        return tdm;
     }
     
     /*
@@ -174,19 +189,32 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static /*SourcePosition*/Object getSourcePosition(/*SuspendedEvent*/Object suspendedEvent) {
-        SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
-        return JPDATruffleDebugManager.getPosition(evt.getNode());
+    static int executionHalted(JPDATruffleDebugManager tdm,
+                               SourcePosition position,
+                               boolean haltedBefore,
+                               DebugValue returnValue,
+                               FrameInfo frameInfo,
+                               Breakpoint[] breakpointsHit,
+                               Throwable[] breakpointConditionExceptions,
+                               int stepCmd) {
+        // Called when the execution is halted. Have a breakpoint here.
+        return stepCmd;
     }
     
-    static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
-        SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
-        Node node = evt.getNode();
-        return new FrameInfo(evt.getFrame(), node, evt.getStack());
-    }
+    //static /*SourcePosition*/Object getSourcePosition(/*SuspendedEvent*/Object suspendedEvent) {
+    //    SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
+    //    return JPDATruffleDebugManager.getPosition(evt.getNode());
+    //}
     
-    static void setStep(/*SuspendedEvent*/Object suspendedEvent, int stepCmd) {
-        SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
+    //static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
+    //    SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
+    //    Node node = evt.getNode();
+    //    return new FrameInfo(evt.getFrame(), node, evt.getStack());
+    //}
+    
+    static void setStep(JPDATruffleDebugManager debugManager, int stepCmd) {
+       //SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
+        SuspendedEvent evt = debugManager.getCurrentSuspendedEvent();
         switch (stepCmd) {
             case 0: evt.prepareContinue();
                     break;
@@ -218,6 +246,7 @@ public class JPDATruffleAccessor extends Object {
         stepCmd = 0;
     }*/
     
+    /*
     static Object getSlotValue(Object event, Object frameObj, Object slotObj) {
         SuspendedEvent suspEvent = (SuspendedEvent) event;
         FrameInstance frameInstance = (FrameInstance) frameObj;
@@ -252,7 +281,7 @@ public class JPDATruffleAccessor extends Object {
             case Illegal:   
             default:        return null;
         }
-        */
+        *//*
         if (frame.isBoolean(slot)) {
             return FrameUtil.getBooleanSafe(frame, slot);
         }
@@ -287,6 +316,7 @@ public class JPDATruffleAccessor extends Object {
         }
         return null;
     }
+    */
     
     /*
     static TruffleFrame[] getFramesInfo(FrameInstance[] frames) {
@@ -308,7 +338,7 @@ public class JPDATruffleAccessor extends Object {
      * @param frames The array of stack frame infos
      * @return An array of two elements: a String of frame information and
      * an array of code contents.
-     */
+     *//*
     static Object[] getFramesInfo(FrameInstance[] frames) {
         //Visualizer visualizer = debugManager.getVisualizer();
         int n = frames.length;
@@ -330,9 +360,59 @@ public class JPDATruffleAccessor extends Object {
                 System.err.println("  is virtual frame = "+fi.isVirtualFrame());
                 System.err.println("  call target = "+fi.getCallTarget());
                 System.err.println("frameInfos = "+frameInfos);
-                */
+                *//*
             }
             SourcePosition position = JPDATruffleDebugManager.getPosition(fi.getCallNode());
+            frameInfos.append(position.id);
+            frameInfos.append('\n');
+            frameInfos.append(position.name);
+            frameInfos.append('\n');
+            frameInfos.append(position.path);
+            frameInfos.append('\n');
+            frameInfos.append(position.uri.toString());
+            frameInfos.append('\n');
+            frameInfos.append(position.line);
+            
+            frameInfos.append("\n\n");
+            
+            codes[i] = position.code;
+            /*
+             TODO Find "this"
+            Frame f = fi.getFrame(FrameInstance.FrameAccess.READ_ONLY, false);
+            if (f instanceof VirtualFrame) {
+                thiss[i] = JSFrameUtil.getThisObj((VirtualFrame) f);
+            }*//*
+        }
+        return new Object[] { frameInfos.toString(), codes, thiss };
+    }*/
+    
+    /**
+     * @param frames The array of stack frame infos
+     * @return An array of two elements: a String of frame information and
+     * an array of code contents.
+     */
+    static Object[] getFramesInfo(DebugStackFrame[] frames) {
+        //Visualizer visualizer = debugManager.getVisualizer();
+        int n = frames.length;
+        //TruffleFrame[] frameInfos = new TruffleFrame[n];
+        StringBuilder frameInfos = new StringBuilder();
+        String[] codes = new String[n];
+        Object[] thiss = new Object[n];
+        for (int i = 0; i < n; i++) {
+            DebugStackFrame sf = frames[i];
+            frameInfos.append(sf.getName());
+            frameInfos.append('\n');
+            frameInfos.append(DebuggerVisualizer.getSourceLocation(sf.getSourceSection()));
+            frameInfos.append('\n');
+            /*if (fi.getCallNode() == null) {
+                /* frames with null call nodes are filtered out by JPDATruffleDebugManager.FrameInfo
+                System.err.println("Frame with null call node: "+fi);
+                System.err.println("  is virtual frame = "+fi.isVirtualFrame());
+                System.err.println("  call target = "+fi.getCallTarget());
+                System.err.println("frameInfos = "+frameInfos);
+                *//*
+            }*/
+            SourcePosition position = JPDATruffleDebugManager.getPosition(sf.getSourceSection());
             frameInfos.append(position.id);
             frameInfos.append('\n');
             frameInfos.append(position.name);
@@ -355,7 +435,27 @@ public class JPDATruffleAccessor extends Object {
         }
         return new Object[] { frameInfos.toString(), codes, thiss };
     }
-    
+
+    // 5*vars: <name>, <type>, <writable>, <String value>, <DebugValue>
+    static Object[] getVariables(DebugStackFrame sf) {
+        List<DebugValue> values = new ArrayList<>();
+        for (Iterator<DebugValue> iterator = sf.iterator(); iterator.hasNext(); ) {
+            values.add(iterator.next());
+        }
+        int numValues = values.size();
+        Object[] vars = new Object[numValues*5];
+        for (int i = 0; i < numValues; i++) {
+            DebugValue value = values.get(i);
+            int vi = 5*i;
+            vars[vi] = value.getName();
+            vars[vi + 1] = "";  // TODO
+            vars[vi + 2] = value.isWriteable();
+            vars[vi + 3] = value.as(String.class);
+            vars[vi + 4] = value;
+        }
+        return vars;
+    }
+
     static void debuggerAccess() {
         // A breakpoint is submitted on this method.
         // When accessLoopThread is interrupted, this breakpoint is hit
@@ -380,12 +480,12 @@ public class JPDATruffleAccessor extends Object {
     
     static Breakpoint setLineBreakpoint(JPDATruffleDebugManager debugManager, String uriStr, int line,
                                         int ignoreCount, String condition) throws URISyntaxException {
-        try {
-            return doSetLineBreakpoint(debugManager.getDebugger(), new URI(uriStr), line, ignoreCount, condition, false);
-        } catch (IOException ex) {
-            System.err.println("setLineBreakpoint("+uriStr+", "+line+"): "+ex);
-            return null;
-        }
+        //try {
+            return doSetLineBreakpoint(debugManager.getDebuggerSession(), new URI(uriStr), line, ignoreCount, condition, false);
+        //} catch (IOException ex) {
+        //    System.err.println("setLineBreakpoint("+uriStr+", "+line+"): "+ex);
+        //    return null;
+        //}
     }
     
     static Breakpoint[] setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
@@ -403,52 +503,57 @@ public class JPDATruffleAccessor extends Object {
         lbs = new Breakpoint[managers.length];
         int i = 0;
         for (JPDATruffleDebugManager debugManager : managers) {
-            Debugger debugger = debugManager.getDebugger();
-            if (debugger == null) {
+            DebuggerSession debuggerSession = debugManager.getDebuggerSession();
+            if (debuggerSession == null) {
                 lbs = Arrays.copyOf(lbs, lbs.length - 1);
-                synchronized (debugManagers) {
-                    debugManagers.remove(debugger);
-                }
+                //synchronized (debugManagers) {
+                //    debugManagers.remove(debugger);
+                //}
                 continue;
             }
             Breakpoint lb;
-            try {
-                lb = doSetLineBreakpoint(debugger, uri, line,
+            //try {
+                lb = doSetLineBreakpoint(debuggerSession, uri, line,
                                          ignoreCount, condition, oneShot);
-            } catch (IOException dex) {
-                System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
-                lbs = Arrays.copyOf(lbs, lbs.length - 1);
-                continue;
-            }
+            //} catch (IOException dex) {
+            //    System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
+            //    lbs = Arrays.copyOf(lbs, lbs.length - 1);
+            //    continue;
+            //}
             lbs[i++] = lb;
         }
         return lbs;
     }
     
-    private static Breakpoint doSetLineBreakpoint(Debugger debugger,
+    private static Breakpoint doSetLineBreakpoint(DebuggerSession debuggerSession,
                                                   URI uri, int line,
                                                   int ignoreCount, String condition,
-                                                  boolean oneShot) throws IOException {
-        Breakpoint lb = debugger.setLineBreakpoint(0, uri, line, oneShot);
-        //System.err.println("JPDATruffleAccessor.setLineBreakpoint("+uri+", "+line+"): lb = "+lb);
+                                                  boolean oneShot) {
+        Breakpoint.Builder bb = Breakpoint.newBuilder(uri).lineIs(line);
         if (ignoreCount != 0) {
-            lb.setIgnoreCount(ignoreCount);
+            bb.ignoreCount(ignoreCount);
         }
+        if (oneShot) {
+            bb.oneShot();
+        }
+        Breakpoint lb = bb.build();
         if (condition != null) {
-            try {
-                lb.setCondition(condition);
-            } catch (IOException dex) {
-                System.err.println("Wrong condition "+condition+" : "+dex);
-            }
+            lb.setConditionExpression(condition);
         }
-        return lb;
+        System.err.println("JPDATruffleAccessor.setLineBreakpoint("+uri+", "+line+"): lb = "+lb);
+        return debuggerSession.install(lb);
     }
     
     static void removeBreakpoint(Object br) {
         ((Breakpoint) br).dispose();
     }
     
-    static Object evaluate(/*SuspendedEvent*/Object suspendedEvent, Object frameInstance, String expression) {
+    static Object evaluate(DebugStackFrame sf, String expression) {
+        return sf.eval(expression);
+    }
+    
+    /*
+    static Object evaluate(/*SuspendedEvent*//*Object suspendedEvent, Object frameInstance, String expression) {
         //System.err.println("evaluate("+expression+")");
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         FrameInstance fi = (FrameInstance) frameInstance;
@@ -473,7 +578,9 @@ public class JPDATruffleAccessor extends Object {
         TruffleObject to = new TruffleObject(expression, value, evt, fi);
         return to;
     }
+    */
     
+    /*
     static Object[] getFrameSlots(FrameInstance frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
         // returns { Frame frame, FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes }
@@ -502,6 +609,7 @@ public class JPDATruffleAccessor extends Object {
         slots[3] = slotTypes;
         return slots;
     }
+    */
     
     private static class AccessLoop implements Runnable {
         

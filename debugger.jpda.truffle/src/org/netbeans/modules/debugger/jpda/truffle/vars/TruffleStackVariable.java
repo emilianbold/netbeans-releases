@@ -42,43 +42,31 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
-import com.sun.jdi.ClassType;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin
  */
-public class TruffleSlotVariable implements TruffleVariable {
-    
-    private static final String METHOD_GET_SLOT_VALUE = "getSlotValue";         // NOI18N
-    private static final String METHOD_GET_SLOT_VALUE_SIG = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
+public class TruffleStackVariable implements TruffleVariable {
     
     private final JPDADebugger debugger;
-    private final Variable suspendedInfo;
-    private final ObjectVariable frame;
-    private final ObjectVariable slot;
     private final String name;
     private final String type;
-    private final int[] valueLoaded = new int[] { 0 }; // 0 - not loaded, 1 - loading, 2 - loaded
-    private Object value;
+    private final boolean writable;
+    private String valueStr;
+    private ObjectVariable value;
     private TruffleVariableImpl truffleVariable;
     
-    public TruffleSlotVariable(JPDADebugger debugger, Variable suspendedInfo,
-                               ObjectVariable frame, ObjectVariable slot,
-                               String name, String type) {
+    public TruffleStackVariable(JPDADebugger debugger, String name, String type,
+                                boolean writable, String valueStr, ObjectVariable value) {
         this.debugger = debugger;
-        this.suspendedInfo = suspendedInfo;
-        this.frame = frame;
-        this.slot = slot;
         this.name = name;
         this.type = type;
+        this.writable = writable;
+        this.valueStr = valueStr;
+        this.value = value;
     }
 
     @Override
@@ -93,63 +81,17 @@ public class TruffleSlotVariable implements TruffleVariable {
     
     @Override
     public Object getValue() {
-        boolean toLoad = false;
-        synchronized (valueLoaded) {
-            if (valueLoaded[0] == 2) {
-                return value;
-            }
-            if (valueLoaded[0] == 1) {
-                try {
-                    valueLoaded.wait();
-                } catch (InterruptedException ex) {}
-                // will call getValue() again
-            } else {
-                valueLoaded[0] = 1; // going to load the value...
-                toLoad = true;
-            }
-        }
-        if (!toLoad) {
-            return getValue();
-        }
-        JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
-        Object valueObj;
-        TruffleVariableImpl tv = null;
-        try {
-            Variable valueVar = debugAccessor.invokeMethod(METHOD_GET_SLOT_VALUE,
-                                                           METHOD_GET_SLOT_VALUE_SIG,
-                                                           new Variable[] { suspendedInfo, frame, slot });
-            tv = TruffleVariableImpl.get(valueVar);
-            if (tv != null) {
-                valueObj = tv.getDisplayValue();
-            } else {
-                valueObj = valueVar.createMirrorObject();
-            }
-        } catch (NoSuchMethodException | InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            valueObj = null;
-        }
-        synchronized (valueLoaded) {
-            value = valueObj;
-            truffleVariable = tv;
-            valueLoaded[0] = 2;
-            valueLoaded.notifyAll();
-        }
-        return value;
+        return valueStr;
     }
     
     @Override
     public boolean isLeaf() {
-        synchronized (valueLoaded) {
-            if (valueLoaded[0] != 2) {
-                if ("Object".equals(type)) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        }
         if (truffleVariable == null) {
-            return true;
+            if ("Object".equals(type)) {
+                return false;
+            } else {
+                return true;
+            }
         } else {
             return truffleVariable.isLeaf();
         }

@@ -133,11 +133,12 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         } else if (ActionsManager.ACTION_STEP_OUT.equals(action)) {
             stepCmd = 3;
         }
-        JPDAClassType accessorClass = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
+        //JPDAClassType accessorClass = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
-            Variable[] arguments = new Variable[] { currentPCInfo.getSuspendedInfo(), debugger.createMirrorVar((Integer) stepCmd, true) };
-            accessorClass.invokeMethod("setStep", "(Ljava/lang/Object;I)V", arguments);
-        } catch (InvalidExpressionException | InvalidObjectException | NoSuchMethodException ex) {
+            currentPCInfo.getStepCommandVar().setFromMirrorObject((Integer) stepCmd);
+        //    Variable[] arguments = new Variable[] { currentPCInfo.getSuspendedInfo(), debugger.createMirrorVar((Integer) stepCmd, true) };
+        //    accessorClass.invokeMethod("setStep", "(Ljava/lang/Object;I)V", arguments);
+        } catch (InvalidObjectException ex) {
             Exceptions.printStackTrace(ex);
         }
         /*
