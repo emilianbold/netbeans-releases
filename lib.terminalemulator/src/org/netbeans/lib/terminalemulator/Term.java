@@ -287,6 +287,7 @@ public class Term extends JComponent implements Accessible {
     // getSystemSelection() wasn't available on Java prior to 1.4
     private Clipboard systemClipboard = getToolkit().getSystemClipboard();
     private Clipboard systemSelection = getToolkit().getSystemSelection();
+    private static final Color transparent = new Color(0, 0, 0, 0);
 
     /**
      * ScrollWrapper is a HACK that allows us to make pairs of scrollbars
@@ -3138,7 +3139,7 @@ public class Term extends JComponent implements Accessible {
                 if (image != null) {
                     // xy passed to drawImage() is the top-left of the image
                     int gyoff = yoff;
-                    g.drawImage(image, xoff, gyoff, Color.white, null);
+                    g.drawImage(image, xoff, gyoff, transparent, null);
                 }
             }
             xoff += glyph_gutter_width;
@@ -3971,7 +3972,7 @@ public class Term extends JComponent implements Accessible {
             // cursor down - no scroll
             // Opposite of op_cuu()
             if (debugOps()) {
-                System.out.printf("op_cud(%d)", count); // NOI18N
+                System.out.printf("op_cud(%d)\n", count); // NOI18N
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
 
@@ -4003,7 +4004,7 @@ public class Term extends JComponent implements Accessible {
             // Opposite of op_ri()
             // \ESCD
             if (debugOps()) {
-                System.out.printf("op_ind(%d)", count); // NOI18N
+                System.out.printf("op_ind(%d)\n", count); // NOI18N
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
             boolean noMargins = topMargin() == 0 && botMargin() == st.rows-1;
