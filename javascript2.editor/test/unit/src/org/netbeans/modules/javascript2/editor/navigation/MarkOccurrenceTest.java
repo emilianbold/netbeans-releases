@@ -2207,6 +2207,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/parser/decorators/decorators8.js", "function annot^ation(target) {", true);
     }
     
+    public void testIssue267974_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267974.js", "var onreadystatec^hange;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

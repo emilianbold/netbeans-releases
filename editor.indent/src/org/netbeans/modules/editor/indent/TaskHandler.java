@@ -210,6 +210,24 @@ public final class TaskHandler {
             items = newItems;
         }
 
+        // XXX : Hack to get javascript formatter running as last one
+        if (items != null && items.size() > 1 && "text/javascript".equals(docMimeType())) { //NOI18N
+            // Copy list, except for JS element, which we then add at the end
+            List<MimeItem> newItems = new ArrayList<MimeItem>(items.size());
+            MimeItem jsItem = null;
+            for (MimeItem item : items) {
+                if (item.mimePath().getPath().endsWith("text/javascript")) { // NOI18N
+                    jsItem = item;
+                } else {
+                    newItems.add(item);
+                }
+            }
+            if (jsItem != null) {
+                newItems.add(jsItem);
+            }
+            items = newItems;
+        }
+        
         // XXX: HACK TODO PENDING WORKAROUND
         // A hotfix for #116022: the jsp formatter must be called first and the html formatter second
         if (items != null && "text/x-jsp".equals(docMimeType()) || "text/x-tag".equals(docMimeType())) { //NOI18N
