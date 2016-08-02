@@ -61,8 +61,11 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.cdnjs.Library;
 import org.netbeans.modules.javascript.cdnjs.LibraryProvider;
+import org.netbeans.modules.javascript.cdnjs.LibraryUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -91,11 +94,13 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     /**
      * Creates a new {@code SelectionPanel}.
      * 
+     * @param project owning project.
      * @param existingLibraries libraries present in the project already.
      * @param webRoot web-root.
      * @param libraryFolder library folder (relative path from web-root).
      */
-    public SelectionPanel(Library.Version[] existingLibraries, File webRoot, String libraryFolder) {
+    public SelectionPanel(Project project, Library.Version[] existingLibraries, File webRoot, String libraryFolder) {
+        assert project != null;
         libraries = new ArrayList<>(Arrays.asList(existingLibraries));
         Collections.sort(libraries, new LibraryVersionComparator());
         this.webRoot = webRoot;
@@ -105,6 +110,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
         librariesTable.getSelectionModel().addListSelectionListener(new Listener());
         TableCellRenderer versionColumnRenderer = new VersionColumnRenderer();
         TableColumnModel tableColumnModel = librariesTable.getColumnModel();
+        tableColumnModel.getColumn(0).setCellRenderer(new LibraryNameColumnRenderer(project));
         tableColumnModel.getColumn(1).setCellRenderer(versionColumnRenderer);
         tableColumnModel.getColumn(2).setCellRenderer(versionColumnRenderer);
         loadLibraryInfo(existingLibraries);
@@ -385,6 +391,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
         removeButton = new javax.swing.JButton();
         folderLabel = new javax.swing.JLabel();
         folderField = new javax.swing.JTextField();
+        folderInfoLabel = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         updateButton = new javax.swing.JButton();
@@ -402,6 +409,8 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
         removeButton.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(folderLabel, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.folderLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(folderInfoLabel, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.folderInfoLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(formListener);
@@ -421,11 +430,15 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(librariesScrollPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(folderLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(folderField))
-                    .addComponent(librariesScrollPane))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(folderInfoLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(folderField))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -453,13 +466,14 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(updateButton)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(librariesScrollPane))
+                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(folderLabel)
                     .addComponent(folderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseButton))
-                .addGap(0, 0, 0))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(folderInfoLabel))
         );
     }
 
@@ -511,6 +525,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton browseButton;
     private javax.swing.JButton editButton;
     private javax.swing.JTextField folderField;
+    private javax.swing.JLabel folderInfoLabel;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JScrollPane librariesScrollPane;
     private javax.swing.JTable librariesTable;
@@ -546,12 +561,62 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     }
 
     /**
+     * Renderer of the library names columns.
+     */
+    static class LibraryNameColumnRenderer extends DefaultTableCellRenderer {
+
+        @StaticResource
+        private static final String BROKEN_ICON = "org/netbeans/modules/javascript/cdnjs/ui/resources/broken.png"; // NOI18N
+
+        private final Project project;
+
+
+        LibraryNameColumnRenderer(Project project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        @NbBundle.Messages("SelectionPanel.version.broken=Broken")
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            String icon = null;
+            String toolTip = null;
+            if (value instanceof Library.Version) {
+                Library.Version libraryVersion = (Library.Version) value;
+                value = libraryVersion.getLibrary().getName();
+                if (LibraryUtils.isBroken(project, libraryVersion)) {
+                    icon = BROKEN_ICON;
+                    toolTip = Bundle.SelectionPanel_version_broken();
+                }
+            }
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setToolTipText(toolTip);
+            if (icon == null) {
+                setIcon(null);
+            } else {
+                setIcon(ImageUtilities.loadImageIcon(icon, false));
+            }
+            return this;
+        }
+
+    }
+
+    /**
      * Renderer of the version columns.
      */
     static class VersionColumnRenderer extends DefaultTableCellRenderer {
+
         final static Object UP_TO_DATE = new Object();
         final static Object CHECKING = new Object();
         final static Object UNKNOWN = new Object();
+
+        @StaticResource
+        private static final String UP_TO_DATE_ICON = "org/netbeans/modules/javascript/cdnjs/ui/resources/uptodate.gif"; // NOI18N
+        @StaticResource
+        private static final String CHECKING_ICON = "org/netbeans/modules/javascript/cdnjs/ui/resources/checking.png"; // NOI18N
+        @StaticResource
+        private static final String UNKNOWN_ICON = "org/netbeans/modules/javascript/cdnjs/ui/resources/unknown.png"; // NOI18N
+
 
         @Override
         @NbBundle.Messages({
@@ -563,13 +628,13 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
             String icon = null;
             String toolTip = null;
             if (value == UNKNOWN) {
-                icon = "org/netbeans/modules/javascript/cdnjs/resources/unknown.png"; // NOI18N
+                icon = UNKNOWN_ICON;
                 toolTip = Bundle.SelectionPanel_version_unknown();
             } else if (value == CHECKING) {
-                icon = "org/netbeans/modules/javascript/cdnjs/resources/checking.png"; // NOI18N
+                icon = CHECKING_ICON;
                 toolTip = Bundle.SelectionPanel_version_checking();
             } else if (value == UP_TO_DATE) {
-                icon = "org/netbeans/modules/javascript/cdnjs/resources/uptodate.gif"; // NOI18N
+                icon = UP_TO_DATE_ICON;
                 toolTip = Bundle.SelectionPanel_version_uptodate();
             }
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -623,7 +688,7 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
             Library.Version libraryVersion = libraries.get(rowIndex);
             Object value;
             switch (columnIndex) {
-                case 0: value = libraryVersion.getLibrary().getName(); break;
+                case 0: value = libraryVersion; break;
                 case 1: value = libraryVersion.getName(); break;
                 case 2:
                     String libraryName = libraryVersion.getLibrary().getName();

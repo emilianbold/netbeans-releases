@@ -180,9 +180,8 @@ public final class NewlineView extends EditorView {
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         int viewStartOffset = getStartOffset();
         DocumentView docView = getDocumentView();
-        HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
-                docView, this, viewStartOffset,
-                true, null, viewStartOffset, 0, 1);
+        HighlightsViewUtils.paintNewline(g, alloc, clipBounds,
+                docView, this, viewStartOffset);
     }
 
     @Override

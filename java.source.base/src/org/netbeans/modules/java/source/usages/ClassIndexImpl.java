@@ -146,7 +146,7 @@ public abstract class ClassIndexImpl {
             name,
             kind,
             scope,
-            DocumentUtil.declaredTypesFieldSelector(false),
+            DocumentUtil.declaredTypesFieldSelector(false, false),
             convertor,
             result);
     }
@@ -271,7 +271,7 @@ public abstract class ClassIndexImpl {
     
     public static interface Writer {
         void clear() throws IOException;
-        void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        void deleteAndStore(final List<Pair<Pair<BinaryName,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
         /**
          * Different from deleteAndStore in that the data is NOT committed, but just flushed. Make sure, deleteAndStore is called from the
          * indexer's finish!
@@ -280,7 +280,7 @@ public abstract class ClassIndexImpl {
          * @param toDelete
          * @throws IOException 
          */
-        void deleteAndFlush(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        void deleteAndFlush(final List<Pair<Pair<BinaryName,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
         
         /**
          * Flushes any pending data from deleteAndFlush as if deleteAndStore was called with empty collections

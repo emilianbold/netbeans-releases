@@ -50,6 +50,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -326,6 +327,7 @@ public final class CategoryModel implements LookupListener {
     final class Category  {
         private OptionsCategory category;
         private OptionsPanelController controller;
+        private final Set<PropertyChangeListener> controllerListeners = new HashSet<PropertyChangeListener>(1);
         private boolean isUpdated;
         private JComponent component;
         private Lookup lookup;
@@ -390,8 +392,9 @@ public final class CategoryModel implements LookupListener {
                 isUpdated = true;
                 getComponent();
                 create().update();
-                if (l != null) {
+                if (l != null && !controllerListeners.contains(l)) {
                     create().addPropertyChangeListener(l);
+                    controllerListeners.add(l);
                 }
             }
         }

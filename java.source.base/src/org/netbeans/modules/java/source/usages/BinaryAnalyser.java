@@ -105,6 +105,7 @@ import org.netbeans.modules.classfile.ConstantPool;
 import org.netbeans.modules.classfile.ElementValue;
 import org.netbeans.modules.classfile.EnumElementValue;
 import org.netbeans.modules.classfile.Field;
+import org.netbeans.modules.classfile.InnerClass;
 import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.classfile.LocalVariableTableEntry;
 import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
@@ -346,8 +347,8 @@ public class BinaryAnalyser {
 
     private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
-    private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
-    private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
+    private final List<Pair<Pair<BinaryName,String>,Object[]>> refs = new ArrayList<>();
+    private final Set<Pair<String,String>> toDelete = new HashSet<> ();
     private final LowMemoryWatcher lmListener;
     private final Config cfg;
     //@NotThreadSafe
@@ -669,13 +670,19 @@ public class BinaryAnalyser {
         final ClassFileProcessor cfp = cfg.createProcessor(classFile);
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
-        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile), isLocal(classFile));
-        final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
+        final Pair<BinaryName,String> pair = Pair.of(
+                BinaryName.create(
+                        cfp.getClassName(),
+                        getElementKind(classFile),
+                        isLocal(classFile),
+                        getSimpleNameIndex(classFile)
+                        ),
+                null);
         addReferences (pair, usages);
     }
 
     private void addReferences (
-        @NonNull final Pair<String,String> name,
+        @NonNull final Pair<BinaryName,String> name,
         @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
         assert usages != null;
@@ -684,7 +691,7 @@ public class BinaryAnalyser {
             usages.featureIdentsToString(),
             usages.identsToString()
         };
-        this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
+        this.refs.add(Pair.<Pair<BinaryName,String>,Object[]>of(name, cr));
     }
 
     private static ElementKind getElementKind(@NonNull final ClassFile cf) {
@@ -701,6 +708,27 @@ public class BinaryAnalyser {
 
     private static boolean isLocal(@NonNull final ClassFile cf) {
         return cf.getEnclosingMethod() != null;
+    }
+
+    private static int getSimpleNameIndex(@NonNull final ClassFile cf) {
+        final ClassName me = cf.getName();
+        final String simpleName = me.getSimpleName();
+        int len = simpleName.length();
+        for (InnerClass ic : cf.getInnerClasses()) {
+            if (me.equals(ic.getName())) {
+                final String innerName = ic.getSimpleName();
+                if (innerName != null) {
+                    len = innerName.length();
+                } else {
+                    final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
+                    if (sepIndex > 0) {
+                        len -= sepIndex+1;
+                    }                                                                             
+                }
+                break;
+            }
+        }
+        return me.getInternalName().length() - len;
     }
     //</editor-fold>
 

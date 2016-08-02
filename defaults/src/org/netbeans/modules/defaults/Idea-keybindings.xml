@@ -140,11 +140,12 @@ made subject to such option by the copyright holder.
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="clipboard-history" key="CS-V"/>
 
+    <bind actionName="clipboard-lines" key="DS-L"/>
     <bind actionName="add-caret-up" key="OS-OPEN_BRACKET"/>
     <bind actionName="add-caret-down" key="OS-CLOSE_BRACKET"/>
-    <bind actionName="remove-last-caret" key="AS-J"/>
+    <bind actionName="remove-last-caret" key="OS-J"/>
     <bind actionName="addCaretSelectNext" key="O-J"/>
-    <bind actionName="addCaretSelectAll" key="CSA-J"/>
+    <bind actionName="addCaretSelectAll" key="CSO-J"/>
     
     <bind actionName="in-place-refactoring" key="S-F6"/>
     <bind actionName="toggle-comment" key="C-SLASH"/>

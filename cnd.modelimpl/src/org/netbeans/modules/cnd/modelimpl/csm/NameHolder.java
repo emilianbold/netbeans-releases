@@ -303,6 +303,7 @@ public class NameHolder {
 	    switch( next.getType() ) {
 		case CPPTokenTypes.CSM_TYPE_BUILTIN:
 		case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                case CPPTokenTypes.CSM_TYPE_ATOMIC:
                     if (sb.charAt(sb.length()-1) != ' ') {
                         sb.append(' ');
                     }

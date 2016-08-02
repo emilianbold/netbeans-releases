@@ -77,11 +77,12 @@ import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties.PROPERTY_ADMIN_PORT;
+
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -414,7 +415,6 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     public boolean isWildfly() {
         return isWildfly;
     }
-
     /**
      * Mark the server with a needs restart flag. This may be needed for
      * instance when JDBC driver is deployed to a running server.

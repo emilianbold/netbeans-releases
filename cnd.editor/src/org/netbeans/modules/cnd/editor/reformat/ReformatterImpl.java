@@ -200,7 +200,7 @@ public class ReformatterImpl {
                                 prevImportant.id() == SEMICOLON &&
                                 braces.getLength() == 1) {
                                 // TODO detect K&R style.
-                                entry.setLikeToFunction(true);
+                                entry.setLikeToFunction();
                                 newLinesBeforeDeclaration(codeStyle.blankLinesBeforeMethods(), braces.lastKRstart);
                             }
                         }
@@ -999,22 +999,30 @@ public class ReformatterImpl {
             //    functionDefinitionNewLine();
             //}
         } else if (entry != null && entry.isLikeToArrayInitialization()) {
-            StackEntry prevEntry = braces.lookPerevious();
-            if (prevEntry != null && prevEntry.isLikeToArrayInitialization()) {
-                // it a situation int a[][]={{
-                newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE,
-                        codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
-            } else {
-                Token<CppTokenId> p1 = ts.lookPreviousLineImportant();
-                boolean concurent = false;
-                if (p1 != null) {
-                    if (p1.id() == EQ){
-                        concurent |= codeStyle.spaceAroundAssignOps();
-                    }
+            if (entry.isUniformInitialization()) {
+                // it is equvalent to constructor
+                Token<CppTokenId> previousImportant = ts.lookPreviousImportant();
+                if (previousImportant != null && previousImportant.id() != RETURN) {
+                    spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen(), codeStyle.spaceKeepExtra());
                 }
-                newLine(previous, current, CodeStyle.BracePlacement.SAME_LINE,
-                        concurent || codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
-                spaceAfter(current, codeStyle.spaceWithinBraces(), codeStyle.spaceKeepExtra());
+            } else {
+                StackEntry prevEntry = braces.lookPerevious();
+                if (prevEntry != null && prevEntry.isLikeToArrayInitialization()) {
+                    // it a situation int a[][]={{
+                    newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE,
+                            codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
+                } else {
+                    Token<CppTokenId> p1 = ts.lookPreviousLineImportant();
+                    boolean concurent = false;
+                    if (p1 != null) {
+                        if (p1.id() == EQ){
+                            concurent |= codeStyle.spaceAroundAssignOps();
+                        }
+                    }
+                    newLine(previous, current, CodeStyle.BracePlacement.SAME_LINE,
+                            concurent || codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
+                    spaceAfter(current, codeStyle.spaceWithinBraces(), codeStyle.spaceKeepExtra());
+                }
             }
         } else {
             // TODO add options for block spaces 
@@ -1344,9 +1352,13 @@ public class ReformatterImpl {
         }
         boolean isNewLineArrayInit = false;
         if (entry != null && entry.isLikeToArrayInitialization()){
-            isNewLineArrayInit = ts.isOpenBraceLastLineToken(1);
-            if (ts.isFirstLineToken() && !isNewLineArrayInit){
+            if (entry.isUniformInitialization()) {
                 done = removeLineBefore(codeStyle.spaceWithinBraces());
+            } else {
+                isNewLineArrayInit = ts.isOpenBraceLastLineToken(1);
+                if (ts.isFirstLineToken() && !isNewLineArrayInit){
+                    done = removeLineBefore(codeStyle.spaceWithinBraces());
+                }
             }
         }
         if (previous != null && !done) {
@@ -1517,7 +1529,11 @@ public class ReformatterImpl {
         }
         next = ts.lookNextLineImportant();
         if (next != null && !(next.id() == RPAREN || next.id() == COMMA || next.id() == SEMICOLON || next.id() == NEW_LINE)) {
-            ts.addAfterCurrent(current, 1, indent, true);
+            if (entry != null && entry.isUniformInitialization()){
+                //
+            } else {
+                ts.addAfterCurrent(current, 1, indent, true);
+            }
         }
     }
 

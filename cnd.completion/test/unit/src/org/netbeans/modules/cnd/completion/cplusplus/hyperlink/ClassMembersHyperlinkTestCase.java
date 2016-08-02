@@ -1312,6 +1312,25 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug262407.cpp", 7, 59, "bug262407.cpp", 4, 9);
     }
     
+    public void testBug242719() throws Exception {
+        // Bug 242719 - Wrong resolving of member operator plus
+        performTest("bug242719.cpp", 24, 18, "bug242719.cpp", 6, 9);
+        performTest("bug242719.cpp", 25, 18, "bug242719.cpp", 14, 9);
+    }
+    
+    public void testBug257822() throws Exception {
+        // Bug 257822 - Unresolved identifier in designated initializer of compound literal
+        performTest("bug257822.c", 8, 8, "bug257822.c", 3, 5);
+        performTest("bug257822.c", 18, 8, "bug257822.c", 3, 5);
+        performTest("bug257822.c", 23, 8, "bug257822.c", 3, 5);
+    }
+    
+    public void testBug257821() throws Exception {
+        // Bug 257821 - Unresolved identifier in designated initializer following sizeof a typedef
+        performTest("bug257821.c", 13, 8, "bug257821.c", 7, 5);
+        performTest("bug257821.c", 19, 11, "bug257821.c", 2, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

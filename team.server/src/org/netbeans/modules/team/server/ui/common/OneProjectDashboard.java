@@ -77,6 +77,7 @@ import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListListener;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -867,6 +868,10 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         }
         if( null != provider.getSourceAccessor() ) {
             children.add( provider.createSourceListNode(null, project) );
+        }
+        RemoteMachineAccessor<P> remoteMachines = provider.getRemoteMachineAccessor();
+        if( remoteMachines != null ) {
+            children.add( new RemoteMachineListNode(null, project, remoteMachines));
         }
         return children;
     }

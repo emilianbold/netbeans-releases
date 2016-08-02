@@ -53,6 +53,7 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -142,33 +143,7 @@ class OrigSurroundWithTryCatchFix implements Fix {
                                 declaration = Utilities.copyComments(parameter, vt, declaration, true);
                                 assignment = Utilities.copyComments(parameter, vt, assignment, false);
                                 TryTree tryTree = make.Try(make.Block(Collections.singletonList(assignment), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
-                                List<StatementTree> nueStatements = new LinkedList<StatementTree>();
-
-                                if (block.getLeaf().getKind() == Kind.BLOCK) {
-                                    BlockTree bt = (BlockTree) block.getLeaf();
-                                    int index = bt.getStatements().indexOf(leaf);
-
-                                    assert index != (-1);
-
-                                    nueStatements.addAll(bt.getStatements().subList(0, index));
-                                    nueStatements.add(declaration);
-                                    nueStatements.add(tryTree);
-                                    nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
-
-                                    parameter.rewrite(bt, make.Block(nueStatements, bt.isStatic()));
-                                } else {
-                                    CaseTree ct = (CaseTree) block.getLeaf();
-                                    int index = ct.getStatements().indexOf(leaf);
-
-                                    assert index != (-1);
-
-                                    nueStatements.addAll(ct.getStatements().subList(0, index));
-                                    nueStatements.add(declaration);
-                                    nueStatements.add(tryTree);
-                                    nueStatements.addAll(ct.getStatements().subList(index + 1, ct.getStatements().size()));
-
-                                    parameter.rewrite(ct, make.Case(ct.getExpression(), nueStatements));
-                                }
+                                Utilities.replaceStatement(parameter, p, Arrays.asList(declaration, tryTree));
                                 return ;
                             }
                         }

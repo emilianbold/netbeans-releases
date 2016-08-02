@@ -54,7 +54,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
 @EditorActionRegistration(
         name = "clipboard-lines",
         menuPath = "Edit",
-        menuPosition = 1360)
+        menuPosition = 1360, category = "edit.multicaret")
 public class PasteLinesAction extends AbstractEditorAction {
 
     private static final Logger LOG = Logger.getLogger(PasteLinesAction.class.getName());

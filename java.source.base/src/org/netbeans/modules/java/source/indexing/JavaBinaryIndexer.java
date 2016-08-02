@@ -134,10 +134,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                     }
                 }
             }
-        } catch (IllegalArgumentException iae) {
-            Exceptions.printStackTrace(iae);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        } catch (IllegalArgumentException | IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }
 

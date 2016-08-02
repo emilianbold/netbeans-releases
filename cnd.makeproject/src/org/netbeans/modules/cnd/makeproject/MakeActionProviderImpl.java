@@ -137,6 +137,7 @@ import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ActionProgress;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -203,6 +204,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
     private static final String DEBUG_TEST_STEP = "debug-test"; // NOI18N
     private static final String DEBUG_STEPINTO_TEST_STEP = "debug-stepinto-test"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Make Action RP", 1);// NOI18N
+    private static final boolean PARALLEL_POST = "true".equals(System.getProperty("org.netbeans.modules.cnd.makeproject.parallel-build", "false"));    
 
     public MakeActionProviderImpl(MakeProject project) {
         this.project = project;
@@ -312,24 +314,38 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
             confs.add(activeConf);
         }
         final String finalCommand = command;
+        ActionProgress progress;
+        if (PARALLEL_POST) {
+            progress = null;
+        } else {
+            progress = ActionProgress.start(context);
+        }        
 
-        CancellableTask actionWorker = new CancellableTask() {
+        CancellableTask actionWorker = new CancellableTask(progress) {
 
             @Override
             protected void runImpl() {
                 final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
                 for (MakeConfiguration conf : confs) {
-                    addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
+                    if (!addAction(actionEvents, pd, conf, finalCommand, context, getCancelled())) {
+                        if (!getCancelled().isCanceled()) {
+                            getCancelled().getActionProgress().finished(false);
+                        }
+                        return;
+                    }
                 }
                 // Execute actions
-                if (actionEvents.size() > 0 && !cancelled.isCanceled()) {
-                    RP.post(new NamedRunnable("Make Project Action Worker") { //NOI18N
-
-                        @Override
-                        protected void runImpl() {
-                            ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
-                        }
-                    });
+                if (!getCancelled().isCanceled()) {
+                    if (actionEvents.size() > 0) {
+                        RP.post(new NamedRunnable("Make Project Action Worker") { //NOI18N
+                            @Override
+                            protected void runImpl() {
+                                ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),null, getCancelled().getActionProgress());
+                            }
+                        });
+                    } else {
+                        getCancelled().getActionProgress().finished(false);
+                    }
                 }
             }
         };
@@ -344,12 +360,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
     }
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
-        CancellableTask actionWorker = new CancellableTask() {
+        CancellableTask actionWorker = new CancellableTask(null) {
 
             @Override
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
-                addAction(actionEvents, pd, conf, MakeActionProviderImpl.COMMAND_CUSTOM_ACTION, null, cancelled);
+                addAction(actionEvents, pd, conf, MakeActionProviderImpl.COMMAND_CUSTOM_ACTION, null, getCancelled());
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
@@ -380,7 +396,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 }
             }
             // start validation phase
-            wrapper = new CancellableTask() {
+            wrapper = new CancellableTask(actionWorker.getCancelled().getActionProgress()) {
 
                 @Override
                 public boolean cancel() {
@@ -419,12 +435,12 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 NbBundle.getMessage(MakeActionProviderImpl.class, "MSG_Validate_Host", record.getDisplayName()));
     }
 
-    private void addAction(ArrayList<ProjectActionEvent> actionEvents,
+    private boolean addAction(ArrayList<ProjectActionEvent> actionEvents,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             CanceledState cancelled) throws IllegalArgumentException {
 
         if (cancelled.isCanceled()) {
-            return;
+            return false;
         }
 
         AtomicBoolean validated = new AtomicBoolean(false);
@@ -432,7 +448,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
 
         String[] targetNames = getTargetNames(command, conf, context);
         if (targetNames == null || targetNames.length == 0) {
-            return;
+            return false;
         }
 
         for (int i = 0; i < targetNames.length; i++) {
@@ -454,6 +470,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 }
             }
         }
+        return true;
     }
 
     private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents,

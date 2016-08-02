@@ -232,6 +232,20 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             for(Occurrence occurence: object.getOccurrences()) {
                                 addColoring(result, highlights, occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
                             }
+                        } else {
+                            // we need to check whether the fiels is not used in aa["bb"], then bb color with black 
+                            TokenSequence<? extends JsTokenId> cts = LexUtilities.getJsTokenSequence(result.getSnapshot(), object.getOffset());
+                            cts.move(object.getOffsetRange().getStart());
+                            if (cts.moveNext() && cts.token().id() == JsTokenId.STRING) {
+                                addColoring(result, highlights, object.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                            }
+                            for (Occurrence occurrence : object.getOccurrences()) {
+                                cts.move(occurrence.getOffsetRange().getStart());
+                                if (cts.moveNext() && cts.token().id() == JsTokenId.STRING) {
+                                    addColoring(result, highlights, occurrence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                                }
+                                
+                            }
                         }
                         break;
                     case VARIABLE:

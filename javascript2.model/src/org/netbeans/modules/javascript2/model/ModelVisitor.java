@@ -1270,7 +1270,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         
         DeclarationScopeImpl fnScope = (DeclarationScopeImpl)jsFunction;
         DeclarationScope parentScope = fnScope.getParentScope();
-        parentScope.addDeclaredScope(fnScope);
+        if (parentScope != null) {
+            parentScope.addDeclaredScope(fnScope);
+        }
     }
     
     private boolean isFunctionAnonymous(FunctionNode fn) {
@@ -1795,7 +1797,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
 //                            new OffsetRange(lNode.getStart(), lNode.getFinish())));
 //                }
                 
-                if (fqName != null && !fqName.isEmpty()) {
+                if (fqName != null && !fqName.isEmpty() && fqName.get(0) != null) {
                     if (ModelUtils.THIS.equals(fqName.get(0).getName())) {
                         parent = resolveThis(modelBuilder.getCurrentObject());
                         fqName.remove(0);

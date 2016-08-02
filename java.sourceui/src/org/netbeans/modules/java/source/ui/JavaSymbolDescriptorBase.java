@@ -73,6 +73,7 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     private final ClassIndexImpl ci;
     private volatile FileObject cachedFo;
     private volatile String cachedPath;
+    private volatile String ownerName;
 
     JavaSymbolDescriptorBase(
         @NonNull final ElementHandle<TypeElement> owner,
@@ -89,19 +90,27 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     }
 
     JavaSymbolDescriptorBase(
-        @NonNull final JavaSymbolDescriptorBase other) {
+            @NonNull final JavaSymbolDescriptorBase other,
+            @NullAllowed final String ownerName) {
         this.owner = other.owner;
         this.projectInformation = other.projectInformation;
         this.root = other.root;
         this.ci = other.ci;
         this.cachedFo = other.cachedFo;
         this.cachedPath = other.cachedPath;
+        this.ownerName = ownerName != null ?
+                ownerName :
+                other.ownerName;
     }
 
     @Override
     @NonNull
     public final String getOwnerName() {
-        return owner.getQualifiedName();
+        String on = ownerName;
+        if (on == null) {
+            ownerName = on = replace(owner.getBinaryName(), getSimpleName());
+        }
+        return on;
     }
 
     @Override
@@ -184,5 +193,40 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     @NonNull
     final ElementHandle<TypeElement> getOwner() {
         return owner;
+    }
+    
+    @NonNull
+    private static String replace(
+            @NonNull String name,
+            @NonNull final String simpleName) {
+        int upBound = name.length();
+        int pos = upBound - simpleName.length();
+        if ((pos == 0 || (pos > 0 && name.charAt(pos-1) == '$')) &&     //NOI18N
+                name.substring(pos).equalsIgnoreCase(simpleName)) {
+            upBound = pos;
+        }
+        int i = 1;
+        for (; i < upBound; i++) {
+            char c = name.charAt(i);
+            if (c == '$' &&             //NOI18N
+                name.charAt(i-1) != '.' && //NOI18N
+                i < name.length() - 1 && name.charAt(i+1) != '.') { //NOI18N
+                break;
+            }
+        }
+        if (i < upBound) {
+            final char[] data = name.toCharArray();
+            for (; i < upBound; i++) {
+                char c = name.charAt(i);
+                if (c == '$' &&             //NOI18N
+                    name.charAt(i-1) != '.' && //NOI18N
+                    i < name.length() - 1 && name.charAt(i+1) != '.') { //NOI18N
+                    c = '.';    //NOI18N
+                }
+                data[i] = c;
+            }
+            name = new String(data);
+        }
+        return name;
     }
 }

@@ -1052,7 +1052,23 @@ public class CasualDiff {
                 // constructor use whole tree start.
                 int oldPos = getOldPos(oldT.mods);
                 copyTo(localPointer, oldPos);
-                localPointer = oldT.restype != null ? getOldPos(oldT.restype) : oldT.pos;
+                if (oldT.typarams.isEmpty()) {
+                    if (oldT.restype != null) {
+                        localPointer = getOldPos(oldT.restype);
+                    } else {
+                        localPointer = oldT.pos;
+                    }
+                } else {
+                    int firstTyParam = getOldPos(oldT.typarams.head);
+                    tokenSequence.move(firstTyParam);
+                    JavaTokenId id = moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    if (id == JavaTokenId.LT) {
+                        localPointer = tokenSequence.offset();
+                    } else {
+                        // fallback
+                        localPointer = firstTyParam;
+                    }
+                }
             }
         }
         // compute the position for type parameters - if type param is empty,

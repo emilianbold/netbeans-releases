@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.doc.api;
 
+import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.UIManager;
 import org.netbeans.modules.javascript2.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.types.api.Type;
@@ -62,6 +64,8 @@ public final class JsDocumentationPrinter {
 
     private static final String OPTIONAL_PARAMETER = "[optional]"; //NOI18N
     private static final String OPTIONAL_PARAMETER_DEFAULT = "[optional, default=%s]"; //NOI18N
+    private static final Color SYNTAX_HEADER_BACKGROUNDCOLOR = getDefault(UIManager.getColor("Label.background"), new Color(199, 199, 199));
+    private static final Color SYNTAX_HEADER_COLOR = getDefault(UIManager.getColor("Label.foreground"), Color.WHITE);
 
     @Messages({
         "# T13Y: All following words are section headers of the documentation window. Mostly ends with colon.",
@@ -138,7 +142,10 @@ public final class JsDocumentationPrinter {
     private static String printSyntax(JsComment jsComment) {
         List<String> syntax = jsComment.getSyntax();
         if (!syntax.isEmpty()) {
-            StringBuilder sb = new StringBuilder("<p style=\"background-color: #C7C7C7; width: 100%; padding: 3px; margin: 10 5 3 5;\">\n"); //NOI18N
+            StringBuilder sb = new StringBuilder("<p style=\"background-color: ");// NOI18N
+            sb.append(getColorString(SYNTAX_HEADER_BACKGROUNDCOLOR));
+            sb.append("; color:").append(getColorString(SYNTAX_HEADER_COLOR));
+            sb.append("; width: 100%; padding: 3px; margin: 10 5 3 5;\">\n"); // NOI18N
             for (String descElement : syntax) {
                 sb.append(descElement).append("<br>\n"); //NOI18N
             }
@@ -340,5 +347,34 @@ public final class JsDocumentationPrinter {
             delimiter = " | "; //NOI18N
         }
         return sb.toString();
+    }
+
+    private static <T> T getDefault(T obj, T defaultValue) {
+	if (null != obj) {
+	    return obj;
+	}
+	return defaultValue;
+    }
+    
+    /**
+     * Copied from org.netbeans.modules.subversion.remote.ui.history.RevisionNode
+     * @param c
+     * @return 
+     */
+    private static String getColorString(Color c) {
+	return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); // NOI18N
+    }
+
+    /**
+     * Copied from org.netbeans.modules.subversion.remote.ui.history.RevisionNode
+     * @param c
+     * @return 
+     */
+    private static String getHex(int i) {
+	String hex = Integer.toHexString(i & 0x000000FF);
+	if (hex.length() == 1) {
+	    hex = "0" + hex; // NOI18N
+	}
+	return hex;
     }
 }

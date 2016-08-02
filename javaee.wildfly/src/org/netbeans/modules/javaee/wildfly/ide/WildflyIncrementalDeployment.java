@@ -177,6 +177,9 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
     public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
         File moduleFile;
         try {
+            if (!shouldRedeploy(desc)) {
+                return noRedeploy(module);
+            }
             moduleFile = new File(dm.getClient().getDeploymentDirectory(), module.getModuleID());
             return deployer.redeploy(module, moduleFile);
         } catch (IOException ex) {
@@ -186,21 +189,35 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     }
 
-    @Override
-    public ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor changes) {
+    private ProgressObject noRedeploy(TargetModuleID module) {
+        WildflyProgressObject progress = new WildflyProgressObject(module);
+        progress.fireProgressEvent(module, new WildflyDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                                    NbBundle.getMessage(WildflyIncrementalDeployment.class, "MSG_Deployment_Completed")));
+        return progress;
+    }
+
+    private boolean shouldRedeploy(AppChangeDescriptor changes) {
         boolean redeploy = changes.classesChanged() || changes.descriptorChanged()
                 || changes.ejbsChanged() || changes.manifestChanged() || changes.serverDescriptorChanged();
         if (changes instanceof DeploymentChangeDescriptor) {
             DeploymentChangeDescriptor deploymentChanges = (DeploymentChangeDescriptor) changes;
             redeploy = redeploy || deploymentChanges.serverResourcesChanged();
         }
+        return redeploy;
+    }
 
-        if (!redeploy) {
-            WildflyProgressObject progress = new WildflyProgressObject(module);
-            progress.fireProgressEvent(module, new WildflyDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                    NbBundle.getMessage(WildflyIncrementalDeployment.class, "MSG_Deployment_Completed")));
-            return progress;
+    @Override
+    public ProgressObject incrementalDeploy(TargetModuleID module, AppChangeDescriptor changes) {
+        if (!shouldRedeploy(changes)) {
+            return noRedeploy(module);
+        }
+        File moduleFile;
+        try {
+            moduleFile = new File(dm.getClient().getDeploymentDirectory(), module.getModuleID());
+            return deployer.redeploy(module, moduleFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

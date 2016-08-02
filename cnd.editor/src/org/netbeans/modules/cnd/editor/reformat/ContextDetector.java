@@ -204,6 +204,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case STRUCT:
                     case CLASS:
                     case CONST:
+                    case VOLATILE:
                     case VOID:
                     case UNSIGNED:
                     case CHAR:
@@ -217,6 +218,8 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case COMMA:
                     case IDENTIFIER:
                         break;
+                    case ELLIPSIS:
+                        return true;
                     default:
                         return false;
                 }

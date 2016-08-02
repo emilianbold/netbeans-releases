@@ -1340,24 +1340,19 @@ public class ModelUtils {
     }
 
     private static Collection<String> findPrototypeChain(String fqn, Index jsIndex, Set<String> alreadyCheck) {
-        Collection<String> result = new ArrayList<String>();
+        Collection<String> result = new HashSet<>();
         if (!alreadyCheck.contains(fqn)) {
             alreadyCheck.add(fqn);
-            Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(fqn, ModelUtils.PROTOTYPE);
-            for (IndexedElement property : properties) {
-                if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
-                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(property.getFQN(), Index.FIELD_ASSIGNMENTS);
-                    for (IndexResult indexResult : indexResults) {
-                        Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                        for (TypeUsage typeUsage : assignments) {
-                            result.add(typeUsage.getType());
-                        }
-                        for (TypeUsage typeUsage : assignments) {
-                            result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
-                        }
-                    }
+            Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqn + "." + ModelUtils.PROTOTYPE, Index.FIELD_ASSIGNMENTS); //NOI18N
+            for (IndexResult indexResult : indexResults) {
+                Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                for (TypeUsage typeUsage : assignments) {
+                    result.add(typeUsage.getType());
                 }
-            } 
+                for (TypeUsage typeUsage : assignments) {
+                    result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
+                }
+            }
         } 
         if (result.isEmpty()) {
             result.add("Object"); //NOI18N

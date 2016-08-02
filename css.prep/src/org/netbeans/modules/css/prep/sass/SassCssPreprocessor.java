@@ -49,8 +49,12 @@ import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
+@ServiceProviders({
+    @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100),
+    @ServiceProvider(service = SassCssPreprocessor.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100),
+})
 public final class SassCssPreprocessor extends BaseCssPreprocessor {
 
     public static final String IDENTIFIER = "SASS"; // NOI18N

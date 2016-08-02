@@ -35,9 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): thenauradha@netbeans.org
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+/*
+ * Contributor(s): thenauradha@netbeans.org
  */
 package org.netbeans.modules.maven.indexer.api;
 

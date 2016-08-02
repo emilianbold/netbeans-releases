@@ -55,7 +55,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
  * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
  */
 @EditorActionRegistrations({
-    @EditorActionRegistration(name = EditorActionNames.removeLastCaret)
+    @EditorActionRegistration(name = EditorActionNames.removeLastCaret, category = "edit.multicaret")
 })
 public class RemoveLastCaretAction extends AbstractEditorAction {
 

@@ -1903,8 +1903,8 @@ public final class CompletionSupport implements DocumentListener {
             // struct AAA a[] = { { .field = 1}, { .field = 2}};
             CsmVariable varObj = (CsmVariable) context.getLastObject();
             CsmClassifier varCls = CsmBaseUtilities.getOriginalClassifier(varObj.getType().getClassifier(), file);
-            if (CsmKindUtilities.isClass(varCls)) {
-                CsmClass contextClass = CsmContextUtilities.getContextClassInInitializer(varObj, (CsmClass) varCls, pos, getFinder());
+            if (varCls != null) {
+                CsmClass contextClass = CsmContextUtilities.getContextClassInInitializer(varObj, varCls, pos, getFinder());
                 if (contextClass != null) {
                     // Note that we can extract type from CsmField if necessary
                     return CsmCompletion.createType(contextClass, 0, 0, 0, false, false);

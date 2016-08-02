@@ -1540,6 +1540,44 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testRemoveModifiersWithTypeParameters() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    public <T extends java.lang.Number> java.util.Set<T> find(){return null;}" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    <T extends java.lang.Number> java.util.Set<T> find(){return null;}" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                new TreeScanner() {
+                    @Override public Object visitMethod(MethodTree node, Object p) {
+                        if (node.getName().contentEquals("find")) {
+                            workingCopy.rewrite(node.getModifiers(), make.Modifiers(Collections.emptySet()));
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(clazz, null);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

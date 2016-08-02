@@ -137,6 +137,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         if (embedded) {
             return JsTokenId.UNKNOWN;
         }
+        if (yystate() == JSX) {
+            return JsTokenId.JSX_TEXT;
+        }
         return JsTokenId.ERROR;
     }
 
@@ -453,15 +456,19 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                         } else {
                                             templateBalances.push(balance - 1);
                                             if (!jsxBalances.isEmpty()) {
+                                                yypushback(1);
                                                 yybegin(JSX);
+                                            } else {
+                                                return JsTokenId.BRACKET_RIGHT_CURLY;
                                             }
-                                            return JsTokenId.BRACKET_RIGHT_CURLY;
                                         }
                                      } else {
                                         if (!jsxBalances.isEmpty()) {
+                                            yypushback(1);
                                             yybegin(JSX);
-                                        } 
-                                        return JsTokenId.BRACKET_RIGHT_CURLY;
+                                        } else {
+                                            return JsTokenId.BRACKET_RIGHT_CURLY;
+                                        }
                                      }
                                  }
   "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
@@ -648,8 +655,6 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      }
                                  }
 
-  {TemplateCharacter}+           { }
-
   "$"\{                          { 
                                      yypushback(2);
                                      yybegin(TEMPLATEEXP);
@@ -657,6 +662,9 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                          return JsTokenId.TEMPLATE;
                                      }
                                  }
+
+  "$"                            |
+  {TemplateCharacter}+           { }
 
   \\.                            { }
 }
@@ -750,8 +758,13 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                   }
                                 }
   "</"                          { jsxBalances.push(jsxBalances.pop() - 1);}
-  "{"                           {  yypushback(1);
+  "{"                           {  //yypushback(1);
                                    yybegin(INITIAL);
+                                   // we are checking if we are in template expression
+                                   if (!templateBalances.isEmpty()) {
+                                     Integer balance = templateBalances.pop();
+                                     templateBalances.push(balance + 1);
+                                   }
                                    if (yylength() > 0) {
                                      return JsTokenId.JSX_TEXT;
                                    }

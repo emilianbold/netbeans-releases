@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.makeproject.uiapi;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.spi.project.ActionProgress;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
@@ -51,12 +52,17 @@ public abstract class LongOperation {
     public static final class CanceledState {
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final AtomicBoolean interruptable = new AtomicBoolean(true);
+        private final ActionProgress actionProgress;
         
-        private CanceledState() {
+        private CanceledState(ActionProgress actionProgress) {
+            this.actionProgress = actionProgress;
         }
         
         public synchronized void cancel() {
             cancelled.set(true);
+            if (actionProgress != null) {
+                actionProgress.finished(false);
+            }
         }
         
         public synchronized boolean isCanceled() {
@@ -70,10 +76,20 @@ public abstract class LongOperation {
         public synchronized boolean isInterruptable(){
             return interruptable.get();
         }
+
+        public ActionProgress getActionProgress() {
+            return actionProgress;
+        }
     }
     
     public abstract static class CancellableTask implements Runnable, Cancellable {
+        private volatile Thread thread;
+        private final CanceledState cancelled;
 
+        public CancellableTask(ActionProgress actionProgress) {
+            cancelled = new CanceledState(actionProgress);
+        }
+ 
         protected abstract void runImpl();
         
         @Override
@@ -93,8 +109,9 @@ public abstract class LongOperation {
             return true;
         }
 
-        private volatile Thread thread;
-        protected final CanceledState cancelled = new CanceledState();
+        public CanceledState getCancelled() {
+            return cancelled;
+        }
     }
     
     public abstract void executeLongOperation(CancellableTask task, String title, String message);

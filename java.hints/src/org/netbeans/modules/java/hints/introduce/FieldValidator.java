@@ -58,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -111,6 +110,7 @@ final class FieldValidator implements MemberValidator {
         
         @Override
         public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.RESOLVED);
             this.cinfo = parameter;
             if (targetHandle == null) {
                 return;

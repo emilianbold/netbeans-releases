@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.lexer;
@@ -262,6 +262,11 @@ HEREDOC_CHARS=([^$\\{]|("\\"{ANY_CHAR}))({HEREDOC_LABEL_NO_NEWLINE} | {HEREDOC_N
 NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR="=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"<<"|">>"|"**"|"**="|"..."|"="|"+"|"-"|"/"|"*"|"%"|"<"|">"|"!"|"@"|"^"|"&"|"|"|"~"|"<=>"|"??"
 PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
+// XXX how to define case sensitive patterns?
+PHP_TYPE_INT=[i][n][t]
+PHP_TYPE_FLOAT=[f][l][o][a][t]
+PHP_TYPE_STRING=[s][t][r][i][n][g]
+PHP_TYPE_BOOL=[b][o][o][l]
 
 
 
@@ -496,6 +501,22 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
     return PHPTokenId.PHP_SELF;
 }
 
+<ST_PHP_IN_SCRIPTING>{PHP_TYPE_INT} {
+    return PHPTokenId.PHP_TYPE_INT;
+}
+
+<ST_PHP_IN_SCRIPTING>{PHP_TYPE_FLOAT} {
+    return PHPTokenId.PHP_TYPE_FLOAT;
+}
+
+<ST_PHP_IN_SCRIPTING>{PHP_TYPE_STRING} {
+    return PHPTokenId.PHP_TYPE_STRING;
+}
+
+<ST_PHP_IN_SCRIPTING>{PHP_TYPE_BOOL} {
+    return PHPTokenId.PHP_TYPE_BOOL;
+}
+
 <ST_PHP_IN_SCRIPTING>"->" {
     pushState(ST_PHP_LOOKING_FOR_PROPERTY);
     return PHPTokenId.PHP_OBJECT_OPERATOR;
@@ -560,6 +581,10 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
 
 <ST_PHP_IN_SCRIPTING>"var" {
     return PHPTokenId.PHP_VAR;
+}
+
+<ST_PHP_IN_SCRIPTING>"("{TABS_AND_SPACES}({PHP_TYPE_INT}|{PHP_TYPE_FLOAT}|{PHP_TYPE_STRING}|{PHP_TYPE_BOOL}){TABS_AND_SPACES}")" {
+    return PHPTokenId.PHP_CASTING;
 }
 
 <ST_PHP_IN_SCRIPTING>"("{TABS_AND_SPACES}("int"|"integer"){TABS_AND_SPACES}")" {

@@ -423,15 +423,17 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (id == JsTokenId.STRING) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, offset - ts.offset()));
-                    prefix = prefix.substring(prefixIndex, offset - ts.offset());
+                    int end = offset - ts.offset();
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, end));
+                    prefix = prefix.substring(prefixIndex, end);
                 }
             }
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    if (offset - ts.offset() >= 0) {
-                        prefix = prefix.substring(0, offset - ts.offset());
+                    int end = offset - ts.offset();
+                    if (end >= 0) {
+                        prefix = prefix.substring(0, Math.min(end, prefix.length()));
                     }
                 }
             }
@@ -1172,9 +1174,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     }
     
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
-        for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
-            if (startsWith(keyword, request.prefix)) {
-                resultList.add(new JsCompletionItem.KeywordItem(keyword, request));
+        for (Map.Entry<String, JsKeywords.CompletionDescription> entry : JsKeywords.KEYWORDS.entrySet()) {
+            if (startsWith(entry.getKey(), request.prefix)) {
+                resultList.add(new JsCompletionItem.KeywordItem(entry.getKey(), entry.getValue(), request));
             }
         }
     }

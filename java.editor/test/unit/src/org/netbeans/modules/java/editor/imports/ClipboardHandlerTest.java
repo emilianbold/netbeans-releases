@@ -37,11 +37,14 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.concurrent.Exchanger;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import static org.junit.Assert.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
@@ -52,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,19 +75,19 @@ public class ClipboardHandlerTest extends NbTestCase {
     }
 
     public void testSimple() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\nList l;\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic class Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic class Target {\nList l;\n}");
     }
 
     public void testFieldGroup1() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l1, l2;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\nList l1, l2;\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l1, l2;| }\n", "package test;\npublic class Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic class Target {\nList l1, l2;\n}");
     }
 
     public void testFieldGroup2() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |@SuppressWarnings(\"deprecated\") List l1, l2;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\n@SuppressWarnings(\"deprecated\") List l1, l2;\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |@SuppressWarnings(\"deprecated\") List l1, l2;| }\n", "package test;\npublic class Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic class Target {\n@SuppressWarnings(\"deprecated\") List l1, l2;\n}");
     }
 
     public void testCopyIntoComment() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic Target {\n/*^*/\n}", "package test;\npublic Target {\n/*List l;*/\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic class Target {\n/*^*/\n}", "package test;\npublic class Target {\n/*List l;*/\n}");
     }
     
     public void testClassCopied() throws Exception {
@@ -91,11 +95,16 @@ public class ClipboardHandlerTest extends NbTestCase {
     }
     
     public void testClassNotCopied() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { static class Inner { } |Inner i;| }\n", "package test;\npublic Target {\n^\n}", "package test;\npublic Target {\nTest.Inner i;\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { static class Inner { } |Inner i;| }\n", "package test;\npublic class Target {\n^\n}", "package test;\npublic class Target {\nTest.Inner i;\n}");
     }
     
     public void testMethodCopied() throws Exception {
-        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |public static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}| }\n", "package test;\npublic Target {\n^\n}", "package test;\npublic Target {\npublic static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}\n}");
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |public static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}| }\n", "package test;\npublic class Target {\n^\n}", "package test;\npublic class Target {\npublic static int m1() {return 0;} int one = m1(); int two = m2(); public static int m2() {return 0;}\n}");
+    }
+    
+    public void testAnnotationWithValueCopied() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { @Retention(value = RetentionPolicy.RUNTIME) @Target(value = {ElementType.TYPE}) public static @interface R { public Class value() } |@R(List.class) |public static class X { }\n", 
+                "package test;\n^public class Target {\n\n}", "package test;\n\nimport java.util.List;\n\n@Test.R(List.class) public class Target {\n\n}");
     }
     
     private void copyAndPaste(String from, final String to, String golden) throws Exception {
@@ -122,20 +131,16 @@ public class ClipboardHandlerTest extends NbTestCase {
 
         final JEditorPane[] target = new JEditorPane[1];
         final Exception[] fromAWT = new Exception[1];
-
+        
+        final JEditorPane source = paneFor(src, "test/Test.java", cleanFrom);
+        target[0] = paneFor(src, "test/Target.java", to.replaceAll(Pattern.quote("^"), ""));
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override public void run() {
                 try {
-                    JEditorPane source = paneFor(src, "test/Test.java", cleanFrom);
-
-                    Thread.sleep(2000);//XXX
-
                     source.setSelectionStart(start);
                     source.setSelectionEnd(end);
 
                     source.copy();
-
-                    target[0] = paneFor(src, "test/Target.java", to.replaceAll(Pattern.quote("^"), ""));
 
                     target[0].setCaretPosition(pastePos);
 
@@ -155,7 +160,6 @@ public class ClipboardHandlerTest extends NbTestCase {
                 actual[0] = target[0].getText();
             }
         });
-        
         assertEquals(golden, actual[0]);
     }
 
@@ -163,13 +167,39 @@ public class ClipboardHandlerTest extends NbTestCase {
         FileObject fromFO = FileUtil.createData(src, fileName);
         TestUtilities.copyStringToFile(fromFO, code);
         DataObject od = DataObject.find(fromFO);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
-
-        ec.open();
+        final EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);
+        final Exchanger<JEditorPane> exch = new Exchanger<>();
         
-        ec.getDocument().putProperty(Language.class, JavaTokenId.language());
+        class L implements PropertyChangeListener {
 
-        return ec.getOpenedPanes()[0];
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                try {
+                    if (!EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                        return;
+                    }
+                    // we are in AWT
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (panes == null) {
+                        return;
+                    }
+                    exch.exchange(panes[0]);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+        L listener = new L();
+        ec.addPropertyChangeListener(listener);
+        JEditorPane pane = null;
+        try {
+            ec.open();
+            ec.openDocument().putProperty(Language.class, JavaTokenId.language());
+            pane = exch.exchange(null, 5, TimeUnit.SECONDS);
+        } finally {
+            ec.removePropertyChangeListener(listener);
+        }
+        assertNotNull("Editor pane not opened", pane);
+        return pane;
     }
 
 }

@@ -50,22 +50,32 @@
 
 package com.apple.eawt;
 
+import java.awt.Image;
+import java.awt.PopupMenu;
+import javax.swing.JMenuBar;
+
 public class Application
 {
-    public Application() { }
-    public void addAboutMenuItem() {}
-    public void addApplicationListener(ApplicationListener listener) {}
-    public void addPreferencesMenuItem() {}
     public static Application getApplication() { return null; }
-    public boolean getEnabledAboutMenu() { return false; }
-    public boolean getEnabledPreferencesMenu() { return false; }
-    public static java.awt.Point getMouseLocationOnScreen() { return null; }
-    public boolean isAboutMenuItemPresent() { return false; }
-    public boolean isPreferencesMenuItemPresent() { return false; }
-    public void removeAboutMenuItem() {}
-    public void removeApplicationListener(ApplicationListener listener) {}
-    public void removePreferencesMenuItem() {}
-    public void setEnabledAboutMenu(boolean enable) {}
-    public void setEnabledPreferencesMenu(boolean enable) {}
+    public void addAppEventListener(final AppEventListener listener) {}
+    public void removeAppEventListener(final AppEventListener listener) {}
+    public void setAboutHandler(final AboutHandler aboutHandler) {}
+    public void setPreferencesHandler(final PreferencesHandler preferencesHandler) {}
+    public void setOpenFileHandler(final OpenFilesHandler openFileHandler) {}
+    public void setPrintFileHandler(final PrintFilesHandler printFileHandler) {}
+    public void setOpenURIHandler(final OpenURIHandler openURIHandler) {}
+    public void setQuitHandler(final QuitHandler quitHandler) {}
+    public void setQuitStrategy(final QuitStrategy strategy) {}
+    public void enableSuddenTermination() {}
+    public void disableSuddenTermination() {}
+    public void requestForeground(final boolean allWindows) {}
+    public void requestUserAttention(final boolean critical) {}
+    public void openHelpViewer() {}
+    public void setDockMenu(final PopupMenu menu) {}
+    public PopupMenu getDockMenu() { return null; }
+    public void setDockIconImage(final Image image) {}
+    public Image getDockIconImage() { return null; }
+    public void setDockIconBadge(final String badge) {}
+    public void setDefaultMenuBar(final JMenuBar menuBar) {}
 }
 

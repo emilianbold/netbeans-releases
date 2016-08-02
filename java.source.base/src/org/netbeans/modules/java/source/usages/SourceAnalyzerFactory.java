@@ -43,7 +43,6 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
@@ -152,7 +151,7 @@ public final class SourceAnalyzerFactory {
                 @NullAllowed final /*out*/Set<? super ElementHandle<ModuleElement>> newModules,
                 final /*out*/boolean[] mainMethod) throws IOException {
             final JavaFileManager manager = jt.getContext().get(JavaFileManager.class);
-            final Map<Pair<String, String>,UsagesData<String>> usages = new HashMap<Pair<String,String>,UsagesData<String>>();
+            final Map<Pair<BinaryName, String>,UsagesData<String>> usages = new HashMap<>();
             for (CompilationUnitTree cu : data) {
                 try {
                     UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, newModules, tuple);
@@ -202,8 +201,8 @@ public final class SourceAnalyzerFactory {
             //Ideally not even usegas will be calculated but it will propagate the storeIndex
             //through the UsagesVisitor
             if (tuple.index) {
-                for (Map.Entry<Pair<String,String>,UsagesData<String>> oe : usages.entrySet()) {
-                    final Pair<String,String> key = oe.getKey();
+                for (Map.Entry<Pair<BinaryName,String>,UsagesData<String>> oe : usages.entrySet()) {
+                    final Pair<BinaryName,String> key = oe.getKey();
                     final UsagesData<String> value = oe.getValue();
                     addClassReferences (key,value);
                 }
@@ -250,7 +249,7 @@ public final class SourceAnalyzerFactory {
          * @throws IOException in case of IO error
          */
         @CheckForNull
-        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (
+        public List<Pair<Pair<BinaryName, String>, Object[]>> analyseUnit (
                 @NonNull final CompilationUnitTree cu,
                 @NonNull final JavacTaskImpl jt) throws IOException {
             if (used) {
@@ -258,13 +257,13 @@ public final class SourceAnalyzerFactory {
             }
             used = true;
             try {
-                final Map<Pair<String,String>,UsagesData<String>> usages = new HashMap<Pair<String,String>,UsagesData<String>> ();
-                final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
+                final Map<Pair<BinaryName,String>,UsagesData<String>> usages = new HashMap<> ();
+                final Set<Pair<String,String>> topLevels = new HashSet<>();
                 final JavaFileManager jfm = jt.getContext().get(JavaFileManager.class);
                 final UsagesVisitor uv = new UsagesVisitor (jt, cu, jfm, cu.getSourceFile(), topLevels);
                 uv.scan(cu,usages);
-                for (Map.Entry<Pair<String,String>,UsagesData<String>> oe : usages.entrySet()) {
-                    final Pair<String,String> key = oe.getKey();
+                for (Map.Entry<Pair<BinaryName,String>,UsagesData<String>> oe : usages.entrySet()) {
+                    final Pair<BinaryName,String> key = oe.getKey();
                     final UsagesData<String> data = oe.getValue();
                     addClassReferences (key,data);
                 }
@@ -280,27 +279,27 @@ public final class SourceAnalyzerFactory {
     }
     
     private static class BaseAnalyzer {
-        protected final List<Pair<Pair<String, String>, Object[]>> references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
-        protected final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
+        protected final List<Pair<Pair<BinaryName, String>, Object[]>> references = new ArrayList<>();
+        protected final Set<Pair<String,String>> toDelete = new HashSet<> ();
         
-        protected final void addClassReferences (final Pair<String,String> name, final UsagesData<String> data) {
+        protected final void addClassReferences (final Pair<BinaryName,String> name, final UsagesData<String> data) {
             assert name != null;
             assert data != null;
             final Object[] result = new Object[3];                        
             result[0] = data.usagesToStrings();
             result[1] = data.featureIdentsToString();
             result[2] = data.identsToString();
-            this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
+            this.references.add(Pair.<Pair<BinaryName,String>,Object[]>of(name,result));
         }
     }
         
-    private static class UsagesVisitor extends TreePathScanner<Void,Map<Pair<String,String>,UsagesData<String>>> {
+    private static class UsagesVisitor extends TreePathScanner<Void,Map<Pair<BinaryName,String>,UsagesData<String>>> {
 
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
 
         private static final Convertor<String,String> CONVERTOR = (String p) -> p;
 
-        private final Stack<Pair<String,String>> activeClass;
+        private final Stack<Pair<BinaryName,String>> activeClass;
         private final Names names;
         private final Trees trees;
         private final CompilationUnitTree cu;
@@ -401,14 +400,17 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void scan(@NullAllowed final Tree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void scan(@NullAllowed final Tree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
+            if (node == null) {
+                return null;
+            }
             super.scan (node,p);
             return null;
         }
 
         @Override
         @CheckForNull
-        public Void visitCompilationUnit(@NonNull final CompilationUnitTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitCompilationUnit(@NonNull final CompilationUnitTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             State oldState = state;
             try {
                 state = State.PACKAGE_ANN;
@@ -421,35 +423,34 @@ public final class SourceAnalyzerFactory {
             }
             scan(node.getTypeDecls(),p);
 
-            String className = null;
+            Pair<BinaryName,String> name = null;
             if (!imports.isEmpty() ||
                 !staticImports.isEmpty() ||
                 !unusedPkgImports.isEmpty()) {
                 //Empty file
-                className = getResourceName(node);
-                final Pair<String,String> name;
+                final String className = getResourceName(node);
                 if (className != null) {
-                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                    name = Pair.<String,String>of(classNameType, null);
-                } else {
-                    name = null;
+                    name = Pair.<BinaryName,String>of(
+                            BinaryName.create(className, ElementKind.CLASS),
+                            null);
                 }
                 addAndClearImports(name,p);
                 addAndClearUnusedPkgImports(name, p);
             }
 
             if (!packageAnnotations.isEmpty()) {
-                if (className == null) {
-                    className = getResourceName(node);
-                }
-                if (className != null) {
-                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                    final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
-                    for (Pair<Symbol,ClassIndexImpl.UsageType> usage : packageAnnotations) {
-                        addUsage(usage.first(), name, p, usage.second());
-                    }
-                    for (CharSequence ident : packageAnnotationIdents) {
-                        addIdent(name, ident, p, false);
+                if (name == null) {
+                    final String className = getResourceName(node);
+                    if (className != null) {
+                        name = Pair.of(
+                                BinaryName.create(className, ElementKind.CLASS),
+                                null);
+                        for (Pair<Symbol,ClassIndexImpl.UsageType> usage : packageAnnotations) {
+                            addUsage(usage.first(), name, p, usage.second());
+                        }
+                        for (CharSequence ident : packageAnnotationIdents) {
+                            addIdent(name, ident, p, false);
+                        }
                     }
                 }
                 packageAnnotations.clear();
@@ -461,7 +462,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitMemberSelect(@NonNull final MemberSelectTree node,  @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitMemberSelect(@NonNull final MemberSelectTree node,  @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
             handleVisitIdentSelect (sym, node.getIdentifier(), p);
             State oldState = this.state;
@@ -473,7 +474,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitIdentifier(@NonNull final IdentifierTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitIdentifier(@NonNull final IdentifierTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
             handleVisitIdentSelect (sym, node.getName(), p);
             return super.visitIdentifier(node, p);
@@ -481,7 +482,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitImport (@NonNull final ImportTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitImport (@NonNull final ImportTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             this.isStaticImport = node.isStatic();
             final Tree qit = node.getQualifiedIdentifier();
             isPkgImport = qit.getKind() == Tree.Kind.MEMBER_SELECT && names.asterisk == (((MemberSelectTree)qit).getIdentifier());
@@ -491,7 +492,7 @@ public final class SourceAnalyzerFactory {
         }
 
         @Override
-        public Void visitMemberReference(MemberReferenceTree node, Map<Pair<String, String>, UsagesData<String>> p) {
+        public Void visitMemberReference(MemberReferenceTree node, Map<Pair<BinaryName, String>, UsagesData<String>> p) {
             final Symbol sym = (Symbol) trees.getElement(getCurrentPath());
             handleVisitIdentSelect(sym, node.getName(), p);
             return super.visitMemberReference(node, p);
@@ -500,7 +501,7 @@ public final class SourceAnalyzerFactory {
         private void handleVisitIdentSelect (
                 @NullAllowed final Symbol sym,
                 @NonNull final CharSequence name,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             if (!activeClass.empty()) {
                 addIdent(activeClass.peek(), name, p, false);
                 if (sym != null) {
@@ -582,7 +583,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public  Void visitParameterizedType(@NonNull final ParameterizedTypeTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public  Void visitParameterizedType(@NonNull final ParameterizedTypeTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             scan(node.getType(), p);
             State currState = this.state;
             this.state = State.GT;
@@ -595,7 +596,7 @@ public final class SourceAnalyzerFactory {
         @CheckForNull
         public Void visitModule(
                 @NonNull final ModuleTree node,
-                @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
+                @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
             if (newModules != null && FileObjects.getPackageAndName(sourceName)[0].isEmpty()) {
                 final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
                 if (sym != null) {
@@ -610,13 +611,13 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             final Symbol.ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
             boolean errorIgnorSubtree = true;
             boolean topLevel = false;
             String className = null;
-            Pair<String,String> name = null;
+            Pair<BinaryName,String> name = null;
             int nameFrom = -1;
             String simpleName = null;
 
@@ -630,8 +631,9 @@ public final class SourceAnalyzerFactory {
                         topLevel = true;
                         className = getResourceName (this.cu);
                         if (className != null && !className.isEmpty()) {
-                            final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                            name = Pair.<String,String>of(classNameType, null);
+                            name = Pair.<BinaryName,String>of(
+                                    BinaryName.create(className, ElementKind.CLASS),
+                                    null);
                             simpleName = className.substring(className.lastIndexOf('.') + 1);
                             nameFrom = 1;
                         } else {
@@ -649,8 +651,18 @@ public final class SourceAnalyzerFactory {
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
                     if (!className.isEmpty()) {
-                        classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind(), sym.isLocal()));
-                        final String classNameType = classNameBuilder.toString();
+                        final int simpleNameStart;
+                        simpleName = sym.getSimpleName().toString();
+                        if (simpleName.isEmpty()) {
+                            //Annon
+                            int i = className.lastIndexOf('$'); //NOI18N
+                            assert i > 0 : className;
+                            simpleNameStart = i+1;
+                        } else {
+                            //Named
+                            simpleNameStart = className.length() - sym.getSimpleName().length();
+                        }
+                        
                         String resourceName = null;
                         topLevel = activeClass.isEmpty();
                         if (topLevel) {
@@ -671,9 +683,10 @@ public final class SourceAnalyzerFactory {
                         } else {
                             resourceName = activeClass.peek().second();
                         }
-                        name = Pair.<String,String>of(classNameType, resourceName);
+                        name = Pair.<BinaryName,String>of(
+                                BinaryName.create(className, sym.getKind(), sym.isLocal(), simpleNameStart),
+                                resourceName);
                         nameFrom = 2;
-                        simpleName = sym.getSimpleName().toString();
                     } else {
                         LOG.log(
                             Level.WARNING,
@@ -756,7 +769,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitNewClass(@NonNull final NewClassTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitNewClass(@NonNull final NewClassTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             final Symbol sym = ((JCTree.JCNewClass)node).constructor;
             if (sym != null) {
                 final Symbol owner = sym.getEnclosingElement();
@@ -773,7 +786,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitErroneous(@NonNull final ErroneousTree tree, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitErroneous(@NonNull final ErroneousTree tree, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             List<? extends Tree> trees = tree.getErrorTrees();
             for (Tree t : trees) {
                 this.scan(t,p);
@@ -783,7 +796,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitMethod(@NonNull final MethodTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
+        public Void visitMethod(@NonNull final MethodTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             Element old = enclosingElement;
             try {
                 enclosingElement = ((JCTree.JCMethodDecl) node).sym;
@@ -801,7 +814,7 @@ public final class SourceAnalyzerFactory {
         @Override
         public Void visitLambdaExpression(
                 @NonNull final LambdaExpressionTree node,
-                @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
+                @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
             final Type type = ((JCTree.JCLambda)node).type;
             if (type != null) {
                 final Symbol sym = type.tsym;
@@ -819,7 +832,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void visitVariable(@NonNull final VariableTree node, @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
+        public Void visitVariable(@NonNull final VariableTree node, @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
             Symbol s = ((JCTree.JCVariableDecl)node).sym;
             if (s != null && s.owner != null && (s.owner.getKind().isClass() || s.owner.getKind().isInterface())) {
                 addIdent(activeClass.peek(), node.getName(), p, true);
@@ -828,8 +841,8 @@ public final class SourceAnalyzerFactory {
         }
 
         private void addAndClearImports(
-                @NullAllowed final Pair<String,String> nameOfCU,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> data) {
+                @NullAllowed final Pair<BinaryName,String> nameOfCU,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> data) {
             if (nameOfCU != null) {
                 for (Symbol s : imports) {
                     addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
@@ -853,8 +866,8 @@ public final class SourceAnalyzerFactory {
         }
 
         private void addAndClearUnusedPkgImports(
-                @NullAllowed final Pair<String,String> nameOfCU,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> data) {
+                @NullAllowed final Pair<BinaryName,String> nameOfCU,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> data) {
             if (nameOfCU != null) {
                 for (Symbol s : unusedPkgImports) {
                     final StringBuilder sb = new StringBuilder();
@@ -907,8 +920,8 @@ public final class SourceAnalyzerFactory {
 
         private void addUsage (
                 @NullAllowed final Symbol sym,
-                @NonNull final Pair<String,String>owner,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+                @NonNull final Pair<BinaryName,String>owner,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map,
                 @NonNull final ClassIndexImpl.UsageType type) {
             assert map != null;
             assert type != null;
@@ -924,8 +937,8 @@ public final class SourceAnalyzerFactory {
 
         private void addUsage(
             @NullAllowed final String className,
-            @NonNull final Pair<String,String>owner,
-            @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+            @NonNull final Pair<BinaryName,String>owner,
+            @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map,
             @NonNull final ClassIndexImpl.UsageType type) {
             if (className != null) {
                 final UsagesData<String> data = getData(owner, map);
@@ -935,8 +948,8 @@ public final class SourceAnalyzerFactory {
 
         private void addUsages (
                 @NullAllowed final Symbol sym,
-                @NonNull final Pair<String,String>owner,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+                @NonNull final Pair<BinaryName,String>owner,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map,
                 @NonNull final ClassIndexImpl.UsageType... types) {
             assert map != null;
             assert types != null;
@@ -952,8 +965,8 @@ public final class SourceAnalyzerFactory {
 
         private void addUsages(
             @NullAllowed final String className,
-            @NonNull final Pair<String,String>owner,
-            @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+            @NonNull final Pair<BinaryName,String>owner,
+            @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map,
             @NonNull final ClassIndexImpl.UsageType... types) {
             if (className != null) {
                 final UsagesData<String> data = getData(owner, map);
@@ -962,9 +975,9 @@ public final class SourceAnalyzerFactory {
         }
 
         private void addIdent (
-                @NonNull final Pair<String,String>owner,
+                @NonNull final Pair<BinaryName,String>owner,
                 @NonNull final CharSequence ident,
-                @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map,
                 final boolean feature) {
             assert owner != null;
             assert ident != null;
@@ -981,12 +994,11 @@ public final class SourceAnalyzerFactory {
         }
 
         @NonNull
-        private UsagesData<String> getData (@NonNull final Pair<String,String>owner, @NonNull final Map<Pair<String,String>, UsagesData<String>> map) {
+        private UsagesData<String> getData (
+                @NonNull final Pair<BinaryName,String>owner,
+                @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> map) {
             UsagesData<String> data = map.get(owner);
             if (data == null) {
-                if (owner.first().charAt(owner.first().length()-2) == '.') {    //NOI18N
-                    throw new IllegalArgumentException(owner.first());
-                }
                 data = new UsagesData<> (CONVERTOR);
                 map.put(owner,data);
             }
@@ -1046,7 +1058,9 @@ public final class SourceAnalyzerFactory {
             return null;
         }
         
-        private void recordTypeUsage(final TypeMirror type, final Map<Pair<String, String>, UsagesData<String>> p) {
+        private void recordTypeUsage(
+                final TypeMirror type,
+                final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
             List<TypeMirror> types = new LinkedList<TypeMirror>();
             types.add(type);
             while (!types.isEmpty()) {

@@ -240,7 +240,7 @@ public class NbToolTip extends FileChangeAdapter {
                                             ? HighlightingManager.getInstance(target).getBottomHighlights()
                                             : HighlightingManager.getInstance(target).getTopHighlights();
                                     HighlightsSequence seq = highlights.getHighlights(offset, offset + 1);
-                                    if (seq.moveNext()) {
+                                    if (seq.moveNext() && seq.getAttributes() != null) {
                                         tooltipAttributeValue = seq.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
                                     }
                                     tops = !tops;

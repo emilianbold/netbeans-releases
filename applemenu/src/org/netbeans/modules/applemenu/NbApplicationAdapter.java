@@ -44,18 +44,18 @@
 
 package org.netbeans.modules.applemenu;
 
-import com.apple.eawt.*;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Window;
 
-import java.beans.Beans;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
+import javax.swing.RootPaneContainer;
 
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
@@ -75,37 +75,20 @@ import org.openide.windows.WindowSystemListener;
  * @author  Tim Boudreau
  */
 
-class NbApplicationAdapter implements ApplicationListener {
+abstract class NbApplicationAdapter {
     
-    private static ApplicationListener al = null;
-    
-    private NbApplicationAdapter() {
+    NbApplicationAdapter() {
     }
 
     static void install() {
-        //Thanks to Scott Kovatch from Apple for this fix - enabling the preferences menu
-        //requires that Beans.isDesignTime() be false
-        boolean wasDesignTime = Beans.isDesignTime();
-        
-        try {
-            Beans.setDesignTime (false);
-
-            al = new NbApplicationAdapter();
-            Application.getApplication().addApplicationListener(al);
-            Application.getApplication().setEnabledAboutMenu(true);
-            Application.getApplication().setEnabledPreferencesMenu(true);
-        } finally {
-            Beans.setDesignTime(wasDesignTime);
-        }
         WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
 
             @Override
             public void beforeLoad(WindowSystemEvent event) {
                 WindowManager.getDefault().removeWindowSystemListener(this);
                 try {
-                    FullScreenUtilities.setWindowCanFullScreen(WindowManager.getDefault().getMainWindow(), true);
-                } catch( ThreadDeath td ) {
-                    throw td;
+                    Frame main = WindowManager.getDefault().getMainWindow();
+                    ((RootPaneContainer)main).getRootPane().putClientProperty("apple.awt.fullscreenable", true);    // NOI18N
                 } catch( Throwable e ) {
                     Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.FINE, 
                             "Error while setting up full screen support.", e );//NOI18N
@@ -126,14 +109,7 @@ class NbApplicationAdapter implements ApplicationListener {
         });
     }
 
-    static void uninstall() {
-        if (al != null) {
-            Application.getApplication().removeApplicationListener(al);
-            al = null;
-        }
-    }
-    
-    public void handleAbout(ApplicationEvent e) {
+    void handleAbout() {
         //#221571 - check if About window is showing already
         Window[] windows = Dialog.getWindows();
         if( null != windows ) {
@@ -143,64 +119,49 @@ class NbApplicationAdapter implements ApplicationListener {
                     if( Boolean.TRUE.equals(dlg.getRootPane().getClientProperty("nb.about.dialog") ) ) { //NOI18N
                         if( dlg.isVisible() ) {
                             dlg.toFront();
-                            e.setHandled(true);
                             return;
                         }
                     }
                 }
             }
         }
-        e.setHandled(performAction("Help", "org.netbeans.core.actions.AboutAction"));
+        performAction("Help", "org.netbeans.core.actions.AboutAction"); // NOI18N
     }
     
-    public void handleOpenApplication (ApplicationEvent e) {
-    }
-    
-    public void handleOpenFile (ApplicationEvent e) {
-        boolean result = false;
-        String fname = e.getFilename();
-        File f = new File (fname);
-        if (f.exists() && !f.isDirectory()) {
-            FileObject obj = FileUtil.toFileObject(f);
-            if (obj != null) {
-                try {
-                    DataObject dob = DataObject.find(obj);
-                    OpenCookie oc = dob.getLookup().lookup (OpenCookie.class);
-                    if (result = oc != null) {
-                        oc.open();
-                    } else {
-                        EditCookie ec = dob.getLookup().lookup(EditCookie.class);
-                        if (result = ec != null) {
-                            ec.edit();
+    void openFiles(List<File> files) {
+        for (File f : files) {
+            if (f.exists() && !f.isDirectory()) {
+                FileObject obj = FileUtil.toFileObject(f);
+                if (obj != null) {
+                    try {
+                        DataObject dob = DataObject.find(obj);
+                        OpenCookie oc = dob.getLookup().lookup (OpenCookie.class);
+                        if (oc != null) {
+                            oc.open();
                         } else {
-                            ViewCookie v = dob.getLookup().lookup(ViewCookie.class);
-                            if (result = v != null) {
-                                v.view();
+                            EditCookie ec = dob.getLookup().lookup(EditCookie.class);
+                            if (ec != null) {
+                                ec.edit();
+                            } else {
+                                ViewCookie v = dob.getLookup().lookup(ViewCookie.class);
+                                if (v != null) {
+                                    v.view();
+                                }
                             }
                         }
+                    } catch (DataObjectNotFoundException ex) {
+                        Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.INFO, f.getAbsolutePath(), ex);
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.INFO, fname, ex);
                 }
             }
         }
-        e.setHandled(result);
     }
     
-    public void handlePreferences (ApplicationEvent e) {
-        e.setHandled(performAction("Window", "org.netbeans.modules.options.OptionsWindowAction"));
+    public void handlePreferences() {
+        performAction("Window", "org.netbeans.modules.options.OptionsWindowAction");    // NOI18N
     }
-    
-    public void handlePrintFile (ApplicationEvent e) {
-        //do nothing - what invokes this?
-    }
-    
-    public void handleQuit (ApplicationEvent e) {
-        //Set it to false to abort the quit, our code will handle shutdown
-        e.setHandled(!performAction("System", "org.netbeans.core.actions.SystemExit"));
-    }
-    
-    public void handleReOpenApplication (ApplicationEvent e) {
+    public void handleQuit() {
+        performAction("System", "org.netbeans.core.actions.SystemExit");    // NOI18N
     }
     
     private boolean performAction(String category, String id) {
@@ -208,7 +169,7 @@ class NbApplicationAdapter implements ApplicationListener {
         if (a == null) {
             return false;
         }
-        ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "whatever");
+        ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "whatever");   // NOI18N
         try {
             a.actionPerformed(ae);
             return true;

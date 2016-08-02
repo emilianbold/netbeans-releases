@@ -68,6 +68,7 @@ public class EditorActionRegistrationTest extends NbTestCase {
     private static final String NAME2 = "editor-test-action2";
     private static final String NAME3 = "editor-test-action3";
     private static final String NAME4 = "editor-test-action4";
+    private static final String NAME5 = "editor-test-action5";
     private static final String NAME_NO_ICON_AND_KEY_BINDING = "editor-test-action-no-icon-and-kb";
 
     private static final String bundleHash = "org.netbeans.modules.editor.lib2.testactionsregistration.Bundle#";
@@ -97,6 +98,14 @@ public class EditorActionRegistrationTest extends NbTestCase {
         assertEquals("Short Desc3", fo.getAttribute(Action.SHORT_DESCRIPTION));
         assertEquals("Menu Text3", fo.getAttribute("menuText"));
         assertEquals("Popup Text3", fo.getAttribute("popupText"));
+
+        fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME5 + ".instance");
+        assertNotNull(fo);
+        assertEquals(fo.getAttribute(Action.SHORT_DESCRIPTION), fo.getAttribute("displayName"));
+        assertEquals("Short Desc5", fo.getAttribute(Action.SHORT_DESCRIPTION));
+        fo = FileUtil.getConfigFile("/OptionsDialog/Actions/NAME5#CATEGORY/" + NAME5);
+        assertNotNull(fo);
+        assertFalse(fo.getAttributes().hasMoreElements());
     }
 
     public void testRegistrationNoIconAndKeyBinding() throws Exception {
@@ -185,6 +194,14 @@ public class EditorActionRegistrationTest extends NbTestCase {
             shortDescription = ""
     )
     public static EditorTestAction createAction4() {
+        return new EditorTestAction();
+    }
+
+    @EditorActionRegistration(
+            name = NAME5,
+            category = "NAME5#CATEGORY"
+    )
+    public static EditorTestAction createAction5() {
         return new EditorTestAction();
     }
 

@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSu
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
@@ -161,6 +162,9 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
                 if(this.properties.isServletOnly()) {
                     return Collections.unmodifiableSet(WILDFLY_WEB_PROFILES);
                 }
+                return Collections.unmodifiableSet(WILDFLY_PROFILES);
+            }
+            if(this.properties.getServerVersion().compareToIgnoreUpdate(WildflyPluginUtils.EAP_7_0) >= 0) {
                 return Collections.unmodifiableSet(WILDFLY_PROFILES);
             }
             return Collections.unmodifiableSet(EAP6_PROFILES);

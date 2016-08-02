@@ -72,7 +72,7 @@ public class SelectDestPanel extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/rebase-destination.png"))); // NOI18N
+        jLabel1.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/rebase-destination.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.jLabel1.text")); // NOI18N
 
         tfBaseRevision.setEditable(false);
@@ -81,25 +81,25 @@ public class SelectDestPanel extends javax.swing.JPanel {
         tfDestinationRevision.setEditable(false);
         tfDestinationRevision.setText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.tfDestinationRevision.text")); // NOI18N
 
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/base.png"))); // NOI18N
+        jLabel2.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/base.png", false)); // NOI18N
         jLabel2.setLabelFor(tfBaseRevision);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.lblBase.text")); // NOI18N
         jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.lblBaseRevision.TTtext")); // NOI18N
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/destinations.png"))); // NOI18N
+        jLabel3.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/destinations.png", false)); // NOI18N
         jLabel3.setLabelFor(tfDestinationRevision);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.lblDest.text")); // NOI18N
         jLabel3.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "SelectDestPanel.lblDest.TTtext")); // NOI18N
 
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/base.png"))); // NOI18N
+        jLabel4.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/base.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblBaseRevision.text")); // NOI18N
         jLabel4.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblBaseRevision.TTtext")); // NOI18N
 
-        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/destinations.png"))); // NOI18N
+        jLabel5.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/destinations.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblDestRevision.text")); // NOI18N
         jLabel5.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblDestRevision.TTtext")); // NOI18N
 
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/tracked.png"))); // NOI18N
+        jLabel6.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/tracked.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblTracked.text")); // NOI18N
         jLabel6.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblTracked.TTtext")); // NOI18N
 

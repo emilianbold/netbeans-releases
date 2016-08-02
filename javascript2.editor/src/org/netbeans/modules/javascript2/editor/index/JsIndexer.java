@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -237,7 +238,7 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
-        if (!isInvisibleFunction(object)) {
+        if (!isInvisibleFunction(object) && object != null && object.getName() != null) {
             if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
                 IndexDocument document = createDocument(object, fqn, support, indexable);
@@ -348,7 +349,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 15;
+        public static final int VERSION = 16;
         private static final int PRIORITY = 100;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
@@ -415,6 +416,13 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public void scanFinished(Context context) {
+            if (context.isAllFilesIndexing()) {
+                IndexChangeSupport changeSupport = Lookup.getDefault().lookup(IndexChangeSupport.class);
+                if (changeSupport != null) {
+                    // when the scan is finished, clear the index cache
+                    changeSupport.fireChange();
+                }
+            }
             try {
                 for (Runnable task : postScanTasks.get()) {
                     task.run();

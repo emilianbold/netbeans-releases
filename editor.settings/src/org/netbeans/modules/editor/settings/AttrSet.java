@@ -486,7 +486,7 @@ public abstract class AttrSet implements AttributeSet, Iterable<Object> {
 
     @Override
     public String toString() {
-        return appendInfo(new StringBuilder(100), false, false, 0).toString();
+        return appendAttrs(new StringBuilder(100)).toString();
     }
 
     StringBuilder appendInfo(StringBuilder sb, boolean attrs, boolean overrides, int indent) {
@@ -532,6 +532,34 @@ public abstract class AttrSet implements AttributeSet, Iterable<Object> {
                 }
             }
         }
+        return sb;
+    }
+
+    StringBuilder appendAttrs(StringBuilder sb) {
+        Object[] sharedPairs = sharedPairs();
+        Object[] extraPairs = extraPairs();
+        sb.append("{");
+        if (sharedPairs.length > 0) {
+            sb.append('S').append(sharedPairs.length).append('{');
+            for (int i = 0; i < sharedPairs.length;) {
+                if (i > 0) sb.append(',');
+                Object key = ((KeyWrapper) sharedPairs[i++]).key;
+                Object value = sharedPairs[i++];
+                sb.append(key).append("=").append(value);
+            }
+            sb.append('}');
+        }
+        if (extraPairs.length > 0) {
+            sb.append('S').append(extraPairs.length).append('{');
+            for (int i = 0; i < extraPairs.length;) {
+                if (i > 0) sb.append(',');
+                Object key = extraPairs[i++];
+                Object value = extraPairs[i++];
+                sb.append(key).append("=").append(value);
+            }
+            sb.append('}');
+        }
+        sb.append('}');
         return sb;
     }
 

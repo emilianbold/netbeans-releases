@@ -49,7 +49,7 @@ import javax.swing.text.AttributeSet;
  *
  * @author Miloslav Metelka
  */
-public final class HighlightItem {
+public class HighlightItem {
     
     /** End offset of the highlight. Start offset is derived from end of previous item. */
     private final int endOffset; // 8 + 4 = 12 bytes
@@ -69,6 +69,10 @@ public final class HighlightItem {
      */
     public int getEndOffset() {
         return endOffset;
+    }
+    
+    public int getEndSplitOffset() {
+        return 0;
     }
 
     /**

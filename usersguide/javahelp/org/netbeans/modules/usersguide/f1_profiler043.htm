@@ -2,26 +2,19 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Objects Snapshot Dialog</title>
+<title>Methods Snapshot Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2016-07-12</p>
-<p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
+<p>Beta Draft: 2016-07-27</p>
+<p><a id="CpuSnapshot.HelpCtx" name="CpuSnapshot.HelpCtx"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref451" name="sthref451"></a>
-<h1>Objects Snapshot Dialog</h1>
+<h1>Methods Snapshot Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view and analyze data from an existing Objects snapshot. 
+<p>Use to view and analyze data from an existing Methods snapshot. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u></u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG783">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -43,13 +36,65 @@
 <td style="text-align:left" id="r2c1-t43" headers="r1c1-t43">
 <p><img width="20" height="20" src="img/export_snapshot.png" alt="Export snapshot icon" title="Export snapshot icon" />Export Selected Snapshot</p>
 </td>
-<td style="text-align:left" headers="r2c1-t43 r1c2-t43">Use to export the snapshot. You may export the snapshot data or the objects.</td>
+<td style="text-align:left" headers="r2c1-t43 r1c2-t43">Use to export the snapshot. The options that dynamically appear when you select this icon are based on the selected View options.</td>
 </tr>
 <tr align="left" valign="top">
 <td style="text-align:left" id="r3c1-t43" headers="r1c1-t43">
-<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshots icon" title="Compare snapshots icon" />Compare with another snapshot</p>
+<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshot icon" title="Compare snapshot icon" />Compare with another snapshot</p>
 </td>
 <td style="text-align:left" headers="r3c1-t43 r1c2-t43">Use to compare two snapshots. When you click on this icon a Select Snapshot to Compare dialog with a list of your snapshots is displayed.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r4c1-t43" headers="r1c1-t43">
+<p>View</p>
+</td>
+<td style="text-align:left" headers="r4c1-t43 r1c2-t43"></td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r5c1-t43" headers="r1c1-t43">
+<p><img width="14" height="15" src="img/forward_calls.png" alt="Forward calls icon" title="Forward calls icon" />Forward Calls</p>
+</td>
+<td style="text-align:left" headers="r5c1-t43 r1c2-t43">Use this icon to view forwards calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r6c1-t43" headers="r1c1-t43">
+<p><img width="16" height="16" src="img/hot_spots.png" alt="Hot spots icon" title="Hot spots icon" />Hot Spots</p>
+</td>
+<td style="text-align:left" headers="r6c1-t43 r1c2-t43">Use this icon to view hot spots.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r7c1-t43" headers="r1c1-t43">
+<p><img width="15" height="15" src="img/reverse_calls.png" alt="Reverse calls icon" title="Reverse calls icon" />Reverse Calls</p>
+</td>
+<td style="text-align:left" headers="r7c1-t43 r1c2-t43">Use this icon to view reverse calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r8c1-t43" headers="r1c1-t43">
+<p><img width="29" height="17" src="img/select_threads.png" alt="Select threads icon" title="Select threads icon" />Select Threads</p>
+</td>
+<td style="text-align:left" headers="r8c1-t43 r1c2-t43">Use this icon to narrow the session scope to specific threads.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r9c1-t43" headers="r1c1-t43">Aggregation</td>
+<td style="text-align:left" headers="r9c1-t43 r1c2-t43">Use the dropdown to change the granularity of the displayed results.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r10c1-t43" headers="r1c1-t43">
+<p>Methods</p>
+</td>
+<td style="text-align:left" headers="r10c1-t43 r1c2-t43">Displays results according to the fully-qualified method names</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r11c1-t43" headers="r1c1-t43">
+<p>Classes</p>
+</td>
+<td style="text-align:left" headers="r11c1-t43 r1c2-t43">Displays results for all methods of the same class aggregated in a single entry.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r12c1-t43" headers="r1c1-t43">
+<p>Packages</p>
+</td>
+<td style="text-align:left" headers="r12c1-t43 r1c2-t43">ll methods of classes that belong to the same package are aggregated</td>
 </tr>
 </tbody>
 </table>

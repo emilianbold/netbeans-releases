@@ -184,12 +184,22 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         if (mimeType.length() > 0) {
             actionFilePathBuilder.append("/").append(mimeType);
         }
-        actionFilePathBuilder.append("/Actions/").append(actionName).append(".instance");
+        actionFilePathBuilder.append("/Actions/");
+        actionFilePathBuilder.append(actionName).append(".instance");
         LayerBuilder layer = layer(e);
         String actionFilePath = actionFilePathBuilder.toString();
         LayerBuilder.File actionFile = layer.file(actionFilePath);
         String preferencesKey = annotation.preferencesKey();
 
+	// Resolve category for keymap
+	String category = annotation.category();
+	if (null != category && !category.isEmpty()) {
+            StringBuilder pathBuilder = new StringBuilder(50);
+	    pathBuilder.append("OptionsDialog/Actions/").append(category).append("/").append(annotation.name());
+	    LayerBuilder.File file = layer.file(pathBuilder.toString());
+	    file.write();
+	}
+        
         // Resolve icon resource
         String iconResource = annotation.iconResource();
         if (iconResource.length() > 0) {

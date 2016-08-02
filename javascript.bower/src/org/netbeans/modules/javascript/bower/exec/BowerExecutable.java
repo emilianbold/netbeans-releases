@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.exec;
 
@@ -77,6 +77,7 @@ import org.netbeans.modules.web.common.ui.api.ExternalExecutable;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class BowerExecutable {
@@ -134,18 +135,26 @@ public class BowerExecutable {
         return bowerPath;
     }
 
+    @CheckForNull
+    public Future<Integer> install(String... args) {
+        return install(false, args);
+    }
+
     @NbBundle.Messages({
         "# {0} - project name",
         "BowerExecutable.install=Bower ({0})",
+        "# {0} - project name",
+        "BowerExecutable.install.continous=Bower ({0}, continuous)",
     })
     @CheckForNull
-    public Future<Integer> install(String... args) {
+    public Future<Integer> install(boolean continuous, String... args) {
         assert !EventQueue.isDispatchThread();
         assert project != null;
         String projectName = BowerUtils.getProjectDisplayName(project);
-        Future<Integer> task = getExecutable(Bundle.BowerExecutable_install(projectName))
+        String title = continuous ? Bundle.BowerExecutable_install_continous(projectName) : Bundle.BowerExecutable_install(projectName);
+        Future<Integer> task = getExecutable(title)
                 .additionalParameters(getInstallParams(args))
-                .run(getDescriptor());
+                .run(continuous ? getContinuousDescriptor(title) : getDescriptor());
         assert task != null : bowerPath;
         return task;
     }
@@ -259,6 +268,12 @@ public class BowerExecutable {
                 .optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
+    }
+
+    private ExecutionDescriptor getContinuousDescriptor(String title) {
+        return getDescriptor()
+                .inputOutput(IOProvider.getDefault().getIO(title, false))
+                .noReset(true);
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {

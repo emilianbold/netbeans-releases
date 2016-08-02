@@ -167,6 +167,7 @@ public final class PhpProjectConvertor implements ProjectConvertor {
         public Project call() throws Exception {
             transientLkp.close();
             PROJECT_CONVERTOR_USAGE_LOGGER.log("composer.json"); // NOI18N
+            deleteNbProject();
             PhpModuleGenerator phpModuleGenerator = Lookup.getDefault().lookup(PhpModuleGenerator.class);
             assert phpModuleGenerator != null;
             phpModuleGenerator.createModule(new PhpModuleGenerator.CreateProperties()
@@ -179,6 +180,14 @@ public final class PhpProjectConvertor implements ProjectConvertor {
             Project project = FileOwnerQuery.getOwner(projectDirectory);
             assert project != null : projectDirectory;
             return project;
+        }
+
+        private void deleteNbProject() throws IOException {
+            FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+            if (nbproject != null
+                    && nbproject.isValid()) {
+                nbproject.delete();
+            }
         }
 
         private FileObject detectSourceRoot() {

@@ -352,11 +352,6 @@ public final class EditorContextDispatcher {
                         //if (!(offset <= to && to < offset2)) {
                         //    continue;
                         //}
-                        TokenSequence ets;
-                        ets = ts.embedded();
-                        if (ets != null) {
-                            ts = ets;
-                        }
                         String mimeType = ts.language().mimeType();
                         if (mimeType != null) {
                             if (mimeTypes == null) {

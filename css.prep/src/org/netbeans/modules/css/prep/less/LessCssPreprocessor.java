@@ -49,8 +49,12 @@ import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
+@ServiceProviders({
+    @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200),
+    @ServiceProvider(service = LessCssPreprocessor.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200),
+})
 public final class LessCssPreprocessor extends BaseCssPreprocessor {
 
     public static final String IDENTIFIER = "LESS"; // NOI18N

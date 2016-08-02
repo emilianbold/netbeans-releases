@@ -973,8 +973,8 @@ public class LayoutPainter implements LayoutConstants {
     private static Color fixedGapColor;
     private static Color resGapColor;
     private static Color minGapColor;
-    private static Color gapBorderColor = new Color(200, 200, 200); // 192, 192, 192
-    private static Color sawColor = new Color(208, 208, 208);
+    private static Color gapBorderColor;
+    private static Color sawColor;
 
     static {
         fixedGapColor = UIManager.getColor( "nb.formdesigner.gap.fixed.color" ); //NOI18N
@@ -988,6 +988,14 @@ public class LayoutPainter implements LayoutConstants {
         minGapColor = UIManager.getColor( "nb.formdesigner.gap.min.color" ); //NOI18N
         if( null == minGapColor )
             minGapColor = new Color(212, 212, 212); // 204, 204, 204
+
+        gapBorderColor = UIManager.getColor( "nb.formdesigner.gap.border.color" ); //NOI18N
+        if( null == gapBorderColor )
+            gapBorderColor = new Color(200, 200, 200); // 192, 192, 192
+
+        sawColor = UIManager.getColor( "nb.formdesigner.saw.color" ); //NOI18N
+        if( null == sawColor )
+            sawColor = new Color(208, 208, 208);
     }
 
     private static Color getFixedGapColor(boolean selected) {

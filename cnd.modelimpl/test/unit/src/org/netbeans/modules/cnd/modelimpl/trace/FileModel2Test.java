@@ -575,4 +575,24 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 260774 - Errors on anonymous class
         performTest("bug260774.cpp");
     }
+    
+    public void testBug256516() throws Exception {
+        // Bug 256516 - StackOverflowError at org.netbeans.modules.cnd.repository.RepositoryImpl.get
+        performTest("bug256516.cpp");
+    }
+    
+    public void testBug256516c() throws Exception {
+        // Bug 256516 - StackOverflowError at org.netbeans.modules.cnd.repository.RepositoryImpl.get
+        performTest("bug256516.c");
+    }
+    
+    public void testBug258327() throws Exception {
+        // Bug 258327 - Unresolved _Atomic in C11 when used with parens
+        performTest("bug258327.c");
+    }
+    
+    public void testBug255724() throws Exception {
+        // Bug 255724 - inaccuracy tests: regression in DDD
+        performTest("bug255724.c");
+    }
 }

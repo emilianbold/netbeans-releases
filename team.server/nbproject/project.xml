@@ -188,6 +188,7 @@ Contributor(s):
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <friend>org.netbeans.modules.odcs.hudson</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>

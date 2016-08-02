@@ -60,7 +60,7 @@ public final class LessCssPreprocessorUI implements CssPreprocessorUIImplementat
     public String getIdentifier() {
         return LessCssPreprocessor.IDENTIFIER;
     }
-    
+
     private LessCssPreprocessor getProcessorInstance() {
         return Lookups.forPath(CssPreprocessors.PREPROCESSORS_PATH).lookup(LessCssPreprocessor.class);
     }

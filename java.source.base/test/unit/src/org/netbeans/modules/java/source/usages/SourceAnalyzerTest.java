@@ -140,7 +140,7 @@ public class SourceAnalyzerTest extends NbTestCase {
             jt.enter();
             jt.analyze();
             final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
-            List<Pair<Pair<String, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
+            List<Pair<Pair<BinaryName, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
             assertEquals(1, data.size());
             assertTrue(((Collection)data.iterator().next().second()[0]).contains(
                 DocumentUtil.encodeUsage("Lib", EnumSet.<ClassIndexImpl.UsageType>of(   //NOI18N
@@ -193,7 +193,7 @@ public class SourceAnalyzerTest extends NbTestCase {
             jt.enter();
             jt.analyze();
             final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
-            List<Pair<Pair<String, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
+            List<Pair<Pair<BinaryName, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
             assertEquals(1, data.size());
             assertTrue(((Collection)data.iterator().next().second()[0]).contains(
                 DocumentUtil.encodeUsage("Lib", EnumSet.<ClassIndexImpl.UsageType>of(   //NOI18N
@@ -242,7 +242,7 @@ public class SourceAnalyzerTest extends NbTestCase {
             jt.enter();
             jt.analyze();
             final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
-            List<Pair<Pair<String, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
+            List<Pair<Pair<BinaryName, String>, Object[]>> data = sa.analyseUnit(trees.iterator().next(), jt);
             assertEquals(1, data.size());
             assertTrue(((Collection)data.iterator().next().second()[0]).contains(
                 DocumentUtil.encodeUsage("Lib", EnumSet.<ClassIndexImpl.UsageType>of(   //NOI18N

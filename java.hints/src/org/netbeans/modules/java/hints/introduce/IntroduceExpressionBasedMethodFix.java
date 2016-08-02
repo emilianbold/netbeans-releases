@@ -219,10 +219,6 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
             public void run(WorkingCopy copy) throws Exception {
                 copy.toPhase(JavaSource.Phase.RESOLVED);
                 TreePath expression = IntroduceExpressionBasedMethodFix.this.handle.resolve(copy);
-                Scope s = copy.getTrees().getScope(expression);
-                for (Element e : s.getLocalElements()) {
-                    System.err.println(e);
-                }
                 InstanceRefFinder finder = new InstanceRefFinder(copy, expression);
                 finder.process();
                 if (finder.containsLocalReferences()) {

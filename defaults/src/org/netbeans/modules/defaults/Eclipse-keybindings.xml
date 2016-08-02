@@ -162,6 +162,13 @@ made subject to such option by the copyright holder.
     <bind actionName="word-match-next" key="O-DIVIDE"/>
     <bind remove="true" key="OS-J"/>
     
+    <bind actionName="clipboard-lines" key="DS-L"/>
+    <bind actionName="add-caret-up" key="OS-OPEN_BRACKET"/>
+    <bind actionName="add-caret-down" key="OS-CLOSE_BRACKET"/>
+    <bind actionName="remove-last-caret" key="OS-J"/>
+    <bind actionName="addCaretSelectNext" key="O-J"/>
+    <bind actionName="addCaretSelectAll" key="CSO-J"/>
+    
     <bind actionName="in-place-refactoring" key="D-2$R"/>
     <bind actionName="toggle-comment" key="D-7"/>
     <bind actionName="toggle-comment" key="SD-SLASH"/>

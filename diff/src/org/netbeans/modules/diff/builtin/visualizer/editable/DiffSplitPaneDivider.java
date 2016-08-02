@@ -252,7 +252,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
 
             int rightY = getWidth() - 1;
 
-            g.setColor(Color.LIGHT_GRAY);
+            g.setColor(UIManager.getColor("controlShadow"));
             g.drawLine(0, clip.y, 0, clip.height);
             g.drawLine(rightY, clip.y, rightY, clip.height);
 

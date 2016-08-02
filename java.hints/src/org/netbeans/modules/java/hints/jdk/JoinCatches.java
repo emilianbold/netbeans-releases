@@ -58,12 +58,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Pattern;
@@ -74,13 +74,21 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Joins several catch branches into a multicatch.
+ * Functional note: if types from two branches are releated by subclassing, entire catches are now excluded from the join. This may seem strange in a case
+ * when the excluded catch clause is a multicatch already, and only one (or not all) caught types are subtypes or supertypes of other catch branch.
+ * <p/>
+ * Implementing the hierarchy exclusion precisely would mean to rewrite individual catch clauses, remove types, which are OK to join and leave the rest. Even
+ * more sophisticated solution is to identify groups of handlers, with identical code, collect their types and make joins.
+ * <p/>
+ * When working with types, it is important to use not TypeMirrors to generate new declarations, but to use original Trees (TreePathHandles) so that comments
+ * possibly made in between the types are preserved. 
+ * 
  * @author lahvac
  */
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.JoinCatches", description = "#DESC_org.netbeans.modules.java.hints.jdk.JoinCatches", category="rules15",
@@ -120,11 +128,20 @@ public class JoinCatches {
             Map<TypeMirror, Integer> duplicates = new LinkedHashMap<TypeMirror, Integer>();
 
             duplicates.put(mainVarType, i);
-
             for (int j = i + 1; j < catches.size(); j++) {
                 Pattern pattern = Pattern.createPatternWithRemappableVariables(new TreePath(toTestPath, toTest.getBlock()), Collections.singleton(excVar), false);
-                Iterable<? extends Occurrence> found = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
-
+                Iterable<? extends Occurrence> found = 
+                        Matcher.create(ctx.getInfo()).
+                                setCancel(new AtomicBoolean()).
+                                setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).
+                                setSearchRoot(
+                                    new TreePath(
+                                            new TreePath(ctx.getPath(), catches.get(j)), 
+                                            ((CatchTree)catches.get(j)).getBlock()
+                                    )).
+                                setTreeTopSearch().
+                                match(pattern);
+                
                 if (found.iterator().hasNext()) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
                     TreePath var = new TreePath(catchPath, ((CatchTree)catches.get(j)).getParameter());
@@ -135,13 +152,22 @@ public class JoinCatches {
                         statements.add(new TreePath(blockPath, t));
                     }
 
+                    if (UseSpecificCatch.assignsTo(ctx, var, statements)) {
+                        continue;
+                    }
+                    
                     TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(var);
 
                     if (!Utilities.isValidType(varType)) continue;
 
-                    boolean subtype = false;
-
-                    for (Iterator<TypeMirror> it = duplicates.keySet().iterator(); it.hasNext();) {
+                    boolean process = true;
+                    List<TypeMirror> varTypes = new ArrayList<>();
+                    if (varType.getKind() == TypeKind.UNION) {
+                        varTypes.addAll(((UnionType) varType).getAlternatives());
+                    } else {
+                        varTypes.add(varType);
+                    }
+                    DUP: for (Iterator<TypeMirror> it = duplicates.keySet().iterator(); it.hasNext();) {
                         TypeMirror existingType = it.next();
                         Iterable<? extends TypeMirror> caughtList;
                         
@@ -151,16 +177,29 @@ public class JoinCatches {
                             caughtList = Collections.singletonList(existingType);
                         }
                         
-                        for (TypeMirror caught : caughtList) {
-                            if (ctx.getInfo().getTypes().isSubtype(caught, varType)) {
-                                subtype = true;
-                                it.remove();
-                                break;
+                        for (Iterator<TypeMirror> vtI = varTypes.iterator(); vtI.hasNext(); ) {
+                            TypeMirror vt = vtI.next();
+                            for (TypeMirror caught : caughtList) {
+                                if (ctx.getInfo().getTypes().isSubtype(caught, vt)) {
+                                    // the subtype cannot be added into the union, supertype will be used.
+                                    Integer index = duplicates.get(existingType);
+                                    // if the broader catch would move BEFORE the more specific one,
+                                    // discard it.
+                                    if (index != null) {
+                                        it.remove();
+                                        process &= index > findMin(duplicates.values());
+                                    }
+                                } else if (ctx.getInfo().getTypes().isSubtype(vt, caught)) {
+                                    // should be an error, but must be handled gracefully
+                                    process = false;
+                                }
+                            }
+                            if (!process) {
+                                break DUP;
                             }
                         }
                     }
-
-                    if (!subtype && !UseSpecificCatch.assignsTo(ctx, var, statements)) {
+                    if (process && !varTypes.isEmpty()) {
                         duplicates.put(varType, j);
                     }
                 }
@@ -168,21 +207,39 @@ public class JoinCatches {
 
             if (duplicates.size() >= 2) {
                 String displayName = NbBundle.getMessage(JoinCatches.class, "ERR_JoinCatches");
-
-                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, new FixImpl(ctx.getInfo(), ctx.getPath(), Collections.unmodifiableList(new ArrayList<Integer>(duplicates.values()))).toEditorFix());
+                List<TypeMirrorHandle> types = new ArrayList<>();
+                for (TypeMirror t : duplicates.keySet()) {
+                    types.add(TypeMirrorHandle.create(t));
+                }
+                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, 
+                        new FixImpl(ctx.getInfo(), ctx.getPath(), 
+                        new ArrayList<Integer>(duplicates.values()),
+                        types).toEditorFix());
             }
         }
 
         return null;
     }
+    
+    private static int findMin(Collection<Integer> x) {
+        int m = Integer.MAX_VALUE;
+        for (int i : x) {
+            if (i < m) {
+                m = i;
+            }
+        }
+        return m;
+    }
 
     private static final class FixImpl extends JavaFix {
 
         private final List<Integer> duplicates;
+        private final List<TypeMirrorHandle> typeHandles;
         
-        public FixImpl(CompilationInfo info, TreePath tryStatement, List<Integer> duplicates) {
+        public FixImpl(CompilationInfo info, TreePath tryStatement, List<Integer> duplicates, List<TypeMirrorHandle> types) {
             super(info, tryStatement);
             this.duplicates = duplicates;
+            this.typeHandles = types;
         }
 
         @Override

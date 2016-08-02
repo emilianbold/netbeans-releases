@@ -1949,7 +1949,7 @@ public final class EditorCaret implements Caret {
                             oldCaretBounds = caretBounds;
                         }
                         if (caretBounds != null) {
-                            Rectangle scrollBounds = caretBounds; // Must possibly be cloned upon change
+                            Rectangle scrollBounds = new Rectangle(caretBounds); // Must possibly be cloned upon change
                             // Only scroll the view for the LAST caret to be visible
                             // For null old bounds (likely at begining of component displayment) ensure that a possible
                             // horizontal scrollbar would not hide the caret so enlarge the scroll bounds by hscrollbar height.
@@ -1976,6 +1976,14 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             if (editorRect == null || !editorRect.contains(scrollBounds)) {
+                                Rectangle visibleBounds = c.getVisibleRect();
+                                if (// #219580: if the preceding if-block computed new scrollBounds, it cannot be offset yet more
+                                        /* # 70915 !updateAfterFoldHierarchyChange && */ (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
+                                        || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)) {
+                                    // Scroll into the middle
+                                    scrollBounds.y -= (visibleBounds.height - caretBounds.height) / 2;
+                                    scrollBounds.height = visibleBounds.height;
+                                }
                                 // When typing on a longest line the size of the component may still not incorporate just performed insert
                                 // at this point so schedule the scrolling for later.
                                 Dimension size = c.getSize();

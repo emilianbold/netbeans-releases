@@ -2376,6 +2376,14 @@ abstract public class CsmCompletionQuery {
                         case PLUS:
                         case MINUS:
                             if (findType && mtdList.isEmpty() && lastType == null) {
+                                if (item.getParameterCount() == 2) {
+                                    CsmType typ1 = resolveType(item.getParameter(0));
+                                    if (typ1 != null && typ1.getArrayDepth() == 0) {
+                                        if (findTypeViaOperator(typ1, item)) {
+                                            break;
+                                        }
+                                    }
+                                }
                                 findStandardCommonType(item);
                                 break;
                             }
@@ -2419,17 +2427,7 @@ abstract public class CsmCompletionQuery {
                                                         }
                                                     }
                                                 } else {
-                                                    CsmClassifier classifier = extractTypeClassifier(typ1, null, ExprKind.NONE); // FIXME: scope is null?
-                                                    if (CsmKindUtilities.isClass(classifier)) {
-                                                        CsmClass cls = (CsmClass) classifier;
-                                                        CsmFunction.OperatorKind opKind = CsmFunction.OperatorKind.getKindByImage(item.getTokenText(0), true);
-                                                        if (opKind != CsmFunction.OperatorKind.NONE) {
-                                                            CsmFunction member = getOperator(cls, contextFile, endOffset, opKind);
-                                                            if (member != null) {
-                                                                lastType = member.getReturnType();
-                                                            }
-                                                        }
-                                                    }
+                                                    findTypeViaOperator(typ1, item);
                                                 }
                                             }
                                             break;
@@ -3227,6 +3225,22 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return func;
+        }
+        
+        private boolean findTypeViaOperator(CsmType type, CsmCompletionExpression opExp) {
+            CsmClassifier classifier = extractTypeClassifier(type, getLocalContextScope(), ExprKind.NONE);
+            if (CsmKindUtilities.isClass(classifier)) {
+                CsmClass cls = (CsmClass) classifier;
+                CsmFunction.OperatorKind opKind = CsmFunction.OperatorKind.getKindByImage(opExp.getTokenText(0), true);
+                if (opKind != CsmFunction.OperatorKind.NONE) {
+                    CsmFunction member = getOperator(cls, contextFile, endOffset, opKind);
+                    if (member != null) {
+                        lastType = member.getReturnType();
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         
         private void findStandardCommonType(CsmCompletionExpression item) {

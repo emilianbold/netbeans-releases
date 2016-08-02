@@ -190,7 +190,7 @@ public final class HighlightsViewPart extends EditorView {
         // could not be reused (due to different start offset) etc.
         HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
                 docView, fullView, fullViewStartOffset,
-                false, getTextLayout(), fullViewStartOffset + shift, 0, getLength());
+                getTextLayout(), fullViewStartOffset + shift, 0, getLength());
     }
 
     @Override

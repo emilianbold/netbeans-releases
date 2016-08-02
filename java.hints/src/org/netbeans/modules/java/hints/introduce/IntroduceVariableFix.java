@@ -233,22 +233,17 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                 }
                 // handle lambda of expression BodyKind
                 List<StatementTree> nueStatements;
-                if (statement.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-                    nueStatements = new ArrayList<>();
-                    nueStatements.add(
-                            make.Return((ExpressionTree)statement.getLeaf()));
-                } else {
-                    nueStatements = new LinkedList<StatementTree>(IntroduceHint.getStatements(statement));
-                }
                 GeneratorUtilities.get(parameter).importComments(IntroduceHint.getStatementOrBlock(statement).getLeaf(), parameter.getCompilationUnit());
                 mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
                 VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);
-                nueStatements.add(index, make.asReplacementOf(newVariable, resolved.getLeaf(), true));
+                nueStatements = new ArrayList<>();
+                nueStatements.add(make.asReplacementOf(newVariable, resolved.getLeaf(), true));
                 if (expressionStatement) {
-                    make.asReplacementOf(newVariable, resolved.getParentPath().getLeaf());
-                    nueStatements.remove(resolved.getParentPath().getLeaf());
+                    Utilities.replaceStatements(parameter, statement, null, nueStatements);
+                } else {
+                    Utilities.insertStatement(parameter, statement, nueStatements, null);
                 }
-                IntroduceHint.doReplaceInBlockCatchSingleStatement(parameter, new HashMap<Tree, Tree>(), statement, nueStatements);
+                
                 if (!expressionStatement) {
                     Tree origParent = resolved.getParentPath().getLeaf();
                     Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), 

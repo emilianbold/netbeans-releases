@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.debugger.ui.annotations;
 
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -368,7 +373,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             valueProvider.setChangeListener(watch, new ValueChangeListener() {
                 @Override
                 public void valueChanged(Watch w) {
-                    final String text = getWatchValueText(watch, valueProvider);
+                    final boolean[] isEvaluating = new boolean[] { false };
+                    final String text = getWatchValueText(watch, valueProvider, isEvaluating);
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -380,12 +386,15 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                             Dimension size = getPreferredSize();
                             Point loc = getLocation();
                             setBounds(loc.x, loc.y, size.width, size.height);
+                            if (!isEvaluating[0]) {
+                                adjustSize();
+                            }
                         }
                     });
                 }
             });
             
-            textComponent = createNonEditableSelectableLabel(expressionText + getWatchValueText(watch, valueProvider));
+            textComponent = createNonEditableSelectableLabel(expressionText + getWatchValueText(watch, valueProvider, null));
             
             if (font != null) {
                 textComponent.setFont(font);
@@ -402,53 +411,20 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             }
             setComponentZOrder(textComponent, 1);
             setComponentZOrder(valueField, 0);
-            textComponent.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    String editableValue = valueProvider.getEditableValue(watch);
-                    if (editableValue != null) {
-                        if (e.getX() < expressionTextPositionEnd) {
-                            return ;
-                        }
-                        //valueLabel.setVisible(false);
-                        valueField.setVisible(true);
-                        valueField.setPreferredSize(null);
-                        valueField.setText(editableValue);
-                        Dimension fieldSize = valueField.getPreferredSize();
-                        fieldSize.width = textComponent.getSize().width - expressionTextPositionEnd;
-                        int minWidth = 2*fieldSize.height;  // Have some reasonable minimum width
-                        if (fieldSize.width < minWidth) {
-                            int extendedBy = minWidth - fieldSize.width;
-                            fieldSize.width = minWidth;
-                            GridBagConstraints constraints = ((GridBagLayout) getLayout()).getConstraints(textComponent);
-                            constraints.insets = new Insets(0, 0, 0, extendedBy);
-                            ((GridBagLayout) getLayout()).setConstraints(textComponent, constraints);
-                        }
-                        valueField.setPreferredSize(fieldSize);
-                        valueField.requestFocusInWindow();
-                        Dimension size = getPreferredSize();
-                        Point loc = getLocation();
-                        setBounds(loc.x, loc.y, size.width, size.height);
-                        revalidate();
-                        repaint();
-                        e.consume();
-                    }
-                }
-                @Override
-                public void mousePressed(MouseEvent e) {}
-                @Override
-                public void mouseReleased(MouseEvent e) {}
-                @Override
-                public void mouseEntered(MouseEvent e) {}
-                @Override
-                public void mouseExited(MouseEvent e) {}
-            });
+            TextKeysMouseListener textKeysMouseListener = new TextKeysMouseListener(expressionTextPositionEnd);
+            textComponent.addMouseListener(textKeysMouseListener);
+            textComponent.addKeyListener(textKeysMouseListener);
+            textComponent.addFocusListener(textKeysMouseListener);
             valueField.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String newValue = valueField.getText();
                     if (valueProvider.setValue(watch, newValue)) {
-                        textComponent.setText(expressionText + getWatchValueText(watch, valueProvider));
+                        boolean[] isEvaluating = new boolean[] { false };
+                        textComponent.setText(expressionText + getWatchValueText(watch, valueProvider, isEvaluating));
+                        if (!isEvaluating[0]) {
+                            adjustSize();
+                        }
                     }
                     hideValueField();
                 }
@@ -524,20 +500,19 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 
             MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
                 private Point orig;
+                private Cursor lastCursor;
                 @Override
                 public void mouseDragged(MouseEvent e) {
-                    if ((e.getModifiersEx() & (MouseEvent.ALT_DOWN_MASK |
-                                               MouseEvent.ALT_GRAPH_DOWN_MASK |
-                                               MouseEvent.CTRL_DOWN_MASK |
-                                               MouseEvent.META_DOWN_MASK |
-                                               MouseEvent.SHIFT_DOWN_MASK)) != 0) {
+                    if (!canDrag(e)) {
                         // Do not drag with any meta key pressed - allow text selection
+                        unsetMoveCursor();
                         return ;
                     }
                     if(orig == null) {
                         // Needs to have orig pressed point for precise movement
                         return ;
                     }
+                    setMoveCursor();
                     Point p = getLocation();
                     int deltaX = e.getX() - orig.x;
                     int deltaY = e.getY() - orig.y;
@@ -554,22 +529,62 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     ((EditorPin) watch.getPin()).move(line, p);
                     textComponent.setCaretPosition(0);   // Assure that we do not select anything
                     e.consume();
+                    adjustSize();
                 }
 
                 @Override
                 public void mousePressed(MouseEvent e) {
                     orig = e.getPoint();
+                    if (canDrag(e)) {
+                        setMoveCursor();
+                    }
                 }
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     orig = null;
+                    unsetMoveCursor();
+                }
+
+                private void setMoveCursor() {
+                    if (lastCursor == null) {
+                        lastCursor = getCursor();
+                        setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                    }
+                }
+
+                private void unsetMoveCursor() {
+                    if (lastCursor != null) {
+                        setCursor(lastCursor);
+                        lastCursor = null;
+                    }
                 }
             };
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
             textComponent.addMouseListener(mouseAdapter);
             textComponent.addMouseMotionListener(mouseAdapter);
+            adjustSize();
+            eui.getComponent().addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    adjustSize();
+                }
+                @Override
+                public void componentMoved(ComponentEvent e) {}
+                @Override
+                public void componentShown(ComponentEvent e) {}
+                @Override
+                public void componentHidden(ComponentEvent e) {}
+            });
+        }
+
+        private boolean canDrag(MouseEvent e) {
+            return (e.getModifiersEx() & (MouseEvent.ALT_DOWN_MASK |
+                                          MouseEvent.ALT_GRAPH_DOWN_MASK |
+                                          MouseEvent.CTRL_DOWN_MASK |
+                                          MouseEvent.META_DOWN_MASK |
+                                          MouseEvent.SHIFT_DOWN_MASK)) == 0;
         }
 
         @Override
@@ -582,6 +597,53 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 preferredSize.height = minPreferredHeight;
             }
             return preferredSize;
+        }
+
+        private void adjustSize() {
+            int editorSize = eui.getComponent().getSize().width;
+            int maxSize = editorSize - getLocation().x;
+            Dimension prefSize = getPreferredSize();
+            if (prefSize.width > maxSize) {
+                int smallerBy = prefSize.width - maxSize;
+                Dimension textSize = textComponent.getPreferredSize();
+                int newTextSize = textSize.width - smallerBy;
+                if (newTextSize < textSize.height) { // too small
+                    newTextSize = textSize.height;
+                }
+                textSize.width = newTextSize;
+                textComponent.setSize(textSize);
+                textComponent.setPreferredSize(textSize);
+                Dimension size = getPreferredSize();
+                Point loc = getLocation();
+                if (loc.x + size.width > editorSize) {
+                    loc.x = editorSize - size.width;
+                    if (loc.x < 0) {
+                        loc.x = 0;
+                    }
+                }
+                setBounds(loc.x, loc.y, size.width, size.height);
+            } else if (prefSize.width < maxSize) {
+                if (textComponent.isPreferredSizeSet()) {
+                    textComponent.setPreferredSize(null);
+                    textComponent.setSize(textComponent.getPreferredSize());
+                    adjustSize();
+                    Dimension size = getPreferredSize();
+                    Point loc = getLocation();
+                    setBounds(loc.x, loc.y, size.width, size.height);
+                }
+            } else {    // pref size is equal to the max, we need to check if it can be shrinked
+                if (textComponent.isPreferredSizeSet()) {
+                    Dimension preferredSize = textComponent.getPreferredSize();
+                    Dimension uiPreferredSize = textComponent.getUI().getPreferredSize(textComponent);
+                    if (uiPreferredSize.width < preferredSize.width) {
+                        textComponent.setPreferredSize(null);
+                        textComponent.setSize(textComponent.getPreferredSize());
+                        Dimension size = getPreferredSize();
+                        Point loc = getLocation();
+                        setBounds(loc.x, loc.y, size.width, size.height);
+                    }
+                }
+            }
         }
 
         private void hideValueField() {
@@ -666,10 +728,13 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             ((EditorPin) watch.getPin()).setComment(commentField.getText());
         }
 
-        private String getWatchValueText(Watch watch, ValueProvider vp) {
+        private String getWatchValueText(Watch watch, ValueProvider vp, boolean[] isEvaluating) {
             String value = vp.getValue(watch);
             //System.err.println("WatchAnnotationProvider.getWatchText("+watch.getExpression()+"): value = "+value+", lastValue = "+lastValue);
             if (value == evaluatingValue) {
+                if (isEvaluating != null) {
+                    isEvaluating[0] = true;
+                }
                 return "<html>" + "<font color=\"red\">" + value + "</font>" + "</html>";
             }
             boolean bold = false;
@@ -694,7 +759,132 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             //System.err.println("  return: "+"<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>");
             return "<html>" + s1 + value + s2 + "</html>";
         }
-        
+
+        private class TextKeysMouseListener implements KeyListener, MouseListener, FocusListener {
+
+            private final Cursor selectCursor = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
+            private Cursor lastCursor;
+            private boolean lastCursorUnset;
+            private final int expressionTextPositionEnd;
+            private Component lastFocusOwner;
+
+            TextKeysMouseListener(int expressionTextPositionEnd) {
+                this.expressionTextPositionEnd = expressionTextPositionEnd;
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.isAltDown() || e.isAltGraphDown() ||
+                    e.isControlDown() || e.isMetaDown() ||
+                    e.isShiftDown()) {
+
+                    setSelectCursor();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (!(e.isAltDown() || e.isAltGraphDown() ||
+                      e.isControlDown() || e.isMetaDown() ||
+                      e.isShiftDown())) {
+
+                    unsetSelectCursor();
+                }
+            }
+
+            private void setSelectCursor() {
+                if (lastCursor == null && !lastCursorUnset) {
+                    lastCursorUnset = !textComponent.isCursorSet();
+                    if (!lastCursorUnset) {
+                        lastCursor = textComponent.getCursor();
+                    }
+                    textComponent.setCursor(selectCursor);
+                }
+            }
+
+            private void unsetSelectCursor() {
+                if (lastCursor != null || lastCursorUnset) {
+                    textComponent.setCursor(lastCursor);
+                    lastCursor = null;
+                    lastCursorUnset = false;
+                }
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String editableValue = valueProvider.getEditableValue(watch);
+                if (editableValue != null) {
+                    if (e.getX() < expressionTextPositionEnd) {
+                        return ;
+                    }
+                    valueField.setVisible(true);
+                    valueField.setPreferredSize(null);
+                    valueField.setText(editableValue);
+                    Dimension fieldSize = valueField.getPreferredSize();
+                    fieldSize.width = textComponent.getSize().width - expressionTextPositionEnd;
+                    int minWidth = 2*fieldSize.height;  // Have some reasonable minimum width
+                    if (fieldSize.width < minWidth) {
+                        int extendedBy = minWidth - fieldSize.width;
+                        fieldSize.width = minWidth;
+                        GridBagConstraints constraints = ((GridBagLayout) getLayout()).getConstraints(textComponent);
+                        constraints.insets = new Insets(0, 0, 0, extendedBy);
+                        ((GridBagLayout) getLayout()).setConstraints(textComponent, constraints);
+                    }
+                    valueField.setPreferredSize(fieldSize);
+                    valueField.requestFocusInWindow();
+                    Dimension size = getPreferredSize();
+                    Point loc = getLocation();
+                    setBounds(loc.x, loc.y, size.width, size.height);
+                    revalidate();
+                    repaint();
+                    e.consume();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                lastFocusOwner = kfm.getFocusOwner();
+                if (lastFocusOwner != null) {
+                    lastFocusOwner.addKeyListener(this);
+                }
+                if (!canDrag(e)) {
+                    setSelectCursor();
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (lastFocusOwner != null) {
+                    lastFocusOwner.removeKeyListener(this);
+                    lastFocusOwner = null;
+                }
+                unsetSelectCursor();
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {}
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (lastFocusOwner != null) {
+                    lastFocusOwner.removeKeyListener(this);
+                    lastFocusOwner = null;
+                }
+                unsetSelectCursor();
+            }
+
+        }
+
         /*
         private static JTextArea createMultiLineToolTip(String toolTipText, boolean wrapLines) {
             JTextArea ta = new TextToolTip(wrapLines);

@@ -63,6 +63,7 @@ public class LessOptions implements CssPreprocessorUIImplementation.Options {
 
 
     public LessOptions(LessCssPreprocessor lessCssPreprocessor) {
+        assert lessCssPreprocessor != null;
         this.lessCssPreprocessor = lessCssPreprocessor;
     }
 

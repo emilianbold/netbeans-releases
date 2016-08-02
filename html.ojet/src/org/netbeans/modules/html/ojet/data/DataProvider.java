@@ -44,6 +44,8 @@ package org.netbeans.modules.html.ojet.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
 
 /**
  *
@@ -66,6 +68,8 @@ public abstract class DataProvider {
     public abstract String getCurrentVersion();
     
     public abstract void setCurrentVersion(String version);
+    
+    public abstract Collection<JsObject> getGlobalObjects(ModelElementFactory factory);
 
     public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
         List<DataItem> result = new ArrayList<>();
