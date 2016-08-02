@@ -1209,7 +1209,26 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 jsFunction.setDeclarationName(jsObject.getDeclarationName());
                 ModelUtils.copyOccurrences(jsObject, jsFunction);
                 if (!parentHasSameName) {
-                    jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
+                    String builderName = modelBuilder.getFunctionName(fn);
+                    if (jsFunction.getParent().getProperties().remove(builderName) == null) {
+                        // we need to check, whether is not declared in a block of the parent for handling cases like:
+                        // onreadystatechange = function() {
+                        //      if (true) {
+                        //          onreadystatechange = function () {console.log("true");};
+                        //      } else {
+                        //          onreadystatechange = function () {console.log("false");};
+                        //      }
+                        // };
+                        for (JsObject property : jsFunction.getParent().getProperties().values()) {
+                            if (property.getJSKind() == JsElement.Kind.BLOCK && property.getProperties().remove(builderName) != null) {
+                                if (property.getProperties().size() == 0) {
+                                    // remove the empty block from model
+                                    property.getParent().getProperties().remove(property.getName());
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
                 parent.addProperty(jsObject.getName(), jsFunction);
                 jsFunction.setParent(parent);
