@@ -45,6 +45,9 @@ package termtester;
 import interp.Cmd;
 import interp.CmdSet;
 import interp.Interp;
+import java.awt.Image;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -65,8 +68,10 @@ final class MainCmdSet extends CmdSet {
         interp.addCmd(new CmdDeleteLines());
         interp.addCmd(new CmdFill());
         interp.addCmd(new CmdGo());
+        interp.addCmd(new CmdGlyph());
         interp.addCmd(new CmdHome());
         interp.addCmd(new CmdInsertLines());
+        interp.addCmd(new CmdMark());
         interp.addCmd(new CmdMargin());
         interp.addCmd(new CmdSend());
         interp.addCmd(new CmdPause());
@@ -241,6 +246,48 @@ final class MainCmdSet extends CmdSet {
         }
     }
 
+    private class CmdMark extends Cmd {
+
+        public CmdMark() {
+            super("mark");
+        }
+
+        @Override
+        public void run(String[] args) {
+            // 'hbvi' addds 48 (ascii '0') to glyph_id and 58 to color_id.
+            // color_id's 40-47 give "standard colors"
+            // color_id's 58-65 give custom colors which are settable using 
+            // Term.setCustomColor()
+            //
+            // Typical sequence then should be something like this:
+            //          term ansi       # not dtterm!
+            //          glyph gutter 16 # doesn't automatically refresh
+            //          fill X          # refreshes but doesn't resize
+            //          glyph reg 1 bpt.png
+            //                          # register glyph_id 1 to bpt.png in /resources
+            //          mark 1 41       # put a mark using glyph_id 1 and
+            //                          # standard color 41 (red)
+
+            if (args.length == 0) {
+                error("mising glyph-id");
+            } else if (args.length == 1) {
+                int glyph_id = Integer.parseInt(args[0]);
+                context.send("\\ESC[22;%d;0t", glyph_id);
+            } else if (args.length == 2) {
+                int glyph_id = Integer.parseInt(args[0]);
+                int color_id = Integer.parseInt(args[1]);
+                context.send("\\ESC[22;%d;%dt", glyph_id, color_id);
+            } else {
+                error("wrong number of arguments");
+            }
+        }
+
+        @Override
+        public void help() {
+            printf("mark <glyph-id> [ <color-id> ]\n");
+        }
+    }
+
     private class CmdGo extends Cmd {
 
         public CmdGo() {
@@ -265,8 +312,54 @@ final class MainCmdSet extends CmdSet {
 
         public void help() {
             printf("go        # ... home\n");
-            printf("go <compass>\n");
+            printf("go <compass-direction>\n");
             printf("go row col\n");
+        }
+    }
+
+    private class CmdGlyph extends Cmd {
+
+        public CmdGlyph() {
+            super("glyph");
+        }
+
+        @Override
+        public void run(String[] args) {
+            if (args.length < 2) {
+                error("wrong number of arguments");
+            } else {
+                switch (args[0]) {
+                    case "gutter":
+                        if (args.length != 2)
+                            error("wrong number of arguments");
+                        int width = Integer.parseInt(args[1]);
+                        context.getTerm().setGlyphGutterWidth(width);
+                        context.getTerm().revalidate();
+                        break;
+                    case "reg":
+                        if (args.length != 3)
+                            error("wrong number of arguments");
+                        int id = Integer.parseInt(args[1]);
+                        String imageName = args[2];
+                        String imagePath = "resources/" + imageName;
+                        Image image = null;
+                        try {
+                            image = ImageIO.read(getClass().getClassLoader().getResource(imagePath));
+                        } catch (IOException ex) {
+                            error("Couldn't load image as " + imagePath);
+                        }
+                        context.getTerm().setGlyphImage(id, image);
+                        break;
+                    default:
+                        error("unrecognized sub-cmd '%s'", args[0]);
+                        break;
+                }
+            }
+        }
+
+        public void help() {
+            printf("glyph gutter <width>\n");
+            printf("glyph reg <id> <imgname> # 'bpt.png'\n");
         }
     }
 

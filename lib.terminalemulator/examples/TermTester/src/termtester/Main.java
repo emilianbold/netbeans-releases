@@ -84,7 +84,7 @@ public class Main {
 
         protected Program makeProgram(Context context, Pty pty) {
             Program p = new Program();
-            p.add("/usr/bin/xterm");
+            p.add("/bin/xterm");
 
             p.add("-geometry");
             p.add(String.format("%dx%d+0+350", context.width(), context.height()));
@@ -112,7 +112,7 @@ public class Main {
 
         protected Program makeProgram(Context context, Pty pty) {
             Program p = new Program();
-            p.add("/usr/bin/gnome-terminal");
+            p.add("/bin/gnome-terminal");
 
             p.add("--geometry");
             p.add(String.format("%dx%d+0+710", context.width(), context.height()));
