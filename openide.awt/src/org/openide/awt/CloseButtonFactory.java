@@ -117,11 +117,21 @@ public final class CloseButtonFactory{
     private static boolean isWindows8LaF() {
         return isWindowsLaF() && isWindows8() && isWindowsXPLaF();
     }
+    
+    private static boolean isWindows10LaF() {
+        return isWindowsLaF() && isWindows10() && isWindowsXPLaF();
+    }
 
     private static boolean isWindowsVista() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
+    }
+    
+    private static boolean isWindows10() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 10") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "10.0".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isWindows8() {
@@ -163,7 +173,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == closeTabImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_enabled.png", true); // NOI18N
@@ -190,7 +200,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == closeTabPressedImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_pressed.png", true); // NOI18N
@@ -217,7 +227,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == closeTabMouseOverImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_rollover.png", true); // NOI18N
@@ -245,7 +255,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == bigCloseTabImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_enabled.png", true); // NOI18N
@@ -272,7 +282,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == bigCloseTabPressedImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_pressed.png", true); // NOI18N
@@ -299,7 +309,7 @@ public final class CloseButtonFactory{
             }
         }
         if( null == bigCloseTabMouseOverImage ) {
-            if( isWindows8LaF() ) {
+            if( isWindows8LaF() || isWindows10LaF() ) {
                 bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
                 bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_rollover.png", true); // NOI18N
