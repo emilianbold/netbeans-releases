@@ -513,6 +513,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
        private final ReferenceHelper rh;
        private final Consumer<Pair<String,String>> preRemoveAction;
        private final Consumer<Pair<String,String>> postRemoveAction;
+       private final ThreadLocal<String> lastRef = new ThreadLocal<>();
 
        Removable (
                @NonNull final UpdateHelper helper,
@@ -545,33 +546,60 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
        public Project remove() {
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.
-            String ref = null;
-            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            String raw = props.getProperty (classPathId);
-            List<ClassPathSupport.Item> resources = cs.itemsList( raw, webModuleElementName );
+            boolean found = false;
+            final List<ClassPathSupport.Item> resources = getClassPathItems();
             for (Iterator i = resources.iterator(); i.hasNext();) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
-                    ref = item.getReference();
-                    preRemoveAction.accept(Pair.of(classPathId, ref));
+                    lastRef.set(item.getReference());
                     i.remove();
                     ClassPathPackageAccessor.getInstance().removeUnusedReference(item, classPathId, helper, rh);
+                    found = true;
                 }
             }
-            if (ref != null) {
+            if (found) {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
-                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                final EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                if (postRemoveAction != null) {
-                    postRemoveAction.accept(Pair.of(classPathId,ref));
-                }
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;
            }
        }
 
+        @Override
+        public void beforeRemove() {
+            if (preRemoveAction != null) {
+                getClassPathItems().stream()
+                        .map((i) -> i.getReference())
+                        .filter((r) -> entryId.equals(CommonProjectUtils.getAntPropertyName(r)))
+                        .findAny()
+                        .ifPresent((r) -> preRemoveAction.accept(Pair.of(classPathId, r)));
+            }
+        }
+
+        @Override
+        public void afterRemove() {
+            try {
+                if (postRemoveAction != null) {
+                    final String ref = lastRef.get();
+                    if (ref != null) {
+                        postRemoveAction.accept(Pair.of(classPathId,ref));
+                    }
+                }
+            } finally {
+                lastRef.remove();
+            }
+        }
+        
+        @NonNull
+        private List<ClassPathSupport.Item> getClassPathItems() {
+            final EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            final String raw = props.getProperty (classPathId);
+            return cs.itemsList( raw, webModuleElementName );
+        }
+        
     }
 
     private static class LibraryEditable implements EditRootAction.Editable {

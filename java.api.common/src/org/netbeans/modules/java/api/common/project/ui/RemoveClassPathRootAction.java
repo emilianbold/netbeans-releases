@@ -46,6 +46,7 @@ package org.netbeans.modules.java.api.common.project.ui;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.Project;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Exceptions;
@@ -90,50 +92,68 @@ final class RemoveClassPathRootAction extends NodeAction {
          * changed made to the project may cause the build-impl.xml file to be 
          * recreated upon saving, which is slow. There will be performance issues (see #54160) if
          * multiple references are removed and the project is saved after 
-         * each removal.
+         * each removal.</p>
+         * 
+         * <p>Threading: Called under the {@link ProjectManager#mutex} write access.</p>
          *
          * @return the changed project or null if no project has been changed.
          */
         public abstract Project remove ();
+        
+        /**
+         * Called before the {@link Removable#remove} is called.
+         * The implementation can perform operations which should not be done
+         * under the {@link ProjectManager#mutex} write access.
+         * Threading: Called outside the {@link ProjectManager#mutex} write access.
+         */
+        public default void beforeRemove() {}
+        
+        /**
+         * Called after the {@link Removable#remove} is called.
+         * The implementation can perform operations which should not be done
+         * under the {@link ProjectManager#mutex} write access.
+         * Threading: Called outside the {@link ProjectManager#mutex} write access.
+         */
+        public default void afterRemove() {}
     }
 
+    @Override
     protected void performAction(final Node[] activatedNodes) {
-        assert !(ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isReadAccess());   //Prevent to deadlock
+        assert !ProjectManager.mutex().isReadAccess();   //Prevent to deadlock
         final AtomicBoolean cancel = new AtomicBoolean();
 
-        final Runnable action = new Runnable() {
-            public void run() {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run() {
+        final Runnable action = () -> {
+            final Set<Removable> removables = Arrays.stream(activatedNodes)
+                    .map((n) -> n.getLookup().lookup(Removable.class))
+                    .filter((r) -> r != null)
+                    .collect(Collectors.toSet());
+            removables.forEach(Removable::beforeRemove);
+            try {
+                ProjectManager.mutex().writeAccess(() -> {
+                    if (cancel.get()) {
+                        return;
+                    }
+                    final Set<Project> changedProjectsSet = new HashSet<>();
+                    for (Removable removable : removables) {
                         if (cancel.get()) {
-                            return;
+                            break;
                         }
-                        final Set<Project> changedProjectsSet = new HashSet<Project>();
-                        for (int i = 0; i < activatedNodes.length; i++) {
-                            Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
-                            if (removable == null) {
-                                continue;
-                            }
-                            if (cancel.get()) {
-                                break;
-                            }
-                            Project p = removable.remove();
-                            if (p != null)
-                                changedProjectsSet.add(p);
-                        }
-
-                        for (Project p : changedProjectsSet) {
-                            try {
-                                ProjectManager.getDefault().saveProject(p);
-                            } catch (IOException e) {
-                                Exceptions.printStackTrace(e);
-                            }
+                        Project p = removable.remove();
+                        if (p != null)
+                            changedProjectsSet.add(p);
+                    }
+                    for (Project p : changedProjectsSet) {
+                        try {
+                            ProjectManager.getDefault().saveProject(p);
+                        } catch (IOException e) {
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 });
+            } finally {
+                removables.forEach(Removable::afterRemove);
             }
         };
-
         ProgressUtils.runOffEventDispatchThread(
                 action,
                 NbBundle.getMessage(RemoveClassPathRootAction.class, "TXT_RemovingClassPathRoots"),
