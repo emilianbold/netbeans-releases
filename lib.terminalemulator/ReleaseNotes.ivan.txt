@@ -1,3 +1,20 @@
+nobugid - Move handling of <ESC>[t (ACT_GLYPH) from InterpANSI to InterpDtTerm.
+
+nobugid - Make background of images in the glyph gutter be transparent instead
+          of white
+	+ Misc. \n fixes.
+
+nobugid - TermTester updates
+	- Switch to javac.{source,target}=1.8
+	- Look for xterm and gnome-terminal in /bin instead of /usr/bin.
+	- New test commands 'mark' and 'glyph' to test Term's ability to 
+	  place glyphs in the glyph gutter.
+	- Enhance 'tab' test to help debug problems with HT handling.
+
+nobugid - Allow ActiveTerm to react to right mouse button.
+	... so we can do context menus for active regions.
+
+================================================================================
 nobugid - Track various NB API changes
 	These are in projects in the examples directory.
 	- JNA Structure now needs getFieldOrder() implemented.
