@@ -117,15 +117,23 @@ public class Main {
             p.add("--geometry");
             p.add(String.format("%dx%d+0+710", context.width(), context.height()));
 
-            p.add("--title");
-            p.add(title());
+	    // gnome-terminal no longer accepts --title:
+	    // https://bugzilla.redhat.com/show_bug.cgi?id=1160184
+            // https://bugzilla.gnome.org/show_bug.cgi?id=740188
+            // What a bunch of hooey.
+            // p.add("--title");
+            // p.add(title());
 
             p.add("--hide-menubar");
 
             p.add("--profile=TermTest");
 
             // So we don't automatically run in background.
-            p.add("--disable-factory");
+	    // Also no longer supported
+	    // This means you have to close the gnome-terminal by hand after you
+	    // exit TermTester.
+	    // workaround: https://wiki.gnome.org/Apps/Terminal/Debugging
+            // p.add("--disable-factory");
 
             p.add("-e");
             String cmd = java;

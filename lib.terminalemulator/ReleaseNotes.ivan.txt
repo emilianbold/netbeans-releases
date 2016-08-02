@@ -1,3 +1,5 @@
+nobugid - Track gnome-terminal changes in TermTester
+
 nobugid - Move handling of <ESC>[t (ACT_GLYPH) from InterpANSI to InterpDtTerm.
 
 nobugid - Make background of images in the glyph gutter be transparent instead
