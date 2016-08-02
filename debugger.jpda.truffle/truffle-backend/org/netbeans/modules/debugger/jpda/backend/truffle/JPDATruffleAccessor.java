@@ -549,7 +549,7 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static Object evaluate(DebugStackFrame sf, String expression) {
-        return sf.eval(expression);
+        return sf.eval(expression).as(String.class);
     }
     
     /*

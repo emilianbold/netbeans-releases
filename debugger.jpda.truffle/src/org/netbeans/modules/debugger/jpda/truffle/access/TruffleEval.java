@@ -59,19 +59,24 @@ import org.openide.util.Exceptions;
 public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
-    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Lcom/oracle/truffle/api/debug/DebugStackFrame;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}
 
     public static Variable evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
         CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
-        ObjectVariable stackFrameInstance = null;
+        if (currentPCInfo == null) {
+            throw new InvalidExpressionException("No current suspend location.");
+        }
+        ObjectVariable stackFrameInstance = currentPCInfo.getSelectedStackFrame().getStackFrameInstance();
+        /*
         if (currentPCInfo != null) {
             TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
             if (selectedStackFrame != currentPCInfo.getTopFrame()) {
                 stackFrameInstance = selectedStackFrame.getStackFrameInstance();
             }
         }
+        */
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
             Variable mirrorExpression = debugger.createMirrorVar(expression);

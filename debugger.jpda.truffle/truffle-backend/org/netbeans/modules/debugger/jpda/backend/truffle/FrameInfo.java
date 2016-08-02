@@ -52,7 +52,7 @@ final class FrameInfo {
     //final FrameSlot[] slots;
     //final String[] slotNames;
     //final String[] slotTypes;
-    final DebugStackFrame[] stackTrace;
+    final DebugStackFrame[] stackTrace; // All but the top frame
     final String topFrame;
     final Object[] topVariables;
     //final Object thisObject;
@@ -169,6 +169,9 @@ final class FrameInfo {
         SourcePosition position = JPDATruffleDebugManager.getPosition(topSS);
         ArrayList<DebugStackFrame> stackFramesArray = new ArrayList<>();
         for (DebugStackFrame sf : stackFrames) {
+            if (sf == topStackFrame) {
+                continue;
+            }
             SourceSection ss = sf.getSourceSection();
             // Ignore frames without sources:
             if (ss == null || ss.getSource() == null) {
