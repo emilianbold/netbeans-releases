@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -65,16 +66,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementVisitor;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ModuleElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -404,16 +417,20 @@ final class ModuleClassPaths {
         }
     }
 
-    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener, ClassIndexListener {
+    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
 
         private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
+        private static final String MOD_JAVA_SE = "java.se";        //NOI18N
+        private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
+        private static final String ARG_ADDMODS = "-addmods";       //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private final ClassPath base;
         private final SourceRoots sources;
         private final ClassPath systemModules;
         private final ClassPath legacyClassPath;
         private final ThreadLocal<Object[]> selfRes;
+        private final AtomicReference<CompilerOptionsQuery.Result> compilerOptions;
 
         //@GuardedBy("this")
         private ClasspathInfo activeProjectSourceRoots;
@@ -435,6 +452,7 @@ final class ModuleClassPaths {
             this.systemModules = systemModules;
             this.legacyClassPath = legacyClassPath;
             this.selfRes = new ThreadLocal<>();
+            this.compilerOptions = new AtomicReference<>();
             this.moduleInfos = Collections.emptyList();
             this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
@@ -526,45 +544,13 @@ final class ModuleClassPaths {
                 selfResResources,
                 needToFire});
             try {
-                boolean found = false;
+                FileObject found = null;
                 for (URL root : sources.getRootURLs()) {
                     try {
                         final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO_JAVA));
                         newModuleInfos.add(moduleInfo);
-                        if (!found) {
-                            final FileObject modules = FileUtil.toFileObject(moduleInfo);
-                            if (modules != null) {
-                                found = true;
-                                final JavaSource src = JavaSource.create(
-                                    new ClasspathInfo.Builder(bootCp)
-                                            .setModuleBootPath(bootModules)
-                                            .setModuleCompilePath(userModules)
-                                            .build(),
-                                    modules);
-                                if (src != null) {
-                                    try {
-                                        final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
-                                        resInOut.add(res);
-                                        src.runUserActionTask((CompilationController cc) -> {
-                                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                            final Trees trees = cc.getTrees();
-                                            final TreePathScanner<ModuleElement, Void> scanner =
-                                                    new TreePathScanner<ModuleElement, Void>() {
-                                                        @Override
-                                                        public ModuleElement visitModule(ModuleTree node, Void p) {
-                                                            return (ModuleElement) trees.getElement(getCurrentPath());
-                                                        }
-                                                };
-                                            final ModuleElement rootModule = scanner.scan(new TreePath(cc.getCompilationUnit()), null);
-                                            Set<URL> requires = collectRequiredModules(rootModule, true, modulesByName);
-                                            resInOut.set(0, filterModules(resInOut.get(0), requires));
-                                        }, true);
-                                        res = resInOut.get(0);
-                                    } catch (IOException ioe) {
-                                        Exceptions.printStackTrace(ioe);
-                                    }
-                                }
-                            }
+                        if (found == null) {
+                            found = FileUtil.toFileObject(moduleInfo);
                         }
                     } catch (URISyntaxException e) {
                         LOG.log(
@@ -576,14 +562,59 @@ final class ModuleClassPaths {
                             });
                     }
                 }
-                if (!found && legacyClassPath != null) {
-                    final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
-                    final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
-                    legacyEntires.stream()
-                            .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
-                            .forEach(tmp::add);
-                    tmp.addAll(res);
-                    res = tmp;
+                final ClasspathInfo cpInfo = new ClasspathInfo.Builder(bootCp)
+                        .setModuleBootPath(bootModules)
+                        .setModuleCompilePath(userModules)
+                        .build();
+                final JavaSource src;
+                final Collection<String> additionalRootModules;
+                if (found != null) {
+                    src = JavaSource.create(cpInfo, found);
+                    additionalRootModules = getAddMods();
+                } else {
+                    src = JavaSource.create(cpInfo);
+                    additionalRootModules = new HashSet<>();
+                    if (systemModules == null) {
+                        additionalRootModules.add(MOD_JAVA_SE);
+                    }
+                    additionalRootModules.addAll(getAddMods());
+                }
+                additionalRootModules.remove(MOD_ALL_UNNAMED);
+                if (src != null) {
+                    try {
+                        final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
+                        resInOut.add(res);
+                        src.runUserActionTask((CompilationController cc) -> {
+                                cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                final Set<URL> requires = new HashSet<>();
+                                if (cc.getFileObject() != null) {
+                                    Optional.ofNullable(parseModule(cc))
+                                            .map((m) -> collectRequiredModules(m, true, false, modulesByName))
+                                            .ifPresent(requires::addAll);
+                                }
+                                for (String additionalRootModule : additionalRootModules) {
+                                    Optional.ofNullable(resolveModule(cc, additionalRootModule))
+                                            .map((m) -> collectRequiredModules(m, true, true, modulesByName))
+                                            .ifPresent(requires::addAll);
+                                }                                
+                                resInOut.set(0, filterModules(resInOut.get(0), requires));
+                            }, true);
+                            res = resInOut.get(0);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+                if (found == null || isUnnamedModuleReachable()) {
+                    //Unnamed module - add legacy classpath to classpath.
+                    if (legacyClassPath != null) {
+                        final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
+                        final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
+                        legacyEntires.stream()
+                                .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
+                                .forEach(tmp::add);
+                        tmp.addAll(res);
+                        res = tmp;
+                    }
                 }
             } finally {
                 needToFire = selfRes.get()[1] == Boolean.TRUE;
@@ -624,13 +655,13 @@ final class ModuleClassPaths {
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || ClassPath.PROP_ENTRIES.equals(propName) || SourceRoots.PROP_ROOTS.equals(propName)) {
-                final Runnable action = () -> resetCache(TOMBSTONE, true);
-                if (ProjectManager.mutex().isWriteAccess()) {
-                    ProjectManager.mutex().postReadRequest(action);
-                } else {
-                    action.run();
-                }
+                resetOutsideWriteAccess();
             }
+        }
+        
+        @Override
+        public void stateChanged(@NonNull final ChangeEvent evt) {
+            resetOutsideWriteAccess();
         }
 
         @Override
@@ -683,6 +714,15 @@ final class ModuleClassPaths {
         public void typesChanged(TypesEvent event) {
             handleModuleChange(event);
         }
+        
+        private void resetOutsideWriteAccess() {
+            final Runnable action = () -> resetCache(TOMBSTONE, true);
+            if (ProjectManager.mutex().isWriteAccess()) {
+                ProjectManager.mutex().postReadRequest(action);
+            } else {
+                action.run();
+            }
+        }
 
         private void handleModuleChange(@NonNull final TypesEvent event) {
             if (event.getModule() != null) {
@@ -729,6 +769,66 @@ final class ModuleClassPaths {
                 }
             }
         }
+        
+        @CheckForNull
+        private CompilerOptionsQuery.Result getCompilerOptions() {
+            CompilerOptionsQuery.Result res = compilerOptions.get();
+            if (res == null) {
+                final FileObject[] roots = sources.getRoots();
+                res = roots.length == 0 ?
+                        null :
+                        CompilerOptionsQuery.getOptions(roots[0]);
+                if (res != null) {
+                    if (compilerOptions.compareAndSet(null, res)) {
+                        res.addChangeListener(WeakListeners.change(this, res));
+                    } else {
+                        res = compilerOptions.get();
+                        assert res != null;
+                    }
+                }
+            }
+            return res;
+        }
+        
+        private Collection<String> getAddMods() {
+            final Set<String> mods = new HashSet<>();
+            final CompilerOptionsQuery.Result res = getCompilerOptions();
+            if (res != null) {
+                boolean addmod = false;
+                for (String arg : res.getArguments()) {
+                    if (addmod) {
+                        mods.addAll(Arrays.stream(arg.split(","))   //NOI18N
+                                .map((m) -> m.trim())
+                                .collect(Collectors.toList()));
+                    }
+                    addmod = ARG_ADDMODS.equals(arg);
+                }
+            }
+            return mods;
+        }
+        
+        private boolean isUnnamedModuleReachable() {
+            return getAddMods().contains(MOD_ALL_UNNAMED);
+        }
+        
+        @NonNull
+        private static ModuleElement parseModule(@NonNull final CompilationController cc) {
+            final Trees trees = cc.getTrees();
+            final TreePathScanner<ModuleElement, Void> scanner = new TreePathScanner<ModuleElement, Void>() {
+                    @Override
+                    public ModuleElement visitModule(ModuleTree node, Void p) {
+                        return (ModuleElement) trees.getElement(getCurrentPath());
+                    }
+            };
+            return scanner.scan(new TreePath(cc.getCompilationUnit()), null);
+        }
+        
+        @NonNull
+        private static ModuleElement resolveModule(
+                @NonNull final CompilationController cc,
+                @NonNull final String moduleName) {
+            return cc.getElements().getModuleElement(moduleName);
+        }
 
         @NonNull
         private static Map<String,URL> getModulesByName(
@@ -766,9 +866,16 @@ final class ModuleClassPaths {
         private static Set<URL> collectRequiredModules(
                 @NonNull final ModuleElement module,
                 final boolean transitive,
+                final boolean includeTopLevel,
                 @NonNull final Map<String,URL> modulesByName) {
             final Set<URL> res = new HashSet<>();
             final Set<ModuleElement> seen = new HashSet<>();
+            if (includeTopLevel) {
+                final URL dependencyURL = modulesByName.get(module.getQualifiedName().toString());
+                if (dependencyURL != null) {
+                    res.add(dependencyURL);
+                }
+            }
             collectRequiredModulesImpl(module, transitive, true, modulesByName, seen, res);
             return res;
         }
