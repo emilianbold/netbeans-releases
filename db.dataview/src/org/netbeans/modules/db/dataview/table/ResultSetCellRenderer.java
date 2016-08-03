@@ -54,6 +54,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.jdesktop.swingx.renderer.*;
+import org.netbeans.modules.db.dataview.output.SQLConstant;
 import org.netbeans.modules.db.dataview.util.ColorHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.LobHelper;
@@ -213,9 +214,15 @@ class SQLConstantsCellRenderer extends CellFocusCustomRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        Object resolvedValue;
+        if(value instanceof SQLConstant) {
+            resolvedValue = "<" + ((SQLConstant) value).toString() + ">";
+        } else {
+            resolvedValue = value;
+        }
+        Component c = super.getTableCellRendererComponent(table, resolvedValue, isSelected, hasFocus, row, column);
         c.setFont(new Font(c.getFont().getFamily(), Font.ITALIC, 9));
-        ((JLabel) c).setToolTipText(value.toString());
+        ((JLabel) c).setToolTipText(resolvedValue.toString());
         if (!isSelected) {
             c.setForeground(foregroundColor);
         }
