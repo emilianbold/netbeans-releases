@@ -131,6 +131,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * The implementation of JPDAThread.
@@ -198,6 +199,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     /** A set of threads which hit breakpoints that suspended a step in this thread. */
     private Set<JPDAThreadImpl> steppingSuspendedByBptsInThreads;
     private VirtualMachine      vm;
+    /** Lock under which we're safe to suspend this thread for the purpose of checking for monitors. */
+    private final Object        suspendToCheckForMonitorsLock = new Object();
+    private boolean             canSuspendToCheckForMonitors;
 
     public final ReadWriteLock  accessLock = new ThreadReentrantReadWriteLock();
     private final Object ownedMonitorsAndFramesSingleAccessLock = new Object();
@@ -1427,9 +1431,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         for (PropertyChangeEvent evt : evts) {
             pch.firePropertyChange(evt);
         }
+        synchronized (suspendToCheckForMonitorsLock) {
+            canSuspendToCheckForMonitors = true;
+        }
     }
     
     public void notifyMethodInvokeDone() {
+        synchronized (suspendToCheckForMonitorsLock) {
+            canSuspendToCheckForMonitors = false;
+        }
         SingleThreadWatcher watcherToDestroy = null;
         boolean wasUnsuspendedStateWhenInvoking;
         accessLock.writeLock().lock();
@@ -1899,48 +1909,106 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             // TODO: Need to be freed up and method invocation flag needs to be used instead.
             List<JPDAThread> oldLockerThreadsList;
             List<JPDAThread> newLockerThreadsList;
-            logger.fine("checkForBlockingThreads("+threadName+"): suspend all...");
             // Do not wait for write lock if it's not available, since no one will get read lock!
             boolean locked = debugger.accessLock.writeLock().tryLock();
-            if (!locked) return false;
-            try {
-                VirtualMachineWrapper.suspend(vm);
+            if (!locked) {
+                debugger.accessLock.readLock().lock();
                 try {
-                    ObjectReference waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
-                    if (waitingMonitor != null) {
-                        synchronized (lockerThreadsLock) {
-                            if (waitingMonitor.equals(lockerThreadsMonitor)) {
-                                // We're still blocked at the monitor
-                                return true;
+                    // We can not suspend the whole VM, but can check currently suspended threads, at least:
+                    locked = accessLock.writeLock().tryLock();
+                    if (!locked) {
+                        synchronized (suspendToCheckForMonitorsLock) {
+                            if (!canSuspendToCheckForMonitors) {
+                                return false;
+                            }
+                            ThreadReferenceWrapper.suspend(threadReference);
+                            try {
+                                ObjectReference waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
+                                if (waitingMonitor != null) {
+                                    synchronized (lockerThreadsLock) {
+                                        if (waitingMonitor.equals(lockerThreadsMonitor)) {
+                                            // We're still blocked at the monitor
+                                            return true;
+                                        }
+                                    }
+                                    lockedThreadsWithMonitors = findLockPath(vm, threadReference, false, waitingMonitor);
+                                }
+                                Pair<List<JPDAThread>, List<JPDAThread>> lockerThreadsLists =
+                                        updateLockerThreads(lockedThreadsWithMonitors, waitingMonitor);
+                                oldLockerThreadsList = lockerThreadsLists.first();
+                                newLockerThreadsList = lockerThreadsLists.second();
+                            } catch (IncompatibleThreadStateException ex) {
+                                return false;
+                            } finally {
+                                ThreadReferenceWrapper.resume(threadReference);
                             }
                         }
-                        lockedThreadsWithMonitors = findLockPath(vm, threadReference, waitingMonitor);
-                    }
-                    synchronized (lockerThreadsLock) {
-                        oldLockerThreadsList = lockerThreadsList;
-                        if (lockedThreadsWithMonitors != null) {
-                            //lockerThreads2 = lockedThreadsWithMonitors;
-                            lockerThreadsMonitor = waitingMonitor;
-                            if (!submitMonitorEnteredFor(waitingMonitor)) {
-                                submitCheckForMonitorEntered(waitingMonitor);
+                    } else {
+                        try {
+                            boolean wasSuspended = false;
+                            try {
+                                wasSuspended = ThreadReferenceWrapper.isSuspended0(threadReference);
+                                if (!wasSuspended) {
+                                    ThreadReferenceWrapper.suspend(threadReference);
+                                }
+                                ObjectReference waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
+                                if (waitingMonitor != null) {
+                                    synchronized (lockerThreadsLock) {
+                                        if (waitingMonitor.equals(lockerThreadsMonitor)) {
+                                            // We're still blocked at the monitor
+                                            return true;
+                                        }
+                                    }
+                                    lockedThreadsWithMonitors = findLockPath(vm, threadReference, false, waitingMonitor);
+                                }
+                                Pair<List<JPDAThread>, List<JPDAThread>> lockerThreadsLists =
+                                        updateLockerThreads(lockedThreadsWithMonitors, waitingMonitor);
+                                oldLockerThreadsList = lockerThreadsLists.first();
+                                newLockerThreadsList = lockerThreadsLists.second();
+                            } catch (IncompatibleThreadStateException ex) {
+                                return false;
+                            } finally {
+                                if (wasSuspended) {
+                                    ThreadReferenceWrapper.resume(threadReference);
+                                }
                             }
-                            lockerThreadsList = new ThreadListDelegate(debugger, new ArrayList(lockedThreadsWithMonitors.keySet()));
-                        } else {
-                            //lockerThreads2 = null;
-                            lockerThreadsMonitor = null;
-                            lockerThreadsList = null;
+                        } finally {
+                            accessLock.writeLock().unlock();
                         }
-                        newLockerThreadsList = lockerThreadsList;
                     }
-                    //System.err.println("Locker threads list = "+newLockerThreadsList);
-                } catch (IncompatibleThreadStateException ex) {
-                    return false;
                 } finally {
-                    logger.fine("checkForBlockingThreads("+threadName+"): resume all.");
-                    VirtualMachineWrapper.resume(vm);
+                    debugger.accessLock.readLock().unlock();
                 }
-            } finally {
-                debugger.accessLock.writeLock().unlock();
+            } else {
+                // locked debugger access
+                try {
+                    logger.fine("checkForBlockingThreads("+threadName+"): suspend all...");
+                    VirtualMachineWrapper.suspend(vm);
+                    try {
+                        ObjectReference waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(threadReference);
+                        if (waitingMonitor != null) {
+                            synchronized (lockerThreadsLock) {
+                                if (waitingMonitor.equals(lockerThreadsMonitor)) {
+                                    // We're still blocked at the monitor
+                                    return true;
+                                }
+                            }
+                            lockedThreadsWithMonitors = findLockPath(vm, threadReference, true, waitingMonitor);
+                        }
+                        Pair<List<JPDAThread>, List<JPDAThread>> lockerThreadsLists =
+                                updateLockerThreads(lockedThreadsWithMonitors, waitingMonitor);
+                        oldLockerThreadsList = lockerThreadsLists.first();
+                        newLockerThreadsList = lockerThreadsLists.second();
+                        //System.err.println("Locker threads list = "+newLockerThreadsList);
+                    } catch (IncompatibleThreadStateException ex) {
+                        return false;
+                    } finally {
+                        logger.fine("checkForBlockingThreads("+threadName+"): resume all.");
+                        VirtualMachineWrapper.resume(vm);
+                    }
+                } finally {
+                    debugger.accessLock.writeLock().unlock();
+                }
             }
             if (oldLockerThreadsList != newLockerThreadsList) { // Not fire when both null
                 //System.err.println("Fire lockerThreads: "+(oldLockerThreadsList == null || !oldLockerThreadsList.equals(newLockerThreadsList)));
@@ -1957,25 +2025,67 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
         return false;
     }
+    
+    private Pair<List<JPDAThread>, List<JPDAThread>> updateLockerThreads(
+            Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors,
+            ObjectReference waitingMonitor) throws InternalExceptionWrapper,
+                                                   VMDisconnectedExceptionWrapper,
+                                                   ObjectCollectedExceptionWrapper,
+                                                   IllegalThreadStateExceptionWrapper {
+        List<JPDAThread> oldLockerThreadsList;
+        List<JPDAThread> newLockerThreadsList;
+        synchronized (lockerThreadsLock) {
+            oldLockerThreadsList = lockerThreadsList;
+            if (lockedThreadsWithMonitors != null) {
+                //lockerThreads2 = lockedThreadsWithMonitors;
+                lockerThreadsMonitor = waitingMonitor;
+                if (!submitMonitorEnteredFor(waitingMonitor)) {
+                    submitCheckForMonitorEntered(waitingMonitor);
+                }
+                lockerThreadsList = new ThreadListDelegate(debugger, new ArrayList(lockedThreadsWithMonitors.keySet()));
+            } else {
+                //lockerThreads2 = null;
+                lockerThreadsMonitor = null;
+                lockerThreadsList = null;
+            }
+            newLockerThreadsList = lockerThreadsList;
+        }
+        return Pair.of(oldLockerThreadsList, newLockerThreadsList);
+    }
 
-    private static Map<ThreadReference, ObjectReference> findLockPath(VirtualMachine vm, ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {
+    private static Map<ThreadReference, ObjectReference> findLockPath(VirtualMachine vm, ThreadReference tr,
+                                                                      final boolean suspendedAll,
+                                                                      ObjectReference waitingMonitor) throws IncompatibleThreadStateException,
+                                                                                                             InternalExceptionWrapper,
+                                                                                                             VMDisconnectedExceptionWrapper,
+                                                                                                             ObjectCollectedExceptionWrapper,
+                                                                                                             IllegalThreadStateExceptionWrapper {
         Map<ThreadReference, ObjectReference> threadsWithMonitors = new LinkedHashMap<ThreadReference, ObjectReference>();
         Map<ObjectReference, ThreadReference> monitorMap = new HashMap<ObjectReference, ThreadReference>();
         for (ThreadReference t : VirtualMachineWrapper.allThreads(vm)) {
-            List<ObjectReference> monitors = ThreadReferenceWrapper.ownedMonitors(t);
-            if (monitors != null) {
-                for (ObjectReference m : monitors) {
-                    monitorMap.put(m, t);
+            if (suspendedAll || ThreadReferenceWrapper.isSuspended0(t)) {
+                List<ObjectReference> monitors;
+                try {
+                    monitors = ThreadReferenceWrapper.ownedMonitors0(t);
+                } catch (IllegalThreadStateExceptionWrapper | IncompatibleThreadStateException ex) {
+                    continue;
+                }
+                if (monitors != null) {
+                    for (ObjectReference m : monitors) {
+                        monitorMap.put(m, t);
+                    }
                 }
             }
         }
-        while (tr != null && waitingMonitor != null) {
-            tr = monitorMap.get(waitingMonitor);
-            if (tr != null) {
-                if (ThreadReferenceWrapper.suspendCount(tr) > 1) { // Add it if it was suspended before
-                    threadsWithMonitors.put(tr, waitingMonitor);
+        while (waitingMonitor != null) {
+            ThreadReference t = monitorMap.get(waitingMonitor);
+            if (t != null) {
+                if (ThreadReferenceWrapper.suspendCount(t) > (suspendedAll ? 1 : 0)) { // Add it if it was suspended before
+                    threadsWithMonitors.put(t, waitingMonitor);
                 }
-                waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(tr);
+                waitingMonitor = ThreadReferenceWrapper.currentContendedMonitor(t);
+            } else {
+                break;
             }
         }
         if (threadsWithMonitors.size() > 0) {

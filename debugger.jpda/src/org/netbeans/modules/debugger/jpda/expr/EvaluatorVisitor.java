@@ -4420,14 +4420,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             // No preferred, just take the first one:
             return types.get(0);
         }
-        // DO NOT TRY TO LOAD CLASSES AT ALL! See http://www.netbeans.org/issues/show_bug.cgi?id=168949
-        return null;
-        /*
         // DO NOT TRY TO LOAD THE CLASS ON JDK 5 AND OLDER!
         // See http://www.netbeans.org/issues/show_bug.cgi?id=50315
-        if (!JPDAUtils.IS_JDK_16) {
-            return null;
-        }
         // The bug is in JVMTI code, therefore the target VM must be JDK 6 at least.
         String targetVersion = vm.version();
         if (targetVersion.startsWith("1.5") || // NOI18N
@@ -4450,9 +4444,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             args.add(className);
             args.add(vm.mirrorOf(true));
             args.add(executingClassloader);
-            ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, 0);
+            ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, ObjectReference.INVOKE_SINGLE_THREADED);
             //evaluationContext.disableCollectionOf(cor); - Not necessary, values returned from methods are not collected!
             return cor.reflectedType();
+        } catch (IncompatibleThreadStateException itsex) {
+            String message = Bundle.MSG_IncompatibleThreadStateMessage();
+            InvalidExpressionException ieex = new InvalidExpressionException(message, itsex);
+            throw new IllegalStateException(ieex);
         } catch (Exception ex) {
             return null;
         } finally {
@@ -4464,7 +4462,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
-         */
     }
 
     private static StringReference createStringMirrorWithDisabledCollection(String s, VirtualMachine vm, EvaluationContext evaluationContext) {
