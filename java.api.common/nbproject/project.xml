@@ -414,8 +414,8 @@ Contributor(s):
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.android.project</friend>
-                <friend>org.netbeans.modules.avatar_js.project</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
+                <friend>org.netbeans.modules.avatar_js.project</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.hudson.ant</friend>
                 <friend>org.netbeans.modules.j2ee.archive</friend>
@@ -424,6 +424,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2me.project</friend>
+                <friend>org.netbeans.modules.java.j2semodule</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
