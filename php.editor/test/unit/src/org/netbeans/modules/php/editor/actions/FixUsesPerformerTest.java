@@ -359,6 +359,11 @@ public class FixUsesPerformerTest extends PHPTestBase {
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, caretOffset);
                     Options currentOptions = options;
                     Document document = phpResult.getSnapshot().getSource().getDocument(false);
+                    if (document == null) {
+                        // it can sometimes randomly happen
+                        document = phpResult.getSnapshot().getSource().getDocument(true);
+                    }
+                    assertNotNull("Document should be found for: " + phpResult.getSnapshot().getSource().getFileObject(), document);
                     if (currentOptions == null) {
                         CodeStyle codeStyle = CodeStyle.get(document);
                         currentOptions = new FixUsesAction.Options(codeStyle, fileScope.getFileObject());
