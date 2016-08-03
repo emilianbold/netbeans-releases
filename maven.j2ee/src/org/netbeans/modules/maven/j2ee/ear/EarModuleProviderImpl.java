@@ -318,7 +318,11 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
 
             boolean register = listeners.isEmpty();
             if (listener != null) {
-                listeners.add(listener);
+                if(listener == DeployOnSaveSupportProxy.this) {
+                    Logger.getLogger(EarModuleProviderImpl.class.getName()).log(Level.WARNING, "DeployOnSaveSupportProxy.addArtifactListener for project {0} was about to register itself as a listener!", project.getProjectDirectory());
+                } else {                
+                    listeners.add(listener);
+                }
             }
 
             if (register) {
