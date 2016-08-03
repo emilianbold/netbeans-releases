@@ -65,21 +65,20 @@ class InsertRecordTableUI extends ResultSetJXTable {
         }
     }   
 
-    // Must correspond to DataViewUtils#isSQLConstantString!
     protected void appendEmptyRow() {
         Object[] row = new Object[getModel().getColumnCount()];
         for (int i = 0, I = getModel().getColumnCount(); i < I; i++) {
             DBColumn col = getModel().getColumn(i);
             if (col.isGenerated()) {
-                row[i] = "<GENERATED>";
+                row[i] = SQLConstant.GENERATED;
             } else if (col.hasDefault()) {
-                row[i] = "<DEFAULT>";
+                row[i] = SQLConstant.DEFAULT;
             } else if (col.getJdbcType() == Types.TIMESTAMP) {
-                row[i] = "<CURRENT_TIMESTAMP>";
+                row[i] = SQLConstant.CURRENT_TIMESTAMP;
             } else if (col.getJdbcType() == Types.DATE) {
-                row[i] = "<CURRENT_DATE>";
+                row[i] = SQLConstant.CURRENT_DATE;
             } else if (col.getJdbcType() == Types.TIME) {
-                row[i] = "<CURRENT_TIME>";
+                row[i] = SQLConstant.CURRENT_TIME;
             }
         }
         getModel().addRow(row);
