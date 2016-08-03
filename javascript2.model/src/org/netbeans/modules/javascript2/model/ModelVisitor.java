@@ -3006,8 +3006,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     }
     
     private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
-        if (ModelUtils.THIS.equals(name)) {
-            // don't process this node.
+        if (ModelUtils.THIS.equals(name) || Type.UNDEFINED.equals(name)) {
+            // don't process this node and undefined
             return;
         }
         occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), modelBuilder.getCurrentWith(), isFunction, leftSite);
