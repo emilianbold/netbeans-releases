@@ -100,7 +100,7 @@ public final class ClassPathUiSupport {
                           && selectionModel.getMinSelectionIndex() != -1;
         if (can) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
-            can = item.canEdit();
+            can = item != null && item.canEdit();
         }
         return can;
     }
