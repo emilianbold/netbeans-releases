@@ -60,10 +60,10 @@ final class BinaryName {
             @NonNull final String binaryName,
             final int pkgEnd,
             final int simpleNameStart) {
-        assert pkgEnd < binaryName.length() - 1;
-        assert pkgEnd != 0;
-        assert simpleNameStart < binaryName.length() - 1;
-        assert simpleNameStart > pkgEnd;
+        assert pkgEnd < binaryName.length() - 1 : binaryName;
+        assert pkgEnd != 0 : binaryName;
+        assert simpleNameStart < binaryName.length() - 1 : binaryName;
+        assert simpleNameStart > pkgEnd : binaryName;
         this.binaryName = binaryName;
         this.pkgEnd = pkgEnd;
         this.simpleNameStart = simpleNameStart;

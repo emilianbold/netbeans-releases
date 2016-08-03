@@ -3122,7 +3122,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, null, t);
+                    LOGGER.log(
+                            Level.WARNING,
+                            String.format("%s while indexing: %s",
+                                    t.getClass().getSimpleName(),
+                                    ctx.getRootURI()),
+                            t);
                 }
                 long et = System.currentTimeMillis();
                 logIndexerTime(f.getIndexerName(), (int)(et-st));

@@ -712,13 +712,19 @@ public class BinaryAnalyser {
 
     private static int getSimpleNameIndex(@NonNull final ClassFile cf) {
         final ClassName me = cf.getName();
-        int len = me.getSimpleName().length();
+        final String simpleName = me.getSimpleName();
+        int len = simpleName.length();
         for (InnerClass ic : cf.getInnerClasses()) {
             if (me.equals(ic.getName())) {
-                String simpleName = ic.getSimpleName();
-                len = simpleName == null ?
-                        me.getInternalName().length() - me.getInternalName().lastIndexOf('$') - 1:  //NOI18N
-                        simpleName.length();
+                final String innerName = ic.getSimpleName();
+                if (innerName != null) {
+                    len = innerName.length();
+                } else {
+                    final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
+                    if (sepIndex > 0) {
+                        len -= sepIndex+1;
+                    }                                                                             
+                }
                 break;
             }
         }
