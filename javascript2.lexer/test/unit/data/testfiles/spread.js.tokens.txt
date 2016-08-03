@@ -19,8 +19,8 @@ BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=52, zzLexicalState=2, canFollowLi
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 IDENTIFIER      "line", la=1, st=LexerState{zzState=24, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_ARROW  "=>", st=LexerState{zzState=157, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_ARROW  "=>", st=LexerState{zzState=157, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 IDENTIFIER      "versionsMap", la=1, st=LexerState{zzState=24, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 OPERATOR_DOT    ".", la=1, st=LexerState{zzState=27, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 IDENTIFIER      "set", la=1, st=LexerState{zzState=24, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}

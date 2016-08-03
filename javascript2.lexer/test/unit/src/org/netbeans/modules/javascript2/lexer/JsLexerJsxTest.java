@@ -95,4 +95,9 @@ public class JsLexerJsxTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/templates01.js",
                 JsTokenId.javascriptLanguage());
     }
+    
+    public void testIssue267422() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/issue267422.js",
+                JsTokenId.javascriptLanguage());
+    }
 }
