@@ -25,13 +25,13 @@ var |>GLOBAL:formatter<| = {
     },
 
     |>METHOD:delimiter<|: function(title, emptyLine) {
-        if (emptyLine == |>GLOBAL:undefined<| || !(emptyLine instanceof Boolean)) {
+        if (emptyLine == undefined || !(emptyLine instanceof Boolean)) {
             emptyLine = new Boolean(false);
         }
         if (emptyLine.valueOf()) {
             this.println("");
         }
-        if (title != |>GLOBAL:undefined<|) {
+        if (title != undefined) {
             this.println("------------------- " + title + " ------------------");
         } else {
             this.println("-------------------------------------");
