@@ -61,8 +61,8 @@ import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.ui.IOTerm;
+import org.netbeans.modules.terminal.api.ui.IOVisibility;
 import org.netbeans.terminal.example.Config;
 
 

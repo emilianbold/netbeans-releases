@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="NetBeans_Build_System">
+    <property file="nbproject/nbjdk.properties"/>
+    <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
+    <property file="${user.properties.file}"/>
+    <import file="jdk.xml"/>
+    <target depends="-jdk-init" name="bootstrap">
+        <ant inheritall="false" target="bootstrap"/>
+    </target>
+    <target depends="-jdk-init" name="localclean">
+        <ant inheritall="false" target="localclean"/>
+    </target>
+    <target depends="-jdk-init" name="localtest">
+        <ant inheritall="false" target="localtest"/>
+    </target>
+    <target depends="-jdk-init" name="localtest-single">
+        <ant inheritall="false" target="localtest-single"/>
+    </target>
+    <target depends="-jdk-init,-jdk-presetdef-nbjpdastart" name="localtest-single-nb-debug">
+        <ant inheritall="false" target="localtest-single-nb-debug"/>
+    </target>
+    <target depends="-jdk-init" name="tryme">
+        <ant inheritall="false" target="tryme"/>
+    </target>
+    <target depends="-jdk-init,-jdk-presetdef-nbjpdastart" name="tryme-debug">
+        <ant inheritall="false" target="tryme-debug"/>
+    </target>
+</project>

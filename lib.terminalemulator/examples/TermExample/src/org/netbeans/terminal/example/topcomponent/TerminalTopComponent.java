@@ -50,7 +50,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.api.ui.TerminalContainer;
 import org.openide.windows.IOContainer;
 
 /**
