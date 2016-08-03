@@ -331,6 +331,12 @@ public class JavacParser extends Parser {
                 cpInfo = _tmpInfo;
                 this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
                 cpInfo.addChangeListener (this.weakCpListener);
+                root = Optional.ofNullable(cpInfo.getClassPath(PathKind.SOURCE))
+                        .map((cp)-> {
+                            FileObject[] roots = cp.getRoots();
+                            return roots.length > 0 ? roots[0] : null;
+                        })
+                        .orElse(null);
             } else {
                 throw new IllegalArgumentException("No classpath provided by task: " + task);
             }
@@ -403,7 +409,7 @@ public class JavacParser extends Parser {
                 case 0:
                     if (shouldParse(task)) {
                         init(task);
-                        ciImpl = new CompilationInfoImpl(cpInfo);
+                        ciImpl = new CompilationInfoImpl(cpInfo, root);
                     }
                     break;
                 case 1:

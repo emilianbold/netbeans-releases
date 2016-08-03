@@ -562,17 +562,23 @@ final class ModuleClassPaths {
                             });
                     }
                 }
-                final ClasspathInfo cpInfo = new ClasspathInfo.Builder(bootCp)
-                        .setModuleBootPath(bootModules)
-                        .setModuleCompilePath(userModules)
-                        .build();
                 final JavaSource src;
                 final Collection<String> additionalRootModules;
                 if (found != null) {
-                    src = JavaSource.create(cpInfo, found);
+                    src = JavaSource.create(
+                            new ClasspathInfo.Builder(bootCp)
+                                    .setModuleBootPath(bootModules)
+                                    .setModuleCompilePath(userModules)
+                                    .build(),
+                            found);
                     additionalRootModules = getAddMods();
                 } else {
-                    src = JavaSource.create(cpInfo);
+                    src = JavaSource.create(
+                            new ClasspathInfo.Builder(bootCp)
+                                    .setModuleBootPath(bootModules)
+                                    .setModuleCompilePath(userModules)
+                                    .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
+                                    .build());
                     additionalRootModules = new HashSet<>();
                     if (systemModules == null) {
                         additionalRootModules.add(MOD_JAVA_SE);
