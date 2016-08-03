@@ -2701,7 +2701,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 name.add(new Identifier(lNode.getPropertyName(), 
                         new OffsetRange(lNode.getStart(), lNode.getFinish())));
             } else if (indexNode.getIndex() instanceof IdentNode) {
-                name.add(create(parserResult, (IdentNode)indexNode.getIndex()));
+                // this is case test[variable] where we don't know the name -> return null
+                return null;
             }
         }
         return name;
