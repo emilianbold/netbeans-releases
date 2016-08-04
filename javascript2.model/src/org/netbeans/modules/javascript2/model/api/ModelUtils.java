@@ -1566,7 +1566,8 @@ public class ModelUtils {
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
             "XMLHttpRequest", "JSON", "Date", Type.UNDEFINED, "Math",  //NOI18N
-            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED,
+            Type.NAN, Type.INFINITY);
     
     public static boolean isKnownGLobalType(String type) {
         return knownGlobalObjects.contains(type);
