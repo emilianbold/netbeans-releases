@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.knockout.index;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,6 +63,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -75,11 +78,11 @@ public class KnockoutIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(KnockoutIndexer.class.getName());
 
-    private static final ThreadLocal<Map<URI, Collection<KnockoutCustomElement>>> customElements = new ThreadLocal();
+    private static final ThreadLocal<Map<URI, Collection<KnockoutCustomElement>>> CUSTOM_ELEMENTS = new ThreadLocal();
 
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
-        Map<URI, Collection<KnockoutCustomElement>> cElements = customElements.get();
+        Map<URI, Collection<KnockoutCustomElement>> cElements = CUSTOM_ELEMENTS.get();
         if (cElements != null && !cElements.isEmpty()) {
             IndexingSupport support;
             try {
@@ -89,37 +92,36 @@ public class KnockoutIndexer extends EmbeddingIndexer {
                 return;
             }
 
-            for (Map.Entry<URI, Collection<KnockoutCustomElement>> entry : cElements.entrySet()) {
-                URI uri = entry.getKey();
-                Collection<KnockoutCustomElement> collection = entry.getValue();
-
-                File file = Utilities.toFile(uri);
-                FileObject fo = FileUtil.toFileObject(file);
-
-                IndexDocument elementDocument = support.createDocument(fo);
-                for (KnockoutCustomElement customElement : collection) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(customElement.getName()).append(":");    //NOI18N
-                    sb.append(customElement.getFqn()).append(":");     //NOI18N
-                    sb.append(customElement.getOffset());
-                    if (!customElement.getParameters().isEmpty()) {
-                        sb.append(":");                                //NOI18N
-                        for (int i = 0; i < customElement.getParameters().size(); i++) {
-                            sb.append(customElement.getParameters().get(i));
-                            if (i != (customElement.getParameters().size() - 1)) {
-                                sb.append(";");                        //NOI18N
+            try {
+                Collection<KnockoutCustomElement> elements = cElements.remove(indexable.getURL().toURI());
+                if (elements != null) {
+                    IndexDocument elementDocument = support.createDocument(indexable);
+                    for (KnockoutCustomElement customElement : elements) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(customElement.getName()).append(":");    //NOI18N
+                        sb.append(customElement.getFqn()).append(":");     //NOI18N
+                        sb.append(customElement.getOffset());
+                        if (!customElement.getParameters().isEmpty()) {
+                            sb.append(":");                                //NOI18N
+                            for (int i = 0; i < customElement.getParameters().size(); i++) {
+                                sb.append(customElement.getParameters().get(i));
+                                if (i != (customElement.getParameters().size() - 1)) {
+                                    sb.append(";");                        //NOI18N
+                                }
                             }
                         }
+                        elementDocument.addPair(CUSTOM_ELEMENT, sb.toString(), true, true);
                     }
-                    elementDocument.addPair(CUSTOM_ELEMENT, sb.toString(), true, true);
+                    support.addDocument(elementDocument);
                 }
-                support.addDocument(elementDocument);
+            } catch (URISyntaxException ex) {
+                LOG.log(Level.INFO, null, ex);
             }
         }
     }
 
     public static void addCustomElement(final URI uri, final KnockoutCustomElement customElement) {
-        final Map<URI, Collection<KnockoutCustomElement>> map = customElements.get();
+        final Map<URI, Collection<KnockoutCustomElement>> map = CUSTOM_ELEMENTS.get();
 
         if (map == null) {
             throw new IllegalStateException("KnockoutIndexer.addCustomElement can be called only from scanner thread.");  //NOI18N
@@ -135,7 +137,7 @@ public class KnockoutIndexer extends EmbeddingIndexer {
     }
 
     public static boolean isScannerThread() {
-        return customElements.get() != null;
+        return CUSTOM_ELEMENTS.get() != null;
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -188,7 +190,7 @@ public class KnockoutIndexer extends EmbeddingIndexer {
         @Override
         public boolean scanStarted(Context context) {
             postScanTasks.set(new LinkedList<Runnable>());
-            customElements.set(new HashMap<URI, Collection<KnockoutCustomElement>>());
+            CUSTOM_ELEMENTS.set(new HashMap<URI, Collection<KnockoutCustomElement>>());
             return super.scanStarted(context);
         }
 
