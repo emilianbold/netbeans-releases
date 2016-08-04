@@ -36,9 +36,6 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * $Id$
- *
  */
 
 package org.netbeans.test.installer;

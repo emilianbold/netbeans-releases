@@ -889,17 +889,19 @@ public final class JsColoringLexer {
     }
 
     private boolean canFollowJSX(JsTokenId token) {
-        if ("operator".equals(token.primaryCategory())) {
-            return true;
-        }
         if (token == JsTokenId.BRACKET_LEFT_PAREN
                 || token == JsTokenId.BRACKET_LEFT_CURLY
                 || token == JsTokenId.BRACKET_LEFT_BRACKET
+                || token == JsTokenId.KEYWORD_RETURN
+                // operators
                 || token == JsTokenId.OPERATOR_ASSIGNMENT
                 || token == JsTokenId.OPERATOR_COLON
                 || token == JsTokenId.OPERATOR_COMMA
                 || token == JsTokenId.OPERATOR_TERNARY
-                || token == JsTokenId.KEYWORD_RETURN) {
+                || token == JsTokenId.OPERATOR_PLUS_ASSIGNMENT
+                || token == JsTokenId.OPERATOR_MINUS_ASSIGNMENT
+                || token == JsTokenId.OPERATOR_PLUS 
+                ) {
             return true;
         }
         return false;
