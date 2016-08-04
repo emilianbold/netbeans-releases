@@ -327,7 +327,8 @@ public class J2SEProjectBuilder {
      */
     public AntProjectHelper build() throws IOException {
         final FileObject dirFO = FileUtil.createFolder(this.projectDirectory);
-        final AntProjectHelper[] h = new AntProjectHelper[1];        
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject[] srcFolder = new FileObject[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
@@ -371,21 +372,19 @@ public class J2SEProjectBuilder {
                 } catch (MutexException ex) {
                     Exceptions.printStackTrace(ex.getException());
                 }
-                
-                FileObject srcFolder = null;
                 if (hasDefaultRoots) {
-                    srcFolder = dirFO.createFolder("src") ; // NOI18N
+                    srcFolder[0] = dirFO.createFolder("src") ; // NOI18N
                     if (!skipTests) {
                         dirFO.createFolder("test"); // NOI18N
                     }
                 } else if (!sourceRoots.isEmpty()) {
-                    srcFolder = FileUtil.toFileObject(sourceRoots.iterator().next());
-                }
-                if ( mainClass != null && srcFolder != null) {
-                    createMainClass(mainClass, srcFolder, mainClassTemplate);
+                    srcFolder[0] = FileUtil.toFileObject(sourceRoots.iterator().next());
                 }
             }
-        });        
+        });                        
+        if ( mainClass != null && srcFolder[0] != null) {
+            createMainClass(mainClass, srcFolder[0], mainClassTemplate);
+        }
         return h[0];
     }
     
