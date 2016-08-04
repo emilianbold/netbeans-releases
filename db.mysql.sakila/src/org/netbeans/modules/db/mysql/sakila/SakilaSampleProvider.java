@@ -216,7 +216,7 @@ public class SakilaSampleProvider implements SampleProvider {
           assert(conn != null);
           conn.setAutoCommit(false);
           ps = conn.prepareStatement(sql);
-          ps.setBinaryStream(1, stream, (int) HILLYER_LENGTH);
+          ps.setBinaryStream(1, stream, HILLYER_LENGTH);
           ps.executeUpdate();
           conn.commit();
         } catch (SQLException e) {
