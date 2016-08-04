@@ -106,7 +106,7 @@ import org.openide.windows.OutputListener;
 @Messages("JsTestDriverResolver=js-test-driver Conf Files")
 @MIMEResolver.Registration(
     displayName="#JsTestDriverResolver",
-    position=117, // has to be before languages.apachecon resolver
+    position=132, // has to be after languages.apachecon resolver, see #267416
     resource="resources/mime-resolver.xml"
 )
 public class JSTestDriverSupport {
