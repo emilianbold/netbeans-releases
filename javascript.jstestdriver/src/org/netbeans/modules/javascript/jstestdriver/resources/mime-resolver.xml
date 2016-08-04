@@ -42,7 +42,8 @@ Contributor(s):
 <MIME-resolver>
     <file>
         <ext name="conf"/>
-        <name name="jstestdriver" substring="true"/>
+        <!-- #267416 & #267415 - it is better to check only extension because elements are OR-ed and not AND-ed -->
+        <!--name name="jstestdriver" substring="true"/-->
         <resolver mime="text/x-yaml"/>
     </file>
 </MIME-resolver>
