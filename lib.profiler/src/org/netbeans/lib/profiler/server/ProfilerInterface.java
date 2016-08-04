@@ -792,6 +792,16 @@ public class ProfilerInterface implements CommonConstants {
                     if (dynamic) {
                         if (loadedClassesLoaders[i] > 0) { // bootstrap classloader has index -1 and system classloader has index 0
                             nonSystemClasses[nonSystemIndex++] = clazz;
+                        } else {    // system or bootstrap class loader
+                            String name = clazz.getName();
+                            
+                            if (name.startsWith("[") || internalClassName(name)) {  // NOI18N
+                                continue;
+                            }
+                            if (ClassBytesLoader.getClassFileURL(name) == null) {
+                                // system class without file on disk -> must be cached
+                                nonSystemClasses[nonSystemIndex++] = clazz;
+                            }
                         }
                         if (nonSystemIndex == MAX_CLASSES) {
                             cacheLoadedClasses(nonSystemClasses,nonSystemIndex);
