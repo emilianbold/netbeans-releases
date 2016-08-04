@@ -1230,6 +1230,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                         }
                     }
                 }
+                if (parent == null) {
+                    parent = jsObject.getParent();
+                }
                 parent.addProperty(jsObject.getName(), jsFunction);
                 jsFunction.setParent(parent);
             }
