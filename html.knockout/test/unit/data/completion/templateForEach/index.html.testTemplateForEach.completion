@@ -16,7 +16,6 @@ VARIABLE   $parents: Array                 [PRIVATE]  <font color=#999999>index.
 VARIABLE   $root: ko.$bindings             [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>index.html</font>
 VARIABLE   people                          [PUBLIC]   <font color=#999999>index.html</font>
-VARIABLE   undefined                       [PUBLIC]   <font color=#999999>index.html</font>
 KEYWORD    async                                      ECMAScript 7 (Experimental)
 KEYWORD    await                                      ECMAScript 7 (Experimental)
 KEYWORD    break                                      null
