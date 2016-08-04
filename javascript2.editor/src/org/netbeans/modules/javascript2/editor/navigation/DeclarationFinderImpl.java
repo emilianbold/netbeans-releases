@@ -342,6 +342,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
         if (!indexResults.isEmpty()) {
             IndexResult iResult = indexResults.get(0);
+            if (iResult.getFile() == null) {
+                return null;
+            }
             String value = iResult.getValue(Index.FIELD_OFFSET);
             int offset = Integer.parseInt(value);
             HashSet<String> alreadyThere = new HashSet<String>();
