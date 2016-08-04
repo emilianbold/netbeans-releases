@@ -330,6 +330,16 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
             returnTypes.clear();
             returnTypes.addAll(resolved);
+        } else if (getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+            Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(this, returnTypes.iterator().next());
+            returnTypes.clear();
+            returnTypes.addAll(resolved);
+        } else if (returnTypes.size() == 1) {
+            TypeUsage type = returnTypes.iterator().next();
+            if (Type.UNDEFINED.equals(type.getType()) && !type.isResolved()) {
+                returnTypes.clear();
+                returnTypes.add(new TypeUsage(type.getType(), type.getOffset(), true));
+            }
         }
          
         // parameters and type type resolving for occurrences
