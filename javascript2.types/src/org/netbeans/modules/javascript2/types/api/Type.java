@@ -62,6 +62,8 @@ public interface Type {
     static String UNDEFINED = "undefined";   //NOI18N
     static String NULL = "null";            //NOI18N
     static String OBJECT = "Object";        //NOI18N
+    static String NAN = "NaN";              // NOI18N
+    static String INFINITY = "Infinity";    // NOI18N
     
     String getType();
 
