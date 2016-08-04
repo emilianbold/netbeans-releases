@@ -85,7 +85,6 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -511,7 +510,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             Object val = insertDataModel.getValueAt(row, i);
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (DataViewUtils.isSQLConstantString(val, col)) {
+            if (val instanceof SQLConstant) {
                 insertData[i] = val;
             } else { // ELSE literals
                 insertData[i] = DBReadWriteHelper.validate(val, col);
@@ -558,8 +557,10 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             setFocusable(false);
         } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
             control0Event();
+            e.consume();
         } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
             control1Event();
+            e.consume();
         } else if (KeyStroke.getKeyStrokeForEvent(e).equals(tab)) {
         }
     }
@@ -624,21 +625,14 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (row == -1) {
             return;
         }
-        insertRecordTableUI.editCellAt(row, col);
-        TableCellEditor editor = insertRecordTableUI.getCellEditor();
-        List<DBColumn> columns = insertTable.getColumnList();
-        if (editor != null) {
-            DBColumn dbcol = columns.get(col);
-            if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                Toolkit.getDefaultToolkit().beep();
-                editor.stopCellEditing();
-            } else {
-                editor.getTableCellEditorComponent(insertRecordTableUI, null, insertRecordTableUI.isRowSelectionAllowed, row, col);
-                insertRecordTableUI.setValueAt(null, row, col);
-                editor.stopCellEditing();
-            }
-            insertRecordTableUI.setRowSelectionInterval(row, row);
+        int modelColumn = insertRecordTableUI.convertColumnIndexToModel(col);
+        DBColumn dbcol = insertRecordTableUI.getModel().getColumn(modelColumn);
+        if (dbcol.isGenerated() || !dbcol.isNullable()) {
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            insertRecordTableUI.setValueAt(null, row, col);
         }
+        insertRecordTableUI.setRowSelectionInterval(row, row);
     }
 
     private void control1Event() {
@@ -647,26 +641,14 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (row == -1) {
             return;
         }
-        insertRecordTableUI.editCellAt(row, col);
-        TableCellEditor editor = insertRecordTableUI.getCellEditor();
-        if (editor != null) {
-            List<DBColumn> columns = insertTable.getColumnList();
-            DBColumn dbcol = columns.get(col);
-            Object val = insertRecordTableUI.getValueAt(row, col);
-            if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                Toolkit.getDefaultToolkit().beep();
-                editor.stopCellEditing();
-            } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                editor.getTableCellEditorComponent(insertRecordTableUI, "", insertRecordTableUI.isRowSelectionAllowed, row, col);
-                insertRecordTableUI.setValueAt(null, row, col);
-                editor.stopCellEditing();
-            } else {
-                editor.getTableCellEditorComponent(insertRecordTableUI, "<DEFAULT>", insertRecordTableUI.isRowSelectionAllowed, row, col);
-                insertRecordTableUI.setValueAt("<DEFAULT>", row, col);
-                editor.stopCellEditing();
-            }
-            insertRecordTableUI.setRowSelectionInterval(row, row);
+        int modelColumn = insertRecordTableUI.convertColumnIndexToModel(col);
+        DBColumn dbcol = insertRecordTableUI.getModel().getColumn(modelColumn);
+        if (dbcol.isGenerated() || !dbcol.isNullable()) {
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            insertRecordTableUI.setValueAt(SQLConstant.DEFAULT, row, col);
         }
+        insertRecordTableUI.setRowSelectionInterval(row, row);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
