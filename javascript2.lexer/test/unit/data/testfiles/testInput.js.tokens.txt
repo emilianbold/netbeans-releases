@@ -30,14 +30,14 @@ OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=51, zzLexicalState=2, canF
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 IDENTIFIER      "x", la=1, st=LexerState{zzState=24, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 NUMBER          "2", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 NUMBER          "5", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 NUMBER          "6", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 OPERATOR_SEMICOLON  ";", st=LexerState{zzState=56, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
@@ -55,8 +55,8 @@ OPERATOR_PLUS   "+", la=1, st=LexerState{zzState=64, zzLexicalState=2, canFollow
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
 NUMBER          "2", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=21, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 NUMBER          "5", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 EOL             "\n", st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 EOL             "\n", st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
@@ -170,13 +170,13 @@ OPERATOR_SEMICOLON  ";", st=LexerState{zzState=56, zzLexicalState=2, canFollowLi
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 IDENTIFIER      "i", la=1, st=LexerState{zzState=43, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_LOWER  "<", la=1, st=LexerState{zzState=32, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
-WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_LOWER  "<", la=1, st=LexerState{zzState=32, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 IDENTIFIER      "count", la=1, st=LexerState{zzState=24, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 OPERATOR_SEMICOLON  ";", st=LexerState{zzState=56, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 IDENTIFIER      "i", la=1, st=LexerState{zzState=43, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
-OPERATOR_INCREMENT  "++", st=LexerState{zzState=165, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}
+OPERATOR_INCREMENT  "++", st=LexerState{zzState=165, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=53, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 WHITESPACE      " ", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], canFollowJSX=false, jsxBalances=[]}
 BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], canFollowJSX=true, jsxBalances=[]}

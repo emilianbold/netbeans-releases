@@ -538,6 +538,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
+                dataView.getSQLExecutionHelper().executeQuery();
                 Mutex.EVENT.writeAccess(new Runnable() {
                     @Override
                     public void run() {

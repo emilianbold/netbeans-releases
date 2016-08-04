@@ -257,27 +257,17 @@ final class DataViewTableUI extends ResultSetJXTable {
         if (dbcol.isGenerated() || !dbcol.isNullable()) {
             Toolkit.getDefaultToolkit().beep();
         } else {
-            Class modelClass = getModel().getColumnClass(modelColumn);
-            if (Blob.class.isAssignableFrom(modelClass)
-                    || Clob.class.isAssignableFrom(modelClass)) {
-                setValueAt(null, row, col);
-            } else {
-                setValueAt("<NULL>", row, col);
-            }
+            setValueAt(null, row, col);
         }
     }
 
     private void setCellToDefault(int row, int col) {
         int modelColumn = convertColumnIndexToModel(col);
         DBColumn dbcol = getModel().getColumn(modelColumn);
-        Object val = getValueAt(row, col);
         if (dbcol.isGenerated() || !dbcol.hasDefault()) {
             Toolkit.getDefaultToolkit().beep();
-        } else if (val != null && val instanceof String
-                && ((String) val).equals("<DEFAULT>")) {
-            setValueAt(null, row, col);
         } else {
-            setValueAt("<DEFAULT>", row, col);
+            setValueAt(SQLConstant.DEFAULT, row, col);
         }
         setRowSelectionInterval(row, row);
     }

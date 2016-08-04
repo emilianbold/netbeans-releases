@@ -582,6 +582,7 @@ public final class Model {
                 assertFired.set(true);
                 assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
             }
+            System.out.println("alreadyResolved: " + fqn);
             return;
         }
         if (!isTopObject) {

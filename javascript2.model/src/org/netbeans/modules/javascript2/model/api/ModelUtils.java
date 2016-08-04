@@ -1565,7 +1565,7 @@ public class ModelUtils {
     private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
-            "XMLHttpRequest", "JSON", "Date", "undefined", "Math",  //NOI18N
+            "XMLHttpRequest", "JSON", "Date", Type.UNDEFINED, "Math",  //NOI18N
             Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     public static boolean isKnownGLobalType(String type) {

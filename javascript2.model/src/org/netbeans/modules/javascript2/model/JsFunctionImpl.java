@@ -267,68 +267,70 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         super.resolveTypes(docHolder);
-        HashSet<String> nameReturnTypes = new HashSet<String>();
-        Collection<TypeUsage> resolved = new ArrayList();
-        for (TypeUsage type : returnTypes) {
-            if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
-                if (!type.isResolved()) {
-                    for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
-                        if (!nameReturnTypes.contains(rType.getType())) {
-                            if ("@this;".equals(type.getType())) { // NOI18N
-                                rType = new TypeUsage(rType.getType(), -1, rType.isResolved());
+        if (!(returnTypes.size() == 1 && Type.UNDEFINED.equals(returnTypes.iterator().next().getType()))) {
+            HashSet<String> nameReturnTypes = new HashSet<String>();
+            Collection<TypeUsage> resolved = new ArrayList();
+            for (TypeUsage type : returnTypes) {
+                if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
+                    if (!type.isResolved()) {
+                        for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
+                            if (!nameReturnTypes.contains(rType.getType())) {
+                                if ("@this;".equals(type.getType())) { // NOI18N
+                                    rType = new TypeUsage(rType.getType(), -1, rType.isResolved());
+                                }
+                                resolved.add(rType);
+                                nameReturnTypes.add(rType.getType());
                             }
-                            resolved.add(rType);
-                            nameReturnTypes.add(rType.getType());
                         }
-                    }
-//                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
-                } else {
-                    if (!nameReturnTypes.contains(type.getType())) {
-                        resolved.add(type);
-                        nameReturnTypes.add(type.getType());
+    //                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+                    } else {
+                        if (!nameReturnTypes.contains(type.getType())) {
+                            resolved.add(type);
+                            nameReturnTypes.add(type.getType());
+                        }
                     }
                 }
             }
-        }
-        
-        for (TypeUsage type : resolved) {
-            if (type.getOffset() > 0) {
-                String typeName = type.getType();
-                JsObject jsObject = null;
-                // at first check whether is not a parameter
-                if (typeName.indexOf('.') == -1) {
-                    JsObject parameter = null;
-                    DeclarationScope scope = this;
-                    while (scope != null && parameter == null && jsObject == null) {
-                        if (scope instanceof JsFunction) {
-                            parameter = ((JsFunction) scope).getParameter(typeName);
+
+            for (TypeUsage type : resolved) {
+                if (type.getOffset() > 0) {
+                    String typeName = type.getType();
+                    JsObject jsObject = null;
+                    // at first check whether is not a parameter
+                    if (typeName.indexOf('.') == -1) {
+                        JsObject parameter = null;
+                        DeclarationScope scope = this;
+                        while (scope != null && parameter == null && jsObject == null) {
+                            if (scope instanceof JsFunction) {
+                                parameter = ((JsFunction) scope).getParameter(typeName);
+                            }
+                            jsObject = ((JsObject) scope).getProperty(typeName);
+                            scope = scope.getParentScope();
                         }
-                        jsObject = ((JsObject) scope).getProperty(typeName);
-                        scope = scope.getParentScope();
+                        if (jsObject == null && parameter != null) {
+                            jsObject = parameter;
+                        }
+                        if (jsObject != null) {
+                            jsObject.addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeName.length()));
+                        }
                     }
-                    if (jsObject == null && parameter != null) {
-                        jsObject = parameter;
-                    }
-                    if (jsObject != null) {
-                        jsObject.addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeName.length()));
-                    }
-                }
-                if (jsObject == null) {
-                    jsObject = ModelUtils.findJsObjectByName(this, typeName);
                     if (jsObject == null) {
-                        JsObject global = ModelUtils.getGlobalObject(this);
-                        jsObject = ModelUtils.findJsObjectByName(global, typeName);
-                    }
-                    if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
-                        int index = typeName.lastIndexOf('.');
-                        int typeLength = (index > -1) ? typeName.length() - index - 1 : typeName.length();
-                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                        jsObject = ModelUtils.findJsObjectByName(this, typeName);
+                        if (jsObject == null) {
+                            JsObject global = ModelUtils.getGlobalObject(this);
+                            jsObject = ModelUtils.findJsObjectByName(global, typeName);
+                        }
+                        if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
+                            int index = typeName.lastIndexOf('.');
+                            int typeLength = (index > -1) ? typeName.length() - index - 1 : typeName.length();
+                            ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                        }
                     }
                 }
             }
+            returnTypes.clear();
+            returnTypes.addAll(resolved);
         }
-        returnTypes.clear();
-        returnTypes.addAll(resolved);
          
         // parameters and type type resolving for occurrences
         JsObject global = ModelUtils.getGlobalObject(this);

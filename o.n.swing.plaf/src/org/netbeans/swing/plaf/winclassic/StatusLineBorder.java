@@ -40,10 +40,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- /*
- * StatusLineBorder.java
- *
- * Created on March 14, 2004, 4:36 AM
  */
 
 package org.netbeans.swing.plaf.winclassic;

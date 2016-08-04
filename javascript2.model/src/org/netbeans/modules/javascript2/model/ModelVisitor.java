@@ -1209,7 +1209,26 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 jsFunction.setDeclarationName(jsObject.getDeclarationName());
                 ModelUtils.copyOccurrences(jsObject, jsFunction);
                 if (!parentHasSameName) {
-                    jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
+                    String builderName = modelBuilder.getFunctionName(fn);
+                    if (jsFunction.getParent().getProperties().remove(builderName) == null) {
+                        // we need to check, whether is not declared in a block of the parent for handling cases like:
+                        // onreadystatechange = function() {
+                        //      if (true) {
+                        //          onreadystatechange = function () {console.log("true");};
+                        //      } else {
+                        //          onreadystatechange = function () {console.log("false");};
+                        //      }
+                        // };
+                        for (JsObject property : jsFunction.getParent().getProperties().values()) {
+                            if (property.getJSKind() == JsElement.Kind.BLOCK && property.getProperties().remove(builderName) != null) {
+                                if (property.getProperties().size() == 0) {
+                                    // remove the empty block from model
+                                    property.getParent().getProperties().remove(property.getName());
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
                 parent.addProperty(jsObject.getName(), jsFunction);
                 jsFunction.setParent(parent);
@@ -2682,7 +2701,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 name.add(new Identifier(lNode.getPropertyName(), 
                         new OffsetRange(lNode.getStart(), lNode.getFinish())));
             } else if (indexNode.getIndex() instanceof IdentNode) {
-                name.add(create(parserResult, (IdentNode)indexNode.getIndex()));
+                // this is case test[variable] where we don't know the name -> return null
+                return null;
             }
         }
         return name;
@@ -2986,8 +3006,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     }
     
     private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
-        if (ModelUtils.THIS.equals(name)) {
-            // don't process this node.
+        if (ModelUtils.THIS.equals(name) || Type.UNDEFINED.equals(name)) {
+            // don't process this node and undefined
             return;
         }
         occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), modelBuilder.getCurrentWith(), isFunction, leftSite);

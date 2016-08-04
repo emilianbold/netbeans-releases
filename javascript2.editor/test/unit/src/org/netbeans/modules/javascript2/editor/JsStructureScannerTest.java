@@ -761,4 +761,12 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue262590_1() throws Exception {
         checkStructure("testfiles/ecmascript6/importExport/issue262590_1.js");
     } 
+    
+    public void testIssue267974() throws Exception {
+        checkStructure("testfiles/markoccurences/issue267974.js");
+    }
+    
+    public void testIssue267974_01() throws Exception {
+        checkStructure("testfiles/markoccurences/issue267974_01.js");
+    }
 }

@@ -59,23 +59,44 @@ public class Test_tab extends Test {
 
     private void line(int row, int start, int n) {
         Util.go(context, row, 0);
-        for (int cx = 0; cx <= 8*9; cx++) {
-            if (cx % 8 == 0)
-                context.send("|");
+        if (row == 2) {
+            context.send("    interp->run();");
+            Util.go(context, row, 5);
+            Util.attr(context, 43);         // bg -> yellow
+            Util.attr(context, 4);          // underline
+
+            context.send("A");          // should overwrite 'i'
+            if (fwd) {
+                // context.send("\\ESC[%dI", n);
+                // context.send("\\ESC[%dI", n);
+                context.send("\\HT");
+                context.send("\\HT");
+            } else {
+                // context.send("\\ESC[%dZ", n);
+                // context.send("\\ESC[%dZ", n);
+                context.send("\\HT");
+                context.send("\\HT");
+            }
+            context.send("Z");
+        } else {
+            for (int cx = 0; cx <= 8*9; cx++) {
+                if (cx % 8 == 0)
+                    context.send("|");
+                else
+                    context.send(".");
+            }
+            Util.go(context, row, start);
+
+            Util.attr(context, 43);         // bg -> yellow
+            Util.attr(context, 4);          // underline
+
+            context.send("A");
+            if (fwd)
+                context.send("\\ESC[%dI", n);
             else
-                context.send(".");
+                context.send("\\ESC[%dZ", n);
+            context.send("Z");
         }
-        Util.go(context, row, start);
-
-        Util.attr(context, 43);         // bg -> yellow
-        Util.attr(context, 4);          // underline
-
-        context.send("A");
-        if (fwd)
-            context.send("\\ESC[%dI", n);
-        else
-            context.send("\\ESC[%dZ", n);
-        context.send("Z");
 
         Util.attr(context, 0);          // reset
     }
@@ -99,6 +120,7 @@ public class Test_tab extends Test {
         int row = 2;
         int n = 1;
         line(row++, 8*1+4, n);
+        line(row++, 8*1+1, n);
         line(row++, 8*1, n);
         line(row++, 8*1-1, n);
         line(row++, 8*1-2, n);

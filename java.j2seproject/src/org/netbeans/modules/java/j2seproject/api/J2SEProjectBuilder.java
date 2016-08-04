@@ -331,64 +331,60 @@ public class J2SEProjectBuilder {
     public AntProjectHelper build() throws IOException {
         final FileObject dirFO = FileUtil.createFolder(this.projectDirectory);
         final AntProjectHelper[] h = new AntProjectHelper[1];
-        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                final SpecificationVersion sourceLevel = getSourceLevel();
-                h[0] = createProject(
-                        dirFO,
-                        name,
-                        sourceLevel,
-                        hasDefaultRoots ? "src" : null,     //NOI18N
-                        hasDefaultRoots ? "test" : null,    //NOI18N
-                        skipTests,
-                        buildXmlName,
-                        distFolder,
-                        mainClass,
-                        manifest,
-                        manifest == null,
-                        librariesDefinition,
-                        jvmArgs.toString(),
-                        toClassPathElements(compileLibraries),
-                        toClassPathElements(runtimeLibraries, ref(ProjectProperties.JAVAC_CLASSPATH,false), ref(ProjectProperties.BUILD_CLASSES_DIR,true)),
-                        platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME));   //NOI18N
-                final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
-                ProjectManager.getDefault().saveProject(p);
-                final ReferenceHelper refHelper = p.getReferenceHelper();
-                try {
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        @Override
-                        public Void run() throws Exception {
-                            registerRoots(h[0], refHelper, sourceRoots, false);
-                            registerRoots(h[0], refHelper, testRoots, true);
-                            ProjectManager.getDefault().saveProject (p);
-                            final List<Library> libsToCopy = new ArrayList<Library>();
-                            libsToCopy.addAll(getMandatoryLibraries(skipTests));
-                            libsToCopy.addAll(compileLibraries);
-                            libsToCopy.addAll(runtimeLibraries);
-                            copyRequiredLibraries(h[0], refHelper, libsToCopy);
-                            ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                            return null;
-                        }
-                    });
-                } catch (MutexException ex) {
-                    Exceptions.printStackTrace(ex.getException());
-                }
-
-                FileObject srcFolder = null;
-                if (hasDefaultRoots) {
-                    srcFolder = dirFO.createFolder("src") ; // NOI18N
-                    if (!skipTests) {
-                        dirFO.createFolder("test"); // NOI18N
+        final FileObject[] srcFolder = new FileObject[1];
+        dirFO.getFileSystem().runAtomicAction(() -> {
+            final SpecificationVersion sourceLevel = getSourceLevel();
+            h[0] = createProject(
+                    dirFO,
+                    name,
+                    sourceLevel,
+                    hasDefaultRoots ? "src" : null,     //NOI18N
+                    hasDefaultRoots ? "test" : null,    //NOI18N
+                    skipTests,
+                    buildXmlName,
+                    distFolder,
+                    mainClass,
+                    manifest,
+                    manifest == null,
+                    librariesDefinition,
+                    jvmArgs.toString(),
+                    toClassPathElements(compileLibraries),
+                    toClassPathElements(runtimeLibraries, ref(ProjectProperties.JAVAC_CLASSPATH,false), ref(ProjectProperties.BUILD_CLASSES_DIR,true)),
+                    platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME));   //NOI18N
+            final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
+            ProjectManager.getDefault().saveProject(p);
+            final ReferenceHelper refHelper = p.getReferenceHelper();
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        registerRoots(h[0], refHelper, sourceRoots, false);
+                        registerRoots(h[0], refHelper, testRoots, true);
+                        ProjectManager.getDefault().saveProject (p);
+                        final List<Library> libsToCopy = new ArrayList<Library>();
+                        libsToCopy.addAll(getMandatoryLibraries(skipTests));
+                        libsToCopy.addAll(compileLibraries);
+                        libsToCopy.addAll(runtimeLibraries);
+                        copyRequiredLibraries(h[0], refHelper, libsToCopy);
+                        ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        return null;
                     }
-                } else if (!sourceRoots.isEmpty()) {
-                    srcFolder = FileUtil.toFileObject(sourceRoots.iterator().next());
-                }
-                if ( mainClass != null && srcFolder != null) {
-                    createMainClass(mainClass, srcFolder, mainClassTemplate);
-                }
+                });
+            } catch (MutexException ex) {
+                Exceptions.printStackTrace(ex.getException());
             }
-        });
+            if (hasDefaultRoots) {
+                srcFolder[0] = dirFO.createFolder("src") ; // NOI18N
+                if (!skipTests) {
+                    dirFO.createFolder("test"); // NOI18N
+                }
+            } else if (!sourceRoots.isEmpty()) {
+                srcFolder[0] = FileUtil.toFileObject(sourceRoots.iterator().next());
+            }
+        });                    
+        if ( mainClass != null && srcFolder[0] != null) {
+            createMainClass(mainClass, srcFolder[0], mainClassTemplate);
+        }
         return h[0];
     }
 

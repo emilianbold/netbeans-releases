@@ -76,19 +76,24 @@ made subject to such option by the copyright holder.
             </folders>
             <ide-actions>
                 <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>bootstrap</target>
                 </action>
                 <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localclean</target>
                     <target>bootstrap</target>
                 </action>
                 <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localclean</target>
                 </action>
                 <action name="test">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest</target>
                 </action>
                 <action name="test.single">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest-single</target>
                     <context>
                         <property>test.class</property>
@@ -101,6 +106,7 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="debug.test.single">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest-single-nb-debug</target>
                     <context>
                         <property>test.class</property>
@@ -113,6 +119,7 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="run.single.method">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest-single</target>
                     <context>
                         <property>test.class</property>
@@ -125,6 +132,7 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="debug.single.method">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest-single-nb-debug</target>
                     <context>
                         <property>test.class</property>
@@ -137,9 +145,11 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="run">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>tryme</target>
                 </action>
                 <action name="debug">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>tryme-debug</target>
                 </action>
             </ide-actions>
