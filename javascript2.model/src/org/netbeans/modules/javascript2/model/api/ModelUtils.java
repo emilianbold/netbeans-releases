@@ -150,11 +150,13 @@ public class ModelUtils {
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
-            result = tmpObject.getProperty(name.getName());
-            if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
-                        (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
-                tmpObject.addProperty(name.getName(), result);
+            if (name != null) {
+                result = tmpObject.getProperty(name.getName());
+                if (result == null) {
+                    result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
+                            (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
+                    tmpObject.addProperty(name.getName(), result);
+                }
             }
             tmpObject = result;
         }
