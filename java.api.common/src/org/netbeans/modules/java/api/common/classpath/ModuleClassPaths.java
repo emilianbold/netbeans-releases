@@ -50,7 +50,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -71,14 +70,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ElementVisitor;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ModuleElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -563,7 +555,7 @@ final class ModuleClassPaths {
                     }
                 }
                 final JavaSource src;
-                final Collection<String> additionalRootModules;
+                final Collection<String> additionalModules;
                 if (found != null) {
                     src = JavaSource.create(
                             new ClasspathInfo.Builder(bootCp)
@@ -571,7 +563,7 @@ final class ModuleClassPaths {
                                     .setModuleCompilePath(userModules)
                                     .build(),
                             found);
-                    additionalRootModules = getAddMods();
+                    additionalModules = getAddMods();
                 } else {
                     src = JavaSource.create(
                             new ClasspathInfo.Builder(bootCp)
@@ -579,13 +571,14 @@ final class ModuleClassPaths {
                                     .setModuleCompilePath(userModules)
                                     .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
                                     .build());
-                    additionalRootModules = new HashSet<>();
+                    additionalModules = new HashSet<>();
                     if (systemModules == null) {
-                        additionalRootModules.add(MOD_JAVA_SE);
+                        additionalModules.add(MOD_JAVA_SE);
                     }
-                    additionalRootModules.addAll(getAddMods());
+                    additionalModules.addAll(getAddMods());
                 }
-                additionalRootModules.remove(MOD_ALL_UNNAMED);
+                additionalModules.remove(MOD_ALL_UNNAMED);
+                final boolean[] dependsOnUnnamed = new boolean[]{true};
                 if (src != null) {
                     try {
                         final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
@@ -594,15 +587,19 @@ final class ModuleClassPaths {
                                 cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                 final Set<URL> requires = new HashSet<>();
                                 if (cc.getFileObject() != null) {
-                                    Optional.ofNullable(parseModule(cc))
-                                            .map((m) -> collectRequiredModules(m, true, false, modulesByName))
-                                            .ifPresent(requires::addAll);
+                                    final ModuleElement myModule = parseModule(cc);
+                                    if (myModule != null) {
+                                        dependsOnUnnamed[0] = dependsOnUnnamed(myModule, true);
+                                        requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
+                                    }
                                 }
-                                for (String additionalRootModule : additionalRootModules) {
-                                    Optional.ofNullable(resolveModule(cc, additionalRootModule))
+                                if (dependsOnUnnamed[0]) {
+                                    for (String additionalRootModule : additionalModules) {
+                                        Optional.ofNullable(resolveModule(cc, additionalRootModule))
                                             .map((m) -> collectRequiredModules(m, true, true, modulesByName))
-                                            .ifPresent(requires::addAll);
-                                }                                
+                                                .ifPresent(requires::addAll);
+                                    }
+                                }
                                 resInOut.set(0, filterModules(resInOut.get(0), requires));
                             }, true);
                             res = resInOut.get(0);
@@ -610,7 +607,7 @@ final class ModuleClassPaths {
                         Exceptions.printStackTrace(ioe);
                     }
                 }
-                if (found == null || isUnnamedModuleReachable()) {
+                if (dependsOnUnnamed[0]) {
                     //Unnamed module - add legacy classpath to classpath.
                     if (legacyClassPath != null) {
                         final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
@@ -812,12 +809,8 @@ final class ModuleClassPaths {
             }
             return mods;
         }
-        
-        private boolean isUnnamedModuleReachable() {
-            return getAddMods().contains(MOD_ALL_UNNAMED);
-        }
-        
-        @NonNull
+                
+        @CheckForNull
         private static ModuleElement parseModule(@NonNull final CompilationController cc) {
             final Trees trees = cc.getTrees();
             final TreePathScanner<ModuleElement, Void> scanner = new TreePathScanner<ModuleElement, Void>() {
@@ -829,7 +822,7 @@ final class ModuleClassPaths {
             return scanner.scan(new TreePath(cc.getCompilationUnit()), null);
         }
         
-        @NonNull
+        @CheckForNull
         private static ModuleElement resolveModule(
                 @NonNull final CompilationController cc,
                 @NonNull final String moduleName) {
@@ -867,6 +860,35 @@ final class ModuleClassPaths {
                 .map(Collections::singletonList)
                 .orElseGet(Collections::emptyList);
         }
+        
+        private static boolean dependsOnUnnamed(
+                @NonNull final ModuleElement module,
+                final boolean transitive) {
+            return dependsOnUnnamed(module, transitive, true, new HashSet<>());
+        }
+        
+        private static boolean dependsOnUnnamed(
+                @NonNull final ModuleElement module,
+                final boolean transitive,
+                final boolean topLevel,
+                final Set<ModuleElement> seen) {
+            if (module.isUnnamed()) {
+                return true;
+            }
+            if (seen.add(module)) {
+                for (ModuleElement.Directive d : module.getDirectives()) {
+                    if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
+                        final ModuleElement.RequiresDirective rd = (ModuleElement.RequiresDirective) d;
+                        if (topLevel || (transitive && rd.isPublic())) {
+                            if (dependsOnUnnamed(rd.getDependency(), transitive, false, seen)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
 
         @NonNull
         private static Set<URL> collectRequiredModules(
@@ -893,7 +915,7 @@ final class ModuleClassPaths {
                 @NonNull final Map<String,URL> modulesByName,
                 @NonNull final Collection<? super ModuleElement> seen,
                 @NonNull final Collection<? super URL> c) {
-            if (module != null && !module.isUnnamed() && seen.add(module)) {
+            if (module != null && seen.add(module) && !module.isUnnamed()) {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
