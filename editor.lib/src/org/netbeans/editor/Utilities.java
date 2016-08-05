@@ -1505,10 +1505,11 @@ public class Utilities {
      *
      * @return Two components, the first one is a visual <code>JComponent</code> and
      *   the second one is the editor <code>JTextComponent</code>.
+     * @throws IllegalArgumentException when EditorKit is not found for the given mime type.
      *
      * @since 2.7
      */
-    public static JComponent [] createSingleLineEditor(String mimeType) {
+    public static JComponent [] createSingleLineEditor(String mimeType) throws IllegalArgumentException {
         assert SwingUtilities.isEventDispatchThread()
                 : "Utilities.createSingleLineEditor must be called from AWT thread only"; // NOI18N
 
