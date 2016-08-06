@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import java.io.*;
 import javax.lang.model.element.PackageElement;
 import junit.framework.Test;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
@@ -113,7 +114,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
 
-                    final RefactoringUI ui = WhereUsedQueryUI.factory().create(controller, new TreePathHandle[]{element}, null, null);
+                    final RefactoringUI ui = WhereUsedQueryUI.factory().create(controller, new TreePathHandle[]{element}, null, new NonRecursiveFolder[0]);
                     ui.getPanel(null);
                     try {
                         ui.setParameters();
