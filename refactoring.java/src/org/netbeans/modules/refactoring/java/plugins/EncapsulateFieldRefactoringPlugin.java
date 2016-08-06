@@ -710,7 +710,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         public Tree visitVariable(VariableTree node, Element field) {
             if (sourceFile == workingCopy.getFileObject()) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                EncapsulateDesc desc = fields.get(el);
+                EncapsulateDesc desc = el == null ? null : fields.get(el);
                 if (desc != null) {
                     resolveFieldDeclaration(node, desc);
                     return node;
@@ -838,7 +838,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 t = ((ArrayAccessTree) t).getExpression();
             }
             Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
-            EncapsulateDesc desc = fields.get(el);
+            EncapsulateDesc desc = el == null ? null : fields.get(el);
             if (desc != null && desc.useAccessors
                     && desc.refactoring.getGetterName() != null
                     && (isArrayOrImmutable || checkAssignmentInsideExpression())
@@ -879,7 +879,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         @Override
         public Tree visitMemberSelect(MemberSelectTree node, Element field) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            EncapsulateDesc desc = fields.get(el);
+            EncapsulateDesc desc = el == null ? null : fields.get(el);
             if (desc != null && desc.useAccessors && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
                     && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
                 ExpressionTree nodeNew = createGetterInvokation(node, desc.refactoring.getGetterName());
@@ -891,7 +891,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         @Override
         public Tree visitIdentifier(IdentifierTree node, Element field) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            EncapsulateDesc desc = fields.get(el);
+            EncapsulateDesc desc = el == null ? null : fields.get(el);
             if (desc != null && desc.useAccessors && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
                     && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
                 ExpressionTree nodeNew = createGetterInvokation(node, desc.refactoring.getGetterName());
@@ -1170,6 +1170,9 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                             return false;
                         }
                         Element m = workingCopy.getTrees().getElement(path);
+                        if (m == null) {
+                            return false;
+                        }
                         boolean result = m.getKind() == ElementKind.CONSTRUCTOR && (m.getEnclosingElement() == field.getEnclosingElement() || isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()));
                         if (m.getKind() == ElementKind.CONSTRUCTOR
                                 && m.getEnclosingElement() != field.getEnclosingElement()

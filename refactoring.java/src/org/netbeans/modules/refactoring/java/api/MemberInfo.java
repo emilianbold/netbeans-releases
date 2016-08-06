@@ -163,6 +163,9 @@ public final class MemberInfo<H> {
         String format = ElementHeaders.NAME;
         Group g = null;
         Element el = c.getTrees().getElement(tpath);
+        if (el == null) {
+            return null;
+        }
         if (el.getKind() == ElementKind.FIELD) {
             format += " : " + ElementHeaders.TYPE; // NOI18N
             g=Group.FIELD;

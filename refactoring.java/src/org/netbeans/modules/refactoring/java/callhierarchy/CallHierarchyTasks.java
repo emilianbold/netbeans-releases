@@ -235,7 +235,7 @@ final class CallHierarchyTasks {
                 Kind kind = tpath.getLeaf().getKind();
                 if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT || kind == Kind.NEW_CLASS) {
                     method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
-                    if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
+                    if (RefactoringUtils.isExecutableElement(method)) {
                         break;
                     }
                     method = null;
@@ -398,7 +398,7 @@ final class CallHierarchyTasks {
                     // initializer
                     Element enclosing = javac.getTrees().getElement(declarationPath.getParentPath());
                     BlockTree block = (BlockTree) declarationPath.getLeaf();
-                    elm = new InitializerElement(enclosing, block.isStatic());
+                    elm = enclosing == null ? null : new InitializerElement(enclosing, block.isStatic());
                 }
                 
                 if (elm == null) {
@@ -589,9 +589,8 @@ final class CallHierarchyTasks {
                 incomplete = true;
                 return;
             } 
-            if (resolved != null
-                    && !javac.getElementUtilities().isSynthetic(resolved)
-                    && (resolved.getKind() == ElementKind.METHOD || resolved.getKind() == ElementKind.CONSTRUCTOR)) {
+            if (RefactoringUtils.isExecutableElement(resolved)
+                    && !javac.getElementUtilities().isSynthetic(resolved)) {
                 addRef(resolved, tpath);
             }
         }

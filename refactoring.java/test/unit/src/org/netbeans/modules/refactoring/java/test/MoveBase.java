@@ -67,9 +67,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
  */
-public class MoveBaseTest extends RefactoringTestBase {
+public class MoveBase extends RefactoringTestBase {
 
-    public MoveBaseTest(String name) {
+    public MoveBase(String name) {
         super(name);
     }
     

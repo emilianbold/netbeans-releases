@@ -107,9 +107,11 @@ public class ReplaceConstructorWithFactoryPlugin extends JavaRefactoringPlugin {
         String factoryName = refactoring.getFactoryName();
         
         if (factoryName == null || factoryName.length() == 0) {
+            // FIXME: I18N
             return new Problem(true, "No factory method name specified.");
         }
         if (!SourceVersion.isIdentifier(factoryName)) {
+            // FIXME: I18N
             return new Problem(true, factoryName + " is not an identifier.");
         }
         return null;
@@ -132,6 +134,9 @@ public class ReplaceConstructorWithFactoryPlugin extends JavaRefactoringPlugin {
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.RESOLVED);
                     TreePath constrPath = constr.resolve(parameter);
+                    if (constrPath == null || constrPath.getLeaf().getKind() != Tree.Kind.METHOD) {
+                        return;
+                    }
                     MethodTree constructor = (MethodTree) constrPath.getLeaf();
                     TypeElement parent = (TypeElement) parameter.getTrees().getElement(constrPath.getParentPath());
                     TreeMaker make = parameter.getTreeMaker();
@@ -188,7 +193,9 @@ public class ReplaceConstructorWithFactoryPlugin extends JavaRefactoringPlugin {
                     toCode[0]+=";;";
                 }
             });
-
+            if (ruleCode[0] == null) {
+                return new Problem(true, ERR_ReplaceWrongType());
+            }
             List<ModificationResult> results = new ArrayList<ModificationResult>();
 
             results.add(mod);

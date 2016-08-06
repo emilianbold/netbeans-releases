@@ -188,7 +188,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             ExpressionTree expression = node.getExpression();
             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
             Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
-            if (enclosingElement.equals(target)) {
+            if (target.equals(enclosingElement)) {
                 IdentifierTree newIdt = make.Identifier(node.getIdentifier());
                 rewrite(node, newIdt);
             } else {
@@ -199,7 +199,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, false);
             Scope scope = workingCopy.getTrees().getScope(currentPath);
             Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
-            if (enclosingElement.equals(target)
+            if (target.equals(enclosingElement)
                     && node.getKind() == Tree.Kind.MEMBER_SELECT
                     && !scope.getEnclosingMethod().getModifiers().contains(Modifier.STATIC)) {
                 IdentifierTree newIdt = make.Identifier(((MemberSelectTree) node).getIdentifier());
@@ -237,7 +237,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             IdentifierTree it = (IdentifierTree) node;
             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
             Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
-            if (!enclosingElement.equals(target)) {
+            if (enclosingElement == null || !enclosingElement.equals(target)) {
                 ExpressionTree qualIdent = make.QualIdent(target);
                 MemberSelectTree memberSelect = make.MemberSelect(qualIdent, it.getName().toString());
                 rewrite(it, memberSelect);
@@ -304,13 +304,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
         if (el.getModifiers().contains(Modifier.STATIC)) {
             if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-                if (enclosingElement.equals(target)) {
+                if (enclosingElement != null && enclosingElement.equals(target)) {
                     newMethodSelect = make.Identifier(((MemberSelectTree) node.getMethodSelect()).getIdentifier());
                 } else {
                     newMethodSelect = make.MemberSelect(make.QualIdent(target), ((MemberSelectTree) node.getMethodSelect()).getIdentifier().toString());
                 }
             } else { // if (methodSelect.getKind() == Tree.Kind.IDENTIFIER) {
-                if (!enclosingElement.equals(target)) {
+                if (enclosingElement == null || !enclosingElement.equals(target)) {
                     newMethodSelect = make.MemberSelect(make.QualIdent(target), el);
                 } else {
                     newMethodSelect = node.getMethodSelect();
@@ -471,11 +471,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 ExpressionTree methodSelect = node.getMethodSelect();
                 if(methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
                     VariableElement element = (VariableElement) workingCopy.getTrees().getElement(new TreePath(currentPath, ((MemberSelectTree)methodSelect).getExpression()));
-                    TypeMirror asType = element.asType();
-                    if(asType.getKind() == TypeKind.DECLARED) {
-                        List<? extends TypeMirror> typeArguments1 = ((DeclaredType)asType).getTypeArguments();
-                        for (TypeMirror typeMirror : typeArguments1) {
-                            typeArguments.add((ExpressionTree)make.Type(typeMirror));
+                    if (element != null) {
+                        TypeMirror asType = element.asType();
+                        if(asType.getKind() == TypeKind.DECLARED) {
+                            List<? extends TypeMirror> typeArguments1 = ((DeclaredType)asType).getTypeArguments();
+                            for (TypeMirror typeMirror : typeArguments1) {
+                                typeArguments.add((ExpressionTree)make.Type(typeMirror));
+                            }
                         }
                     }
                 } else {
@@ -530,9 +532,16 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             for (TreePathHandle tph : allElements) {
 
                 final TreePath resolvedPath = tph.resolve(workingCopy);
+                if (resolvedPath == null) {
+                    // XXX - should report a problem ?
+                    continue;
+                }
                 Tree member = resolvedPath.getLeaf();
                 Tree newMember = null;
                 Element resolvedElement = workingCopy.getTrees().getElement(resolvedPath);
+                if (resolvedElement == null) {
+                    continue;
+                }
                 final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
                 genUtils.importComments(member, resolvedPath.getCompilationUnit());
                 // Make a new Method tree
@@ -569,7 +578,11 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         public Void visitIdentifier(IdentifierTree node, Void p) {
                             TreePath treePath = trees.getPath(bodyPath.getCompilationUnit(), node);
                             if(!workingCopy.getTreeUtilities().isSynthetic(treePath)) {
-                                fqns.put(node, make.Identifier(trees.getElement(treePath)));
+                                // FIXME: path may skip some intermediate types which bring the identifier.
+                                Element el = trees.getElement(treePath);
+                                if (el != null) {
+                                    fqns.put(node, make.Identifier(el));
+                                }
                             }
                             return super.visitIdentifier(node, p);
                         }
@@ -670,8 +683,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         };
                         TreePath path = new TreePath(resolvedPath, removedParameter);
                         Element element = trees.getElement(path);
-                        final Pair<Element, ExpressionTree> pair = Pair.of(element, workingCopy.getTreeUtilities().parseExpression("this", new SourcePositions[1])); // NOI18N
-                        idScan2.scan(body, pair);
+                        if (element != null) {
+                            final Pair<Element, ExpressionTree> pair = Pair.of(element, workingCopy.getTreeUtilities().parseExpression("this", new SourcePositions[1])); // NOI18N
+                            idScan2.scan(body, pair);
+                        }
                     }
 
                     body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2Translated);
@@ -765,12 +780,19 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             ClassTree newClassTree = classTree;
             for (TreePathHandle tph : allElements) {
                 TreePath resolvedPath = tph.resolve(workingCopy);
+                if (resolvedPath == null) {
+                    // XXX: report missing target ?
+                    continue;
+                }
                 Tree member = resolvedPath.getLeaf();
                 if (delegate && member.getKind() == Tree.Kind.METHOD) {
                     MethodTree methodTree = (MethodTree) member;
                     int index = newClassTree.getMembers().indexOf(methodTree);
                     newClassTree = make.removeClassMember(newClassTree, methodTree);
                     ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(resolvedPath);
+                    if (element == null) {
+                        continue;
+                    }
                     List<ExpressionTree> paramList = new ArrayList<ExpressionTree>();
 
                     for (VariableElement variableElement : element.getParameters()) {

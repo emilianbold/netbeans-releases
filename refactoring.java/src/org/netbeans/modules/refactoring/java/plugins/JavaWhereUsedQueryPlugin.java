@@ -261,7 +261,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                                 continue;
                             }
                             for (Element e : te.getEnclosedElements()) {
-                                if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
+                                if (RefactoringUtils.isExecutableElement(e)) {
                                     for (ExecutableElement executableElement : methods) {
                                         if (info.getElements().overrides((ExecutableElement) e, executableElement, te)) {
                                             sourceSet.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, resourceType));
