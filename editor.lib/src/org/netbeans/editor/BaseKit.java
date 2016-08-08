@@ -2561,78 +2561,83 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if(doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int dot = caretInfo.getDot();
-                                    Point p = caretInfo.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            context.setMagicCaretPosition(caretInfo, p);
-                                        } else {
-                                            return; // model to view failed
-                                        }
-                                    }
-                                    try {
-                                        dot = Utilities.getPositionAbove(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        boolean select = selectionUpAction.equals(getValue(Action.NAME));
-                                        if (select) {
-                                            context.moveDot(caretInfo, dotPos);
-                                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
                                             }
-                                        } else {
-                                            context.setDot(caretInfo, dotPos);
+                                            try {
+                                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                                                if (select) {
+                                                    context.moveDot(caretInfo, dotPos);
+                                                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                                                    }
+                                                } else {
+                                                    context.setDot(caretInfo, dotPos);
+                                                }
+                                            } catch (BadLocationException e) {
+                                                // the position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-                                    } catch (BadLocationException e) {
-                                        // the position stays the same
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
+                            );
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
-                    );
+                    });
                 } else {
-                try {
-                    int dot = caret.getDot();
-                    Point p = caret.getMagicCaretPosition();
-                    if (p == null) {
-                        Rectangle r = target.modelToView(dot);
-                        if (r!=null){
-                            p = new Point(r.x, r.y);
-                            caret.setMagicCaretPosition(p);
-                        }else{
-                            return; // model to view failed
-                        }
-                    }
                     try {
-                        dot = Utilities.getPositionAbove(target, dot, p.x);
-                        boolean select = selectionUpAction.equals(getValue(Action.NAME));
-                        if (select) {
-                            caret.moveDot(dot);
-                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                if (caret instanceof EditorCaret) {
-                                    RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
-                                }
+                        int dot = caret.getDot();
+                        Point p = caret.getMagicCaretPosition();
+                        if (p == null) {
+                            Rectangle r = target.modelToView(dot);
+                            if (r!=null){
+                                p = new Point(r.x, r.y);
+                                caret.setMagicCaretPosition(p);
+                            }else{
+                                return; // model to view failed
                             }
-                        } else {
-                            caret.setDot(dot);
                         }
-                    } catch (BadLocationException e) {
-                        // the position stays the same
+                        try {
+                            dot = Utilities.getPositionAbove(target, dot, p.x);
+                            boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                            if (select) {
+                                caret.moveDot(dot);
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    if (caret instanceof EditorCaret) {
+                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
+                                    }
+                                }
+                            } else {
+                                caret.setDot(dot);
+                            }
+                        } catch (BadLocationException e) {
+                            // the position stays the same
+                        }
+                    } catch (BadLocationException ex) {
+                        target.getToolkit().beep();
                     }
-                } catch (BadLocationException ex) {
-                    target.getToolkit().beep();
                 }
-            }
             }
         }
     }
@@ -2655,45 +2660,50 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int dot = caretInfo.getDot();
-                                    Point p = caretInfo.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            context.setMagicCaretPosition(caretInfo, p);
-                                        } else {
-                                            return; // model to view failed
-                                        }
-                                    }
-                                    try {
-                                        dot = Utilities.getPositionBelow(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        boolean select = selectionDownAction.equals(getValue(Action.NAME));
-                                        if (select) {
-                                            context.moveDot(caretInfo, dotPos);
-                                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
                                             }
-                                        } else {
-                                            context.setDot(caretInfo, dotPos);
+                                            try {
+                                                dot = Utilities.getPositionBelow(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                boolean select = selectionDownAction.equals(getValue(Action.NAME));
+                                                if (select) {
+                                                    context.moveDot(caretInfo, dotPos);
+                                                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                                                    }
+                                                } else {
+                                                    context.setDot(caretInfo, dotPos);
+                                                }
+                                            } catch (BadLocationException e) {
+                                                // position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-                                    } catch (BadLocationException e) {
-                                        // position stays the same
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
+                            );
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
-                    );
+                    });
                 } else {
                 try {
                     int dot = caret.getDot();
