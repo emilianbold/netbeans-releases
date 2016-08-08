@@ -57,8 +57,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -236,16 +238,18 @@ public class CompilationInfo {
         }
         final List<TypeElement> result = new ArrayList<TypeElement>();
         if (this.impl.isClassFile()) {
-            Elements elements = getElements();
+            final JavacElements elements = (JavacElements) getElements();
             assert elements != null;
             assert this.impl.getRoot() != null;
-            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(this.impl.getRoot(), this.impl.getFileObject())));
-            TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
+            final String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(this.impl.getRoot(), this.impl.getFileObject())));
+            final TypeElement e = Optional.ofNullable(SourceUtils.getModuleName(impl.getRoot().toURL(), true))
+                    .map(elements::getModuleElement)
+                    .map((module) -> elements.getTypeElementByBinaryName(module, name))
+                    .orElseGet(() -> elements.getTypeElementByBinaryName(name));
             if (e != null) {                
                 result.add (e);
             }
-        }
-        else {
+        } else {
             CompilationUnitTree cu = getCompilationUnit();
             if (cu == null) {
                 return null;
