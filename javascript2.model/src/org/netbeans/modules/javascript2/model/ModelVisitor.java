@@ -239,7 +239,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     // probably we are in global space and there is used this
                     property = modelBuilder.getGlobal().getProperty(iNode);
                 }
-                if (property != null) {
+                if (property != null && !property.getModifiers().contains(Modifier.PRIVATE)) {
+                    // we don't want to add occurrences for cases like var buf = this.buf. See issue #267694
                     ((JsObjectImpl)property).addOccurrence(new OffsetRange(accessNode.getFinish() - iNode.length(), accessNode.getFinish()));
                 }
             }

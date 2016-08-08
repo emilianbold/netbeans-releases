@@ -2227,6 +2227,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue246239.js", "c^tl.value = type;", true);
     }
     
+    public void testIssue267694_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var bu^f = this.buf;", true);
+    }
+    
+    public void testIssue267694_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var buf = this.bu^f;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
