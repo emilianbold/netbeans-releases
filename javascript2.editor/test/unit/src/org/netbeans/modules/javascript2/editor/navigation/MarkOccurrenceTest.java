@@ -2219,6 +2219,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue254189.js", "this.methodB = metho^dB;", true);
     }
     
+    public void testIssue246239_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "var type = ct^l.options.selectedIndex,", true);
+    }
+    
+    public void testIssue246239_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "c^tl.value = type;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
