@@ -66,6 +66,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -127,12 +128,14 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
             @NonNull final ClassPath systemModules,
-            @NonNull final SourceRoots sourceRoots) {
+            @NonNull final SourceRoots sourceRoots,
+            @NullAllowed final Function<URL,Boolean> filter) {
         return new ModuleInfoClassPathImplementation(
                 systemModules,
                 sourceRoots,
                 null,
-                null);
+                null,
+                filter);
     }
 
     @NonNull
@@ -140,14 +143,16 @@ final class ModuleClassPaths {
             @NonNull final ClassPath modulePath,
             @NonNull final SourceRoots sourceRoots,
             @NonNull final ClassPath systemModules,
-            @NonNull final ClassPath legacyClassPath) {
+            @NonNull final ClassPath legacyClassPath,
+            @NullAllowed final Function<URL,Boolean> filter) {
         Parameters.notNull("systemModules", systemModules); //NOI18N
         Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
         return new ModuleInfoClassPathImplementation(
                 modulePath,
                 sourceRoots,
                 systemModules,
-                legacyClassPath);
+                legacyClassPath,
+                filter);
     }
 
     @NonNull
@@ -421,6 +426,7 @@ final class ModuleClassPaths {
         private final SourceRoots sources;
         private final ClassPath systemModules;
         private final ClassPath legacyClassPath;
+        private final Function<URL,Boolean> filter;
         private final ThreadLocal<Object[]> selfRes;
         private final AtomicReference<CompilerOptionsQuery.Result> compilerOptions;
 
@@ -435,7 +441,8 @@ final class ModuleClassPaths {
                 @NonNull final ClassPath base,
                 @NonNull final SourceRoots sources,
                 @NullAllowed final ClassPath systemModules,
-                @NullAllowed final ClassPath legacyClassPath) {
+                @NullAllowed final ClassPath legacyClassPath,
+                @NullAllowed final Function<URL,Boolean> filter) {
             super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
@@ -443,6 +450,9 @@ final class ModuleClassPaths {
             this.sources = sources;
             this.systemModules = systemModules;
             this.legacyClassPath = legacyClassPath;
+            this.filter = filter == null ?
+                    (url) -> null :
+                    filter;
             this.selfRes = new ThreadLocal<>();
             this.compilerOptions = new AtomicReference<>();
             this.moduleInfos = Collections.emptyList();
@@ -600,7 +610,7 @@ final class ModuleClassPaths {
                                                 .ifPresent(requires::addAll);
                                     }
                                 }
-                                resInOut.set(0, filterModules(resInOut.get(0), requires));
+                                resInOut.set(0, filterModules(resInOut.get(0), requires, filter));
                             }, true);
                             res = resInOut.get(0);
                     } catch (IOException ioe) {
@@ -943,11 +953,13 @@ final class ModuleClassPaths {
         @NonNull
         private static List<PathResourceImplementation> filterModules(
                 @NonNull List<PathResourceImplementation> modules,
-                @NonNull Set<URL> requires) {
+                @NonNull Set<URL> requires,
+                @NonNull final Function<URL,Boolean> filter) {
             final List<PathResourceImplementation> res = new ArrayList<>(modules.size());
             for (PathResourceImplementation pr : modules) {
                 for (URL url : pr.getRoots()) {
-                    if (requires.contains(url)) {
+                    final Boolean vote = filter.apply(url);
+                    if (vote == Boolean.TRUE || (vote == null && requires.contains(url))) {
                         res.add(pr);
                     }
                 }
