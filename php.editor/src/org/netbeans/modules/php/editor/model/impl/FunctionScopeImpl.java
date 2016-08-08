@@ -352,26 +352,28 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Collection<? extends TypeScope> returnTypes = getReturnTypes();
-        sb.append('[');
-        for (TypeScope typeScope : returnTypes) {
-            if (sb.length() == 1) {
-                sb.append(TYPE_SEPARATOR); //NOI18N
-            }
-            sb.append(typeScope.getName());
-        }
-        sb.append("] "); //NOI18N
-        sb.append(super.toString()).append("("); //NOI18N
+        sb.append(super.toString()).append('('); // NOI18N
         List<? extends String> parameters = getParameterNames();
         for (int i = 0; i < parameters.size(); i++) {
             String param = parameters.get(i);
             if (i > 0) {
-                sb.append(","); //NOI18N
+                sb.append(',').append(' '); // NOI18N
             }
             sb.append(param);
         }
-        sb.append(")"); //NOI18N
-
+        sb.append(')'); // NOI18N
+        Collection<? extends TypeScope> returnTypes = getReturnTypes();
+        sb.append(':'); // NOI18N
+        boolean first = true;
+        for (TypeScope typeScope : returnTypes) {
+            if (first) {
+                first = false;
+                sb.append(' '); // NOI18N
+            } else {
+                sb.append(TYPE_SEPARATOR);
+            }
+            sb.append(typeScope.getName());
+        }
         return sb.toString();
     }
 

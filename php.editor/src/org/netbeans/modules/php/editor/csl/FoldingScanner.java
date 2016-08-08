@@ -44,8 +44,10 @@ package org.netbeans.modules.php.editor.csl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
@@ -235,18 +237,21 @@ public final class FoldingScanner {
         return ranges;
     }
 
-    private List<Scope>  getEmbededScopes(Scope scope, List<Scope> collectedScopes) {
+    private List<Scope>  getEmbededScopes(Scope scope, Set<Scope> collectedScopes) {
         if (collectedScopes == null) {
-            collectedScopes = new ArrayList<>();
+            collectedScopes = new HashSet<>();
         }
         List<? extends ModelElement> elements = scope.getElements();
         for (ModelElement element : elements) {
             if (element instanceof Scope) {
-                collectedScopes.add((Scope) element);
-                getEmbededScopes((Scope) element, collectedScopes);
+                if (collectedScopes.add((Scope) element)) {
+                    // #258713 - scopes can be duplicated, typically anonymous classes;
+                    // (we must scan all method bodies for them so they appear twice here)
+                    getEmbededScopes((Scope) element, collectedScopes);
+                }
             }
         }
-        return collectedScopes;
+        return new ArrayList<>(collectedScopes);
     }
 
     private class FoldingVisitor extends DefaultVisitor {
