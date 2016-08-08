@@ -333,7 +333,7 @@ public final class J2SEModularProject implements Project {
             QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
-//            new RecommendedTemplatesImpl (this.updateHelper),
+            new RecommendedTemplatesImpl(),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
@@ -469,140 +469,29 @@ public final class J2SEModularProject implements Project {
 //        }
 //
 //    }
-//
-//    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates, TemplateCategorySorter {
-//        RecommendedTemplatesImpl (UpdateHelper helper) {
-//            this.helper = helper;
-//        }
-//
-//        private UpdateHelper helper;
-//
-//        // List of primarily supported templates
-//
-//        private static final String[] APPLICATION_TYPES = new String[] {
-//            "java-classes",         // NOI18N
-//            "java-main-class",      // NOI18N
-//            "java-forms",           // NOI18N
-//            "gui-java-application", // NOI18N
-//            "java-beans",           // NOI18N
-//            "persistence",          // NOI18N
-//            "oasis-XML-catalogs",   // NOI18N
-//            "XML",                  // NOI18N
-//            "ant-script",           // NOI18N
-//            "ant-task",             // NOI18N
-//            "web-service-clients",  // NOI18N
-//            "REST-clients",         // NOI18N
-//            "wsdl",                 // NOI18N
-//            // "servlet-types",     // NOI18N
-//            // "web-types",         // NOI18N
-//            "junit",                // NOI18N
-//            // "MIDP",              // NOI18N
-//            "simple-files"          // NOI18N
-//        };
-//
-//        private static final String[] LIBRARY_TYPES = new String[] {
-//            "java-classes",         // NOI18N
-//            "java-main-class",      // NOI18N
-//            "java-forms",           // NOI18N
-//            //"gui-java-application", // NOI18N
-//            "java-beans",           // NOI18N
-//            "persistence",          // NOI18N
-//            "oasis-XML-catalogs",   // NOI18N
-//            "XML",                  // NOI18N
-//            "ant-script",           // NOI18N
-//            "ant-task",             // NOI18N
-//            "servlet-types",        // NOI18N
-//            "servlet-types-j2se-only",// NOI18N
-//            "web-service-clients",  // NOI18N
-//            "REST-clients",         // NOI18N
-//            "wsdl",                 // NOI18N
-//            // "web-types",         // NOI18N
-//            "junit",                // NOI18N
-//            // "MIDP",              // NOI18N
-//            "simple-files"         // NOI18N
-//        };
-//
-//        private static final String[] PRIVILEGED_NAMES = new String[] {
-//            "Templates/Classes/Class.java", // NOI18N
-//            "Templates/Classes/Package", // NOI18N
-//            "Templates/Classes/Interface.java", // NOI18N
-//            "Templates/GUIForms/JPanel.java", // NOI18N
-//            "Templates/GUIForms/JFrame.java", // NOI18N
-//            "Templates/Persistence/Entity.java", // NOI18N
-//            "Templates/Persistence/RelatedCMP", // NOI18N
-//            "Templates/WebServices/WebServiceClient"   // NOI18N
-//        };
-//
-//        private static final Map<String,Integer>  CAT_MAP;
-//        static {
-//            final Map<String,Integer> m = new HashMap<>();
-//            m.put("Classes",0);     //NOI18N
-//            m.put("GUIForms",1);    //NOI18N
-//            m.put("Beans",2);       //NOI18N
-//            m.put("AWTForms",3);    //NOI18N
-//            m.put("UnitTests",4);   //NOI18N
-//            CAT_MAP = Collections.unmodifiableMap(m);
-//        };
-//
-//        @Override
-//        public String[] getRecommendedTypes() {            
-//            return isLibrary() ? LIBRARY_TYPES : APPLICATION_TYPES;
-//        }
-//
-//        @Override
-//        public String[] getPrivilegedTemplates() {
-//            return PRIVILEGED_NAMES;
-//        }
-//
-//        @Override
-//        @NonNull
-//        public List<DataObject> sort(@NonNull final List<DataObject> original) {
-//            if (!isLibrary()) {
-//                return original;
-//            }
-//            final List<DataObject> result = new ArrayList<>(Collections.<DataObject>nCopies(CAT_MAP.size(), null));
-//            for (DataObject dobj : original) {
-//                final String name = dobj.getName();
-//                final Integer index = CAT_MAP.get(name);
-//                if (index == null) {
-//                    result.add(dobj);
-//                } else {
-//                    result.set (index, dobj);
-//                }
-//            }
-//            return filterNulls(result);
-//        }
-//
-//        @NonNull
-//        private List<DataObject> filterNulls(@NonNull final List<DataObject> list) {
-//            boolean hasNull = false;
-//            for (int i=0; i<CAT_MAP.size(); i++) {
-//                if (list.get(i) == null) {
-//                    hasNull = true;
-//                    break;
-//                }
-//            }
-//            if (!hasNull) {
-//                //No copy needed
-//                return list;
-//            }
-//            final List<DataObject> result = new ArrayList<>(list.size());
-//            for (DataObject dobj : list) {
-//                if (dobj != null) {
-//                    result.add(dobj);
-//                }
-//            }
-//            return result;
-//        }
-//
-//        private boolean isLibrary() {
-//            final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//            // if the project has no main class, it's not really an application
-//            return ep.getProperty (ProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (ProjectProperties.MAIN_CLASS)); // NOI18N
-//        }
-//
-//    }
-//
+
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+
+        // List of primarily supported templates
+        private static final String[] TEMPLATES = new String[] {
+            "simple-files"          // NOI18N
+        };
+
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/J2SEModule/module-info.java" // NOI18N
+        };
+
+        @Override
+        public String[] getRecommendedTypes() {            
+            return TEMPLATES;
+        }
+
+        @Override
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+    }
+
 //    private static final class J2SEPropertyEvaluatorImpl implements J2SEPropertyEvaluator {
 //        private PropertyEvaluator evaluator;
 //        public J2SEPropertyEvaluatorImpl (PropertyEvaluator eval) {

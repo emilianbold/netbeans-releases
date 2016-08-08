@@ -46,6 +46,11 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
+    <folder name="Templates">
+        <folder name="J2SEModule">
+            <attr name="simple" boolvalue="false"/> <!-- do not show this in regular temlate wizard -->
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2semodule">
             <folder name="Nodes">
@@ -53,7 +58,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
-<!--            <folder name="Lookup"/>
+<!--            <folder name="Lookup"/>-->
             <folder name="Actions">
                 <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>
@@ -75,7 +80,7 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
                     <attr name="position" intvalue="500"/>
                 </file>
-                <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
+<!--                <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-JavadocProject.instance"/>
                     <attr name="position" intvalue="600"/>
                 </file>
@@ -154,8 +159,8 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
                     <attr name="position" intvalue="2700"/>
-                </file>
-            </folder>-->
+                </file>-->
+            </folder>
         </folder>
     </folder>
     <folder name="ProjectXMLCatalog">
