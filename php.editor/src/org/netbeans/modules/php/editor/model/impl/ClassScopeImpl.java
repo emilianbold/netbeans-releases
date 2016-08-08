@@ -92,7 +92,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     private final Collection<QualifiedName> usedTraits = new HashSet<>();
     private final Set<? super TypeScope> superRecursionDetection = new HashSet<>();
     private final Set<? super TypeScope> subRecursionDetection = new HashSet<>();
-    private Union2<String, List<ClassScopeImpl>> superClass;
+    private final Union2<String, List<ClassScopeImpl>> superClass;
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -123,6 +123,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             }
             if (superClassName != null) {
                 this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            } else {
+                this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
             }
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
@@ -146,6 +148,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             }
             if (superClassName != null) {
                 this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            } else {
+                this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
             }
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
