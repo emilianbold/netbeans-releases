@@ -67,6 +67,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
@@ -336,7 +337,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
             }
         }
         final List<Pair<Pair<String, Icon>, TreePathHandle>> classes;
-        if(el.getKind() == ElementKind.CONSTRUCTOR || el.getKind() == ElementKind.METHOD) {
+        if(RefactoringUtils.isExecutableElement(el)) {
             ExecutableElement method = (ExecutableElement) el;
             classes = new LinkedList<Pair<Pair<String, Icon>, TreePathHandle>>();
             Element enclosingElement = method.getEnclosingElement();

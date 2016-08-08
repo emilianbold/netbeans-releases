@@ -99,6 +99,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             return null;
         }
         Element current = getCurrentElement();
+        if (current == null) {
+            return null;
+        }
         if (inner.equals(current)) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
@@ -171,7 +174,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 boolean removeEnclosingExpression = false;
                 if(enclosingExpression != null) {
                     Element enclosingElement = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), enclosingExpression));
-                    if(workingCopy.getTypes().isSameType(enclosingElement.asType(), outer.asType())) {
+                    if(enclosingElement != null && workingCopy.getTypes().isSameType(enclosingElement.asType(), outer.asType())) {
                         thisString = enclosingExpression.toString();
                         removeEnclosingExpression = true;
                     }
@@ -243,12 +246,15 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     public Tree visitMethod(MethodTree constructor, Element element) {
         if (constructor.getReturnType()==null) {
             //constructor
-            if (refactoring.getReferenceName() != null && !inner.equals(getCurrentClass()) && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
-                MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this"); // NOI18N
-                MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
-                int index = hasVarArgs(constructor) ? constructor.getParameters().size() - 1 : 0;
-                MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, index, arg);
-                rewrite(superCall, newSuperCall);
+            if (refactoring.getReferenceName() != null && !inner.equals(getCurrentClass())) {
+                Element current = getCurrentElement();
+                if (current != null && workingCopy.getTypes().isSubtype(current.getEnclosingElement().asType(), inner.asType())) {
+                    MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this"); // NOI18N
+                    MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
+                    int index = hasVarArgs(constructor) ? constructor.getParameters().size() - 1 : 0;
+                    MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, index, arg);
+                    rewrite(superCall, newSuperCall);
+                }
             }
             
         }
@@ -258,6 +264,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     @Override
     public Tree visitClass(ClassTree classTree, Element element) {
         Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
+        if (currentElement == null) {
+            return super.visitClass(classTree, element);
+        }
         GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper        
         if (currentElement!=null && currentElement == outer) {
             Element outerouter = outer.getEnclosingElement();
@@ -412,6 +421,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     @Override
     public Tree visitMemberSelect(MemberSelectTree memberSelect, Element element) {
         Element current = getCurrentElement();
+        if (current == null) {
+            return super.visitMemberSelect(memberSelect, inner);
+        }
         if (inner.equals(current)) {
             ExpressionTree ex = memberSelect.getExpression();
             Tree newTree;
@@ -438,7 +450,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         } else if (isThisReferenceToOuter() && isThisInInner()) {
             if (current.getModifiers().contains(Modifier.PRIVATE)) {
-                referencedPrivateElement.add(getCurrentElement());
+                referencedPrivateElement.add(current);
             }
             if (!"class".equals(memberSelect.getIdentifier().toString()) && !current.getModifiers().contains(Modifier.STATIC)) { //NOI18N)
                 if (refactoring.getReferenceName()!=null) {

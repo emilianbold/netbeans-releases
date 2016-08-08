@@ -131,9 +131,13 @@ public class PushDownTransformer extends RefactoringVisitor {
     public Tree visitMemberSelect(MemberSelectTree node, Element source) {
         // Check if from visitClass and return changed tree, otherwise rewrite
         final Element el = workingCopy.getTrees().getElement(getCurrentPath());
+        if (el == null) {
+            // fail fast
+            return super.visitMemberSelect(node, source);
+        }
         for (int i = 0; i<members.length; i++) {
             Element member = members[i].getElementHandle().resolve(workingCopy);
-            if (el != null && el.equals(member)) {
+            if (el.equals(member)) {
                 String isSuper = node.getExpression().toString();
                 if (isSuper.equals("super") || isSuper.endsWith(".super")) { //NOI18N
                     
@@ -337,6 +341,9 @@ public class PushDownTransformer extends RefactoringVisitor {
         // Remove implements
         for (Tree t: tree.getImplementsClause()) {
             Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
+            if (currentInterface == null) {
+                continue;
+            }
             for (int i=0; i<members.length; i++) {
                 if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
                     njuClass = make.removeClassImplementsClause(njuClass, t);
@@ -345,9 +352,9 @@ public class PushDownTransformer extends RefactoringVisitor {
         }
         
         for (Tree t: njuClass.getMembers()) {
+            Element current = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
             for (int i=0; i<members.length; i++) {
-                Element current = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
-                if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current!=null && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
                     if (members[i].isMakeAbstract()) {
                         if (el.getKind().isClass()) {
                             
@@ -410,7 +417,7 @@ public class PushDownTransformer extends RefactoringVisitor {
 
             private void check() throws IllegalArgumentException {
                 Element thisElement = workingCopy.getTrees().getElement(getCurrentPath());
-                if (thisElement.getKind()!=ElementKind.PACKAGE && workingCopy.getElementUtilities().enclosingTypeElement(thisElement) == el.getEnclosingElement()) {
+                if (thisElement != null && thisElement.getKind()!=ElementKind.PACKAGE && workingCopy.getElementUtilities().enclosingTypeElement(thisElement) == el.getEnclosingElement()) {
                     Tree tree = workingCopy.getTrees().getTree(thisElement);
                     if (thisElement.getKind().isField() && tree!=null) {
                         makeProtectedIfPrivate(((VariableTree) tree).getModifiers());

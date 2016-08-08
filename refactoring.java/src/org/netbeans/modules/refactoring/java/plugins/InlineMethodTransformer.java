@@ -180,7 +180,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         final TreePath methodInvocationPath = getCurrentPath();
         Element el = trees.getElement(methodInvocationPath);
 //        TypeMirror tm = workingCopy.getTrees().getTypeMirror(getCurrentPath());
-        if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
+        if (el != null && el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
             List<? extends VariableTree> parameters = methodTree.getParameters();
             BlockTree body = methodTree.getBody();
 
@@ -205,7 +205,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         Tree value = super.visitMethodInvocation(node, methodElement);
         final TreePath methodInvocationPath = getCurrentPath();
         Element el = trees.getElement(methodInvocationPath);
-        if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
+        if (el != null && el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
             GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
             ExecutableElement method = (ExecutableElement) el;
             List<StatementTree> newStatementList = new LinkedList<>();
@@ -553,7 +553,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 TreePath path = trees.getPath(compilationUnitTree, node);
                 if (path != null) {
                     Element variable = trees.getElement(path);
-                    if (!(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement) variable))) {
+                    if (variable != null && !(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement) variable))) {
                         String varName = node.getName().toString();
                         String uniqueName = JavaPluginUtils.makeNameUnique(workingCopy,
                                                        workingCopy.getTrees().getScope(methodInvocationPath), varName, definedIds);

@@ -173,6 +173,9 @@ public final class EncapsulateFieldUI implements RefactoringUI {
      */
     private static TreePathHandle resolveSourceType(TreePathHandle selectedObject, CompilationInfo javac) {
         TreePath selectedField = selectedObject.resolve(javac);
+        if (selectedField == null) {
+            return null;
+        }
         Element elm = javac.getTrees().getElement(selectedField);
         TypeElement encloser = null;
         if (elm != null && ElementKind.FIELD == elm.getKind()

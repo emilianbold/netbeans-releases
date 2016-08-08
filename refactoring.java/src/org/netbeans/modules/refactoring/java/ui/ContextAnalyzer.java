@@ -157,7 +157,7 @@ public final class ContextAnalyzer {
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     if (!created) {
                         if(handles.isEmpty() && selectedElements.length > 0 && "package-info".equals(selectedElements[0].getName())) {
-                            ui = factory.create(null, new TreePathHandle[]{}, selectedElements, null);
+                            ui = factory.create(null, new TreePathHandle[]{}, selectedElements, new NonRecursiveFolder[0]);
                         } else {
                             ui = factory.create(null, handles.toArray(new TreePathHandle[handles.size()]), selectedElements, pkg.toArray(new NonRecursiveFolder[pkg.size()]));
                         }

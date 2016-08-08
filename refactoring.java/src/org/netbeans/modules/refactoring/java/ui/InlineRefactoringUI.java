@@ -142,15 +142,18 @@ public class InlineRefactoringUI implements RefactoringUI {
                     case NULL_LITERAL:
                     case STRING_LITERAL:
                         TreePath tp = selectedElement.resolve(info);
+                        if (tp == null) {
+                            return null;
+                        }
                         TreePath parent = tp.getParentPath();
                         Element parentElement = info.getTrees().getElement(parent);
-                        if (parentElement.getKind() == ElementKind.LOCAL_VARIABLE) {
+                        if (parentElement != null && parentElement.getKind() == ElementKind.LOCAL_VARIABLE) {
                             selectedElement = TreePathHandle.create(parent, info);
                         }
                         break;
                 }
                 TreePath path = selectedElement.resolve(info);
-                if(info.getTreeUtilities().isSynthetic(path)) {
+                if(path == null || info.getTreeUtilities().isSynthetic(path)) {
                     return null;
                 }
                 Element element = info.getTrees().getElement(path);

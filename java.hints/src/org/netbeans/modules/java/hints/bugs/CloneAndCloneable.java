@@ -174,6 +174,21 @@ public class CloneAndCloneable {
                 return null;
             }
         }
+        // check if the overriden clone method declares CNSE - if not, the body code may not throw
+        // the exception and adding throws clause would break the code:
+        ExecutableElement ee = info.getElementUtilities().getOverriddenMethod(cloneMethod);
+        boolean superThrows = ee == null;
+        if (ee != null) {
+            for (TypeMirror m : ee.getThrownTypes()) {
+                if (info.getTypes().isSameType(cnse, m)) {
+                    superThrows = true;
+                    break;
+                }
+            }
+        }
+        if (!superThrows) {
+            return null;
+        }
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), 
                 TEXT_CloneWithoutCloneNotSupported(), 

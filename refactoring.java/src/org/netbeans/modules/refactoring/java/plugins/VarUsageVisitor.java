@@ -194,14 +194,15 @@ class VarUsageVisitor extends RefactoringVisitor {
         List<? extends VariableTree> parameters = node.getParameters();
         for (VariableTree variableTree : parameters) {
             Element var = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variableTree));
-            if(p.equals(var)) {
+            ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
+            if(p.equals(var) && element != null) {
+                // if var is != null then the enclosing method and class must exist as well.
                 TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
                 List<ExecutableElement> methods = ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(classElement));
                 String methodName = node.getName().toString();
                 for (ExecutableElement method : methods) {
                         if(methodName.equals(method.getSimpleName().toString())
                         && node.getParameters().size() == method.getParameters().size()) {
-                    ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
                     boolean sameParameters = true;
                     for (int j = 0; j < node.getParameters().size(); j++) {
                         TypeMirror exType = ((VariableElement)method.getParameters().get(j)).asType();

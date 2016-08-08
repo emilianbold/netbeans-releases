@@ -76,6 +76,10 @@ public final class JavaPluginUtils {
     private static final Logger LOG = Logger.getLogger(JavaPluginUtils.class.getName());
 
     public static Problem isSourceElement(Element el, CompilationInfo info) {
+        if (el == null) {
+            // XXX: shouldn't we create a problem ? How ?
+            return null;
+        }
         Problem preCheckProblem;
         Element typeElement;
         if(el.getKind() != ElementKind.PACKAGE) {
