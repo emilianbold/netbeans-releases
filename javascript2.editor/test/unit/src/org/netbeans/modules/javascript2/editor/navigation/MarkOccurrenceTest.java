@@ -2235,6 +2235,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue267694.js", "var buf = this.bu^f;", true);
     }
     
+    public void testIssue252755_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var bu^f = this.buf,", true);
+    }
+    
+    public void testIssue252755_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var buf = this.b^uf,", true);
+    }
+    
+    public void testIssue252755_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_02.js", "var coo^rd;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
