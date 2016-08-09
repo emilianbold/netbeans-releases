@@ -1417,15 +1417,18 @@ public final class GeneratorUtilities {
             TokenSequence<JavaTokenId> seq = tokens.tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = original;
+            Tree mapTarget = null;
             
             if (tp != null && original.getKind() != Kind.COMPILATION_UNIT) {
                 // find some 'nice' place like method/class/field so the comments get an appropriate contents
                 // Javadocs or other comments may be assigned inappropriately with wider surrounding contents.
                 TreePath p2 = tp;
+                boolean first = true;
                 B: while (p2 != null) {
                     Tree.Kind k = p2.getLeaf().getKind();
-                    toMap = p2.getLeaf();
                     if (StatementTree.class.isAssignableFrom(k.asInterface())) {
+                        mapTarget = p2.getLeaf();
+                        p2 = p2.getParentPath();
                         break;
                     }
                    switch (p2.getLeaf().getKind()) {
@@ -1433,16 +1436,29 @@ public final class GeneratorUtilities {
                        case METHOD:
                        case BLOCK:
                        case VARIABLE:
+                           if (mapTarget == null) {
+                               mapTarget = p2.getLeaf();
+                           }
+                           if (first) {
+                               p2 = p2 = p2.getParentPath();
+                           }
                            break B;
                    } 
+                   first = false;
                    p2 = p2.getParentPath();
+                }
+                if (p2 != null) {
+                    toMap = p2.getLeaf();
                 }
                 if (toMap == tp.getLeaf()) {
                     // go at least one level up in a hope it's sufficient.
                     toMap = tp.getParentPath().getLeaf();
                 }
             }
-            AssignComments translator = new AssignComments(info, original, seq, unit);
+            if (mapTarget == null) {
+                mapTarget = original;
+            }
+            AssignComments translator = new AssignComments(info, mapTarget, seq, unit);
             
             translator.scan(toMap, null);
 
