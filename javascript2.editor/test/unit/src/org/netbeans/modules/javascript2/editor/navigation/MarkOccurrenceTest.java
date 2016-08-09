@@ -2247,6 +2247,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue252755_02.js", "var coo^rd;", true);
     }
     
+    public void testIssue223970_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223970.js", "wrapper.pers.ru^n(); // place cursor here to inside run", true);
+    }
+    
+    public void testIssue223970_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223970.js", "wrapper.pe^rs.run(); // place cursor here to inside run", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
