@@ -275,6 +275,12 @@ public class WildflyManagementAPI {
         return method.invoke(modelNode, toAddModelNode);
     }
 
+    static Object addModelNodeChildString(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, String toAddModelNode) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+        Method method = modelNode.getClass().getMethod("add", String.class);
+        return method.invoke(modelNode, toAddModelNode);
+    }
+
     static boolean modelNodeIsDefined(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("isDefined", (Class<?>[]) null);

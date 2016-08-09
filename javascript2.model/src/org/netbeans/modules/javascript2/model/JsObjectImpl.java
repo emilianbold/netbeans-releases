@@ -641,6 +641,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 moveOccurrenceOfProperties((JsObjectImpl) prototype, created);
             }
         }
+        
+        if (!original.getAssignments().isEmpty() && created.getAssignments().isEmpty()) {
+            // we are add type to help resolve other properties. 
+            for(TypeUsage type : original.getAssignments()) {
+                created.addAssignment(type, -1);
+            }
+        }
 
     }
 
