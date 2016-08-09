@@ -116,7 +116,7 @@ import org.openide.util.lookup.ServiceProvider;
     "ColorCustomizer_ColorHint=Select to define custom color, unselect to use the default color",
     "ColorCustomizer_Value=Value:",
     "ColorCustomizer_AddCaption=Add Filter",
-    "ColorCustomizer_EditCaption=EditFilter",
+    "ColorCustomizer_EditCaption=Edit Filter",
     "ColorCustomizer_ColorCaption=Choose Filter Color"
 })
 @ServiceProvider( service = ProfilerOptionsPanel.class, position = 15 )

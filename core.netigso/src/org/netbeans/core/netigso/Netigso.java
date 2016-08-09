@@ -634,7 +634,7 @@ implements Cloneable, Stamps.Updater {
             for (Map.Entry<Object, Object> entry : p.entrySet()) {
                 String k = (String)entry.getKey();
                 String v = (String)entry.getValue();
-                registered.put(k, v.split(","));
+                registered.put(k, v.trim().isEmpty() ? EMPTY : v.split(","));
                 LOG.log(Level.FINE, "readBundle: {0}", k);
             }
         } catch (IOException ex) {
