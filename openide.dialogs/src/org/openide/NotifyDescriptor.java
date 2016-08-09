@@ -46,6 +46,7 @@ package org.openide;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -269,6 +270,7 @@ public class NotifyDescriptor extends Object {
     public NotifyDescriptor(
         Object message, String title, int optionType, int messageType, Object[] options, Object initialValue
     ) {
+        checkMessageValidity(message);
         this.message = message;
         this.messageType = messageType;
         this.options = options;
@@ -347,6 +349,7 @@ public class NotifyDescriptor extends Object {
     * @see #getMessage
     */
     public void setMessage(Object newMessage) {
+        checkMessageValidity(newMessage);
         Object oldMessage = message;
 
         if (newMessage instanceof String) {
@@ -366,6 +369,13 @@ public class NotifyDescriptor extends Object {
 
         message = newMessage;
         firePropertyChange(PROP_MESSAGE, oldMessage, newMessage);
+    }
+
+    private void checkMessageValidity(Object message) {
+        if (message instanceof Window) {
+            // See https://netbeans.org/bugzilla/show_bug.cgi?id=267337
+            throw new IllegalArgumentException("The message must not be a window. message = "+message);
+        }
     }
 
     /**
