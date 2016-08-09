@@ -87,6 +87,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -892,15 +893,26 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
-    private static class FolderFilterChildren extends FilterNode.Children {
+    private static class FolderFilterChildren extends FilterNode.Children implements ChangeListener {
 
         private final Set<File> ignoreList = new WeakSet<File>();
         private final ClientSideProject project;
+
+
+        FolderFilterChildren(ClientSideProject project, Node n) {
+            this(project, n, Collections.emptyList());
+        }
 
         FolderFilterChildren(ClientSideProject project, Node n, List<File> ignoreList) {
             super(n);
             this.project = project;
             this.ignoreList.addAll(ignoreList);
+        }
+
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            VisibilityQuery.getDefault().addChangeListener(WeakListeners.change(this, VisibilityQuery.getDefault()));
         }
 
         @Override
@@ -911,7 +923,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             File file = FileUtil.toFile(fo);
             if (file == null) {
-                // XX add logging
+                LOGGER.log(Level.WARNING, "No file found for fileobject {0}", fo);
                 return super.createNodes(key);
             }
             if (!VisibilityQuery.getDefault().isVisible(fo)) {
@@ -935,6 +947,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return super.copyNode(node);
         }
 
+        @Override
+        public void stateChanged(ChangeEvent event) {
+            Node[] children = original.getChildren().getNodes();
+            if (event instanceof VisibilityQueryChangeEvent) {
+                Set<FileObject> fileObjects = new HashSet(Arrays.asList(((VisibilityQueryChangeEvent) event).getFileObjects()));
+                for (Node child : children) {
+                    if (fileObjects.contains(child.getLookup().lookup(FileObject.class))) {
+                        refreshNodes(new Node[] {child});
+                    }
+                }
+                return;
+            }
+            refreshNodes(children);
+        }
+
+        private void refreshNodes(Node[] nodes) {
+            for (Node node : nodes) {
+                refreshKey(node);
+            }
+        }
+
     }
 
     private static final class FolderNode extends FilterNode {
@@ -943,7 +976,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
 
         FolderNode(ClientSideProject project, Node original) {
-            super(original, new FolderChildren(project, original), new ProxyLookup(original.getLookup()));
+            super(original, new FolderFilterChildren(project, original), new ProxyLookup(original.getLookup()));
             assert original != null;
             assert project != null;
             this.project = project;
@@ -983,29 +1016,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 originalIcon = opened ? super.getOpenedIcon(type) : super.getIcon(type);
             }
             return originalIcon;
-        }
-
-    }
-
-    private static class FolderChildren extends FilterNode.Children {
-
-        private final ClientSideProject project;
-
-        FolderChildren(ClientSideProject project, Node node) {
-            super(node);
-            this.project = project;
-        }
-
-        @Override
-        protected Node copyNode(Node node) {
-            FileObject fo = node.getLookup().lookup(FileObject.class);
-            if (fo == null) {
-                return super.copyNode(node);
-            }
-            if (fo.isFolder()) {
-                return new FolderNode(project, node);
-            }
-            return super.copyNode(node);
         }
 
     }
