@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
-
-import java.awt.Image;
-import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 /**
- * 
- * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
+ *
+ * @author >Emmanuel Hugonnet (c) 2016 Red Hat, inc.
  */
-public class WildflyDestinationNode extends AbstractNode {
-
-    public WildflyDestinationNode(String name, MessageDestination destination, Lookup lookup) {
-        super(Children.LEAF);
-        getCookieSet().add(new UndeployModuleCookieImpl(destination.getName(), destination.getType() == MessageDestination.Type.QUEUE ? ResourceType.QUEUE : ResourceType.TOPIC,lookup));
-        setDisplayName(destination.getName());
-        setName(name);
-        setShortDescription(destination.getName());
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new SystemAction[]{
-            SystemAction.get(UndeployModuleAction.class)
-        };
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage(Util.JMS_ICON);
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage(Util.JMS_ICON);
-    }
-
+public enum ResourceType {
+    EAR, EJB, CAR, RAR, WAR, QUEUE, TOPIC, DATASOURCE;
+    
 }
