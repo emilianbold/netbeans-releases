@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.connections.ui.transfer.tree;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -89,6 +90,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
 
 
     public TransferSelector(Set<TransferFile> transferFiles, TransferType transferType, long timestamp) {
+        assert EventQueue.isDispatchThread();
         this.transferType = transferType;
 
         model = new TransferSelectorModel(transferType, transferFiles, timestamp);
