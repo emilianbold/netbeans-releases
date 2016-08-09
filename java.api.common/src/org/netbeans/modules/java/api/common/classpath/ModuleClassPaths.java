@@ -161,13 +161,21 @@ final class ModuleClassPaths {
             @NonNull final String platformType) {
         return new PlatformModulePath(eval, platformType);
     }
-
-    @NonNull
+    
     static ClassPathImplementation createPropertyBasedModulePath(
             @NonNull final File projectDir,
             @NonNull final PropertyEvaluator eval,
             @NonNull final String... props) {
-        return new PropertyModulePath(projectDir, eval, props);
+        return createPropertyBasedModulePath(projectDir, eval, null, props);
+    }
+    
+    @NonNull
+    static ClassPathImplementation createPropertyBasedModulePath(
+            @NonNull final File projectDir,
+            @NonNull final PropertyEvaluator eval,
+            @NullAllowed final Function<URL,Boolean> filter,
+            @NonNull final String... props) {
+        return new PropertyModulePath(projectDir, eval, filter, props);
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
@@ -252,6 +260,7 @@ final class ModuleClassPaths {
 
         private final File projectDir;
         private final PropertyEvaluator eval;
+        private final Function<URL,Boolean> filter;
         private final Set<String> props;
         //@GuardedBy("this")
         private final Set<File> listensOn;
@@ -259,12 +268,16 @@ final class ModuleClassPaths {
         PropertyModulePath(
             @NonNull final File projectDir,
             @NonNull final PropertyEvaluator eval,
+            @NullAllowed final Function<URL,Boolean> filter,
             @NonNull final String... props) {
             Parameters.notNull("projectDir", projectDir);   //NOI18N
             Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("props", props); //NOI18N
             this.projectDir = projectDir;
             this.eval = eval;
+            this.filter = filter == null ?
+                    (url) -> true :
+                    filter;
             this.props = new LinkedHashSet<>();
             this.listensOn = new HashSet<>();
             Collections.addAll(this.props, props);
@@ -296,7 +309,7 @@ final class ModuleClassPaths {
                     })
                     .forEach((file)->{
                         URL url = FileUtil.urlForArchiveOrDir(file);
-                        if (url != null) {
+                        if (url != null && filter.apply(url) != Boolean.FALSE) {
                             collector.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url));
                         }
                     });

@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -973,6 +974,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     modules = ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
+                        new Filter(null, buildClassesDir),
                         props);
                     break;
                 default:
@@ -1301,19 +1303,38 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     private class Filter implements Function<URL, Boolean>{        
-        private final String prop;
+        private final String includeProp;
+        private final String excludeProp;
         
-        Filter(@NonNull final String prop) {            
-            this.prop = prop;
+        Filter(@NullAllowed final String includeProp) {            
+            this(includeProp, null);
+        }
+        
+        Filter(
+                @NullAllowed final String includeProp,
+                @NullAllowed final String excludeProp) {
+            this.includeProp = includeProp;
+            this.excludeProp = excludeProp;            
         }
 
         @Override
-        public Boolean apply(@NonNull final URL t) {
-            return Optional.ofNullable(getDir(prop))
-                    .map((fo) -> Objects.equals(fo.toURL(),t))
-                    .orElse(Boolean.FALSE) ?
-                    true :
-                    null;
+        public Boolean apply(@NonNull final URL url) {
+            final URL aurl = FileUtil.isArchiveArtifact(url) ?
+                    FileUtil.getArchiveFile(url) :
+                    url;
+            if (Optional.ofNullable(includeProp)
+                    .map((p) -> getDir(p))
+                    .map((fo) -> Objects.equals(fo.toURL(),aurl))
+                    .orElse(Boolean.FALSE)) {
+                return Boolean.TRUE;
+            }            
+            if(Optional.ofNullable(excludeProp)
+                    .map((p) -> getDir(p))
+                    .map((fo) -> Objects.equals(fo.toURL(),aurl))
+                    .orElse(Boolean.FALSE)) {
+                return Boolean.FALSE;
+            }
+            return null;
         }
     }
 
