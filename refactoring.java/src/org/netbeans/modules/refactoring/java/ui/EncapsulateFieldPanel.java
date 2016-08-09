@@ -196,8 +196,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
             String getName = CodeStyleUtils.computeGetterName(field.getSimpleName(), field.asType().getKind() == TypeKind.BOOLEAN, staticMod, cs);
             String setName = CodeStyleUtils.computeSetterName(field.getSimpleName(), staticMod, cs);
+            MemberInfo<TreePathHandle> mi = MemberInfo.create(fieldTPath, javac);
+            if (mi == null) {
+                continue;
+            }
             model.addRow(new Object[] { 
-                MemberInfo.create(fieldTPath, javac),
+                mi,
                 createGetter ? Boolean.TRUE : Boolean.FALSE,                        
                 AccessorInfo.createGetter(javac, field, getName),
                 createSetter ? Boolean.TRUE : Boolean.FALSE,                        
@@ -579,14 +583,19 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
      * @return  array of all fields in a class.
      */
     private List<VariableElement> initFields(TreePath selectedField, CompilationInfo javac) {
+        if (selectedField == null) {
+            return Collections.emptyList();
+        }
         Element elm = javac.getTrees().getElement(selectedField);
         TypeElement encloser = null;
-        if (ElementKind.FIELD == elm.getKind()) {
+        if (elm != null && ElementKind.FIELD == elm.getKind()) {
             encloser = (TypeElement) elm.getEnclosingElement();
         } else {
             encloser = (TypeElement) elm;
         }
-        
+        if (encloser == null) {
+            return Collections.emptyList();
+        }
         List<VariableElement> result = new ArrayList<VariableElement>();
         for (Element member : encloser.getEnclosedElements()) {
             if (ElementKind.FIELD == member.getKind()) {
@@ -604,12 +613,15 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     private void initInsertPoints(TreePath selectedField, CompilationInfo javac) {
         Element elm = javac.getTrees().getElement(selectedField);
         TypeElement encloser = null;
-        if (ElementKind.FIELD == elm.getKind()) {
+        if (elm != null && ElementKind.FIELD == elm.getKind()) {
             encloser = (TypeElement) elm.getEnclosingElement();
         } else {
             encloser = (TypeElement) elm;
         }
-        
+        if (encloser == null) {
+            InsertPoint.DEFAULT.index = offset;
+            return;
+        }
         List<InsertPoint> result = new ArrayList<InsertPoint>();
         int idx = 0;
         TreePath encloserPath = javac.getTrees().getPath(encloser);

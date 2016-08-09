@@ -87,7 +87,7 @@ public class FindSubtypesVisitor extends FindVisitor {
             }
         } else {
             TypeElement el = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            if (el.getSuperclass()!=null && types.isSameType(types.erasure(el.getSuperclass()), type2) || containsType(el.getInterfaces(), type2)) {
+            if (el != null && el.getSuperclass()!=null && types.isSameType(types.erasure(el.getSuperclass()), type2) || containsType(el.getInterfaces(), type2)) {
                 addUsage(getCurrentPath());
             }
         }

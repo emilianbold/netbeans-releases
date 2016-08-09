@@ -269,7 +269,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
         Element el = treePathHandle.resolveElement(info);
-        if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+        if (!RefactoringUtils.isExecutableElement(el)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType")); // NOI18N
             return preCheckProblem;
         }
@@ -539,7 +539,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
                     Element element = javac.getTrees().getElement(path);
 
-                    return vt.getName().contentEquals(p) && !element.equals(parameterElement);
+                    return vt.getName().contentEquals(p) && (element == null || !element.equals(parameterElement));
                 }
 
                 @Override

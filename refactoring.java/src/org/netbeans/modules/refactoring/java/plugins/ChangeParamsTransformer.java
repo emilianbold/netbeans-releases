@@ -79,6 +79,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -168,6 +169,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         ClassTree classTree = (ClassTree) JavaRefactoringUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
         if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
             Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
+            if (el == null || p == null) {
+                return;
+            }
             TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
             TypeElement enclosingTypeElement2 = workingCopy.getElementUtilities().outermostTypeElement(p);
             if(!workingCopy.getTypes().isSameType(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
@@ -772,12 +776,12 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private boolean isMethodMatch(Element method, Element p) {
-        if(method == null) {
+        if (!RefactoringUtils.isExecutableElement(method)) {
             return false;
         }
         if(compatible) {
-            return (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && method == p;
-        } else if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
+            return method == p;
+        } else if (allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
                 if (baseMethod==null) {

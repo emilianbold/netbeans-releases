@@ -766,7 +766,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         List<Object[]> newModel = new LinkedList<>();
 
         TreePath path = refactoredObj.resolve(info);
-        ExecutableElement method = (ExecutableElement) info.getTrees().getElement(path);
+        if (path == null) {
+            return;
+        }
+        Element e = info.getTrees().getElement(path);
+        if (!RefactoringUtils.isExecutableElement(e)) {
+            parameterSpan = new int[] { 0, 0 }; // stub information
+            return;
+        }
+        ExecutableElement method = (ExecutableElement)e;
         MethodTree tree = info.getTrees().getTree(method);
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
 

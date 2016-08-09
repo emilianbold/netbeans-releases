@@ -74,7 +74,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "public abstract class A {\n"
                 + "public abstract int cislo(int a);\n"
                 + "public void m() {\n"
-                + "    System.out.println(cislo(1);\n"
+                + "    System.out.println(cislo(1));\n"
                 + "}\n"
                 + "}\n"),
                 new File("t/F.java", "package t;\n"

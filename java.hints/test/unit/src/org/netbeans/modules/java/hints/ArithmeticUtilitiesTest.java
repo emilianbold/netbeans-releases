@@ -224,20 +224,40 @@ public class ArithmeticUtilitiesTest extends TestBase {
         performWithFields("var2 % var1", 2, "static final short var1 = 3", "static final short var2 = 11");
     }
     
+    /**
+     * Checks that evaluation of 'b' does not recurse indefinitely as it errneously references
+     * itself in the declaration assignment. See issue #262309
+     * 
+     * @throws Exception 
+     */
+    public void testInvalidRecursion262309() throws Exception {
+        this.enhancedProcessing = true;
+        String code = 
+            "package test;\n" +
+                  "public class Test {\n"
+                + "    public void t() {\n"
+                + "        final int b = b + 1;\n"
+                + "        System.err.println(b|);\n"
+                + "    }\n"
+                + "}";
+        performTest(code, null, null);
+    }
+    
     private boolean enhancedProcessing = false;
 
     private void performTest(String context, String expression, Object golden) throws Exception {
         int pos = context.indexOf('|');
         prepareTest("test/Test.java", context.replaceAll(Pattern.quote("|"), ""));
 
-        ExpressionTree expr = info.getTreeUtilities().parseExpression(expression, new SourcePositions[1]);
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        Scope scope = info.getTrees().getScope(tp);
-
-        info.getTreeUtilities().attributeTree(expr, scope);
-
-        Object real = ArithmeticUtilities.compute(info, new TreePath(tp, expr), true, enhancedProcessing);
-
+        TreePath toAnalyse = tp;
+        if (expression != null) {
+            ExpressionTree expr = info.getTreeUtilities().parseExpression(expression, new SourcePositions[1]);
+            Scope scope = info.getTrees().getScope(tp);
+            info.getTreeUtilities().attributeTree(expr, scope);
+            toAnalyse = new TreePath(tp, expr);
+        }
+        Object real = ArithmeticUtilities.compute(info, toAnalyse, true, enhancedProcessing);
         assertEquals(golden, real);
     }
     

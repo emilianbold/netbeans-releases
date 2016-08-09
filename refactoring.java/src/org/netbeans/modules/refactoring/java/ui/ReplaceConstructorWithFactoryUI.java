@@ -145,7 +145,7 @@ public class ReplaceConstructorWithFactoryUI implements RefactoringUI, JavaRefac
         }
         if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
             Element selected = info.getTrees().getElement(path);
-            if (selected.getKind() == ElementKind.CONSTRUCTOR && selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
+            if (selected != null && selected.getKind() == ElementKind.CONSTRUCTOR && selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
                 return new ReplaceConstructorWithFactoryUI(TreePathHandle.create(selected, info), selected.getEnclosingElement().getSimpleName().toString());
             }
         }

@@ -279,7 +279,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
                 Tree varTree = varTreePath.getLeaf();
                 Trees trees = compiler.getTrees();
                 Element element = trees.getElement(varTreePath);
-                if (varTree.getKind() == Tree.Kind.VARIABLE && element.getKind() == ElementKind.ENUM_CONSTANT) {
+                if (element != null && varTree.getKind() == Tree.Kind.VARIABLE && element.getKind() == ElementKind.ENUM_CONSTANT) {
                     int[] pos = treeUtils.findNameSpan((VariableTree)varTree);
                     if (pos == null) {
                         //#121084 hotfix

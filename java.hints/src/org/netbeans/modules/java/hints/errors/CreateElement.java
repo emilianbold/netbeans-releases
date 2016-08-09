@@ -422,7 +422,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 } else {
 		    List<Fix> currentResult = new LinkedList<Fix>();
 
-		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
+		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.of(Modifier.PUBLIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
                     if (!baseType || outermostTypeElement != source)
 		        currentResult.addAll(prepareCreateInnerClassFix(info, newClass, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
 		    
