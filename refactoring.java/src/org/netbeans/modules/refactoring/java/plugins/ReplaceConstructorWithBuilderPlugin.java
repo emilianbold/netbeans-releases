@@ -95,7 +95,7 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         Element constr = treePathHandle.resolveElement(javac);
-        if(constr.getKind() != ElementKind.CONSTRUCTOR) {
+        if(constr == null || constr.getKind() != ElementKind.CONSTRUCTOR) {
             return new Problem(true, ERR_ReplaceWrongType());
         }
         if(constr.getModifiers().contains(Modifier.PRIVATE)) {
@@ -116,6 +116,9 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
         Problem problem = null;
         javac.toPhase(JavaSource.Phase.RESOLVED);
         TreePath constrPath = treePathHandle.resolve(javac);
+        if (constrPath == null || constrPath.getLeaf().getKind() != Tree.Kind.METHOD) {
+            return new Problem(true, ERR_ReplaceWrongType());
+        }
         TypeElement type = (TypeElement) javac.getTrees().getElement(constrPath.getParentPath());
         for (Setter setter : refactoring.getSetters()) {
             if(setter.isOptional()) {
@@ -167,7 +170,13 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     TreePath constrPath = constr.resolve(workingCopy);
+                    if (constrPath == null) {
+                        return;
+                    }
                     ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(constrPath);
+                    if (element == null || element.getKind() != ElementKind.CONSTRUCTOR) {
+                        return;
+                    }
                     MethodTree constructor = (MethodTree) constrPath.getLeaf();
                     TypeElement parent = (TypeElement) workingCopy.getTrees().getElement(constrPath.getParentPath());
                     parentSimpleName[0] = parent.getSimpleName().toString();
@@ -325,7 +334,9 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     ruleCode[0] = rule.toString();
                 }
             });
-
+            if (ruleCode[0] == null) {
+                return new Problem(true, ERR_ReplaceWrongType());
+            }
             List<ModificationResult> results = new ArrayList<ModificationResult>();
 
             results.add(mod);
@@ -337,7 +348,7 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     final TreeMaker make = copy.getTreeMaker();
                     Element element = copy.getTrees().getElement(occurrence.getOccurrenceRoot());
                     ExecutableElement constrElement = (ExecutableElement) constr.resolveElement(copy);
-                    if(!constrElement.equals(element)) {
+                    if(constrElement == null || !constrElement.equals(element)) {
                         return;
                     }
                     Collection<? extends TreePath> modifiers = occurrence.getMultiVariables().get("$modifiers$");

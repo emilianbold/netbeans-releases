@@ -393,7 +393,10 @@ public class RenameTransformer extends RefactoringVisitor {
         }
         TreePath elementPath = path;
         Element el = workingCopy.getTrees().getElement(elementPath);
-        
+        if (el == null) {
+            // fail fast
+            return;
+        }
         for (Element shadow : shadowed) {
             if (shadow.equals(el)) {
                 if (elementToFind.getModifiers().contains(Modifier.STATIC)) {

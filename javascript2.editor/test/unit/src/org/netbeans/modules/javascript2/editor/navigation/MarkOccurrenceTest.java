@@ -2215,6 +2215,38 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue267974_01.js", "      metho^d", true);
     }
     
+    public void testIssue254189_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue254189.js", "this.methodB = metho^dB;", true);
+    }
+    
+    public void testIssue246239_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "var type = ct^l.options.selectedIndex,", true);
+    }
+    
+    public void testIssue246239_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "c^tl.value = type;", true);
+    }
+    
+    public void testIssue267694_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var bu^f = this.buf;", true);
+    }
+    
+    public void testIssue267694_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var buf = this.bu^f;", true);
+    }
+    
+    public void testIssue252755_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var bu^f = this.buf,", true);
+    }
+    
+    public void testIssue252755_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var buf = this.b^uf,", true);
+    }
+    
+    public void testIssue252755_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_02.js", "var coo^rd;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

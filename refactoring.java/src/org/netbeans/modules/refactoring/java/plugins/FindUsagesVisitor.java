@@ -147,7 +147,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
                 }
             }
         }
-        if(p.getKind() == ElementKind.METHOD || p.getKind() == ElementKind.CONSTRUCTOR) {
+        if(RefactoringUtils.isExecutableElement(p)) {
             ExecutableElement method = (ExecutableElement) p;
             methods.add(method);
             TypeElement enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(method);

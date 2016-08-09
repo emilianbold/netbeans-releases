@@ -121,7 +121,7 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
         
         if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS || kind == Kind.MEMBER_REFERENCE)) {
             Element element = info.getTrees().getElement(path);
-            if(element.asType().getKind() == TypeKind.ERROR) {
+            if(element == null || element.asType().getKind() == TypeKind.ERROR) {
                 return null;
             }
             ExecutableElement method = (ExecutableElement) element;

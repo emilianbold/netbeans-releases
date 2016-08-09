@@ -600,7 +600,12 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         }
 
         private void adjustSize() {
-            int editorSize = eui.getComponent().getSize().width;
+            JTextComponent component = eui.getComponent();
+            if (component == null) {
+                // uninstalled.
+                return ;
+            }
+            int editorSize = component.getSize().width;
             int maxSize = editorSize - getLocation().x;
             Dimension prefSize = getPreferredSize();
             if (prefSize.width > maxSize) {

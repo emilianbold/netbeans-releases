@@ -1049,4 +1049,3 @@ prototype         : OBJECT prototype [ANONYMOUS: false, DECLARED: false - protot
                   # PROPERTIES
                   xtypesChain : OBJECT xtypesChain [ANONYMOUS: false, DECLARED: false - xtypesChain, MODIFIERS: PUBLIC, PROPERTY]
                   xtypesMap   : OBJECT xtypesMap [ANONYMOUS: false, DECLARED: false - xtypesMap, MODIFIERS: PUBLIC, PROPERTY]
-undefined         : OBJECT undefined [ANONYMOUS: false, DECLARED: false - undefined, MODIFIERS: PUBLIC, VARIABLE]

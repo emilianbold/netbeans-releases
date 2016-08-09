@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
@@ -53,6 +54,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -123,44 +125,73 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
-    public Problem fastCheckParameters() {
+    protected Problem fastCheckParameters(CompilationController info) throws IOException {
         if (!isRenameProperty()) {
             return null;
         }
         initDelegates();
+        
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        Element el = property.resolveElement(info);
+        if (el == null || el.getKind() != ElementKind.FIELD) {
+            return null;
+        }
+        String oldName = el.getSimpleName().toString();
+        String bareName = RefactoringUtils.removeFieldPrefixSuffix(el, codeStyle);
 
+        boolean isStatic = el.getModifiers().contains(Modifier.STATIC);
+        String bareNewName = CodeStyleUtils.removePrefixSuffix(refactoring.getNewName(),
+                isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
+                isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix());
+        
+        if (bareName.equals(bareNewName)) {
+            return null;
+        }
+        
         Problem p = null;
-        if (getterDelegate != null) {
-            String gettername = CodeStyleUtils.computeGetterName(
-                                    refactoring.getNewName(), isBoolean, isStatic, codeStyle);
-            getterDelegate.setNewName(gettername);
-            p = JavaPluginUtils.chainProblems(p, getterDelegate.fastCheckParameters());
-            if (p != null && p.isFatal()) {
-                return p;
+        JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
+        boolean saveNoChange = false;
+        if (renameProps != null) {
+            saveNoChange = renameProps.isNoChangeOK();
+            renameProps.setNoChangeOK(true);
+        }
+        try {
+            if (getterDelegate != null) {
+                String gettername = CodeStyleUtils.computeGetterName(
+                                        refactoring.getNewName(), isBoolean, isStatic, codeStyle);
+                getterDelegate.setNewName(gettername);
+                p = JavaPluginUtils.chainProblems(p, getterDelegate.fastCheckParameters());
+                if (p != null && p.isFatal()) {
+                    return p;
+                }
+            }
+            if (setterDelegate != null) {
+                String settername = CodeStyleUtils.computeSetterName(
+                                        refactoring.getNewName(), isStatic, codeStyle);
+                setterDelegate.setNewName(settername);
+                p = JavaPluginUtils.chainProblems(p, setterDelegate.fastCheckParameters());
+                if (p != null && p.isFatal()) {
+                    return p;
+                }
+            }
+            if (parameterDelegate != null) {
+                String newParam = RefactoringUtils.addParamPrefixSuffix(
+                                CodeStyleUtils.removePrefixSuffix(
+                                refactoring.getNewName(),
+                                isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
+                                isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix()), codeStyle);
+                parameterDelegate.setNewName(newParam);
+                p = JavaPluginUtils.chainProblems(p, parameterDelegate.fastCheckParameters());
+                if (p != null && p.isFatal()) {
+                    return p;
+                }
+            }
+        } finally {
+            if (renameProps != null) {
+                renameProps.setNoChangeOK(saveNoChange);
             }
         }
-        if (setterDelegate != null) {
-            String settername = CodeStyleUtils.computeSetterName(
-                                    refactoring.getNewName(), isStatic, codeStyle);
-            setterDelegate.setNewName(settername);
-            p = JavaPluginUtils.chainProblems(p, setterDelegate.fastCheckParameters());
-            if (p != null && p.isFatal()) {
-                return p;
-            }
-        }
-        if (parameterDelegate != null) {
-            String newParam = RefactoringUtils.addParamPrefixSuffix(
-                            CodeStyleUtils.removePrefixSuffix(
-                            refactoring.getNewName(),
-                            isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
-                            isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix()), codeStyle);
-            parameterDelegate.setNewName(newParam);
-            p = JavaPluginUtils.chainProblems(p, parameterDelegate.fastCheckParameters());
-            if (p != null && p.isFatal()) {
-                return p;
-            }
-        }
-        return p = JavaPluginUtils.chainProblems(p, super.fastCheckParameters());
+        return p = JavaPluginUtils.chainProblems(p, super.fastCheckParameters(info));
     }
 
     @Override
@@ -245,6 +276,8 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
                 @Override
                 public void run(CompilationController p) throws Exception {
+                    JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
+                    
                     p.toPhase(JavaSource.Phase.RESOLVED);
                     codeStyle = RefactoringUtils.getCodeStyle(p);
                     Element propertyElement = property.resolveElement(p);
@@ -263,12 +296,14 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                             continue;
                         } else if (RefactoringUtils.isGetter(p, el, propertyElement)) {
                             getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
+                            getterDelegate.getContext().add(renameProps);
                             String gettername = CodeStyleUtils.computeGetterName(
                                     refactoring.getNewName(), isBoolean, isStatic, codeStyle);
                             getterDelegate.setNewName(gettername);
                             getterDelegate.setSearchInComments(refactoring.isSearchInComments());
                         } else if (RefactoringUtils.isSetter(p, el, propertyElement)) {
                             setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
+                            setterDelegate.getContext().add(renameProps);
                             String settername = CodeStyleUtils.computeSetterName(
                                     refactoring.getNewName(), isStatic, codeStyle);
                             setterDelegate.setNewName(settername);
@@ -279,6 +314,7 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                                 parameterDelegate.getContext().add(RenamePropertyRefactoringPlugin.this);
                                 parameterDelegate.setNewName(newParam);
                                 parameterDelegate.setSearchInComments(refactoring.isSearchInComments());
+                                parameterDelegate.getContext().add(renameProps);
                             }
                         }
                     }

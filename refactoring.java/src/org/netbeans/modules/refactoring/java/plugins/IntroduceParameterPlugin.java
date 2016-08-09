@@ -118,7 +118,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                         super.visitVariable(vt, p);
                         TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
                         Element element = javac.getTrees().getElement(path);
-                        boolean sameName = vt.getName().contentEquals(p) && !element.equals(parameterElement);
+                        boolean sameName = element != null && vt.getName().contentEquals(p) && !element.equals(parameterElement);
                 
                         return sameName && element != variableElement;
                     }
@@ -128,7 +128,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                         super.visitIdentifier(it, p);
                         TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), it);
                         Element element = javac.getTrees().getElement(path);
-                        boolean sameName = VARIABLES.contains(element.getKind()) && it.getName().contentEquals(p) && !element.equals(parameterElement);
+                        boolean sameName = element != null && VARIABLES.contains(element.getKind()) && it.getName().contentEquals(p) && !element.equals(parameterElement);
                 
                         return sameName && element != variableElement;
                     }
@@ -150,7 +150,13 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         };
 
         TreePath methodPath = JavaPluginUtils.findMethod(resolved);
+        if (methodPath == null) {
+            return p;
+        }
         final ExecutableElement method = (ExecutableElement) javac.getTrees().getElement(methodPath);
+        if (method == null) {
+            return p;
+        }
 
         boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
 
@@ -390,7 +396,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         }
 
         Element el = info.getTrees().getElement(method);
-        if (el != null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+        if (!RefactoringUtils.isExecutableElement(el)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType")); //NOI18N
             return preCheckProblem;
         }
@@ -500,7 +506,12 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 TreePath path = treePathHandle.resolve(info);
                 TreePath methodPath = JavaPluginUtils.findMethod(path);
 
-                ExecutableElement method = (ExecutableElement) info.getTrees().getElement(methodPath);
+                ExecutableElement method = methodPath == null ? null : (ExecutableElement) info.getTrees().getElement(methodPath);
+                if (method == null) {
+                    p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_canNotResolve", 
+                            methodPath != null ? methodPath.getLeaf().toString() : treePathHandle)));
+                    return p;
+                }
                 List<? extends VariableElement> parameters = method.getParameters();
                 paramTable = new ChangeParametersRefactoring.ParameterInfo[parameters.size() + 1];
                 for (int originalIndex = 0; originalIndex < parameters.size(); originalIndex++) {

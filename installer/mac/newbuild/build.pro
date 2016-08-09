@@ -73,11 +73,12 @@
     <property name="glassfish.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.1.1/promoted"/>
     
     <loadresource property="glassfish.build.number">
-          <url url="${glassfish.location.prefix}/latest/archive/bundles"/>
+          <url url="${glassfish.location.prefix}/latest/archive/release"/>
           <filterchain>
             <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)glassfish-4.1.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <!-- replaceregex pattern="(.*)glassfish-4.1.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/ -->
+              <replaceregex pattern="(.*)glassfish-4.1.1-a.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -86,7 +87,8 @@
     <property name="glassfish.version"      value="b${glassfish.build.number}"/>
     <property name="glassfish.id"           value="${glassfish.display.version}"/>
     <property name="glassfish.install.dir"  value="${install.dir}/glassfish-4.1.1"/>
-    <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.1.1-${glassfish.version}.zip"/>
+    <!-- property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.1.1-${glassfish.version}.zip"/ -->
+    <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/latest/archive/release/glassfish-4.1.1-a.zip"/>
     <property name="glassfish.subdir"       value="glassfish4"/>
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

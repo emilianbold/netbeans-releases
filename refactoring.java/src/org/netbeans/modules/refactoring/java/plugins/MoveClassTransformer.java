@@ -436,7 +436,7 @@ public class MoveClassTransformer extends RefactoringVisitor {
     }
 
     private boolean isTopLevelClass(Element el) {
-        return (el.getKind().isClass()
+        return el != null && (el.getKind().isClass()
                 || el.getKind().isInterface())
                 && el.getEnclosingElement().getKind() == ElementKind.PACKAGE;
     }

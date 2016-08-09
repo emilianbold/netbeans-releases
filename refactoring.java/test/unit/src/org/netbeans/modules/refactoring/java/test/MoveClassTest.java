@@ -48,7 +48,7 @@ import org.netbeans.modules.refactoring.api.Problem;
  *
  * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
  */
-public class MoveClassTest extends MoveBaseTest {
+public class MoveClassTest extends MoveBase {
 
     public MoveClassTest(String name) {
         super(name);

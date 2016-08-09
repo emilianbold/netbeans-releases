@@ -150,11 +150,13 @@ public class ModelUtils {
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
-            result = tmpObject.getProperty(name.getName());
-            if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
-                        (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
-                tmpObject.addProperty(name.getName(), result);
+            if (name != null) {
+                result = tmpObject.getProperty(name.getName());
+                if (result == null) {
+                    result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
+                            (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
+                    tmpObject.addProperty(name.getName(), result);
+                }
             }
             tmpObject = result;
         }
@@ -1566,7 +1568,8 @@ public class ModelUtils {
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
             "XMLHttpRequest", "JSON", "Date", Type.UNDEFINED, "Math",  //NOI18N
-            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED,
+            Type.NAN, Type.INFINITY);
     
     public static boolean isKnownGLobalType(String type) {
         return knownGlobalObjects.contains(type);

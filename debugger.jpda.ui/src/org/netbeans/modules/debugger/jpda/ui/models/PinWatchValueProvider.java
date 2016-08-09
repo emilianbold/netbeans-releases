@@ -200,7 +200,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
         if (varVl == null) {
             return null;
         }
-        ObjectVariable expandableVar = getObjectVariable(watch).first();
+        ObjectVariable expandableVar = varVl.first();
         return new Action[] { new ExpandAction(headAction, watch.getExpression(), expandableVar) };
     }
 

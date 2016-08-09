@@ -2561,78 +2561,83 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if(doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int dot = caretInfo.getDot();
-                                    Point p = caretInfo.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            context.setMagicCaretPosition(caretInfo, p);
-                                        } else {
-                                            return; // model to view failed
-                                        }
-                                    }
-                                    try {
-                                        dot = Utilities.getPositionAbove(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        boolean select = selectionUpAction.equals(getValue(Action.NAME));
-                                        if (select) {
-                                            context.moveDot(caretInfo, dotPos);
-                                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
                                             }
-                                        } else {
-                                            context.setDot(caretInfo, dotPos);
+                                            try {
+                                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                                                if (select) {
+                                                    context.moveDot(caretInfo, dotPos);
+                                                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                                                    }
+                                                } else {
+                                                    context.setDot(caretInfo, dotPos);
+                                                }
+                                            } catch (BadLocationException e) {
+                                                // the position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-                                    } catch (BadLocationException e) {
-                                        // the position stays the same
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
+                            );
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
-                    );
+                    });
                 } else {
-                try {
-                    int dot = caret.getDot();
-                    Point p = caret.getMagicCaretPosition();
-                    if (p == null) {
-                        Rectangle r = target.modelToView(dot);
-                        if (r!=null){
-                            p = new Point(r.x, r.y);
-                            caret.setMagicCaretPosition(p);
-                        }else{
-                            return; // model to view failed
-                        }
-                    }
                     try {
-                        dot = Utilities.getPositionAbove(target, dot, p.x);
-                        boolean select = selectionUpAction.equals(getValue(Action.NAME));
-                        if (select) {
-                            caret.moveDot(dot);
-                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                if (caret instanceof EditorCaret) {
-                                    RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
-                                }
+                        int dot = caret.getDot();
+                        Point p = caret.getMagicCaretPosition();
+                        if (p == null) {
+                            Rectangle r = target.modelToView(dot);
+                            if (r!=null){
+                                p = new Point(r.x, r.y);
+                                caret.setMagicCaretPosition(p);
+                            }else{
+                                return; // model to view failed
                             }
-                        } else {
-                            caret.setDot(dot);
                         }
-                    } catch (BadLocationException e) {
-                        // the position stays the same
+                        try {
+                            dot = Utilities.getPositionAbove(target, dot, p.x);
+                            boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                            if (select) {
+                                caret.moveDot(dot);
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    if (caret instanceof EditorCaret) {
+                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
+                                    }
+                                }
+                            } else {
+                                caret.setDot(dot);
+                            }
+                        } catch (BadLocationException e) {
+                            // the position stays the same
+                        }
+                    } catch (BadLocationException ex) {
+                        target.getToolkit().beep();
                     }
-                } catch (BadLocationException ex) {
-                    target.getToolkit().beep();
                 }
-            }
             }
         }
     }
@@ -2655,45 +2660,50 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int dot = caretInfo.getDot();
-                                    Point p = caretInfo.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            context.setMagicCaretPosition(caretInfo, p);
-                                        } else {
-                                            return; // model to view failed
-                                        }
-                                    }
-                                    try {
-                                        dot = Utilities.getPositionBelow(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        boolean select = selectionDownAction.equals(getValue(Action.NAME));
-                                        if (select) {
-                                            context.moveDot(caretInfo, dotPos);
-                                            if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
                                             }
-                                        } else {
-                                            context.setDot(caretInfo, dotPos);
+                                            try {
+                                                dot = Utilities.getPositionBelow(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                boolean select = selectionDownAction.equals(getValue(Action.NAME));
+                                                if (select) {
+                                                    context.moveDot(caretInfo, dotPos);
+                                                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                                        RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
+                                                    }
+                                                } else {
+                                                    context.setDot(caretInfo, dotPos);
+                                                }
+                                            } catch (BadLocationException e) {
+                                                // position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-                                    } catch (BadLocationException e) {
-                                        // position stays the same
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
+                            );
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
-                    );
+                    });
                 } else {
                 try {
                     int dot = caret.getDot();
@@ -2751,182 +2761,187 @@ public class BaseKit extends DefaultEditorKit {
                     final Document doc = target.getDocument();
                     if(doc != null && caret instanceof EditorCaret) {
                         final EditorCaret editorCaret = (EditorCaret) caret;
-                        editorCaret.moveCarets(new CaretMoveHandler() {
+                        doc.render(new Runnable() {
                             @Override
-                            public void moveCarets(CaretMoveContext context) {
-                                try {
-                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                        int caretOffset = caretInfo.getDot();
-                                        Rectangle caretBounds = ((BaseTextUI) target.getUI()).modelToView(target, caretOffset);
-                                        if (caretBounds == null) {
-                                            return; // Cannot continue reasonably
-                                        }
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        try {
+                                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                                int caretOffset = caretInfo.getDot();
+                                                Rectangle caretBounds = ((BaseTextUI) target.getUI()).modelToView(target, caretOffset);
+                                                if (caretBounds == null) {
+                                                    return; // Cannot continue reasonably
+                                                }
 
-                                        // Retrieve caret magic position and attempt to retain
-                                        // the x-coordinate information and use it
-                                        // for setting of the new caret position
-                                        Point magicCaretPosition = caretInfo.getMagicCaretPosition();
-                                        if (magicCaretPosition == null) {
-                                            magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
-                                        }
+                                                // Retrieve caret magic position and attempt to retain
+                                                // the x-coordinate information and use it
+                                                // for setting of the new caret position
+                                                Point magicCaretPosition = caretInfo.getMagicCaretPosition();
+                                                if (magicCaretPosition == null) {
+                                                    magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                                                }
 
-                                        Rectangle visibleBounds = target.getVisibleRect();
-                                        int newCaretOffset;
-                                        Rectangle newCaretBounds;
+                                                Rectangle visibleBounds = target.getVisibleRect();
+                                                int newCaretOffset;
+                                                Rectangle newCaretBounds;
 
-                                        // Check whether caret was contained in the original visible window
-                                        if (visibleBounds.contains(caretBounds)) {
-                                            // Clone present view bounds
-                                            Rectangle newVisibleBounds = new Rectangle(visibleBounds);
-                                            // Do viewToModel() and modelToView() with the left top corner
-                                            // of the currently visible view. If that line is not fully visible
-                                            // then it should be the bottom line of the previous page
-                                            // (if it's fully visible then the line above it).
-                                            int topLeftOffset = target.viewToModel(new Point(
-                                                    visibleBounds.x, visibleBounds.y));
-                                            Rectangle topLeftLineBounds = target.modelToView(topLeftOffset);
+                                                // Check whether caret was contained in the original visible window
+                                                if (visibleBounds.contains(caretBounds)) {
+                                                    // Clone present view bounds
+                                                    Rectangle newVisibleBounds = new Rectangle(visibleBounds);
+                                                    // Do viewToModel() and modelToView() with the left top corner
+                                                    // of the currently visible view. If that line is not fully visible
+                                                    // then it should be the bottom line of the previous page
+                                                    // (if it's fully visible then the line above it).
+                                                    int topLeftOffset = target.viewToModel(new Point(
+                                                            visibleBounds.x, visibleBounds.y));
+                                                    Rectangle topLeftLineBounds = target.modelToView(topLeftOffset);
 
-                                            // newVisibleBounds.y will hold bottom of new view
-                                            if (topLeftLineBounds.y != visibleBounds.y) {
-                                                newVisibleBounds.y = topLeftLineBounds.y + topLeftLineBounds.height;
-                                            } // Component view starts right at the line boundary
-                                            // Go back by the view height
-                                            newVisibleBounds.y -= visibleBounds.height;
+                                                    // newVisibleBounds.y will hold bottom of new view
+                                                    if (topLeftLineBounds.y != visibleBounds.y) {
+                                                        newVisibleBounds.y = topLeftLineBounds.y + topLeftLineBounds.height;
+                                                    } // Component view starts right at the line boundary
+                                                    // Go back by the view height
+                                                    newVisibleBounds.y -= visibleBounds.height;
 
-                                            // Find the new caret bounds by using relative y position
-                                            // on the original caret bounds. If the caret's new relative bounds
-                                            // would be visually above the old bounds
-                                            // the view should be shifted so that the relative bounds
-                                            // are the same (user's eyes do not need to move).
-                                            int caretRelY = caretBounds.y - visibleBounds.y;
-                                            int caretNewY = newVisibleBounds.y + caretRelY;
-                                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
-                                            newCaretBounds = target.modelToView(newCaretOffset);
-                                            if (newCaretBounds.y < caretNewY) {
-                                                // Need to go one line down to retain the top line
-                                                // of the present newVisibleBounds to be fully visible.
-                                                // Attempt to go forward by height of caret
-                                                newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
-                                                        newCaretBounds.y + newCaretBounds.height));
-                                                newCaretBounds = target.modelToView(newCaretOffset);
+                                                    // Find the new caret bounds by using relative y position
+                                                    // on the original caret bounds. If the caret's new relative bounds
+                                                    // would be visually above the old bounds
+                                                    // the view should be shifted so that the relative bounds
+                                                    // are the same (user's eyes do not need to move).
+                                                    int caretRelY = caretBounds.y - visibleBounds.y;
+                                                    int caretNewY = newVisibleBounds.y + caretRelY;
+                                                    newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
+                                                    newCaretBounds = target.modelToView(newCaretOffset);
+                                                    if (newCaretBounds.y < caretNewY) {
+                                                        // Need to go one line down to retain the top line
+                                                        // of the present newVisibleBounds to be fully visible.
+                                                        // Attempt to go forward by height of caret
+                                                        newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
+                                                                newCaretBounds.y + newCaretBounds.height));
+                                                        newCaretBounds = target.modelToView(newCaretOffset);
+                                                    }
+
+                                                    // Shift the new visible bounds so that the caret
+                                                    // does not visually move
+                                                    newVisibleBounds.y = newCaretBounds.y - caretRelY;
+
+                                                    // Scroll the window to the requested rectangle
+                                                    target.scrollRectToVisible(newVisibleBounds);
+
+                                                } else { // Caret outside of originally visible window
+                                                    // Shift the dot by the visible bounds height
+                                                    Point newCaretPoint = new Point(magicCaretPosition.x,
+                                                            caretBounds.y - visibleBounds.height);
+                                                    newCaretOffset = target.viewToModel(newCaretPoint);
+                                                    newCaretBounds = target.modelToView(newCaretOffset);
+                                                }
+
+                                                boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
+                                                Position newCaretPos = doc.createPosition(newCaretOffset);
+                                                if (select) {
+                                                    context.moveDot(caretInfo, newCaretPos);
+                                                } else {
+                                                    context.setDot(caretInfo, newCaretPos);
+                                                }
+
+                                                // Update magic caret position
+                                                newCaretBounds = target.modelToView(caretInfo.getDot());
+                                                magicCaretPosition.y = newCaretBounds.y;
+                                                context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                             }
-
-                                            // Shift the new visible bounds so that the caret
-                                            // does not visually move
-                                            newVisibleBounds.y = newCaretBounds.y - caretRelY;
-
-                                            // Scroll the window to the requested rectangle
-                                            target.scrollRectToVisible(newVisibleBounds);
-
-                                        } else { // Caret outside of originally visible window
-                                            // Shift the dot by the visible bounds height
-                                            Point newCaretPoint = new Point(magicCaretPosition.x,
-                                                    caretBounds.y - visibleBounds.height);
-                                            newCaretOffset = target.viewToModel(newCaretPoint);
-                                            newCaretBounds = target.modelToView(newCaretOffset);
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-
-                                        boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
-                                        Position newCaretPos = doc.createPosition(newCaretOffset);
-                                        if (select) {
-                                            context.moveDot(caretInfo, newCaretPos);
-                                        } else {
-                                            context.setDot(caretInfo, newCaretPos);
-                                        }
-
-                                        // Update magic caret position
-                                        newCaretBounds = target.modelToView(caretInfo.getDot());
-                                        magicCaretPosition.y = newCaretBounds.y;
-                                        context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
-                                }
+                                }, new MoveCaretsOrigin(
+                                        MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
+                                );
                             }
-                        }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
-                        );
+                        });
                     } else {
-                    int caretOffset = caret.getDot();
-                    Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
-                    if (caretBounds == null) {
-                        return; // Cannot continue reasonably
-                    }
+                        int caretOffset = caret.getDot();
+                        Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
+                        if (caretBounds == null) {
+                            return; // Cannot continue reasonably
+                        }
 
-                    // Retrieve caret magic position and attempt to retain
-                    // the x-coordinate information and use it
-                    // for setting of the new caret position
-                    Point magicCaretPosition = caret.getMagicCaretPosition();
-                    if (magicCaretPosition == null) {
-                        magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
-                    }
-                    
-                    Rectangle visibleBounds = target.getVisibleRect();
-                    int newCaretOffset;
-                    Rectangle newCaretBounds;
+                        // Retrieve caret magic position and attempt to retain
+                        // the x-coordinate information and use it
+                        // for setting of the new caret position
+                        Point magicCaretPosition = caret.getMagicCaretPosition();
+                        if (magicCaretPosition == null) {
+                            magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                        }
 
-                    // Check whether caret was contained in the original visible window
-                    if (visibleBounds.contains(caretBounds)) {
-                        // Clone present view bounds
-                        Rectangle newVisibleBounds = new Rectangle(visibleBounds);
-                        // Do viewToModel() and modelToView() with the left top corner
-                        // of the currently visible view. If that line is not fully visible
-                        // then it should be the bottom line of the previous page
-                        // (if it's fully visible then the line above it).
-                        int topLeftOffset = target.viewToModel(new Point(
-                                visibleBounds.x, visibleBounds.y));
-                        Rectangle topLeftLineBounds = target.modelToView(topLeftOffset);
+                        Rectangle visibleBounds = target.getVisibleRect();
+                        int newCaretOffset;
+                        Rectangle newCaretBounds;
 
-                        // newVisibleBounds.y will hold bottom of new view
-                        if (topLeftLineBounds.y != visibleBounds.y) {
-                            newVisibleBounds.y = topLeftLineBounds.y + topLeftLineBounds.height;
-                        } // Component view starts right at the line boundary
-                        // Go back by the view height
-                        newVisibleBounds.y -= visibleBounds.height;
+                        // Check whether caret was contained in the original visible window
+                        if (visibleBounds.contains(caretBounds)) {
+                            // Clone present view bounds
+                            Rectangle newVisibleBounds = new Rectangle(visibleBounds);
+                            // Do viewToModel() and modelToView() with the left top corner
+                            // of the currently visible view. If that line is not fully visible
+                            // then it should be the bottom line of the previous page
+                            // (if it's fully visible then the line above it).
+                            int topLeftOffset = target.viewToModel(new Point(
+                                    visibleBounds.x, visibleBounds.y));
+                            Rectangle topLeftLineBounds = target.modelToView(topLeftOffset);
 
-                        // Find the new caret bounds by using relative y position
-                        // on the original caret bounds. If the caret's new relative bounds
-                        // would be visually above the old bounds
-                        // the view should be shifted so that the relative bounds
-                        // are the same (user's eyes do not need to move).
-                        int caretRelY = caretBounds.y - visibleBounds.y;
-                        int caretNewY = newVisibleBounds.y + caretRelY;
-                        newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
-                        newCaretBounds = target.modelToView(newCaretOffset);
-                        if (newCaretBounds.y < caretNewY) {
-                            // Need to go one line down to retain the top line
-                            // of the present newVisibleBounds to be fully visible.
-                            // Attempt to go forward by height of caret
-                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
-                                    newCaretBounds.y + newCaretBounds.height));
+                            // newVisibleBounds.y will hold bottom of new view
+                            if (topLeftLineBounds.y != visibleBounds.y) {
+                                newVisibleBounds.y = topLeftLineBounds.y + topLeftLineBounds.height;
+                            } // Component view starts right at the line boundary
+                            // Go back by the view height
+                            newVisibleBounds.y -= visibleBounds.height;
+
+                            // Find the new caret bounds by using relative y position
+                            // on the original caret bounds. If the caret's new relative bounds
+                            // would be visually above the old bounds
+                            // the view should be shifted so that the relative bounds
+                            // are the same (user's eyes do not need to move).
+                            int caretRelY = caretBounds.y - visibleBounds.y;
+                            int caretNewY = newVisibleBounds.y + caretRelY;
+                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
+                            newCaretBounds = target.modelToView(newCaretOffset);
+                            if (newCaretBounds.y < caretNewY) {
+                                // Need to go one line down to retain the top line
+                                // of the present newVisibleBounds to be fully visible.
+                                // Attempt to go forward by height of caret
+                                newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
+                                        newCaretBounds.y + newCaretBounds.height));
+                                newCaretBounds = target.modelToView(newCaretOffset);
+                            }
+
+                            // Shift the new visible bounds so that the caret
+                            // does not visually move
+                            newVisibleBounds.y = newCaretBounds.y - caretRelY;
+
+                            // Scroll the window to the requested rectangle
+                            target.scrollRectToVisible(newVisibleBounds);
+
+                        } else { // Caret outside of originally visible window
+                            // Shift the dot by the visible bounds height
+                            Point newCaretPoint = new Point(magicCaretPosition.x,
+                                    caretBounds.y - visibleBounds.height);
+                            newCaretOffset = target.viewToModel(newCaretPoint);
                             newCaretBounds = target.modelToView(newCaretOffset);
                         }
 
-                        // Shift the new visible bounds so that the caret
-                        // does not visually move
-                        newVisibleBounds.y = newCaretBounds.y - caretRelY;
+                        boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
+                        if (select) {
+                            caret.moveDot(newCaretOffset);
+                        } else {
+                            caret.setDot(newCaretOffset);
+                        }
 
-                        // Scroll the window to the requested rectangle
-                        target.scrollRectToVisible(newVisibleBounds);
-                        
-                    } else { // Caret outside of originally visible window
-                        // Shift the dot by the visible bounds height
-                        Point newCaretPoint = new Point(magicCaretPosition.x,
-                                caretBounds.y - visibleBounds.height);
-                        newCaretOffset = target.viewToModel(newCaretPoint);
-                        newCaretBounds = target.modelToView(newCaretOffset);
-                    }
-
-                    boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
-                    if (select) {
-                        caret.moveDot(newCaretOffset);
-                    } else {
-                        caret.setDot(newCaretOffset);
-                    }
-                    
-                    // Update magic caret position
-                    magicCaretPosition.y = newCaretBounds.y;
-                    caret.setMagicCaretPosition(magicCaretPosition);
+                        // Update magic caret position
+                        magicCaretPosition.y = newCaretBounds.y;
+                        caret.setMagicCaretPosition(magicCaretPosition);
                     }
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
@@ -2958,33 +2973,38 @@ public class BaseKit extends DefaultEditorKit {
                     if (select && RectangularSelectionUtils.isRectangularSelection(target)) {
                         RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, true, false);
                     } else {
-                        editorCaret.moveCarets(new CaretMoveHandler() {
+                        doc.render(new Runnable() {
                             @Override
-                            public void moveCarets(CaretMoveContext context) {
-                                for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                    try {
-                                        if (!select && caretInfo.isSelection()) {
-                                            int offset = caretInfo.getSelectionEnd();
-                                            context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
-                                        } else {
-                                            int offset = caretInfo.getDot();
-                                            offset = target.getUI().getNextVisualPositionFrom(target,
-                                                    offset, Position.Bias.Forward, SwingConstants.EAST, null);
-                                            Position dotPos = doc.createPosition(offset);
-                                            if (select) {
-                                                context.moveDot(caretInfo, dotPos);
-                                            } else {
-                                                context.setDot(caretInfo, dotPos);
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            try {
+                                                if (!select && caretInfo.isSelection()) {
+                                                    int offset = caretInfo.getSelectionEnd();
+                                                    context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
+                                                } else {
+                                                    int offset = caretInfo.getDot();
+                                                    offset = target.getUI().getNextVisualPositionFrom(target,
+                                                            offset, Position.Bias.Forward, SwingConstants.EAST, null);
+                                                    Position dotPos = doc.createPosition(offset);
+                                                    if (select) {
+                                                        context.moveDot(caretInfo, dotPos);
+                                                    } else {
+                                                        context.setDot(caretInfo, dotPos);
+                                                    }
+                                                }
+                                            } catch (BadLocationException ex) {
+                                                target.getToolkit().beep();
                                             }
                                         }
-                                    } catch (BadLocationException ex) {
-                                        target.getToolkit().beep();
                                     }
-                                }
+                                }, new MoveCaretsOrigin(
+                                        MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
+                                );
                             }
-                        }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
-                        );
+                        });
                     }
                 } else {
                 try {
@@ -3042,171 +3062,177 @@ public class BaseKit extends DefaultEditorKit {
                     final Document doc = target.getDocument();
                     if(doc != null && caret instanceof EditorCaret) {
                         final EditorCaret editorCaret = (EditorCaret) caret;
-                        editorCaret.moveCarets(new CaretMoveHandler() {
+                        doc.render(new Runnable() {
                             @Override
-                            public void moveCarets(CaretMoveContext context) {
-                                try {
-                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                        int caretOffset = caretInfo.getDot();
-                                        Rectangle caretBounds = ((BaseTextUI) target.getUI()).modelToView(target, caretOffset);
-                                        if (caretBounds == null) {
-                                            return; // Cannot continue reasonably
-                                        }
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        try {
+                                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                                int caretOffset = caretInfo.getDot();
+                                                Rectangle caretBounds = ((BaseTextUI) target.getUI()).modelToView(target, caretOffset);
+                                                if (caretBounds == null) {
+                                                    return; // Cannot continue reasonably
+                                                }
 
-                                        // Retrieve caret magic position and attempt to retain
-                                        // the x-coordinate information and use it
-                                        // for setting of the new caret position
-                                        Point magicCaretPosition = caretInfo.getMagicCaretPosition();
-                                        if (magicCaretPosition == null) {
-                                            magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
-                                        }
+                                                // Retrieve caret magic position and attempt to retain
+                                                // the x-coordinate information and use it
+                                                // for setting of the new caret position
+                                                Point magicCaretPosition = caretInfo.getMagicCaretPosition();
+                                                if (magicCaretPosition == null) {
+                                                    magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                                                }
 
-                                        Rectangle visibleBounds = target.getVisibleRect();
-                                        int newCaretOffset;
-                                        Rectangle newCaretBounds;
+                                                Rectangle visibleBounds = target.getVisibleRect();
+                                                int newCaretOffset;
+                                                Rectangle newCaretBounds;
 
-                                        // Check whether caret was contained in the original visible window
-                                        if (visibleBounds.contains(caretBounds)) {
-                                            // Clone present view bounds
-                                            Rectangle newVisibleBounds = new Rectangle(visibleBounds);
-                                            // Do viewToModel() and modelToView() with the left bottom corner
-                                            // of the currently visible view.
-                                            // That line should be the top line of the next page.
-                                            int bottomLeftOffset = target.viewToModel(new Point(
-                                                    visibleBounds.x, visibleBounds.y + visibleBounds.height));
-                                            Rectangle bottomLeftLineBounds = target.modelToView(bottomLeftOffset);
+                                                // Check whether caret was contained in the original visible window
+                                                if (visibleBounds.contains(caretBounds)) {
+                                                    // Clone present view bounds
+                                                    Rectangle newVisibleBounds = new Rectangle(visibleBounds);
+                                                    // Do viewToModel() and modelToView() with the left bottom corner
+                                                    // of the currently visible view.
+                                                    // That line should be the top line of the next page.
+                                                    int bottomLeftOffset = target.viewToModel(new Point(
+                                                            visibleBounds.x, visibleBounds.y + visibleBounds.height));
+                                                    Rectangle bottomLeftLineBounds = target.modelToView(bottomLeftOffset);
 
-                                            // newVisibleBounds.y will hold bottom of new view
-                                            newVisibleBounds.y = bottomLeftLineBounds.y;
+                                                    // newVisibleBounds.y will hold bottom of new view
+                                                    newVisibleBounds.y = bottomLeftLineBounds.y;
 
-                                            // Find the new caret bounds by using relative y position
-                                            // on the original caret bounds. If the caret's new relative bounds
-                                            // would be visually below the old bounds
-                                            // the view should be shifted so that the relative bounds
-                                            // are the same (user's eyes do not need to move).
-                                            int caretRelY = caretBounds.y - visibleBounds.y;
-                                            int caretNewY = newVisibleBounds.y + caretRelY;
-                                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
-                                            newCaretBounds = target.modelToView(newCaretOffset);
-                                            if (newCaretBounds.y > caretNewY) {
-                                                // Need to go one line above to retain the top line
-                                                // of the present newVisibleBounds to be fully visible.
-                                                // Attempt to go up by height of caret.
-                                                newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
-                                                        newCaretBounds.y - newCaretBounds.height));
-                                                newCaretBounds = target.modelToView(newCaretOffset);
+                                                    // Find the new caret bounds by using relative y position
+                                                    // on the original caret bounds. If the caret's new relative bounds
+                                                    // would be visually below the old bounds
+                                                    // the view should be shifted so that the relative bounds
+                                                    // are the same (user's eyes do not need to move).
+                                                    int caretRelY = caretBounds.y - visibleBounds.y;
+                                                    int caretNewY = newVisibleBounds.y + caretRelY;
+                                                    newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
+                                                    newCaretBounds = target.modelToView(newCaretOffset);
+                                                    if (newCaretBounds.y > caretNewY) {
+                                                        // Need to go one line above to retain the top line
+                                                        // of the present newVisibleBounds to be fully visible.
+                                                        // Attempt to go up by height of caret.
+                                                        newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
+                                                                newCaretBounds.y - newCaretBounds.height));
+                                                        newCaretBounds = target.modelToView(newCaretOffset);
+                                                    }
+
+                                                    // Shift the new visible bounds so that the caret
+                                                    // does not visually move
+                                                    newVisibleBounds.y = newCaretBounds.y - caretRelY;
+
+                                                    // Scroll the window to the requested rectangle
+                                                    target.scrollRectToVisible(newVisibleBounds);
+
+                                                } else { // Caret outside of originally visible window
+                                                    // Shift the dot by the visible bounds height
+                                                    Point newCaretPoint = new Point(magicCaretPosition.x,
+                                                            caretBounds.y + visibleBounds.height);
+                                                    newCaretOffset = target.viewToModel(newCaretPoint);
+                                                    newCaretBounds = target.modelToView(newCaretOffset);
+                                                }
+
+                                                boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
+                                                Position newCaretPos = doc.createPosition(newCaretOffset);
+                                                if (select) {
+                                                    context.moveDot(caretInfo, newCaretPos);
+                                                } else {
+                                                    context.setDot(caretInfo, newCaretPos);
+                                                }
+
+                                                // Update magic caret position
+                                                magicCaretPosition.y = newCaretBounds.y;
+                                                context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                             }
-
-                                            // Shift the new visible bounds so that the caret
-                                            // does not visually move
-                                            newVisibleBounds.y = newCaretBounds.y - caretRelY;
-
-                                            // Scroll the window to the requested rectangle
-                                            target.scrollRectToVisible(newVisibleBounds);
-
-                                        } else { // Caret outside of originally visible window
-                                            // Shift the dot by the visible bounds height
-                                            Point newCaretPoint = new Point(magicCaretPosition.x,
-                                                    caretBounds.y + visibleBounds.height);
-                                            newCaretOffset = target.viewToModel(newCaretPoint);
-                                            newCaretBounds = target.modelToView(newCaretOffset);
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
-
-                                        boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
-                                        Position newCaretPos = doc.createPosition(newCaretOffset);
-                                        if (select) {
-                                            context.moveDot(caretInfo, newCaretPos);
-                                        } else {
-                                            context.setDot(caretInfo, newCaretPos);
-                                        }
-
-                                        // Update magic caret position
-                                        magicCaretPosition.y = newCaretBounds.y;
-                                        context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                     }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
-                                }
+                                }, new MoveCaretsOrigin(
+                                        MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
+                                );
                             }
-                        }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
-                        );
+                        });
+
                     } else {
-                    int caretOffset = caret.getDot();
-                    Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
-                    if (caretBounds == null) {
-                        return; // Cannot continue reasonably
-                    }
+                        int caretOffset = caret.getDot();
+                        Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
+                        if (caretBounds == null) {
+                            return; // Cannot continue reasonably
+                        }
 
-                    // Retrieve caret magic position and attempt to retain
-                    // the x-coordinate information and use it
-                    // for setting of the new caret position
-                    Point magicCaretPosition = caret.getMagicCaretPosition();
-                    if (magicCaretPosition == null) {
-                        magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
-                    }
-                    
-                    Rectangle visibleBounds = target.getVisibleRect();
-                    int newCaretOffset;
-                    Rectangle newCaretBounds;
+                        // Retrieve caret magic position and attempt to retain
+                        // the x-coordinate information and use it
+                        // for setting of the new caret position
+                        Point magicCaretPosition = caret.getMagicCaretPosition();
+                        if (magicCaretPosition == null) {
+                            magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                        }
 
-                    // Check whether caret was contained in the original visible window
-                    if (visibleBounds.contains(caretBounds)) {
-                        // Clone present view bounds
-                        Rectangle newVisibleBounds = new Rectangle(visibleBounds);
-                        // Do viewToModel() and modelToView() with the left bottom corner
-                        // of the currently visible view.
-                        // That line should be the top line of the next page.
-                        int bottomLeftOffset = target.viewToModel(new Point(
-                                visibleBounds.x, visibleBounds.y + visibleBounds.height));
-                        Rectangle bottomLeftLineBounds = target.modelToView(bottomLeftOffset);
+                        Rectangle visibleBounds = target.getVisibleRect();
+                        int newCaretOffset;
+                        Rectangle newCaretBounds;
 
-                        // newVisibleBounds.y will hold bottom of new view
-                        newVisibleBounds.y = bottomLeftLineBounds.y;
+                        // Check whether caret was contained in the original visible window
+                        if (visibleBounds.contains(caretBounds)) {
+                            // Clone present view bounds
+                            Rectangle newVisibleBounds = new Rectangle(visibleBounds);
+                            // Do viewToModel() and modelToView() with the left bottom corner
+                            // of the currently visible view.
+                            // That line should be the top line of the next page.
+                            int bottomLeftOffset = target.viewToModel(new Point(
+                                    visibleBounds.x, visibleBounds.y + visibleBounds.height));
+                            Rectangle bottomLeftLineBounds = target.modelToView(bottomLeftOffset);
 
-                        // Find the new caret bounds by using relative y position
-                        // on the original caret bounds. If the caret's new relative bounds
-                        // would be visually below the old bounds
-                        // the view should be shifted so that the relative bounds
-                        // are the same (user's eyes do not need to move).
-                        int caretRelY = caretBounds.y - visibleBounds.y;
-                        int caretNewY = newVisibleBounds.y + caretRelY;
-                        newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
-                        newCaretBounds = target.modelToView(newCaretOffset);
-                        if (newCaretBounds.y > caretNewY) {
-                            // Need to go one line above to retain the top line
-                            // of the present newVisibleBounds to be fully visible.
-                            // Attempt to go up by height of caret.
-                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
-                                    newCaretBounds.y - newCaretBounds.height));
+                            // newVisibleBounds.y will hold bottom of new view
+                            newVisibleBounds.y = bottomLeftLineBounds.y;
+
+                            // Find the new caret bounds by using relative y position
+                            // on the original caret bounds. If the caret's new relative bounds
+                            // would be visually below the old bounds
+                            // the view should be shifted so that the relative bounds
+                            // are the same (user's eyes do not need to move).
+                            int caretRelY = caretBounds.y - visibleBounds.y;
+                            int caretNewY = newVisibleBounds.y + caretRelY;
+                            newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x, caretNewY));
+                            newCaretBounds = target.modelToView(newCaretOffset);
+                            if (newCaretBounds.y > caretNewY) {
+                                // Need to go one line above to retain the top line
+                                // of the present newVisibleBounds to be fully visible.
+                                // Attempt to go up by height of caret.
+                                newCaretOffset = target.viewToModel(new Point(magicCaretPosition.x,
+                                        newCaretBounds.y - newCaretBounds.height));
+                                newCaretBounds = target.modelToView(newCaretOffset);
+                            }
+
+                            // Shift the new visible bounds so that the caret
+                            // does not visually move
+                            newVisibleBounds.y = newCaretBounds.y - caretRelY;
+
+                            // Scroll the window to the requested rectangle
+                            target.scrollRectToVisible(newVisibleBounds);
+
+                        } else { // Caret outside of originally visible window
+                            // Shift the dot by the visible bounds height
+                            Point newCaretPoint = new Point(magicCaretPosition.x,
+                                    caretBounds.y + visibleBounds.height);
+                            newCaretOffset = target.viewToModel(newCaretPoint);
                             newCaretBounds = target.modelToView(newCaretOffset);
                         }
 
-                        // Shift the new visible bounds so that the caret
-                        // does not visually move
-                        newVisibleBounds.y = newCaretBounds.y - caretRelY;
+                        boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
+                        if (select) {
+                            caret.moveDot(newCaretOffset);
+                        } else {
+                            caret.setDot(newCaretOffset);
+                        }
 
-                        // Scroll the window to the requested rectangle
-                        target.scrollRectToVisible(newVisibleBounds);
-                        
-                    } else { // Caret outside of originally visible window
-                        // Shift the dot by the visible bounds height
-                        Point newCaretPoint = new Point(magicCaretPosition.x,
-                                caretBounds.y + visibleBounds.height);
-                        newCaretOffset = target.viewToModel(newCaretPoint);
-                        newCaretBounds = target.modelToView(newCaretOffset);
-                    }
-
-                    boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
-                    if (select) {
-                        caret.moveDot(newCaretOffset);
-                    } else {
-                        caret.setDot(newCaretOffset);
-                    }
-                    
-                    // Update magic caret position
-                    magicCaretPosition.y = newCaretBounds.y;
-                    caret.setMagicCaretPosition(magicCaretPosition);
+                        // Update magic caret position
+                        magicCaretPosition.y = newCaretBounds.y;
+                        caret.setMagicCaretPosition(magicCaretPosition);
                     }
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
@@ -3234,37 +3260,41 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
-                    EditorCaret editorCaret = (EditorCaret) caret;
+                    final EditorCaret editorCaret = (EditorCaret) caret;
                     if (select && RectangularSelectionUtils.isRectangularSelection(target)) {
                         RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, false, false);
                     } else {
-                        editorCaret.moveCarets(new CaretMoveHandler() {
+                        doc.render(new Runnable() {
                             @Override
-                            public void moveCarets(CaretMoveContext context) {
-                                for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                    try {
-                                        if (!select && caretInfo.isSelection()) {
-                                            int offset = caretInfo.getSelectionStart();
-                                            context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
-                                        } else {
-                                            int offset = caretInfo.getDot();
-                                            offset = target.getUI().getNextVisualPositionFrom(target,
-                                                    offset, Position.Bias.Backward, SwingConstants.WEST, null);
-                                            Position dotPos = doc.createPosition(offset);
-                                            if (select) {
-                                                context.moveDot(caretInfo, dotPos);
-                                            } else {
-                                                context.setDot(caretInfo, dotPos);
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            try {
+                                                if (!select && caretInfo.isSelection()) {
+                                                    int offset = caretInfo.getSelectionStart();
+                                                    context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
+                                                } else {
+                                                    int offset = caretInfo.getDot();
+                                                    offset = target.getUI().getNextVisualPositionFrom(target,
+                                                            offset, Position.Bias.Backward, SwingConstants.WEST, null);
+                                                    Position dotPos = doc.createPosition(offset);
+                                                    if (select) {
+                                                        context.moveDot(caretInfo, dotPos);
+                                                    } else {
+                                                        context.setDot(caretInfo, dotPos);
+                                                    }
+                                                }
+                                            } catch (BadLocationException ex) {
+                                                target.getToolkit().beep();
                                             }
                                         }
-                                    } catch (BadLocationException ex) {
-                                        target.getToolkit().beep();
                                     }
-                                }
-                            }
-                        }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
-                        );
+                                }, new MoveCaretsOrigin(
+                                        MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
+                                );                            }
+                        });
                     }
                 } else {
                     try {
@@ -3335,136 +3365,141 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
-                    EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int dot = caretInfo.getDot();
-                                    // #232675: if bounds are defined, use them rather than line start/end
-                                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                                    PositionRegion bounds = null;
-                                    if (o instanceof PositionRegion) {
-                                        bounds = (PositionRegion) o;
-                                        int start = bounds.getStartOffset();
-                                        int end = bounds.getEndOffset();
-                                        if (dot > start && dot <= end) {
-                                            // move to the region start
-                                            dot = start;
-                                        } else {
-                                            bounds = null;
-                                        }
-                                    }
-
-                                    if (bounds == null) {
-                                        int lineStartPos = Utilities.getRowStart(target, dot);
-                                        if (homeKeyColumnOne) { // to first column
-                                            dot = lineStartPos;
-                                        } else { // either to line start or text start
-                                            BaseDocument doc = (BaseDocument) target.getDocument();
-                                            int textStartPos = Utilities.getRowFirstNonWhite(doc, lineStartPos);
-                                            if (textStartPos < 0) { // no text on the line
-                                                textStartPos = Utilities.getRowEnd(target, lineStartPos);
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            // #232675: if bounds are defined, use them rather than line start/end
+                                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                                            PositionRegion bounds = null;
+                                            if (o instanceof PositionRegion) {
+                                                bounds = (PositionRegion) o;
+                                                int start = bounds.getStartOffset();
+                                                int end = bounds.getEndOffset();
+                                                if (dot > start && dot <= end) {
+                                                    // move to the region start
+                                                    dot = start;
+                                                } else {
+                                                    bounds = null;
+                                                }
                                             }
-                                            if (dot == lineStartPos) { // go to the text start pos
-                                                dot = textStartPos;
-                                            } else if (dot <= textStartPos) {
-                                                dot = lineStartPos;
+
+                                            if (bounds == null) {
+                                                int lineStartPos = Utilities.getRowStart(target, dot);
+                                                if (homeKeyColumnOne) { // to first column
+                                                    dot = lineStartPos;
+                                                } else { // either to line start or text start
+                                                    BaseDocument doc = (BaseDocument) target.getDocument();
+                                                    int textStartPos = Utilities.getRowFirstNonWhite(doc, lineStartPos);
+                                                    if (textStartPos < 0) { // no text on the line
+                                                        textStartPos = Utilities.getRowEnd(target, lineStartPos);
+                                                    }
+                                                    if (dot == lineStartPos) { // go to the text start pos
+                                                        dot = textStartPos;
+                                                    } else if (dot <= textStartPos) {
+                                                        dot = lineStartPos;
+                                                    } else {
+                                                        dot = textStartPos;
+                                                    }
+                                                }
+                                            }
+                                            // For partial view hierarchy check bounds
+                                            dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
+                                            String actionName = (String) getValue(Action.NAME);
+                                            boolean select = selectionBeginLineAction.equals(actionName)
+                                                    || selectionLineFirstColumnAction.equals(actionName);
+
+                                            // If possible scroll the view to its begining horizontally
+                                            // to ease user's orientation in the code.
+                                            Rectangle r = target.modelToView(dot);
+                                            Rectangle visRect = target.getVisibleRect();
+                                            if (r.getMaxX() < visRect.getWidth()) {
+                                                r.x = 0;
+                                                target.scrollRectToVisible(r);
+                                            }
+
+                                            Position dotPos = doc.createPosition(dot);
+                                            if (select) {
+                                                context.moveDot(caretInfo, dotPos);
                                             } else {
-                                                dot = textStartPos;
+                                                context.setDot(caretInfo, dotPos);
                                             }
+                                        } catch (BadLocationException e) {
+                                            target.getToolkit().beep();
                                         }
                                     }
-                                    // For partial view hierarchy check bounds
-                                    dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
-                                    String actionName = (String) getValue(Action.NAME);
-                                    boolean select = selectionBeginLineAction.equals(actionName)
-                                            || selectionLineFirstColumnAction.equals(actionName);
+                                }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
+                            );
+                        }
+                    });
+                } else {
+                    try {
+                        int dot = caret.getDot();
+                        // #232675: if bounds are defined, use them rather than line start/end
+                        Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                        PositionRegion bounds = null;
+                        if (o instanceof PositionRegion) {
+                            bounds = (PositionRegion)o;
+                            int start = bounds.getStartOffset();
+                            int end = bounds.getEndOffset();
+                            if (dot > start && dot <= end) {
+                                // move to the region start
+                                dot = start;
+                            } else {
+                                bounds = null;
+                            }
+                        }
 
-                                    // If possible scroll the view to its begining horizontally
-                                    // to ease user's orientation in the code.
-                                    Rectangle r = target.modelToView(dot);
-                                    Rectangle visRect = target.getVisibleRect();
-                                    if (r.getMaxX() < visRect.getWidth()) {
-                                        r.x = 0;
-                                        target.scrollRectToVisible(r);
-                                    }
-
-                                    Position dotPos = doc.createPosition(dot);
-                                    if (select) {
-                                        context.moveDot(caretInfo, dotPos);
-                                    } else {
-                                        context.setDot(caretInfo, dotPos);
-                                    }
-                                } catch (BadLocationException e) {
-                                    target.getToolkit().beep();
+                        if (bounds == null) {
+                            int lineStartPos = Utilities.getRowStart(target, dot);
+                            if (homeKeyColumnOne) { // to first column
+                                dot = lineStartPos;
+                            } else { // either to line start or text start
+                                int textStartPos = Utilities.getRowFirstNonWhite(((BaseDocument)doc), lineStartPos);
+                                if (textStartPos < 0) { // no text on the line
+                                    textStartPos = Utilities.getRowEnd(target, lineStartPos);
+                                }
+                                if (dot == lineStartPos) { // go to the text start pos
+                                    dot = textStartPos;
+                                } else if (dot <= textStartPos) {
+                                    dot = lineStartPos;
+                                } else {
+                                    dot = textStartPos;
                                 }
                             }
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
-                    );
-                } else {
-                try {
-                    int dot = caret.getDot();
-                    // #232675: if bounds are defined, use them rather than line start/end
-                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                    PositionRegion bounds = null;
-                    if (o instanceof PositionRegion) {
-                        bounds = (PositionRegion)o;
-                        int start = bounds.getStartOffset();
-                        int end = bounds.getEndOffset();
-                        if (dot > start && dot <= end) {
-                            // move to the region start
-                            dot = start;
-                        } else {
-                            bounds = null;
-                        }
-                    }
-                    
-                    if (bounds == null) {
-                        int lineStartPos = Utilities.getRowStart(target, dot);
-                        if (homeKeyColumnOne) { // to first column
-                            dot = lineStartPos;
-                        } else { // either to line start or text start
-                            int textStartPos = Utilities.getRowFirstNonWhite(((BaseDocument)doc), lineStartPos);
-                            if (textStartPos < 0) { // no text on the line
-                                textStartPos = Utilities.getRowEnd(target, lineStartPos);
-                            }
-                            if (dot == lineStartPos) { // go to the text start pos
-                                dot = textStartPos;
-                            } else if (dot <= textStartPos) {
-                                dot = lineStartPos;
-                            } else {
-                                dot = textStartPos;
-                            }
-                        }
-                    }
-                    // For partial view hierarchy check bounds
-                    dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
-                    String actionName = (String) getValue(Action.NAME);
-                    boolean select = selectionBeginLineAction.equals(actionName)
-                            || selectionLineFirstColumnAction.equals(actionName);
-                    
-                    // If possible scroll the view to its begining horizontally
-                    // to ease user's orientation in the code.
-                    Rectangle r = target.modelToView(dot);
-                    Rectangle visRect = target.getVisibleRect();
-                    if (r.getMaxX() < visRect.getWidth()) {
-                        r.x = 0;
-                        target.scrollRectToVisible(r);
-                    }
+                        // For partial view hierarchy check bounds
+                        dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
+                        String actionName = (String) getValue(Action.NAME);
+                        boolean select = selectionBeginLineAction.equals(actionName)
+                                || selectionLineFirstColumnAction.equals(actionName);
 
-                    if (select) {
-                        caret.moveDot(dot);
-                    } else {
-                        caret.setDot(dot);
+                        // If possible scroll the view to its begining horizontally
+                        // to ease user's orientation in the code.
+                        Rectangle r = target.modelToView(dot);
+                        Rectangle visRect = target.getVisibleRect();
+                        if (r.getMaxX() < visRect.getWidth()) {
+                            r.x = 0;
+                            target.scrollRectToVisible(r);
+                        }
+
+                        if (select) {
+                            caret.moveDot(dot);
+                        } else {
+                            caret.setDot(dot);
+                        }
+                    } catch (BadLocationException e) {
+                        target.getToolkit().beep();
                     }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
                 }
-            }
             }
         }
     }
@@ -3484,96 +3519,103 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                Caret caret = target.getCaret();
+                final Caret caret = target.getCaret();
                 if(caret instanceof EditorCaret) {
-                    ((EditorCaret) caret).moveCarets(new org.netbeans.spi.editor.caret.CaretMoveHandler() {
+                    Document doc = target.getDocument();
+                    doc.render(new Runnable() {
                         @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    // #232675: if bounds are defined, use them rather than line start/end
-                                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                                    int dot = -1;
+                        public void run() {
+                            ((EditorCaret) caret).moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            // #232675: if bounds are defined, use them rather than line start/end
+                                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                                            int dot = -1;
 
-                                    if (o instanceof PositionRegion) {
-                                        PositionRegion bounds = (PositionRegion) o;
-                                        int start = bounds.getStartOffset();
-                                        int end = bounds.getEndOffset();
-                                        int d = caretInfo.getDot();
-                                        if (d >= start && d < end) {
-                                            // move to the region start
-                                            dot = end;
+                                            if (o instanceof PositionRegion) {
+                                                PositionRegion bounds = (PositionRegion) o;
+                                                int start = bounds.getStartOffset();
+                                                int end = bounds.getEndOffset();
+                                                int d = caretInfo.getDot();
+                                                if (d >= start && d < end) {
+                                                    // move to the region start
+                                                    dot = end;
+                                                }
+                                            }
+
+                                            if (dot == -1) {
+                                                dot = Utilities.getRowEnd(target, caretInfo.getDot());
+                                            }
+
+                                            // For partial view hierarchy check bounds
+                                            dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
+                                            boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
+                                            Position dotPos = context.getDocument().createPosition(dot);
+                                            if (select) {
+                                                context.moveDot(caretInfo, dotPos);
+                                            } else {
+                                                context.setDot(caretInfo, dotPos);
+                                            }
+                                            // now move the magic caret position far to the right
+                                            Rectangle r = target.modelToView(dot);
+                                            if (r != null) {
+                                                Point p = new Point(MAGIC_POSITION_MAX, r.y);
+                                                context.setMagicCaretPosition(caretInfo, p);
+                                            }
+                                        } catch (BadLocationException e) {
+                                            e.printStackTrace();
+                                            target.getToolkit().beep();
                                         }
                                     }
-
-                                    if (dot == -1) {
-                                        dot = Utilities.getRowEnd(target, caretInfo.getDot());
-                                    }
-
-                                    // For partial view hierarchy check bounds
-                                    dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
-                                    boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
-                                    Position dotPos = context.getDocument().createPosition(dot);
-                                    if (select) {
-                                        context.moveDot(caretInfo, dotPos);
-                                    } else {
-                                        context.setDot(caretInfo, dotPos);
-                                    }
-                                    // now move the magic caret position far to the right
-                                    Rectangle r = target.modelToView(dot);
-                                    if (r != null) {
-                                        Point p = new Point(MAGIC_POSITION_MAX, r.y);
-                                        context.setMagicCaretPosition(caretInfo, p);
-                                    }
-                                } catch (BadLocationException e) {
-                                    e.printStackTrace();
-                                    target.getToolkit().beep();
                                 }
+                            }, new MoveCaretsOrigin(
+                                    MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
+                            );
+                        }
+                    });
+
+                } else {
+                    try {
+                        // #232675: if bounds are defined, use them rather than line start/end
+                        Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                        int dot = -1;
+
+                        if (o instanceof PositionRegion) {
+                            PositionRegion bounds = (PositionRegion)o;
+                            int start = bounds.getStartOffset();
+                            int end = bounds.getEndOffset();
+                            int d = caret.getDot();
+                            if (d >= start && d < end) {
+                                // move to the region start
+                                dot = end;
                             }
                         }
-                    }, new MoveCaretsOrigin(
-                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
-                    );
-                } else {
-                try {
-                    // #232675: if bounds are defined, use them rather than line start/end
-                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                    int dot = -1;
-                    
-                    if (o instanceof PositionRegion) {
-                        PositionRegion bounds = (PositionRegion)o;
-                        int start = bounds.getStartOffset();
-                        int end = bounds.getEndOffset();
-                        int d = caret.getDot();
-                        if (d >= start && d < end) {
-                            // move to the region start
-                            dot = end;
-                        }
-                    }
 
-                    if (dot == -1) {
-                        dot = Utilities.getRowEnd(target, caret.getDot());
+                        if (dot == -1) {
+                            dot = Utilities.getRowEnd(target, caret.getDot());
+                        }
+
+                        // For partial view hierarchy check bounds
+                        dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
+                        boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
+                        if (select) {
+                            caret.moveDot(dot);
+                        } else {
+                            caret.setDot(dot);
+                        }
+                        // now move the magic caret position far to the right
+                        Rectangle r = target.modelToView(dot);
+                        if (r!=null){
+                            Point p = new Point(MAGIC_POSITION_MAX, r.y);
+                            caret.setMagicCaretPosition(p);
+                        }
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                        target.getToolkit().beep();
                     }
-                    
-                    // For partial view hierarchy check bounds
-                    dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
-                    boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
-                    if (select) {
-                        caret.moveDot(dot);
-                    } else {
-                        caret.setDot(dot);
-                    }
-                    // now move the magic caret position far to the right
-                    Rectangle r = target.modelToView(dot);
-                    if (r!=null){
-                        Point p = new Point(MAGIC_POSITION_MAX, r.y);
-                        caret.setMagicCaretPosition(p);
-                    }
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
-                    target.getToolkit().beep();
                 }
-            }
             }
         }
     }

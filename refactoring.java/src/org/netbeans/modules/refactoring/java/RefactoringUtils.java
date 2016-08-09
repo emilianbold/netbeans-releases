@@ -881,6 +881,9 @@ public class RefactoringUtils {
     @Deprecated
     public static @NullUnknown
     TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
+        if (path == null) {
+            return null;
+        }
         Tree selectedTree = path.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
         while (true) {
@@ -978,7 +981,9 @@ public class RefactoringUtils {
             return null;
         }
         Element var = info.getTrees().getElement(tp);
-        lookup.scan(scopeBlok, var);
+        if (var != null) {
+            lookup.scan(scopeBlok, var);
+        }
 
         if (lookup.hasRefernces()) {
             return NbBundle.getMessage(RefactoringUtils.class, "MSG_LocVariableClash",newName);
@@ -1119,6 +1124,19 @@ public class RefactoringUtils {
             }
         }
         return false;
+    }
+    
+    /**
+     * Checks if the element is a method or constructor. Returns {@code false} for {@code null} input.
+     * @param e element to check
+     * @return true iff the element is a constructor or method.
+     */
+    public static boolean isExecutableElement(Element e) {
+        if (e == null) {
+            return false;
+        }
+        ElementKind ek = e.getKind();
+        return ek == ElementKind.CONSTRUCTOR || ek == ElementKind.METHOD;
     }
 
     private RefactoringUtils() {

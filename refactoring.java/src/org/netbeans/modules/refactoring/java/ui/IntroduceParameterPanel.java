@@ -164,7 +164,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         
                         Element methodElement = info.getTrees().getElement(methodPath);
                         Doc javadocDoc = info.getElementUtilities().javaDocFor(methodElement);
-                        if(javadocDoc.commentText() == null || javadocDoc.getRawCommentText().equals("")) {
+                        if(javadocDoc != null && javadocDoc.commentText() == null || javadocDoc.getRawCommentText().equals("")) {
                             chkGenJavadoc.setEnabled(true);
                             chkGenJavadoc.setVisible(true);
                             chkUpdateJavadoc.setVisible(false);

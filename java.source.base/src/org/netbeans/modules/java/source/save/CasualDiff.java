@@ -2700,7 +2700,7 @@ public class CasualDiff {
                 localpointer = bounds[0];
             }
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), oldT, null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -3906,13 +3906,25 @@ public class CasualDiff {
                 localPointer);
     }
     
+    private DocCommentTree getDocComment(JCTree t, boolean old) {
+        if (t instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)t;
+            List<JCVariableDecl> vars = fgt.getVariables();
+            t = vars.get(0);
+        }
+        return old ?  oldTopLevel.docComments.getCommentTree(t) : tree2Doc.get(t);
+    }
+    
     // note: the oldTreeStartPos must be the real start, without preceding comments.
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer, boolean doNotDelete) {
+        if (parent instanceof FieldGroupTree) {
+            return localPointer;
+        }
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
         List<Comment> oldPrecedingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.PRECEDING) : old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-        DocCommentTree newD = tree2Doc.get(newT);
+        DocCommentTree newD = getDocComment(newT, false);
         if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null) {
             if (oldPrecedingComments.isEmpty()) {
                 return localPointer;
@@ -3926,7 +3938,7 @@ public class CasualDiff {
             }
             
         }
-        DocCommentTree oldD = oldTopLevel.docComments.getCommentTree(oldT);
+        DocCommentTree oldD = getDocComment(oldT, true);
         return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, oldD, newD, false, true, false,
                 doNotDelete,
                 localPointer);
@@ -4929,11 +4941,16 @@ public class CasualDiff {
      * diffTreeImpl will print the comments. At the end, the flag is reset to the original value
      */
     private boolean innerCommentsProcessed;
+    
+    private JCTree parent;
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         boolean saveInnerComments = this.innerCommentsProcessed;
+        JCTree saveParent = this.parent;
+        this.parent = parent;
         int ret = diffTreeImpl0(oldT, newT, parent, elementBounds);
         this.innerCommentsProcessed = saveInnerComments;
+        this.parent = saveParent;
         return ret;
     }
     

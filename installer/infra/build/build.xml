@@ -341,7 +341,7 @@
         <echo message="Property glassfish-mod.milestone.number: ${glassfish-mod.milestone.number}"/>
         <echo message="Property glassfish-mod.milestone.number.real: ${glassfish-mod.milestone.number.real}"/>
         <echo message="Property glassfish-mod.build.number: ${glassfish-mod.build.number}"/>
-        
+
         <!--
 	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
 	<set property="glassfish-mod-sun.milestone.number.real" value="74b"/>
