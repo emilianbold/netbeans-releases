@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.completion;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -81,7 +82,9 @@ public final class PhpTypeCompletionProviderWrapper implements CompletionProvide
         public Set<String> getItems(FileObject sourceFile, String prefix) {
             Set<String> result = new HashSet<>();
             for (TypeElement typeElement : ElementFilter.forName(NameKind.prefix(prefix)).filter(getElements(sourceFile))) {
-                result.add(typeElement.getFullyQualifiedName().toString());
+                if (!CodeUtils.isSyntheticTypeName(typeElement.getName())) {
+                    result.add(typeElement.getFullyQualifiedName().toString());
+                }
             }
             return result;
         }
