@@ -48,7 +48,7 @@ import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visib
  *
  * @author Ralph Ruijs
  */
-public class MoveMethodTest extends MoveBaseTest {
+public class MoveMethodTest extends MoveBase {
 
     public MoveMethodTest(String name) {
         super(name);

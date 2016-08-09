@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints.suggestions;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -54,7 +55,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -119,26 +124,45 @@ public class TooStrongCast {
         CompilationInfo info = ctx.getInfo();
         ExecutableElement exec = null;
         
-        if (parentExec != null) {
-            exec = (ExecutableElement)info.getTrees().getElement(parentExec);
-            if (exec == null) {
-                return null;
-            }
-            argIndex = exp.getArgumentIndex();
-            varargs = exec.isVarArgs() && argIndex == exec.getParameters().size() - 1;
-        }
-        if (types == null) {
-            return null;
-        }
-        
         // obtain the type of the casted expression. Some of the proposed types may be even type-compatible,
         // which means we could remove the cast at all.
         // just in case, non-castable types should be removed.
         TypeCastTree tct = (TypeCastTree)ctx.getPath().getLeaf();
         TreePath realExpressionPath = new TreePath(ctx.getPath(), tct.getExpression());
         TypeMirror casteeType = info.getTrees().getTypeMirror(realExpressionPath);
+
+        if (parentExec != null) {
+            exec = (ExecutableElement)info.getTrees().getElement(parentExec);
+            if (exec == null) {
+                return null;
+            }
+            argIndex = exp.getArgumentIndex();
+            varargs = exec.isVarArgs() && argIndex == exec.getParameters().size() - 1; 
+            // check if the parent executable is not signature - polymorphic:
+            if (isPolymorphicSignature(info, parentExec)) {
+                casteeType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+        }
+        if (types == null) {
+            return null;
+        }
+        
         if (!Utilities.isValidType(casteeType)) {
             return null;
+        }
+
+        Tree castExp = tct.getExpression();
+        while (castExp != null && castExp.getKind() == Tree.Kind.PARENTHESIZED) {
+            castExp = ((ParenthesizedTree)castExp).getExpression();
+        }
+        if (castExp == null) {
+            return null;
+        } else if (castExp.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            TreePath mitPath = new TreePath(ctx.getPath(), castExp);
+            if (isPolymorphicSignature(info, mitPath)) {
+                // reset the castee type to prevent "redundant cast" errors.
+                casteeType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
         }
         String lst = null;
         List<TypeMirror> filteredTypes = new ArrayList<TypeMirror>(types.size());
@@ -250,6 +274,33 @@ public class TooStrongCast {
         String msg = TEXT_TooStrongCast(currentTypeName, lst);
         
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), msg, fixes);
+    }
+    
+    private static boolean isPolymorphicSignature(CompilationInfo info, TreePath path) {
+        TypeElement polymorphicEl=  info.getElements().getTypeElement("java.lang.invoke.MethodHandle.PolymorphicSignature"); // NOI18N
+        if (polymorphicEl == null) {
+            // unsuitable platform
+            return false;
+        }
+        TypeMirror polyType = polymorphicEl.asType();
+        Element target = info.getTrees().getElement(path);
+        if (target == null || target.getKind() != ElementKind.METHOD) {
+            return false;
+        }
+        if (target.getEnclosingElement() == null || !target.getEnclosingElement().getKind().isClass()) {
+            return false;
+        }
+        ExecutableElement ee = (ExecutableElement)target;
+        TypeElement parent = (TypeElement)target.getEnclosingElement();
+        if (!parent.getQualifiedName().toString().startsWith("java.lang.invoke.")) { // NOI18N
+            return false;
+        }
+        for (AnnotationMirror am : ee.getAnnotationMirrors()) {
+            if (info.getTypes().isSameType(polyType, am.getAnnotationType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static ErrorDescription reportUselessCast(HintContext ctx, TypeCastTree tct, 

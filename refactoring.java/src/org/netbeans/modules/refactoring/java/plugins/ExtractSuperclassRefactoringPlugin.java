@@ -419,23 +419,25 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         @Override
         public Tree visitVariable(VariableTree variableTree, Element p) {
             Element current = workingCopy.getTrees().getElement(getCurrentPath());
-            for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
-                if (memberInfo.getGroup() == MemberInfo.Group.FIELD
-                        && memberInfo.getElementHandle().resolve(workingCopy) == current) {
-                    GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
-                    members2Remove.add(variableTree);
-                    VariableTree copy = genUtils.importComments(variableTree, workingCopy.getCompilationUnit());
-                    copy = genUtils.importFQNs(copy);
-                    ModifiersTree modifiers = copy.getModifiers();
-                    if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
-                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
-                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
-                        copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
-                        genUtils.copyComments(variableTree, copy, false);
-                        genUtils.copyComments(variableTree, copy, true);
+            if (current != null) {
+                for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
+                    if (memberInfo.getGroup() == MemberInfo.Group.FIELD
+                            && memberInfo.getElementHandle().resolve(workingCopy) == current) {
+                        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                        members2Remove.add(variableTree);
+                        VariableTree copy = genUtils.importComments(variableTree, workingCopy.getCompilationUnit());
+                        copy = genUtils.importFQNs(copy);
+                        ModifiersTree modifiers = copy.getModifiers();
+                        if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                            modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                            modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                            copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
+                            genUtils.copyComments(variableTree, copy, false);
+                            genUtils.copyComments(variableTree, copy, true);
+                        }
+                        members.add(copy);
+                        break;
                     }
-                    members.add(copy);
-                    break;
                 }
             }
             return variableTree;
@@ -445,51 +447,53 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         public Tree visitMethod(final MethodTree methodTree, Element p) {
             final Trees trees = workingCopy.getTrees();
             Element current = trees.getElement(getCurrentPath());
-            for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
-                if (memberInfo.getGroup() == MemberInfo.Group.METHOD
-                        && memberInfo.getElementHandle().resolve(workingCopy) == current) {
-                    if(!memberInfo.isMakeAbstract()) {
-                        members2Remove.add(methodTree);
+            if (current != null) {
+                for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
+                    if (memberInfo.getGroup() == MemberInfo.Group.METHOD
+                            && memberInfo.getElementHandle().resolve(workingCopy) == current) {
+                        if(!memberInfo.isMakeAbstract()) {
+                            members2Remove.add(methodTree);
+                        }
+                        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                        MethodTree newMethod = genUtils.importComments(methodTree, workingCopy.getCompilationUnit());
+                        ModifiersTree modifiers = methodTree.getModifiers();
+                        if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                            modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                            modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                        }
+                        newMethod = genUtils.importFQNs(newMethod);
+                        modifiers = genUtils.importFQNs(modifiers);
+                        final List<? extends TypeMirror> thrownTypes = ((ExecutableElement)current).getThrownTypes();
+                        List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+                        for (TypeMirror typeMirror : thrownTypes) {
+                            newThrownTypes.add((ExpressionTree) make.Type(typeMirror)); // Necessary as this is not covered by importFQNs
+                        }
+                        if (memberInfo.isMakeAbstract() && !current.getModifiers().contains(Modifier.ABSTRACT)) {
+                            newMethod = make.Method(
+                                    RefactoringUtils.makeAbstract(make, modifiers),
+                                    newMethod.getName(),
+                                    newMethod.getReturnType(),
+                                    newMethod.getTypeParameters(),
+                                    newMethod.getParameters(),
+                                    newThrownTypes,
+                                    (BlockTree) null,
+                                    null);
+                        } else {
+                            newMethod = make.Method(modifiers,
+                                    newMethod.getName(),
+                                    newMethod.getReturnType(),
+                                    newMethod.getTypeParameters(),
+                                    newMethod.getParameters(),
+                                    newThrownTypes,
+                                    newMethod.getBody(),
+                                    (ExpressionTree) newMethod.getDefaultValue());
+                        }
+                        genUtils.copyComments(methodTree, newMethod, false);
+                        genUtils.copyComments(methodTree, newMethod, true);
+                        makeAbstract |= newMethod.getModifiers().getFlags().contains(Modifier.ABSTRACT);
+                        members.add(newMethod);
+                        break;
                     }
-                    GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
-                    MethodTree newMethod = genUtils.importComments(methodTree, workingCopy.getCompilationUnit());
-                    ModifiersTree modifiers = methodTree.getModifiers();
-                    if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
-                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
-                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
-                    }
-                    newMethod = genUtils.importFQNs(newMethod);
-                    modifiers = genUtils.importFQNs(modifiers);
-                    final List<? extends TypeMirror> thrownTypes = ((ExecutableElement)current).getThrownTypes();
-                    List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
-                    for (TypeMirror typeMirror : thrownTypes) {
-                        newThrownTypes.add((ExpressionTree) make.Type(typeMirror)); // Necessary as this is not covered by importFQNs
-                    }
-                    if (memberInfo.isMakeAbstract() && !current.getModifiers().contains(Modifier.ABSTRACT)) {
-                        newMethod = make.Method(
-                                RefactoringUtils.makeAbstract(make, modifiers),
-                                newMethod.getName(),
-                                newMethod.getReturnType(),
-                                newMethod.getTypeParameters(),
-                                newMethod.getParameters(),
-                                newThrownTypes,
-                                (BlockTree) null,
-                                null);
-                    } else {
-                        newMethod = make.Method(modifiers,
-                                newMethod.getName(),
-                                newMethod.getReturnType(),
-                                newMethod.getTypeParameters(),
-                                newMethod.getParameters(),
-                                newThrownTypes,
-                                newMethod.getBody(),
-                                (ExpressionTree) newMethod.getDefaultValue());
-                    }
-                    genUtils.copyComments(methodTree, newMethod, false);
-                    genUtils.copyComments(methodTree, newMethod, true);
-                    makeAbstract |= newMethod.getModifiers().getFlags().contains(Modifier.ABSTRACT);
-                    members.add(newMethod);
-                    break;
                 }
             }
             return methodTree;

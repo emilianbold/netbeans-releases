@@ -83,6 +83,8 @@ public class CommentHandlerService implements CommentHandler {
 
     private final Map<Tree, CommentSetImpl> map = new HashMap<Tree, CommentSetImpl>();
     
+    private boolean frozen;
+    
     private CommentHandlerService(Context context) {
     }
     
@@ -95,6 +97,13 @@ public class CommentHandlerService implements CommentHandler {
             }
         }
         return m;
+    }
+    
+    public void freeze() {
+        frozen = true;
+        for (CommentSetImpl impl : map.values()) {
+            impl.commentsMapped();
+        }
     }
     
     public boolean hasComments(Tree tree) {
@@ -110,6 +119,9 @@ public class CommentHandlerService implements CommentHandler {
                 // note - subsequent change to the CommentSetImpl will clone the old (empty) set of comments into CommentSetImpl
                 // optimization NOT to retain empty CSImpls is not possible; the caller may modify the return value.
                 cs = new CommentSetImpl();
+                if (frozen) {
+                    cs.commentsMapped();
+                }
                 map.put(tree, cs);
             }
             return cs;
@@ -140,6 +152,9 @@ public class CommentHandlerService implements CommentHandler {
                 CommentSetImpl to = map.get(toTree);
                 if (to == null) {
                     map.put(toTree, to = new CommentSetImpl());
+                    if (frozen) {
+                        to.commentsMapped();
+                    }
                 }
                 for (RelativePosition pos : RelativePosition.values()) {
                     int index = 0;
@@ -165,6 +180,7 @@ public class CommentHandlerService implements CommentHandler {
                     if (last == -1) {
                         last = l.size() - 1;
                     }
+                    CopyEntry en = new CopyEntry();
                     for (index = first; index <= last; index++) {
                         Comment c = l.get(index);
                         if (copied != null && !copied.add(c)) {
@@ -177,6 +193,12 @@ public class CommentHandlerService implements CommentHandler {
         }
     }
     
+    private static class CopyEntry {
+        private Tree target;
+        private RelativePosition pos;
+        private Collection<Comment> comments = new ArrayList();
+    }
+    
     /**
      * Add a comment to a tree's comment set.  If a comment set
      * for the tree doesn't exist, one will be created.
@@ -186,6 +208,9 @@ public class CommentHandlerService implements CommentHandler {
             CommentSetImpl set = map.get(tree);
             if (set == null) {
                 set = new CommentSetImpl();
+                if (frozen) {
+                    set.commentsMapped();
+                }
                 map.put(tree, set);
             }
             set.addPrecedingComment(c);

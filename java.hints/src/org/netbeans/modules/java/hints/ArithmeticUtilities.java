@@ -51,6 +51,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
@@ -460,9 +461,18 @@ public class ArithmeticUtilities {
                     obj = UNKNOWN;
                 }
             }
-            if (obj == null) {
+            EVAL: if (obj == null) {
                 TreePath varPath = info.getTrees().getPath(el);
                 if (varPath != null && varPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                    // #262309: if variable is errnoeously referenced from its own initializer, we must not recurse.
+                    for (Tree t : path) {
+                        if (t == varPath.getLeaf()) {
+                            break EVAL;
+                        }
+                        if (StatementTree.class.isAssignableFrom(t.getKind().asInterface())) {
+                            break;
+                        }
+                    }
                     VariableTree vt = (VariableTree)varPath.getLeaf();
                     if (vt.getInitializer() != null) {
                         VisitorImpl recurse = new VisitorImpl(info, true, enhanceProcessing);

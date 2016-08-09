@@ -266,6 +266,12 @@ public class TryCatchFinally {
         }
 
         @Override
+        public Void scan(TreePath path, Collection<TreePath> p) {
+            seenTrees.add(path.getLeaf());
+            return super.scan(path, p);
+        }
+
+        @Override
         public Void scan(Tree tree, Collection<TreePath> trees) {
             seenTrees.add(tree);
             return super.scan(tree, trees);
