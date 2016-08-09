@@ -726,7 +726,9 @@ public class JavacParser extends Parser {
         if (mayBeParser.filter((p)->p.sourceCount>1).isPresent()) {
             flags.add(ConfigFlags.MULTI_SOURCE);
         }
-        if (mayBeParser.map(p->(p.file)).filter((f)->FileObjects.MODULE_INFO.equals(f.getName())).isPresent()) {
+        if (Optional.ofNullable(mayBeParser.map(p->(p.file))
+                .orElse(file))
+                .filter((f)->FileObjects.MODULE_INFO.equals(f.getName())).isPresent()) {
             flags.add(ConfigFlags.MODULE_INFO);
         }
         final JavacTaskImpl javacTask = createJavacTask(
