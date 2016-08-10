@@ -457,7 +457,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     public void resolveTypes(JsDocumentationHolder jsDocHolder) {
-        if (parent == null) {
+        if (parent == null 
+                || (parent != null && parent.getOffset() == getOffset() && ModelUtils.ARGUMENTS.equals(getName())) ) {
             return;
         }
         Collection<TypeUsage> resolved = new ArrayList();
