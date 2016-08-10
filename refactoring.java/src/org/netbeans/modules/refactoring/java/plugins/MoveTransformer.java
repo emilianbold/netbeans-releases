@@ -442,7 +442,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 MemberSelectTree memberSelect = (MemberSelectTree) qualifiedIdentifier;
                 if(memberSelect.getIdentifier().contentEquals("*")) {
                     Element packageElement = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
-                    if(packageElement.getKind() == ElementKind.PACKAGE) {
+                    if(packageElement != null && packageElement.getKind() == ElementKind.PACKAGE) {
                         PackageElement pakketje = (PackageElement) packageElement;
                         if(isThisPackageMoving(pakketje)) {
                             importToRemove.add(node);

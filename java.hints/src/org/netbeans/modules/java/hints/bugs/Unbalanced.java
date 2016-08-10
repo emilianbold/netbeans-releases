@@ -152,6 +152,7 @@ public class Unbalanced {
             
             if (tp.getParentPath().getLeaf().getKind() == Kind.ARRAY_ACCESS) {
                 State accessType = State.READ;
+                State secondAccess = null;
                 Tree access = tp.getParentPath().getLeaf();
                 Tree assign = tp.getParentPath().getParentPath().getLeaf();
                 
@@ -166,16 +167,18 @@ public class Unbalanced {
                     case PLUS_ASSIGNMENT: case REMAINDER_ASSIGNMENT: case RIGHT_SHIFT_ASSIGNMENT:
                     case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: case XOR_ASSIGNMENT:
                         if (((CompoundAssignmentTree) assign).getVariable() == access) {
-                            accessType = State.WRITE;
+                            secondAccess = State.WRITE;
                         }
                         break;
                     case POSTFIX_DECREMENT: case POSTFIX_INCREMENT: case PREFIX_DECREMENT:
                     case PREFIX_INCREMENT:
-                        accessType = State.WRITE;
+                        secondAccess = State.WRITE;
                         break;
                 }
-                
                 record(ctx.getInfo(), var, accessType);
+                if (secondAccess != null) {
+                    record(ctx.getInfo(), var, secondAccess);
+                }
             } else {
                 record(ctx.getInfo(), var, State.WRITE, State.READ);
             }

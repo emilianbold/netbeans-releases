@@ -55,6 +55,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -270,9 +271,8 @@ final class Call implements CallDescriptor {
     }
 
     private static boolean isLeaf(Element elm, ElementHandle handle, Call parent, boolean isCallerGraph, boolean[] recursion) {
-        ElementKind kind = elm.getKind();
         recursion[0] = false;
-        if (kind != ElementKind.METHOD && kind != ElementKind.CONSTRUCTOR) {
+        if (!RefactoringUtils.isExecutableElement(elm)) {
             return true;
         }
         if (!isCallerGraph && elm.getModifiers().contains(Modifier.ABSTRACT)) {

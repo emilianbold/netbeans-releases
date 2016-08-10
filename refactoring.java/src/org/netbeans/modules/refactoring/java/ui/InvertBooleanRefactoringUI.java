@@ -149,6 +149,9 @@ public class InvertBooleanRefactoringUI implements RefactoringUI, JavaRefactorin
         }
         if (p != null && treeKinds.contains(p.getLeaf().getKind())) {
             Element selected = info.getTrees().getElement(p);
+            if (selected == null) {
+                return null;
+            }
             TreePath selectedTree = info.getTrees().getPath(selected);
             if (selected.getKind().isField() && ((VariableElement) selected).asType().getKind() == TypeKind.BOOLEAN) {
                 return new InvertBooleanRefactoringUI(TreePathHandle.create(selectedTree, info), ((VariableElement) selected).getSimpleName().toString());

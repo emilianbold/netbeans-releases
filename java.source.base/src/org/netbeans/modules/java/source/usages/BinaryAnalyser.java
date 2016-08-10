@@ -717,7 +717,7 @@ public class BinaryAnalyser {
         for (InnerClass ic : cf.getInnerClasses()) {
             if (me.equals(ic.getName())) {
                 final String innerName = ic.getSimpleName();
-                if (innerName != null) {
+                if (innerName != null && !innerName.isEmpty()) {
                     len = innerName.length();
                 } else {
                     final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
