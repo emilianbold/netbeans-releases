@@ -51,13 +51,12 @@ import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
-public class JsFormatterEmbeddedTest extends JsTestBase {
+public class JsFormatterEmbeddedTest extends JsFormatterTestBase {
 
     public JsFormatterEmbeddedTest(String name) {
         super(name);
@@ -131,6 +130,42 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
 
     public void testEmbeddedMultipleSections2() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
+    }
+    
+    public void testJsx1() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx1.js");
+    }
+
+//    public void testJsx2() throws Exception {
+//        reformatFileContents("testfiles/formatter/jsx2.js",new IndentPrefs(4, 4));
+//    }
+//
+//    public void testJsx2Tokens() throws Exception {
+//        dumpFormatTokens("testfiles/formatter/jsx2.js");
+//    }
+    
+    public void testJsx3() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx3.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx3.js");
+    }
+    
+    public void testJsx4() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx4.js");
+    }
+
+    public void testBroken1() throws Exception {
+        reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
     }
 
     public void testIssue225749() throws Exception {

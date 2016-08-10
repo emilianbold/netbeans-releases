@@ -46,10 +46,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -105,6 +108,8 @@ public final class FormatContext {
     private final List<Region> regions;
 
     private final boolean embedded;
+
+    private final Stack<JsxBlock> jsxIndents = new Stack<>();
 
     private LineWrap lastLineWrap;
 
@@ -190,6 +195,71 @@ public final class FormatContext {
         return provider;
     }
 
+    public void incJsxIndentation(FormatToken token) {
+        assert token.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START;
+        assert token.next() != null;
+        try {
+            int indent = context.lineIndent(context.lineStartOffset(token.next().getOffset() + offsetDiff));
+            jsxIndents.push(new JsxBlock(indent, 0, 0, indent));
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+
+    public void updateJsxIndentation(FormatToken token) {
+        assert token.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START;
+        assert token.next() != null;
+        try {
+            int indent = context.lineIndent(context.lineStartOffset(token.next().getOffset() + offsetDiff));
+            JsxBlock current = jsxIndents.pop();
+            jsxIndents.push(new JsxBlock(current.getBaseIndent(),
+                    indentationLevel, continuationLevel, indent));
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+
+    public void decJsxIndentation(FormatToken token) {
+        assert token.getKind() == FormatToken.Kind.AFTER_JSX_BLOCK_END;
+        jsxIndents.pop();
+    }
+
+    public int getJsxIndentation() {
+        if (jsxIndents.isEmpty()) {
+            return 0;
+        }
+        return jsxIndents.peek().getIndent();
+    }
+
+    public int getBaseJsxIndentation() {
+        if (jsxIndents.isEmpty()) {
+            return 0;
+        }
+        return jsxIndents.peek().getBaseIndent();
+    }
+
+    public boolean isInsideJsx() {
+        return !jsxIndents.isEmpty();
+    }
+
+    public Integer getSuggestedIndentation(FormatToken token) {
+        if (jsxIndents.isEmpty()) {
+            return 0;
+        }
+        BaseDocument doc = getDocument();
+        Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
+        if (suggestedLineIndents != null) {
+            try {
+                int lineIndex = LineDocumentUtils.getLineIndex(doc, token.getOffset() + offsetDiff);
+                Integer indent = suggestedLineIndents.get(lineIndex);
+                return indent != null ? indent : 0;
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return 0;
+    }
+
     public void setLastLineWrap(LineWrap lineWrap) {
         this.lastLineWrap = lineWrap;
     }
@@ -207,6 +277,9 @@ public final class FormatContext {
     }
 
     public int getIndentationLevel() {
+        if (!jsxIndents.isEmpty()) {
+            return indentationLevel - jsxIndents.peek().getIndentationLevel();
+        }
         return indentationLevel;
     }
 
@@ -219,6 +292,9 @@ public final class FormatContext {
     }
 
     public int getContinuationLevel() {
+        if (!jsxIndents.isEmpty()) {
+            return continuationLevel - jsxIndents.peek().getContinuationLevel();
+        }
         return continuationLevel;
     }
 
@@ -677,6 +753,40 @@ public final class FormatContext {
 
         public boolean isChange() {
             return change;
+        }
+    }
+
+    private static class JsxBlock {
+
+        private final int baseIndent;
+
+        private final int indentationLevel;
+
+        private final int continuationLevel;
+
+        private final int indent;
+
+        public JsxBlock(int baseIndent, int indentationLevel, int continuationLevel, int indent) {
+            this.baseIndent = baseIndent;
+            this.indentationLevel = indentationLevel;
+            this.continuationLevel = continuationLevel;
+            this.indent = indent;
+        }
+
+        public int getBaseIndent() {
+            return baseIndent;
+        }
+
+        public int getIndentationLevel() {
+            return indentationLevel;
+        }
+
+        public int getContinuationLevel() {
+            return continuationLevel;
+        }
+
+        public int getIndent() {
+            return indent;
         }
     }
 
