@@ -47,6 +47,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
+import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
@@ -122,7 +124,17 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         }
 
         @Override
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(ChangeEvent event) {
+            if (event instanceof VisibilityQueryChangeEvent) {
+                FileObject[] fileObjects = ((VisibilityQueryChangeEvent) event).getFileObjects();
+                for (FileObject fileObject : fileObjects) {
+                    if (project.equals(ProjectConvertors.getNonConvertorOwner(fileObject))) {
+                        changeSupport.fireChange();
+                        return;
+                    }
+                }
+                return;
+            }
             changeSupport.fireChange();
         }
 
