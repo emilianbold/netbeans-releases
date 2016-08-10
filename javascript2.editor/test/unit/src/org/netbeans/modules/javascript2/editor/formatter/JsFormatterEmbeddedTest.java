@@ -140,13 +140,13 @@ public class JsFormatterEmbeddedTest extends JsFormatterTestBase {
         dumpFormatTokens("testfiles/formatter/jsx1.js");
     }
 
-//    public void testJsx2() throws Exception {
-//        reformatFileContents("testfiles/formatter/jsx2.js",new IndentPrefs(4, 4));
-//    }
-//
-//    public void testJsx2Tokens() throws Exception {
-//        dumpFormatTokens("testfiles/formatter/jsx2.js");
-//    }
+    public void testJsx2() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx2.js");
+    }
     
     public void testJsx3() throws Exception {
         reformatFileContents("testfiles/formatter/jsx3.js",new IndentPrefs(4, 4));

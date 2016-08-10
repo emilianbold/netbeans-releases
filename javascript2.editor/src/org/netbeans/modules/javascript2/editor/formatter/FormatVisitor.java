@@ -176,16 +176,13 @@ public class FormatVisitor extends NodeVisitor {
             assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
             jsxToken = jsxToken.previous();
             if (jsxToken != null) {
-                TokenUtils.appendToken(jsxToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START));
+                TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START), true);
             }
         }
-        jsxToken = tokenStream.getToken(getFinish(jsxElementNode));
+        jsxToken = tokenUtils.getPreviousToken(getFinish(jsxElementNode) - 1, JsTokenId.JSX_TEXT);
         if (jsxToken != null) {
-            jsxToken = jsxToken.previous();
             assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
-            if (jsxToken != null) {
-                TokenUtils.appendToken(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END));
-            }
+            TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END), true);
         }
 
         for (Expression e : jsxElementNode.getChildren()) {
