@@ -45,6 +45,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -58,6 +59,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.BaseCaret;
 import org.netbeans.modules.editor.lib2.caret.CaretFoldExpander;
 import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
+import org.openide.util.Exceptions;
 
 /**
  * Provides adjustments to functions of editor component
@@ -134,11 +136,14 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
     }
     
     public @Override void foldHierarchyChanged(final FoldHierarchyEvent evt) {
-        Caret c = component.getCaret();
-        if (!(c instanceof BaseCaret)) {
+        final Caret c = component.getCaret();
+//        if (!(c instanceof BaseCaret)) {
+//            return;
+//        }
+//        final BaseCaret bc = (BaseCaret)c;
+        if (c == null) {
             return;
         }
-        final BaseCaret bc = (BaseCaret)c;
         int caretOffset = c.getDot();
         final int addedFoldCnt = evt.getAddedFoldCount();
         boolean scrollToView = false;
@@ -205,32 +210,86 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                 }
                 if (startOffset != Integer.MAX_VALUE) {
                     newPosition = startOffset;
-                    bc.setDot(startOffset, false);
+                    c.setDot(startOffset);
                     expand = false;
                 }
             }
-            scrollToView = false;
         }
         
+        boolean wasExpanded = false;
         if (expand) {
             Fold collapsed = null;
-            boolean wasExpanded = false;
             if (includeEnd) {
-                // compensate so findCollapsedFold finds something.
+                // compensate so findCollapsedFold finds something. Also for newly created folds so text does not collapse immediately
+                // after a caret.
                 caretOffset--;
             }
-            while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && 
-                    collapsed.getStartOffset() < caretOffset &&
-                    (collapsed.getEndOffset() > caretOffset)) {
-                        LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), collapsed);
-                        hierarchy.expand(collapsed);
-                        wasExpanded = true;
+            final int dot = caretOffset;
+            while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null) {
+                boolean shouldExpand = false;
+                
+                EX: if (collapsed.getStartOffset() < caretOffset) {
+                        if (collapsed.getEndOffset() > caretOffset) {
+                            shouldExpand = true;
+                        } else if (addedFoldCnt > 0) {
+                            // shortcut: caret immediately following the collapsed fold
+                            if (collapsed.getEndOffset() == caretOffset) {
+                                shouldExpand = true;
+                            }
+                        }
+                }
+                if (shouldExpand) {
+                    LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), collapsed);
+                    wasExpanded = true;
+                    hierarchy.expand(collapsed);
+                } else {
+                    break;
+                }
             }
             // prevent unneeded scrolling; the user may have scrolled out using mouse already
             // so scroll only if the added fold may affect Y axis. Actually it's unclear why
             // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
-            scrollToView = wasExpanded;
         }
+        if (!wasExpanded) {
+            // go through folds just created folds, if some of them is _immediately_ preceding the caret && there's just whitespace in between the caret
+            // and fold end - expand it.
+            Fold preceding = caretOffset > 0 ? FoldUtilities.findNearestFold(hierarchy, -caretOffset) : null;
+            if (preceding != null) {
+                int precEnd = preceding.getEndOffset();
+                for (int i = 0; i < addedFoldCnt; i++) {
+                    Fold f = evt.getAddedFold(i);
+                    if (f.getStartOffset() > precEnd) {
+                        // fail fast
+                        break;
+                    }
+                    if (f == preceding && onlyWhitespacesBetween(f, caretOffset)) {
+                        LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), f);
+                        wasExpanded = true;
+                        hierarchy.expand(f);
+                        break;
+                    }
+                }
+                if (!wasExpanded) {
+                    // go through changes and detect if the nearest preceding fold was expanded
+                    for (int i = 0; i < evt.getFoldStateChangeCount(); i++) {
+                        FoldStateChange change = evt.getFoldStateChange(i);
+                        Fold f = change.getFold();
+                        int so = f.getStartOffset();
+                        if (so > precEnd) {
+                            break;
+                        }
+                        if (change.isEndOffsetChanged() && f == preceding && f == preceding && onlyWhitespacesBetween(f, caretOffset)) {
+                            LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), f);
+                            wasExpanded = true;
+                            hierarchy.expand(f);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        scrollToView = wasExpanded;
         
         final int newPositionF = newPosition;
         
@@ -248,17 +307,43 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                 public @Override void run() {
                     LOG.fine("Updating after fold hierarchy change; evt= " + evt.hashCode()); // NOI18N
                     // see defect #227531; the caret may be uninstalled before the EDT executes this runnable.
-                    if (component == null || component.getCaret() != bc) {
+                    if (component == null || component.getCaret() != c) {
                         return;
                     }
                     if (newPositionF >= 0) {
-                        bc.setDot(newPositionF);
+                        c.setDot(newPositionF);
                     } else {
+                        /*
                         bc.refresh(addedFoldCnt > 1 && !scroll);
+                        */
                     }
                 }
             });
         }
+    }
+    
+    private boolean onlyWhitespacesBetween(final Fold check, final int dot) {
+        // autoexpand a fold that was JUST CREATED, if there's no non-whitespace (not lexical, but actual) in between the
+        // fold end and the caret:
+        final String[] cnt = new String[1];
+        final Document doc = component.getDocument();
+        doc.render(new Runnable() {
+            public void run() {
+                int dl = doc.getLength();
+                int from = Math.min(dl, 
+                        Math.min(check.getEndOffset(), dot)
+                        );
+                int to = Math.min(dl, 
+                        Math.max(check.getEndOffset(), dot
+                        ));
+                try {
+                    cnt[0] = doc.getText(from, to - from);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        return (cnt[0] == null || cnt[0].trim().isEmpty());
     }
 
     @MimeRegistration(mimeType = "", service = FoldHierarchyMonitor.class)
