@@ -73,6 +73,7 @@ import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.ImportNode;
+import com.oracle.js.parser.ir.JsxElementNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -166,6 +167,47 @@ public class FormatVisitor extends NodeVisitor {
             handleBlockContent(nodes, true);
         }
         return false;
+    }
+
+    @Override
+    public boolean enterJsxElementNode(JsxElementNode jsxElementNode) {
+        FormatToken jsxToken = tokenStream.getToken(getStart(jsxElementNode));
+        if (jsxToken != null) {
+            assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
+            jsxToken = jsxToken.previous();
+            if (jsxToken != null) {
+                TokenUtils.appendToken(jsxToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START));
+            }
+        }
+        jsxToken = tokenStream.getToken(getFinish(jsxElementNode));
+        if (jsxToken != null) {
+            jsxToken = jsxToken.previous();
+            assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
+            if (jsxToken != null) {
+                TokenUtils.appendToken(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END));
+            }
+        }
+
+        for (Expression e : jsxElementNode.getChildren()) {
+            if (!(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
+                // assignmentExpression
+                int start = getStart(e);
+                FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_TEXT);
+                if (token != null) {
+                    TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                }
+                int finish = getFinish(e);
+                token = tokenUtils.getNextToken(finish, JsTokenId.JSX_TEXT);
+                if (token != null) {
+                    token = tokenUtils.getPreviousNonWhiteToken(token.getOffset(),
+                            start, JsTokenId.JSX_TEXT, true);
+                    if (token != null) {
+                        TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                    }
+                }
+            }
+        }
+        return super.enterJsxElementNode(jsxElementNode);
     }
 
     @Override

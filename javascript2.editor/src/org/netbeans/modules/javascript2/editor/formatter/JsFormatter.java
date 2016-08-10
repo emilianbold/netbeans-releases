@@ -255,7 +255,7 @@ public class JsFormatter implements Formatter {
                             lastOffsetDiff = formatContext.getOffsetDiff();
                         }
                         initialIndent = formatContext.getEmbeddingIndent(tokenStream, token)
-                                + codeStyle.initialIndent;
+                                + codeStyle.initialIndent + formatContext.getJsxIndentation();
                     }
 
                     if (started && (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
@@ -268,6 +268,8 @@ public class JsFormatter implements Formatter {
                         } catch (BadLocationException ex) {
                             LOGGER.log(Level.INFO, null, ex);
                         }
+                    } else if (started && token.getId() == JsTokenId.JSX_TEXT) {
+                        formatJsx(token, formatContext, context, codeStyle);
                     } else if (started && token.getKind().isBraceMarker()) {
                         formatBrace(tokens, i, formatContext, codeStyle, initialIndent, continuationIndent, continuations, tokenProcessed);
                     } else if (started && token.getKind().isAlignmentMarker()) {
@@ -277,7 +279,9 @@ public class JsFormatter implements Formatter {
                     } else if (started && token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, codeStyle, initialIndent,
                                 continuationIndent, continuations);
-                    } else if (token.getKind().isIndentationMarker()) {
+                    } else if (token.getKind().isIndentationMarker()
+                            || token.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START
+                            || token.getKind() == FormatToken.Kind.AFTER_JSX_BLOCK_END) {
                         updateIndentationLevel(token, formatContext, codeStyle);
                     } else if (token.getKind() == FormatToken.Kind.AFTER_END_BRACE) {
                         if (!openedBraces.isEmpty()
@@ -350,11 +354,25 @@ public class JsFormatter implements Formatter {
                                 formatContext.setPendingContinuation(false);
                             }
                             indentationSize += continuationIndent * continuationLevel;
+                            indentationSize += formatContext.getSuggestedIndentation(indentationEnd);
                             if (started) {
-                                formatContext.indentLine(
-                                        indentationStart.getOffset(), indentationSize,
-                                        checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize),
-                                        codeStyle);
+                                FormatToken indentationEndPrev = indentationEnd.previous();
+                                // last empty line formatted by html
+                                if (indentationEnd.getId() == JsTokenId.JSX_TEXT
+                                        && !(indentationEndPrev != null && indentationEndPrev.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START)) {
+                                    indentationSize = computeJsxIndentation(formatContext, context, indentationEnd.getOffset());
+                                }
+                                if (indentationSize >= 0) {
+                                    formatContext.indentLine(
+                                            indentationStart.getOffset(), indentationSize,
+                                            checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize),
+                                            codeStyle);
+                                }
+                                if (indentationEndPrev != null
+                                        && indentationEndPrev.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START) {
+                                    // it has just been updated
+                                    formatContext.updateJsxIndentation(indentationEnd.previous());
+                                }
                             }
                         }
                     }
@@ -699,6 +717,8 @@ public class JsFormatter implements Formatter {
                 current = current.next()) {
             if (current.isVirtual()
                     && !current.getKind().isIndentationMarker()
+                    && current.getKind() != FormatToken.Kind.BEFORE_JSX_BLOCK_START
+                    && current.getKind() != FormatToken.Kind.AFTER_JSX_BLOCK_END
                     && getLineWrap(current, formatContext, codeStyle) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
                 processed.add(current);
             }
@@ -811,6 +831,34 @@ public class JsFormatter implements Formatter {
                         indent + 1, Indentation.ALLOWED, codeStyle);
             }
         }
+    }
+
+    private void formatJsx(FormatToken jsx, FormatContext formatContext, Context context, CodeStyle.Holder codeStyle) {
+        // this assumes the firts line is already indented by EOL logic
+        assert jsx.getId() == JsTokenId.JSX_TEXT;
+        String text = jsx.getText().toString();
+
+        for (int i = 0; i < text.length(); i++) {
+            char single = text.charAt(i);
+            if (single == '\n') { // NOI18N
+                int indent = computeJsxIndentation(formatContext, context, jsx.getOffset() + i + 1);
+                if (indent >= 0) {
+                    formatContext.indentLine(jsx.getOffset() + i + 1, indent, Indentation.ALLOWED, codeStyle);
+                }
+            }
+        }
+    }
+
+    private int computeJsxIndentation(FormatContext formatContext, Context context, int offset) {
+        try {
+            int htmlIndent = context.lineIndent(context.lineStartOffset(offset
+                    + formatContext.getOffsetDiff()));
+            int indent = (htmlIndent - formatContext.getBaseJsxIndentation()) + formatContext.getJsxIndentation();
+            return indent;
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return -1;
     }
 
     private void formatBrace(List<FormatToken> tokens, int index, FormatContext formatContext, CodeStyle.Holder codeStyle,
@@ -1230,6 +1278,12 @@ public class JsFormatter implements Formatter {
                 }
             case INDENTATION_DEC:
                 formatContext.decIndentationLevel();
+                break;
+            case BEFORE_JSX_BLOCK_START:
+                formatContext.incJsxIndentation(token);
+                break;
+            case AFTER_JSX_BLOCK_END:
+                formatContext.decJsxIndentation(token);
                 break;
             default:
                 break;
