@@ -2685,11 +2685,13 @@ public final class EditorCaret implements Caret {
                             }
                             c.setDragEnabled(true);
                             if (evt.isControlDown() && evt.isShiftDown()) {
-                                mouseState = MouseState.CHAR_SELECTION;
+                                // "Add multicaret" mode
+                                mouseState = MouseState.DEFAULT;
                                 try {
                                     Position pos = doc.createPosition(offset);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward) }, null);
+                                    //add/remove caret
+                                    runTransaction(CaretTransaction.RemoveType.TOGGLE_CARET, 0,
+                                            new CaretItem[]{new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward)}, null);
                                     evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
@@ -2720,18 +2722,8 @@ public final class EditorCaret implements Caret {
                                 }
                                 if (!foldExpanded) {
                                     if (evt.isControlDown() && evt.isShiftDown()) {
-                                        try {
-                                            int begOffs = Utilities.getWordStart(c, offset);
-                                            int endOffs = Utilities.getWordEnd(c, offset);
-                                            Position beginPos = doc.createPosition(begOffs);
-                                            Position endPos = doc.createPosition(endOffs);
-                                            runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                                     new CaretItem[] { new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward) }, null);
-                                            minSelectionStartOffset = begOffs;
-                                            minSelectionEndOffset = endOffs;
-                                        } catch (BadLocationException ex) {
-                                            // Do nothing
-                                        }
+                                        // "Add multicaret" mode only with single click
+                                        mouseState = MouseState.DEFAULT;
                                     } else {
                                         if (selectWordAction == null) {
                                             selectWordAction = EditorActionUtilities.getAction(
@@ -2755,18 +2747,8 @@ public final class EditorCaret implements Caret {
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
                             if (evt.isControlDown() && evt.isShiftDown()) {
-                                try {
-                                    int begOffs = Utilities.getRowStart(c, offset);
-                                    int endOffs = Utilities.getRowEnd(c, offset);
-                                    Position beginPos = doc.createPosition(begOffs);
-                                    Position endPos = doc.createPosition(endOffs);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                                            new CaretItem[]{new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward)}, null);
-                                    minSelectionStartOffset = begOffs;
-                                    minSelectionEndOffset = endOffs;
-                                } catch (BadLocationException ex) {
-                                    // Do nothing
-                                }
+                                // "Add multicaret" mode only with single click
+                                mouseState = MouseState.DEFAULT;
                             } else {
                                 if (selectLineAction == null) {
                                     selectLineAction = EditorActionUtilities.getAction(

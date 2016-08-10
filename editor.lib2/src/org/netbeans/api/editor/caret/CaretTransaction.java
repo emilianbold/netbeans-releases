@@ -292,6 +292,36 @@ final class CaretTransaction {
         switch (removeType) {
             case NO_REMOVE:
                 break;
+            case TOGGLE_CARET:
+                // Remove existing caret at current dot only when:
+                // * at least one caret to add and 
+                // * we do not remove the only remaining caret
+                if (null != addCaretItems && addCaretItems.length == 1 && origCaretItems.size() >= 2) {
+                    CaretItem caretToAdd = addCaretItems[0];
+                    int caretFoundAtIndex = -1;
+                    for (int i = 0; i < origCaretItems.size(); i++) {
+                        CaretItem origCaretItem = origCaretItems.get(i);
+                        if (origCaretItem.getDot() == caretToAdd.getDot()
+                                && origCaretItem.getMark() == caretToAdd.getMark()) {
+                            // so need to remove the current caret
+                            caretFoundAtIndex = i;
+                            break;
+                        } 
+                    }
+                    if (caretFoundAtIndex != -1) {
+                        // remove the caret
+                        modIndex = caretFoundAtIndex;
+                        modEndIndex = Math.min(caretFoundAtIndex + 1, size);
+                        addOrRemove = true;
+                        // clear the "add new carets" field
+                        addCaretItems = null;
+                    } else {
+                        // add the given caret based on addCaretItems
+                    }
+                } else {
+                    // add the given caret based on addCaretItems
+                }
+                break;
             case REMOVE_LAST_CARET:
                 if (size > 1) {
                     modIndex = size - 1;
@@ -601,7 +631,8 @@ final class CaretTransaction {
         RETAIN_LAST_CARET,
         REMOVE_ALL_CARETS,
         DOCUMENT_REMOVE,
-        DOCUMENT_INSERT_ZERO_OFFSET
+        DOCUMENT_INSERT_ZERO_OFFSET,
+        TOGGLE_CARET
     }
     
     /**
