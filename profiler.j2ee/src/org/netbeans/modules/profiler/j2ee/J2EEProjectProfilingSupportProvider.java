@@ -63,6 +63,7 @@ import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.j2ee.impl.ServerJavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -75,6 +76,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  */
 @NbBundle.Messages({
     "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg=Target server does not support profiling.\nTo profile project running on current server, use Attach to Project or Attach to External Process.\nTo change server for this project, right-click the project and select Properties | Run | Server.\n",
+    "J2EEProjectTypeProfiler_ProfilingFileNotSupportedMsg=Profiling {0} is not supported in project {1}.",
     "J2EEProjectTypeProfiler_SkipButtonName=Skip",
     "J2EEProjectTypeProfiler_NoServerFoundMsg=<html><b>Failed to obtain server information.</b><br>Check if the server for the profiled project has been set correctly.</html>",
     "TTL_setServletExecutionUri=Provide Servlet Request Parameters"
@@ -231,7 +233,17 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
             return false;
         }
         
-        return super.checkProjectCanBeProfiled(profiledClassFile);
+        if (profiledClassFile != null) {
+            if (isFileObjectSupported(profiledClassFile)) {
+                return true;
+            } else {
+                ProfilerDialogs.displayWarning(Bundle.J2EEProjectTypeProfiler_ProfilingFileNotSupportedMsg(
+                                               profiledClassFile.getNameExt(), ProjectUtilities.getDisplayName(getProject())));
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     @Override
@@ -239,8 +251,8 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         Project project = getProject();
         return ((WebProjectUtils.isJSP(file) && WebProjectUtils.isWebDocumentSource(file, project)) // jsp from /web directory               
                   || (WebProjectUtils.isHttpServlet(file) && WebProjectUtils.isWebJavaSource(file, project)
-                  && WebProjectUtils.isMappedServlet(file, project, true)) // mapped servlet from /src directory
-                  || super.isFileObjectSupported(file)); // regular java file
+                  /*&& WebProjectUtils.isMappedServlet(file, project, true)*/) // mapped servlet from /src directory
+                  /*|| super.isFileObjectSupported(file)*/); // regular java file
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------
