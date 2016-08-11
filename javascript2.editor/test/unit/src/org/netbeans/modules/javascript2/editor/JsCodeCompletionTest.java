@@ -363,4 +363,12 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testShorthandPropertyNames02() throws Exception {
         checkCompletion("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(c.^third);", true);
     }
+    
+    public void testIssue258724_01() throws Exception {
+        checkCompletion("testfiles/completion/issue258724.js", "return this.n^;", false);
+    }
+    
+    public void testIssue258724_02() throws Exception {
+        checkCompletion("testfiles/completion/issue258724.js", "return this.a^;", false);
+    }
 }
