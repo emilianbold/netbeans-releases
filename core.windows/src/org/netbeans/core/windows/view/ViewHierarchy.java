@@ -63,7 +63,6 @@ import org.netbeans.core.windows.view.ui.DesktopImpl;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 /**
