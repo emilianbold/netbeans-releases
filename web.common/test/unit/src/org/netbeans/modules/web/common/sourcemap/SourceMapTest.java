@@ -47,6 +47,7 @@ import java.io.StringReader;
 import java.util.List;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -56,6 +57,19 @@ public class SourceMapTest extends CslTestBase {
     
     public SourceMapTest() {
         super(SourceMapTest.class.getName());
+    }
+    
+    public void testParseAll() throws IOException {
+        FileObject dir = FileUtil.toFileObject(getDataDir());
+        dir = dir.getFileObject("sourcemaps");
+        for (FileObject fo : dir.getChildren()) {
+            if (!fo.getExt().equalsIgnoreCase("map")) {
+                continue;
+            }
+            System.out.println("parsing "+fo);
+            SourceMap.parse(fo.asText());
+            System.out.println("DONE.");
+        }
     }
     
     public void testParseSourceMap() throws IOException {
