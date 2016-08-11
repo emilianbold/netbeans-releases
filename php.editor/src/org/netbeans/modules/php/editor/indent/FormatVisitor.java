@@ -284,10 +284,11 @@ public class FormatVisitor extends DefaultVisitor {
                     delta = options.indentArrayItems;
                 }
             }
-            if (ts.token().text().toString().equals("[")) { //NOI18N
-                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+            if (ts.token().text().toString().equals("[")) { // NOI18N
+                // just move back so we are right before "[" (consistent with "array()", see else-if below)
+                ts.movePrevious();
             } else if (lastIndex < ts.index()) {
-                addFormatToken(formatTokens); // add array keyword
+                addFormatToken(formatTokens); // add only "array" keyword
             }
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
@@ -1844,7 +1845,8 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                 } else if ("[".equals(text)) {
                     if (parent instanceof ArrayCreation) {
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
+                        // do not add this format token, it historically serves for case "array ()"
+                        //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN, ts.offset() + ts.token().length()));
                     } else {
