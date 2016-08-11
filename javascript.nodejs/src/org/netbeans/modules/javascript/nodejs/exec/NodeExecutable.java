@@ -594,7 +594,7 @@ public class NodeExecutable {
             // debugger?
             if (debugInfo != null
                     && !debugging) {
-                if (line.toLowerCase(Locale.US).startsWith("debugger listening on port")) { // NOI18N
+                if (line.toLowerCase(Locale.US).startsWith("debugger listening on ")) { // NOI18N
                     assert debuggerCountDownLatch != null;
                     debuggerCountDownLatch.countDown();
                 }
