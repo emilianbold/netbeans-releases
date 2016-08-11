@@ -168,11 +168,12 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
+        setupOjetFiles(handle, files, projectDirectory);
+
         CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSiteRootFolder(""); // NOI18N
         ClientSideProjectGenerator.createProject(createProperties);
 
-        setupProject(handle, files, projectDirectory);
         hackIgnoreSCSSErrorsInOJET(projectDirectory);
 
         handle.finish();
@@ -286,7 +287,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         "NewProjectWizardIterator.progress.downloading=Downloading archive...",
         "NewProjectWizardIterator.progress.unpacking=Unpacking archive...",
     })
-    private void setupProject(ProgressHandle handle, Set<FileObject> files, FileObject projectDirectory) throws IOException {
+    private void setupOjetFiles(ProgressHandle handle, Set<FileObject> files, FileObject projectDirectory) throws IOException {
         try {
             // download
             handle.progress(Bundle.NewProjectWizardIterator_progress_downloading());
@@ -296,7 +297,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
             if (isHtmlFile(tmpFile)) {
                 // likely not in oracle network
                 if (NetworkSupport.showNetworkErrorDialog(displayName)) {
-                    setupProject(handle, files, projectDirectory);
+                    setupOjetFiles(handle, files, projectDirectory);
                 }
             } else {
                 // unzip
@@ -318,7 +319,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         } catch (NetworkException ex) {
             LOGGER.log(Level.INFO, "Failed to download OJET archive", ex);
             if (NetworkSupport.showNetworkErrorDialog(displayName)) {
-                setupProject(handle, files, projectDirectory);
+                setupOjetFiles(handle, files, projectDirectory);
             }
         } catch (InterruptedException ex) {
             // cancelled, should not happen
