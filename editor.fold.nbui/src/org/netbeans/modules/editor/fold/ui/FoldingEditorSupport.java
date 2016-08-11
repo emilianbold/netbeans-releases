@@ -262,7 +262,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                         // fail fast
                         break;
                     }
-                    if (f == preceding && onlyWhitespacesBetween(f, caretOffset)) {
+                    if (f == preceding && onlyWhitespacesBetween(f.getEndOffset(), caretOffset)) {
                         LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), f);
                         wasExpanded = true;
                         hierarchy.expand(f);
@@ -278,7 +278,11 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                         if (so > precEnd) {
                             break;
                         }
-                        if (change.isEndOffsetChanged() && f == preceding && f == preceding && onlyWhitespacesBetween(f, caretOffset)) {
+                        if (change.isEndOffsetChanged() && 
+                            f == preceding && f.isCollapsed() &&
+                            onlyWhitespacesBetween(f.getEndOffset(), caretOffset) &&
+                            // non empty content added to the fold:
+                            !onlyWhitespacesBetween(change.getOriginalEndOffset(), caretOffset)) {
                             LOG.log(Level.FINER, "Expanding fold {0}; evt= " + evt.hashCode(), f);
                             wasExpanded = true;
                             hierarchy.expand(f);
@@ -322,7 +326,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         }
     }
     
-    private boolean onlyWhitespacesBetween(final Fold check, final int dot) {
+    private boolean onlyWhitespacesBetween(final int endOffset, final int dot) {
         // autoexpand a fold that was JUST CREATED, if there's no non-whitespace (not lexical, but actual) in between the
         // fold end and the caret:
         final String[] cnt = new String[1];
@@ -331,10 +335,10 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
             public void run() {
                 int dl = doc.getLength();
                 int from = Math.min(dl, 
-                        Math.min(check.getEndOffset(), dot)
+                        Math.min(endOffset, dot)
                         );
                 int to = Math.min(dl, 
-                        Math.max(check.getEndOffset(), dot
+                        Math.max(endOffset, dot
                         ));
                 try {
                     cnt[0] = doc.getText(from, to - from);
