@@ -47,11 +47,13 @@ package org.netbeans.core.windows.services;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GridBagConstraints;
@@ -288,9 +290,19 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             return;
         }
 
-        if (!Constants.AUTO_FOCUS && FocusManager.getCurrentManager().getActiveWindow() == null) {
+        if (/*!Constants.AUTO_FOCUS &&*/ FocusManager.getCurrentManager().getActiveWindow() == null) {
             // Do not steal focus if no Java window have it
-            comp.requestFocusInWindow();
+            Component defComp = null;
+            Container nearestRoot =
+                (comp instanceof Container && ((Container) comp).isFocusCycleRoot()) ? (Container) comp : comp.getFocusCycleRootAncestor();
+            if (nearestRoot != null) {
+                defComp = nearestRoot.getFocusTraversalPolicy().getDefaultComponent(nearestRoot);
+            }
+            if (defComp != null) {
+                defComp.requestFocusInWindow();
+            } else {
+                comp.requestFocusInWindow();
+            }
         } else {
             if (!(comp instanceof JComponent)
                 || !((JComponent)comp).requestDefaultFocus()) {

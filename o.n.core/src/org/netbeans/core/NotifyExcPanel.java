@@ -426,7 +426,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             //another dialog, which will trigger another exception, endlessly.
             //Catch any exceptions and append them to the list instead.
             ensurePreferredSize();
-            dialog.setVisible(true);
+            if (!dialog.isVisible()) {
+                dialog.setVisible(true);
+            }
             //throw new RuntimeException ("I am not so exceptional"); //uncomment to test
         } catch (Exception e) {
             exceptions.add(NbErrorManager.createExc(
