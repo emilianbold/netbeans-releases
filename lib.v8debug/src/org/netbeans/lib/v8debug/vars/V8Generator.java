@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.lib.v8debug.vars;
+
+import java.util.Map;
+import org.netbeans.lib.v8debug.PropertyLong;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class V8Value {
-
-    public enum Type {
-
-        Undefined,
-        Null,
-        Boolean,
-        Number,
-        String,
-        Object,
-        Function,
-        Frame,
-        Script,
-        Context,
-        Error,
-        Regexp,
-        Symbol,     // ES6
-        Promise,    // ES6
-        Map,        // ES6
-        Set,        // ES6
-        Generator;  // ES6
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-
-        public static Type fromString(String typeName) {
-            typeName = Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1);
-            return Type.valueOf(typeName);
-        }
-
+public final class V8Generator extends V8Object {
+    
+    private final PropertyLong functionHandle;
+    private final PropertyLong receiverHandle;
+    
+    public V8Generator(long handle, String className,
+                       PropertyLong constructorFunctionHandle,
+                       PropertyLong protoObjectHandle,
+                       PropertyLong prototypeObjectHandle,
+                       PropertyLong functionHandle,
+                       PropertyLong receiverHandle,
+                       Map<String, Property> properties, String text) {
+        super(handle, Type.Generator, className,
+              constructorFunctionHandle, protoObjectHandle, prototypeObjectHandle,
+              properties, text);
+        this.functionHandle = functionHandle;
+        this.receiverHandle = receiverHandle;
     }
     
-    private final long handle;
-    private final Type type;
-    private final String text;
-
-    public V8Value(long handle, Type type, String text) {
-        this.handle = handle;
-        this.type = type;
-        this.text = text;
+    public PropertyLong getFunctionHandle() {
+        return functionHandle;
     }
 
-    public long getHandle() {
-        return handle;
+    public PropertyLong getReceiverHandle() {
+        return receiverHandle;
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

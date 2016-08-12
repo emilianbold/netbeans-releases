@@ -80,6 +80,7 @@ import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Generator;
 import org.netbeans.lib.v8debug.vars.V8Number;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
@@ -1001,6 +1002,18 @@ public class JSONWriter {
                 }
                 if (vf.getProperties() != null || vf.getArray() != null && vf.getArray().getLength() > 0) {
                     obj.put(VALUE_PROPERTIES, storeProperties(vf.getProperties(), vf.getArray()));
+                }
+                break;
+            case Generator:
+                V8Generator gf = (V8Generator) value;
+                obj.put(VALUE_CLASS_NAME, gf.getClassName());
+                storeReferenceIf(gf.getConstructorFunctionHandle(), obj, VALUE_CONSTRUCTOR_FUNCTION);
+                storeReferenceIf(gf.getProtoObjectHandle(), obj, VALUE_PROTO_OBJECT);
+                storeReferenceIf(gf.getPrototypeObjectHandle(), obj, VALUE_PROTOTYPE_OBJECT);
+                storeReferenceIf(gf.getFunctionHandle(), obj, FRAME_FUNC);
+                storeReferenceIf(gf.getReceiverHandle(), obj, FRAME_RECEIVER);
+                if (gf.getProperties() != null) {
+                    obj.put(VALUE_PROPERTIES, storeProperties(gf.getProperties(), null));
                 }
                 break;
             case Object:
