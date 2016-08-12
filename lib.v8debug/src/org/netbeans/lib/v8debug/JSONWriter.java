@@ -610,10 +610,14 @@ public class JSONWriter {
         obj.put(COLUMN, getLongOrNull(bp.getColumn()));
         PropertyLong groupId = bp.getGroupId();
         obj.put(BREAK_GROUP_ID, getLongOrNull(groupId));
-        obj.put(BREAK_HIT_COUNT, bp.getHitCount());
+        if (bp.getHitCount() != 0) {
+            obj.put(BREAK_HIT_COUNT, bp.getHitCount());
+        }
         obj.put(BREAK_ACTIVE, bp.isActive());
         obj.put(BREAK_CONDITION, bp.getCondition());
-        obj.put(BREAK_IGNORE_COUNT, bp.getIgnoreCount());
+        if (bp.getIgnoreCount() != 0) {
+            obj.put(BREAK_IGNORE_COUNT, bp.getIgnoreCount());
+        }
         obj.put(BREAK_ACTUAL_LOCATIONS, store(bp.getActualLocations()));
         obj.put(TYPE, bp.getType().toString());
         storeIf(bp.getScriptId(), obj, SCRIPT_ID);
