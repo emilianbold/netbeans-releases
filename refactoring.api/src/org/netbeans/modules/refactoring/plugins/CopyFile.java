@@ -43,7 +43,10 @@ package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.refactoring.api.Context;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
@@ -99,7 +102,17 @@ public class CopyFile extends SimpleRefactoringElementImplementation {
             if (newFiles == null) {
                 newFiles = new FileObject[]{newFile};
             } else {
-                newFiles = Arrays.copyOf(newFiles, newFiles.length + 1);
+                // rather a special case: there can be files from former run of the refactoring,
+                // which had been undone. In that case, those files may be invalid and will cause
+                // parser errors if processed.
+                List<FileObject> stillValidFiles = new ArrayList<>(newFiles.length);
+                for (FileObject f : newFiles) {
+                    if (f.isValid()) {
+                        stillValidFiles.add(f);
+                    }
+                }
+                newFiles = new FileObject[stillValidFiles.size() + 1];
+                stillValidFiles.toArray(newFiles);
                 newFiles[newFiles.length - 1] = newFile;
             }
             context.add(newFiles);
