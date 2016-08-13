@@ -1,3 +1,16 @@
+242439 - Terminal -- Clear preserves position of the prompt
+	Fix is easy.
+	Just have the Clear action call Term.clearHistory() instead of clear().
+
+	User Visible Changes
+	--------------------
+	Clear action will clear history, selection and move cursor to 0,0.
+
+	Added a Ctl-Shift-L accelerator for Clear. It can't be Ctl-L like
+	it is in the regular output window because Ctrl-L might mean something
+	to the application running in the terminal. Allother terminal
+	accelerators are Ctl-Shift for the same reason.
+
 236268 - terminal ignores Alt-f, Alt-b keys 
 	Introduced new Term property, altSendsEscape.
 	It is matched with a TermOptions property of the same name 
