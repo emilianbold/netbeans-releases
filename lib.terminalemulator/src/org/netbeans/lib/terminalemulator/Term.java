@@ -858,7 +858,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Return true (and consume it) if 'e' is allowed to be consumed by us.
      *
-     * If our owner is interested in some keys they will put someting into
+     * If our owner is interested in some keys they will put something into
      * keystroke_set.
      */
     private boolean maybeConsume(KeyEvent e) {
@@ -1803,6 +1803,7 @@ public class Term extends JComponent implements Accessible {
             // use a flag.
             boolean saw_return;
 
+	    @SuppressWarnings("AssignmentToMethodParameter")
             private void charTyped(char c, KeyEvent e) {
                 if (read_only) {
                     return;
@@ -1821,7 +1822,18 @@ public class Term extends JComponent implements Accessible {
                 }
 
                 if (passOn && maybeConsume(e)) {
-                    on_char(c);
+		    if ((e.getModifiers() & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
+			if (getAltSendsEscape()) {
+			    on_char(ESC);
+			    on_char(c);
+			} else {
+			    if (c >=0 || c <= 127)
+				c += 128;
+			    on_char(c);
+			}
+		    } else {
+			on_char(c);
+		    }
                     possiblyScrollOnInput();
                 }
 
@@ -1842,7 +1854,7 @@ public class Term extends JComponent implements Accessible {
                 charTyped(c, e);
             }
 
-	           @Override
+	    @Override
             public void keyPressed(KeyEvent e) {
                 if (debugKeys()) {
                     System.out.printf("keyPressed %2d %s\n", e.getKeyCode(), KeyEvent.getKeyText(e.getKeyCode())); // NOI18N
@@ -5369,6 +5381,55 @@ public class Term extends JComponent implements Accessible {
         return scroll_on_output;
     }
     private boolean scroll_on_output = true;
+
+    /**
+     * Control whether the Alt key prefixes a key with an ESC or shifts
+     * the character.
+     * <p>
+     * This is based on XTerms altSendsEscape resource. There's a family
+     * of interrelated resources as follows. You can read about them in
+     * <b>Xterm Control Sequences</b> under <b>Alt and Meta Keys</b> for
+     * a summary or the XTerm man page for more details.
+     * <table border="1">
+     * <tr>
+     * 		<th>Resource</th>
+     * 		<th>Term assumed value</th>
+     * </tr>
+     * <tr>
+     * 		<td>metaSendsEscape</td>
+     * 		<td>N/A</td>
+     * </tr>
+     * <tr>
+     * 		<td>altIsNotMeta</td>
+     * 		<td>false (Alt <u>is</u> Meta)</td>
+     * </tr>
+     * <tr>
+     * 		<td>modifyOtherKeys</td>
+     * 		<td>0 (disable)</td>
+     * </tr>
+     * <tr>
+     * 		<td>eightBitInput</td>
+     * 		<td>true</td>
+     * </tr>
+     * </table>
+     * <p>
+     * Default value is true.
+     * @param altSendsEscape Sets the property.
+     */
+    public void setAltSendsEscape(boolean altSendsEscape) {
+	this.altSendsEscape = altSendsEscape;
+    }
+
+    /**
+     * Return whether the Alt key prefixes a key with an ESC or shifts
+     * the character.
+     * @return The property value.
+     */
+    public boolean getAltSendsEscape() {
+	return altSendsEscape;
+    }
+
+    private boolean altSendsEscape = true;
 
     /**
      * Control whether Term will scroll to track the cursor as text is added.

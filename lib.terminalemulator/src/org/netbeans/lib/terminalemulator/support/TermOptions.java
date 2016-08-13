@@ -85,6 +85,7 @@ public final class TermOptions {
     private boolean scrollOnOutputDefault;
     private boolean lineWrapDefault;
     private boolean ignoreKeymapDefault;
+    private boolean altSendsEscapeDefault;
 
     // In case settings get shared uniqueify the key names with a prefix:
     private static final String PREFIX = "term.";	// NOI18N
@@ -119,6 +120,7 @@ public final class TermOptions {
         scrollOnOutputDefault = true;
         lineWrapDefault = true;
         ignoreKeymapDefault = false;
+	altSendsEscapeDefault = true;
         
         fontSize = fontSizeDefault;
         font = fontDefault;
@@ -133,6 +135,7 @@ public final class TermOptions {
 	scrollOnOutput = scrollOnOutputDefault;
 	lineWrap = lineWrapDefault;
         ignoreKeymap = ignoreKeymapDefault;
+	altSendsEscape = altSendsEscapeDefault;
         markDirty();
     }
 
@@ -204,6 +207,7 @@ public final class TermOptions {
 	this.scrollOnOutput = that.scrollOnOutput;
 	this.lineWrap = that.lineWrap;
         this.ignoreKeymap = that.ignoreKeymap;
+        this.altSendsEscape = that.altSendsEscape;
 	this.dirty = false;
         
 	this.fontDefault= that.fontDefault;
@@ -219,6 +223,7 @@ public final class TermOptions {
 	this.scrollOnOutputDefault = that.scrollOnOutputDefault;
 	this.lineWrapDefault = that.lineWrapDefault;
         this.ignoreKeymapDefault = that.ignoreKeymapDefault;
+        this.altSendsEscapeDefault = that.altSendsEscapeDefault;
 	pcs.firePropertyChange(null, null, null);
     }
 
@@ -268,6 +273,8 @@ public final class TermOptions {
         
         ignoreKeymap = prefs.getBoolean(PREFIX + PROP_IGNORE_KEYMAP,
 				    ignoreKeymap);
+        altSendsEscape = prefs.getBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE,
+				    altSendsEscape);
 
 	font = new Font(fontFamily, fontStyle, fontSize);
 
@@ -296,6 +303,7 @@ public final class TermOptions {
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput);
 	prefs.putBoolean(PREFIX + PROP_LINE_WRAP, lineWrap);
         prefs.putBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymap);
+        prefs.putBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE, altSendsEscape);
     }
 
 
@@ -512,6 +520,21 @@ public final class TermOptions {
         markDirty();
     } 
 
+    /*
+     * Alt sends ESC property
+     */
+    public static final String PROP_ALT_SENDS_ESCAPE = "altSendsEscape"; // NOI18N
+
+    private boolean altSendsEscape;
+
+    public boolean getAltSendsEscape() {
+	return altSendsEscape;
+    } 
+    public void setAltSendsEscape(boolean altSendsEscape) {
+	this.altSendsEscape = altSendsEscape;
+        markDirty();
+    } 
+
     private void markDirty() {
         pcs.firePropertyChange(null, null, null);
         if (preferences == null) {
@@ -531,6 +554,7 @@ public final class TermOptions {
                 || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInputDefault) != scrollOnInput
                 || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutputDefault) != scrollOnOutput
                 || preferences.getBoolean(PREFIX + PROP_LINE_WRAP, lineWrapDefault) != lineWrap
-                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymapDefault) != ignoreKeymap;
+                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymapDefault) != ignoreKeymap
+                || preferences.getBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE, altSendsEscapeDefault) != altSendsEscape;
     }
 }

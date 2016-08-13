@@ -168,6 +168,7 @@ public final class TermOptionsPanel extends JPanel {
         scrollOnOutputCheckBox = new javax.swing.JCheckBox();
         previewLabel = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
+        altSendsEscapeCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.descriptionLabel.text")); // NOI18N
 
@@ -289,38 +290,39 @@ public final class TermOptionsPanel extends JPanel {
         previewPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         previewPanel.setLayout(new java.awt.BorderLayout());
 
+        org.openide.awt.Mnemonics.setLocalizedText(altSendsEscapeCheckBox, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.altSendsEscapeCheckBox.text")); // NOI18N
+        altSendsEscapeCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                altSendsEscapeCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fontLabel)
+                    .addComponent(fontSizeLabel)
+                    .addComponent(foregroundLabel)
+                    .addComponent(backgroundLabel)
+                    .addComponent(selectionLabel)
+                    .addComponent(historySizeLabel)
+                    .addComponent(descriptionLabel))
+                .addGap(16, 16, 16)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fontLabel)
-                            .addComponent(fontSizeLabel)
-                            .addComponent(foregroundLabel)
-                            .addComponent(backgroundLabel)
-                            .addComponent(selectionLabel)
-                            .addComponent(historySizeLabel))
-                        .addGap(79, 79, 79)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(foregroundComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                            .addComponent(backgroundComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(selectionComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(selectByWordTextField)
-                            .addComponent(fontText)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(historySizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tabSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addComponent(foregroundComboBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                    .addComponent(backgroundComboBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(selectionComboBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(selectByWordTextField, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fontText, javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(clickToTypeCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(descriptionLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(fontSizeSpinner, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(historySizeSpinner, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tabSizeSpinner, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -330,16 +332,19 @@ public final class TermOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tabSizeLabel)
                     .addComponent(previewLabel)
+                    .addComponent(selectByWordLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(ignoreKeymapCheckBox)
+                        .addGap(86, 86, 86)
+                        .addComponent(altSendsEscapeCheckBox))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(scrollOnInputCheckBox)
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ignoreKeymapCheckBox)
-                                .addGap(18, 18, 18)
-                                .addComponent(lineWrapCheckBox))
-                            .addComponent(scrollOnOutputCheckBox)))
-                    .addComponent(selectByWordLabel))
+                        .addComponent(scrollOnOutputCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(clickToTypeCheckBox)
+                        .addGap(31, 31, 31)
+                        .addComponent(lineWrapCheckBox)))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -381,10 +386,13 @@ public final class TermOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(selectByWordLabel)
                     .addComponent(selectByWordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ignoreKeymapCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(altSendsEscapeCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(clickToTypeCheckBox)
-                    .addComponent(ignoreKeymapCheckBox)
                     .addComponent(lineWrapCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -392,8 +400,9 @@ public final class TermOptionsPanel extends JPanel {
                     .addComponent(scrollOnOutputCheckBox))
                 .addGap(18, 18, 18)
                 .addComponent(previewLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -521,7 +530,15 @@ public final class TermOptionsPanel extends JPanel {
 	}
     }//GEN-LAST:event_selectionComboBoxActionPerformed
 
+    private void altSendsEscapeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_altSendsEscapeCheckBoxActionPerformed
+	if (inApplyingModel) {
+	    return;
+	}
+	termOptions.setAltSendsEscape(altSendsEscapeCheckBox.isSelected());
+    }//GEN-LAST:event_altSendsEscapeCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox altSendsEscapeCheckBox;
     private org.openide.awt.ColorComboBox backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JCheckBox clickToTypeCheckBox;
@@ -592,6 +609,7 @@ public final class TermOptionsPanel extends JPanel {
 	    scrollOnOutputCheckBox.setSelected(termOptions.getScrollOnOutput());
 	    lineWrapCheckBox.setSelected(termOptions.getLineWrap());
 	    ignoreKeymapCheckBox.setSelected(termOptions.getIgnoreKeymap());
+	    altSendsEscapeCheckBox.setSelected(termOptions.getAltSendsEscape());
 	} finally {
 	    inApplyingModel = false;
 	}
@@ -634,6 +652,7 @@ public final class TermOptionsPanel extends JPanel {
 	term.setScrollOnInput(termOptions.getScrollOnInput());
 	term.setScrollOnOutput(termOptions.getScrollOnOutput());
 	term.setHorizontallyScrollable(!termOptions.getLineWrap());
+	term.setAltSendsEscape(termOptions.getAltSendsEscape());
 
 	term.setRowsColumns(7, 60);
 
