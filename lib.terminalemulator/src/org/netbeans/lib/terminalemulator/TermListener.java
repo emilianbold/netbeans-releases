@@ -53,7 +53,7 @@ package org.netbeans.lib.terminalemulator;
 import java.awt.Dimension;
 
 /**
- * Listener for Miscelaneous events.
+ * Listener for Miscellaneous events.
  */
 
 public interface TermListener {

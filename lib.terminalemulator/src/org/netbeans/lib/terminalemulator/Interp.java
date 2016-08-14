@@ -59,11 +59,13 @@ public interface Interp {
     /**
      * Handle a function key.
      * 'e' must be consumed if the Interp recognizes it and sends a sequence.
+     * @param e
      */
     public void keyPressed(KeyEvent e);
 
     /**
      * Convert a terminal-specific character to the canonical curses ACS code.
+     * @param inChar
      * @return '\0' if no conversion took place.
      */
     public char mapACS(char inChar);

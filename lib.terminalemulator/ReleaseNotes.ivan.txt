@@ -1,3 +1,5 @@
+nobugid - Massive tip cleanup
+
 242439 - Terminal -- Clear preserves position of the prompt
 	Fix is easy.
 	Just have the Clear action call Term.clearHistory() instead of clear().

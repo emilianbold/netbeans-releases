@@ -93,7 +93,7 @@ public final class TermOptions {
     private static TermOptions DEFAULT;
 
     private boolean dirty = false;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private Preferences preferences;
 
     private TermOptions() {
@@ -184,6 +184,7 @@ public final class TermOptions {
 
     /**
      * Make a copy of 'this'.
+     * @return A copy of 'this'.
      */
     public TermOptions makeCopy() {
         return new TermOptions(this);
@@ -191,7 +192,9 @@ public final class TermOptions {
 
     /**
      * Assign the values in 'that' to 'this'.
+     * @param that Object to copy values from.
      */
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     public void assign (TermOptions that) {
         this.preferences = that.preferences;
 	this.font= that.font;

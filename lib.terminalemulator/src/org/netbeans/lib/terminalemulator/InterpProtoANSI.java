@@ -113,7 +113,7 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setAction('r', st_base, new ACT_MARGIN());
         }
 
-	static final class ACT_CHA implements Actor {
+	private static final class ACT_CHA implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -124,7 +124,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_ECH implements Actor {
+	private static final class ACT_ECH implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -135,7 +135,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_CBT implements Actor {
+	private static final class ACT_CBT implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -146,7 +146,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_CHT implements Actor {
+	private static final class ACT_CHT implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -157,7 +157,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_VPA implements Actor {
+	private static final class ACT_VPA implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -168,14 +168,14 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_TO_ESC implements Actor {
+	private static final class ACT_TO_ESC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		return null;
 	    }
 	}
 
-        static final class ACT_AS implements Actor {
+        private static final class ACT_AS implements Actor {
 	    @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_as();
@@ -183,7 +183,7 @@ class InterpProtoANSI extends InterpDumb {
             }
         }
         
-        static final class ACT_AE implements Actor {
+        private static final class ACT_AE implements Actor {
 	    @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_ae();
@@ -191,7 +191,7 @@ class InterpProtoANSI extends InterpDumb {
             }
         }
 
-	static class ACT_RESET_NUMBER implements Actor {
+	private static class ACT_RESET_NUMBER implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.resetNumber();
@@ -199,7 +199,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	};
 
-	static final class ACT_REMEMBER_DIGIT implements Actor {
+	private static final class ACT_REMEMBER_DIGIT implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.remember_digit(c);
@@ -207,7 +207,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	};
 
-	static final class ACT_M implements Actor {
+	private static final class ACT_M implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_ri(1);
@@ -215,7 +215,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_FULL_RESET implements Actor {
+	private static final class ACT_FULL_RESET implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_full_reset();
@@ -223,7 +223,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_LS2 implements Actor {
+	private static final class ACT_LS2 implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_selectGL(2);
@@ -231,7 +231,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_LS3 implements Actor {
+	private static final class ACT_LS3 implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_selectGL(3);
@@ -239,7 +239,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_REMEMBER1 implements Actor {
+	private static final class ACT_REMEMBER1 implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 InterpProtoANSI i = (InterpProtoANSI) ai;
@@ -248,7 +248,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_SETG implements Actor {
+	private static final class ACT_SETG implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 int gx = 0;
@@ -269,7 +269,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_PUSH_NUMBER implements Actor {
+	private static final class ACT_PUSH_NUMBER implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (!ai.pushNumber())
@@ -278,7 +278,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_UP implements Actor {
+	private static final class ACT_UP implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -289,7 +289,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_CUD implements Actor {
+	private static final class ACT_CUD implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 // no scroll
@@ -301,7 +301,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_ND implements Actor {
+	private static final class ACT_ND implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -312,7 +312,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_BC implements Actor {
+	private static final class ACT_BC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -323,7 +323,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_HO implements Actor {
+	private static final class ACT_HO implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -335,7 +335,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_J implements Actor {
+	private static final class ACT_J implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -356,7 +356,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_K implements Actor {
+	private static final class ACT_K implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -377,7 +377,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_AL implements Actor {
+	private static final class ACT_AL implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -389,7 +389,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_DL implements Actor {
+	private static final class ACT_DL implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -401,7 +401,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_DC implements Actor {
+	private static final class ACT_DC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -412,7 +412,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_IC implements Actor {
+	private static final class ACT_IC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -423,7 +423,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_SM implements Actor {
+	private static final class ACT_SM implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -434,7 +434,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_RM implements Actor {
+	private static final class ACT_RM implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -446,7 +446,7 @@ class InterpProtoANSI extends InterpDumb {
 	}
 
 
-	static final class ACT_ATTR implements Actor {
+	private static final class ACT_ATTR implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		// set graphics modes (bold, reverse video etc)
@@ -463,7 +463,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_DSR implements Actor {
+	private static final class ACT_DSR implements Actor {
 	    // Device Status Report
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
@@ -476,7 +476,7 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_MARGIN implements Actor {
+	private static final class ACT_MARGIN implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -489,7 +489,7 @@ class InterpProtoANSI extends InterpDumb {
 
     }
 
-    private InterpTypeProtoANSI type;
+    private final InterpTypeProtoANSI type;
 
     private static final InterpTypeProtoANSI type_singleton = new InterpTypeProtoANSI();
 
