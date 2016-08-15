@@ -72,4 +72,12 @@ public function anonymousClassExample($arg) {
     return $instance;
 }
 }
+
+$a=10;
+$bb=20;
+$c=[
+'a'=>10,
+'aa'=>100,
+];
+
 ?>
