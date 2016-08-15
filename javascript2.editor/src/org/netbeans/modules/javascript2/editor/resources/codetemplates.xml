@@ -157,24 +157,21 @@ function ${name}(${parameters}) {
         <code>
 <![CDATA[function(${cursor}) {
     
-};
-]]>
+};]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="it" contexts="JavaScript-Code">
         <code>
 <![CDATA[it('${cursor}', function() {
     
-});
-]]>
+});]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="des" contexts="JavaScript-Code">
         <code>
 <![CDATA[describe('${cursor}', function() {
     
-});
-]]>
+});]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="if" descriptionId="CT_if" contexts="JavaScript-Code">
