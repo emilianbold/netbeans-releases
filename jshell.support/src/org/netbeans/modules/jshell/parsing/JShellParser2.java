@@ -477,9 +477,9 @@ public class JShellParser2 {
         O:
         while (true) {
             SourceCodeAnalysis.CompletionInfo info = state.sourceCodeAnalysis().analyzeCompletion(input);
-            int e = info.unitEndPos;
-            boolean empty = info.remaining.trim().isEmpty();
-            switch (info.completeness) {
+            int e = info.unitEndPos();
+            boolean empty = info.remaining().trim().isEmpty();
+            switch (info.completeness()) {
                 case DEFINITELY_INCOMPLETE:
                 case CONSIDERED_INCOMPLETE:
                     // parser thinks it is incomplete. If no prompt/marker is present, the JShell was not able
@@ -504,9 +504,9 @@ public class JShellParser2 {
                     if (empty) {
                         e = addNewline(input.length()); // plus newline
                     }
-                    input = info.remaining;
+                    input = info.remaining();
                     e -= snippetPrefixLen;
-                    addJavaSnippet(snipOffset, info.unitEndPos);
+                    addJavaSnippet(snipOffset, info.unitEndPos());
                     snipOffset += e;
                     ModelAccessor.INSTANCE.setSectionComplete(section, true);
                     s = State.MAY_INPUT;
@@ -515,7 +515,7 @@ public class JShellParser2 {
                     }
                     break;
                 default:
-                    throw new AssertionError(info.completeness.name());
+                    throw new AssertionError(info.completeness().name());
             }
         }
     }

@@ -7,6 +7,8 @@ package org.netbeans.modules.jshell.launch;
 
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.jshell.spi.ExecutionControl;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -318,10 +321,31 @@ public final class ShellAgent {
         return con;
     }
     
+    static class Debug extends AgentGenerator {
+        public Debug(ShellAgent agent, String targetSpec) {
+            super(agent, targetSpec);
+        }
+        @Override
+        protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
+            return new DebugExecutionEnvironment(agent, out, in, c.getVirtualMachine());
+        }
+    }
+
+    static class Runtime extends AgentGenerator {
+        private final String targetSpec;
+        
+        public Runtime(ShellAgent agent, String targetSpec) {
+            super(agent, targetSpec);
+            this.targetSpec = targetSpec;
+        }
+        
+        @Override
+        protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
+            return new RunExecutionEnvironment(agent, out, in, targetSpec);
+        }
+    }
+
     public RemoteJShellAccessor createRemoteService() throws IOException {
-//        if (closed) {
-//            throw new IOException("Closed");
-//        }
         JavaPlatform plat = ShellProjectUtils.findPlatform(project);
         String targetSpec = (plat == null || plat == JavaPlatform.getDefault()) ? 
                 null : plat.getSpecification().getVersion().toString();
@@ -329,10 +353,10 @@ public final class ShellAgent {
             if (debuggerSession == null) {
                 throw new IOException("Debugger unavailable");
             }
-            return new DebugExecutionEnvironment(this, targetSpec);
+            return new Debug(this, targetSpec);
         } else {
             try {
-                return new RunExecutionEnvironment(this, targetSpec);
+                return new Runtime(this, targetSpec);
             } catch (Throwable t) {
                 t.printStackTrace();
                 return null;

@@ -80,13 +80,13 @@ public class LocationSuppressRule implements OverrideErrorMessage {
             return null;
         }
         String location = m.group(1);
-        int idx = location.indexOf("$REPL"); // NOI18N
+        int idx = location.indexOf("$JShell$"); // NOI18N
         if (idx == -1) {
             return null;
         }
         String[] components = location.substring(idx).split("\\."); // NOI18N
         String last = components[components.length - 1];
-        if (last.startsWith("$REPL")) { // NOI18N
+        if (last.startsWith("$JShell$")) { // NOI18N
             // leave out the location at all
             return msg.substring(0, m.start(0));
         } else {

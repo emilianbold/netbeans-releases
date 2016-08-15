@@ -43,16 +43,18 @@ package org.netbeans.modules.jshell.launch;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import jdk.internal.jshell.remote.RemoteCodes;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.lib.nbjshell.NbExecutionControlBase;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -60,19 +62,23 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author sdedic
  */
-public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implements RemoteJShellAccessor, ShellLaunchListener, NbExecutionControl {
+public class RunExecutionEnvironment extends NbExecutionControlBase implements RemoteJShellService, ShellLaunchListener, NbExecutionControl {
     private final ShellAgent agent;
     
     private boolean added;
     private volatile boolean closed;
     private JShellConnection shellConnection;
-    private ObjectInputStream dis;
-    private ObjectOutputStream dos;
+    private ObjectInput dis;
+    private ObjectOutput dos;
     private String targetSpec;
 
-    public RunExecutionEnvironment(ShellAgent agent, String targetSpec) {
+    public RunExecutionEnvironment(ShellAgent agent, ObjectOutput out, ObjectInput in, String targetSpec) {
+        super(out, in);
+        this.dis = in;
+        this.dos = out;
         this.agent = agent;
         this.targetSpec = targetSpec;
+        ShellLaunchManager.getInstance().addLaunchListener(this);
     }
     
     public JShellConnection getOpenedConnection() {
@@ -82,76 +88,15 @@ public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implem
     }
 
     @Override
-    public boolean redefineClasses(Map<Long, byte[]> redefines) throws IOException, IllegalStateException {
-        if (dis == null || dos == null) {
-            throw new UnsupportedOperationException("streams not opened");
-        }
-        dos.writeInt(NbExecutionControl.CMD_REDEFINE);
-        dos.writeInt(redefines.size());
-        for (Map.Entry<Long, byte[]> en : redefines.entrySet()) {
-            Long l = (Long)en.getKey();
-            
-            dos.writeLong(l);
-            dos.writeObject(en.getValue());
-        }
-        dos.flush();
-        
-        int code = dis.readInt();
-        if (code == RemoteCodes.RESULT_SUCCESS) {
-            return true;
-        }
-        if (code == RemoteCodes.RESULT_FAIL) {
-            String msg = dis.readUTF();
-            throw new IllegalStateException(msg);
-        } else {
-            throw new IOException("Invalid response code");
-        }
-    }
-
-    @Override
     protected void shutdown() {
         requestShutdown();
         super.shutdown();
     }
-
     
-    @Override
     protected boolean isClosed() {
         return closed;
     }
     
-    @Override
-    public Collection<Long> nameToRef(String className) {
-        if (dis == null || dos == null) {
-            // no class sent over -> no class ever could be defined.
-            return null;
-        }
-        try {
-            dos.writeInt(NbExecutionControl.CMD_CLASSID);
-            dos.writeUTF(className);
-            dos.flush();
-            
-            int code = dis.readInt();
-            if (code != RemoteCodes.RESULT_SUCCESS) {
-                return null;
-            }
-            long l = dis.readLong();
-            return l != -1 ? Collections.singleton(l) : null;
-        } catch (IOException ex) {
-            return null;
-        }
-    }
-
-    @Override
-    public void start(ExecutionEnv ee) throws Exception {
-        getConnection(false);
-        OutputStream o = getConnection(true).getAgentInput();
-        InputStream i = getConnection(true).getAgentOutput();
-        init(i, o, ee);
-        dis = getRemoteIn();
-        dos = getRemoteOut();
-    }
-
     @Override
     public void close() {
         requestShutdown();
@@ -184,27 +129,17 @@ public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implem
         return false;
     }
 
-    private JShellConnection getConnection(boolean dontConnect) throws IOException {
-        synchronized (this) {
-            if (closed || (dontConnect && shellConnection == null)) {
-                throw new IOException(Bundle.MSG_AgentConnectionBroken());
-            }
-            if (shellConnection != null) {
-                return shellConnection;
-            }
+    @Override
+    public void setClasspath(String path) throws EngineTerminationException, InternalException {
+        if (!suppressClasspath) {
+            super.setClasspath(path);
         }
-        try {
-            JShellConnection x = agent.createConnection();
-            synchronized (this) {
-                if (!added) {
-                    ShellLaunchManager.getInstance().addLaunchListener(this);
-                    added = true;
-                }
-                return this.shellConnection = x;
-            }
-        } catch (IOException ex) {
-            StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ErrorConnectingToAgent(ex.getLocalizedMessage()), 100);
-            throw ex;
+    }
+
+    @Override
+    public void addToClasspath(String path) throws EngineTerminationException, InternalException {
+        if (!suppressClasspath) {
+            super.addToClasspath(path);
         }
     }
 
@@ -259,5 +194,12 @@ public class RunExecutionEnvironment extends NbExecutionControlBase<Long> implem
     @Override
     public String getTargetSpec() {
         return targetSpec;
+    }
+
+    private boolean suppressClasspath;
+
+    @Override
+    public void suppressClasspathChanges(boolean b) {
+        this.suppressClasspath = b;
     }
 }

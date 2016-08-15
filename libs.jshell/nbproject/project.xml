@@ -28,6 +28,7 @@
                 <package>jdk.internal.jshell.jdi</package>
                 <package>jdk.internal.jshell.remote</package>
                 <package>jdk.jshell</package>
+                <package>jdk.jshell.execution</package>
                 <package>jdk.jshell.spi</package>
                 <package>org.netbeans.lib.nbjshell</package>
             </public-packages>

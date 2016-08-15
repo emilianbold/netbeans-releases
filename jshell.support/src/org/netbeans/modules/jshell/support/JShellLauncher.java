@@ -46,12 +46,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import jdk.internal.jshell.jdi.JDIRemoteAgent;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
+import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionEnv;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,8 +61,7 @@ import org.openide.util.NbBundle;
 public class JShellLauncher extends InternalJShell {
 
     private String prefix = "";
-    
-    private ExecutionControl execEnv = null;
+    private JShellGenerator execGen;
 
     /**
      * 
@@ -72,9 +71,9 @@ public class JShellLauncher extends InternalJShell {
      * @param userout user output from the JShell VM
      * @param usererr  user error from the JShell VM
      */
-    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, RemoteJShellService execEnv) {
+    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
         super(cmdout, cmderr, userin, userout, usererr);
-        this.execEnv = execEnv;
+        this.execGen = execEnv;
     }
 
     
@@ -132,20 +131,33 @@ public class JShellLauncher extends InternalJShell {
         printSystemInfo();
     }
     
-    
-
     @Override
     protected JShell createJShellInstance() {
-        if (execEnv == null) {
-            execEnv = new JDIRemoteAgent(this::decorateLaunchArgs);
+        if (execGen == null) {
+            execGen = new JShellGenerator() {
+                @Override
+                public String getTargetSpec() {
+                    return null;
+                }
+
+                @Override
+                public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
+                    return LaunchJDIAgent.launch().generate(ee);
+                }
+            };
         }
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            JShell ret = createJShell().
-                    executionEngine(execEnv).
-                    remoteVMOptions("-classpath", classpath).
-                    build();
+            JShell.Builder b = createJShell().
+                    executionEngine(execGen);
+            String s = System.getProperty("jshell.logging.properties");
+            if (s == null) {
+                b = b.remoteVMOptions("-classpath", classpath);
+            } else {
+                b = b.remoteVMOptions("-classpath", classpath, "-Djava.util.logging.config.file=" + s);
+            }
+            JShell ret = b.build();
             return ret;
         } finally {
             Thread.currentThread().setContextClassLoader(ctxLoader);

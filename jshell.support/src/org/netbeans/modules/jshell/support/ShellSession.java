@@ -88,6 +88,10 @@ import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
+import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
+import jdk.jshell.spi.ExecutionControl.InternalException;
+import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -628,7 +632,7 @@ public class ShellSession {
         return sb.toString();
     }
     
-    private void setupJShellClasspath(JShell jshell) {
+    private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
         ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
         ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
         ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
@@ -644,6 +648,27 @@ public class ShellSession {
     public  String getClasspath() {
         return createClasspathString();
     }
+    
+    private class GenProxy implements JShellGenerator {
+        private final JShellGenerator del;
+
+        public GenProxy(JShellGenerator del) {
+            this.del = del;
+        }
+
+        @Override
+        public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
+            ExecutionControl ctrl = del.generate(ee);
+            exec = (RemoteJShellService)ctrl;
+            return ctrl;
+        }
+
+        @Override
+        public String getTargetSpec() {
+            return del.getTargetSpec();
+        }
+        
+    }
 
     private void initJShell() {
         if (shell != null) {
@@ -654,14 +679,13 @@ public class ShellSession {
             initializing = true;
             synchronized (this) {
                 if (launcher == null) {
-                    this.exec = env.createExecutionEnv();
                     launcher = new JShellLauncher(
                         shellControlOutput,
                         shellControlOutput, 
                         env.getInputStream(),
                         env.getOutputStream(),
                         env.getErrorStream(),
-                        exec
+                        new GenProxy(env.createExecutionEnv())
                     );
                     launcher.setClasspath(createClasspathString());
                 }
@@ -671,7 +695,7 @@ public class ShellSession {
             // not necessary to launch  the shell, but WILL display the initial prompt
             launcher.start();
             initialSetupSnippets = new HashSet<>(shell.snippets());
-        } catch (IOException | InternalError err) {
+        } catch (IOException | ExecutionControlException | InternalError err) {
             Throwable t = err.getCause();
             if (t == null) {
                 t = err;

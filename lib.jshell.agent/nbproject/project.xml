@@ -13,11 +13,19 @@
                         <specification-version>5.3</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.jshell</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>agentsrc</package-root>
-                <classpath>${agentsrc.asm.cp}</classpath>
+                <classpath>${module.classpath}:${agentsrc.asm.cp}</classpath>
                 <built-to>build/agent/classes</built-to>
                 <built-to>${cluster}/modules/ext/nb-custom-jshell-probe.jar</built-to>
             </extra-compilation-unit>

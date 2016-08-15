@@ -43,6 +43,10 @@ class RemoteClassLoader extends URLClassLoader {
         super(new URL[0]);
     }
 
+    RemoteClassLoader(URL[] urls) {
+        super(urls);
+    }
+
     void delare(String name, byte[] bytes) {
         classObjects.put(name, bytes);
     }

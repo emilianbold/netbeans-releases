@@ -14,9 +14,24 @@
                 <exclude name="META-INF/**"/>
             </patternset>
         </unjar>
-        <javac srcdir="agentsrc" destdir="build/agent/classes" debug="true" deprecation="true" target="1.6" source="1.6">
+        <unjar src="${agentsrc.jshell.cp}" dest="build/agent/classes">
+            <patternset>
+                <include name="jdk/jshell/execution/**"/>
+                <exclude name="**/JDI*.class"/>
+                <exclude name="**/LocalExecutionControl.class"/>
+                <exclude name="**/StreamingExecutionControl.class"/>
+                <exclude name="**/DemultiplexInput.class"/>
+            </patternset>
+            <patternset>
+                <include name="jdk/jshell/spi/ExecutionControl*.class"/>
+                <exclude name="jdk/jshell/spi/ExecutionControl*Generator.class"/>
+                <include name="jdk/jshell/spi/SPIResolutionException.class"/>
+            </patternset>
+        </unjar>
+        <javac srcdir="agentsrc" destdir="build/agent/classes" debug="true" deprecation="true" target="1.8" source="1.8">
 	    <classpath>
 		<pathelement path="${agentsrc.asm.cp}"/>
+		<pathelement path="${module.classpath}"/>
 	    </classpath>
 	</javac>
         <mkdir dir="${cluster}/modules/ext"/>

@@ -39,44 +39,14 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.nbjshell;
+package org.netbeans.modules.jshell.support;
 
-import java.util.Map;
 import jdk.jshell.spi.ExecutionControl;
 
 /**
- * Extension ExecutionControl interface. Defines NB-specific commands to the agent
- * and command methods.
- * 
+ *
  * @author sdedic
  */
-public interface NbExecutionControl extends ExecutionControl {
-    /**
-     * Dump system information and properties.
-     */
-    public static final int CMD_VERSION_INFO = 100;
-
-    /**
-     * Redefine class, new bytes sent over the wire.
-     */
-    public static final int CMD_REDEFINE   =    101;
-    
-    /**
-     * Stop execution of user code
-     */
-    public static final int CMD_STOP        =   102;
-    
-    /**
-     * Provide unique class identification
-     */
-    public static final int CMD_CLASSID     =   103;
-
-    /**
-     * Retrieves properties of the JShell process. May be used to print out
-     * system information.
-     * 
-     * @return properties in a map
-     */
-    public Map<String, String> commandVersionInfo();
-
+public interface JShellGenerator extends ExecutionControl.Generator {
+    public String getTargetSpec();
 }

@@ -186,7 +186,7 @@ public class InternalJShell {
                 .out(userout)
                 .err(usererr)
                 .tempVariableNameGenerator(()-> "$" + currentNameSpace.tidNext())
-                .idGenerator((sn, i) -> (currentNameSpace == startNamespace || state.status(sn).isActive)
+                .idGenerator((sn, i) -> (currentNameSpace == startNamespace || state.status(sn).isActive())
                         ? currentNameSpace.tid(sn)
                         : errorNamespace.tid(sn));
     }
@@ -544,7 +544,7 @@ public class InternalJShell {
             }
         }
 
-        Collections.sort(result, (s1, s2) -> s1.continuation.compareTo(s2.continuation));
+        Collections.sort(result, (s1, s2) -> s1.continuation().compareTo(s2.continuation()));
         return result;
     }
 
@@ -793,7 +793,7 @@ public class InternalJShell {
         }
         boolean hasOutput = false;
         for (Snippet sn : state.snippets()) {
-            if (all || (notInStartUp(sn) && state.status(sn).isActive)) {
+            if (all || (notInStartUp(sn) && state.status(sn).isActive())) {
                 if (!hasOutput) {
                     cmdout.println();
                     hasOutput = true;
@@ -1040,15 +1040,15 @@ public class InternalJShell {
     private String processSource(String srcInput) throws IllegalStateException {
         while (true) {
             CompletionInfo an = analysis.analyzeCompletion(srcInput);
-            if (!an.completeness.isComplete) {
-                return an.remaining;
+            if (!an.completeness().isComplete()) {
+                return an.remaining();
             }
-            boolean failed = processCompleteSource(an.source);
+            boolean failed = processCompleteSource(an.source());
             
-            if (failed || an.remaining.isEmpty()) {
+            if (failed || an.remaining().isEmpty()) {
                 return "";
             }
-            srcInput = an.remaining;
+            srcInput = an.remaining();
         }
     }
     //where
@@ -1073,7 +1073,7 @@ public class InternalJShell {
         if (ste.causeSnippet() == null) {
             // main event
             printDiagnostics(source, diagnostics, false);
-            if (ste.status().isActive) {
+            if (ste.status().isActive()) {
                 if (ste.exception() != null) {
                     if (ste.exception() instanceof EvalException) {
                         printEvalException((EvalException) ste.exception());
@@ -1125,7 +1125,7 @@ public class InternalJShell {
             case VALID:
             case RECOVERABLE_DEFINED:
             case RECOVERABLE_NOT_DEFINED:
-                if (ste.previousStatus().isActive) {
+                if (ste.previousStatus().isActive()) {
                     declared = ste.isSignatureChange()
                         ? "Replaced"
                         : "Modified";
@@ -1333,7 +1333,7 @@ public class InternalJShell {
         int[] anchor = new int[1];
         List<String> result = new ArrayList<>();
         for (Suggestion s : analysis.completionSuggestions(prefix + process, prefix.length() + process.length(), anchor)) {
-            result.add(s.continuation + "\n" + (anchor[0] - prefix.length()));
+            result.add(s.continuation() + "\n" + (anchor[0] - prefix.length()));
         }
         return result;
     }

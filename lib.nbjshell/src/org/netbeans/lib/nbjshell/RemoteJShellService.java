@@ -29,4 +29,6 @@ public interface RemoteJShellService extends ExecutionControl {
     public void closeStreams();
     
     public String getTargetSpec();
+    
+    public void suppressClasspathChanges(boolean b);
 }

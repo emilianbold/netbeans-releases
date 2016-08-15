@@ -7,6 +7,8 @@ package org.netbeans.modules.jshell.project;
 
 import org.netbeans.modules.jshell.launch.RemoteJShellAccessor;
 import java.io.IOException;
+import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
@@ -15,6 +17,7 @@ import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.launch.ShellLaunchEvent;
 import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
+import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.windows.InputOutput;
 
@@ -35,12 +38,22 @@ class ProjectShellEnv extends JShellEnvironment {
         return agent.getIO();
     }
 
-    public RemoteJShellService createExecutionEnv() {
+    public JShellGenerator createExecutionEnv() {
         try {
             RemoteJShellAccessor accessor = agent.createRemoteService();
             CloseNotifier nf = new CloseNotifier(accessor, getSession());
             ShellLaunchManager.getInstance().addLaunchListener(nf);
-            return accessor;
+            return new JShellGenerator() {
+                @Override
+                public String getTargetSpec() {
+                    return accessor.getTargetSpec();
+                }
+
+                @Override
+                public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
+                    return accessor.generate(ee);
+                }
+            };
         } catch (IOException ex) {
             return null;
         }

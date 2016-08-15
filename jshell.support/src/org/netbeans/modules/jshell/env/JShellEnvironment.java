@@ -55,6 +55,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
+import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -66,9 +68,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
+import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -514,7 +518,7 @@ public class JShellEnvironment {
         this.shellListeners.remove(l);
     }
     
-    public RemoteJShellService createExecutionEnv() {
+    public JShellGenerator createExecutionEnv() {
         return null;
     }
     

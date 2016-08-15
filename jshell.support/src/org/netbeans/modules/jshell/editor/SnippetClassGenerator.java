@@ -131,7 +131,7 @@ public class SnippetClassGenerator implements Runnable {
     private void createStatementsText() {
         for (Snippet s : liveSnippets) {
             
-            if (s.kind().isPersistent) {
+            if (s.kind().isPersistent()) {
                 // exclude temporaries, the unreferenced ones should be generated
                 // as expression statements.
                 if (s.subKind() != SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
@@ -171,9 +171,9 @@ public class SnippetClassGenerator implements Runnable {
         candidates.add(snip);
         while (!candidates.isEmpty()) {
             Snippet c = candidates.poll();
-            List<Snippet> deps = JShellAccessor.getDependents(shellSession.getShell(), c);
+            Collection<Snippet> deps = JShellAccessor.getDependents(shellSession.getShell(), c);
             for (Snippet s : deps) {
-                if (!s.kind().isPersistent) {
+                if (!s.kind().isPersistent()) {
                     continue;
                 }
                 if (s.kind() == Snippet.Kind.IMPORT) {
@@ -191,7 +191,7 @@ public class SnippetClassGenerator implements Runnable {
     
     private void prepareDeclarations() {
         for (Snippet s : liveSnippets) {
-            if (!s.kind().isPersistent) {
+            if (!s.kind().isPersistent()) {
                 continue;
             }
             if (s.kind() == Snippet.Kind.IMPORT) {

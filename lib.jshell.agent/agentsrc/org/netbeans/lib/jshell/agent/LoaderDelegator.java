@@ -39,44 +39,35 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.nbjshell;
+package org.netbeans.lib.jshell.agent;
 
-import java.util.Map;
+import jdk.jshell.execution.LoaderDelegate;
 import jdk.jshell.spi.ExecutionControl;
 
 /**
- * Extension ExecutionControl interface. Defines NB-specific commands to the agent
- * and command methods.
- * 
+ *
  * @author sdedic
  */
-public interface NbExecutionControl extends ExecutionControl {
-    /**
-     * Dump system information and properties.
-     */
-    public static final int CMD_VERSION_INFO = 100;
+public class LoaderDelegator implements LoaderDelegate {
+    AgentWorker worker;
 
-    /**
-     * Redefine class, new bytes sent over the wire.
-     */
-    public static final int CMD_REDEFINE   =    101;
-    
-    /**
-     * Stop execution of user code
-     */
-    public static final int CMD_STOP        =   102;
-    
-    /**
-     * Provide unique class identification
-     */
-    public static final int CMD_CLASSID     =   103;
+    @Override
+    public void load(ExecutionControl.ClassBytecodes[] cbs) throws ExecutionControl.ClassInstallException, ExecutionControl.NotImplementedException, ExecutionControl.EngineTerminationException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-    /**
-     * Retrieves properties of the JShell process. May be used to print out
-     * system information.
-     * 
-     * @return properties in a map
-     */
-    public Map<String, String> commandVersionInfo();
+    @Override
+    public void addToClasspath(String string) throws ExecutionControl.EngineTerminationException, ExecutionControl.InternalException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
+    @Override
+    public void setClasspath(String string) throws ExecutionControl.EngineTerminationException, ExecutionControl.InternalException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Class<?> findClass(String string) throws ClassNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

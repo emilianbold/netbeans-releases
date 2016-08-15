@@ -606,6 +606,10 @@ public final class ShellLaunchManager {
         if (executor != null) {
             args.add("-Dorg.netbeans.lib.jshell.agent.AgentWorker.executor=" + executor);
         }
+        String s = System.getProperty("jshell.logging.properties");
+        if (s != null) {
+            args.add("-Djava.util.logging.config.file=" + s);
+        }
         args.add(arg);
         
         return args;

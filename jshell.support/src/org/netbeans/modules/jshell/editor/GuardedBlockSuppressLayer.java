@@ -123,26 +123,22 @@ public class GuardedBlockSuppressLayer extends AbstractHighlightsContainer imple
             return HighlightsSequence.EMPTY;
         }
         if (invalid) {
-            document.render(new Runnable() {
-                public void run() {
-                    bag.clear();
-                    AttributeSet def = getAttribs("default", true, true);
-                    for (ConsoleSection s : model.getSections()) {
-                        if (s.getType().input) {
-                            continue;
-                        }
-                        try {
-                            bag.addHighlight(
-                                    document.createPosition(s.getStart()),
-                                    document.createPosition(s.getEnd()),
-                                    def
-                            );
-                        } catch (BadLocationException ex) {
-                        }
-                    }
-                    invalid = false;
+            bag.clear();
+            AttributeSet def = getAttribs("default", true, true);
+            for (ConsoleSection s : model.getSections()) {
+                if (s.getType().input) {
+                    continue;
                 }
-            });
+                try {
+                    bag.addHighlight(
+                            document.createPosition(s.getStart()),
+                            document.createPosition(s.getEnd()),
+                            def
+                    );
+                } catch (BadLocationException ex) {
+                }
+            }
+            invalid = false;
         }
         return bag.getHighlights(startOffset, endOffset);
     }

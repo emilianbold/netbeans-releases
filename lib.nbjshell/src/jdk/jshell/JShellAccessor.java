@@ -43,15 +43,19 @@ package jdk.jshell;
 
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.lib.nbjshell.SnippetWrapping;
-import com.sun.source.tree.Tree;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.jshell.Snippet.Status;
-import jdk.jshell.TaskFactory.ParseTask;
-import static jdk.jshell.Util.REPL_DOESNOTMATTER_CLASS_NAME;
-import jdk.jshell.Wrap.CompoundWrap;
+import jdk.jshell.SourceCodeAnalysis.SnippetWrapper;
+import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
+import jdk.jshell.spi.ExecutionControl.InternalException;
+import org.netbeans.lib.nbjshell.RemoteJShellService;
 /**
  *
  * @author sdedic
@@ -75,15 +79,33 @@ public class JShellAccessor {
      * @param instance
      * @param classpath 
      */
-    public static void resetCompileClasspath(JShell instance, String classpath) {
+    public static void resetCompileClasspath(JShell instance, String classpath) throws ExecutionControlException {
         try {
             Field f = TaskFactory.class.getDeclaredField("classpath");
             f.setAccessible(true);
             f.set(instance.taskFactory, "");
-        } catch (ReflectiveOperationException ex) {
-            throw new IllegalStateException(ex);
+            
+            Method m = instance.getClass().getDeclaredMethod("executionControl");
+            m.setAccessible(true);
+            ExecutionControl ctrl = (ExecutionControl)m.invoke(instance);
+            RemoteJShellService rjs = (RemoteJShellService)ctrl;
+            rjs.suppressClasspathChanges(true);
+            try {
+                instance.addToClasspath(classpath);
+            } finally {
+                rjs.suppressClasspathChanges(false);
+            }
+        } catch (InvocationTargetException ex) {
+            Throwable t = ex.getCause();
+            if (t instanceof ExecutionControlException) {
+                throw (ExecutionControlException)t;
+            }
+            InternalException x = new InternalException("Error during setting classpath");
+            x.initCause(t);
+            throw x;
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException ex) {
+            Logger.getLogger(JShellAccessor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        addCompileClasspath(instance, classpath);
     }
     
     /**
@@ -92,9 +114,8 @@ public class JShellAccessor {
      * @param snippetPos index in the original rouce
      * @return index in wrapped snippet code
      */
-    public static int getWrappedPosition(Snippet snip, int snippetPos) {
-        OuterWrap wrap = snip.outerWrap();
-        return wrap == null ? -1 : snip.outerWrap().snippetIndexToWrapIndex(snippetPos);
+    public static int getWrappedPosition(JShell state, Snippet snip, int snippetPos) {
+        return state.sourceCodeAnalysis().wrapper(snip).sourceToWrappedPosition(snippetPos);
     }
     
     /**
@@ -104,16 +125,18 @@ public class JShellAccessor {
      * @return 
      */
     public static SnippetWrapping snippetWrap(JShell state, Snippet s) {
+        SnippetWrapper wrp = state.sourceCodeAnalysis().wrapper(s);
+        return new WrappedWrapper(s, wrp);
+        /*
         OuterWrap outer = s.outerWrap();
         if (outer != null) {
             return new StdWrapper(s);
         }
         String src = s.source();
         return wrapInput(state, src, s);
+        */
     }
     
-    private static AtomicInteger snippetClassId = new AtomicInteger();
-
     /**
      * Generates a wrapping for a text without declaring a new Snippet
      * @param state JShell instance
@@ -121,108 +144,30 @@ public class JShellAccessor {
      * @return wrapped source
      */
     public static SnippetWrapping wrapInput(JShell state, String input) {
-        return wrapInput(state, input, null);
+        List<SnippetWrapper> wraps = state.sourceCodeAnalysis().wrappers(input);
+        if (wraps.size() != 1) {
+            return null;
+        }
+        return new WrappedWrapper(null, wraps.get(0));
     }
     
-    public static SnippetWrapping wrapInput(JShell state, String input, Snippet snip) {
-        if (snip != null && input == null) {
-            input = snip.source();
-        }
-        //XXX: modifiers/comments!
-        String compileSource = new MaskCommentsAndModifiers(input, true).cleared();
-        ParseTask pt = state.taskFactory.new ParseTask(compileSource/*, "-XDallowStringFolding=false"*/);
-        List<? extends Tree> units = pt.units();
-        Tree.Kind kind = Tree.Kind.EXPRESSION_STATEMENT;
-        if (!units.isEmpty()) {
-            kind = units.get(0).getKind();
-        }
-        String imports = state.maps.packageAndImportsExcept(null, null);
-        Wrap w;
-        Snippet.Kind snipKind = null;
-                
-        switch (kind) {
-            case IMPORT:
-                w = Wrap.simpleWrap(compileSource);
-                snipKind = Snippet.Kind.IMPORT;
-                break;
-            case CLASS:
-            case ENUM:
-            case ANNOTATION_TYPE:
-            case INTERFACE:
-                snipKind = Snippet.Kind.TYPE_DECL;
-                w = Wrap.classMemberWrap(compileSource);
-                break;
-            case METHOD:
-                snipKind = Snippet.Kind.METHOD;
-                w = Wrap.classMemberWrap(compileSource);
-                break;
-            case VARIABLE:
-                snipKind = Snippet.Kind.VAR;
-                w = Wrap.classMemberWrap(compileSource);
-                break;
-            case EXPRESSION_STATEMENT:
-                snipKind = Snippet.Kind.EXPRESSION;
-                w = Wrap.methodWrap(compileSource);
-                break;
-            default:
-                snipKind = Snippet.Kind.STATEMENT;
-                w = Wrap.methodWrap(compileSource);
-                break;
-        }
-        OuterWrap outer;
-        String className = null;
-        if (kind == Tree.Kind.IMPORT) {
-            outer = state.outerMap.wrapImport(w, null);
-        } else {
-            int id = snippetClassId.getAndIncrement();
-            String idString = Integer.toString(id, Character.MAX_RADIX);
-            if (idString.length() == 1) {
-                idString = "0" + idString;
-            }
-
-            className = REPL_DOESNOTMATTER_CLASS_NAME.replace("00", idString);
-            // taken from OuterWrapMap.wrappedInClass; method is not public and I need to generate
-            // different names of classes.
-            
-            List<Object> elems = new ArrayList<>(3);
-            elems.add(imports +
-                    "class " + className + " {\n");
-            elems.add(w);
-            elems.add("}\n");
-            CompoundWrap cwr = new Wrap.CompoundWrap(elems.toArray());
-            outer = new OuterWrap(cwr);
-            
-        }
-        return new ErrWrapper(snip, outer, snipKind, input, className);
-    }
-    
-    private static class ErrWrapper implements SnippetWrapping {
+    private static class WrappedWrapper implements SnippetWrapping {
         private final Snippet snippet;
-        private final OuterWrap ow;
-        private final Snippet.Kind kind;
-        private final String input;
-        private final String className;
-        
-        public ErrWrapper(Snippet snippet, OuterWrap ow, Snippet.Kind kind, String input, String className) {
+        private final SnippetWrapper wrapper;
+
+        public WrappedWrapper(Snippet snippet, SnippetWrapper wrapper) {
             this.snippet = snippet;
-            this.ow = ow;
-            this.kind = kind;
-            this.input = input;
-            this.className = className;
+            this.wrapper = wrapper;
         }
 
         @Override
         public Snippet.Kind getSnippetKind() {
-            return kind;
+            return wrapper.kind();
         }
 
         @Override
         public Status getStatus() {
-            return snippet != null ? snippet.status() : Status.NONEXISTENT;
-        }
-        
-        public String getSource() {
-            return input;
+            return snippet == null ? Status.NONEXISTENT : snippet.status(); 
         }
 
         @Override
@@ -232,66 +177,25 @@ public class JShellAccessor {
 
         @Override
         public String getCode() {
-            return ow.wrapped();
-        }
-
-        @Override
-        public int getWrappedPosition(int pos) {
-            return ow.snippetIndexToWrapIndex(pos);
-        }
-
-        @Override
-        public String getClassName() {
-            if (className != null) {
-                return className;
-            } else {
-                return ow.className();
-            }
-        }
-    }
-
-    private static class StdWrapper implements SnippetWrapping {
-        private final Snippet snippet;
-        public StdWrapper(Snippet snippet) {
-            this.snippet = snippet;
-        }
-
-        @Override
-        public Snippet.Kind getSnippetKind() {
-            return snippet.kind();
+            return wrapper.wrapped();
         }
 
         @Override
         public String getSource() {
-            return snippet.source();
-        }
-
-        @Override
-        public Status getStatus() {
-            return snippet.status();
-        }
-
-        @Override
-        public Snippet getSnippet() {
-            return snippet;
-        }
-
-        @Override
-        public String getCode() {
-            return snippet.outerWrap().wrapped();
+            return wrapper.source();
         }
 
         @Override
         public int getWrappedPosition(int pos) {
-            return snippet.outerWrap().snippetIndexToWrapIndex(pos);
+            return wrapper.sourceToWrappedPosition(pos);
         }
 
         @Override
         public String getClassName() {
-            return snippet.className();
+            return wrapper.fullClassName();
         }
     }
-    
+
     /**
      * Finds dependent snippets. Only persistent snippets are returned.
      * 
@@ -299,8 +203,8 @@ public class JShellAccessor {
      * @param snip dependency target
      * @return persistent snippets which depend on 'snip'.
      */
-    public static List<Snippet> getDependents(JShell state, Snippet snip) {
-        return state.maps.getDependents(snip);
+    public static Collection<Snippet> getDependents(JShell state, Snippet snip) {
+        return state.sourceCodeAnalysis().dependents(snip);
     }
     
     public static NbExecutionControl getNbExecControl(JShell state) {

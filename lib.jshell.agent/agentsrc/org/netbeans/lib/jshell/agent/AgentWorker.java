@@ -44,7 +44,9 @@ package org.netbeans.lib.jshell.agent;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -53,19 +55,26 @@ import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jdk.jshell.execution.LoaderDelegate;
+import jdk.jshell.execution.RemoteExecutionControl;
+import static jdk.jshell.execution.Util.forwardExecutionControlAndIO;
 import static org.netbeans.lib.jshell.agent.RemoteCodes.RESULT_KILLED;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
@@ -73,7 +82,7 @@ import org.netbeans.lib.jshell.agent.NbJShellAgent;
  *
  * @author sdedic
  */
-public class AgentWorker extends RemoteAgent implements Executor, Runnable {
+public class AgentWorker extends RemoteExecutionControl implements Executor, Runnable {
     private static final Logger LOG = Logger.getLogger("org.netbeans.lib.jshell.agent.AgentWorker"); // NOI18N
     
     public static final String PROPERTY_EXECUTOR = "org.netbeans.lib.jshell.agent.AgentWorker.executor"; // NOI18N
@@ -94,6 +103,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     private final Socket socket;
     private final int   socketPort;
 
+    private RemoteClassLoader loader;
     /**
      * The Classloader last obtained from a field or method
      */
@@ -117,11 +127,43 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      */
     // @GuardedBy(self)
     private final static Map<Integer, Thread>     userCodeExecutingThreads = new HashMap<Integer, Thread>();
-    
+        
     private AgentWorker() {
         agent = null;
         socket = null;
         socketPort = -1;
+        this.userExecutor = findExecutor();
+        loaderProvider = new Callable<ClassLoader>() {
+            public ClassLoader call() {
+                return loader;
+            }
+        };
+        setup();
+    }
+    
+    public AgentWorker(NbJShellAgent agent, Socket controlSocket) {
+        this.agent = agent;
+        this.socket = controlSocket;
+        this.socketPort = controlSocket.getLocalPort();
+        setup();
+    }
+    
+    private void setup() {
+        this.loader = new NbRemoteLoader(ClassLoader.getSystemClassLoader(), null, new URL[0]);
+        if (agent != null) {
+            if (agent.getField() != null || agent.getMethod() != null) {
+                loaderProvider = new LoaderEvaluator();
+            } else if (agent.getClassName() != null) {
+                loaderProvider = new LoaderAccessor(loader);
+            }
+        } 
+        if (loaderProvider == null) {
+            loaderProvider = new Callable<ClassLoader>() {
+                public ClassLoader call() {
+                    return loader;
+                }
+            };
+        }
         this.userExecutor = findExecutor();
     }
     
@@ -205,7 +247,8 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     
     private void installNewClassLoader(ClassLoader delegate) {
         lastClassLoader = delegate;
-        loader = new NbRemoteLoader(delegate, loader);
+        loader = new NbRemoteLoader(delegate, loader, 
+                additionalClasspath.toArray(new URL[additionalClasspath.size()]));
     }
 
     @Override
@@ -213,7 +256,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         command.run();
     }
     
-    protected void prepareClassLoader() {
+    protected NbRemoteLoader prepareClassLoader() {
         try {
             ClassLoader current = loaderProvider.call();
             if (current != lastClassLoader && current != loader) {
@@ -222,73 +265,64 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         } catch (Exception ex) {
             // don't touch
         }
-    }
-    
-    public AgentWorker(NbJShellAgent agent, Socket controlSocket) {
-        loader = new NbRemoteLoader(ClassLoader.getSystemClassLoader(), null);
-        
-        this.agent = agent;
-        this.socket = controlSocket;
-        this.socketPort = controlSocket.getLocalPort();
-        if (agent.getField() != null || agent.getMethod() != null) {
-            loaderProvider = new LoaderEvaluator();
-        } else if (agent.getClassName() != null) {
-            loaderProvider = new LoaderAccessor(loader);
-        } else {
-            loaderProvider = new Callable<ClassLoader>() {
-                public ClassLoader call() {
-                    return loader;
-                }
-            };
-        }
-        this.userExecutor = findExecutor();
-    }
-    
-    void commandLoop(ObjectInputStream in, OutputStream socketOut) throws IOException {
-        LOG.fine("Creating multiplexing stream");
-        OutputStream osm = new MultiplexingOutputStream("command", socketOut);
-        LOG.fine("Object stream over multiplexer");
-        ObjectOutputStream out = new ObjectOutputStream(osm);
-        out.flush();
-        LOG.fine("Object stream created");
-        while (true) {
-            int cmd = in.readInt();
-            prepareClassLoader();
-            performCommand(cmd, in, out);
-        }
+        return (NbRemoteLoader)loader;
     }
     
     public static void main(String[] args) throws Exception {
         String loopBack = null;
+        LOG.log(Level.INFO, "Running main, port = ", args[0]);
         Socket socket = new Socket(loopBack, Integer.parseInt(args[0]));
         try {
             AgentWorker worker = new AgentWorker();
-            OutputStream socketOut = socket.getOutputStream();
-            System.setOut(new PrintStream(new MultiplexingOutputStream("out", socketOut), true));
-            System.setErr(new PrintStream(new MultiplexingOutputStream("err", socketOut), true));
-            worker.commandLoop(
-                    new ObjectInputStream(socket.getInputStream()),
-                    socketOut
-            );
+            LOG.log(Level.INFO, "Worker created", args[0]);
+            InputStream inStream = socket.getInputStream();
+            OutputStream outStream = socket.getOutputStream();
+            Map<String, Consumer<OutputStream>> chans = new HashMap<>();
+            chans.put("out", st -> System.setOut(new PrintStream(st, true)));
+            chans.put("err", st -> System.setErr(new PrintStream(st, true)));
+            forwardExecutionControlAndIO(worker, inStream, outStream, chans);
         } catch (EOFException ex) {
             // ignore, forcible close by the tool
         }
     }
+
+    @Override
+    public Object extensionCommand(String command, Object arg) throws RunException, EngineTerminationException, InternalException {
+        try {
+            switch (command) {
+                case "nb_vmInfo":
+                    return returnVMInfo(null);
+                case "nb_stop":
+                    if (!(arg instanceof Integer)) {
+                        throw new InternalError("Unexpected agent ID: " + arg);
+                    }
+                    performStop((Integer)arg);
+                    return null;
+                default:
+                    throw new NotImplementedException("Command " + command + " not implemented");
+            }
+        } catch (Exception ex) {
+            throw new InternalException("Internal error: " + ex.getClass().getName());
+        }
+    }
+    
+    
     
     @Override
     public void run() {
         // reset the classloader
         OutputStream osm = null;
-        ObjectInputStream ism = null;
+        InputStream ism = null;
         try {
             LOG.fine("Opening output stream to master");
             // will block, but this is necessary so the IDE eventually sets the debuggerKey
             osm = socket.getOutputStream();
+            ism = socket.getInputStream();
             // will read immediately
             LOG.fine("Opening input stream from master");
-            ism = new ObjectInputStream(socket.getInputStream());
-            LOG.fine("I/O streams opened, starting command loop");
-            commandLoop(ism, osm);
+
+            Map<String, Consumer<OutputStream>> chans = new HashMap<>();
+            forwardExecutionControlAndIO(this, ism, osm, chans);
         } catch (EOFException ex) {
             // expected.
         } catch (IOException ex) {
@@ -335,7 +369,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     );
         
 
-    private void returnVMInfo(ObjectOutputStream o) throws IOException {
+    private Object returnVMInfo(ObjectOutput o) throws IOException {
         Map<String, String>  result = new HashMap<String, String>();
         Properties props = System.getProperties();
         for (String s : props.stringPropertyNames()) {
@@ -376,18 +410,12 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         }
         LOG.log(Level.FINE, "Classloader path: " + cp);
         result.put("nb.class.path", cp.toString()); // NOI18N
-        
-        o.writeInt(result.size());
-        for (String s : result.keySet()) {
-            o.writeUTF(s);
-            o.writeUTF(result.get(s));
-        }
-        o.flush();
+        return result;
     }
     
     private ClassLoader contextLoader;
     
-    void clientCodeEnter() {
+    protected void clientCodeEnter() {
         LOG.log(Level.FINER, "Entering client code");
         this.contextLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(loader);
@@ -406,7 +434,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      * to true and response code is produced in performExecute. Since ThreadDeath is thrown, 
      * the executing agent will not complete the synchronized block normally
      */
-    void clientCodeLeave() {
+    protected void clientCodeLeave() throws InternalException {
         super.clientCodeLeave();
         LOG.log(Level.FINER, "Exiting client code");
         Thread.currentThread().setContextClassLoader(contextLoader);
@@ -418,15 +446,50 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             LOG.log(Level.FINER, "User code killed: {0}", killed);
         }
     }
+
+    @Override
+    public String invoke(String className, String methodName) throws RunException, InternalException, EngineTerminationException {
+        final Exception [] err = new IOException[1];
+        final CountDownLatch execLatch = new CountDownLatch(1);
+        final String[] result = new String[1];
+        // for Graalists :)
+        
+        userExecutor.execute(new Runnable() {
+            public void run() {
+                try {
+                    result[0] = performExecute(className, methodName, execLatch);
+                } catch (Exception ex) {
+                    err[0] = ex;
+                }
+            }
+        });
+        try {
+            execLatch.await();
+        } catch (InterruptedException ex) {
+            throw new StoppedException();
+        }
+        if (err[0] != null) {
+            try {
+                throw err[0];
+            } catch (RunException | InternalException | EngineTerminationException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new InternalException("InternalException: " + ex.getClass().getName());
+            }
+        }
+        return result[0];
+    }
     
-    private void performExecute(int cmd, ObjectInputStream in, ObjectOutputStream out, CountDownLatch latch) throws IOException {
+    
+    
+    private String performExecute(String className, String methodName, CountDownLatch latch) 
+            throws ExecutionControlException {
         killed.set(false);
         try {
             synchronized (userCodeExecutingThreads) {
                 userCodeExecutingThreads.put(socketPort, Thread.currentThread());
             }
-            super.performCommand(cmd, in, out);
-            return;
+            return super.invoke(className, methodName);
         } catch (ThreadDeath td) {
             LOG.log(Level.FINE, "Received ThreadDeath, killed: {0}", killed);
             if (!killed.get()) {
@@ -437,67 +500,14 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         } finally {
             latch.countDown();
         }
-        out.writeInt(RESULT_KILLED);
-        out.flush();
+        throw new StoppedException();
     }
     
-    @Override
-    protected void performCommand(final int cmd, final ObjectInputStream in, final ObjectOutputStream out) throws IOException {
-        try {
-            switch (cmd) {
-                case RemoteCodes.CMD_INVOKE: {
-                    final IOException [] err = new IOException[1];
-                    final CountDownLatch execLatch = new CountDownLatch(1);
-                    // for Graalists :)
-                    userExecutor.execute(new Runnable() {
-                        public void run() {
-                            try {
-                                performExecute(cmd, in, out, execLatch);
-                            } catch (IOException ex) {
-                                err[0] = ex;
-                            }
-                        }
-                    });
-                    execLatch.await();
-                    if (err[0] != null) {
-                        throw err[0];
-                    }
-                    break;
-                }
-                case CMD_VM_INFO:
-                    returnVMInfo(out);
-                    break;
-                case CMD_REDEFINE:
-                    performRedefineClasses(in, out);
-                    break;
-                case CMD_CLASSID:
-                    performClassId(in, out);
-                    break;
-                case CMD_STOP:
-                    performStop(in, out);
-                    break;
-                default:
-                    super.performCommand(cmd, in, out);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-            System.err.flush();
-        }
-    }
-    
-    /**
-     * Executes STOP command. Note that STOP comes through <b>different</b> agent than
-     * the one which should stop the user's code; the controlling process opens connection
-     * and instructs the VM to stop running thread.
-     * @param in
-     * @param out
-     * @throws IOException 
-     */
-    @SuppressWarnings({"deprecation", "CallToThreadStopSuspendOrResumeManager"})
-    private void performStop(ObjectInputStream in, ObjectOutputStream out) throws IOException {
-        int agentId = in.readInt();
+    private void performStop(int agentId) throws ExecutionControlException {
         Thread targetThread;
-        
+        if (agentId == -1) {
+            agentId = this.socketPort;
+        }
         synchronized (userCodeExecutingThreads) {
             targetThread = userCodeExecutingThreads.remove(agentId);
             if (targetThread != null) {
@@ -505,48 +515,99 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
                 targetThread.stop();
             }
         }
-        if (targetThread != null) {
-            out.writeInt(RemoteCodes.RESULT_SUCCESS);
-        } else {
-            out.writeInt(RemoteCodes.RESULT_FAIL);
+        if (targetThread == null) {
+            throw new InternalException("Invalid agent ID or not executing user code");
         }
-        out.flush();
     }
     
-    private void performRedefineClasses(ObjectInputStream in, ObjectOutputStream out) throws IOException {
-        int count = in.readInt();
-        try {
-            for (int i = 0; i < count; i++) {
-                long classId = in.readLong();
-                byte[] replaceBytecode = (byte[]) in.readObject();
-                Class defined = ((NbRemoteLoader) loader).getClassOfId(classId);
+    private List<URL> additionalClasspath = new ArrayList<>();
 
-                agent.getInstrumentation().redefineClasses(
-                        new ClassDefinition(defined, replaceBytecode)
-                );
-            }
-            out.writeInt(RemoteCodes.RESULT_SUCCESS);
-        } catch (UnsupportedOperationException ex) {
-            LOG.log(Level.FINE, "Class redefinition failed");
-            out.writeInt(RemoteCodes.RESULT_FAIL);
-            out.writeInt(RemoteCodes.RESULT_SUCCESS);
-        } catch (LinkageError ex) {
-            handleRedefineException(ex, out);
-        } catch (NullPointerException ex) {
-            handleRedefineException(ex, out);
-        } catch (ClassNotFoundException ex) {
-            handleRedefineException(ex, out);
-        } catch (UnmodifiableClassException ex) {
-            handleRedefineException(ex, out);
-        }
-        out.flush();
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        return prepareClassLoader().findClass(name);
     }
-    
-    private void handleRedefineException(Throwable ex, ObjectOutputStream out) throws IOException {
-        LOG.log(Level.WARNING, "Could not redefine class: ", ex);
-        out.writeInt(RemoteCodes.RESULT_FAIL);
-        out.writeInt(RemoteCodes.RESULT_FAIL);
-        out.writeUTF(ex.toString());
+
+    @Override
+    public void setClasspath(String path) throws EngineTerminationException, InternalException {
+        List<URL> savePath = additionalClasspath;
+        additionalClasspath = new ArrayList<>();
+        boolean success = false;
+        try {
+            addToClasspath(path);
+            success = true;
+        } finally {
+            if (!success) {
+                additionalClasspath = savePath;
+            }
+        }
+    }
+
+    @Override
+    public void addToClasspath(String cp) throws EngineTerminationException, InternalException {
+        for (String cpItem : cp.split(";")) { // NOI18N
+            File f = new File(cpItem);
+            if (!f.isAbsolute()) {
+                throw new InternalException("Relative paths unuspported yet"); // NOI18N
+            }
+            try {
+                additionalClasspath.add(f.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                throw new InternalException("Invalid file url: " + cpItem);
+            }
+        }
+        // reset the classloader
+        lastClassLoader = null;
+    }
+
+    @Override
+    public void load(ClassBytecodes[] cbcs) throws ClassInstallException, NotImplementedException, EngineTerminationException {
+        int count = cbcs.length;
+        boolean[] status = new boolean[cbcs.length];
+        int success = 0;
+        NbRemoteLoader ldr = prepareClassLoader();
+        for (int i = 0; i < count; i++) {
+            String name = cbcs[i].name();
+            byte[] byteCode = cbcs[i].bytecodes();
+            ldr.delare(name, byteCode);
+            try {
+                Class.forName(name, false, ldr);
+                success++;
+                status[i] = true;
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(AgentWorker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (success < count) {
+            throw new ClassInstallException("Could not define class", status);
+        }
+    }
+
+    @Override
+    public void redefine(ClassBytecodes[] cbcs) throws ClassInstallException, NotImplementedException, EngineTerminationException {
+        int count = cbcs.length;
+        boolean[] status = new boolean[cbcs.length];
+        int success = 0;
+        NbRemoteLoader ldr = prepareClassLoader();
+        for (int i = 0; i < count; i++) {
+            String name = cbcs[i].name();
+            byte[] replaceBytecode = cbcs[i].bytecodes();
+            Long id = ldr.getClassId(name);
+            if (id != null) {
+                Class defined = ldr.getClassOfId(id);
+                try {
+                    agent.getInstrumentation().redefineClasses(
+                            new ClassDefinition(defined, replaceBytecode)
+                    );
+                    status[i] = true;
+                    success++;
+                } catch (ClassNotFoundException | UnmodifiableClassException ex) {
+                    Logger.getLogger(AgentWorker.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (success < count) {
+                throw new ClassInstallException("Could not redefine classes", status);
+            }
+        }
     }
     
     private void performClassId(ObjectInputStream in, ObjectOutputStream out) throws IOException {
@@ -559,9 +620,5 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             out.writeLong(id);
         }
         out.flush();
-    }
-
-    @Override
-    protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {
     }
  }

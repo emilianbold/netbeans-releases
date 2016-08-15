@@ -57,10 +57,11 @@ import java.util.NoSuchElementException;
 class NbRemoteLoader extends RemoteClassLoader {
     private final NbRemoteLoader oldDelegate;
     private final Map<String, Long> classIds;
+    private final Map<String, Class>  namedClasses;
     private final Map<Long, Class>  definedClasses;
     
-    public NbRemoteLoader(ClassLoader parent, ClassLoader oldDelegate) {
-        
+    public NbRemoteLoader(ClassLoader parent, ClassLoader oldDelegate, URL[] additionalURLs) {
+        super(additionalURLs);
         if (oldDelegate != null && !(oldDelegate instanceof NbRemoteLoader)) {
             throw new IllegalArgumentException("Invalid classloader: " + oldDelegate);
         }
@@ -68,9 +69,11 @@ class NbRemoteLoader extends RemoteClassLoader {
         if (oldDelegate == null) {
             classIds = new HashMap<String, Long>();
             definedClasses = new HashMap<Long, Class>();
+            namedClasses = new HashMap<String, Class>();
         } else {
             classIds = this.oldDelegate.classIds;
             definedClasses = this.oldDelegate.definedClasses;
+            namedClasses = this.oldDelegate.namedClasses;
         }
     }
     
@@ -79,6 +82,7 @@ class NbRemoteLoader extends RemoteClassLoader {
         String className = c.getName();
         classIds.put(className, ret);
         definedClasses.put(ret, c);
+        namedClasses.put(className, c);
         return c;
     }
     
@@ -118,6 +122,10 @@ class NbRemoteLoader extends RemoteClassLoader {
                 return registerClass(c);
             } catch (ClassNotFoundException ex) {
             }
+        }
+        c = namedClasses.get(name);
+        if (c != null) {
+            return c;
         }
         c = super.findClass(name);
         return registerClass(c);
