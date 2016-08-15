@@ -256,6 +256,7 @@ public final class DefaultProjectOperationsImplementation extends DefaultProject
             if (panel.getRenameProjectFolder()) {
                 try {
                     Project move = executor.doMoveProject(handle, project, nueName1, nueName1, project.getProjectDirectory().getParent(), false); // NOI18N
+                    close(project);
                     open(move, wasMain);
                 }catch (IOException x) {
                     LOG.log(Level.WARNING, null, x);
