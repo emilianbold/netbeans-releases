@@ -594,6 +594,22 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_55), "testIssue262838Fix03.php", "class Fo^o implements FooInterface", "Implement");
     }
 
+    public void testIssue267563Fix01a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_70), "testIssue267563Fix01.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue267563Fix01b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_55), "testIssue267563Fix01.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue267563Fix02a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_70), "testIssue267563Fix02.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue267563Fix02b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_55), "testIssue267563Fix02.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
     //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {

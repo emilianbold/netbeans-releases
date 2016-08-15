@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 
@@ -88,12 +89,12 @@ public class BaseFunctionElementSupport  {
         switch (as) {
             case NameAndParamsDeclaration:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), OutputType.COMPLETE_DECLARATION, typeNameResolver));
+                template.append(parameters2String(element, getParameters(), OutputType.COMPLETE_DECLARATION, typeNameResolver));
                 template.append(")"); //NOI18N
                 break;
             case NameAndParamsInvocation:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), OutputType.SIMPLE_NAME, typeNameResolver));
+                template.append(parameters2String(element, getParameters(), OutputType.SIMPLE_NAME, typeNameResolver));
                 template.append(")"); //NOI18N
                 break;
             case DeclarationWithoutBody:
@@ -109,6 +110,11 @@ public class BaseFunctionElementSupport  {
                     if (returns1.size() == 1) {
                         String returnType = asString(PrintAs.ReturnTypes, element, typeNameResolver, phpVersion);
                         if (StringUtils.hasText(returnType)) {
+                            if ("\\self".equals(returnType) // NOI18N
+                                    && element instanceof TypeMemberElement) {
+                                // #267563
+                                returnType = ((TypeMemberElement) element).getType().getFullyQualifiedName().toString();
+                            }
                             template.append(": "); // NOI18N
                             template.append(returnType);
                         }
@@ -172,7 +178,7 @@ public class BaseFunctionElementSupport  {
         return template.toString();
     }
 
-    private static String parameters2String(final List<ParameterElement> parameterList, OutputType stringOutputType, TypeNameResolver typeNameResolver) {
+    private static String parameters2String(final BaseFunctionElement element, final List<ParameterElement> parameterList, OutputType stringOutputType, TypeNameResolver typeNameResolver) {
         StringBuilder template = new StringBuilder();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
@@ -181,7 +187,13 @@ public class BaseFunctionElementSupport  {
                     paramSb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
-                paramSb.append(param.asString(stringOutputType, typeNameResolver));
+                String paramInfo = param.asString(stringOutputType, typeNameResolver);
+                if (paramInfo.startsWith("self ") // NOI18N
+                        && element instanceof TypeMemberElement) {
+                    // #267563
+                    paramInfo = ((TypeMemberElement) element).getType().getFullyQualifiedName().toString() + paramInfo.substring(4);
+                }
+                paramSb.append(paramInfo);
                 template.append(paramSb);
             }
         }
