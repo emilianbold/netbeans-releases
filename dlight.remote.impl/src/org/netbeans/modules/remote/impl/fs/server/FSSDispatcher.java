@@ -492,16 +492,6 @@ import org.openide.util.RequestProcessor;
         }
     }
     
-    private static boolean isFreeBSD(ExecutionEnvironment execEnv) {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
-        if (res.isOK()) {
-            if (res.getOutputString().equals("FreeBSD")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
     /*package*/ static File testGetOriginalFSServerFile(ExecutionEnvironment execEnv) 
             throws IOException, ConnectionManager.CancellationException {
         String path = getOriginalFSServerPath(execEnv);
@@ -531,11 +521,7 @@ import org.openide.util.RequestProcessor;
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             if (osFamily == HostInfo.OSFamily.UNKNOWN) {
-                if (isFreeBSD(execEnv)) {
-                    platformPath = "FreeBSD-x86"; // NOI18N
-                } else {                    
-                    throw new IOException("Unsupported platform on " + execEnv.getDisplayName()); //NOI18N
-                }
+                throw new IOException("Unsupported platform on " + execEnv.getDisplayName()); //NOI18N
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
                         ((osFamily == HostInfo.OSFamily.LINUX && 

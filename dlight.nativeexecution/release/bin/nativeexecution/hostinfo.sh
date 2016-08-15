@@ -114,6 +114,10 @@ elif [ "${OSFAMILY}" = "MACOSX" ]; then
    CPUNUM=`hostinfo | awk '/processor.*logical/{print $1}'`
    OSNAME="MacOSX"
    OSBUILD=`hostinfo | sed -n '/kernel version/{n;p;}' | sed 's/[	 ]*\([^:]*\).*/\1/'`
+elif [ "${OSFAMILY}" = "FreeBSD" ]; then
+   CPUNUM=`sysctl hw.ncpu | awk '{print $2}'`
+   OSNAME=`sysctl -n  kern.ostype`
+   OSBUILD=`sysctl -n kern.osrelease`
 fi
 
 wx_fail() {

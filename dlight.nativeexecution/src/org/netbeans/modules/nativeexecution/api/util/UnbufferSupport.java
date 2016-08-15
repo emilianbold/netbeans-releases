@@ -91,6 +91,7 @@ public class UnbufferSupport {
 
         switch (hinfo.getOSFamily()) {
             case MACOSX:
+            case FREEBSD: // No unbuffer on FreeBSD
                 // No unbuffer on MacOS - see IZ179172
                 return;
             case LINUX:
