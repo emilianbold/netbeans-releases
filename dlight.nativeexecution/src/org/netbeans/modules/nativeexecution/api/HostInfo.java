@@ -60,6 +60,7 @@ public interface HostInfo {
         LINUX,
         WINDOWS,
         MACOSX,
+        FREEBSD,
         UNKNOWN;
 
         public boolean isUnix() {
@@ -67,6 +68,7 @@ public interface HostInfo {
                 case LINUX:
                 case MACOSX:
                 case SUNOS:
+                case FREEBSD:
                     return true;
                 case WINDOWS:
                     return false;
@@ -91,6 +93,8 @@ public interface HostInfo {
                     return "MacOSX"; // NOI18N
                 case SUNOS:
                     return "SunOS"; // NOI18N
+                case FREEBSD:
+                    return "FreeBSD"; // NOI18N
                 case WINDOWS:
                     return "Windows"; // NOI18N
                 case UNKNOWN:

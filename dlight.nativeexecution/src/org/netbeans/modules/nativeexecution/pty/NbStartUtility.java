@@ -116,6 +116,7 @@ public class NbStartUtility extends HelperUtility {
                     }
                     return false;
                 case WINDOWS:
+                case FREEBSD:
                     // For now will disable it on Windows, as there are some
                     // side-effects with paths (need deeper studying)
 //                    Shell activeShell = WindowsSupport.getInstance().getActiveShell();
