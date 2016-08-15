@@ -53,8 +53,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -70,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -78,6 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -194,6 +199,65 @@ public class LineBreakpoint extends AbstractBreakpoint {
         if (fileObject != null) {
             fileObject.removeFileChangeListener(myWeakListener);
         }
+    }
+
+    @Override
+    public GroupProperties getGroupProperties() {
+        return new PhpGroupProperties();
+    }
+
+    //~ Inner classes
+
+    private final class PhpGroupProperties extends GroupProperties {
+
+        @Override
+        public String getLanguage() {
+            return "PHP"; // NOI18N
+        }
+
+        @NbBundle.Messages("LineBreakpoint.type=Line")
+        @Override
+        public String getType() {
+            return Bundle.LineBreakpoint_type();
+        }
+
+        @Override
+        public FileObject[] getFiles() {
+            FileObject file = getFile();
+            if (file != null) {
+                return new FileObject[] {file};
+            }
+            return null;
+        }
+
+        @Override
+        public Project[] getProjects() {
+            FileObject file = getFile();
+            if (file != null) {
+                Project project = ProjectConvertors.getNonConvertorOwner(file);
+                if (project != null) {
+                    return new Project[] {project};
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public DebuggerEngine[] getEngines() {
+            // ???
+            return null;
+        }
+
+        @Override
+        public boolean isHidden() {
+            return false;
+        }
+
+        @CheckForNull
+        private FileObject getFile() {
+            return myLine.getLookup().lookup(FileObject.class);
+        }
+
     }
 
     private class FileRemoveListener extends FileChangeAdapter {
