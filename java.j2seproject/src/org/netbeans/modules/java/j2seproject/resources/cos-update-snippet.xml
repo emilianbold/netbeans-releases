@@ -43,9 +43,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<antlib>
-    <taskdef name="javac" classname="org.netbeans.modules.java.source.ant.JavacTask"/>
-    <taskdef name="delete" classname="org.netbeans.modules.java.source.ant.DeleteTask"/>
-    <taskdef name="translate-classpath" classname="org.netbeans.modules.java.source.ant.TranslateClassPath"/>
-    <taskdef name="cos-updated" classname="org.netbeans.modules.java.source.ant.CosUpdated"/>
-</antlib>
+<project name="cos-update" default="cos-update-internal">
+    <target name="cos-update-internal">
+        <cos-updated id="cos.updated.files" srcdir="${cos.src.dir.internal}" includes="${cos.includes.internal}"/>
+        <ant antfile="${cos.update.script.internal}" target="${cos.update.target.internal}" useNativeBasedir="true" inheritRefs="true"/>
+    </target>
+</project>
