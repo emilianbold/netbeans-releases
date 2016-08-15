@@ -48,7 +48,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,14 +61,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -72,16 +82,24 @@ import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider.Callback3;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.j2seproject.api.J2SEBuildPropertiesProvider;
+import org.netbeans.modules.java.preprocessorbridge.spi.CompileOnSaveAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
+import org.openide.util.BaseUtilities;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
@@ -341,8 +359,18 @@ public class J2SEActionProvider extends BaseActionProvider {
     }
 
     private static final class CosAction implements BuildArtifactMapper.ArtifactsUpdated,
-            PropertyChangeListener {
+            CompileOnSaveAction, PropertyChangeListener {
+        private static Map<Project,Reference<CosAction>> instances = new WeakHashMap<>();
         private static final String COS_UPDATED = "$cos.update";    //NOI18N
+        private static final String COS_CUSTOM = "$cos.update.custom";    //NOI18N
+        private static final String PROP_TARGET = "cos.update.target.internal";  //NOI18N
+        private static final String PROP_SCRIPT = "cos.update.script.internal";  //NOI18N
+        private static final String PROP_SRCDIR = "cos.src.dir.internal";   //NOI18N
+        private static final String PROP_INCLUDES ="cos.includes.internal"; //NOI18N
+        private static final String SNIPPETS = "executor-snippets"; //NOI18N
+        private static final String SCRIPT = "cos-update.xml"; //NOI18N
+        private static final String TARGET = "cos-update-internal"; //NOI18N
+        private static final String SCRIPT_TEMPLATE = "/org/netbeans/modules/java/j2seproject/resources/cos-update-snippet.xml"; //NOI18N
         private static final Object NONE = new Object();
         private final J2SEActionProvider owner;
         private final PropertyEvaluator eval;
@@ -350,7 +378,9 @@ public class J2SEActionProvider extends BaseActionProvider {
         private final SourceRoots tests;
         private final BuildArtifactMapper mapper;
         private final Map</*@GuardedBy("this")*/URL,BuildArtifactMapper.ArtifactsUpdated> currentListeners;
+        private final ChangeSupport cs;
         private volatile Object targetCache;
+        private volatile Boolean enabledCache;
 
         private CosAction(
                 @NonNull final J2SEActionProvider owner,
@@ -363,32 +393,65 @@ public class J2SEActionProvider extends BaseActionProvider {
             this.tests = tests;
             this.mapper = new BuildArtifactMapper();
             this.currentListeners = new HashMap<>();
+            this.cs = new ChangeSupport(this);
             this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
             this.src.addPropertyChangeListener(WeakListeners.propertyChange(this, this.src));
             this.tests.addPropertyChangeListener(WeakListeners.propertyChange(this, this.tests));
             updateRootsListeners();
+            instances.put(owner.getProject(), new WeakReference<>(this));
         }
 
         @Override
+        public boolean isEnabled() {
+            return getTarget() != null && isCustomUpdate();
+        }
+
+        @Override
+        public boolean isUpdateClasses() {
+            return isEnabled();
+        }
+
+        @Override
+        public boolean isUpdateResources() {
+            return isEnabled();
+        }
+
+        @Override
+        public Boolean performAction(Context ctx) throws IOException {
+            switch (ctx.getOperation()) {
+                case UPDATE:
+                    return performUpdate(ctx);
+                case CLEAN:
+                    return performClean(ctx);
+                case SYNC:
+                    return performSync(ctx);
+                default:
+                    throw new IllegalArgumentException(String.valueOf(ctx.getOperation()));                 
+            }
+        }               
+
+        @Override
         public void artifactsUpdated(@NonNull final Iterable<File> artifacts) {
-            final String target = getTarget();
-            if (target != null) {
-                final FileObject buildXml = owner.findBuildXml();
-                if (buildXml != null) {
-                    try {
-                        ActionUtils.runTarget(
-                                buildXml,
-                                new String[] {target},
-                                null,
-                                null);
-                    } catch (IOException ioe) {
-                        LOG.log(
-                                Level.WARNING,
-                                "Cannot execute pos compile on save target: {0} in: {1}",   //NOI18N
-                                new Object[]{
-                                    target,
-                                    FileUtil.getFileDisplayName(buildXml)
-                                });
+            if (!isCustomUpdate()) {
+                final String target = getTarget();
+                if (target != null) {
+                    final FileObject buildXml = owner.findBuildXml();
+                    if (buildXml != null) {
+                        try {
+                                ActionUtils.runTarget(
+                                    buildXml,
+                                    new String[] {target},
+                                    null,
+                                        null);
+                        } catch (IOException ioe) {
+                            LOG.log(
+                                    Level.WARNING,
+                                    "Cannot execute pos compile on save target: {0} in: {1}",   //NOI18N
+                                    new Object[]{
+                                        target,
+                                        FileUtil.getFileDisplayName(buildXml)
+                                    });
+                        }
                     }
                 }
             }
@@ -397,12 +460,30 @@ public class J2SEActionProvider extends BaseActionProvider {
         @Override
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             final String name = evt.getPropertyName();
-            if (name == null || COS_UPDATED.equals(name)) {
+            if (name == null) {
                 targetCache = null;
-            } else if (SourceRoots.PROP_ROOTS.equals(name)) {
+                enabledCache = null;
+                cs.fireChange();
+            } else if (COS_UPDATED.equals(name)) {
+                targetCache = null;
+                cs.fireChange();
+            } else if (COS_CUSTOM.equals(name)) {
+                enabledCache = null;
+                cs.fireChange();
+            }else if (SourceRoots.PROP_ROOTS.equals(name)) {
                 updateRootsListeners();
             }
         }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            cs.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListner(@NonNull final ChangeListener listener) {
+            cs.removeChangeListener(listener);
+        }               
 
         private void updateRootsListeners() {
             final Set<URL> newRoots = new HashSet<>();
@@ -440,6 +521,123 @@ public class J2SEActionProvider extends BaseActionProvider {
                     (String) target :
                     null;
         }
+        
+        private boolean isCustomUpdate() {
+            Boolean res = enabledCache;
+            if (res == null) {
+                final String val = eval.getProperty(COS_CUSTOM);
+                res = enabledCache = Boolean.valueOf(val);
+            }
+            return res;
+        }
+        
+        @CheckForNull
+        private Boolean performUpdate(@NonNull final Context ctx) {
+            final String target = getTarget();
+            if (target != null) {
+                final FileObject buildXml = owner.findBuildXml();
+                if (buildXml != null) {
+                    try {
+                        final FileObject cosScript = getCosScript();
+                        final Iterable<? extends File> updated = ctx.getUpdated();
+                        final Iterable<? extends File> deleted = ctx.getDeleted();
+                        final File root = ctx.isCopyResources() ?
+                                BaseUtilities.toFile(ctx.getSourceRoot().toURI()) :
+                                ctx.getCacheRoot();
+                        final String includes = createIncludes(root, updated);
+                        if (includes != null) {
+                            final Properties props = new Properties();
+                            props.setProperty(PROP_TARGET, target);
+                            props.setProperty(PROP_SCRIPT, FileUtil.toFile(buildXml).getAbsolutePath());
+                            props.setProperty(PROP_SRCDIR, root.getAbsolutePath());
+                            props.setProperty(PROP_INCLUDES, includes);
+                            ActionUtils.runTarget(
+                                    cosScript,
+                                    new String[] {TARGET},
+                                    props,
+                                    null);
+                        } else {
+                            LOG.warning("BuildArtifactMapper artifacts do not provide attributes.");    //NOI18N
+                        }
+                    } catch (IOException | URISyntaxException e) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot execute update targer on save target: {0} in: {1} due to: {2}",   //NOI18N
+                                new Object[]{
+                                    target,
+                                    FileUtil.getFileDisplayName(buildXml),
+                                    e.getMessage()
+                                });
+                    }
+                }
+            }
+            return true;
+        }
+        
+        @CheckForNull
+        private Boolean performClean(@NonNull final Context ctx) {
+            //Not sure what to do
+            return null;
+        }
+        
+        @CheckForNull
+        private Boolean performSync(@NonNull final Context ctx) {
+            //Not sure what to do
+            return null;
+        }
+        
+        @NonNull
+        private FileObject getCosScript() throws IOException {
+            final FileObject snippets = FileUtil.createFolder(
+                    Places.getCacheSubdirectory(SNIPPETS));
+            FileObject cosScript = snippets.getFileObject(SCRIPT);
+            if (cosScript == null) {
+                cosScript = FileUtil.createData(snippets, SCRIPT);
+                final FileLock lock = cosScript.lock();
+                try (InputStream in = getClass().getResourceAsStream(SCRIPT_TEMPLATE);
+                        OutputStream out = cosScript.getOutputStream(lock)) {
+                    FileUtil.copy(in, out);
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+            return cosScript;
+        }        
+        
+        @CheckForNull
+        private static String createIncludes(
+                @NonNull final File root,
+                @NonNull final Iterable<? extends File> artifacts) {
+            final StringBuilder include = new StringBuilder();
+            for (File f : artifacts) {
+                if (include.length() > 0) {
+                    include.append(','); //NOI18N
+                }
+                include.append(relativize(f,root));
+            }
+            return include.length() == 0 ?
+                    null :
+                    include.toString();
+        }
+        
+        private static String relativize(
+                @NonNull final File file,
+                @NonNull final File folder) {
+            final String folderPath = folder.getAbsolutePath();
+            int start = folderPath.length();
+            if (!folderPath.endsWith(File.separator)) {
+                start++;
+            }
+            return file.getAbsolutePath().substring(start);
+        }                        
+        
+        @CheckForNull
+        static CosAction getInstance(@NonNull final Project p) {
+            final Reference<CosAction> r = instances.get(p);
+            return r != null ?
+                    r.get() :
+                    null;
+        }
 
         private static final class WeakArtifactUpdated extends WeakReference<BuildArtifactMapper.ArtifactsUpdated>
                 implements BuildArtifactMapper.ArtifactsUpdated, Runnable {
@@ -472,5 +670,25 @@ public class J2SEActionProvider extends BaseActionProvider {
                 source.removeArtifactsUpdatedListener(url, this);
             }
         }
+    }
+    
+    @ServiceProvider(service = CompileOnSaveAction.Provider.class, position = 10_000)
+    public static final class Provider implements CompileOnSaveAction.Provider {
+
+        @Override
+        public CompileOnSaveAction forRoot(URL root) {
+            try {
+                final Project p = FileOwnerQuery.getOwner(root.toURI());
+                if (p != null) {
+                    p.getLookup().lookup(ActionProvider.class).getSupportedActions();   //Force initialization
+                    final CosAction action = CosAction.getInstance(p);
+                    return action;
+                }
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            }
+            return null;
+        }
+        
     }
 }
