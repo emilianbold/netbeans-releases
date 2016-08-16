@@ -45,6 +45,7 @@ import com.oracle.js.parser.ir.FunctionNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -76,7 +77,7 @@ public final class FormatContext {
     private static final Logger LOGGER = Logger.getLogger(FormatContext.class.getName());
 
     private static final Pattern SAFE_DELETE_PATTERN = Pattern.compile("\\s*"); // NOI18N
-    
+
     private static final Comparator<Region> REGION_COMPARATOR = new Comparator<Region>() {
 
         @Override
@@ -98,8 +99,10 @@ public final class FormatContext {
     private final Language<JsTokenId> languange;
 
     private final Defaults.Provider provider;
-    
+
     private final FunctionNode root;
+
+    private final FormatTokenStream stream;
 
     private final int initialStart;
 
@@ -110,6 +113,8 @@ public final class FormatContext {
     private final boolean embedded;
 
     private final Stack<JsxBlock> jsxIndents = new Stack<>();
+
+    private final Map<FormatToken, JsxBlock> jsxIndentsMap = new HashMap<>();
 
     private LineWrap lastLineWrap;
 
@@ -126,12 +131,13 @@ public final class FormatContext {
     private int tabCount;
 
     public FormatContext(Context context, Defaults.Provider provider,
-            Snapshot snapshot, Language<JsTokenId> language, FunctionNode root) {
+            Snapshot snapshot, Language<JsTokenId> language, FunctionNode root, FormatTokenStream stream) {
         this.context = context;
         this.snapshot = snapshot;
         this.languange = language;
         this.provider = provider;
         this.root = root;
+        this.stream = stream;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
@@ -191,6 +197,10 @@ public final class FormatContext {
         }
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     public Defaults.Provider getDefaultsProvider() {
         return provider;
     }
@@ -198,12 +208,23 @@ public final class FormatContext {
     public void incJsxIndentation(FormatToken token) {
         assert token.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START;
         assert token.next() != null;
+
+        FormatToken next = token.next();
+        while (next != null && next.getId() != JsTokenId.JSX_TEXT) {
+            next = next.next();
+        }
+        Integer indent = next != null ? stream.getOriginalIndent(next) : null;
+        int value = indent != null ? indent : 0;
+
+        int current = value;
         try {
-            int indent = context.lineIndent(context.lineStartOffset(token.next().getOffset() + offsetDiff));
-            jsxIndents.push(new JsxBlock(indent, 0, 0, indent));
+            current = context.lineIndent(context.lineStartOffset(token.next().getOffset() + offsetDiff));
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
+        JsxBlock block = new JsxBlock(value, 0, 0, current);
+        jsxIndents.push(block);
+        jsxIndentsMap.put(token, block);
     }
 
     public void updateJsxIndentation(FormatToken token) {
@@ -211,9 +232,10 @@ public final class FormatContext {
         assert token.next() != null;
         try {
             int indent = context.lineIndent(context.lineStartOffset(token.next().getOffset() + offsetDiff));
-            JsxBlock current = jsxIndents.pop();
-            jsxIndents.push(new JsxBlock(current.getBaseIndent(),
-                    indentationLevel, continuationLevel, indent));
+            JsxBlock current = jsxIndentsMap.get(token);
+            if (current != null) {
+                current.update(indentationLevel, continuationLevel, indent);
+            }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
@@ -221,6 +243,7 @@ public final class FormatContext {
 
     public void decJsxIndentation(FormatToken token) {
         assert token.getKind() == FormatToken.Kind.AFTER_JSX_BLOCK_END;
+        jsxIndentsMap.remove(token);
         jsxIndents.pop();
     }
 
@@ -348,8 +371,8 @@ public final class FormatContext {
             }
         }
     }
-    
-    
+
+
     public int getEmbeddedRegionEnd(int offset) {
         if (!embedded) {
             return -1;
@@ -367,7 +390,7 @@ public final class FormatContext {
         }
         return -1;
     }
-    
+
     public int getDocumentOffset(int offset) {
         return getDocumentOffset(offset, true);
     }
@@ -498,7 +521,7 @@ public final class FormatContext {
         // return embedded && getDocumentOffset(token.getOffset()) < 0;
         return embedded && JsEmbeddingProvider.isGeneratedIdentifier(token.getText().toString());
     }
-    
+
     public boolean isBrokenSource() {
         return embedded && root == null;
     }
@@ -760,11 +783,11 @@ public final class FormatContext {
 
         private final int baseIndent;
 
-        private final int indentationLevel;
+        private int indentationLevel;
 
-        private final int continuationLevel;
+        private int continuationLevel;
 
-        private final int indent;
+        private int indent;
 
         public JsxBlock(int baseIndent, int indentationLevel, int continuationLevel, int indent) {
             this.baseIndent = baseIndent;
@@ -787,6 +810,12 @@ public final class FormatContext {
 
         public int getIndent() {
             return indent;
+        }
+
+        public void update(int indentationLevel, int continuationLevel, int indent) {
+            this.indentationLevel = indentationLevel;
+            this.continuationLevel = continuationLevel;
+            this.indent = indent;
         }
     }
 
