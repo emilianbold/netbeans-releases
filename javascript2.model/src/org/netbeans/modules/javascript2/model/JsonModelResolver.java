@@ -339,9 +339,16 @@ public final class JsonModelResolver extends JsonBaseVisitor<Boolean> implements
 
     @NonNull
     private static OffsetRange createOffsetRange(@NonNull final ParserRuleContext parseTree) {
-        return new OffsetRange(
-            parseTree.start.getStartIndex(),
-            parseTree.stop.getStopIndex() +1);
+        int start = parseTree.start.getStartIndex();
+        int end = parseTree.stop.getStopIndex() +1;
+        if (end <= start) {
+            end = start + 1;
+            LOG.log(
+                    Level.FINE,
+                    "ParseTree.start offset is bigger then end offset [{0}, {1}]",      //NOI18N
+                    new Object[]{parseTree.start.getStartIndex(), parseTree.stop.getStopIndex()});
+        }
+        return new OffsetRange( start, end);
     }
 
     @NonNull
