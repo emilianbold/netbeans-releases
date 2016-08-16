@@ -5,8 +5,6 @@
  */
 package org.netbeans.lib.nbjshell;
 
-import org.netbeans.lib.nbjshell.NbExecutionControl;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.IncompatibleThreadStateException;
@@ -38,7 +36,6 @@ import jdk.jshell.execution.Util;
 import static jdk.jshell.execution.Util.remoteInput;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
-import static org.netbeans.lib.nbjshell.NbExecutionControl.CMD_VERSION_INFO;
 
 /**
  * Launches a JShell VM using standard JDI agent, but incorporates
@@ -46,6 +43,8 @@ import static org.netbeans.lib.nbjshell.NbExecutionControl.CMD_VERSION_INFO;
  * 
  * @author sdedic
  */
+// PENDING: JDIExecutionControl does not bring that much - copy over and derive
+// from NbExecutionControlBase to provide an uniform API
 public class LaunchJDIAgent extends JDIExecutionControl 
     implements ExecutionControl, RemoteJShellService, NbExecutionControl{
     
@@ -81,9 +80,16 @@ public class LaunchJDIAgent extends JDIExecutionControl
 
     private final Object STOP_LOCK = new Object();
     private boolean userCodeRunning = false;
+    private boolean closed = false;
     
     @Override
     public void closeStreams() {
+        synchronized (this) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+        }
         try {
             if (out != null) {
                 out.close();
@@ -183,11 +189,6 @@ public class LaunchJDIAgent extends JDIExecutionControl
 
             List<Consumer<String>> deathListeners = new ArrayList<>();
             deathListeners.add(s -> env.closeDown());
-            Util.detectJDIExitEvent(vm, s -> {
-                for (Consumer<String> h : deathListeners) {
-                    h.accept(s);
-                }
-            });
 
             // Set-up the commands/reslts on the socket.  Piggy-back snippet
             // output.
@@ -200,6 +201,12 @@ public class LaunchJDIAgent extends JDIExecutionControl
             io.put("err", env.userErr());
             ObjectInput cmdin = remoteInput(socket.getInputStream(), io);
             LaunchJDIAgent agent = new LaunchJDIAgent(cmdout, cmdin, vm, process, deathListeners);
+            Util.detectJDIExitEvent(vm, s -> {
+                for (Consumer<String> h : deathListeners) {
+                    h.accept(s);
+                }
+                agent.disposeVM();
+            });
             outFilter.agent = agent;
             return agent;
         }

@@ -44,12 +44,12 @@ package org.netbeans.lib.nbjshell;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.execution.StreamingExecutionControl;
-import static org.netbeans.lib.nbjshell.NbExecutionControl.CMD_VERSION_INFO;
 
 public class NbExecutionControlBase extends StreamingExecutionControl implements NbExecutionControl {
     private static final Logger LOG = Logger.getLogger(NbExecutionControlBase.class.getName());
@@ -73,20 +73,17 @@ public class NbExecutionControlBase extends StreamingExecutionControl implements
     
     @Override
     public Map<String, String> commandVersionInfo() {
-        ObjectOutput out = getRemoteOut();
-        ObjectInput in = getRemoteIn();
         Map<String, String> result = new HashMap<>();
         try {
-            out.writeInt(CMD_VERSION_INFO);
-            out.flush();
-            int num = in.readInt();
-            for (int i = 0; i < num; i++) {
-                String key = in.readUTF();
-                String val = in.readUTF();
-                result.put(key, val);
+            Object o = extensionCommand("nb_vmInfo", null);
+            if (!(o instanceof Map)) {
+                return Collections.emptyMap();
             }
-        } catch (IOException ex) {
+            result = (Map<String, String>)o;
+        } catch (RunException | InternalException ex) {
             LOG.log(Level.INFO, "Error invoking JShell agent", ex.toString());
+        } catch (EngineTerminationException ex) {
+            shutdown();
         }
         return result;
     }
