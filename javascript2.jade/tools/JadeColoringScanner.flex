@@ -495,7 +495,10 @@ UnbufferedComment = "//-"
                                         yybegin(JAVASCRIPT_VALUE);
                                         return JadeTokenId.BRACKET_LEFT_PAREN; 
                                     }
-    .                               {   return JadeTokenId.UNKNOWN;}
+    {LineTerminator}                {   yybegin(AFTER_EOL);
+                                        return JadeTokenId.EOL; }
+    .                               {   yybegin(AFTER_TAG);
+                                        return JadeTokenId.UNKNOWN;}
 }
 
 <AFTER_EACH>    {
