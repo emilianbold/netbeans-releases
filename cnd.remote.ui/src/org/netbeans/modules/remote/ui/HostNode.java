@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.AbstractNode;
@@ -165,6 +166,11 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     private boolean isConnected() {
         return ConnectionManager.getInstance().isConnectedTo(env);
+    }
+
+    @Override
+    public String getName() {
+        return ExecutionEnvironmentFactory.toUniqueID(env);
     }
 
     @Override
