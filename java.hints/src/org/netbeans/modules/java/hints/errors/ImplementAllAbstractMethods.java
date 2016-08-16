@@ -146,7 +146,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
         "ERR_CannotOverrideAbstractMethods=Inherited abstract methods are not accessible and could not be implemented"
     })
     @Override
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Object> data) {
+    public String createMessage(CompilationInfo info, Diagnostic diag, int offset, TreePath treePath, Data<Object> data) {
         TreePath path = deepTreePath(info, offset);
         Element e = findTypeElement(info, path);
         if (e == null) {
