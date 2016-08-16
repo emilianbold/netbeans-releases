@@ -44,11 +44,13 @@ package org.netbeans.modules.cnd.api.toolchain.ui;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -267,36 +269,31 @@ public class PathEnvVariables extends javax.swing.JPanel {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(utilitiesVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(utilitiesLabel))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(toolsVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(toolsLabel)))
+                            .addComponent(utilitiesVariableTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                            .addComponent(toolsVariableTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(utilitiesLabel)
+                            .addComponent(toolsLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(toolsValueTextField)
                             .addComponent(utilitiesValueTextField)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pathBuildVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pathBuildVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pathBuildVariableLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buildTextField))
+                    .addComponent(addLabel)
+                    .addComponent(modifyBuildLabel)
+                    .addComponent(modifyRunLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(addLabel)
-                            .addComponent(modifyBuildLabel)
-                            .addComponent(modifyRunLabel))
-                        .addGap(0, 201, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pathRunVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pathRunVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pathRunVariableLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(runTextField)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(runTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 519, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -322,17 +319,17 @@ public class PathEnvVariables extends javax.swing.JPanel {
                     .addComponent(pathBuildVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pathBuildVariableLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(modifyRunLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pathRunVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(pathRunVariableTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(pathRunVariableLabel))
-                    .addComponent(runTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(runTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pathRunVariableLabel)))
                 .addGap(10, 10, 10)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -366,6 +363,8 @@ public class PathEnvVariables extends javax.swing.JPanel {
         private final MacroExpanderFactory.MacroExpander expander;
         private final Map<String, String> envVariables;
         private String homeDir;
+        private String pathName;
+        private String pathSeparator;
 
         public MacroConverter(ExecutionEnvironment env) {
             envVariables = new HashMap<>();
@@ -374,6 +373,8 @@ public class PathEnvVariables extends javax.swing.JPanel {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                     envVariables.putAll(hostInfo.getEnvironment());
                     homeDir = hostInfo.getUserDir();
+                    pathName = getPathName(env, hostInfo);
+                    pathSeparator = getPathSeparator(hostInfo);
                 } catch (IOException | ConnectionManager.CancellationException ex) {
                     // should never == null occur if isHostInfoAvailable(env) => report
                     Exceptions.printStackTrace(ex);
@@ -381,7 +382,25 @@ public class PathEnvVariables extends javax.swing.JPanel {
             }
             this.expander = MacroExpanderFactory.getExpander(env, false);
         }
+        
+        private final String getPathName(ExecutionEnvironment env, HostInfo hostInfo) {
+            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                for (String key : HostInfoProvider.getEnv(env).keySet()) {
+                    if (key.toLowerCase(Locale.getDefault()).equals("path")) { // NOI18N
+                        return key.substring(0, 4);
+                    }
+                }
+            }
+            return "PATH"; // NOI18N
+        }
 
+        private final String getPathSeparator(HostInfo hostInfo) {
+            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                return ";"; // NOI18N
+            }
+            return ":"; // NOI18N
+        }
+        
         private void updateVariables(String toolPath, String utilitiesPath) {
             envVariables.put(CompilerSet.TOOLS_PATH, toolPath);
             envVariables.put(CompilerSet.UTILITIES_PATH, utilitiesPath);
@@ -395,6 +414,16 @@ public class PathEnvVariables extends javax.swing.JPanel {
                     }
                     in = in.replace(":~", ":"+homeDir); //NOI18N
                     in = in.replace(";~", ";"+homeDir); //NOI18N
+                }
+                if (pathName != null) {
+                    if (!"PATH".equals(pathName)) { //NOI18N
+                        in = in.replace("${PATH}", "${"+pathName+"}"); //NOI18N
+                    }
+                }
+                if (pathSeparator != null) {
+                    if (!";".equals(pathSeparator)) { //NOI18N
+                        in = in.replace(";", pathSeparator); //NOI18N
+                    }
                 }
                 return expander != null ? expander.expandMacros(in, envVariables) : in;
             } catch (ParseException ex) {
