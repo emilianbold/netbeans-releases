@@ -610,7 +610,11 @@ public class ConsoleModel {
                     String text = newInput.getRangeContents(document, ranges[i]);
                     if (!text.isEmpty()) {
                         SnippetWrapping wr = JShellAccessor.wrapInput(shell, text);
-                        snipPos = registerNewSnippet0(wr, newInput, snipPos);
+                        if (wr != null) {
+                            snipPos = registerNewSnippet0(wr, newInput, snipPos);
+                        } else {
+                            snipPos += text.length();
+                        }
                     }
                 }
             }
