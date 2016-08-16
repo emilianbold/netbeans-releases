@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.utils.CndNotifier;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -238,8 +239,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
             // Append compilerset base to run path. (IZ 120836)
             if (conf.getPrependToolCollectionPath().getValue()) {
-                if (cs != null) {
-                    modifyPath(execEnv, env, pi, cs, "run"); //NOI18N
+                if (cs != null && env.get("__CND_TOOL_WRAPPER__") == null) { //NOI18N
+                    ToolchainUtilities.modifyPathEnvVariable(execEnv, env, cs, "run"); //NOI18N
                 }
             }
 
@@ -247,7 +248,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         } else { // Build or Clean or compile
             // Build or Clean
             if (conf.getPrependToolCollectionPath().getValue()) {
-                modifyPath(execEnv, env, pi, cs, "build"); //NOI18N
+                if (env.get("__CND_TOOL_WRAPPER__") == null) { //NOI18N
+                    ToolchainUtilities.modifyPathEnvVariable(execEnv, env, cs, "build"); //NOI18N
+                }
             }
             // Pass QMAKE from compiler set to the Makefile (IZ 174731)
             if (conf.isQmakeConfiguration()) {
@@ -410,45 +413,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 pae.getActionName());
 
         executorTask = es.run();
-    }
-
-    private static void modifyPath(final ExecutionEnvironment execEnv, final Map<String, String> env, final PlatformInfo pi, final CompilerSet cs, final String type) {
-        if (env.get("__CND_TOOL_WRAPPER__") != null) { //NOI18N
-            return;
-        }
-        String macro;
-        if ("run".equals(type)) { //NOI18N
-            macro = cs.getModifyRunPath();
-        } else {
-            macro = cs.getModifyBuildPath();
-        }
-        if (!";".equals(pi.pathSeparator())) { //NOI18N
-            macro = macro.replace(";", pi.pathSeparator()); //NOI18N
-        }
-        String pathName = pi.getPathName();
-        if (!"PATH".equals(pathName)) { //NOI18N
-            macro = macro.replace("${PATH}", "${"+pathName+"}"); //NOI18N
-        }
-        MacroConverter converter = new MacroConverter(execEnv, env);
-        if (pi.isWindows()) {
-            String commands = CompilerSetUtils.getCommandFolder(cs);
-            String baseMinGW = CompilerSetUtils.getMinGWBaseFolder(cs);
-            String path = "";
-            if (commands != null && !commands.isEmpty()) {
-                path = commands;
-            }
-            if (baseMinGW != null && !baseMinGW.isEmpty()) {
-                if (path.isEmpty()) {
-                    path = baseMinGW;
-                } else {
-                    path = path+";"+baseMinGW; //NOI18N
-                }
-            }
-            converter.updateUtilitiesPath(path);
-        }
-        converter.updateToolPath(cs.getDirectory());
-        String expandedPath = converter.expand(macro);
-        env.put(pathName, expandedPath);
     }
 
     private String getExecutable(CompilerSet cs) {
