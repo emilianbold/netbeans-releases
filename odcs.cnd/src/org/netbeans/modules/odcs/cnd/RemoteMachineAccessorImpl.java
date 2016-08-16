@@ -56,6 +56,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
@@ -122,9 +127,9 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
      * @return 
      */
     private List<String> getRemoteMachinesIntern(ProjectHandle<ODCSProject> project) {
-        waitAMoment(500);             
+        waitAMoment(500);
         List<String> ret = readFromFile();
-        return ret != null ? ret : Arrays.asList(new String[] {"Some Remote Host,192.168.1.1:6666", "Another Remote Host,192.168.1.2:4444"});
+        return ret != null ? ret : Arrays.asList(new String[] {"Tester Remote Host,tester@192.168.1.1:5555", "BetaTester Remote Host,beta_tester@192.168.1.2:22"});
     }
 
     /**
@@ -132,8 +137,8 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
      * 
      * odcs.mock.remoteMachinesFile should point to a CSV file, 
      * where each line contains a remote host description.
-     * [host display name],[host address]
-     * Some Host,192.168.1.1:8888
+     * [host display name],[host url]
+     * Some Host,tester@192.168.1.1:8888
      * 
      * @return
      */
@@ -187,7 +192,7 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
             return new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    selectNode("https://java.net"); // XXX fixme!
+                    selectNode(url); // XXX fixme!
                 }
             };
         }
@@ -217,19 +222,33 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
                 final Node root = mgr.getRootContext();
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {                        
-                        // XXX fixme!
-                        Node hudson = NodeOp.findChild(root, "team");
-                        if (hudson == null) {
-                            // XXX fixme!
-                            LOG.fine("ServicesTab does not contain remote machines");
+                        Node buildHosts = NodeOp.findChild(root, "remote");
+                        if (buildHosts == null) {
+                            LOG.fine("ServicesTab does not contain C/C++ Build Hosts");
                             return;
                         }
                         Node _selected;
                         try {
-                            _selected = NodeOp.findPath(hudson, path);
+                            _selected = NodeOp.findPath(buildHosts, path);
                         } catch (NodeNotFoundException x) {
                             LOG.log(Level.FINE, "Could not find subnode", x);
-                            _selected = x.getClosestNode();
+                            ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(path[0]);
+                            if (ee != null) {
+                                ServerRecord serverRecord = ServerList.addServer(ee, null, RemoteSyncFactory.getDefault(), false, true);
+                                if (serverRecord != null) {
+                                    try {
+                                        _selected = NodeOp.findPath(buildHosts, path);
+                                    } catch (NodeNotFoundException ex) {
+                                        LOG.log(Level.FINE, "Could not find created subnode", ex);
+                                        _selected = x.getClosestNode();
+                                    }
+                                } else {
+                                    LOG.log(Level.FINE, "Could not create subnode", ee.toString());
+                                    _selected = x.getClosestNode();
+                                }
+                            } else {
+                                _selected = x.getClosestNode();
+                            }
                         }
                         final Node selected = _selected;
                         Mutex.EVENT.readAccess(new Runnable() {
