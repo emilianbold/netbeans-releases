@@ -253,6 +253,7 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
         try {
             ThreadGroup tg = new ThreadGroup("NetBeans JSHell agent support"); // NOI18N
             Thread t = new Thread(tg, agent, "JShell VM Agent Connector"); // NOI18N
+            LOG.log(Level.INFO, "Starting JShell agent loop");
             t.setDaemon(true);
             t.setContextClassLoader(agent.createClassLoader());
             t.start();
@@ -269,7 +270,6 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
     }
     
     public void run() {
-        LOG.setLevel(Level.FINE);
         try {
             workerClass = Class.forName("org.netbeans.lib.jshell.agent.AgentWorker", true, createClassLoader()); //createClassLoader().loadClass("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
             workerCtor = workerClass.getConstructor(NbJShellAgent.class, Socket.class);

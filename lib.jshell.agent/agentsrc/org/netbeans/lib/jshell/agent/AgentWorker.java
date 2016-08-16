@@ -297,7 +297,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
                         throw new InternalError("Unexpected agent ID: " + arg);
                     }
                     performStop((Integer)arg);
-                    return null;
+                    return 1;
                 default:
                     throw new NotImplementedException("Command " + command + " not implemented");
             }
@@ -325,8 +325,9 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             forwardExecutionControlAndIO(this, ism, osm, chans);
         } catch (EOFException ex) {
             // expected.
+            LOG.log(Level.FINE, "EOF", ex);
         } catch (IOException ex) {
-            
+            LOG.log(Level.FINE, "I/O", ex);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -449,7 +450,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
 
     @Override
     public String invoke(String className, String methodName) throws RunException, InternalException, EngineTerminationException {
-        final Exception [] err = new IOException[1];
+        final Exception [] err = new Exception[1];
         final CountDownLatch execLatch = new CountDownLatch(1);
         final String[] result = new String[1];
         // for Graalists :)

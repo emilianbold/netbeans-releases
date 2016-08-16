@@ -341,7 +341,7 @@ public final class ShellAgent {
         
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
-            return new RunExecutionEnvironment(agent, out, in, targetSpec);
+            return new RunExecutionEnvironment(agent, out, in, targetSpec, c);
         }
     }
 

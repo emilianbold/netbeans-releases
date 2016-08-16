@@ -48,14 +48,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jdk.jshell.execution.StreamingExecutionControl;
+import jdk.jshell.execution.Util;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
-import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.lib.nbjshell.NbExecutionControlBase;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
-import org.openide.awt.StatusDisplayer;
 
 /**
  * Exec environment suitable for machines without active JDI connection.
@@ -63,21 +64,23 @@ import org.openide.awt.StatusDisplayer;
  * @author sdedic
  */
 public class RunExecutionEnvironment extends NbExecutionControlBase implements RemoteJShellService, ShellLaunchListener, NbExecutionControl {
+    private static final Logger LOG = Logger.getLogger(RunExecutionEnvironment.class.getName());
+    
     private final ShellAgent agent;
     
-    private boolean added;
     private volatile boolean closed;
     private JShellConnection shellConnection;
     private ObjectInput dis;
     private ObjectOutput dos;
     private String targetSpec;
 
-    public RunExecutionEnvironment(ShellAgent agent, ObjectOutput out, ObjectInput in, String targetSpec) {
+    public RunExecutionEnvironment(ShellAgent agent, ObjectOutput out, ObjectInput in, String targetSpec, JShellConnection c) {
         super(out, in);
         this.dis = in;
         this.dos = out;
         this.agent = agent;
         this.targetSpec = targetSpec;
+        this.shellConnection = c;
         ShellLaunchManager.getInstance().addLaunchListener(this);
     }
     
@@ -109,17 +112,26 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
      */
     @Override
     public void stop() {
+        if (shellConnection == null) {
+            return;
+        }
         int id = this.shellConnection.getRemoteAgentId();
+        Map<String, OutputStream> io = new HashMap<>();
+        LOG.log(Level.FINE, "Creating agent connection for STOP command");
         try (JShellConnection stopConnection = agent.createConnection();
-            ObjectInputStream in = new ObjectInputStream(stopConnection.getAgentOutput());
-            ObjectOutputStream out = new ObjectOutputStream(stopConnection.getAgentInput())
+            ObjectOutputStream out = new ObjectOutputStream(stopConnection.getAgentInput());
+            ObjectInput cmdin = Util.remoteInput(stopConnection.getAgentOutput(), io);
         ) {
-            
-            out.writeInt(NbExecutionControl.CMD_STOP);
-            out.writeInt(id);
-            out.flush();
-            int success = in.readInt();
+            StreamingExecutionControl stopStream = new StreamingExecutionControl(out, cmdin);
+            Object o = stopStream.extensionCommand("nb_stop", id);
+            LOG.log(Level.FINE, "Sending STOP command for agent ID: " + id);
+            int success = (o instanceof Integer) ? (Integer)o : -1;
+        } catch (RunException | InternalException ex) {
+            LOG.log(Level.INFO, "Error invoking JShell agent", ex.toString());
+        } catch (EngineTerminationException ex) {
+            shutdown();
         } catch (IOException ex) {
+            LOG.log(Level.FINE, "STOP agent creation failed", ex);
         }
     }
 
