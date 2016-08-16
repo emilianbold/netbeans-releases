@@ -234,6 +234,123 @@ public class JsonParserTest extends NbTestCase {
         assertEquals(TestCase.Status.PASSED, test.getStatus());
     }
 
+    public void testIssue267597a() throws Exception {
+        jsonParser.parse(readContent("issue267597a.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("JPC\\CMS\\DependencyResolverTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(1, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testResolveDependencies", test.getName());
+        assertEquals(TestCase.Status.ERROR, test.getStatus());
+    }
+
+    public void testIssue267597b() throws Exception {
+        jsonParser.parse(readContent("issue267597b.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(7, suites.size());
+        TestSuiteVo suite = suites.get(2);
+        assertEquals("SmsZilla\\Adapter\\CiscoAdapterTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(4, tests.size());
+        TestCaseVo testSsh1 = tests.get(2);
+        assertEquals("testSendSsh", testSsh1.getName());
+        assertEquals(TestCase.Status.PASSEDWITHERRORS, testSsh1.getStatus());
+        TestCaseVo testSsh2 = tests.get(3);
+        assertEquals("testSendSsh", testSsh2.getName());
+        assertEquals(TestCase.Status.FAILED, testSsh2.getStatus());
+    }
+
+    public void testIssue267597c() throws Exception {
+        jsonParser.parse(readContent("issue267597c.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(11, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testGetFollowerStatistics", test.getName());
+        assertEquals(TestCase.Status.PASSEDWITHERRORS, test.getStatus());
+        test = tests.get(1);
+        assertEquals("testGetFollowerStatistics", test.getName());
+        assertEquals(TestCase.Status.ERROR, test.getStatus());
+
+        test = tests.get(8);
+        assertEquals("testGetList", test.getName());
+        assertEquals(TestCase.Status.PASSEDWITHERRORS, test.getStatus());
+        test = tests.get(9);
+        assertEquals("testGetList", test.getName());
+        assertEquals(TestCase.Status.ERROR, test.getStatus());
+        // incomplete result?
+        test = tests.get(10);
+        assertEquals("testDeleteValue", test.getName());
+        //assertNull(test.getStatus().toString(), test.getStatus());
+    }
+
+    public void testIssue267597d() throws Exception {
+        jsonParser.parse(readContent("issue267597d.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Test\\FlexiPeeHP\\FlexiBeeROTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(10, tests.size());
+        TestCaseVo test = tests.get(3);
+        assertEquals("testPerformRequest", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(4);
+        assertEquals("testPerformRequest", test.getName());
+        assertEquals(TestCase.Status.SKIPPED, test.getStatus());
+    }
+
+    public void testIssue267597e() throws Exception {
+        jsonParser.parse(readContent("issue267597e.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Test\\FlexiPeeHP\\BankaTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(9, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testStahnoutVypisyOnline", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+    }
+
+    public void testIssue267597f() throws Exception {
+        jsonParser.parse(readContent("issue267597f.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("App\\Tests\\Api\\BT1454Test", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(1, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("test_overview_can_run_up_to_2_years", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        assertEquals(1149, test.getTime());
+    }
+
     private String readContent(String filename) throws IOException {
         byte[] bytes = Files.readAllBytes(getPath(filename));
         return new String(bytes, StandardCharsets.UTF_8);

@@ -95,6 +95,10 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
     @Override
     public void run(final CssParserResult result, SchedulerEvent event) {
         final FileObject file = result.getSnapshot().getSource().getFileObject();
+        if (file == null) {
+            LOG.log(Level.FINE, "run() -  file is null."); // NOI18N
+            return ;
+        }
         final String mimeType = file.getMIMEType();
 
         LOG.log(Level.FINER, "run(), file: {0}", new Object[]{file});
