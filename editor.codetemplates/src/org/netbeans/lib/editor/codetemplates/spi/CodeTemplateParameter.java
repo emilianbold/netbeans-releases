@@ -126,7 +126,7 @@ public final class CodeTemplateParameter {
      * </pre>
      * </p>
      * https://netbeans.org/bugzilla/show_bug.cgi?id=181703
-     * @since 1.42.0
+     * @since 1.43.0
      */
     public static final String ORDERING_HINT_NAME = "ordering"; // NOI18N
 
