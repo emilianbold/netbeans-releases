@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -584,12 +585,12 @@ public class ShellSession {
             env.getSnippetClassPath()
         });
 
-        URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
-        IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
         return Pair.of(previous, evaluator.post(() -> {
 
             ModelAccessor.INSTANCE.execute(model, () -> {
                 try {
+                    URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
+                    IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
                     getJShell();
                 } catch (Exception ex) {
                     LOG.log(Level.FINE, "Thrown error: ", ex);
@@ -667,7 +668,6 @@ public class ShellSession {
         public String getTargetSpec() {
             return del.getTargetSpec();
         }
-        
     }
 
     private void initJShell() {
@@ -912,8 +912,8 @@ public class ShellSession {
             if (closed) {
                 return;
             }
-            this.closed = true;
         }
+        env.notifyDisconnected(this);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
     }
     
@@ -1105,7 +1105,6 @@ public class ShellSession {
                     reportShellMessage(Bundle.MSG_ErrorExecutingCommand());
                 }
             } finally {
-                System.err.println("Bubu");
                 erroneous = false;
             }
         }, this::getPromptAfterError);
