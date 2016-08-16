@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="cos-update" default="cos-update-internal">
     <target name="cos-update-internal">
-        <cos-updated id="cos.updated.files" srcdir="${cos.src.dir.internal}" includes="${cos.includes.internal}"/>
+        <cos-updated id="${$cos.update.resources}" srcdir="${cos.src.dir.internal}" includes="${cos.includes.internal}"/>
         <ant antfile="${cos.update.script.internal}" target="${cos.update.target.internal}" useNativeBasedir="true" inheritRefs="true"/>
     </target>
 </project>

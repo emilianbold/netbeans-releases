@@ -362,7 +362,7 @@ public class J2SEActionProvider extends BaseActionProvider {
             CompileOnSaveAction, PropertyChangeListener {
         private static Map<Project,Reference<CosAction>> instances = new WeakHashMap<>();
         private static final String COS_UPDATED = "$cos.update";    //NOI18N
-        private static final String COS_CUSTOM = "$cos.update.custom";    //NOI18N
+        private static final String COS_CUSTOM = "$cos.update.resources";    //NOI18N
         private static final String PROP_TARGET = "cos.update.target.internal";  //NOI18N
         private static final String PROP_SCRIPT = "cos.update.script.internal";  //NOI18N
         private static final String PROP_SRCDIR = "cos.src.dir.internal";   //NOI18N
@@ -380,7 +380,7 @@ public class J2SEActionProvider extends BaseActionProvider {
         private final Map</*@GuardedBy("this")*/URL,BuildArtifactMapper.ArtifactsUpdated> currentListeners;
         private final ChangeSupport cs;
         private volatile Object targetCache;
-        private volatile Boolean enabledCache;
+        private volatile Object updatedFSProp;
 
         private CosAction(
                 @NonNull final J2SEActionProvider owner,
@@ -462,13 +462,13 @@ public class J2SEActionProvider extends BaseActionProvider {
             final String name = evt.getPropertyName();
             if (name == null) {
                 targetCache = null;
-                enabledCache = null;
+                updatedFSProp = null;
                 cs.fireChange();
             } else if (COS_UPDATED.equals(name)) {
                 targetCache = null;
                 cs.fireChange();
             } else if (COS_CUSTOM.equals(name)) {
-                enabledCache = null;
+                updatedFSProp = null;
                 cs.fireChange();
             }else if (SourceRoots.PROP_ROOTS.equals(name)) {
                 updateRootsListeners();
@@ -522,14 +522,25 @@ public class J2SEActionProvider extends BaseActionProvider {
                     null;
         }
         
-        private boolean isCustomUpdate() {
-            Boolean res = enabledCache;
-            if (res == null) {
+        @CheckForNull
+        private String getUpdatedFileSetProperty() {
+            Object res = updatedFSProp;
+            if (res == null) {                
                 final String val = eval.getProperty(COS_CUSTOM);
-                res = enabledCache = Boolean.valueOf(val);
+                res = updatedFSProp = val != null && !val.isEmpty() ?
+                        val :
+                        NONE;
             }
-            return res;
+            if (res == NONE) {
+                res = null;
+            }
+            return (String) res;
         }
+        
+        private boolean isCustomUpdate() {
+            return getUpdatedFileSetProperty() != null;
+        }
+        
         
         @CheckForNull
         private Boolean performUpdate(@NonNull final Context ctx) {
@@ -551,6 +562,7 @@ public class J2SEActionProvider extends BaseActionProvider {
                             props.setProperty(PROP_SCRIPT, FileUtil.toFile(buildXml).getAbsolutePath());
                             props.setProperty(PROP_SRCDIR, root.getAbsolutePath());
                             props.setProperty(PROP_INCLUDES, includes);
+                            props.setProperty(COS_CUSTOM, getUpdatedFileSetProperty());
                             ActionUtils.runTarget(
                                     cosScript,
                                     new String[] {TARGET},
