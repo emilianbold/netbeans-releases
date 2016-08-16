@@ -43,20 +43,14 @@ package org.netbeans.modules.jshell.project;
 
 import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**

@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;

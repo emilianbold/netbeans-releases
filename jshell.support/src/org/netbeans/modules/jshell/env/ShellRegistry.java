@@ -60,7 +60,6 @@ import java.util.stream.Collectors;
 import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
