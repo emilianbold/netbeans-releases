@@ -1848,7 +1848,43 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             CsmType result = CsmUtilities.iterateTypeChain(type, new CsmUtilities.Predicate<CsmType>() {
                 @Override
                 public boolean check(CsmType value) {
-                    return value != null && value.isInstantiation();
+                    // In fact we always must unfold all types prior to deducing template parameter.
+                    // The same is true for pattern type. If we are ever consider doing
+                    // that we must bind template parameter we are deducing to some 
+                    // subtype inside the most unfolded type (Synonym of that operation
+                    // is modifiyng pattern type).
+                    
+                    // Example (CCC specialized via alias1 and instantiated via alias2):
+                    /*
+                        template <typename T>
+                        struct AAA {};
+
+                        template <typename T>
+                        struct BBB {};
+
+                        template <typename T>
+                        using alias1 = BBB<T>;
+
+                        template <typename T>
+                        using alias2 = alias1<AAA<T> >;
+
+                        template <typename T>
+                        struct CCC {};
+
+                        template <typename T>
+                        struct CCC<alias1<T> > {
+                            typedef T type;
+                        };
+
+                        int main() {
+                            CCC<alias2<int>>::type var;
+                            std::cout << typeid(var).name() << std::endl;
+                            return 0;
+                        }
+                    */
+                    return value != null // just precaution to not get NullPointerException
+                            && value.isInstantiation() // value must be instantation
+                            && value.hasInstantiationParams(); // value must have instantiation parameters
                 }
             });
             return (result != null && result.isInstantiation()) ? result  : null;
