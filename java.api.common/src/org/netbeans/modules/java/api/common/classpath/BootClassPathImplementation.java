@@ -80,8 +80,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private boolean isActivePlatformValid;
     private List<PathResourceImplementation> resourcesCache;
     private long eventId;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private ClassPath endorsedClassPath;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final ClassPath endorsedClassPath;
 
     BootClassPathImplementation(
             @NonNull final PropertyEvaluator evaluator,
@@ -100,6 +100,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     /**
      * @see ClassPathImplementation#getResources()
      */
+    @Override
     public List<PathResourceImplementation> getResources() {
         long currentId;
         synchronized (this) {
@@ -109,13 +110,13 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             currentId = eventId;
         }
 
-        JavaPlatform jp = findActivePlatform();
-        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        final List<PathResourceImplementation> result = new ArrayList<>();
         if (endorsedClassPath != null) {
             for (ClassPath.Entry entry : endorsedClassPath.entries()) {
                 result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
+        JavaPlatform jp = findActivePlatform();
         if (jp != null) {
             // TODO: may also listen on CP, but from Platform it should be fixed
             final ClassPath cp = jp.getBootstrapLibraries();
@@ -140,6 +141,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
      * Add {@link PropertyChangeListener}, see class description for more information.
      * @param listener a listener to add.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -148,6 +150,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
      * Remove {@link PropertyChangeListener}, see class description for more information.
      * @param listener a listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -155,6 +158,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     /**
      * @see PropertyChangeListener#propertyChange()
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
             // active platform was changed
