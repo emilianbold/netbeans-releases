@@ -1557,7 +1557,8 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(UseTraitStatement node) {
-        if (includeWSBeforePHPDoc) {
+        if (includeWSBeforePHPDoc
+                && isFirstUseTraitStatementInBlock(path.get(1), node)) {
             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT, ts.offset()));
         }
         includeWSBeforePHPDoc = true;
@@ -2325,6 +2326,15 @@ public class FormatVisitor extends DefaultVisitor {
 
     private void createGroupAlignment() {
         groupAlignmentTokenHolders.push(new GroupAlignmentTokenHolderImpl());
+    }
+
+    private boolean isFirstUseTraitStatementInBlock(ASTNode parentNode, UseTraitStatement node) {
+        if (parentNode instanceof Block) {
+            List<Statement> statements = ((Block) parentNode).getStatements();
+            return !statements.isEmpty()
+                    && statements.get(0).equals(node);
+        }
+        return true;
     }
 
     private interface GroupAlignmentTokenHolder {
