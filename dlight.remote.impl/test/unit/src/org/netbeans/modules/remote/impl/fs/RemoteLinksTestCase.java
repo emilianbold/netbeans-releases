@@ -130,7 +130,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
             script =
                     "cd " + baseDir + "; "
-                    + "mv " + baseDir + "/ade_autofs/111/222/" + dataFile + ' ' + dataFile + "; "
+                    + "mv -f " + baseDir + "/ade_autofs/111/222/" + dataFile + ' ' + dataFile + "; "
                     + "chmod a+w " + dataFile;
             res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
