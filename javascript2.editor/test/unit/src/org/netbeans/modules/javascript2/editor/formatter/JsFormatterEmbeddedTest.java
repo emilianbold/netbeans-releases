@@ -184,19 +184,37 @@ public class JsFormatterEmbeddedTest extends JsFormatterTestBase {
     public void testJsx7BinaryBeforeIfLong() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
-        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        options.put(FmtOptions.wrapAfterBinaryOps, false);
         reformatFileContents("testfiles/formatter/jsx7.js", options, ".binaryBefore.IfLong.formatted");
     }
 
     public void testJsx7BinaryAfterIfLong() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
-        options.put(FmtOptions.wrapAfterBinaryOps, false);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
         reformatFileContents("testfiles/formatter/jsx7.js", options, ".binaryAfter.IfLong.formatted");
     }
 
     public void testJsx7Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/jsx7.js");
+    }
+    
+    public void testJsx8BinaryBeforeIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, false);
+        reformatFileContents("testfiles/formatter/jsx8.js", options, ".binaryBefore.IfLong.formatted");
+    }
+
+    public void testJsx8BinaryAfterIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/jsx8.js", options, ".binaryAfter.IfLong.formatted");
+    }
+
+    public void testJsx8Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx8.js");
     }
 
     public void testBroken1() throws Exception {
