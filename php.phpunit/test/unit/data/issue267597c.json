@@ -1,0 +1,208 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 74
+}{
+    "event": "suiteStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "tests": 14
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetFollowerStatistics"
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetFollowerStatistics",
+    "status": "warning",
+    "time": 0.042373895645141601562,
+    "trace": [],
+    "message": "Trying to @cover or @use not existing method \"Alvine\\Infrastructure\\CoreOS\\Etcd\\Client::getFollowerStatistics\".",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetFollowerStatistics",
+    "status": "error",
+    "time": 0.042373895645141601562,
+    "trace": [
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\application\\source\\etcd\\Client.class.php",
+            "line": 38,
+            "function": "spl_autoload_call"
+        },
+        {
+            "file": "phar:\/\/C:\/projekte\/svn\/alvine.infrastructure.coreos\/deployment\/vendor\/alvine\/alvine.framework-1.0.1.phar\/source\/core\/AutoLoader.class.php",
+            "line": 2,
+            "function": "include_once"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 25,
+            "function": "getMock",
+            "class": "PHPUnit_Framework_TestCase",
+            "type": "->"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 64,
+            "function": "getPreparedMock",
+            "class": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+            "type": "->"
+        }
+    ],
+    "message": "{alvine.core.autoloader.missingbasepath::class=Alvine\\Infrastructure\\Api\\Rest\\Client::path=Alvine\\Infrastructure\\CoreOS: C:\\projekte\\svn\\alvine.infrastructure.coreos\\application\\source\\,Alvine\\Infrastructure\\Linux: phar:\/\/alvine.infrastructure.linux.phar\/source\/}",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetStatistics"
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetStatistics",
+    "status": "warning",
+    "time": 0.036900997161865234375,
+    "trace": [],
+    "message": "Trying to @cover or @use not existing method \"Alvine\\Infrastructure\\CoreOS\\Etcd\\Client::getStatistics\".",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetStatistics",
+    "status": "error",
+    "time": 0.036900997161865234375,
+    "trace": [
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 25,
+            "function": "getMock",
+            "class": "PHPUnit_Framework_TestCase",
+            "type": "->"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 64,
+            "function": "getPreparedMock",
+            "class": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+            "type": "->"
+        }
+    ],
+    "message": "Class Mock_Client_3b4cd465 does not have a constructor, so you cannot pass any constructor arguments",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetLeader"
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetLeader",
+    "status": "warning",
+    "time": 0.020529031753540039062,
+    "trace": [],
+    "message": "Trying to @cover or @use not existing method \"Alvine\\Infrastructure\\CoreOS\\Etcd\\Client::getLeader\".",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetLeader",
+    "status": "error",
+    "time": 0.020529031753540039062,
+    "trace": [
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 25,
+            "function": "getMock",
+            "class": "PHPUnit_Framework_TestCase",
+            "type": "->"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 64,
+            "function": "getPreparedMock",
+            "class": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+            "type": "->"
+        }
+    ],
+    "message": "Class Mock_Client_3b4cd465 does not have a constructor, so you cannot pass any constructor arguments",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetValue"
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetValue",
+    "status": "warning",
+    "time": 0.01416301727294921875,
+    "trace": [],
+    "message": "Trying to @cover or @use not existing method \"Alvine\\Infrastructure\\CoreOS\\Etcd\\Client::getValue\".",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetValue",
+    "status": "error",
+    "time": 0.01416301727294921875,
+    "trace": [
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 25,
+            "function": "getMock",
+            "class": "PHPUnit_Framework_TestCase",
+            "type": "->"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 64,
+            "function": "getPreparedMock",
+            "class": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+            "type": "->"
+        }
+    ],
+    "message": "Class Mock_Client_3b4cd465 does not have a constructor, so you cannot pass any constructor arguments",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetList"
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetList",
+    "status": "warning",
+    "time": 0.01587009429931640625,
+    "trace": [],
+    "message": "Trying to @cover or @use not existing method \"Alvine\\Infrastructure\\CoreOS\\Etcd\\Client::getList\".",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testGetList",
+    "status": "error",
+    "time": 0.01587009429931640625,
+    "trace": [
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 25,
+            "function": "getMock",
+            "class": "PHPUnit_Framework_TestCase",
+            "type": "->"
+        },
+        {
+            "file": "C:\\projekte\\svn\\alvine.infrastructure.coreos\\development\\tests\\application\\source\\etcd\\Client.classTest.php",
+            "line": 64,
+            "function": "getPreparedMock",
+            "class": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+            "type": "->"
+        }
+    ],
+    "message": "Class Mock_Client_3b4cd465 does not have a constructor, so you cannot pass any constructor arguments",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest",
+    "test": "Alvine\\Infrastructure\\CoreOS\\Etcd\\ClientTest::testDeleteValue"
+}

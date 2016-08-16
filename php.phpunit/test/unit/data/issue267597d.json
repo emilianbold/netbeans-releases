@@ -1,0 +1,126 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 84
+}{
+    "event": "suiteStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "tests": 84
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testCurlInit"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testCurlInit",
+    "status": "pass",
+    "time": 0.017329931259155,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testSetEvidence"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testSetEvidence",
+    "status": "pass",
+    "time": 0.0070528984069824,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testObject2array"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testObject2array",
+    "status": "pass",
+    "time": 0.0071399211883545,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testPerformRequest"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testPerformRequest",
+    "status": "pass",
+    "time": 0.58497095108032,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testPerformRequest",
+    "status": "error",
+    "time": 0,
+    "trace": [],
+    "message": "Skipped Test: This test depends on \"Test\\FlexiPeeHP\\FlexiBeeROTest::testInsertToFlexiBee\" to pass.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testXml2array"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testXml2array",
+    "status": "pass",
+    "time": 0.0070071220397949,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testXml2array",
+    "status": "error",
+    "time": 0,
+    "trace": [],
+    "message": "Skipped Test: This test depends on \"Test\\FlexiPeeHP\\FlexiBeeROTest::testLoadFlexiData\" to pass.",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testXml2array",
+    "status": "error",
+    "time": 0,
+    "trace": [],
+    "message": "Skipped Test: This test depends on \"Test\\FlexiPeeHP\\FlexiBeeROTest::testDisconnect\" to pass.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testLoadFlexiData"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testLoadFlexiData",
+    "status": "error",
+    "time": 0.0073668956756592,
+    "trace": [
+        {
+            "file": "\/home\/vitex\/Projects\/Spoje.Net\/FlexiPeeHP\/testing\/src\/FlexiPeeHP\/FlexiBeeROTest.php",
+            "line": 191,
+            "function": "markTestIncomplete",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Incomplete Test: This test has not been implemented yet.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\FlexiBeeROTest",
+    "test": "Test\\FlexiPeeHP\\FlexiBeeROTest::testGetFlexiRow"
+}
