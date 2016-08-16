@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -57,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -64,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.util.Pair;
 
 /**
  *
@@ -106,15 +107,12 @@ public final class BuildTraceSupport {
                 CompilerSet wrapper = getToolsWrapper();
                 if (wrapper != null) {
                     CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    Map<String, String> envAsMap = env.getenvAsMap();
+                    Pair<String, String> modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, envAsMap, compilerSet, "build"); //NOI18N
                     PlatformInfo pi = conf.getPlatformInfo();
-                    String defaultPath = pi.getPathAsString();
-                    String cmdDir = CompilerSetUtils.getCommandFolder(compilerSet);
-                    if (cmdDir != null && 0 < cmdDir.length()) {
-                        // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
-                    }
-                    defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
-                    env.putenv(pi.getPathName(), defaultPath);
+                    String defaultPath = wrapper.getDirectory() + pi.pathSeparator() + modifyPathEnvVariable.second();
+                    env.putenv(modifyPathEnvVariable.first(), defaultPath);
+                    
                     env.putenv(CND_TOOL_WRAPPER, wrapper.getDirectory());
                     Tool tool = wrapper.getTool(PredefinedToolKind.CCompiler);
                     if (tool != null) {
@@ -127,21 +125,18 @@ public final class BuildTraceSupport {
                 }
             }
         }
-
+        
         public void modifyEnv(Map<String, String> env) {
             if (kind == BuildTraceKind.Wrapper) {
                 CompilerSet wrapper = getToolsWrapper();
                 if (wrapper != null) {
                     CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    Pair<String, String> modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, env, compilerSet, "build"); //NOI18N
                     PlatformInfo pi = conf.getPlatformInfo();
-                    String defaultPath = pi.getPathAsString();
-                    String cmdDir = CompilerSetUtils.getCommandFolder(compilerSet);
-                    if (cmdDir != null && 0 < cmdDir.length()) {
-                        // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
-                    }
+                    String defaultPath = modifyPathEnvVariable.second();
                     defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
-                    env.put(pi.getPathName(), defaultPath);
+                    env.put(modifyPathEnvVariable.first(), defaultPath);
+                    
                     env.put(CND_TOOL_WRAPPER, wrapper.getDirectory());
                     Tool tool = wrapper.getTool(PredefinedToolKind.CCompiler);
                     if (tool != null) {

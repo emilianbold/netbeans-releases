@@ -137,6 +137,10 @@ Contributor(s):
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.completion</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -148,6 +152,10 @@ Contributor(s):
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.remote</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.source</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -191,11 +199,11 @@ Contributor(s):
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.util.ui</code-name-base>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <code-name-base>org.openide.util.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
