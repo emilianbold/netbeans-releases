@@ -95,7 +95,7 @@ public class JsFormatterTestBase extends JsTestBase {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                 snapshot.getTokenHierarchy(), startOffset, JsTokenId.javascriptLanguage());
 
-        FormatTokenStream tokenStream = FormatTokenStream.create(
+        FormatTokenStream tokenStream = FormatTokenStream.create(null,
                 ts, startOffset, endOffset);
         FormatVisitor visitor = new FormatVisitor(tokenStream,
                 ts, endOffset);
