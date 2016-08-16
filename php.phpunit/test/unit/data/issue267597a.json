@@ -1,0 +1,41 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 1
+}{
+    "event": "suiteStart",
+    "suite": "JPC\\CMS\\DependencyResolverTest",
+    "tests": 1
+}{
+    "event": "testStart",
+    "suite": "JPC\\CMS\\DependencyResolverTest",
+    "test": "JPC\\CMS\\DependencyResolverTest::testResolveDependencies"
+}{
+    "event": "test",
+    "suite": "JPC\\CMS\\DependencyResolverTest",
+    "test": "JPC\\CMS\\DependencyResolverTest::testResolveDependencies",
+    "status": "error",
+    "time": 5.5729269981384,
+    "trace": [
+        {
+            "file": "\/home\/hans-rolf\/workspace\/jpclib2\/JPC\/CMS\/Domain\/ResolvedDependencies.php",
+            "line": 25
+        },
+        {
+            "file": "\/home\/hans-rolf\/workspace\/jpclib2\/JPC\/CMS\/DependencyResolver.php",
+            "line": 38,
+            "function": "addData",
+            "class": "JPC\\CMS\\Domain\\ResolvedDependencies",
+            "type": "->"
+        },
+        {
+            "file": "\/home\/hans-rolf\/workspace\/jpclib2\/tests\/JPC\/CMS\/DependencyResolverTest.php",
+            "line": 61,
+            "function": "resolveDependencies",
+            "class": "JPC\\CMS\\DependencyResolver",
+            "type": "->"
+        }
+    ],
+    "message": "JPC\\Type\\Exception: invalid type: PRODUCT\n",
+    "output": "\/home\/hans-rolf\/workspace\/jpclib2\/JPC\/Type\/Enum.php:119:\nNULL\n\/home\/hans-rolf\/workspace\/jpclib2\/JPC\/Type\/Enum.php:119:\narray(1) {\n  'JPC\\CMS\\Domain\\DependencyType' =>\n  array(7) {\n    'PRODUCT' =>\n    string(7) \"PRODUCT\"\n    'STATIC_CONTENT' =>\n    string(14) \"STATIC_CONTENT\"\n    'IMAGE' =>\n    string(5) \"IMAGE\"\n    'TRANSLATION' =>\n    string(11) \"TRANSLATION\"\n    'NAV' =>\n    string(3) \"NAV\"\n    'BROWSE_BOOKS' =>\n    string(12) \"BROWSE_BOOKS\"\n    'BROWSE_EBOOKS' =>\n    string(13) \"BROWSE_EBOOKS\"\n  }\n}\n\/home\/hans-rolf\/workspace\/jpclib2\/JPC\/Type\/Enum.php:119:\narray(7) {\n  'PRODUCT' =>\n  string(7) \"PRODUCT\"\n  'STATIC_CONTENT' =>\n  string(14) \"STATIC_CONTENT\"\n  'IMAGE' =>\n  string(5) \"IMAGE\"\n  'TRANSLATION' =>\n  string(11) \"TRANSLATION\"\n  'NAV' =>\n  string(3) \"NAV\"\n  'BROWSE_BOOKS' =>\n  string(12) \"BROWSE_BOOKS\"\n  'BROWSE_EBOOKS' =>\n  string(13) \"BROWSE_EBOOKS\"\n}\n"
+}
