@@ -176,6 +176,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
             </friend-packages>
