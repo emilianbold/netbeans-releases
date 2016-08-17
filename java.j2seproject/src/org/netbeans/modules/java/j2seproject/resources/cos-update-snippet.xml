@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 2010 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -29,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -43,17 +43,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
-<!--
-    IMPORTANT:  This file modifies keybindings from NetBeans-keybindings.xml to make them work on Mac OS.
--->
-
-<bindings>
-    <!-- Things we add that replace standard keybindings -->
-
-    <!-- Things we add only on the mac -->
-
-    <bind key="OS-R" remove="true" />
-    <bind actionName="in-place-refactoring" key="DA-R"/>
-
-</bindings>
+<project name="cos-update" default="cos-update-internal">
+    <target name="cos-update-internal">
+        <cos-updated id="${$cos.update.resources}" srcdir="${cos.src.dir.internal}" includes="${cos.includes.internal}"/>
+        <ant antfile="${cos.update.script.internal}" target="${cos.update.target.internal}" useNativeBasedir="true" inheritRefs="true"/>
+    </target>
+</project>

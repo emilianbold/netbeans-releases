@@ -174,6 +174,12 @@ public class BaseCaretTest extends NbTestCase {
     public void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault();
+        prepareTest(new String[] {
+                "/org/netbeans/modules/editor/resources/layer.xml",
+                "/META-INF/generated-layer.xml",
+                "/org/netbeans/modules/defaults/mf-layer.xml",
+        },
+        new Object[0]);
         // hack:
         MimeLookup.getLookup("").lookup(FoldHierarchyMonitor.class);
         env = new FoldHierarchyTestEnv(new FoldManagerFactory() {
@@ -182,12 +188,6 @@ public class BaseCaretTest extends NbTestCase {
                 return fm = new FM();
             }
         });
-        prepareTest(new String[] {
-                "/org/netbeans/modules/editor/resources/layer.xml",
-                "/META-INF/generated-layer.xml",
-                "/org/netbeans/modules/defaults/mf-layer.xml",
-        },
-        new Object[0]);
         pane = env.getPane();
         env.getPane().setEditorKit(new Kit());
         env.getDocument().insertString(0, "123456789-123456789-123 aa 89-123456789-1234567890", null);
