@@ -44,9 +44,11 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import static java.lang.Integer.MAX_VALUE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -335,8 +337,11 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             }
             
             TextRegion<?> caretTextRegion = null;
+            
+            List<CodeTemplateParameter> prioritizedMasterParameters = prioritizeParameters(masterParameters);
+            
             // Go through all master parameters and create region infos for them
-            for (CodeTemplateParameter master : masterParameters) {
+            for (CodeTemplateParameter master : prioritizedMasterParameters) {
                 CodeTemplateParameterImpl masterImpl = CodeTemplateParameterImpl.get(master);
                 if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(master.getName())) {
                     // Add explicit ${cursor} as last into text sync group to jump to it by TAB as last param
@@ -586,6 +591,37 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             sb.append('\n');
         }
         return sb.toString();
+    }
+    /**
+     * #181703 - Allow prioritizing parameters in a code-template.
+     * Package private for testing
+     */
+    static List<CodeTemplateParameter> prioritizeParameters(List<CodeTemplateParameter> params) {
+
+        List<CodeTemplateParameter> result = new ArrayList<>(params);
+        Collections.sort(result, new Comparator<CodeTemplateParameter>() {
+            @Override
+            public int compare(CodeTemplateParameter p1, CodeTemplateParameter p2) {
+                return getPrio(p1) - getPrio(p2);
+            }
+
+            private int getPrio(CodeTemplateParameter templateParam) throws NumberFormatException {
+                if (null == templateParam) {
+                    return MAX_VALUE;
+                }
+                String value = templateParam.getHints().get(CodeTemplateParameter.ORDERING_HINT_NAME);
+                if (null != value) {
+                    try {
+                        return Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        // ignore
+                        return MAX_VALUE;
+                    }
+                }
+                return MAX_VALUE;
+            }
+        });
+        return result;
     }
 
     private static final class TemplateInsertUndoEdit extends AbstractUndoableEdit {

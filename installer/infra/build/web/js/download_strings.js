@@ -95,7 +95,7 @@ var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki
 var PLATFORM_DEV_LABEL       = "You can start developing applications based on the NetBeans Platform using the NetBeans IDE for Java SE. Learn more about the <a href=\"{0}\">NetBeans Platform</a>.";
 var PLATFORM_INFO_LINK       = "http://platform.netbeans.org/platform-get.html";
 
-var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
+var ARCHIVE_BUILDS_LINK      = "http://services.netbeans.org/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
 // TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
