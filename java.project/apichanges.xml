@@ -119,6 +119,22 @@ is the proper place.
             <description>
                 <p>
                     Added a support for per project <code>JavaPlatform</code>.
+                    The usecase for the per project JavaPlatform is a generated
+                    project. The project generator puts platform path into
+                    the project properties and the generated projects have correct
+                    JavaPlatform. There is no need to resolve broken JavaPlatform
+                    when the projects are opened.
+                </p>
+                <p>
+                    To use the per project <code>JavaPlatform</code> set the
+                    <code>platform.active</code> property to the platform name and
+                    add the <code>platforms.&lt;platform_name&gt;.home</code> property
+                    pointing to the path to the JDK home.
+                </p>
+                <p>
+                    Example:<br/>
+                    <code>platforms.MyJDK.home=/Library/Java/JavaVirtualMachines/jdk1.7.0_67.jdk/Contents/Home</code><br/>
+                    <code>platform.active=MyJDK</code><br/>
                 </p>
             </description>
             <class package="org.netbeans.spi.java.project.support" name="ProjectPlatform"/>

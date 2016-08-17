@@ -105,6 +105,9 @@ public final class ProjectPlatform {
                 platformName,
                 owner.getProjectDirectory(),
                 eval);
+        if (jdkHome == null) {
+            return null;
+        }
         JavaPlatform res;
         JavaPlatform delegate;        
         synchronized (platformsByProject) {
