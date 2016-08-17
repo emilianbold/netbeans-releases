@@ -573,6 +573,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     break;
                 case SUNOS:
                 case LINUX:
+                case FREEBSD:
                 case UNKNOWN:
                     filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
                     break;
