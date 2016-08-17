@@ -44,11 +44,13 @@ package org.netbeans.modules.php.dbgp;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.dbgp.breakpoints.AbstractBreakpoint;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -137,6 +139,7 @@ public class SessionManager {
             ((DbgpEngineProvider) engine.lookupFirst(null, DebuggerEngineProvider.class)).getDestructor().killEngine();
         }
         SessionManager.closeServerThread(session);
+        resetBreakpoints();
     }
 
     public static SessionId getSessionId(Project project) {
@@ -195,6 +198,17 @@ public class SessionManager {
             }
         }
         return null;
+    }
+
+    private static void resetBreakpoints() {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        for (Breakpoint breakpoint : breakpoints) {
+            if (!(breakpoint instanceof AbstractBreakpoint)) {
+                continue;
+            }
+            AbstractBreakpoint brkpnt = (AbstractBreakpoint) breakpoint;
+            brkpnt.reset();
+        }
     }
 
 }
