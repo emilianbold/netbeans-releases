@@ -176,7 +176,7 @@ ${selection}${cursor}
     </codetemplate>
     <codetemplate abbreviation="fore" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP,LAMBDA_EXPRESSION">
         <code>
-<![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
+<![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem" ordering=2} : ${ITER iterable default="col" ordering=1}) {
 ${selection}${cursor}
 }
 ]]>
