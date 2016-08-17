@@ -164,6 +164,8 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Intentional")
+    @CheckForNull
     private Boolean isValid() {
         try {
             return isValidFuture.get(2, TimeUnit.SECONDS);
