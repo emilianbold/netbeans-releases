@@ -395,6 +395,12 @@ Contributor(s):
             <file name="GNU_mac_assembler" url="resources/toolchaindefinition/GNU_mac_assembler.xml">
                 <attr name="extends" stringvalue="GNU_assembler"/>
             </file>
+            <file name="GNU_mac_c" url="resources/toolchaindefinition/GNU_mac_c.xml">
+                <attr name="extends" stringvalue="GNU_c"/>
+            </file>
+            <file name="GNU_mac_cpp" url="resources/toolchaindefinition/GNU_mac_cpp.xml">
+                <attr name="extends" stringvalue="GNU_cpp"/>
+            </file>
             <file name="GNU_mac_linker" url="resources/toolchaindefinition/GNU_mac_linker.xml">
                 <attr name="extends" stringvalue="GNU_linker"/>
             </file>
@@ -434,6 +440,12 @@ Contributor(s):
 <!-- CLang_mac -->
             <file name="CLang_mac_flavor" url="resources/toolchaindefinition/CLang_mac_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
+            </file>
+            <file name="CLang_mac_c" url="resources/toolchaindefinition/CLang_mac_c.xml">
+                <attr name="extends" stringvalue="GNU_c"/>
+            </file>
+            <file name="CLang_mac_cpp" url="resources/toolchaindefinition/CLang_mac_cpp.xml">
+                <attr name="extends" stringvalue="GNU_cpp"/>
             </file>
 <!-- CLang_solaris -->
             <file name="CLang_solaris_flavor" url="resources/toolchaindefinition/CLang_solaris_flavor.xml">
@@ -1553,10 +1565,10 @@ Contributor(s):
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_mac_flavor"/>
                 </file>
                 <file name="c.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_c"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_mac_c"/>
                 </file>
                 <file name="cpp.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cpp"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_mac_cpp"/>
                 </file>
                 <file name="fortran.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/>
@@ -1667,10 +1679,10 @@ Contributor(s):
                     <attr name="originalFile" stringvalue="CND/Tool/CLang_mac_flavor"/>
                 </file>
                 <file name="c.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/CLang_c"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_mac_c"/>
                 </file>
                 <file name="cpp.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/CLang_cpp"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_mac_cpp"/>
                 </file>
                 <file name="fortran.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/>
