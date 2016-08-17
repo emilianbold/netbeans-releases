@@ -738,4 +738,20 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue261521.php", options);
     }
+
+    public void testIssue253030a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue253030a.php", options);
+    }
+
+    public void testIssue253030b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue253030b.php", options);
+    }
+
+    public void testIssue253030c() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue253030c.php", options);
+    }
+
 }
