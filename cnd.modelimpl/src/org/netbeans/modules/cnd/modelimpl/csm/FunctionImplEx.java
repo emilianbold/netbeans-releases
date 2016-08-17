@@ -163,6 +163,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     /** @return either class or namespace */
     public CsmObject findOwner() {
+        return findOwner(false);
+    }
+    
+    public CsmObject findOwner(boolean isProjectParsed) {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);
@@ -188,7 +192,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             // 2) Check that length of qualified name is more than 1. 
             //    Seems that it makes no sense to resolve qualified name
             //    with one element any further.
-            if (obj == null && cnn.length > 1) {
+            if (isProjectParsed && obj == null && cnn.length > 1) {
                 StringBuilder sb = new StringBuilder(cnn[0]);
                 for (int i = 1; i < cnn.length; ++i) {
                     sb.append(APTUtils.SCOPE).append(cnn[i]);
@@ -255,13 +259,13 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
         if( qualifiedName == null ) {
-            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
+            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName(false));
         }
         return qualifiedName;
     }
 
-    protected CharSequence findQualifiedName() {
-        CsmObject owner = findOwner();
+    protected CharSequence findQualifiedName(boolean isProjectParsed) {
+        CsmObject owner = findOwner(isProjectParsed);
         // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
             setFlags(FAKE_QUALIFIED_NAME, false);
@@ -318,7 +322,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if (fakeData != null) {
             final AST fixFakeRegistrationAst = fakeData.first();
             final MutableDeclarationsContainer container = fakeData.second();
-            CsmObject owner = findOwner();
+            CsmObject owner = findOwner(projectParsedMode);
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
                 boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
@@ -400,7 +404,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 }
             }
         } else {
-            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
+            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName(projectParsedMode));
             if (!newQname.equals(qualifiedName)) {
                 ProjectBase aProject = ((FileImpl)getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
