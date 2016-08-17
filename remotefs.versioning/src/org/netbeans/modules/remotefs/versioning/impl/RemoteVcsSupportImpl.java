@@ -346,6 +346,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     switch (HostInfoUtils.getHostInfo(env).getOSFamily()) {
                         case LINUX:
                         case MACOSX:
+                        case FREEBSD:
                         case SUNOS:
                             return true;
                         case WINDOWS:
