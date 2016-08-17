@@ -54,10 +54,13 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
 
@@ -71,6 +74,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
 
+    private final Project project;
     private final PropertyEvaluator evaluator;
     private final String platformType;
     private JavaPlatformManager platformManager;
@@ -84,10 +88,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final ClassPath endorsedClassPath;
 
     BootClassPathImplementation(
+            @NullAllowed final Project project,
             @NonNull final PropertyEvaluator evaluator,
             @NullAllowed final ClassPath endorsedClassPath,
             @NullAllowed final String platformType) {
         assert evaluator != null;
+        this.project = project;
         this.endorsedClassPath = endorsedClassPath;
         this.evaluator = evaluator;
         this.platformType = platformType;
@@ -188,9 +194,22 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
         }
         activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName, platformType);
-        isActivePlatformValid = activePlatform != null;
+        JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName, platformType);
+        if (activePlatform != null) {
+            isActivePlatformValid = true;
+        } else {
+            activePlatform = createPerProjectPlatform();
+            isActivePlatformValid = false;
+        }
         return activePlatform;
+    }
+    
+    @CheckForNull
+    private JavaPlatform createPerProjectPlatform() {
+        if (project == null) {
+            return null;
+        }
+        return ProjectPlatform.forProject(project, evaluator, platformType);
     }
 
     private void resetCache() {

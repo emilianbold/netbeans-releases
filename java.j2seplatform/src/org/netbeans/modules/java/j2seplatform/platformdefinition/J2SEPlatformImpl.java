@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import org.netbeans.spi.java.platform.support.ForwardingJavaPlatform;
 import java.lang.ref.Reference;
 import java.net.URL;
 import java.net.MalformedURLException;

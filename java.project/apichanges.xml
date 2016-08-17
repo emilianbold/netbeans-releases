@@ -109,6 +109,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectPlatform">
+            <api name="java_project"/>
+            <summary>Added a support for per project JavaPlatform</summary>
+            <version major="1" minor="66"/>
+            <date day="17" month="8" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a support for per project <code>JavaPlatform</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="ProjectPlatform"/>
+        </change>
         <change id="server.is.free">
             <api name="java_project"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
