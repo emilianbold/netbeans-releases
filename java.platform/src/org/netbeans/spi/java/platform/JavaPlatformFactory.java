@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.java.j2seplatform.api;
+package org.netbeans.spi.java.platform;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformFactory;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
+import org.openide.util.Lookup;
 
 /**
- * Creates a new platform definition.
- * @since 1.11
+ * A factory for a new {@link JavaPlatform}.
+ * @since 1.41
+ * @author Tomas Zezula
  */
-public class J2SEPlatformCreator {
-
-    private J2SEPlatformCreator() {}
-
+public interface JavaPlatformFactory {
     /**
-     * Create a new J2SE platform definition.
-     * @param installFolder the installation folder of the JDK
-     * @return the newly created platform
-     * @throws IOException if the platform was invalid or its definition could not be stored
+     * Creates a new {@link JavaPlatform} located in given folder.
+     * @param installFolder the platform folder
+     * @param name the name of the newly created platform
+     * @param persistent if true the platform is registered in the{@link JavaPlatformManager}
+     * @return a newly created {@link JavaPlatform}
+     * @throws IOException 
      */
     @NonNull
-    public static JavaPlatform createJ2SEPlatform(@NonNull final FileObject installFolder) throws IOException {
-        Parameters.notNull("installFolder", installFolder); //NOI18N
-        return J2SEPlatformFactory.getInstance().create(installFolder);
+    JavaPlatform create(@NonNull FileObject installFolder, @NonNull String name, boolean persistent) throws IOException;
+    /**
+     * Provider of the {@link JavaPlatformFactory}.
+     * The provider should be registered in the default {@link Lookup}.
+     */
+    interface Provider {
+        /**
+         * Returns a {@link JavaPlatformFactory} for given platform type.
+         * @param platformType the required platformType
+         * @return a {@link JavaPlatformFactory} or null for unhandled platform type.
+         */
+        @CheckForNull
+        JavaPlatformFactory forType(@NonNull final String platformType);
     }
-
-    /**
-     * Create a new J2SE platform definition with given display name.
-     * @param installFolder the installation folder of the JDK
-     * @param platformName  the desired display name
-     * @return the newly created platform
-     * @throws IOException if the platform was invalid or its definition could not be stored
-     * @throws IllegalArgumentException if a platform of given display name already exists
-     * @since 1.23
-     */
-    @NonNull
-    public static JavaPlatform createJ2SEPlatform(
-            @NonNull final FileObject installFolder,
-            @NonNull final String platformName) throws IOException , IllegalArgumentException {
-        Parameters.notNull("installFolder", installFolder);  //NOI18N
-        Parameters.notNull("platformName", platformName);    //NOI18N
-        return J2SEPlatformFactory.getInstance().create(installFolder, platformName, true);
-    }    
 }

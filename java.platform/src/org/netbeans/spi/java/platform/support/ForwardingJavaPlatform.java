@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seplatform.platformdefinition;
+package org.netbeans.spi.java.platform.support;
 
 import java.net.URL;
 import java.util.Collection;
@@ -52,14 +52,15 @@ import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * A {@link JavaPlatform} forwarding calls to a delegate.
+ * @since 1.41
  * @author Tomas Zezula
  */
-class ForwardingJavaPlatform extends JavaPlatform {
+public class ForwardingJavaPlatform extends JavaPlatform {
 
     protected final JavaPlatform delegate;
 
-    ForwardingJavaPlatform(@NonNull final JavaPlatform delegate) {
+    public ForwardingJavaPlatform(@NonNull final JavaPlatform delegate) {
         this.delegate = delegate;
     }
 
