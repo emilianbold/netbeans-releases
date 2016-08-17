@@ -62,16 +62,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -211,8 +207,17 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private static final AtomicInteger TASK_WATCH = new AtomicInteger(0);
     
+    private int modCount;
+    
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
         return getOrCreateFoldExecution(component).getHierarchy();
+    }
+    
+    void incModCount() {
+        // just for debugging
+        if (++modCount % 5 == 0) {
+//            throw new HierarchyErrorException(null, null, -1, false, "debug");
+        }
     }
     
     private static synchronized FoldHierarchyExecution getOrCreateFoldExecution(JTextComponent component) {
@@ -394,8 +399,15 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      * be used together with {@link #lock()} in <code>try..finally</code> block.
      */
     public void unlock() {
+        unlock(activeTransaction);
+    }
+    
+    void unlock(FoldHierarchyTransactionImpl tran) {
         if (activeTransaction != null) {
             activeTransaction.cancelled();
+        }
+        if (activeTransaction != tran) {
+            activeTransaction = tran;
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Unlocked FoldHierarchy for " + System.identityHashCode(getComponent())); // NOI18N
@@ -533,6 +545,44 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     Set<Fold> getBlockedFolds(Fold f) {
         return (Set<Fold>)block2blockedSet.get(f);
+    }
+    
+    public boolean rebuilding = false;
+    
+    /**
+     * Rebuilds the fold hierarchy. Does so by removing ALL folds and inserting them
+     * back again. Folds may be reparented, reordered, ... all change events made during
+     * the rebuild will be suppressed and will not reach the clients.
+     */
+    void rebuildHierarchy() {
+        LOG.log(Level.WARNING, "Fold hierarchy damaged, rebuilding: " + this);
+        FoldHierarchyTransactionImpl timpl = this.activeTransaction;
+        lock();
+        rebuilding = true;
+        try {
+            // temporary transaction which sinks all changes
+            markClean();
+            activeTransaction = new FoldHierarchyTransactionImpl(this, true);
+            if (operations.length == 0) {
+                return;
+            }
+            int fc = rootFold.getFoldCount();
+            Fold[] folds = new Fold[fc];
+            for (int i = 0; i < fc; i++) {
+                folds[i] = rootFold.getFold(i);
+            }
+            for (Fold f : folds) {
+                activeTransaction.reinsertFoldTree(f);
+            }
+            activeTransaction.commit();
+        } finally {
+            if (timpl != null) {
+                timpl.resetCaches();
+            }
+            rebuilding = false;
+            unlock(timpl);
+        }
+        LOG.log(Level.WARNING, "Fold hierarchy after rebuild: " + this);
     }
     
     /**
@@ -1488,11 +1538,15 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     }
     
     int getDamagedCount() {
-        return this.damaged;
+        return rebuilding ? 0 : this.damaged;
     }
     
     void markDamaged() {
         this.damaged++;
+    }
+    
+    void markClean() {
+        this.damaged = 0;
     }
     
     String getCommittedContent() {

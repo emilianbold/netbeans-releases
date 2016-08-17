@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
     <bind actionName="clipboard-lines" key="DS-L"/>
     <bind actionName="add-caret-up" key="OS-OPEN_BRACKET"/>
     <bind actionName="add-caret-down" key="OS-CLOSE_BRACKET"/>
-    <bind actionName="remove-last-caret" key="DS-J"/>
+    <bind actionName="remove-last-caret" key="OS-J"/>
     <bind actionName="addCaretSelectNext" key="D-J"/>
     <bind actionName="addCaretSelectAll" key="DSO-J"/>
     <bind actionName="redo" key="D-Y"/>
@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
     <bind actionName="select-all" key="D-A"/>
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
-    <bind actionName="select-identifier" key="OS-J"/>
+    <bind actionName="select-identifier" key="D-L"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-backward" key="S-KP_LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
