@@ -206,6 +206,7 @@ public class RfsSetupProvider implements SetupProvider {
                 }
                 return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? Boolean.TRUE : Boolean.FALSE;
             case MACOSX:
+            case FREEBSD:
             case WINDOWS:
             case UNKNOWN:
             default:

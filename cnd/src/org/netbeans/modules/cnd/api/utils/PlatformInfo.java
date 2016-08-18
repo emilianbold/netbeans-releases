@@ -112,6 +112,9 @@ public final class PlatformInfo {
                 case MACOSX:
                     platform = PlatformTypes.PLATFORM_MACOSX;
                     break;
+                case FREEBSD:
+                    platform = PlatformTypes.PLATFORM_GENERIC;
+                    break;
                 default:
                     platform = PlatformTypes.PLATFORM_GENERIC;
                     break;

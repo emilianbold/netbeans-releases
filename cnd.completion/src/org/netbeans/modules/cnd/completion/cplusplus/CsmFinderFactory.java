@@ -137,7 +137,7 @@ public final class CsmFinderFactory {
      *
      * @return finder; cannot be null;
      */
-    public synchronized CsmFinder getFinder(FileObject fo) {
+    public CsmFinder getFinder(FileObject fo) {
         // the file must be on a SOURCE classpath
 //        ClassPath sourceCP = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         FileObject owner;
