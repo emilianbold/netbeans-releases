@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
@@ -75,8 +76,8 @@ public class ConditionalExpression extends Expression {
         COALESCE("??", true) { // NOI18N
             @Override
             public boolean isOperatorToken(Token<PHPTokenId> token) {
-                return token.id() == PHPTokenId.PHP_OPERATOR // NOI18N
-                        && "??".equals(token.text().toString());
+                return token.id() == PHPTokenId.PHP_OPERATOR
+                        && TokenUtilities.textEquals("??", token.text()); // NOI18N
             }
         };
 

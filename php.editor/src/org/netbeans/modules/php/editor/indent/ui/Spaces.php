@@ -73,11 +73,11 @@ public function anonymousClassExample($arg) {
 }
 }
 
-$a=10;
-$bb=20;
-$c=[
-'a'=>10,
-'aa'=>100,
+$shortName=10;
+$veryLooongName=20;
+$data=[
+'short_key'=>10,
+'very_looong_key'=>100,
 ];
 
 ?>

@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
@@ -191,18 +192,13 @@ public class WrongOrderOfArgsHint extends HintRule {
                 while (ts.moveNext()) {
                     Token t = ts.token();
                     if (t.id() == PHPTokenId.PHP_TOKEN) {
-                        switch (t.text().toString()) {
-                            case "(": //NOI18N
-                                if (braceMatch == 0) {
-                                    start = ts.offset() + 1;
-                                }
-                                braceMatch++;
-                                break;
-                            case ")": //NOI18N
-                                braceMatch--;
-                                break;
-                            default:
-                                // no-op
+                        if (TokenUtilities.textEquals(t.text(), "(")) { // NOI18N
+                            if (braceMatch == 0) {
+                                start = ts.offset() + 1;
+                            }
+                            braceMatch++;
+                        } else if (TokenUtilities.textEquals(t.text(), ")")) { // NOI18N
+                            braceMatch--;
                         }
                         if (braceMatch == 0) {
                             end = ts.offset();
