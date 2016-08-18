@@ -62,14 +62,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.BuildArtifactMapper;
@@ -88,6 +86,7 @@ import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,8 +95,8 @@ import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -372,6 +371,7 @@ public class J2SEActionProvider extends BaseActionProvider {
         private static final String TARGET = "cos-update-internal"; //NOI18N
         private static final String SCRIPT_TEMPLATE = "/org/netbeans/modules/java/j2seproject/resources/cos-update-snippet.xml"; //NOI18N
         private static final Object NONE = new Object();
+        private static final RequestProcessor RUNNER = new RequestProcessor(CosAction.class);
         private final J2SEActionProvider owner;
         private final PropertyEvaluator eval;
         private final SourceRoots src;
@@ -563,18 +563,32 @@ public class J2SEActionProvider extends BaseActionProvider {
                             props.setProperty(PROP_SRCDIR, root.getAbsolutePath());
                             props.setProperty(PROP_INCLUDES, includes);
                             props.setProperty(COS_CUSTOM, getUpdatedFileSetProperty());
-                            ActionUtils.runTarget(
-                                    cosScript,
-                                    new String[] {TARGET},
-                                    props,
-                                    null);
+                            RUNNER.execute(()-> {
+                                try {
+                                    final ExecutorTask task = ActionUtils.runTarget(
+                                            cosScript,
+                                            new String[] {TARGET},
+                                            props,
+                                            null);
+                                    task.result();
+                                } catch (IOException | IllegalArgumentException ex) {
+                                    LOG.log(
+                                        Level.WARNING,
+                                        "Cannot execute update targer: {0} in: {1} due to: {2}",   //NOI18N
+                                        new Object[]{
+                                            target,
+                                            FileUtil.getFileDisplayName(buildXml),
+                                            ex.getMessage()
+                                        });
+                                }
+                            });
                         } else {
                             LOG.warning("BuildArtifactMapper artifacts do not provide attributes.");    //NOI18N
                         }
                     } catch (IOException | URISyntaxException e) {
                         LOG.log(
                                 Level.WARNING,
-                                "Cannot execute update targer on save target: {0} in: {1} due to: {2}",   //NOI18N
+                                "Cannot execute update targer: {0} in: {1} due to: {2}",   //NOI18N
                                 new Object[]{
                                     target,
                                     FileUtil.getFileDisplayName(buildXml),
