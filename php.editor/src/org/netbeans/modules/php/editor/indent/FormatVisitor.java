@@ -53,6 +53,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.indent.FormatToken.AssignmentAnchorToken;
@@ -178,7 +179,7 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(beforeTokens);
             if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
                     || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-                    && "//".equals(ts.token().text().toString()))
+                    && TokenUtilities.textEquals("//", ts.token().text())) // NOI18N
                     && indexBeforeLastComment == -1) {
                 if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
                     // don't change if the line comment or a comment starts on the same line
@@ -261,8 +262,8 @@ public class FormatVisitor extends DefaultVisitor {
         inArrayBalance++;
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
-                && !ts.token().text().toString().equals("[")) {  //NOI18N
-            while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && !ts.token().text().toString().equals("[")) && lastIndex < ts.index()) { //NOI18N
+                && !TokenUtilities.textEquals(ts.token().text(), "[")) {  // NOI18N
+            while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && !TokenUtilities.textEquals(ts.token().text(), "[")) && lastIndex < ts.index()) { //NOI18N
                 addFormatToken(formatTokens);
             }
             if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
@@ -284,7 +285,7 @@ public class FormatVisitor extends DefaultVisitor {
                     delta = options.indentArrayItems;
                 }
             }
-            if (ts.token().text().toString().equals("[")) { // NOI18N
+            if (TokenUtilities.textEquals(ts.token().text(), "[")) { // NOI18N
                 // just move back so we are right before "[" (consistent with "array()", see else-if below)
                 ts.movePrevious();
             } else if (lastIndex < ts.index()) {
@@ -365,7 +366,7 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private static boolean isKeyValueOperator(Token<PHPTokenId> token) {
-        return token.id() == PHPTokenId.PHP_OPERATOR && "=>".equals(token.text().toString()); //NOI18N
+        return token.id() == PHPTokenId.PHP_OPERATOR && TokenUtilities.textEquals("=>", token.text()); // NOI18N
     }
 
     @Override
@@ -728,12 +729,12 @@ public class FormatVisitor extends DefaultVisitor {
             case ELVIS:
                 // "?" part
                 while (ts.moveNext()
-                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) // NOI18N
+                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals("?", ts.token().text())) // NOI18N
                         && lastIndex < ts.index()) {
                     addFormatToken(formatTokens);
                 }
                 assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
-                assert "?".equals(ts.token().text().toString()) : ts.token().text().toString();
+                assert TokenUtilities.textEquals("?", ts.token().text()) : ts.token().text().toString();
                 if (putContinualIndent) {
                     formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
                 }
@@ -757,12 +758,12 @@ public class FormatVisitor extends DefaultVisitor {
                 // ":" part
                 assert node.getIfFalse() != null;
                 while (ts.moveNext()
-                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) // NOI18N
+                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(":", ts.token().text())) // NOI18N
                         && lastIndex < ts.index()) {
                     addFormatToken(formatTokens);
                 }
                 assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
-                assert ":".equals(ts.token().text().toString()) : ts.token().text().toString();
+                assert TokenUtilities.textEquals(":", ts.token().text()) : ts.token().text().toString();
                 if (putContinualIndent) {
                     formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
                 }
@@ -805,12 +806,12 @@ public class FormatVisitor extends DefaultVisitor {
         assert node.getIfTrue() != null;
         // "?" part
         while (ts.moveNext()
-                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) // NOI18N
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals("?", ts.token().text())) // NOI18N
                 && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
-        assert "?".equals(ts.token().text().toString()) : ts.token().text().toString();
+        assert TokenUtilities.textEquals("?", ts.token().text()) : ts.token().text().toString();
         if (putContinualIndent) {
             formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
         }
@@ -827,12 +828,12 @@ public class FormatVisitor extends DefaultVisitor {
         // ":" part
         assert node.getIfFalse() != null;
         while (ts.moveNext()
-                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) // NOI18N
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(":", ts.token().text())) // NOI18N
                 && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
-        assert ":".equals(ts.token().text().toString()) : ts.token().text().toString();
+        assert TokenUtilities.textEquals(":", ts.token().text()) : ts.token().text().toString();
         if (putContinualIndent) {
             formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
         }
@@ -1443,7 +1444,7 @@ public class FormatVisitor extends DefaultVisitor {
                 ASTNode parent = path.get(1);
                 assert (parent instanceof FieldsDeclaration);
                 FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) path.get(1);
-                if (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=".equals(ts.token().text().toString())) { //NOI18N
+                if (ts.token().id() == PHPTokenId.PHP_OPERATOR && TokenUtilities.textEquals("=", ts.token().text())) { //NOI18N
                     int realNodeLength = fieldsDeclaration.getModifierString().length() + " ".length() + name.getEndOffset() - name.getStartOffset(); //NOI18N
                     handleGroupAlignment(realNodeLength);
                     addFormatToken(formatTokens);
@@ -1668,12 +1669,11 @@ public class FormatVisitor extends DefaultVisitor {
                 tokens.addAll(resolveWhitespaceTokens());
                 break;
             case PHP_LINE_COMMENT:
-                String text = ts.token().text().toString();
                 if (ts.token().text().charAt(ts.token().length() - 1) == '\n') {
-                    text = text.substring(0, text.length() - 1);
+                    CharSequence text = ts.token().text().subSequence(0, ts.token().length() - 1);
                     int newOffset = ts.offset() + ts.token().length() - 1;
                     if (text.length() > 0) {
-                        tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
+                        tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text.toString()));
                     }
                     if (ts.moveNext()) {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
@@ -1696,7 +1696,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
 
                 } else {
-                    tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
+                    tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), ts.token().text().toString()));
                 }
                 break;
             case PHP_OPENTAG:
@@ -1734,7 +1734,7 @@ public class FormatVisitor extends DefaultVisitor {
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_OBJECT_OP, ts.offset() + ts.token().length()));
                 break;
             case PHP_CASTING:
-                text = ts.token().text().toString();
+                String text = ts.token().text().toString();
                 String part1 = text.substring(0, text.indexOf('(') + 1);
                 String part2 = text.substring(part1.length(), text.indexOf(')'));
                 String part3 = text.substring(part1.length() + part2.length());
@@ -1771,9 +1771,9 @@ public class FormatVisitor extends DefaultVisitor {
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_TYPE_CAST, ts.offset() + length));
                 break;
             case PHP_TOKEN:
-                text = ts.token().text().toString();
+                CharSequence txt = ts.token().text();
                 ASTNode parent = path.get(0);
-                if ("(".equals(text)) { // NOI18N
+                if (TokenUtilities.textEquals("(", txt)) { // NOI18N
                     if (isAnonymousClass(parent)) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ANONYMOUS_CLASS_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1813,7 +1813,7 @@ public class FormatVisitor extends DefaultVisitor {
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if (")".equals(text)) { // NOI18N
+                } else if (TokenUtilities.textEquals(")", txt)) { // NOI18N
                     if (isAnonymousClass(parent)) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1844,7 +1844,7 @@ public class FormatVisitor extends DefaultVisitor {
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if ("[".equals(text)) {
+                } else if (TokenUtilities.textEquals("[", txt)) {
                     if (parent instanceof ArrayCreation) {
                         // do not add this format token, it historically serves for case "array ()"
                         //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
@@ -1854,7 +1854,7 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
                     }
-                } else if ("]".equals(text)) {
+                } else if (TokenUtilities.textEquals("]", txt)) {
                     if (parent instanceof ArrayCreation) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1862,11 +1862,11 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if (",".equals(text)) {
+                } else if (TokenUtilities.textEquals(",", txt)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
-                } else if (":".equals(text)) { // NOI18N
+                } else if (TokenUtilities.textEquals(":", txt)) { // NOI18N
                     if (parent instanceof FunctionDeclaration
                             || parent instanceof MethodDeclaration
                             || parent instanceof LambdaFunctionDeclaration) {
@@ -1881,51 +1881,46 @@ public class FormatVisitor extends DefaultVisitor {
                 }
                 break;
             case PHP_OPERATOR:
-                text = ts.token().text().toString();
+                CharSequence txt2 = ts.token().text();
                 // assignment?
-                if (text.endsWith("=")) { // NOI18N
+                if (TokenUtilities.endsWith(txt2, "=")) { // NOI18N
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ASSIGN_OP, ts.offset() + ts.token().length()));
                     break;
                 }
                 int origOffset = ts.offset();
-                switch (text) {
-                    case "!": // NOI18N
-                        if (ts.movePrevious()) {
-                            Token<? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
-                            if (previous.id() == PHPTokenId.PHP_RETURN) {
-                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
-                            }
-                            ts.move(origOffset);
-                            ts.moveNext();
+                if (TokenUtilities.textEquals(txt2, "!")) { // NOI18N
+                    if (ts.movePrevious()) {
+                        Token<? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+                        if (previous.id() == PHPTokenId.PHP_RETURN) {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
                         }
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                        break;
-                    case "=>": //NOI18N
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
-                        break;
-                    case "++": //NOI18N
-                    case "--": //NOI18N
-                        if (ts.movePrevious()) {
-                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE || ts.token().id() == PHPTokenId.PHP_STRING) {
-                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                            } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
-                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + ts.token().length()));
-                            }
-                            ts.move(origOffset);
-                            ts.moveNext();
+                        ts.move(origOffset);
+                        ts.moveNext();
+                    }
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else if (TokenUtilities.textEquals(txt2, "=>")) { // NOI18N
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
+                } else if (TokenUtilities.textEquals(txt2, "++") // NOI18N
+                        || TokenUtilities.textEquals(txt2, "--")) { // NOI18N
+                    if (ts.movePrevious()) {
+                        if (ts.token().id() == PHPTokenId.PHP_VARIABLE || ts.token().id() == PHPTokenId.PHP_STRING) {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                        } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + ts.token().length()));
                         }
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                        break;
-                    default:
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                        break;
+                        ts.move(origOffset);
+                        ts.moveNext();
+                    }
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else {
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
                 break;
             case PHP_WHILE:
@@ -2099,7 +2094,7 @@ public class FormatVisitor extends DefaultVisitor {
                 || isComment(ts.token()))
                 && lastIndex < ts.index()) {
             if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-                    && !"//".equals(ts.token().text().toString())) {
+                    && !TokenUtilities.textEquals("//", ts.token().text())) { // NOI18N
                 addFormatToken(formatTokens);
                 wasLastLineComment = true;
                 break;
@@ -2147,7 +2142,7 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext()
                 && (ts.token().id() == PHPTokenId.WHITESPACE
                 || isComment(ts.token())
-                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))
+                || (ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(",", ts.token().text()))) // NOI18N
                 && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
@@ -2234,7 +2229,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     private void addNoCurlyBody(ASTNode body, FormatToken.Kind before) {
         addAllUntilOffset(body.getStartOffset());
-        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
+        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(")", ts.token().text())) { // NOI18N
             // the body is not defined yet. See issue #187665
             addFormatToken(formatTokens);
         } else {

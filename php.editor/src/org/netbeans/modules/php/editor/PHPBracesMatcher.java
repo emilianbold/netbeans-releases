@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -136,7 +137,7 @@ public final class PHPBracesMatcher implements BracesMatcher, BracesMatcher.Cont
                                 PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_CURLY_CLOSE, PHPTokenId.PHP_CASE,
                                 PHPTokenId.PHP_TOKEN));
                         id = token.id();
-                    } while (id == PHPTokenId.PHP_TOKEN && !":".equals(token.text().toString()));
+                    } while (id == PHPTokenId.PHP_TOKEN && !TokenUtilities.textEquals(token.text(), ":")); // NOI18N
                     if (id == PHPTokenId.PHP_IF || id == PHPTokenId.PHP_ELSE || id == PHPTokenId.PHP_ELSEIF
                             || id == PHPTokenId.PHP_FOR || id == PHPTokenId.PHP_FOREACH || id == PHPTokenId.PHP_WHILE
                             || id == PHPTokenId.PHP_SWITCH) {
@@ -153,7 +154,7 @@ public final class PHPBracesMatcher implements BracesMatcher, BracesMatcher.Cont
                     while (token.id() != PHPTokenId.PHP_CURLY_OPEN && !":".equals(token.text().toString()) && ts.moveNext()) {
                             token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_CURLY_OPEN));
                     }
-                    if (token.id() == PHPTokenId.PHP_TOKEN && ":".equals(token.text().toString()) && ts.moveNext()) {
+                    if (token.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(token.text(), ":") && ts.moveNext()) { // NOI18N
                         ts.move(offset);
                         ts.moveNext();
                         token = ts.token();
@@ -437,11 +438,11 @@ public final class PHPBracesMatcher implements BracesMatcher, BracesMatcher.Cont
     }
 
     private static boolean isColon(Token<? extends PHPTokenId> token) {
-        return token.id() == PHPTokenId.PHP_TOKEN && ":".equals(token.text().toString()); // NOI18N
+        return token.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(token.text(), ":"); // NOI18N
     }
 
     private static boolean isComplexSyntaxOpen(Token<? extends PHPTokenId> token) {
-        return token.id() == PHPTokenId.PHP_TOKEN && "${".equals(token.text().toString()); // NOI18N
+        return token.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(token.text(), "${"); // NOI18N
     }
 
 }

@@ -122,7 +122,7 @@ public class PhpCamelCaseInterceptor implements CamelCaseInterceptor {
                 }
             }
             if (id == PHPTokenId.PHP_VARIABLE || id == PHPTokenId.PHP_STRING) {
-                String s = token.text().toString();
+                final CharSequence s = token.text();
                 int length = s.length();
                 int wordOffset = offset - ts.offset();
                 if (reverse) {

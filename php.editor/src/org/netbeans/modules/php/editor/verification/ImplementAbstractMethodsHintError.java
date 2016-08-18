@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -141,7 +142,10 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     // for unit tests
-    protected PhpVersion getPhpVersion(FileObject file) {
+    protected PhpVersion getPhpVersion(@NullAllowed FileObject file) {
+        if (file == null) {
+            return PhpVersion.getDefault();
+        }
         return CodeUtils.getPhpVersion(file);
     }
 
@@ -156,6 +160,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
 
     private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) {
         List<FixInfo> retval = new ArrayList<>();
+        final PhpVersion phpVersion = getPhpVersion(context.parserResult.getSnapshot().getSource().getFileObject());
         for (ClassScope classScope : allClasses) {
             if (CancelSupport.getDefault().isCancelled()) {
                 return Collections.emptyList();
@@ -186,10 +191,6 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                         if (fileScope != null) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                             List typeNameResolvers = new ArrayList<>();
-                            PhpVersion phpVersion = PhpVersion.getDefault();
-                            if (fileObject != null) {
-                                phpVersion = getPhpVersion(fileObject);
-                            }
                             if (phpVersion == PhpVersion.PHP_5) {
                                 typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                             } else {
