@@ -52,6 +52,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionListener;
 import org.netbeans.modules.remotefs.versioning.api.RemoteFileSystemConnectionManager;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -61,7 +62,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=RemoteFileSystemConnectionManager.class)
 public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConnectionManager implements ConnectionListener {
     private final Set<RemoteFileSystemConnectionListener> listeners = new HashSet<>();
-    
+    private static final RequestProcessor RP = new RequestProcessor("Remote VCS connection notifier"); //NOI18N
+
     public RemoteFileSystemConnectionManagerImpl() {
         ConnectionManager.getInstance().addConnectionListener(this);
     }
@@ -86,32 +88,40 @@ public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConne
     }
 
     @Override
-    public void connected(ExecutionEnvironment env) {
+    public void connected(final ExecutionEnvironment env) {
         final FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
         if (fileSystem != null) {
-            List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
+            final List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
             synchronized(listeners) {
                 list.addAll(listeners);
             }
-            //TODO: post in request processor
-            for(RemoteFileSystemConnectionListener listener : list) {
-                listener.connected(fileSystem);
-            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    for(RemoteFileSystemConnectionListener listener : list) {
+                        listener.connected(fileSystem);
+                    }
+                }
+            });
         }
     }
 
     @Override
-    public void disconnected(ExecutionEnvironment env) {
+    public void disconnected(final ExecutionEnvironment env) {
         final FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
         if (fileSystem != null) {
-            List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
+            final List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
             synchronized(listeners) {
                 list.addAll(listeners);
             }
-            //TODO: post in request processor
-            for(RemoteFileSystemConnectionListener listener : list) {
-                listener.disconnected(fileSystem);
-            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (RemoteFileSystemConnectionListener listener : list) {
+                        listener.disconnected(fileSystem);
+                    }
+                }
+            });
         }
     }
 }
