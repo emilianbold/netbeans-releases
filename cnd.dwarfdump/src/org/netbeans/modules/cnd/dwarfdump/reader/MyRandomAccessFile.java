@@ -93,7 +93,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
                 bufferShift = bufferShift + MAX_BUF_SIZE/2;
                 bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
                 ByteOrder order = buffer.order();
-                buffer.clear();
+                bufferCleaner();
                 buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
                 buffer.order(order);
                 buffer.position((int)(position-bufferShift));
@@ -130,7 +130,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             bufferShift = Math.max(position - MAX_BUF_SIZE/2, 0L);
             bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
-            buffer.clear();
+            bufferCleaner();
             buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
             buffer.order(order);
             buffer.position((int)(position-bufferShift));
@@ -181,16 +181,29 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             bufferShift = Math.max(pos - MAX_BUF_SIZE/2, 0);
             bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
-            buffer.clear();
+            bufferCleaner();
             buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
             buffer.order(order);
             buffer.position((int)(pos - bufferShift));
         }
     }
 
+    private void bufferCleaner() {
+        buffer.clear();
+        if (buffer instanceof sun.nio.ch.DirectBuffer) {
+            try {
+                sun.misc.Cleaner cleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
+                if (cleaner != null) {
+                    cleaner.clean();
+                }
+            } catch (Throwable e) {
+            }
+        }
+    }
+    
     public void dispose() {
         try {
-            buffer.clear();
+            bufferCleaner();
             channel.close();
             close();
         } catch (IOException ex) {
