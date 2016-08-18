@@ -47,16 +47,7 @@ import com.oracle.truffle.api.debug.DebugStackFrame;
 import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.DebuggerSession;
-import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.debug.SuspendedEvent;
-import com.oracle.truffle.api.frame.Frame;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.FrameUtil;
-import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.IOException;
 import java.net.URI;
@@ -480,12 +471,12 @@ public class JPDATruffleAccessor extends Object {
     
     static Breakpoint setLineBreakpoint(JPDATruffleDebugManager debugManager, String uriStr, int line,
                                         int ignoreCount, String condition) throws URISyntaxException {
-        //try {
+        try {
             return doSetLineBreakpoint(debugManager.getDebuggerSession(), new URI(uriStr), line, ignoreCount, condition, false);
-        //} catch (IOException ex) {
-        //    System.err.println("setLineBreakpoint("+uriStr+", "+line+"): "+ex);
-        //    return null;
-        //}
+        } catch (IOException ex) {
+            System.err.println("setLineBreakpoint("+uriStr+", "+line+"): "+ex);
+            return null;
+        }
     }
     
     static Breakpoint[] setOneShotLineBreakpoint(String uriStr, int line) throws URISyntaxException {
@@ -512,14 +503,14 @@ public class JPDATruffleAccessor extends Object {
                 continue;
             }
             Breakpoint lb;
-            //try {
+            try {
                 lb = doSetLineBreakpoint(debuggerSession, uri, line,
                                          ignoreCount, condition, oneShot);
-            //} catch (IOException dex) {
-            //    System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
-            //    lbs = Arrays.copyOf(lbs, lbs.length - 1);
-            //    continue;
-            //}
+            } catch (IOException dex) {
+                System.err.println("setLineBreakpoint("+uri+", "+line+"): "+dex);
+                lbs = Arrays.copyOf(lbs, lbs.length - 1);
+                continue;
+            }
             lbs[i++] = lb;
         }
         return lbs;
@@ -528,7 +519,7 @@ public class JPDATruffleAccessor extends Object {
     private static Breakpoint doSetLineBreakpoint(DebuggerSession debuggerSession,
                                                   URI uri, int line,
                                                   int ignoreCount, String condition,
-                                                  boolean oneShot) {
+                                                  boolean oneShot) throws IOException {
         Breakpoint.Builder bb = Breakpoint.newBuilder(uri).lineIs(line);
         if (ignoreCount != 0) {
             bb.ignoreCount(ignoreCount);
@@ -538,7 +529,7 @@ public class JPDATruffleAccessor extends Object {
         }
         Breakpoint lb = bb.build();
         if (condition != null) {
-            lb.setConditionExpression(condition);
+            lb.setCondition(condition);
         }
         System.err.println("JPDATruffleAccessor.setLineBreakpoint("+uri+", "+line+"): lb = "+lb);
         return debuggerSession.install(lb);
