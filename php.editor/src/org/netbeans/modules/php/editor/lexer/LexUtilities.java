@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -320,7 +321,7 @@ public final class LexUtilities {
             Token<?extends PHPTokenId> token = LexUtilities.findPreviousToken(ts, possibleBegin);
 
             if (token.id() == PHPTokenId.PHP_TOKEN) {
-                if (":".equals(token.text().toString())) { //NOI18N
+                if (TokenUtilities.textEquals(token.text(), ":")) { // NOI18N
                     columnOffset = ts.offset();
                 }
             } else if (token.id() == endTokenId) {

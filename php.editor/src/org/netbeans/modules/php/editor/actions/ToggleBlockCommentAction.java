@@ -46,6 +46,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -197,7 +198,7 @@ public class ToggleBlockCommentAction extends BaseAction {
     private static int countForgoingWhitespaces(final TokenSequence<PHPTokenId> tokenSequence) {
         int result = 0;
         tokenSequence.moveNext();
-        String commentedText = tokenSequence.token().text().toString();
+        CharSequence commentedText = tokenSequence.token().text();
         for (int i = 0; i < commentedText.length(); i++) {
             if (Character.isWhitespace(commentedText.charAt(i))) {
                 result++;
@@ -211,7 +212,7 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     private static boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
         boolean result = false;
-        int indexOfNewLine = ts.token().text().toString().indexOf("\n"); //NOI18N
+        int indexOfNewLine = TokenUtilities.indexOf(ts.token().text(), '\n'); // NOI18N
         if (indexOfNewLine != -1) {
             int absoluteIndexOfNewLine = ts.offset() + indexOfNewLine;
             result = caretOffset > absoluteIndexOfNewLine;
