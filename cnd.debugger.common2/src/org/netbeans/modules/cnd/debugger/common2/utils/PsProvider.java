@@ -553,8 +553,13 @@ public abstract class PsProvider {
                         psProvider = new WindowsPsProvider(host);
                         break;
                     case MACOSX:
+                    case FREEBSD:
                         psProvider = new MacOSPsProvider(host);
                         break;
+                    case SUNOS:
+                        psProvider = new SolarisPsProvider(host);
+                        break;
+                    case UNKNOWN:
                     default:
                         psProvider = new SolarisPsProvider(host);
                 }

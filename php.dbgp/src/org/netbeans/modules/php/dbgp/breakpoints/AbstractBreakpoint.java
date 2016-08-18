@@ -98,10 +98,20 @@ public abstract class AbstractBreakpoint extends Breakpoint {
 
     public void setBreakpointId(String id) {
         myId = id;
+        setValidity(VALIDITY.VALID, null);  // Has an ID - is valid
     }
 
     public String getBreakpointId() {
         return myId;
+    }
+
+    void setInvalid() {
+        setValidity(VALIDITY.INVALID, null);
+    }
+
+    public void reset() {
+        setValidity(VALIDITY.UNKNOWN, null);
+        myId = null;
     }
 
 }

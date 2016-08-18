@@ -189,6 +189,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                 case LINUX:
                     return Pair.of("/bin/ls", new String[] { "--full-time", path}); // NOI18N
                 case MACOSX:
+                case FREEBSD:
                     return Pair.of("/bin/ls", new String[] { "-lT", path}); // NOI18N
                 case SUNOS:
                     return Pair.of("/bin/ls", new String[] { "-lE", path}); // NOI18N
