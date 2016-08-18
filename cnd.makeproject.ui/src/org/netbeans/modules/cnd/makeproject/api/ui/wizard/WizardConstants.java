@@ -111,6 +111,7 @@ public final class WizardConstants {
     public static final WizardConstant<String> PROPERTY_MAIN_FILE_NAME = new WizardConstant<>("mainFileName"); // NOI18N
     public static final WizardConstant<String> PROPERTY_MAIN_TEMPLATE_NAME = new WizardConstant<>("mainFileTemplate"); // NOI18N
     public static final WizardConstant<String> PROPERTY_LANGUAGE_STANDARD = new WizardConstant<>("languageStandard"); // NOI18N
+    public static final WizardConstant<Integer> PROPERTY_ARCHITECURE = new WizardConstant<>("architecture"); // NOI18N
 
     // the property is not null in case full remote project wizard
     public static final WizardConstant<ExecutionEnvironment> PROPERTY_REMOTE_FILE_SYSTEM_ENV = new WizardConstant<>("REMOTE_FILE_ENV"); //NOI18N

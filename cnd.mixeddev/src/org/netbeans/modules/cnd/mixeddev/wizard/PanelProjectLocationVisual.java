@@ -62,11 +62,16 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -77,8 +82,10 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -92,6 +99,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provider {
@@ -104,6 +112,20 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
             new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
     private static final RequestProcessor RP = new RequestProcessor("JNI Hosts", 1); // NOI18N
     private static final RequestProcessor validationRP = new RequestProcessor("JNI Wizard Validation", 1); // NOI18N
+    static final String[] CPP = new String[]{"C++", // NOI18N
+                                CndLanguageStandards.CndLanguageStandard.CPP98.toString(),
+                                CndLanguageStandards.CndLanguageStandard.CPP11.toString(),
+                                CndLanguageStandards.CndLanguageStandard.CPP14.toString()
+                                };
+    static final String[] C = new String[]{"C", // NOI18N
+                                CndLanguageStandards.CndLanguageStandard.C89.toString(),
+                                CndLanguageStandards.CndLanguageStandard.C99.toString(),
+                                CndLanguageStandards.CndLanguageStandard.C11.toString()
+                                };
+    static final String[] BITS = {
+        getString("BITS_DEFAULT"),
+        getString("BITS_32"),
+        getString("BITS_64")};
     private final LocationJNIWizardPanel controller;
     private String name;
     //private final int type;
@@ -114,13 +136,15 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
     private char fsFileSeparator;
 //    private AtomicBoolean isValid = new AtomicBoolean(false);
     private final WizardValidationWorker validationWorker = new WizardValidationWorker();
-    static final int VALIDATION_DELAY = 300;    
+    static final int VALIDATION_DELAY = 300;   
+    private final FileObject fo;
     
     /**
      * Creates new form PanelProjectLocationVisual
      */
-    public PanelProjectLocationVisual(LocationJNIWizardPanel panel, String name, boolean showMakefileTextField) {
+    public PanelProjectLocationVisual(LocationJNIWizardPanel panel, FileObject fo, String name, boolean showMakefileTextField) {
         initComponents();
+        this.fo = fo;
         this.controller = panel;
         this.controller.addChangeListener(validationWorker);
         this.name = name;
@@ -136,15 +160,67 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         }
 
         // Accessibility
-        makefileTextField.getAccessibleContext().setAccessibleDescription(getString("AD_MAKEFILE"));
+        makefileTextField.getAccessibleContext().setAccessibleDescription(getString("AD_MAKEFILE")); // NOI18N
         hostLabel.setVisible(false);
         hostComboBox.setVisible(false);
+        
+        String modifiedProject = "";
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner != null) {
+            ProjectInformation info = owner.getLookup().lookup(ProjectInformation.class);
+            if (info != null) {
+                modifiedProject = info.getDisplayName();
+            }
+        }
+        instructionTextPane.setEditorKit(new HTMLEditorKit());
+        instructionTextPane.setBackground(getBackground());
+        instructionTextPane.setForeground(getForeground());
+        instructionTextPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        instructionTextPane.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "instruction.text", modifiedProject)); // NOI18N
+        
+        fillComboBox(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.FORTRAN_MIME_TYPE);
         disableHostsInfo(this.hostComboBox, this.toolchainComboBox);
+    }
+    
+    private void fillComboBox(String ... mimeTypes){
+        for(String mime : mimeTypes) {
+            if (mime.equals(MIMENames.C_MIME_TYPE)) {
+                for(String st : C) {
+                    createMainComboBox.addItem(st);
+                }
+            } else if (mime.equals(MIMENames.CPLUSPLUS_MIME_TYPE)) {
+                for(String st : CPP) {
+                    createMainComboBox.addItem(st);
+                }
+            }
+        }
+        createMainComboBox.setSelectedItem(C[2]); // C99
+        for(String s: BITS) {
+            architectureComboBox.addItem(s);
+        }
+        architectureComboBox.setSelectedIndex(2); // 64-bit
+    }
+    
+    static Pair<String,Integer> getLanguageStandard(String value) {
+        if (value == null) {
+            return null;
+        }
+        for(int i = 0; i < C.length; i++) {
+            if (value.equals(C[i])) {
+                return Pair.of(C[0], i);
+            }
+        }
+        for(int i = 0; i < CPP.length; i++) {
+            if (value.equals(CPP[i])) {
+                return Pair.of(CPP[0], i);
+            }
+        }
+        return null;
     }
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(PanelProjectLocationVisual.class, "Step.Name");
+        return NbBundle.getMessage(PanelProjectLocationVisual.class, "Step.Name"); // NOI18N
     }
 
     /*package*/
@@ -243,6 +319,7 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        filler = new javax.swing.JPanel();
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -256,7 +333,13 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         toolchainLabel = new javax.swing.JLabel();
         hostComboBox = new javax.swing.JComboBox();
         toolchainComboBox = new javax.swing.JComboBox();
-        filler = new javax.swing.JPanel();
+        createMainComboBox = new javax.swing.JComboBox<>();
+        labelStandard = new javax.swing.JLabel();
+        labelArchitecture = new javax.swing.JLabel();
+        architectureComboBox = new javax.swing.JComboBox<>();
+        jSeparator1 = new javax.swing.JSeparator();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        instructionTextPane = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -354,7 +437,7 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_HOST")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(hostLabel, gridBagConstraints);
@@ -363,7 +446,7 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         org.openide.awt.Mnemonics.setLocalizedText(toolchainLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_TOOLCHAIN")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(toolchainLabel, gridBagConstraints);
@@ -375,25 +458,76 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(hostComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(toolchainComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        add(createMainComboBox, gridBagConstraints);
+
+        labelStandard.setLabelFor(createMainComboBox);
+        labelStandard.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "label.text.LanguageStandard")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.weighty = 0.1;
-        add(filler, gridBagConstraints);
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        add(labelStandard, gridBagConstraints);
+
+        labelArchitecture.setLabelFor(architectureComboBox);
+        labelArchitecture.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "label.text.Architecture")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        add(labelArchitecture, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        add(architectureComboBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        add(jSeparator1, gridBagConstraints);
+
+        jScrollPane2.setBorder(null);
+
+        instructionTextPane.setEditable(false);
+        instructionTextPane.setBorder(null);
+        instructionTextPane.setFocusable(false);
+        instructionTextPane.setOpaque(false);
+        jScrollPane2.setViewportView(instructionTextPane);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        add(jScrollPane2, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSN_PanelProjectLocationVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSD_PanelProjectLocationVisual")); // NOI18N
@@ -572,6 +706,8 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         }
 
         WizardConstants.MAIN_CLASS.put(d, null); // NOI18N
+        WizardConstants.PROPERTY_LANGUAGE_STANDARD.put(d, (String) createMainComboBox.getSelectedItem());
+        WizardConstants.PROPERTY_ARCHITECURE.put(d, architectureComboBox.getSelectedIndex());
 
         Object obj = hostComboBox.getSelectedItem();
         if (obj != null && obj instanceof ServerRecord) {
@@ -710,12 +846,19 @@ public class PanelProjectLocationVisual extends JPanel implements HelpCtx.Provid
         return res == null ? fileSystem.getRoot().getPath() : res;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> architectureComboBox;
     private javax.swing.JButton browseButton;
+    private javax.swing.JComboBox<String> createMainComboBox;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JPanel filler;
     private javax.swing.JComboBox hostComboBox;
     private javax.swing.JLabel hostLabel;
+    private javax.swing.JTextPane instructionTextPane;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel labelArchitecture;
+    private javax.swing.JLabel labelStandard;
     private javax.swing.JLabel makefileLabel;
     private javax.swing.JTextField makefileTextField;
     private javax.swing.JLabel projectLocationLabel;
