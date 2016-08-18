@@ -149,26 +149,33 @@ public class LineBreakpoint extends AbstractBreakpoint {
     }
 
     public final void refreshValidity() {
-        setValidity(isValid() ? VALIDITY.VALID : VALIDITY.INVALID, null);
+        Boolean valid = isValid();
+        if (valid == null) {
+            return ;
+        }
+        if (!valid) {
+            setValidity(VALIDITY.INVALID, null);
+        } else if (getBreakpointId() == null) {
+            // not submitted
+            setValidity(VALIDITY.UNKNOWN, null);
+        } else {
+            // submitted
+            setValidity(VALIDITY.VALID, null);
+        }
     }
 
-    private boolean isValid() {
-        boolean result = false;
+    private Boolean isValid() {
         try {
-            Boolean semiResult = isValidFuture.get(2, TimeUnit.SECONDS);
-            if (semiResult != null) {
-                result = semiResult;
-            }
+            return isValidFuture.get(2, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.interrupted();
         } catch (ExecutionException | TimeoutException ex) {
-            result = true;
             isValidFuture.cancel(true);
             LOGGER.log(Level.FINE, null, ex);
         } catch (CancellationException ex) {
             //noop
         }
-        return result;
+        return null;
     }
 
     public Line getLine() {
