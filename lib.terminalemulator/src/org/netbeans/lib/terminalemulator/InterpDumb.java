@@ -81,7 +81,7 @@ public class InterpDumb extends AbstractInterp {
             st_base.setAction((char) 7, st_base, act_beL);
         }
         
-        static final class ACT_NOP implements Actor {
+        private static final class ACT_NOP implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -89,7 +89,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_PAUSE implements Actor {
+        private static final class ACT_PAUSE implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -98,7 +98,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_ERR implements Actor {
+        private static final class ACT_ERR implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -106,7 +106,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_REGULAR implements Actor {
+        private static final class ACT_REGULAR implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -115,7 +115,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_CR implements Actor {
+        private static final class ACT_CR implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -124,7 +124,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_LF implements Actor {
+        private static final class ACT_LF implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -133,7 +133,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_BS implements Actor {
+        private static final class ACT_BS implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -142,7 +142,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_TAB implements Actor {
+        private static final class ACT_TAB implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -151,7 +151,7 @@ public class InterpDumb extends AbstractInterp {
             }
         };
 
-        static final class ACT_BEL implements Actor {
+        private static final class ACT_BEL implements Actor {
 
             @Override
             public String action(AbstractInterp ai, char c) {
@@ -164,7 +164,7 @@ public class InterpDumb extends AbstractInterp {
     /*
      * A stack for State
      */
-    private Stack<State> stack = new Stack<State>();
+    private final Stack<State> stack = new Stack<>();
 
     protected void push_state(State s) {
         stack.push(s);
@@ -181,7 +181,7 @@ public class InterpDumb extends AbstractInterp {
     }
     private StringBuilder ctlSequence;
 
-    private InterpTypeDumb type;
+    private final InterpTypeDumb type;
     private static final InterpTypeDumb type_singleton = new InterpTypeDumb();
 
     public InterpDumb(Ops ops) {
