@@ -293,6 +293,39 @@ public final class FoldUtilitiesImpl {
         return (fold != rootFold) ? fold : null;
     }
     
+    public static Fold findNearestFoldBackwards(FoldHierarchy hierarchy, int offset, int beginMark) {
+        offset = -offset;
+        Fold nearestFold = null;
+        int distance = Integer.MAX_VALUE;
+        Fold fold = hierarchy.getRootFold();
+        boolean inspectNested = true;
+        
+        while (inspectNested) {
+            int childCount = fold.getFoldCount();
+            int childIndex = findFoldStartIndex(fold, offset, true);
+            if (childIndex < 0 || childIndex >= childCount) {
+                break;
+            }
+            Fold precedingFold = fold.getFold(childIndex);
+            int endOffset = precedingFold.getEndOffset();
+            if (endOffset <= beginMark) { 
+                break;
+            }
+            
+            int dist = offset - endOffset;
+            // equality will cause a child which ends at the same offset to 
+            // replace the nearest fold
+            if (dist <= distance) {
+                nearestFold = precedingFold;
+            } else {
+                // children must be nested within, so their distance will be greater.
+                break;
+            }
+            fold = precedingFold;
+        }
+        return nearestFold;
+    }
+    
     public static Fold findNearestFold(FoldHierarchy hierarchy, int offset, int endOffset) {
         Fold nearestFold = null;
         int distance = Integer.MAX_VALUE;

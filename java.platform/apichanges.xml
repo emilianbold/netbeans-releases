@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="java-platform-factory">
+            <api name="general"/>
+            <summary>Added a SPI to create new JavaPlatform </summary>
+            <version major="1" minor="41"/>
+            <date day="17" month="8" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>                
+            <description>
+                <p>
+                    Added a SPI allowing <code>JavaPlatform</code> implementors
+                    to export ability to create a new <code>JavaPlatform</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.platform" name="JavaPlatformFactory"/>
+            <class package="org.netbeans.spi.java.platform.support" name="ForwardingJavaPlatform"/>
+        </change>
         <change id="server.is.free">
             <api name="general"/>
             <summary>Desktop dependent java platform UI extracted</summary>

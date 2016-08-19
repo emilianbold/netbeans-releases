@@ -54,10 +54,13 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
 
@@ -71,6 +74,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
 
+    private final Project project;
     private final PropertyEvaluator evaluator;
     private final String platformType;
     private JavaPlatformManager platformManager;
@@ -80,14 +84,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private boolean isActivePlatformValid;
     private List<PathResourceImplementation> resourcesCache;
     private long eventId;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private ClassPath endorsedClassPath;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final ClassPath endorsedClassPath;
 
     BootClassPathImplementation(
+            @NullAllowed final Project project,
             @NonNull final PropertyEvaluator evaluator,
             @NullAllowed final ClassPath endorsedClassPath,
             @NullAllowed final String platformType) {
         assert evaluator != null;
+        this.project = project;
         this.endorsedClassPath = endorsedClassPath;
         this.evaluator = evaluator;
         this.platformType = platformType;
@@ -100,6 +106,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     /**
      * @see ClassPathImplementation#getResources()
      */
+    @Override
     public List<PathResourceImplementation> getResources() {
         long currentId;
         synchronized (this) {
@@ -109,13 +116,13 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             currentId = eventId;
         }
 
-        JavaPlatform jp = findActivePlatform();
-        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        final List<PathResourceImplementation> result = new ArrayList<>();
         if (endorsedClassPath != null) {
             for (ClassPath.Entry entry : endorsedClassPath.entries()) {
                 result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
+        JavaPlatform jp = findActivePlatform();
         if (jp != null) {
             // TODO: may also listen on CP, but from Platform it should be fixed
             final ClassPath cp = jp.getBootstrapLibraries();
@@ -140,6 +147,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
      * Add {@link PropertyChangeListener}, see class description for more information.
      * @param listener a listener to add.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -148,6 +156,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
      * Remove {@link PropertyChangeListener}, see class description for more information.
      * @param listener a listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -155,6 +164,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     /**
      * @see PropertyChangeListener#propertyChange()
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
             // active platform was changed
@@ -184,9 +194,22 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
         }
         activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName, platformType);
-        isActivePlatformValid = activePlatform != null;
+        JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName, platformType);
+        if (activePlatform != null) {
+            isActivePlatformValid = true;
+        } else {
+            activePlatform = createPerProjectPlatform();
+            isActivePlatformValid = false;
+        }
         return activePlatform;
+    }
+    
+    @CheckForNull
+    private JavaPlatform createPerProjectPlatform() {
+        if (project == null) {
+            return null;
+        }
+        return ProjectPlatform.forProject(project, evaluator, platformType);
     }
 
     private void resetCache() {

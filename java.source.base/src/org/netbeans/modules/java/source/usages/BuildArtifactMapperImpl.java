@@ -68,17 +68,19 @@ import java.util.regex.Pattern;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
-import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.java.preprocessorbridge.api.CompileOnSaveActionQuery;
+import org.netbeans.modules.java.preprocessorbridge.spi.CompileOnSaveAction;
 import org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -90,7 +92,6 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -98,7 +99,9 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -175,229 +178,73 @@ public class BuildArtifactMapperImpl {
         }
     }
     
-    private static File getTarget(URL source) {
-        Result binaryRoots = BinaryForSourceQuery.findBinaryRoots(source);
-        
-        File result = null;
-        
-        for (URL u : binaryRoots.getRoots()) {
-            assert u != null : "Null in BinaryForSourceQuery.Result.roots: " + binaryRoots; //NOI18N
-            if (u == null) {
-                continue;
-            }
-            File f = FileUtil.archiveOrDirForURL(u);
-
-            try {
-                if (FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL())) {
-                    continue;
-                }
-            
-                if (f != null && result != null) {
-                    Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
-                    return null;
-                }
-
-                result = f;
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        return result;
-    }
-
     @SuppressWarnings("deprecation")
     public static Boolean ensureBuilt(URL sourceRoot, Object context, boolean copyResources, boolean keepResourceUpToDate) throws IOException {
-        File targetFolder = getTarget(sourceRoot);
-        
-        if (targetFolder == null) {
-            return null;
+        final CompileOnSaveAction a = CompileOnSaveActionQuery.getAction(sourceRoot);
+        if (a != null) {
+            final CompileOnSaveAction.Context ctx = CompileOnSaveAction.Context.sync(
+                    sourceRoot,
+                    copyResources,
+                    keepResourceUpToDate,
+                    context);
+            return a.performAction(ctx);
         }
-        
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException e) {
-            //Not Important
-            LOG.log(Level.FINE, null, e);
-            return null;
-        }
-
-        if (JavaIndex.ensureAttributeValue(sourceRoot, DIRTY_ROOT, null)) {
-            IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
-        }
-
-        if (JavaIndex.getAttribute(sourceRoot, DIRTY_ROOT, null) != null) {
-            return false;
-        }
-        
-        FileObject[][] sources = new FileObject[1][];
-        
-        if (!protectAgainstErrors(targetFolder, sources, context)) {
-            return false;
-        }
-        
-        File tagFile = new File(targetFolder, TAG_FILE_NAME);
-        File tagUpdateResourcesFile = new File(targetFolder, TAG_UPDATE_RESOURCES);
-        final boolean forceResourceCopy = copyResources && keepResourceUpToDate && !tagUpdateResourcesFile.exists();
-        final boolean cosActive = tagFile.exists();
-        if (cosActive && !forceResourceCopy) {
-            return true;
-        }
-
-        if (!cosActive) {
-            delete(targetFolder, false/*#161085: cleanCompletely*/);
-        }
-
-        if (!targetFolder.exists() && !targetFolder.mkdirs()) {
-            throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
-        }
-
-        sources(targetFolder, sources);
-
-        for (int i = sources[0].length - 1; i>=0; i--) {
-            final FileObject sr = sources[0][i];
-            if (!cosActive) {
-                URL srURL = sr.toURL();
-                File index = JavaIndex.getClassFolder(srURL, true);
-
-                if (index == null) {
-                    //#181992: (not nice) ignore the annotation processing target directory:
-                    if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
-                        continue;
-                    }
-
-                    return null;
-                }
-
-                copyRecursively(index, targetFolder);
-            }
-
-            if (copyResources) {
-                Set<String> javaMimeTypes = COSSynchronizingIndexer.gatherJavaMimeTypes();
-                String[]    javaMimeTypesArr = javaMimeTypes.toArray(new String[0]);
-
-                copyRecursively(sr, targetFolder, javaMimeTypes, javaMimeTypesArr);
-            }
-        }
-
-        if (!cosActive) {
-            new FileOutputStream(tagFile).close();
-        }
-
-        if (keepResourceUpToDate)
-            new FileOutputStream(tagUpdateResourcesFile).close();
-        
-        return true;
+        return null;
     }
     
     @SuppressWarnings("deprecation")
     public static Boolean clean(URL sourceRoot) throws IOException {
-        File targetFolder = getTarget(sourceRoot);
-
-        if (targetFolder == null) {
-            return null;
+        final CompileOnSaveAction a = CompileOnSaveActionQuery.getAction(sourceRoot);
+        if (a != null) {
+            final CompileOnSaveAction.Context ctx = CompileOnSaveAction.Context.clean(sourceRoot);
+            return a.performAction(ctx);
         }
-
-        File tagFile = new File(targetFolder, TAG_FILE_NAME);
-
-        if (!tagFile.exists()) {
-            return null;
-        }
-
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException e) {
-            //Not Important
-            LOG.log(Level.FINE, null, e);
-            return false;
-        }
-
-        delete(targetFolder, false);
-        delete(tagFile, true);
-
         return null;
     }
 
-    public static File getTargetFolder(URL sourceRoot) {
-        File targetFolder = getTarget(sourceRoot);
-
-        if (targetFolder == null) {
-            return null;
-        }
-
-        if (!new File(targetFolder, TAG_FILE_NAME).exists()) {
-            return null;
-        }
-        
-        return targetFolder;
+    public static boolean isUpdateClasses(URL sourceRoot) {
+        final CompileOnSaveAction a = CompileOnSaveActionQuery.getAction(sourceRoot);
+        return a != null ? 
+                a.isUpdateClasses():
+                false;        
     }
 
-    public static boolean isUpdateResources(File targetFolder) {
-        return targetFolder != null && new File(targetFolder, TAG_UPDATE_RESOURCES).exists();
+    public static boolean isUpdateResources(URL srcRoot) {
+        final CompileOnSaveAction a = CompileOnSaveActionQuery.getAction(srcRoot);
+        return a != null ? 
+                a.isUpdateResources():
+                false;                
     }
 
     public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated, boolean resource) {
-        if (!deleted.iterator().hasNext() && !updated.iterator().hasNext()) {
-            return ;
-        }
-
-        File targetFolder = getTargetFolder(sourceRoot);
-
-        if (targetFolder == null) {
-            return ;
-        }
-
-        if (resource && !isUpdateResources(targetFolder)) {
-            return ;
-        }
-        
-        List<File> updatedFiles = new LinkedList<File>();
-
-        for (File deletedFile : deleted) {
-            final String relPath = relativizeFile(cacheRoot, deletedFile);
-            if (relPath == null) {
-                throw new IllegalArgumentException (String.format(
-                    "Deleted file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
-                    deletedFile.getAbsolutePath(),
-                    cacheRoot.getAbsolutePath(),
-                    FileUtil.normalizeFile(deletedFile).getAbsolutePath()));
-            }
-            File toDelete = resolveFile(targetFolder, relPath);
-            
-            toDelete.delete();
-            updatedFiles.add(toDelete);
-        }
-
-        for (File updatedFile : updated) {
-            final String relPath = relativizeFile(cacheRoot, updatedFile);
-            if (relPath == null) {
-                throw new IllegalArgumentException (String.format(
-                    "Updated file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
-                    updatedFile.getAbsolutePath(),
-                    cacheRoot.getAbsolutePath(),
-                    FileUtil.normalizeFile(updatedFile).getAbsolutePath()));
-            }
-            File target = resolveFile(targetFolder, relPath);                        
-
+        final CompileOnSaveAction a = CompileOnSaveActionQuery.getAction(sourceRoot);
+        if (a != null) {
             try {
-                copyFile(updatedFile, target);
-                updatedFiles.add(target);
+                final CompileOnSaveAction.Context ctx = CompileOnSaveAction.Context.update(
+                        sourceRoot,
+                        resource,
+                        cacheRoot,
+                        updated,
+                        deleted,
+                        (updatedFiles) -> fire(sourceRoot, updatedFiles));
+                a.performAction(ctx);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        if (updatedFiles.size() > 0) {
+    }
+    
+    private static void fire(
+            @NonNull final URL sourceRoot,
+            @NonNull final Iterable<File> updatedFiles) {
+        if (updatedFiles.iterator().hasNext()) {
             Set<ArtifactsUpdated> listeners;
-
             synchronized (BuildArtifactMapperImpl.class) {
                 listeners = source2Listener.get(sourceRoot);
-
                 if (listeners != null) {
-                    listeners = new HashSet<ArtifactsUpdated>(listeners);
+                    listeners = new HashSet<>(listeners);
                 }
             }
-
             if (listeners != null) {
                 for (ArtifactsUpdated listener : listeners) {
                     listener.artifactsUpdated(updatedFiles);
@@ -405,7 +252,7 @@ public class BuildArtifactMapperImpl {
             }
         }
     }
-
+    
     private static void copyFile(File updatedFile, File target) throws IOException {
         final File parent = target.getParentFile();
         if (parent != null && !parent.exists()) {
@@ -692,59 +539,44 @@ public class BuildArtifactMapperImpl {
                     return delegate;
                 }
 
-                File target = getTarget(owner.getURL());
-                File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
+                final CompileOnSaveAction action = CompileOnSaveActionQuery.getAction(owner.toURL());
+                if (action == null) {
+                    return delegate;
+                }
 
                 synchronized(this) {
-                    Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
-                    FileChangeListenerImpl l = ref != null ? ref.get() : null;
-
-                    if (l == null) {
-                        file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
-                        listener2File.put(l, tagFile);
-                        FileChangeSupport.DEFAULT.addListener(l, tagFile);
-                    }
-
                     Reference<Status> prevRef = file2Status.get(file);
                     result = prevRef != null ? prevRef.get() : null;
 
                     if (result == null) {
-                        file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
+                        file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, action)));
                     }
 
                     return result;
-                }
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+                }            
             } finally {
                 recursive.remove();
             }
         }
         
     }
-
-    private static Map<File, Reference<FileChangeListenerImpl>> file2Listener = new WeakHashMap<File, Reference<FileChangeListenerImpl>>();
-    private static Map<FileChangeListenerImpl, File> listener2File = new WeakHashMap<FileChangeListenerImpl, File>();
     
     private static final class FileBuiltQueryStatusImpl implements FileBuiltQuery.Status, ChangeListener {
 
         private final FileBuiltQuery.Status delegate;
-        private final File tag;
-        private final FileChangeListenerImpl fileListener;
+        private final CompileOnSaveAction action;
         private final ChangeSupport cs = new ChangeSupport(this);
 
-        public FileBuiltQueryStatusImpl(Status delegate, File tag, FileChangeListenerImpl fileListener) {
+        public FileBuiltQueryStatusImpl(Status delegate, CompileOnSaveAction action) {
             this.delegate = delegate;
-            this.tag = tag;
-            this.fileListener = fileListener;
+            this.action = action;
 
             delegate.addChangeListener(this);
-            fileListener.addListener(this);
+            action.addChangeListener(WeakListeners.change(this, action));
         }
 
         public boolean isBuilt() {
-            return delegate.isBuilt() || tag.canRead();
+            return delegate.isBuilt() || action.isUpdateClasses();
         }
 
         public void addChangeListener(ChangeListener l) {
@@ -794,5 +626,287 @@ public class BuildArtifactMapperImpl {
                 }
             });
         }
+    }       
+
+    private static final class DefaultCompileOnSaveAction implements CompileOnSaveAction, ChangeListener {
+        //@GuardedBy("file2Listener")
+        private static Map<File, Reference<FileChangeListenerImpl>> file2Listener = new WeakHashMap<>();
+        //@GuardedBy("file2Listener")
+        private static Map<FileChangeListenerImpl, File> listener2File = new WeakHashMap<>();
+        
+        private final URL root;
+        private final ChangeSupport cs;
+        //@GuardedBy("file2Listener")
+        private FileChangeListenerImpl listenerDelegate;
+        
+        DefaultCompileOnSaveAction(@NonNull final URL root) {
+            this.root = root;
+            this.cs = new ChangeSupport(this);
+        }
+        
+        public boolean isEnabled() {
+            return true;
+        }
+        
+        @Override
+        public boolean isUpdateClasses() {
+            return isUpdateClasses(CompileOnSaveAction.Context.getTarget(root));
+        }
+        
+        @Override
+        public boolean isUpdateResources() {
+            return isUpdateResources(CompileOnSaveAction.Context.getTarget(root));
+        }
+
+        @Override
+        public Boolean performAction(@NonNull final Context ctx) throws IOException {
+            assert root.equals(ctx.getSourceRoot());
+            switch (ctx.getOperation()) {
+                case CLEAN:
+                    return performClean(ctx);
+                case SYNC:
+                    return performSync(ctx);
+                case UPDATE:
+                    return performUpdate(ctx);
+                default:
+            }       throw new IllegalArgumentException(String.valueOf(ctx.getOperation()));
+        }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            final File target = CompileOnSaveAction.Context.getTarget(root);
+            final File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
+            synchronized (file2Listener) {
+                if (listenerDelegate == null) {
+                    final Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
+                    FileChangeListenerImpl l = ref != null ? ref.get() : null;
+                    if (l == null) {
+                        file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
+                        listener2File.put(l, tagFile);
+                        FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                        //Need to hold l
+                    }
+                    listenerDelegate = l;
+                    listenerDelegate.addListener(this);
+                }
+            }
+            cs.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListner(@NonNull final ChangeListener listener) {
+            cs.removeChangeListener(listener);
+        }
+
+        @Override
+        public void stateChanged(@NonNull final ChangeEvent e) {
+            cs.fireChange();
+        }                
+        
+        private Boolean performClean(@NonNull final Context ctx) throws IOException {
+            final File targetFolder = ctx.getTarget();
+
+            if (targetFolder == null) {
+                return null;
+            }
+
+            File tagFile = new File(targetFolder, TAG_FILE_NAME);
+
+            if (!tagFile.exists()) {
+                return null;
+            }
+
+            try {
+                SourceUtils.waitScanFinished();
+            } catch (InterruptedException e) {
+                //Not Important
+                LOG.log(Level.FINE, null, e);
+                return false;
+            }
+
+            delete(targetFolder, false);
+            delete(tagFile, true);
+
+            return null;
+        }
+        
+        private Boolean performSync(@NonNull final Context ctx) throws IOException {
+            final URL sourceRoot = ctx.getSourceRoot();
+            final File targetFolder = ctx.getTarget();
+            final boolean copyResources = ctx.isCopyResources();
+            final boolean keepResourceUpToDate = ctx.isKeepResourcesUpToDate();
+            final Object context = ctx.getOwner();
+        
+            if (targetFolder == null) {
+                return null;
+            }
+        
+            try {
+                SourceUtils.waitScanFinished();
+            } catch (InterruptedException e) {
+                //Not Important
+                LOG.log(Level.FINE, null, e);
+                return null;
+            }
+
+            if (JavaIndex.ensureAttributeValue(sourceRoot, DIRTY_ROOT, null)) {
+                IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
+            }
+
+            if (JavaIndex.getAttribute(sourceRoot, DIRTY_ROOT, null) != null) {
+                return false;
+            }
+        
+            FileObject[][] sources = new FileObject[1][];
+        
+            if (!protectAgainstErrors(targetFolder, sources, context)) {
+                return false;
+            }
+        
+            File tagFile = new File(targetFolder, TAG_FILE_NAME);
+            File tagUpdateResourcesFile = new File(targetFolder, TAG_UPDATE_RESOURCES);
+            final boolean forceResourceCopy = copyResources && keepResourceUpToDate && !tagUpdateResourcesFile.exists();
+            final boolean cosActive = tagFile.exists();
+            if (cosActive && !forceResourceCopy) {
+                return true;
+            }
+
+            if (!cosActive) {
+                delete(targetFolder, false/*#161085: cleanCompletely*/);
+            }
+
+            if (!targetFolder.exists() && !targetFolder.mkdirs()) {
+                throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
+            }
+
+            sources(targetFolder, sources);
+
+            for (int i = sources[0].length - 1; i>=0; i--) {
+                final FileObject sr = sources[0][i];
+                if (!cosActive) {
+                    URL srURL = sr.toURL();
+                    File index = JavaIndex.getClassFolder(srURL, true);
+
+                    if (index == null) {
+                        //#181992: (not nice) ignore the annotation processing target directory:
+                        if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                            continue;
+                        }
+
+                        return null;
+                    }
+
+                    copyRecursively(index, targetFolder);
+                }
+
+                if (copyResources) {
+                    Set<String> javaMimeTypes = COSSynchronizingIndexer.gatherJavaMimeTypes();
+                    String[]    javaMimeTypesArr = javaMimeTypes.toArray(new String[0]);
+
+                    copyRecursively(sr, targetFolder, javaMimeTypes, javaMimeTypesArr);
+                }
+            }
+
+            if (!cosActive) {
+                new FileOutputStream(tagFile).close();
+            }
+
+            if (keepResourceUpToDate)
+                new FileOutputStream(tagUpdateResourcesFile).close();
+        
+            return true;
+        }
+        
+        private Boolean performUpdate(@NonNull final Context ctx) throws IOException {
+            final Iterable<? extends File> deleted = ctx.getDeleted();
+            final Iterable<? extends File> updated = ctx.getUpdated();
+            final boolean resource = ctx.isCopyResources();
+            final File cacheRoot = ctx.getCacheRoot();
+            if (!deleted.iterator().hasNext() && !updated.iterator().hasNext()) {
+                return null;
+            }
+            File targetFolder = ctx.getTarget();
+            if (targetFolder == null) {
+                return null;
+            }
+            if (!isUpdateClasses(targetFolder)) {
+                return null;
+            }
+
+            if (resource && !isUpdateResources(targetFolder)) {
+                return null;
+            }
+        
+            List<File> updatedFiles = new LinkedList<>();
+
+            for (File deletedFile : deleted) {
+                final String relPath = relativizeFile(cacheRoot, deletedFile);
+                if (relPath == null) {
+                    throw new IllegalArgumentException (String.format(
+                        "Deleted file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
+                        deletedFile.getAbsolutePath(),
+                        cacheRoot.getAbsolutePath(),
+                        FileUtil.normalizeFile(deletedFile).getAbsolutePath()));
+                }
+                File toDelete = resolveFile(targetFolder, relPath);
+
+                toDelete.delete();
+                updatedFiles.add(toDelete);
+            }
+
+            for (File updatedFile : updated) {
+                final String relPath = relativizeFile(cacheRoot, updatedFile);
+                if (relPath == null) {
+                    throw new IllegalArgumentException (String.format(
+                        "Updated file: %s is not under cache root: %s, (normalized file: %s).", //NOI18N
+                        updatedFile.getAbsolutePath(),
+                        cacheRoot.getAbsolutePath(),
+                        FileUtil.normalizeFile(updatedFile).getAbsolutePath()));
+                }
+                File target = resolveFile(targetFolder, relPath);                        
+
+                try {
+                    copyFile(updatedFile, target);
+                    updatedFiles.add(target);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            ctx.filesUpdated(updatedFiles);
+            return true;
+        }
+        
+        private boolean isUpdateClasses(@NullAllowed final File targetFolder) {
+            if (targetFolder == null) {
+                return false;
+            }
+            return new File(targetFolder, TAG_FILE_NAME).exists();
+        }
+        
+        private boolean isUpdateResources(@NullAllowed final File targetFolder) {
+            if (targetFolder == null) {
+                return false;
+            }
+            return new File(targetFolder, TAG_UPDATE_RESOURCES).exists();
+        }
+    }
+    
+    @ServiceProvider(service = CompileOnSaveAction.Provider.class, position = Integer.MAX_VALUE)
+    public static final class Provider implements CompileOnSaveAction.Provider {
+        //@GuardedBy("normCache")
+        private final Map<URL,Reference<DefaultCompileOnSaveAction>> normCache
+                = new WeakHashMap<>();
+        @Override
+        public CompileOnSaveAction forRoot(@NonNull final URL root) {
+            synchronized (normCache) {
+                final Reference<DefaultCompileOnSaveAction> ref = normCache.get(root);
+                DefaultCompileOnSaveAction res;
+                if (ref == null || (res = ref.get()) == null) {
+                    res = new DefaultCompileOnSaveAction(root);
+                    normCache.put(root, new WeakReference<>(res));
+                }
+                return res;
+            }
+        }        
     }
 }

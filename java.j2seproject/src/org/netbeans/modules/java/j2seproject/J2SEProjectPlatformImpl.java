@@ -55,6 +55,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -91,8 +92,12 @@ class J2SEProjectPlatformImpl implements J2SEProjectPlatform, PropertyChangeList
         return ProjectManager.mutex().readAccess(new Mutex.Action<JavaPlatform>(){
             @Override
             public JavaPlatform run() {
-                return CommonProjectUtils.getActivePlatform(
+                JavaPlatform jp =  CommonProjectUtils.getActivePlatform(
                     project.evaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE));
+                if (jp == null) {
+                    jp = ProjectPlatform.forProject(project, eval, SE_PLATFORM);
+                }
+                return jp;
             }
         });
     }
