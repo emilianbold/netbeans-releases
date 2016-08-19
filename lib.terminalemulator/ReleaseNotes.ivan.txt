@@ -1,3 +1,12 @@
+nobugid - Adjust spec version to 1.37.6
+	One of the things that triggered an apichanges was the introducton
+	of TermOptions.PROP_ALT_SENDS_ESCAPE. It turns out none of 
+	PROP's in TermOptions is really used externally. I.e there's no
+	API which sets of gets them and there's not property notifications
+	that take them as parameters them so might as well make them all
+	private.
+
+================================================================================
 nobugid - Massive tip cleanup
 
 242439 - Terminal -- Clear preserves position of the prompt
