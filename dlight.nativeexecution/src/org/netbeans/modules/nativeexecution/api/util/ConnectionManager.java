@@ -133,10 +133,10 @@ public final class ConnectionManager {
     private ConnectionManager() {
         
         int timeout = Integer.getInteger(
-                "nativeexecution.slow.connection.listener.timeout", 100); //NOI18N
+                "nativeexecution.slow.connection.listener.timeout", 500); //NOI18N
         Level level;
         try {
-            level = Level.parse(System.getProperty("nativeexecution.slow.connection.listener.level", "FINE")); //NOI18N
+            level = Level.parse(System.getProperty("nativeexecution.slow.connection.listener.level", "SEVERE")); //NOI18N
         } catch (IllegalArgumentException ex) {
             level = Level.FINE;
         }
