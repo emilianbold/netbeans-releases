@@ -76,7 +76,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 	    st_wait.setAction('\\', st_base, act_done_collect3);
 	}
 
-	static final class ACT_GLYPH implements Actor {
+	private static final class ACT_GLYPH implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
@@ -95,7 +95,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 	    }
 	}
 
-	static final class ACT_DONE_COLLECT3 implements Actor {
+	private static final class ACT_DONE_COLLECT3 implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
@@ -120,7 +120,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 
     }
 
-    private InterpTypeDtTerm type;
+    private final InterpTypeDtTerm type;
 
     private static final InterpTypeDtTerm type_singleton = new InterpTypeDtTerm();
 

@@ -67,6 +67,7 @@ public class RegionManager {
 
     /**
      * Returns the always-present "root" ActiveRegion.
+     * @return The always-present "root" ActiveRegion.
      */
     public ActiveRegion root() {
 	return root;

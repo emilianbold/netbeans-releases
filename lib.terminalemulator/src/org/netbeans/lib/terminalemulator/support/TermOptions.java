@@ -85,6 +85,7 @@ public final class TermOptions {
     private boolean scrollOnOutputDefault;
     private boolean lineWrapDefault;
     private boolean ignoreKeymapDefault;
+    private boolean altSendsEscapeDefault;
 
     // In case settings get shared uniqueify the key names with a prefix:
     private static final String PREFIX = "term.";	// NOI18N
@@ -92,7 +93,7 @@ public final class TermOptions {
     private static TermOptions DEFAULT;
 
     private boolean dirty = false;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private Preferences preferences;
 
     private TermOptions() {
@@ -119,6 +120,7 @@ public final class TermOptions {
         scrollOnOutputDefault = true;
         lineWrapDefault = true;
         ignoreKeymapDefault = false;
+	altSendsEscapeDefault = true;
         
         fontSize = fontSizeDefault;
         font = fontDefault;
@@ -133,6 +135,7 @@ public final class TermOptions {
 	scrollOnOutput = scrollOnOutputDefault;
 	lineWrap = lineWrapDefault;
         ignoreKeymap = ignoreKeymapDefault;
+	altSendsEscape = altSendsEscapeDefault;
         markDirty();
     }
 
@@ -181,6 +184,7 @@ public final class TermOptions {
 
     /**
      * Make a copy of 'this'.
+     * @return A copy of 'this'.
      */
     public TermOptions makeCopy() {
         return new TermOptions(this);
@@ -188,7 +192,9 @@ public final class TermOptions {
 
     /**
      * Assign the values in 'that' to 'this'.
+     * @param that Object to copy values from.
      */
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     public void assign (TermOptions that) {
         this.preferences = that.preferences;
 	this.font= that.font;
@@ -204,6 +210,7 @@ public final class TermOptions {
 	this.scrollOnOutput = that.scrollOnOutput;
 	this.lineWrap = that.lineWrap;
         this.ignoreKeymap = that.ignoreKeymap;
+        this.altSendsEscape = that.altSendsEscape;
 	this.dirty = false;
         
 	this.fontDefault= that.fontDefault;
@@ -219,6 +226,7 @@ public final class TermOptions {
 	this.scrollOnOutputDefault = that.scrollOnOutputDefault;
 	this.lineWrapDefault = that.lineWrapDefault;
         this.ignoreKeymapDefault = that.ignoreKeymapDefault;
+        this.altSendsEscapeDefault = that.altSendsEscapeDefault;
 	pcs.firePropertyChange(null, null, null);
     }
 
@@ -268,6 +276,8 @@ public final class TermOptions {
         
         ignoreKeymap = prefs.getBoolean(PREFIX + PROP_IGNORE_KEYMAP,
 				    ignoreKeymap);
+        altSendsEscape = prefs.getBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE,
+				    altSendsEscape);
 
 	font = new Font(fontFamily, fontStyle, fontSize);
 
@@ -296,17 +306,17 @@ public final class TermOptions {
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput);
 	prefs.putBoolean(PREFIX + PROP_LINE_WRAP, lineWrap);
         prefs.putBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymap);
+        prefs.putBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE, altSendsEscape);
     }
 
 
     /*
      * Font property
      */
-    public static final String PROP_FONT = "font"; // NOI18N
 
     // we use PROP_FONT_SIZE and these two when we persist PROP_FONT
-    public static final String PROP_FONT_STYLE = "fontStyle"; // NOI18N
-    public static final String PROP_FONT_FAMILY = "fontFamily"; // NOI18N
+    private static final String PROP_FONT_STYLE = "fontStyle"; // NOI18N
+    private static final String PROP_FONT_FAMILY = "fontFamily"; // NOI18N
 
     private Font font;
 
@@ -324,7 +334,7 @@ public final class TermOptions {
     /*
      * Font size property.
      */
-    public static final String PROP_FONT_SIZE = "fontSize"; // NOI18N
+    private static final String PROP_FONT_SIZE = "fontSize"; // NOI18N
 
     private int fontSize;
 
@@ -345,7 +355,7 @@ public final class TermOptions {
     /*
      * Foreground color property.
      */
-    public static final String PROP_FOREGROUND = "foreground"; // NOI18N
+    private static final String PROP_FOREGROUND = "foreground"; // NOI18N
 
     private Color foreground;
 
@@ -360,7 +370,7 @@ public final class TermOptions {
     /*
      * Background color property.
      */
-    public static final String PROP_BACKGROUND = "background"; // NOI18N
+    private static final String PROP_BACKGROUND = "background"; // NOI18N
 
     private Color background;
 
@@ -375,7 +385,7 @@ public final class TermOptions {
     /*
      * Selection background color property.
      */
-    public static final String PROP_SELECTION_BACKGROUND =
+    private static final String PROP_SELECTION_BACKGROUND =
 	"selectionBackground"; // NOI18N
 
     private Color selectionBackground;
@@ -391,7 +401,7 @@ public final class TermOptions {
     /*
      * History Size property.
      */
-    public static final String PROP_HISTORY_SIZE = "historySize"; // NOI18N
+    private static final String PROP_HISTORY_SIZE = "historySize"; // NOI18N
 
     private int historySize;
 
@@ -406,7 +416,7 @@ public final class TermOptions {
     /*
      * Tab Size property.
      */
-    public static final String PROP_TAB_SIZE = "tabSize"; // NOI18N
+    private static final String PROP_TAB_SIZE = "tabSize"; // NOI18N
 
     private int tabSize;
 
@@ -421,7 +431,7 @@ public final class TermOptions {
     /*
      * Select-by-word-delimiters property
      */
-    public static final String PROP_SELECT_BY_WORD_DELIMITERS = "selectByWordDelimiters";   // NOI18N
+    private static final String PROP_SELECT_BY_WORD_DELIMITERS = "selectByWordDelimiters";   // NOI18N
     
     private String selectByWordDelimiters;
 
@@ -437,7 +447,7 @@ public final class TermOptions {
     /*
      * Click-to-type property.
      */
-    public static final String PROP_CLICK_TO_TYPE = "clickToType"; // NOI18N
+    private static final String PROP_CLICK_TO_TYPE = "clickToType"; // NOI18N
 
     private boolean clickToType;
 
@@ -452,7 +462,7 @@ public final class TermOptions {
     /*
      * Scroll on input property.
      */
-    public static final String PROP_SCROLL_ON_INPUT =
+    private static final String PROP_SCROLL_ON_INPUT =
 	"scrollOnInput"; // NOI18N
 
     private boolean scrollOnInput;
@@ -469,7 +479,7 @@ public final class TermOptions {
     /*
      * Scroll on output property.
      */
-    public static final String PROP_SCROLL_ON_OUTPUT =
+    private static final String PROP_SCROLL_ON_OUTPUT =
 	"scrollOnOutput"; // NOI18N
 
     private boolean scrollOnOutput;
@@ -485,7 +495,7 @@ public final class TermOptions {
     /*
      * Line wrap property.
      */
-    public static final String PROP_LINE_WRAP = "lineWrap"; // NOI18N
+    private static final String PROP_LINE_WRAP = "lineWrap"; // NOI18N
 
     private boolean lineWrap;
 
@@ -500,7 +510,7 @@ public final class TermOptions {
     /*
      * Ignore keymap property.
      */
-    public static final String PROP_IGNORE_KEYMAP = "ignoreKeymap"; // NOI18N
+    private static final String PROP_IGNORE_KEYMAP = "ignoreKeymap"; // NOI18N
 
     private boolean ignoreKeymap;
 
@@ -509,6 +519,21 @@ public final class TermOptions {
     } 
     public void setIgnoreKeymap(boolean ignoreKeymap) {
 	this.ignoreKeymap = ignoreKeymap;
+        markDirty();
+    } 
+
+    /*
+     * Alt sends ESC property
+     */
+    private static final String PROP_ALT_SENDS_ESCAPE = "altSendsEscape"; // NOI18N
+
+    private boolean altSendsEscape;
+
+    public boolean getAltSendsEscape() {
+	return altSendsEscape;
+    } 
+    public void setAltSendsEscape(boolean altSendsEscape) {
+	this.altSendsEscape = altSendsEscape;
         markDirty();
     } 
 
@@ -531,6 +556,7 @@ public final class TermOptions {
                 || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInputDefault) != scrollOnInput
                 || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutputDefault) != scrollOnOutput
                 || preferences.getBoolean(PREFIX + PROP_LINE_WRAP, lineWrapDefault) != lineWrap
-                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymapDefault) != ignoreKeymap;
+                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymapDefault) != ignoreKeymap
+                || preferences.getBoolean(PREFIX + PROP_ALT_SENDS_ESCAPE, altSendsEscapeDefault) != altSendsEscape;
     }
 }

@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -81,7 +80,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
@@ -91,6 +89,8 @@ import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -99,6 +99,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -115,6 +116,8 @@ public class Generator implements PropertyChangeListener {
     private volatile Project makeProject;
     private volatile FileObject header;
     private volatile FileObject include;
+    private volatile boolean isCpp = false;
+    private volatile String extension = "c"; //NOI18N
     
     
     protected Generator(WizardDescriptor wiz, FileObject fileObject) {
@@ -201,16 +204,35 @@ public class Generator implements PropertyChangeListener {
         String projectName = (String) WizardConstants.PROPERTY_NAME.get(wiz);
         String makefileName = (String) WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME.get(wiz);
         int conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
-        LibraryItem lib = new LibraryItem.OptionItem("-lstdc++"); // NOI18N
-        List<LibraryItem> libs = Arrays.asList(lib);
+        //LibraryItem lib = new LibraryItem.OptionItem("-lstdc++"); // NOI18N
+        //List<LibraryItem> libs = Arrays.asList(lib);
+        Pair<String, Integer> languageStandard = PanelProjectLocationVisual.getLanguageStandard(WizardConstants.PROPERTY_LANGUAGE_STANDARD.get(wiz));
+        int stdCode = languageStandard.second();
+        isCpp = languageStandard.first().equals(PanelProjectLocationVisual.CPP[0]);
+        if (isCpp) {
+            MIMEExtensions extensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+            extension = extensions.getDefaultExtension();
+        } else {
+            MIMEExtensions extensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
+            extension = extensions.getDefaultExtension();
+        }
+        int arch = WizardConstants.PROPERTY_ARCHITECURE.get(wiz);
         MakeConfiguration debug = MakeConfiguration.createConfiguration(dirF, "Debug", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
         debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
         debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
+        if (isCpp) {
+            debug.getCCCompilerConfiguration().getCppStandard().setValue(stdCode);
+        } else {
+            debug.getCCompilerConfiguration().getCStandard().setValue(stdCode);
+        }
+        debug.getCCompilerConfiguration().getSixtyfourBits().setValue(arch);
+        debug.getCCCompilerConfiguration().getSixtyfourBits().setValue(arch);
         debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
         debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
         debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
+        debug.getCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
         debug.getCCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
-        debug.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
+        //debug.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
         if (toolchain != null && toolchain.getCompilerFlavor().isSunStudioCompiler()) {
             debug.getLinkerConfiguration().getNorunpathOption().setValue(false);
         }
@@ -218,11 +240,19 @@ public class Generator implements PropertyChangeListener {
         MakeConfiguration release = MakeConfiguration.createConfiguration(dirF, "Release", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
         release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
         release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+        if (isCpp) {
+            release.getCCCompilerConfiguration().getCppStandard().setValue(stdCode);
+        } else {
+            release.getCCompilerConfiguration().getCStandard().setValue(stdCode);
+        }
+        release.getCCompilerConfiguration().getSixtyfourBits().setValue(arch);
+        release.getCCCompilerConfiguration().getSixtyfourBits().setValue(arch);
         release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
         release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
         release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
+        release.getCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
         release.getCCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
-        release.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
+        //release.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
         if (toolchain != null && toolchain.getCompilerFlavor().isSunStudioCompiler()) {
             release.getLinkerConfiguration().getNorunpathOption().setValue(false);
         }
@@ -385,7 +415,7 @@ public class Generator implements PropertyChangeListener {
         } else {
             folder = configurationDescriptor.getBaseDirFileObject();
         }
-        newSource = folder.createData(header.getName(), "cpp"); //NOI18N
+        newSource = folder.createData(header.getName(), extension); //NOI18N
         buf.append("// Native methods implementation of\n// ").append(fileObject.getPath()).append("\n\n"); //NOI18N
         buf.append("#include \"").append(header.getNameExt()).append("\"\n"); //NOI18N
         Item item = ItemFactory.getDefault().createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());

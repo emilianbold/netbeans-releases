@@ -1,3 +1,83 @@
+nobugid - Adjust spec version to 1.37.6
+	One of the things that triggered an apichanges was the introducton
+	of TermOptions.PROP_ALT_SENDS_ESCAPE. It turns out none of 
+	PROP's in TermOptions is really used externally. I.e there's no
+	API which sets of gets them and there's not property notifications
+	that take them as parameters them so might as well make them all
+	private.
+
+================================================================================
+nobugid - Massive tip cleanup
+
+242439 - Terminal -- Clear preserves position of the prompt
+	Fix is easy.
+	Just have the Clear action call Term.clearHistory() instead of clear().
+
+	User Visible Changes
+	--------------------
+	Clear action will clear history, selection and move cursor to 0,0.
+
+	Added a Ctl-Shift-L accelerator for Clear. It can't be Ctl-L like
+	it is in the regular output window because Ctrl-L might mean something
+	to the application running in the terminal. Allother terminal
+	accelerators are Ctl-Shift for the same reason.
+
+236268 - terminal ignores Alt-f, Alt-b keys 
+	Introduced new Term property, altSendsEscape.
+	It is matched with a TermOptions property of the same name 
+	and a check box in org.netbeans.modules.terminal.nb.TermOptionsPanel.
+
+		I was surprised to find out that TermOptionsPanel under
+		org.netbeans.lib.terminalemulator.support was cloned, for
+		reasonably good reason, into terminal.nb/TerminalImplementation.
+
+		So for the moment, the original TermOptionsPanel doesn't support
+		altSendsEscape yet.
+
+		Syncing the two implementations will be a future project.
+
+	Term's altSendsEscape property affects the behaviour of Term's
+	screen's charTyped() KeyListener. It is based on xterm behaviour.
+	You can read more about it in the javadoc for Term.setAltSendsEscape().
+
+	User Visible Changes
+	--------------------
+	If altSendsEscape is checked (the default), when Alt is used as
+	a modifier for some other key, say K, it will be converted
+	to an ESC followed by K.
+
+	If altSendsEscape is not checked, when Alt is used as a modifier,
+	characters in the range 0-127 will be "shifted" to 128-255 by
+	adding 128. This allows the entering of "8bit ascii", "accented",
+	characters used predominantely in the "latin" charsets.
+
+		It takes a bit of care to actually see this work.
+
+		For example, my personal locale has LANG=en_US.utf8 but
+		everything else, LC_*, is "C". Java looks at $LC_ALL
+		to decide it's Charset and for "C" it chooses US-ASCII
+		which is a 7-bit ASCII encoding so anything modified by
+		Alt showed up as '?' for me.
+		The remedy was to set $LC_ALL to en_US.utf8.
+
+		There are also some shananigans that 'bash' pulls such that
+		if you type Alt-e at bash you won't get the accented 'e' but
+		if you use 'cat' or 'od' or 'vi' things get echoed properly.
+
+	The Mac
+	-------
+	Apparently my earlier assumption that "altIsNotMeta false" doesn't
+	hold for the Mac for it has a dedicated Meta key, the Apple key, 
+	distinct from Alt.
+	However, I don't have a Mac so it'll take me a bit to figure what's
+	the right thing to do. Suggestions welcome.
+
+	Terminal options dialog
+	-----------------------
+	The usual accelerator choosing game. 
+	I freed S by using z for FontSize and assigned it to AltSendsESC.
+
+================================================================================
 nobugid - Track gnome-terminal changes in TermTester
 
 nobugid - Move handling of <ESC>[t (ACT_GLYPH) from InterpANSI to InterpDtTerm.

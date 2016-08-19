@@ -260,13 +260,13 @@ public class Term extends JComponent implements Accessible {
     private int bot_margin = 0;
     // Stuff to control how often RegionManager.cull() gets called
     private int cull_count = 0;
-    private static final int cull_frequency = 50;
+    private static final int CULL_FREQUENCY = 50;
     // 'firsta' is the absolute line number of the line at 'lines[0]'.
-    protected int firsta = 0;
+    private int firsta = 0;
     // chars gone by in lines that winked out of history
     // 'firsta' ~= 'linesInPrehistory'
     private int charsInPrehistory = 0;
-    private static final int modulo = Integer.MAX_VALUE / 2;
+    private static final int MODULO = Integer.MAX_VALUE / 2;
     private Screen screen;
     private JScrollBar vscroll_bar;
     private ScrollWrapper hscroll_wrapper;
@@ -279,9 +279,9 @@ public class Term extends JComponent implements Accessible {
     private int n_repaint;
     private int n_paint;
     private boolean fixedFont = false;
-    MyFontMetrics metrics = null;
+    private MyFontMetrics metrics = null;
     private Map<?, ?> renderingHints;
-    Buffer buf = new Buffer(80);
+    private Buffer buf = new Buffer(80);
     private RegionManager region_manager = new RegionManager();
     // 'left_down_point' remembers where the left button came down as a
     // workaround for the flakey mouseDragged event. The flakiness has to with
@@ -292,7 +292,7 @@ public class Term extends JComponent implements Accessible {
     // getSystemSelection() wasn't available on Java prior to 1.4
     private Clipboard systemClipboard = getToolkit().getSystemClipboard();
     private Clipboard systemSelection = getToolkit().getSystemSelection();
-    private static final Color transparent = new Color(0, 0, 0, 0);
+    private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
     /**
      * ScrollWrapper is a HACK that allows us to make pairs of scrollbars
@@ -436,6 +436,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      *
+     * @param stream
      */
     public void pushStream(TermStream stream) {
         // Term will send keystrokes by calling dte_end.sendChar
@@ -510,6 +511,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return true if DEBUG_INPUT flag has been set.
+     * @return true if DEBUG_INPUT flag has been set.
      */
     protected boolean debugInput() {
         return (debug & DEBUG_INPUT) == DEBUG_INPUT;
@@ -517,6 +519,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return true if DEBUG_OUTPUT flag has been set.
+     * @return true if DEBUG_OUTPUT flag has been set.
      */
     protected boolean debugOutput() {
         return (debug & DEBUG_OUTPUT) == DEBUG_OUTPUT;
@@ -554,7 +557,7 @@ public class Term extends JComponent implements Accessible {
      * the buffer.
      */
     private int beginx() {
-        return buf.nlines - st.rows;
+        return buf.nlines() - st.rows;
     }
 
     private Line cursor_line() {
@@ -564,6 +567,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Set/unset WordDelineator.
      * Passing a null sets it to the default WordDelineator.
+     * @param word_delineator Property to set.
      */
     public void setWordDelineator(WordDelineator word_delineator) {
         if (word_delineator == null) {
@@ -575,17 +579,19 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the WordDelineator used by this.
+     * @return Property to get.
      */
     public WordDelineator getWordDelineator() {
         return this.word_delineator;
     }
     private WordDelineator default_word_delineator = WordDelineator.createNewlineDelineator();
-    WordDelineator word_delineator = default_word_delineator;
+    private WordDelineator word_delineator = default_word_delineator;
 
     /**
      * Set/unset input listener.
      * Entered text gets sent via this listener
      *
+     * @param l
      * @deprecated Replaced by {@link #addInputListener(TermInputListener)}.
      */
     @Deprecated
@@ -597,6 +603,7 @@ public class Term extends JComponent implements Accessible {
      * Add an input listener to this.
      * <p>
      * Text entered via the keyboard gets sent via this listener.
+     * @param l
      */
     public void addInputListener(TermInputListener l) {
         input_listeners.add(l);
@@ -628,6 +635,7 @@ public class Term extends JComponent implements Accessible {
      * The following events gets sent via this listener:
      * window size changes
      *
+     * @param l
      * @deprecated Replaced by{@link #addListener(TermListener)}.
      */
     @Deprecated
@@ -637,6 +645,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Add a TermListener to this.
+     * @param l
      */
     public void addListener(TermListener l) {
         listeners.add(l);
@@ -645,6 +654,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Remove the given TermListener from this.
+     * @param l
      */
     public void removeListener(TermListener l) {
         listeners.remove(l);
@@ -681,6 +691,7 @@ public class Term extends JComponent implements Accessible {
      * <br>
      * When set, the Term screen will grab focus when clicked on, otherwise
      * it will grab focus when the mouse moves into it.
+     * @param click_to_type Set the property.
      */
     public void setClickToType(boolean click_to_type) {
         this.click_to_type = click_to_type;
@@ -693,6 +704,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Control whether keystrokes are ignored.
+     * @param read_only Set the property.
      */
     public void setReadOnly(boolean read_only) {
         this.read_only = read_only;
@@ -700,6 +712,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return whether keystrokes are ignored.
+     * @return The property value.
      */
     public boolean isReadOnly() {
         return read_only;
@@ -762,6 +775,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return the RegionManager associated with this Term
+     * @return The RegionManager associated with this Term
      */
     public RegionManager regionManager() {
         return region_manager;
@@ -818,6 +832,7 @@ public class Term extends JComponent implements Accessible {
      * <pre>
      * KeyStroke.getKeyStroke(new Character((char)('T'-64)), Event.CTRL_MASK)
      * </pre>
+     * @return Property value.
      */
     public HashSet<KeyStroke> getKeyStrokeSet() {
         return keystroke_set;
@@ -858,7 +873,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Return true (and consume it) if 'e' is allowed to be consumed by us.
      *
-     * If our owner is interested in some keys they will put someting into
+     * If our owner is interested in some keys they will put something into
      * keystroke_set.
      */
     private boolean maybeConsume(KeyEvent e) {
@@ -902,17 +917,21 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * If begin is null, then the start of the buffer is assumed.
      * If end is null, then the end of the buffer is assumed.
+     * @param begin
+     * @param end
+     * @param llv visit() is called on 'llv' for each line.
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public void visitLogicalLines(Coord begin, Coord end,
             final LogicalLineVisitor llv) {
 
         // Create a trampoline visitor
         LineVisitor tramp = new LineVisitor() {
 
-            String text = "";	// NOI18N
-            int lineno = 0;
-            Coord begin = null;
-            Coord end = null;
+            private String text = "";	// NOI18N
+            private int lineno = 0;
+            private Coord begin = null;
+            private Coord end = null;
 
 	    @Override
             public boolean visit(Line l, int brow, int bcol, int ecol) {
@@ -949,7 +968,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         if (end == null) {
-            int lastrow = buf.nlines - 1;
+            int lastrow = buf.nlines() - 1;
             Line l = buf.lineAt(lastrow);
             end = new Coord(new BCoord(lastrow, l.length() - 1), firsta);
         }
@@ -966,17 +985,21 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * If begin is null, then the start of the buffer is assumed.
      * If end is null, then the end of the buffer is assumed.
+     * @param begin
+     * @param end
+     * @param llv visit() is called on 'llv' for each line.
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public void reverseVisitLogicalLines(Coord begin, Coord end,
             final LogicalLineVisitor llv) {
 
         // Create a trampoline visitor
         LineVisitor tramp = new LineVisitor() {
 
-            String text = "";	// NOI18N
-            int lineno = 0;
-            Coord begin = null;
-            Coord end = null;
+            private String text = "";	// NOI18N
+            private int lineno = 0;
+            private Coord begin = null;
+            private Coord end = null;
 
 	    @Override
             public boolean visit(Line l, int brow, int bcol, int ecol) {
@@ -1018,7 +1041,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         if (end == null) {
-            int lastrow = buf.nlines - 1;
+            int lastrow = buf.nlines() - 1;
             Line l = buf.lineAt(lastrow);
             end = new Coord(new BCoord(lastrow, l.length() - 1), firsta);
         }
@@ -1063,7 +1086,12 @@ public class Term extends JComponent implements Accessible {
      * The implementation of this function is not snappy (it calls
      * Term.advance() in a loop) but the assumption is that his function
      * will not be called in a tight loop.
+     * @param begin
+     * @param offset
+     * @param length
+     * @return 
      */
+    @SuppressWarnings({"AssignmentToMethodParameter", "ValueOfIncrementOrDecrementUsed"})
     public Extent extentInLogicalLine(Coord begin, int offset, int length) {
 
         // SHOULD factor the A/B Coord conversion out
@@ -1091,7 +1119,8 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * If the given coordinate is visible within the screen nothing happens.
      * Otherwise the screen is scrolled so that the given target ends up
-     * approximately mid-sceeen.
+     * approximately mid-screen.
+     * @param target Coord to be checked.
      */
     public void possiblyNormalize(Coord target) {
         if (target == null) {
@@ -1106,8 +1135,8 @@ public class Term extends JComponent implements Accessible {
         st.firstx = btarget.row - (st.rows / 2);
         if (st.firstx < 0) {
             st.firstx = 0;
-        } else if (st.firstx + st.rows > buf.nlines) {
-            st.firstx = buf.nlines - st.rows;
+        } else if (st.firstx + st.rows > buf.nlines()) {
+            st.firstx = buf.nlines() - st.rows;
         }
 
         repaint(true);
@@ -1122,7 +1151,8 @@ public class Term extends JComponent implements Accessible {
      * won't be displayed.
      * If the region is bigger than the half of screen height, last line
      * of the region will be displayed in the last line of the screen.
-     * Otherwise the region will start approximately in mid-sceeen
+     * Otherwise the region will start approximately in mid-screen
+     * @param region Region against which to normalize.
      */
     public void possiblyNormalize(ActiveRegion region) {
         if (region == null) {
@@ -1142,8 +1172,8 @@ public class Term extends JComponent implements Accessible {
             st.firstx = bbegin.row - (st.rows / 2);
             if (st.firstx < 0) {
                 st.firstx = 0;
-            } else if (st.firstx + st.rows > buf.nlines) {
-                st.firstx = buf.nlines - st.rows;
+            } else if (st.firstx + st.rows > buf.nlines()) {
+                st.firstx = buf.nlines() - st.rows;
             } else if (st.firstx + st.rows <= bend.row) {
                 // display also end of region
                 st.firstx = bend.row - st.rows + 1;
@@ -1156,14 +1186,12 @@ public class Term extends JComponent implements Accessible {
     /**
      * If the given coordinate is visible within the screen returns true,
      * otherwise returns false.
+     * @param target Coord to check visibility of.
+     * @return true if 'target' is visible within the screen.
      */
     public boolean isCoordVisible(Coord target) {
         BCoord btarget = target.toBCoord(firsta);
-        if (btarget.row >= st.firstx && btarget.row < st.firstx + st.rows) {
-            return true;
-        } else {
-            return false;
-        }
+        return btarget.row >= st.firstx && btarget.row < st.firstx + st.rows;
     }
 
     private void possiblyScrollOnInput() {
@@ -1174,7 +1202,7 @@ public class Term extends JComponent implements Accessible {
         // vertical (row) dimension
         if (st.cursor.row >= st.firstx && st.cursor.row < st.firstx + st.rows) {
         } else {
-            st.firstx = buf.nlines - st.rows;
+            st.firstx = buf.nlines() - st.rows;
             repaint(true);
         }
     }
@@ -1272,6 +1300,7 @@ public class Term extends JComponent implements Accessible {
      * Set the display attribute for characters printed from now on.
      * <p>
      * Unrecognized values silently ignored.
+     * @param value attribute value
      */
     public void setAttribute(int value) {
         st.attr = Attr.setAttribute(st.attr, value);
@@ -1298,6 +1327,10 @@ public class Term extends JComponent implements Accessible {
      * inclusive to 'value' depending on the value of 'on'.
      * <p>
      * Will cause a repaint.
+     * @param begin
+     * @param end
+     * @param value
+     * @param on
      */
     public void setCharacterAttribute(Coord begin, Coord end,
             final int value, final boolean on) {
@@ -1356,6 +1389,7 @@ public class Term extends JComponent implements Accessible {
      * which roughly says: When resizing keep the line that was at the bottom,
      * _at_ the bottom.
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     private void adjust_lines(int delta_row) {
 
         if (delta_row > 0) {
@@ -1382,7 +1416,7 @@ public class Term extends JComponent implements Accessible {
             // Really weird I seem to get the same results regardless of
             // whether I use orows or buf.nlines. SHOULD investigate more.
 
-            int allowed = buf.nlines - st.cursor.row - 1;
+            int allowed = buf.nlines() - st.cursor.row - 1;
 
             if (allowed < 0) {
                 allowed = 0;
@@ -1402,7 +1436,7 @@ public class Term extends JComponent implements Accessible {
 
             // SHOULD eliminate the loop and move the work to Buffer
             while (delete_from_bottom-- > 0) {
-                buf.removeLineAt(buf.nlines - 1);
+                buf.removeLineAt(buf.nlines() - 1);
             }
 
 
@@ -1413,12 +1447,14 @@ public class Term extends JComponent implements Accessible {
     }
 
     /**
-     * returns curent history size of buffer.
+     * Returns current history size of buffer.
+     * @return current history size of buffer.
      */
     public int getHistoryBuffSize() {
-        return buf.nlines - st.rows;
+        return buf.nlines() - st.rows;
     }
 
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     private void limit_lines() {
 
         /*
@@ -1430,7 +1466,7 @@ public class Term extends JComponent implements Accessible {
             return;
         }
 
-        int history = buf.nlines - st.rows;
+        int history = buf.nlines() - st.rows;
         if (history < 0) {
             history = 0;
         }
@@ -1447,7 +1483,7 @@ public class Term extends JComponent implements Accessible {
             firsta += toremove;
 
             // cull any regions that are no longer in history
-            if (++cull_count % cull_frequency == 0) {
+            if (++cull_count % CULL_FREQUENCY == 0) {
                 /* DEBUG
                 System.out.println("Culling regions ..."); // NOI18N
                  */
@@ -1455,7 +1491,7 @@ public class Term extends JComponent implements Accessible {
             }
 
             // our absolute coordinates are about to wrap
-            if (firsta + buf.nlines >= modulo) {
+            if (firsta + buf.nlines() >= MODULO) {
                 int old_firsta = firsta;
                 firsta = 0;
 
@@ -1465,7 +1501,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         // deal with selection moving out of the buffer
-        sel.adjust(firsta, 0, firsta + buf.nlines);
+        sel.adjust(firsta, 0, firsta + buf.nlines());
 
         adjust_scrollbar();
     }
@@ -1801,8 +1837,9 @@ public class Term extends JComponent implements Accessible {
             // The keycode doesn't make it to keyTyped, so for now we detect
             // a Return by capturing press/releases of VK_ENTER and
             // use a flag.
-            boolean saw_return;
+            private boolean saw_return;
 
+	    @SuppressWarnings("AssignmentToMethodParameter")
             private void charTyped(char c, KeyEvent e) {
                 if (read_only) {
                     return;
@@ -1821,7 +1858,18 @@ public class Term extends JComponent implements Accessible {
                 }
 
                 if (passOn && maybeConsume(e)) {
-                    on_char(c);
+		    if ((e.getModifiers() & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
+			if (getAltSendsEscape()) {
+			    on_char(ESC);
+			    on_char(c);
+			} else {
+			    if (c >=0 || c <= 127)
+				c += 128;
+			    on_char(c);
+			}
+		    } else {
+			on_char(c);
+		    }
                     possiblyScrollOnInput();
                 }
 
@@ -1842,7 +1890,7 @@ public class Term extends JComponent implements Accessible {
                 charTyped(c, e);
             }
 
-	           @Override
+	    @Override
             public void keyPressed(KeyEvent e) {
                 if (debugKeys()) {
                     System.out.printf("keyPressed %2d %s\n", e.getKeyCode(), KeyEvent.getKeyText(e.getKeyCode())); // NOI18N
@@ -2044,22 +2092,29 @@ public class Term extends JComponent implements Accessible {
                         repaint(false);
                     }
 
-                    if (e.getClickCount() == 1) {
-                        left_down_point = (Point) e.getPoint().clone();
-
-                    } else if (e.getClickCount() == 2) {
-                        BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
-                        BExtent word = buf.find_word(word_delineator, bcoord);
-                        sel.select_word(word.toExtent(firsta));
-                        repaint(false);
-
-                    } else if (e.getClickCount() == 3) {
-                        BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
-                        BExtent line = buf.find_line(bcoord);
-                        sel.select_line(line.toExtent(firsta));
-                        repaint(false);
-
-                    }
+		    switch (e.getClickCount()) {
+		    	case 1:
+			    left_down_point = (Point) e.getPoint().clone();
+			    break;
+		    	case 2:
+			    {
+				BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
+				BExtent word = buf.find_word(word_delineator, bcoord);
+				sel.select_word(word.toExtent(firsta));
+				repaint(false);
+				break;
+			    }
+		    	case 3:
+			    {
+				BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
+				BExtent line = buf.find_line(bcoord);
+				sel.select_line(line.toExtent(firsta));
+				repaint(false);
+				break;
+			    }
+		    	default:
+			    break;
+		    }
 
                     fireSelectionExtentChanged();
                 }
@@ -2220,9 +2275,9 @@ public class Term extends JComponent implements Accessible {
 
     private static class MemUse {
 
-        private long free;
-        private long max;
-        private long total;
+        private final long free;
+        private final long max;
+        private final long total;
 
         public MemUse() {
             free = Runtime.getRuntime().freeMemory();
@@ -2236,6 +2291,7 @@ public class Term extends JComponent implements Accessible {
             this.total = total;
         }
 
+	@SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public MemUse changeFrom(MemUse old) {
             return new MemUse(this.free - old.free,
                     this.max - old.max,
@@ -2373,6 +2429,7 @@ public class Term extends JComponent implements Accessible {
      * Set the number of character rows in the screen.
      * <p>
      * See setRowsColumns() for some additional important information.
+     * @param rows The property value.
      */
     public void setRows(int rows) {
         if (old_rows == -1) {
@@ -2386,6 +2443,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the number of character rows in the screen
+     * @return The property value.
      */
     public int getRows() {
         return st.rows;
@@ -2395,10 +2453,19 @@ public class Term extends JComponent implements Accessible {
      * Set the number of character columns in the screen.
      * <p>
      * See setRowsColumns() for some additional important information.
+     * @param cols The property value.
      */
     public void setColumns(int cols) {
         buf.setVisibleCols(cols);
         updateScreenSize();
+    }
+
+    /**
+     * Get the number of character columns in the screen
+     * @return The property value.
+     */
+    public int getColumns() {
+        return buf.visibleCols();
     }
 
     /**
@@ -2417,13 +2484,6 @@ public class Term extends JComponent implements Accessible {
     }
 
     /**
-     * Get the number of character columns in the screen
-     */
-    public int getColumns() {
-        return buf.visibleCols();
-    }
-
-    /**
      * Simultaneously set the number of character rows and columns.
      * <p>
      * A Term is a composite widget made of a contained screen (getScreen())
@@ -2435,17 +2495,19 @@ public class Term extends JComponent implements Accessible {
      * but only new additional lines. For example, if you set columns to
      * 20, print a bunch of lines that wrap, then resize to 80 columns, all
      * the lines that were wrapped to 20 will stay wrapped that way. This is
-     * consistent with xterm behaviour.
+     * consistent with xterm behavior.
      * <p>
      * If this Term is embedded in a component with a layout manager that is
      * set up to accept child resizes gracefully this widget will be resized
      * as expected.
      * <p>
      * Alternatively if this Term is embedded in a Window (like JFrame)
-     * the window will need to be re-pack()ed as it does not accomodate it's
-     * childrens size changes. This has to be done by the application using
+     * the window will need to be re-pack()ed as it does not accommodate it's
+     * children's size changes. This has to be done by the application using
      * Term. The best way to do this is to add a TermListener() and call pack()
      * on the appropriate window when a resize notification is fired.
+     * @param rows
+     * @param columns
      */
     public void setRowsColumns(int rows, int columns) {
 
@@ -2470,9 +2532,10 @@ public class Term extends JComponent implements Accessible {
      * enabled Term will attempt to adjust the size to an even multiple
      * of the character cell size.
      * <p>
-     * The layout manager might not neccesarily honor the rounded size.
+     * The layout manager might not necessarily honor the rounded size.
      * The situation can be somewhat improved by making sure that the ultimate
      * container is re-packed as described in {@link #setRowsColumns(int, int)}.
+     * @param size_rounded The property value.
      */
     public void setSizeRounded(boolean size_rounded) {
         this.size_rounded = size_rounded;
@@ -2484,6 +2547,7 @@ public class Term extends JComponent implements Accessible {
      * cell size.
      * <p>
      * See {@link #setSizeRounded(boolean)} for more info.
+     * @return The property value.
      */
     public boolean isSizeRounded() {
         return size_rounded;
@@ -2548,6 +2612,8 @@ public class Term extends JComponent implements Accessible {
      * Convert row/column coords to pixel coords within the widgets
      * coordinate system.
      * It returns the pixel of the upper left corner of the target cell.
+     * @param target
+     * @return 
      */
     public Point toPixel(Coord target) {
         BCoord btarget = target.toBCoord(firsta);
@@ -2573,8 +2639,8 @@ public class Term extends JComponent implements Accessible {
          * If the buffer is smaller than the view, map to the last line.
          */
         int brow = st.firstx + v.row;
-        if (brow >= buf.nlines) {
-            brow = buf.nlines - 1;
+        if (brow >= buf.nlines()) {
+            brow = buf.nlines() - 1;
         }
         int bc = buf.lineAt(brow).cellToBuf(metrics, st.firsty + v.col);
         BCoord b = new BCoord(brow, bc);
@@ -2586,9 +2652,11 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Convert pixel coords to view (visible area) row/column coords (both
-     * o-origin).
+     * 0-origin).
      * <p>
      * In the returned Point, x represents the column, y the row.
+     * @param p
+     * @return 
      */
     public Point mapToViewRowCol(Point p) {
         BCoord c = toViewCoord(p);
@@ -2600,6 +2668,8 @@ public class Term extends JComponent implements Accessible {
      * 0-origin).
      * <p>
      * In the returned Point, x represents the column, y the row.
+     * @param p
+     * @return 
      */
     public Point mapToBufRowCol(Point p) {
         BCoord c = toBufCoords(toViewCoord(p));
@@ -2833,6 +2903,7 @@ public class Term extends JComponent implements Accessible {
      * Render one line
      * Draw the line on this brow (buffer row 0-origin)
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     private void paint_line_new(Graphics g, Line l, int brow,
             int xoff, int yoff, int baseline,
             Extent selx) {
@@ -3151,7 +3222,7 @@ public class Term extends JComponent implements Accessible {
                 if (image != null) {
                     // xy passed to drawImage() is the top-left of the image
                     int gyoff = yoff;
-                    g.drawImage(image, xoff, gyoff, transparent, null);
+                    g.drawImage(image, xoff, gyoff, TRANSPARENT, null);
                 }
             }
             xoff += glyph_gutter_width;
@@ -3222,7 +3293,7 @@ public class Term extends JComponent implements Accessible {
             g.drawRect(rect_x, rect_y, rect_width, rect_height);
         }
     }
-    private static final boolean do_margins = true;
+    private static final boolean DO_MARGINS = true;
 
     private boolean possiblyScrollDown() {
         /*
@@ -3231,7 +3302,7 @@ public class Term extends JComponent implements Accessible {
          * 'true' is returned.
          */
 
-        if (!do_margins) {
+        if (!DO_MARGINS) {
             if (st.cursor.row >= st.firstx + st.rows) {
                 // scroll down
                 st.firstx++;
@@ -3261,6 +3332,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Send a character to the terminal screen.
+     * @param c The character to send.
      */
     public void putChar(char c) {
         dce_end.putChar(c);
@@ -3271,6 +3343,9 @@ public class Term extends JComponent implements Accessible {
      * <br>
      * While 'buf' will have a size it may not be fully filled, hence
      * the explicit 'nchar'.
+     * @param buf
+     * @param offset
+     * @param count
      */
     public void putChars(char buf[], int offset, int count) {
         dce_end.putChars(buf, offset, count);
@@ -3537,6 +3612,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_cbt(int n) {
             if (debugOps()) {
                 System.out.printf("op_cbt(%d)\n", n); // NOI18N
@@ -3548,6 +3624,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "ValueOfIncrementOrDecrementUsed"})
         public void op_cht(int n) {
             if (debugOps()) {
                 System.out.printf("op_cht(%d)\n", n); // NOI18N
@@ -3568,6 +3645,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_al(int count) {
             // add new blank line
             if (debugOps()) {
@@ -3579,8 +3657,8 @@ public class Term extends JComponent implements Accessible {
 
                 // reverse of op_dl()
                 // Rotate a line from bottom to top
-                if (!do_margins) {
-                    l = buf.moveLineFromTo(buf.nlines/*OLD-1*/, st.cursor.row);
+                if (!DO_MARGINS) {
+                    l = buf.moveLineFromTo(buf.nlines() /*OLD-1*/ , st.cursor.row);
                 } else {
                     l = buf.moveLineFromTo(st.firstx + botMargin(), st.cursor.row);
                 }
@@ -3599,12 +3677,13 @@ public class Term extends JComponent implements Accessible {
                     sel.cancel(true);	// DtTerm behaviour
                     break;
                 case Sel.INT_BELOW:
-                    sel.adjust(firsta, +1, firsta + buf.nlines);
+                    sel.adjust(firsta, +1, firsta + buf.nlines());
                     break;
             }
         }
 
 	@Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_bc(int count) {
             // back cursor/column
             if (debugOps()) {
@@ -3620,6 +3699,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings("AssignmentToMethodParameter")
         public void op_cm(int row, int col) {
             // cursor motion row and col come in as 1-origin)
             if (debugOps()) {
@@ -3788,6 +3868,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings({"AssignmentToMethodParameter", "ValueOfIncrementOrDecrementUsed"})
         public void op_dc(int count) {
             // delete character
             if (debugOps()) {
@@ -3803,6 +3884,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_dl(int count) {
             // delete line
             // and scroll everything under it up
@@ -3815,7 +3897,7 @@ public class Term extends JComponent implements Accessible {
 
                 // reverse of op_al()
                 // Rotate a line from top to bottom
-                if (!do_margins) {
+                if (!DO_MARGINS) {
                     l = buf.moveLineFromTo(st.cursor.row,
                             (beginx() + st.rows - 1)/*OLD-1*/);
                 } else {
@@ -3837,12 +3919,13 @@ public class Term extends JComponent implements Accessible {
                     sel.cancel(true);	// DtTerm behaviour
                     break;
                 case Sel.INT_BELOW:
-                    sel.adjust(firsta, -1, firsta + buf.nlines);
+                    sel.adjust(firsta, -1, firsta + buf.nlines());
                     break;
             }
         }
 
 	@Override
+	@SuppressWarnings({"AssignmentToMethodParameter", "ValueOfIncrementOrDecrementUsed"})
         public void op_do(int count) {
             // down count lines
             // SHOULD add a mode: {scroll, warp, stay} for cases where
@@ -3855,7 +3938,7 @@ public class Term extends JComponent implements Accessible {
 
             while (count-- > 0) {
                 st.cursor.row++;
-                if (st.cursor.row >= buf.nlines) {
+                if (st.cursor.row >= buf.nlines()) {
 
                     // equivalent of op_newline:
                     if (possiblyScrollDown()) {
@@ -3882,6 +3965,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings({"AssignmentToMethodParameter", "ValueOfIncrementOrDecrementUsed"})
         public void op_ic(int count) {
             // insert character
             if (debugOps()) {
@@ -3896,6 +3980,7 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_nd(int count) {
             // cursor right (non-destructive space)
             if (debugOps()) {
@@ -3925,6 +4010,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_ri(int count) {
             // cursor up - scroll
             // Opposite of op_ind()
@@ -4011,6 +4097,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings({"ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"})
         public void op_ind(int count) {
             // cursor down - scroll
             // Opposite of op_ri()
@@ -4024,7 +4111,7 @@ public class Term extends JComponent implements Accessible {
             if (noMargins) {
                 while (count-- > 0) {
                     st.cursor.row++;
-                    if (st.cursor.row >= buf.nlines) {
+                    if (st.cursor.row >= buf.nlines()) {
                         if (scroll_on_output || cursor_was_visible() && track_cursor) {
                             st.firstx++;
                         }
@@ -4315,6 +4402,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings("AssignmentToMethodParameter")
         public void op_cha(int col) {
             // cursor to column
             if (debugOps()) {
@@ -4337,6 +4425,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings("AssignmentToMethodParameter")
         public void op_vpa(int row) {
             // cursor to row
             if (debugOps()) {
@@ -4359,6 +4448,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+	@SuppressWarnings("AssignmentToMethodParameter")
         public void op_ech(int n) {
             // erase characters
             if (debugOps()) {
@@ -4554,10 +4644,10 @@ public class Term extends JComponent implements Accessible {
             int extent = st.rows - 1;
             int min = 0;
             int max;
-            if (buf.nlines <= st.rows) {
+            if (buf.nlines() <= st.rows) {
                 max = st.rows - 1;
             } else {
-                max = buf.nlines - 1;
+                max = buf.nlines() - 1;
             }
             vscroll_bar.setValues(value, extent, min, max);
         }
@@ -4713,6 +4803,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Model and or view settings have changed, redraw everything.
+     * @param adjust_scrollbar
      */
     protected void repaint(boolean adjust_scrollbar) {
 
@@ -4840,6 +4931,7 @@ public class Term extends JComponent implements Accessible {
      * be reversed.
      * <p>
      * Note: This is independent of characters' reverse attribute.
+     * @param reverse_video The property value.
      */
     public void setReverseVideo(boolean reverse_video) {
         this.reverse_video = reverse_video;
@@ -4848,6 +4940,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return the value set by setReverseVideo().
+     * @return The property value.
      */
     public boolean isReverseVideo() {
         return reverse_video;
@@ -4856,6 +4949,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the color of the hilite (selection) - for non XOR mode
+     * @param color The property value.
      */
     public void setHighlightColor(Color color) {
         sel.setColor(color);
@@ -4864,6 +4958,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the color of the hilite (selection) - for non XOR mode
+     * @return The property value.
      */
     public Color getHighlightColor() {
         return sel.getColor();
@@ -4871,6 +4966,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the color of the hilite (selection) - for XOR mode
+     * @param color The property value.
      */
     public void setHighlightXORColor(Color color) {
         sel.setXORColor(color);
@@ -4879,6 +4975,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the color of the hilite (selection) - for XOR mode
+     * @return The property value.
      */
     public Color getHighlightXORColor() {
         return sel.getXORColor();
@@ -4886,6 +4983,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the feedback color of active regions.
+     * @param color The property value.
      */
     public void setActiveColor(Color color) {
         // SHOULD check for null color
@@ -4895,6 +4993,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the feedback color of active regions.
+     * @return The property value.
      */
     public Color getActiveColor() {
         // SHOULD clone? but Color is not clonable and has no simple
@@ -4919,6 +5018,7 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * When anchoring is disabled any text in excess of setHistorySize()
      * is trimmed and the given history size comes into effect again.
+     * @param anchored The property value.
      */
     public void setAnchored(boolean anchored) {
         ckEventDispatchThread();
@@ -4938,6 +5038,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return true if the text is currently anchored.
+     * @return The property value.
      */
     public boolean isAnchored() {
         return anchored;
@@ -4947,7 +5048,8 @@ public class Term extends JComponent implements Accessible {
     /**
      * Returns the actual drawing area so events can be interposed upon,
      * like context menus.
-     * @deprecated
+     * @return 
+     * @deprecated Replaced by{@link #getScreen()}.
      */
     @Deprecated
     public JComponent getCanvas() {
@@ -4957,6 +5059,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Returns the actual drawing area so events can be interposed upon,
      * like context menus.
+     * @return 
      */
     public JComponent getScreen() {
         return screen;
@@ -4965,6 +5068,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Return the terminal operations implementation.
      * <b>WARNING! This is temporary</b>
+     * @return 
      */
     public Ops ops() {
         return ops;
@@ -4972,6 +5076,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the Interpreter type by name.
+     * @param emulation The property value.
      * @see Term#setInterp
      */
     public void setEmulation(String emulation) {
@@ -4985,6 +5090,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Returns the termcap string that best describes what this Term
      * emulates.
+     * @return The property value.
      */
     public String getEmulation() {
         return getInterp().name();
@@ -4996,6 +5102,7 @@ public class Term extends JComponent implements Accessible {
      * It is not advisable to change the emulation after Term has been
      * connected to a process, since it's often impossible to advise
      * the process of the new terminal type.
+     * @param interp The property value.
      */
     public void setInterp(Interp interp) {
         this.interp = interp;
@@ -5003,6 +5110,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return the Interpreter assigned to this.
+     * @return The property value.
      */
     public Interp getInterp() {
         return interp;
@@ -5015,6 +5123,7 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * If an anchor is in effect the history size will only have an
      * effect when the anchor is reset.
+     * @param new_size The property value.
      */
     public void setHistorySize(int new_size) {
         history_size = new_size;
@@ -5024,6 +5133,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return the number of lines in history
+     * @return The property value.
      */
     public int getHistorySize() {
         return history_size;
@@ -5032,6 +5142,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the width of the glyph gutter in pixels
+     * @param pixels The property value.
      */
     public void setGlyphGutterWidth(int pixels) {
 
@@ -5052,6 +5163,8 @@ public class Term extends JComponent implements Accessible {
      * Numbering the glyphs is confusing. They start with 48. That is,
      * if you register glyph #0 using hbvi/vim :K command the escape
      * sequence emitted is 48. 48 is ascii '0'.
+     * @param glyph_number
+     * @param image
      */
     public void setGlyphImage(int glyph_number, Image image) {
         if (glyph_number > 256) {
@@ -5063,9 +5176,10 @@ public class Term extends JComponent implements Accessible {
     ;
 
     /**
-     * Get the usable area for drawing glyphs
-     *
+     * Get the usable area for drawing glyphs.
+     * <p>
      * This value changes when the gutter width or the font changes
+     * @return The usable area for drawing glyphs.
      */
     public Dimension getGlyphCellSize() {
         return new Dimension(glyph_gutter_width, metrics.height);
@@ -5077,6 +5191,8 @@ public class Term extends JComponent implements Accessible {
      * Unlike glyph id's you can start the numbers from 0.
      * hbvi/vim's :K command will add a 58 to the number, but that
      * is the code we interpret as custom color #0.
+     * @param number
+     * @param c
      */
     public void setCustomColor(int number, Color c) {
         custom_color[number] = c;
@@ -5086,13 +5202,15 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get cursor row in buffer coordinates (0-origin).
+     * @return Cursor row in buffer coordinates (0-origin).
      */
     public int getCursorRow() {
         return st.cursor.row;
     }
 
     /**
-     * Get cursor column in buffer coordinates (0-origin)
+     * Get cursor column in buffer coordinates (0-origin).
+     * @return Cursor column in buffer coordinates (0-origin).
      */
     public int getCursorCol() {
         return cursor_line().cellToBuf(metrics, st.cursor.col);
@@ -5102,6 +5220,7 @@ public class Term extends JComponent implements Accessible {
      * Get (absolute) cursor coordinates.
      * <p>
      * The returned Coord is newly allocated and need not be cloned.
+     * @return The property value.
      */
     public Coord getCursorCoord() {
         Line l = buf.lineAt(st.cursor.row);
@@ -5124,6 +5243,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Move the cursor to the given (absolute) coordinates
      * SHOULD be setCursorCoord!
+     * @param coord The property value.
      */
     public void setCursorCoord(Coord coord) {
         Coord c = (Coord) coord.clone();
@@ -5137,7 +5257,8 @@ public class Term extends JComponent implements Accessible {
      * Control whether the cursor is visible or not.
      * <p>
      * We don't want a visible cursor when we're using Term in
-     * non-interactve mode.
+     * non-interactive mode.
+     * @param cursor_visible The property value.
      */
     public void setCursorVisible(boolean cursor_visible) {
         this.cursor_visible = cursor_visible;
@@ -5145,6 +5266,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Find out if cursor is visible.
+     * @return The property value.
      */
     public boolean isCursorVisible() {
         return cursor_visible;
@@ -5157,6 +5279,8 @@ public class Term extends JComponent implements Accessible {
      * Travels back over line boundaries
      * <br>
      * Returns null if 'c' is the first character in the buffer.
+     * @param c Coord to back up from.
+     * @return New Coord derived from 'c'.
      */
     public Coord backup(Coord c) {
         BCoord bRow = buf.backup(c.toBCoord(firsta));
@@ -5172,6 +5296,8 @@ public class Term extends JComponent implements Accessible {
      * Travels forward over line boundaries.
      * <br>
      * Returns null if 'c' is the last character in the buffer.
+     * @param c Coord to advance from.
+     * @return New Coord derived from 'c'.
      */
     public Coord advance(Coord c) {
         return new Coord(buf.advance(c.toBCoord(firsta)), firsta);
@@ -5181,6 +5307,7 @@ public class Term extends JComponent implements Accessible {
      * Get contents of current selection.
      * <p>
      * Returns 'null' if there is no current selection.
+     * @return Contents of current selection.
      */
     public String getSelectedText() {
         return sel.getSelection();
@@ -5190,6 +5317,7 @@ public class Term extends JComponent implements Accessible {
      * Get the extent of the current selection.
      * <p>
      * If there is no selection returns 'null'.
+     * @return The property value.
      */
     public Extent getSelectionExtent() {
         return sel.getExtent();
@@ -5197,10 +5325,11 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Set the extent of the selection.
+     * @param extent The property value.
      */
     public void setSelectionExtent(Extent extent) {
-        extent.begin.clip(buf.nlines, buf.totalCols(), firsta);
-        extent.end.clip(buf.nlines, buf.totalCols(), firsta);
+        extent.begin.clip(buf.nlines(), buf.totalCols(), firsta);
+        extent.end.clip(buf.nlines(), buf.totalCols(), firsta);
         sel.setExtent(extent);
         repaint(false);
     }
@@ -5224,6 +5353,7 @@ public class Term extends JComponent implements Accessible {
      * to have the option of not cloberring the systemClipboard on text
      * selection.
      *
+     * @param auto_copy The property value.
      * @deprecated selections now always get copied to systemSelection if
      * it exists.
      */
@@ -5235,6 +5365,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Return the value set by setAutoCopy()
      *
+     * @return The property value.
      * @deprecated Now always returns 'true'.
      */
     @Deprecated
@@ -5263,6 +5394,7 @@ public class Term extends JComponent implements Accessible {
     /**
      * Sets whether the selection highlighting is XOR style or normal
      * Swing style.
+     * @param selection_xor The property value.
      */
     public void setSelectionXOR(boolean selection_xor) {
         this.selection_xor = selection_xor;
@@ -5276,8 +5408,8 @@ public class Term extends JComponent implements Accessible {
     public boolean isSelectionXOR() {
         return selection_xor;
     }
-    // make accessible to Sel
-    boolean selection_xor = false;
+
+    private boolean selection_xor = false;
 
     /**
      * Set the TAB size.
@@ -5295,8 +5427,9 @@ public class Term extends JComponent implements Accessible {
      * that expands tabs to spaces  in the conventional way. That in,
      * turn explains why TAB information doesn't make it into selections and
      * why copying and pasting Makefile instructions is liable to lead
-     * to hard-to-diagnose make rpoblems, which, in turn drove the ANT people
+     * to hard-to-diagnose make problems, which, in turn drove the ANT people
      * to reinvent the world.
+     * @param tab_size The property value.
      */
     public void setTabSize(int tab_size) {
         this.tab_size = tab_size;
@@ -5304,6 +5437,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Get the TAB size.
+     * @return The property value.
      */
     public int getTabSize() {
         return tab_size;
@@ -5316,6 +5450,7 @@ public class Term extends JComponent implements Accessible {
      * When double-clicking on terminal screen selection will expand on left and
      * right until reaches one of a delimiters or the whitespace symbol (which
      * is delimiter by default).
+     * @param delimiters The property value.
      */
     public void setSelectByWordDelimiters(String delimiters) {
         this.delimiters = delimiters;
@@ -5331,6 +5466,7 @@ public class Term extends JComponent implements Accessible {
      * Control whether Term scrolls to the bottom on keyboard input.
      * <p>
      * This is analogous to the xterm -sk/+sk option.
+     * @param scroll_on_input The property value
      */
     public void setScrollOnInput(boolean scroll_on_input) {
         this.scroll_on_input = scroll_on_input;
@@ -5338,6 +5474,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return whether Term scrolls to the bottom on keyboard input.
+     * @return The property value.
      */
     public boolean isScrollOnInput() {
         return scroll_on_input;
@@ -5357,6 +5494,7 @@ public class Term extends JComponent implements Accessible {
      * property which by default is set to 'true'.
      * <p>
      * This property is analogous to the xterm -si/+si option.
+     * @param scroll_on_output The property value.
      */
     public void setScrollOnOutput(boolean scroll_on_output) {
         this.scroll_on_output = scroll_on_output;
@@ -5364,11 +5502,61 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return whether Term scrolls on any output.
+     * @return The property value.
      */
     public boolean isScrollOnOutput() {
         return scroll_on_output;
     }
     private boolean scroll_on_output = true;
+
+    /**
+     * Control whether the Alt key prefixes a key with an ESC or shifts
+     * the character.
+     * <p>
+     * This is based on XTerms altSendsEscape resource. There's a family
+     * of interrelated resources as follows. You can read about them in
+     * <b>Xterm Control Sequences</b> under <b>Alt and Meta Keys</b> for
+     * a summary or the XTerm man page for more details.
+     * <table border="1">
+     * <tr>
+     * 		<th>Resource</th>
+     * 		<th>Term assumed value</th>
+     * </tr>
+     * <tr>
+     * 		<td>metaSendsEscape</td>
+     * 		<td>N/A</td>
+     * </tr>
+     * <tr>
+     * 		<td>altIsNotMeta</td>
+     * 		<td>false (Alt <u>is</u> Meta)</td>
+     * </tr>
+     * <tr>
+     * 		<td>modifyOtherKeys</td>
+     * 		<td>0 (disable)</td>
+     * </tr>
+     * <tr>
+     * 		<td>eightBitInput</td>
+     * 		<td>true</td>
+     * </tr>
+     * </table>
+     * <p>
+     * Default value is true.
+     * @param altSendsEscape Sets the property.
+     */
+    public void setAltSendsEscape(boolean altSendsEscape) {
+	this.altSendsEscape = altSendsEscape;
+    }
+
+    /**
+     * Return whether the Alt key prefixes a key with an ESC or shifts
+     * the character.
+     * @return The property value.
+     */
+    public boolean getAltSendsEscape() {
+	return altSendsEscape;
+    }
+
+    private boolean altSendsEscape = true;
 
     /**
      * Control whether Term will scroll to track the cursor as text is added.
@@ -5378,6 +5566,7 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * This property is only relevant when scrollOnOutput is set to false.
      * If scrollOnOutput is true, this property is also implicitly true.
+     * @param track_cursor The property value.
      */
     public void setTrackCursor(boolean track_cursor) {
         this.track_cursor = track_cursor;
@@ -5385,6 +5574,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return whether Term will scroll to track the cursor as text is added.
+     * @return The property value
      */
     public boolean isTrackCursor() {
         return track_cursor;
@@ -5396,6 +5586,7 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * When enabled a horizontal scrollbar becomes visible and line-wrapping
      * is disabled.
+     * @param horizontally_scrollable The property value.
      */
     public void setHorizontallyScrollable(boolean horizontally_scrollable) {
         this.horizontally_scrollable = horizontally_scrollable;
@@ -5403,10 +5594,6 @@ public class Term extends JComponent implements Accessible {
         hscroll_wrapper.setVisible(horizontally_scrollable);
     }
 
-    public final void setRenderingHints(Map<?, ?> hints) {
-        renderingHints = hints;
-    }
-    
     /*
      * Returns whether horizontal scrolling is enabled.
      * @see Term.setHorizontallyScrollable
@@ -5414,13 +5601,19 @@ public class Term extends JComponent implements Accessible {
     public boolean isHorizontallyScrollable() {
         return this.horizontally_scrollable;
     }
+
     private boolean horizontally_scrollable = true;
 
+    public final void setRenderingHints(Map<?, ?> hints) {
+        renderingHints = hints;
+    }
+    
     /**
      * Clear everything and assign new text.
      * <p>
      * If the size of the text exceeds history early parts of it will get
      * lost, unless an anchor was set using setAnchor().
+     * @param text The text to put into the terminal buffer.
      */
     public void setText(String text) {
         // SHOULD make a bit more efficient
@@ -5434,6 +5627,8 @@ public class Term extends JComponent implements Accessible {
      * Doesn't repaint the view unless 'repaint' is set to 'true'.
      * <br>
      * Doesn't do anything if 'text' is 'null'.
+     * @param text
+     * @param repaint
      */
     public void appendText(String text, boolean repaint) {
 
@@ -5460,6 +5655,7 @@ public class Term extends JComponent implements Accessible {
      * Scroll the view 'n' pages up.
      * <p>
      * A page is the height of the view.
+     * @param n Number of pages to scroll up.
      */
     public void pageUp(int n) {
         ckEventDispatchThread();
@@ -5477,6 +5673,7 @@ public class Term extends JComponent implements Accessible {
      * Scroll the view 'n' pages down.
      * <p>
      * A page is the height of the view.
+     * @param n Number of pages to scroll down.
      */
     public void pageDown(int n) {
         ckEventDispatchThread();
@@ -5484,8 +5681,8 @@ public class Term extends JComponent implements Accessible {
         {
             st.firstx += n * st.rows;
 
-            if (st.firstx + st.rows > buf.nlines) {
-                st.firstx = buf.nlines - st.rows;
+            if (st.firstx + st.rows > buf.nlines()) {
+                st.firstx = buf.nlines() - st.rows;
             }
         }
         repaint(true);
@@ -5493,6 +5690,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' lines up.
+     * @param n The number of lines to scroll up.
      */
     public void lineUp(int n) {
         ckEventDispatchThread();
@@ -5508,14 +5706,15 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' lines down.
+     * @param n The number of lines to scroll down.
      */
     public void lineDown(int n) {
         ckEventDispatchThread();
         // OLD NPE-x synchronized(this)
         {
             st.firstx += n;
-            if (st.firstx + st.rows > buf.nlines) {
-                st.firstx = buf.nlines - st.rows;
+            if (st.firstx + st.rows > buf.nlines()) {
+                st.firstx = buf.nlines() - st.rows;
             }
         }
         repaint(true);
@@ -5523,6 +5722,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' pages to the left.
+     * @param n The number of pages to scroll left.
      */
     public void pageLeft(int n) {
         columnLeft(n * buf.visibleCols());
@@ -5530,6 +5730,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' pages to the right.
+     * @param n The number of pages to scroll right.
      */
     public void pageRight(int n) {
         columnRight(n * buf.visibleCols());
@@ -5537,6 +5738,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' columns to the right.
+     * @param n The number of columns to scroll to the right.
      */
     public void columnRight(int n) {
         ckEventDispatchThread();
@@ -5552,6 +5754,7 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Scroll the view 'n' columns to the left.
+     * @param n The number of columns to scroll to the left.
      */
     public void columnLeft(int n) {
         ckEventDispatchThread();
@@ -5567,6 +5770,8 @@ public class Term extends JComponent implements Accessible {
 
     /**
      * Return the cell width of the given character.
+     * @param c
+     * @return 
      */
     public int charWidth(char c) {
         return metrics.wcwidth(c);
@@ -5598,6 +5803,7 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * We absolutely require fixed width fonts, so if the font is changed
      * we create a monospaced version of it with the same style and size.
+     * @param new_font
      */
     @Override
     public final void setFont(Font new_font) {
@@ -5763,6 +5969,8 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * This function really should be private but I need it to be public for
      * unit-testing purposes.
+     * @param c
+     * @return 
      */
     public int CoordToPosition(Coord c) {
         BCoord b = c.toBCoord(firsta);
@@ -5785,10 +5993,12 @@ public class Term extends JComponent implements Accessible {
      * <p>
      * This function really should be private but I need it to be public for
      * unit-testing purposes.
+     * @param position
+     * @return 
      */
     public Coord PositionToCoord(int position) {
         int nchars = charsInPrehistory;
-        for (int r = 0; r < buf.nlines; r++) {
+        for (int r = 0; r < buf.nlines(); r++) {
             Line l = buf.lineAt(r);
             nchars += l.length();
             if (!l.isWrapped()) {
@@ -5812,7 +6022,7 @@ public class Term extends JComponent implements Accessible {
      */
     int getCharCount() {
         int nchars = charsInPrehistory;
-        for (int r = 0; r < buf.nlines; r++) {
+        for (int r = 0; r < buf.nlines(); r++) {
             Line l = buf.lineAt(r);
             nchars += l.length();
             if (!l.isWrapped()) {
@@ -5914,7 +6124,7 @@ public class Term extends JComponent implements Accessible {
 
     private static class MouseWheelHandler implements MouseWheelListener {
 
-        private JScrollBar scrollbar;
+        private final JScrollBar scrollbar;
 
         public MouseWheelHandler(JScrollBar scrollbar) {
             this.scrollbar = scrollbar;
@@ -5964,5 +6174,26 @@ public class Term extends JComponent implements Accessible {
         if (unrecognizedSequences == null)
             unrecognizedSequences = new HashSet<>();
         unrecognizedSequences.add(sequence);
+    }
+
+    /**
+     * @return the metrics
+     */
+    MyFontMetrics metrics() {
+	return metrics;
+    }
+
+    /**
+     * @return the buf
+     */
+    Buffer buf() {
+	return buf;
+    }
+
+    /**
+     * @return the firsta
+     */
+    int firsta() {
+	return firsta;
     }
 }

@@ -385,6 +385,7 @@ final class Line {
      * Used for selections
      * If the ecol is past the actual line length a "\n" is appended.
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public String text(int bcol, int ecol) {
         /* DEBUG
         System.out.println("Line.text(bcol " + bcol + " ecol " + ecol + ")");	// NOI18N
