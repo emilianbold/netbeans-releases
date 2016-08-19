@@ -190,14 +190,14 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     private void bufferCleaner() {
         buffer.clear();
-        if (buffer instanceof sun.nio.ch.DirectBuffer) {
-            try {
+        try {
+            if (buffer instanceof sun.nio.ch.DirectBuffer) {
                 sun.misc.Cleaner cleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
                 if (cleaner != null) {
                     cleaner.clean();
                 }
-            } catch (Throwable e) {
             }
+        } catch (Throwable e) {
         }
     }
     
