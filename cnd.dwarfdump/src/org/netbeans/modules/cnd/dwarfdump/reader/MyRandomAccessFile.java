@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Method;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -190,17 +191,27 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     private void bufferCleaner() {
         buffer.clear();
+        if (!buffer.isDirect()) {
+            return;
+        }
+        // Work around of clear memory
+        // See also JDK-4724038 : (fs) Add unmap method to MappedByteBuffer
+        // http://bugs.java.com/view_bug.do?bug_id=4724038
         try {
-            if (buffer instanceof sun.nio.ch.DirectBuffer) {
-                sun.misc.Cleaner cleaner = ((sun.nio.ch.DirectBuffer) buffer).cleaner();
-                if (cleaner != null) {
-                    cleaner.clean();
-                }
-            }
+            Method cleaner = buffer.getClass().getMethod("cleaner");
+            cleaner.setAccessible(true);
+            // TODO: does not work on Java 9
+            // It seems EA of Java 9 have class jdk.internal.ref.Cleaner instead sun.misc.Cleaner
+            // But Java 9 prevent to access to class jdk.internal.ref.Cleaner due to module system
+            Method clean = Class.forName("sun.misc.Cleaner").getMethod("clean");
+            clean.setAccessible(true);
+            clean.invoke(cleaner.invoke(buffer));
         } catch (Throwable e) {
+            // do nothing
+            //e.printStackTrace(System.err);
         }
     }
-    
+
     public void dispose() {
         try {
             bufferCleaner();
@@ -211,3 +222,4 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         }
     }
 }
+ 
