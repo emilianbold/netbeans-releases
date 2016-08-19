@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
@@ -158,7 +159,7 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
 
         @Override
         public boolean shouldBeRemoved() {
-            return !startsWithOpenTagWithEcho && (inlineHtmlTag == null || inlineHtmlTag.text().toString().trim().length() == 0);
+            return !startsWithOpenTagWithEcho && (inlineHtmlTag == null || TokenUtilities.trim(inlineHtmlTag.text()).length() == 0);
         }
 
         @NbBundle.Messages("UnnecessaryClosingDelimiterHintText=Unnecessary Closing Delimiter")

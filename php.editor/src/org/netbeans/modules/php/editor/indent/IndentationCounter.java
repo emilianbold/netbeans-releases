@@ -371,7 +371,7 @@ public class IndentationCounter {
                 break;
             } else {
                 if (indentComment && token.id() == PHPTokenId.WHITESPACE
-                        && token.text().toString().indexOf('\n') != -1
+                        && TokenUtilities.indexOf(token.text(), '\n') != -1
                         && ts.moveNext()) {
                     retunValue.expressionStartOffset = ts.offset();
                     retunValue.indentDelta = 0;

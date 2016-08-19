@@ -202,7 +202,7 @@ public class ParameterInfoSupport {
                         if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
                             if (anchor == -1) {
-                                anchor = tokenSequence.offset() + token.text().toString().length();
+                                anchor = tokenSequence.offset() + token.text().length();
                             }
                             state = State.METHOD;
                         }

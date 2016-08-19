@@ -69,6 +69,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -429,7 +430,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 } else if (PHPTokenId.WHITESPACE.equals(id)) {
                     wasWhitespace = true;
                     continue;
-                } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
+                } else if (PHPTokenId.PHP_TOKEN.equals(id) && TokenUtilities.textEquals(token.text(), "(")) { //NOI18N
                     result = true;
                     break;
                 } else {
