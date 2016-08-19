@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -93,7 +92,6 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
 
     @Override
     public Session changeSuggested(Session origin, String action, Map<Object, Object> properties) {
-        checkAutostartOption();
         PsProvider.PsData psData = PsProvider.getDefault(Host.getLocal()).getData(false);
         if (psData == null) {
             NativeDebuggerManager.warning(NbBundle.getMessage(this.getClass(),"MSG_PS_Failed")); // NOI18N
@@ -134,7 +132,8 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
                 }
             };
             NativeDebuggerManager.get().addDebuggerStateListener(listener);
-            NativeDebuggerManager.get().attach(target);
+            //use new method to attach and do not continue after attach. see bz#256134
+            NativeDebuggerManager.get().attach(false, target);
             try {
                 latch.await(100, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
@@ -222,13 +221,6 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
 ////        debugger.stepTo(functionName);
 //    }
     
-    private static void checkAutostartOption() {
-        boolean isAutostart = DebuggerOption.RUN_AUTOSTART.isEnabled(NativeDebuggerManager.get().globalOptions());
-        if (isAutostart) {
-//            NativeDebuggerManager.warning(NbBundle.getMessage(SessionChangerImpl.class, "MSG_UnsetAutostart")); // NOI18N
-            DebuggerOption.RUN_AUTOSTART.setCurrValue(NativeDebuggerManager.get().globalOptions(), "false"); // NOI18N
-        }
-    }
 
     private static final class MethodMapper {
         /*package*/ static String getNativeName(String javaName) {

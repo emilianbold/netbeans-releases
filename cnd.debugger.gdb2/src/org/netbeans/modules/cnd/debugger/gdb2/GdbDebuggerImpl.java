@@ -957,7 +957,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         profileBridge().noteAttached();
 
         // continue, see IZ 198495
-        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+        if (getNDI().isAutoStart() && DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
             go();
         } else {
             requestStack(null);
