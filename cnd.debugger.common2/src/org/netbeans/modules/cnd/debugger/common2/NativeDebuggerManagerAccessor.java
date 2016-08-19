@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.debugger.common2;
 
-
-import org.openide.windows.InputOutput;
-
-
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 
 /**
- * Implements debug-related actions on a project.
+ *
+ * @author masha
  */
+abstract public class NativeDebuggerManagerAccessor {
+    private static NativeDebuggerManagerAccessor INSTANCE;
 
-public class DbgAttachActionHandler extends DbgActionHandler {
-
-    private volatile DebugTarget target;
-
-    /*
-     * Called when user cancels execution from progressbar in output window
-     */
-    // interface ProjectActionHandler
-    @Override
-    public void cancel() {
-        // find dbugger using target and kill it
-        for (NativeDebugger debugger: NativeDebuggerManager.get().nativeDebuggers()) {
-            if (target == debugger.getNDI().getDebugTarget()) {
-                debugger.shutDown();
-                break;
+    public static synchronized NativeDebuggerManagerAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = NativeDebuggerManager.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
             }
         }
+
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        return INSTANCE;
     }
 
-    // class DbgActionHandler
-    @Override
-    protected void doExecute(final String executable, final NativeDebuggerManager dm, final InputOutput io) {
-	executionStarted();
-
-        target = pae.getContext().lookup(DebugTarget.class);
-        NativeDebuggerManagerAccessor.get().attach(target, this);
-        
-        // executionFinished is called when debugger really finish (NativeDebuggerImpl.preKill)
-//	executionFinished(0);
-    }
+    /**
+     * Register the accessor. The method can only be called once
+     * - otherwise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(NativeDebuggerManagerAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
+    }    
+    
+    public abstract void  attach(DebugTarget dt, DbgActionHandler dah);
 }

@@ -307,6 +307,15 @@ public abstract class NativeDebuggerInfo {
 	return clone;
     }
 
+    private boolean isAutoStart = true;
+    public final void setAutoStart(boolean isAutoStart) {
+        this.isAutoStart = isAutoStart;
+    }
+
+    public boolean isAutoStart() {
+        return isAutoStart;
+    }
+
     /**
      * captureInfo is to support the ss_attach/capture functionality
      */

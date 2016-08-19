@@ -132,6 +132,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
+import org.netbeans.modules.cnd.debugger.common2.NativeDebuggerManagerAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -169,6 +170,10 @@ import org.openide.windows.WindowManager;
  * - ownership of global options
  */
 public final class NativeDebuggerManager extends DebuggerManagerAdapter {
+    
+    static {
+        NativeDebuggerManagerAccessor.register(new NativeDebuggerManagerAccessorImpl());
+    }
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
     private static final boolean pl = "on".equals(System.getProperty("PL_MODE")); // NOI18N;
 
@@ -1060,7 +1065,8 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (runFirst) {
             ndi.setAction(RUN);
         } else {
-            if (isStandalone() || isPL() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
+            if (isStandalone() || isPL() || !ndi.isAutoStart() || 
+                    !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
                 ndi.setAction(LOAD);
             } else {
                 ndi.setAction(this.getAction());
@@ -1199,7 +1205,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         ndi.setProfile(profile);
         ndi.setInputOutput(io);
         ndi.setDah(dah);
-        if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
+        if (isStandalone() || !ndi.isAutoStart() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
             ndi.setAction(LOAD);
         } else {
             ndi.setAction(this.getAction());
@@ -1225,20 +1231,38 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         startDebugger(Start.NEW, ndi);
         return ndi;
     }
+    
+    /**
+     * Start debugging by attaching to pid.
+     * @param isAutoStart <code>true</code> if start after attaching, otherwise use <code>false</code>
+     * @param dt 
+     */
+    public void attach(boolean isAutoStart, DebugTarget dt) {
+        attach(dt, null, isAutoStart);
+    }
 
     /**
      * Start debugging by attaching to pid.
+     * @param dt
      */
     public void attach(DebugTarget dt) {
-        attach(dt, null);
+        attach(dt, null, DebuggerOption.RUN_AUTOSTART.isEnabled(NativeDebuggerManager.get().globalOptions()));
     }
-    public void attach(DebugTarget dt, DbgActionHandler dah) {
+    
+    //make it private as DbgActionHandler is not public therefore method should be package or private 
+    //NativeDebuggerManagerAccessor is inroduced to call this method
+    private void attach(DebugTarget dt, DbgActionHandler dah) {
+        attach(dt, dah, DebuggerOption.RUN_AUTOSTART.isEnabled(NativeDebuggerManager.get().globalOptions()));
+    }
+    
+    private void attach(DebugTarget dt, DbgActionHandler dah, boolean isAutoStart) {
         final Configuration conf = dt.getConfig();
 
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
         ndi.setPid(dt.getPid());
         ndi.setDah(dah);
+        ndi.setAutoStart(isAutoStart);
 
         //ndi.setTarget(dt.getExecutable());
 	Host host = Host.byName(dt.getHostName());
@@ -1310,7 +1334,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             startDebugger(getExistingDebugger(ndi), ndi);
         } else {
             startDebugger(Start.NEW, ndi);
-        }
+        }        
     }
 
     public void debugCore(DebugTarget dt) {
@@ -2314,6 +2338,15 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         for (DebuggerStateListener stateListener : listenersCopy) {
             stateListener.notifyAttached(debugger, pid);
         }
+    }
+    
+    private static class NativeDebuggerManagerAccessorImpl extends NativeDebuggerManagerAccessor {
+
+        @Override
+        public void attach(DebugTarget dt, DbgActionHandler dah) {
+            NativeDebuggerManager.get().attach(dt, dah);
+        }
+        
     }
     
 }
