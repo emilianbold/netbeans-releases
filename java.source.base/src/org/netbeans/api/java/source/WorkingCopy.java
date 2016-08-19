@@ -1064,7 +1064,11 @@ public class WorkingCopy extends CompilationController {
         
         private void process(CompilationUnitTree unit) {
             commentHandler.freeze();
-            scan(unit, null);
+            try {
+                scan(unit, null);
+            } finally {
+                commentHandler.unFreeze();
+            }
         }
         
         private Object scanAndReduce(Tree node, Object p, Object r) {
@@ -1204,7 +1208,7 @@ public class WorkingCopy extends CompilationController {
                 CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.sourceFileObject(targetFile, targetFile.getParent())).iterator().next();
                 CompilationUnitTree importComments = GeneratorUtilities.get(this).importComments(templateCUT, templateCUT);
 
-                rewrite(importComments, t);
+                rewrite(importComments, getTreeMaker().asRemoved(t));
                 //changes.put(importComments, t);
 
                 StringWriter target = new StringWriter();
