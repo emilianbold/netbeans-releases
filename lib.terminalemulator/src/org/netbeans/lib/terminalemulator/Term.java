@@ -2197,7 +2197,7 @@ public class Term extends JComponent implements Accessible {
 
     static void indent(boolean indented) {
         if (indented) {
-            System.out.println("\t");   // NOI18N
+            System.out.print("\t");   // NOI18N
         }
     }
     private MemUse lastMemUse = new MemUse();

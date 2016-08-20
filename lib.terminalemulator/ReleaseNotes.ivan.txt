@@ -1,3 +1,19 @@
+242273 PARTFIX Please support 256 Colors in Terminal
+	Fix benchmarking/statistics gathering escape sequences.
+	They were implemented in InterpANSI (ACT_PRINT) but with the switch
+	to xterm a while ago they should've been moved to InterpProtoANSI.
+
+	Fix Term.indent(). Doing println("\t") for indentation makes
+	no sense. It should've been print().
+
+nobugid - Tinker with TermApp's runargs
+	Had added VM options to set AA fonts to help figure out complaints
+	from Tim. Looks like the VMOptions textarea doesn't like the
+	options separated per line and when I run it the VM complains.
+
+	But it worked once!
+
+================================================================================
 nobugid - Adjust spec version to 1.37.6
 	One of the things that triggered an apichanges was the introducton
 	of TermOptions.PROP_ALT_SENDS_ESCAPE. It turns out none of 
