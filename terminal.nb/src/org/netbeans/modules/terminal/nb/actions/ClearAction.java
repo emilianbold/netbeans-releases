@@ -58,7 +58,9 @@ import org.openide.util.Lookup;
 @ActionRegistration(displayName = "#CTL_Clear", lazy = true) //NOI18N
 @ActionReferences({
     @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "ClearAction"), //NOI18N
+    /* Conflicts with CS-L in collab.ui
     @ActionReference(path = "Shortcuts", name = "CS-L")		//NOI18N
+    */
 })
 public class ClearAction extends TerminalAction {
 
