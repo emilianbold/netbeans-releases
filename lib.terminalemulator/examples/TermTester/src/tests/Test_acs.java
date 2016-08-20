@@ -57,6 +57,7 @@ public class Test_acs extends Test {
 
     public Test_acs(Context context) {
         super("acs", context, 0, 0, false, Util.FillPattern.NONE);
+	info("Alternate Character Set");
     }
 
     public void runBasic(String[] args) {

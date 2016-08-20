@@ -50,134 +50,92 @@
 
 package org.netbeans.lib.terminalemulator;
 
-@SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
-enum Attr {
-    BGCOLOR(5),
-    FGCOLOR(5),
-    HIDDEN(1),
-    REVERSE(1),
-    BLINK(1),
-    UNDERSCORE(1),
-    BRIGHT(1),
-    DIM(1),
-    ACTIVE(1),
+class AttrSave {
+    private final static int BGCOLOR_OFF = 0;
+    private final static int BGCOLOR_WIDTH = 5;
+    private final static int BGCOLOR_MASK = 0xf;
+    @SuppressWarnings("PointlessBitwiseExpression")
+    public final static int BGCOLOR = BGCOLOR_MASK << BGCOLOR_OFF;
+
+    private final static int FGCOLOR_OFF = BGCOLOR_OFF + BGCOLOR_WIDTH;
+    private final static int FGCOLOR_WIDTH = 5;
+    private final static int FGCOLOR_MASK = 0xf;
+    public final static int FGCOLOR = FGCOLOR_MASK << FGCOLOR_OFF;
+
+    private final static int HIDDEN_OFF = FGCOLOR_OFF + FGCOLOR_WIDTH;
+    private final static int HIDDEN_WIDTH = 1;
+    public final static int HIDDEN = 0x1 << HIDDEN_OFF;
+
+    private final static int REVERSE_OFF = HIDDEN_OFF + HIDDEN_WIDTH;
+    private final static int REVERSE_WIDTH = 1;
+    public final static int REVERSE = 0x1 << REVERSE_OFF;
+
+    private final static int BLINK_OFF = REVERSE_OFF + REVERSE_WIDTH;
+    private final static int BLINK_WIDTH = 1;
+    public final static int BLINK = 0x1 << BLINK_OFF;
+
+    private final static int UNDERSCORE_OFF = BLINK_OFF + BLINK_WIDTH;
+    private final static int UNDERSCORE_WIDTH = 1;
+    public final static int UNDERSCORE = 0x1 << UNDERSCORE_OFF;
+
+    private final static int BRIGHT_OFF = UNDERSCORE_OFF + UNDERSCORE_WIDTH;
+    private final static int BRIGHT_WIDTH = 1;
+    public final static int BRIGHT = 0x1 << BRIGHT_OFF;
+
+    private final static int DIM_OFF = BRIGHT_OFF + BRIGHT_WIDTH;
+    private final static int DIM_WIDTH = 1;
+    public final static int DIM = 0x1 << DIM_OFF;
+
+    private final static int ACTIVE_OFF = DIM_OFF + DIM_WIDTH;
+    private final static int ACTIVE_WIDTH = 1;
+    public final static int ACTIVE = 0x1 << ACTIVE_OFF;
 
     // Since an attr value of 0 means render using default attributes
     // We need a value that signifies that no attribute has been set.
     // Can't use the highest (sign) bit since Java has no unsigned and
     // we get complaints from the compiler.
-    UNSET(30, 1);
+    public final static int UNSET = 0x40000000;
 
-    public final static int ALT;
 
-    private final int width;	// ... of field
-    private final int fmask;	// ... corresponding to width
 
-    private int offset;		// ... of field from the "left"
-    private int wmask;		// ... over the word. 1 where bits are set.
-
-    static {
-	// System.out.printf("Attr.static()\n");
-	for (Attr a : values())
-	    a.init();
-	ALT = Attr.BGCOLOR.wmask | Attr.FGCOLOR.wmask | Attr.REVERSE.wmask | Attr.ACTIVE.wmask;
-    }
-
-    /*
-     * Explicitly set the offset.
+    /**
+     * attr = Attr.setBackgroundColor(attr, 7);
      */
-    private Attr(int offset, int width) {
-	// System.out.printf("Attr(%d, %d) -> %d\n", offset, width, ordinal());
-	this.offset = offset;
-	this.width = width;
-	this.fmask = (1<<width)-1;
-    }
 
-    /*
-     * Automatically set the offset.
+    @SuppressWarnings({"PointlessBitwiseExpression", "AssignmentToMethodParameter"})
+    public static int setBackgroundColor(int attr, int code) {
+	code &= BGCOLOR_MASK;	// throw all but lowest relevant bits away
+	attr &= ~ BGCOLOR;	// 0 out existing bits
+	attr |= code << BGCOLOR_OFF;
+	return attr;
+    } 
+
+
+    /**
+     * attr = Attr.setForegroundColor(attr, 7);
      */
-    private Attr(int width) {
-	// System.out.printf("Attr(%d) -> %d\n", width, ordinal());
-	this.offset = -1;
-	this.width = width;
-	this.fmask = (1<<width)-1;
-    }
 
-    private void init() {
-	if (this.offset == -1) {
-	    if (ordinal() == 0) {
-		this.offset = 0;
-	    } else {
-		Attr prev = Attr.values()[ordinal()-1];
-		offset = prev.offset + prev.width;
-	    }
-	}
-	wmask = fmask << offset;
-	// System.out.printf("%s\n", this);
-    }
-
-    @Override
-    public String toString() {
-	return String.format("%d %10s(%2d, %2d, 0x%02x %8s, 0x%08x %32s)",
-		             ordinal(), name(),
-			     offset, width,
-			     fmask, Integer.toBinaryString(fmask),
-			     wmask, Integer.toBinaryString(wmask) );
-    }
-
-    public static String toString(int attr) {
-	return String.format("%32s", Integer.toBinaryString(attr)).replace(" ", "0");
-
-    }
-
-    public final int get(int attr) {
-	return (attr >> offset) & fmask;
-    }
-
-    /*
-     * Use for setting a wide field.
-     * Works for 1-bit field but set(int) is more efficient.
-     */
-    public final int set(int attr, int value) {
-	// value &= fmask;	// throw all but lowest relevant bits away
-	// attr &= ~ wmask;	// 0 out existing bits
-	// attr |= value << offset;// set new value
-
-	return (attr & ~wmask) | ((value & fmask) << offset);
-    }
-
-    /*
-     * Use for setting a 1 bit field
-     */
-    public final int set(int attr) {
-	assert width == 1;
-	return attr | (1 << offset);
-    }
-
-    /*
-     * Use for clearing any width field.
-     */
-    public final int clear(int attr) {
-	return attr & ~wmask;
-    }
-
-
-    public final boolean isSet(int attr) {
-	return (attr & wmask) == wmask;
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public static int setForegroundColor(int attr, int code) {
+	code &= FGCOLOR_MASK;	// throw all but lowest relevant bits away
+	attr &= ~ FGCOLOR;	// 0 out existing bits
+	attr |= code << FGCOLOR_OFF;
+	return attr;
     }
 
     /**
      * Use this to get at the FG color value embedded in an attr.
      */
     public static int foregroundColor(int attr) {
-	return FGCOLOR.get(attr);
+	return (attr >> FGCOLOR_OFF) & FGCOLOR_MASK;
     } 
 
     /**
      * Use this to get at the BG color value embedded in an attr.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static int backgroundColor(int attr) {
-	return BGCOLOR.get(attr);
+	return (attr >> BGCOLOR_OFF) & BGCOLOR_MASK;
     }
 
     /*
@@ -195,30 +153,29 @@ enum Attr {
 		// Attr.BLINK
 		// FALLTHRU
 	    case 1:
-		attr = DIM.clear(attr);
-		attr = BRIGHT.set(attr);
+		attr &= ~ AttrSave.DIM;
+		attr |= AttrSave.BRIGHT;
 		break;
 	    case 2:
-                // Faint - not implemented
-		attr = BRIGHT.clear(attr);
-		attr = DIM.set(attr);
+		attr &= ~ AttrSave.BRIGHT;
+		attr |= AttrSave.DIM;
 		break;
             case 3:
                 // Italic - not supported
                 break;
 	    case 4:
-		attr = UNDERSCORE.set(attr);
+		attr |= AttrSave.UNDERSCORE;
 		break;
 	    case 7:
-		attr = REVERSE.set(attr);
+		attr |= AttrSave.REVERSE;
 		break;
 	    case 8:
-		attr = HIDDEN.set(attr);
+		attr |= AttrSave.HIDDEN;
 		break;
 
 	    case 9:
 		// Term specific
-		attr = ACTIVE.set(attr);
+		attr |= AttrSave.ACTIVE;
 		break;
 
 	    // turn individual attributes off (dtterm specific?)
@@ -226,17 +183,17 @@ enum Attr {
 		// blinking off
 		// FALLTHRU
 	    case 22:
-		attr = DIM.clear(attr);
-		attr = BRIGHT.clear(attr);
+		attr &= ~ AttrSave.DIM;
+		attr &= ~ AttrSave.BRIGHT;
 		break;
 	    case 24:
-		attr = UNDERSCORE.clear(attr);
+		attr &= ~ AttrSave.UNDERSCORE;
 		break;
 	    case 27:
-		attr = REVERSE.clear(attr);
+		attr &= ~ AttrSave.REVERSE;
 		break;
 	    case 28:
-		attr = HIDDEN.clear(attr);
+		attr &= ~ AttrSave.HIDDEN;
 		break;
 
 	    case 30:
@@ -247,12 +204,12 @@ enum Attr {
 	    case 35:
 	    case 36:
 	    case 37:
-		attr = FGCOLOR.set(attr, value-30+1);
+		attr = AttrSave.setForegroundColor(attr, value-30+1);
 		break;
 
 	    case 39:
 		// revert to default (dtterm specific)
-		attr = FGCOLOR.clear(attr);
+		attr = AttrSave.setForegroundColor(attr, 0);
 		break;
 
 	    case 40:
@@ -263,12 +220,12 @@ enum Attr {
 	    case 45:
 	    case 46:
 	    case 47:
-		attr = BGCOLOR.set(attr, value-40+1);
+		attr = AttrSave.setBackgroundColor(attr, value-40+1);
 		break;
 
 	    case 49:
 		// revert to default (dtterm specific)
-		attr = BGCOLOR.clear(attr);
+		attr = AttrSave.setBackgroundColor(attr, 0);
 		break;
 
             case 50:
@@ -280,7 +237,7 @@ enum Attr {
 	    case 56:
 	    case 57:
                 // custom colors
-		attr = FGCOLOR.set(attr, value-50+9);
+		attr = AttrSave.setForegroundColor(attr, value-50+9);
 		break;
 
 	    case 60:
@@ -292,7 +249,7 @@ enum Attr {
 	    case 66:
 	    case 67:
 		// custom colors
-		attr = BGCOLOR.set(attr, value-60+9);
+		attr = AttrSave.setBackgroundColor(attr, value-60+9);
 		break;
 
 	    default:
@@ -318,22 +275,22 @@ enum Attr {
 		// Attr.BLINK
 		// FALLTHRU
 	    case 1:
-		attr = BRIGHT.clear(attr);
+		attr &= ~ AttrSave.BRIGHT;
 		break;
 	    case 2:
-		attr = DIM.clear(attr);
+		attr &= ~ AttrSave.DIM;
 		break;
 	    case 4:
-		attr = UNDERSCORE.clear(attr);
+		attr &= ~ AttrSave.UNDERSCORE;
 		break;
 	    case 7:
-		attr = REVERSE.clear(attr);
+		attr &= ~ AttrSave.REVERSE;
 		break;
 	    case 8:
-		attr = HIDDEN.clear(attr);
+		attr &= ~ AttrSave.HIDDEN;
 		break;
 	    case 9:
-		attr = ACTIVE.clear(attr);
+		attr &= ~ AttrSave.ACTIVE;
 		break;
 
 	    case 30:
@@ -344,7 +301,7 @@ enum Attr {
 	    case 35:
 	    case 36:
 	    case 37:
-		attr = FGCOLOR.clear(attr);
+		attr = AttrSave.setForegroundColor(attr, 0);
 		break;
 
 	    case 40:
@@ -355,7 +312,7 @@ enum Attr {
 	    case 45:
 	    case 46:
 	    case 47:
-		attr = BGCOLOR.clear(attr);
+		attr = AttrSave.setBackgroundColor(attr, 0);
 		break;
 
             case 50:
@@ -367,7 +324,7 @@ enum Attr {
 	    case 56:
 	    case 57:
 		// custom colors
-		attr = FGCOLOR.clear(attr);
+		attr = AttrSave.setForegroundColor(attr, 0);
 		break;
 
 	    case 60:
@@ -379,7 +336,7 @@ enum Attr {
 	    case 66:
 	    case 67:
 		// custom colors
-		attr = BGCOLOR.clear(attr);
+		attr = AttrSave.setBackgroundColor(attr, 0);
 		break;
                 
 	    default:

@@ -2759,8 +2759,8 @@ public class Term extends JComponent implements Accessible {
             xlength = rlength * metrics.width;
         }
 
-        boolean reverse = ((attr & Attr.REVERSE) == Attr.REVERSE);
-        boolean active = ((attr & Attr.ACTIVE) == Attr.ACTIVE);
+        boolean reverse = Attr.REVERSE.isSet(attr);
+        boolean active = Attr.ACTIVE.isSet(attr);
 
         // choose background color
         Color bg;
@@ -2782,7 +2782,7 @@ public class Term extends JComponent implements Accessible {
         g.setColor(fg);
 
         // draw any underscores
-        if ((attr & Attr.UNDERSCORE) == Attr.UNDERSCORE) {
+        if (Attr.UNDERSCORE.isSet(attr)) {
             int h = metrics.height - metrics.leading - 1;
             g.drawLine(x, yoff + h, x + xlength, yoff + h);
         }
@@ -2791,7 +2791,7 @@ public class Term extends JComponent implements Accessible {
         myDrawChars(g, /* OLD buf, */ l, rbegin, rlength, x, baseline);
 
         // Draw fake bold characters by redrawing one pixel to the right
-        if ((attr & Attr.BRIGHT) == Attr.BRIGHT) {
+        if (Attr.BRIGHT.isSet(attr)) {
             myDrawChars(g, /* OLD buf, */ l, rbegin, rlength, x + 1, baseline);
         }
     }
@@ -3043,7 +3043,7 @@ public class Term extends JComponent implements Accessible {
             // parts that fall under the selection are rendered with an
             // alternative attribute set.
 
-            int alt_attr = (attr & ~(Attr.BGCOLOR | Attr.FGCOLOR | Attr.REVERSE | Attr.ACTIVE));
+            int alt_attr = attr & ~ Attr.ALT;
             if (sbegin == -1 || send < rbegin || sbegin > rend) {
                 // run is not in selection
                 do_run(g, yoff, xoff,

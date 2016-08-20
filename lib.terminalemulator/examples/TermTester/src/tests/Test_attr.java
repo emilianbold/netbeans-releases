@@ -53,6 +53,7 @@ public class Test_attr extends Test {
 
     public Test_attr(Context context) {
         super("attr", context, 0, 1, false, Util.FillPattern.NONE);
+        info("\\ESC[%sm\tAttributes & Colors");
     }
 
     public void runBasic(String[] args) {

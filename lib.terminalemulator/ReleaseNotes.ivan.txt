@@ -1,4 +1,18 @@
 242273 PARTFIX Please support 256 Colors in Terminal
+	Redid Attr class into an enum as I will be playing more with
+	these bitfields in order to accomodate more colors.
+	Original Attr class saved as AttrSave.
+
+	The enum approach is a teeny bit slower since field params aren't
+	hard-coded in the instruction stream as constants and one has to do 
+	instance field access but I did benchmarking as well as profiling and
+	Attr class didn't and doesn't contribute much to hotspots. I.e.
+	0% in the profile.
+
+	"test bc" was registered as "attr" by mistake so when I ran test 
+	"attr" I got test "bc". Fixed so "attr" runs "attr".
+
+242273 PARTFIX Please support 256 Colors in Terminal
 	Fix benchmarking/statistics gathering escape sequences.
 	They were implemented in InterpANSI (ACT_PRINT) but with the switch
 	to xterm a while ago they should've been moved to InterpProtoANSI.
