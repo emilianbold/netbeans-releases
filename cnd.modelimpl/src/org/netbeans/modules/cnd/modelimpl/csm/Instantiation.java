@@ -1784,6 +1784,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
                 parameter = paramType.getParameter();
+                TemplateParameterResolver paramsResolver = null;
+                if (CsmKindUtilities.isTemplate(parameter) && paramType.getTemplateType().hasInstantiationParams()) {
+                    paramsResolver = templateParamResolver.clone();
+                }
                 newType = templateParamResolver.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
                     int pointerDepth = (newType != origType ? newType.getPointerDepth() + origType.getPointerDepth() : origType.getPointerDepth());
@@ -1808,7 +1812,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                                 boolean updateInstParams = false;
                                 for (CsmSpecializationParameter param : paramInstParams) {
                                     if (!newInstParams.contains(param)) {
-                                        newInstParams.add(param);
+                                        fillNewInstantiationParams(paramsResolver, param, newInstParams);
                                         updateInstParams = true;
                                     }
                                 }
@@ -1834,6 +1838,39 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
             
             inst = instantiationHappened() ? newType.isInstantiation() : origType.isInstantiation();
+        }
+        
+        private void fillNewInstantiationParams(TemplateParameterResolver paramsResolver, CsmSpecializationParameter param, List<CsmSpecializationParameter> newInstParams) {
+            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                CsmTypeBasedSpecializationParameter typeInstParam = (CsmTypeBasedSpecializationParameter) param;
+                boolean paramAdded = false;
+                if (paramsResolver != null && CsmKindUtilities.isTemplateParameterType(typeInstParam.getType())) {
+                    paramsResolver = paramsResolver.clone();
+                    CsmSpecializationParameter specParam = paramsResolver.resolveTemplateParameter(
+                            ((CsmTemplateParameterType) typeInstParam.getType()).getParameter(), 
+                            new MapHierarchy(instantiation.getMapping())
+                    );
+                    if (CsmKindUtilities.isVariadicSpecalizationParameter(specParam)) {
+                        CsmVariadicSpecializationParameter variadic = (CsmVariadicSpecializationParameter) specParam;
+                        for (CsmSpecializationParameter fromVariadic : variadic.getArgs()) {
+                            newInstParams.add(fromVariadic);
+//                            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(fromVariadic)) {
+//                                CsmTypeBasedSpecializationParameter typeVariadicParam = (CsmTypeBasedSpecializationParameter) fromVariadic;
+//                                CsmType newVariadicParamType = createType(typeVariadicParam.getType(), instantiation, paramsResolver.clone());
+//                                newInstParams.add(CsmInstantiationProvider.getDefault().createTypeBasedSpecializationParameter(newVariadicParamType, param.getScope()));
+//                            }
+                        }
+                        paramAdded = true;
+                    }
+                }
+                if (!paramAdded) {
+                    //newInstParams.add(param);
+                    CsmType newParamType = createType(typeInstParam.getType(), instantiation, paramsResolver);
+                    newInstParams.add(CsmInstantiationProvider.getDefault().createTypeBasedSpecializationParameter(newParamType, param.getScope()));
+                }
+            } else {
+                newInstParams.add(param);
+            }
         }
 
         public final boolean instantiationHappened() {
@@ -2783,21 +2820,21 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             if (lastResolvedParameters.size() > RESOLVED_LIMIT) {
                 return null; // probably infinite recursion
             }
-            CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
+            CsmSpecializationParameter instantiatedParam = mapping.get(templateParameter);
             int iteration = MAX_INHERITANCE_DEPTH;
-            while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
-                    CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
-                CsmTemplateParameter nextTemplateParameter = ((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter();
-                CsmSpecializationParameter nextInstantiatedType = mapping.get(templateParameter);
-                if (nextInstantiatedType != null) {
-                    instantiatedType = nextInstantiatedType;
+            while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedParam) &&
+                    CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedParam).getType()) && iteration != 0) {
+                CsmTemplateParameter nextTemplateParameter = ((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedParam).getType()).getParameter();
+                CsmSpecializationParameter nextInstantiatedParam = mapping.get(templateParameter);
+                if (nextInstantiatedParam != null) {
+                    instantiatedParam = nextInstantiatedParam;
                     templateParameter = nextTemplateParameter;
                 } else {
                     break;
                 }
                 iteration--;
             }
-            if (instantiatedType != null) {
+            if (instantiatedParam != null) {
                 for (CsmTemplateParameter alreadyResolvedParam : lastResolvedParameters) {
                     if (alreadyResolvedParam.getScope() == templateParameter.getScope()) {
                         if (alreadyResolvedParam.getStartOffset() <= templateParameter.getStartOffset()) {
@@ -2821,7 +2858,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     }
                 }
                 lastResolvedParameters.add(templateParameter);
-                return instantiatedType;                
+                return instantiatedParam;                
             }
             return null;  
         }       

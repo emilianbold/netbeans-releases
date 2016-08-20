@@ -184,4 +184,9 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         // Bug 267502 - Unresolved identifiers in editor on Ubuntu 16.04 (check C++11 STL API)
         performTest("bug267502.cpp", 24, 14, "bug267502.cpp", 3, 9);
     }
+    
+    public void testBug267655() throws Exception {
+        // Bug 267655 - Bad support of template template parameters
+        performTest("bug267655.cpp", 41, 14, "bug267655.cpp", 26, 9);
+    }
 }
