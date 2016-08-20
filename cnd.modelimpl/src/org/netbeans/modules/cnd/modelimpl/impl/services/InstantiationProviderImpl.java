@@ -125,6 +125,7 @@ import org.openide.util.Pair;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isReference;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.tryGetFunctionPointerType;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.TemplateParameterResolver;
 import org.netbeans.modules.cnd.utils.Antiloop;
 
 /**
@@ -1335,6 +1336,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             // non first inst
             List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> sps = getInstantiationParams(decl);
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : sps) {
+                CsmInstantiation currentInstantiation = i;
                 CsmSpecializationParameter instParam = pair.first();
                 List<CsmInstantiation> instantiations = pair.second();
                 if (CsmKindUtilities.isVariadicSpecalizationParameter(instParam)) {
@@ -1373,9 +1375,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     if (!asType.isPointer() && !asType.isConst() 
                             && !asType.isVolatile() && !asType.isReference() 
                             && !asType.isRValueReference()) {
-                        CsmSpecializationParameter newTp = m.get(paramType.getParameter());
+                        // TODO: paramResolver should be used in case of variadic parameters (template parameter packs) as well.
+                        TemplateParameterResolver paramResolver = new Instantiation.TemplateParameterResolver();
+                        CsmSpecializationParameter newTp = paramResolver.resolveTemplateParameter(paramType.getParameter(), new MapHierarchy<>(m));
                         if (newTp != null && newTp != instParam) {
                             instantiations.clear();
+                            currentInstantiation = paramResolver.alterInstantiation(currentInstantiation);
                             res.add(Pair.of(newTp, instantiations));
                         } else {
                             res.add(pair);
@@ -1386,7 +1391,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 } else {
                     res.add(pair);
                 }
-                instantiations.add(i);
+                if (currentInstantiation != null) {
+                    instantiations.add(currentInstantiation);
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {

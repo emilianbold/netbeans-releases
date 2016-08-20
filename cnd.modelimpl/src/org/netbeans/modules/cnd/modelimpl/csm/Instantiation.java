@@ -2731,7 +2731,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         return new TemplateParameterResolver().resolveTemplateParameter(templateParameter, mapping);
     }
     
-    private static class TemplateParameterResolver implements Cloneable {
+    public static class TemplateParameterResolver implements Cloneable {
         
         private static final int RESOLVED_LIMIT = 32;
         
@@ -2797,7 +2797,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 }
                 iteration--;
             }
-            if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
+            if (instantiatedType != null) {
                 for (CsmTemplateParameter alreadyResolvedParam : lastResolvedParameters) {
                     if (alreadyResolvedParam.getScope() == templateParameter.getScope()) {
                         if (alreadyResolvedParam.getStartOffset() <= templateParameter.getStartOffset()) {
