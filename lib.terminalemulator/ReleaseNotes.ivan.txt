@@ -1,4 +1,8 @@
 242273 PARTFIX Please support 256 Colors in Terminal
+	Renaming of variables in backgroundColor() and foregroundColor()
+	in preparation for factoring.
+
+242273 PARTFIX Please support 256 Colors in Terminal
 	Switch to a single palette implementation.
 
 	Previously Term used two "palettes" to map color indices into actual

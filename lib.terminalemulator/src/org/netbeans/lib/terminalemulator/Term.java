@@ -6165,53 +6165,53 @@ public class Term extends JComponent implements Accessible {
     }
 
     Color backgroundColor(boolean reverse, int attr) {
-        Color bg = null;
+        final Color c;
         if (reverse) {
-            int fcx = Attr.foregroundColor(attr);
-            if (fcx != 0 && fcx <= 8) {
-		bg = palette[PAL_ANSI+fcx - 1];
-            } else if (fcx > 8) {
-		bg = palette[PAL_ANSI+fcx - 1];
+            int cx = Attr.foregroundColor(attr);
+            if (cx != 0 && cx <= 8) {
+		c = palette[PAL_ANSI+cx - 1];
+            } else if (cx > 8) {
+		c = palette[PAL_ANSI+cx - 1];
             } else {
-		bg = palette[PAL_FG];
+		c = palette[PAL_FG];
             }
 
         } else {
-            int bcx = Attr.backgroundColor(attr);
-            if (bcx != 0 && bcx <= 8) {
-		bg = palette[PAL_ANSI+bcx - 1];
-            } else if (bcx > 8) {
-		bg = palette[PAL_ANSI+bcx - 1];
+            int cx = Attr.backgroundColor(attr);
+            if (cx != 0 && cx <= 8) {
+		c = palette[PAL_ANSI+cx - 1];
+            } else if (cx > 8) {
+		c = palette[PAL_ANSI+cx - 1];
             } else {
-		bg = palette[PAL_BG];
+		c = palette[PAL_BG];
 	    }
         }
-        return bg;
+        return c;
     }
 
     Color foregroundColor(boolean reverse, int attr) {
-        final Color fg;
+        final Color c;
         if (reverse) {
-            int bcx = Attr.backgroundColor(attr);
-            if (bcx != 0 && bcx <= 8) {
-		fg = palette[PAL_ANSI+bcx - 1];
-            } else if (bcx > 8) {
-		fg = palette[PAL_ANSI+bcx - 1];
+            int cx = Attr.backgroundColor(attr);
+            if (cx != 0 && cx <= 8) {
+		c = palette[PAL_ANSI+cx - 1];
+            } else if (cx > 8) {
+		c = palette[PAL_ANSI+cx - 1];
             } else {
-		fg = palette[PAL_BG];
+		c = palette[PAL_BG];
             }
 
         } else {
-            int fcx = Attr.foregroundColor(attr);
-            if (fcx != 0 && fcx <= 8) {
-		fg = palette[PAL_ANSI+fcx - 1];
-            } else if (fcx > 8) {
-		fg = palette[PAL_ANSI+fcx - 1];
+            int cx = Attr.foregroundColor(attr);
+            if (cx != 0 && cx <= 8) {
+		c = palette[PAL_ANSI+cx - 1];
+            } else if (cx > 8) {
+		c = palette[PAL_ANSI+cx - 1];
             } else {
-		fg = palette[PAL_FG];
+		c = palette[PAL_FG];
             }
         }
-        return fg;
+        return c;
     }
 
     private static void ckEventDispatchThread() {
