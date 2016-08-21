@@ -132,6 +132,7 @@ import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import static org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport.areTemplatesEnabled;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isAutoType;
@@ -755,33 +756,54 @@ abstract public class CsmCompletionQuery {
         int exprEndOffset = exprStartOffset + expressionText.length() + (keepWholeAst ? 1 : 0);
 
         final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(exprEndOffset, exprStartOffset);
-        TokenHierarchy<String> hi = TokenHierarchy.create(
-            expressionText,
-            false,
-            CndLexerUtilities.getLanguage(getBaseDocument()),
-            null,
-            (InputAttributes) getBaseDocument().getProperty(InputAttributes.class)
-        );
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(exprEndOffset - exprStartOffset, true);
-        // Go from inner to outer TSes
-        TokenSequence<TokenId> cppts = null;
-        for (int i = tsList.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = tsList.get(i);
-            final Language<?> lang = ts.languagePath().innerLanguage();
-            if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                @SuppressWarnings("unchecked") // NOI18N
-                TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                cppts = uts;
+        
+        Language<CppTokenId> language = CndLexerUtilities.getLanguage(getBaseDocument());
+        if (language == null) {
+            CsmFile csmFile = getCsmFile();
+            if (csmFile != null) {
+                Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> fileLanguageFlavor = CsmFileInfoQuery.getDefault().getFileLanguageFlavor(csmFile);
+                switch (fileLanguageFlavor.first()) {
+                    case C_HEADER:
+                        language = CppTokenId.languageHeader();
+                        break;
+                    case CPP:
+                        language = CppTokenId.languageCpp();
+                        break;
+                    case C:
+                        language = CppTokenId.languageC();
+                        break;
+                }
             }
         }
-        if (cppts != null) {
-            final TokenSequence<TokenId> cppTokenSequence = cppts;
-            CsmFile csmFile = expression.getContainingFile();
-            boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
-            tp.enableLambdaSupport(isCpp11OrLater);
-            tp.enableUniformInitializationSupport(isCpp11OrLater);
-            tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
-            CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);
+        
+        if (language != null) {
+            TokenHierarchy<String> hi = TokenHierarchy.create(expressionText,
+                false, 
+                language,
+                null,
+                (InputAttributes) getBaseDocument().getProperty(InputAttributes.class)
+            );
+            List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(exprEndOffset - exprStartOffset, true);
+            // Go from inner to outer TSes
+            TokenSequence<TokenId> cppts = null;
+            for (int i = tsList.size() - 1; i >= 0; i--) {
+                TokenSequence<?> ts = tsList.get(i);
+                final Language<?> lang = ts.languagePath().innerLanguage();
+                if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                    @SuppressWarnings("unchecked") // NOI18N
+                    TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                    cppts = uts;
+                }
+            }
+            if (cppts != null) {
+                final TokenSequence<TokenId> cppTokenSequence = cppts;
+                CsmFile csmFile = expression.getContainingFile();
+                boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
+                tp.enableLambdaSupport(isCpp11OrLater);
+                tp.enableUniformInitializationSupport(isCpp11OrLater);
+                tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
+                CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);
+            }
         }
 
         return tp;
