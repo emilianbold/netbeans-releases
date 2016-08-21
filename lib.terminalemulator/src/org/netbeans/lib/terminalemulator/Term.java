@@ -3522,7 +3522,7 @@ public class Term extends JComponent implements Accessible {
             }
 
             l.setCharAt(Term.this, c, insertion_col,
-                        st.attr, Attr.backgroundColor(st.attr));	// overstrike
+                        st.attr, Attr.BGCOLOR.get(st.attr));	// overstrike
             st.cursor.col += cwidth;
 
             if (st.cursor.col >= buf.visibleCols() && !horizontally_scrollable) {
@@ -3818,18 +3818,18 @@ public class Term extends JComponent implements Accessible {
                     l.clearToEndFrom(Term.this,
                                      l.cellToBuf(metrics, st.cursor.col),
                                      buf.visibleCols()-1,
-                                     Attr.backgroundColor(st.attr));
+                                     Attr.BGCOLOR.get(st.attr));
                     break;
                 case 1:         // from beginning to cursor (inclusive)
                     l.clearTo(Term.this,
                               l.cellToBuf(metrics, st.cursor.col),
-                              Attr.backgroundColor(st.attr));
+                              Attr.BGCOLOR.get(st.attr));
                     break;
                 case 2:         // whole line
                     l.clearToEndFrom(Term.this,
                                      0,
                                      buf.visibleCols()-1,
-                                     Attr.backgroundColor(st.attr));
+                                     Attr.BGCOLOR.get(st.attr));
                     break;
             }
             switch (sel.intersection(st.cursor.row)) {
@@ -3895,30 +3895,30 @@ public class Term extends JComponent implements Accessible {
                     l.clearToEndFrom(Term.this,
                                      l.cellToBuf(metrics, st.cursor.col),
                                      buf.visibleCols()-1,
-                                     Attr.backgroundColor(st.attr));
+                                     Attr.BGCOLOR.get(st.attr));
                     for (int lx = st.cursor.row+1; lx < beginx() + st.rows; lx++) {
                         l = buf.lineAt(lx);
                         // l.setAboutToWrap(false);
-                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.BGCOLOR.get(st.attr));
                     }
                     break;
                 case 1:         // from beginning to cursor (inclusive)
                     for (int lx = beginx(); lx < st.cursor.row; lx++) {
                         l = buf.lineAt(lx);
                         // l.setAboutToWrap(false);
-                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.BGCOLOR.get(st.attr));
                     }
                     l = cursor_line();
                     // l.setAboutToWrap(false);
                     l.clearTo(Term.this,
                               l.cellToBuf(metrics, st.cursor.col),
-                              Attr.backgroundColor(st.attr));
+                              Attr.BGCOLOR.get(st.attr));
                     break;
                 case 2:         // whole screen
                     for (int lx = beginx(); lx < beginx() + st.rows; lx++) {
                         l = buf.lineAt(lx);
                         // l.setAboutToWrap(false);
-                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.BGCOLOR.get(st.attr));
                     }
                     break;
             }
@@ -4531,7 +4531,7 @@ public class Term extends JComponent implements Accessible {
             int to = l.cellToBuf(metrics, st.cursor.col+n-1);
             if (debugOps())
                 System.out.printf("op_ech() from %d  to %d\n", from, to); // NOI18N
-            l.clearFromTo(Term.this, from, to, Attr.backgroundColor(st.attr));
+            l.clearFromTo(Term.this, from, to, Attr.BGCOLOR.get(st.attr));
 
             switch (sel.intersection(st.cursor.row)) {
                 case Sel.INT_NONE:
@@ -6164,27 +6164,40 @@ public class Term extends JComponent implements Accessible {
         return rect;
     }
 
+    private Color csetBG(int attr) {
+	final int cx = Attr.backgroundColor(attr);
+	final int px;
+	if (cx != 0 && cx <= 8) {
+	    px = PAL_ANSI+cx - 1;
+	} else if (cx > 8) {
+	    px = PAL_ANSI+cx - 1;
+	} else {
+	    px = PAL_BG;
+	}
+	final Color c = palette[px];
+	return c;
+    }
+
+    private Color csetFG(int attr) {
+	final int cx = Attr.foregroundColor(attr);
+	final int px;
+	if (cx != 0 && cx <= 8) {
+	    px = PAL_ANSI+cx - 1;
+	} else if (cx > 8) {
+	    px = PAL_ANSI+cx - 1;
+	} else {
+	    px = PAL_FG;
+	}
+        final Color c = palette[px];
+	return c;
+    }
+
     Color backgroundColor(boolean reverse, int attr) {
         final Color c;
         if (reverse) {
-            int cx = Attr.foregroundColor(attr);
-            if (cx != 0 && cx <= 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else if (cx > 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else {
-		c = palette[PAL_FG];
-            }
-
+	    c = csetFG(attr);
         } else {
-            int cx = Attr.backgroundColor(attr);
-            if (cx != 0 && cx <= 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else if (cx > 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else {
-		c = palette[PAL_BG];
-	    }
+	    c = csetBG(attr);
         }
         return c;
     }
@@ -6192,24 +6205,9 @@ public class Term extends JComponent implements Accessible {
     Color foregroundColor(boolean reverse, int attr) {
         final Color c;
         if (reverse) {
-            int cx = Attr.backgroundColor(attr);
-            if (cx != 0 && cx <= 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else if (cx > 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else {
-		c = palette[PAL_BG];
-            }
-
+	    c = csetBG(attr);
         } else {
-            int cx = Attr.foregroundColor(attr);
-            if (cx != 0 && cx <= 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else if (cx > 8) {
-		c = palette[PAL_ANSI+cx - 1];
-            } else {
-		c = palette[PAL_FG];
-            }
+	    c = csetFG(attr);
         }
         return c;
     }

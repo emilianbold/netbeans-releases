@@ -1,4 +1,8 @@
 242273 PARTFIX Please support 256 Colors in Terminal
+	Factoring of Term.backgroundColor() and foregroundColor() in
+	preparation for moving the decoding of color attribute into Attr.
+
+242273 PARTFIX Please support 256 Colors in Terminal
 	Renaming of variables in backgroundColor() and foregroundColor()
 	in preparation for factoring.
 
