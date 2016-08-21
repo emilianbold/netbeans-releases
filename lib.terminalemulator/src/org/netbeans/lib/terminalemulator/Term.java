@@ -294,6 +294,55 @@ public class Term extends JComponent implements Accessible {
     private Clipboard systemSelection = getToolkit().getSystemSelection();
     private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
+    // 
+    // The palette maps color indexes into actual Color's.
+    // Indexes into the palette are stored in cell Attr's.
+    //		Actually, that's a lie. Methods foregroundColor() and
+    // 		backgroudnColor() convert Attr values to the indexes into the
+    //		palette.
+    //		This is temporary.
+    //
+    // The domain is divided as follows:
+    //
+    //					"ESC [ ... m" codes
+    // index				fg	bg
+    //--------------------------------------------------------------------------
+    // 0-7	ANSI colors		30-37	40-47
+    // 8-15	ANSI "bright" colors	90-97	100-107
+    // 16-231	RGB cube
+    // 232-255	Greyscale
+    //--------------------------------------------------------------------------
+    // 256	default foreground
+    // 257	default background
+    // 258	default bold
+    //
+
+    private final Color palette[] = new Color[259];
+
+    //
+    // Bases of various color ranges
+    //
+    // First 8 colors
+    private final static int PAL_ANSI = 0;
+
+    // Second "bright" 8 colors
+    private final static int PAL_BRIGHT = 8;
+
+    // 6x6x6 RGB cube (number = 16 + 36 * r + 6 * g + b)
+    // where r, g and b are in the range 0-5
+    private final static int PAL_RGB = 16;
+
+    // 24 shades of grey from dark to light
+    private final static int PAL_GREY = 232;
+
+    // Default foreground color
+    private final static int PAL_FG = 256;
+    // Default background color
+    private final static int PAL_BG = 257;
+    // Default bold color
+    private final static int PAL_BOLD = 258;
+
+
     /**
      * ScrollWrapper is a HACK that allows us to make pairs of scrollbars
      * look nice.
@@ -1663,6 +1712,55 @@ public class Term extends JComponent implements Accessible {
         return onMac;
     }
 
+    private void initializePalette() {
+
+        palette[PAL_ANSI+0] = new Color(0x000000);
+        palette[PAL_ANSI+1] = new Color(0xCD0000);
+        palette[PAL_ANSI+2] = new Color(0x00CD00);
+        palette[PAL_ANSI+3] = new Color(0xCDCD00);
+        palette[PAL_ANSI+4] = new Color(0x1E90FF);
+        palette[PAL_ANSI+5] = new Color(0xCD00CD);
+        palette[PAL_ANSI+6] = new Color(0x00CDCD);
+        palette[PAL_ANSI+7] = new Color(0xE5E5E5);
+
+        palette[PAL_BRIGHT+0] = new Color(0x0D0D0D);
+        palette[PAL_BRIGHT+1] = new Color(0xFF0000);
+        palette[PAL_BRIGHT+2] = new Color(0x00FF00);
+        palette[PAL_BRIGHT+3] = new Color(0xFFFF00);
+        palette[PAL_BRIGHT+4] = new Color(0x1FF0FF);
+        palette[PAL_BRIGHT+5] = new Color(0xFF00FF);
+        palette[PAL_BRIGHT+6] = new Color(0x00FFFF);
+        palette[PAL_BRIGHT+7] = new Color(0xFFFFFF);
+
+	// Fill RGB cube
+	for (int r = 0; r <= 5; r++) {
+	    for (int g = 0; g <= 5; g++) {
+		for (int b = 0; b <= 5; b++) {
+		    int number = 36 * r + 6 * g + b;
+		    palette[PAL_RGB+number] = new Color(r*51, b*51, b*51);
+		}
+	    }
+	}
+
+	// Fill greyscale portion.
+	for (int g = 0; g < 24; g++) {
+	    int g2 = g+1;
+	    palette[PAL_GREY+g] = new Color(g2*10, g2*10, g2*10);
+	}
+
+	palette[PAL_FG] = UIManager.getColor("TextArea.foreground");	// NOI18N
+	palette[PAL_BG] = UIManager.getColor("TextArea.background");	// NOI18N
+	palette[PAL_BOLD] = palette[PAL_FG];
+
+	// Ensure nothing is left unfilled.
+	for (int px = 0; px < palette.length; px++) {
+	    if (palette[px] == null) {
+		System.out.printf("palette[%d] is null\n", px);
+		palette[px] = Color.GRAY;
+	    }
+	}
+    }
+
     /**
      * Constructor
      */
@@ -1671,34 +1769,7 @@ public class Term extends JComponent implements Accessible {
         st.firstx = 0;
         st.firsty = 0;
 
-//        standard_color[0] = Color.black;
-//        standard_color[1] = Color.red;
-//        standard_color[2] = Color.green;
-//        standard_color[3] = Color.yellow;
-//        standard_color[4] = Color.blue;
-//        standard_color[5] = Color.magenta;
-//        standard_color[6] = Color.cyan;
-//        standard_color[7] = Color.white;
-        
-        standard_color[0] = new Color(0x00000);
-        standard_color[1] = new Color(0xCD0000);
-        standard_color[2] = new Color(0x00CD00);
-        standard_color[3] = new Color(0xCDCD00);
-        standard_color[4] = new Color(0x1E90FF);
-        standard_color[5] = new Color(0xCD00CD);
-        standard_color[6] = new Color(0x00CDCD);
-        standard_color[7] = new Color(0xE5E5E5);
-
-
-        custom_color[0] = Color.black;
-        custom_color[1] = Color.black;
-        custom_color[2] = Color.black;
-        custom_color[3] = Color.black;
-        custom_color[4] = Color.black;
-        custom_color[5] = Color.black;
-        custom_color[6] = Color.black;
-        custom_color[7] = Color.black;
-
+	initializePalette();
         Font f = UIManager.getFont("TextArea.font"); //NOI18N
         if (f == null) {
             // on, e.g., GTK L&F
@@ -2678,39 +2749,41 @@ public class Term extends JComponent implements Accessible {
 
     private Color rendition_to_color(int rendition) {
         switch (rendition) {
+	    // was: standard_color
             case 40:
-                return standard_color[0];
+		return palette[PAL_ANSI+0];
             case 41:
-                return standard_color[1];
+		return palette[PAL_ANSI+1];
             case 42:
-                return standard_color[2];
+		return palette[PAL_ANSI+2];
             case 43:
-                return standard_color[3];
+		return palette[PAL_ANSI+3];
             case 44:
-                return standard_color[4];
+		return palette[PAL_ANSI+4];
             case 45:
-                return standard_color[5];
+		return palette[PAL_ANSI+5];
             case 46:
-                return standard_color[6];
+		return palette[PAL_ANSI+6];
             case 47:
-                return standard_color[7];
+		return palette[PAL_ANSI+7];
 
+	    // was: custom_color
             case 58:
-                return custom_color[0];
+		return palette[PAL_BRIGHT+0];
             case 59:
-                return custom_color[1];
+		return palette[PAL_BRIGHT+1];
             case 60:
-                return custom_color[2];
+		return palette[PAL_BRIGHT+2];
             case 61:
-                return custom_color[3];
+		return palette[PAL_BRIGHT+3];
             case 62:
-                return custom_color[4];
+		return palette[PAL_BRIGHT+4];
             case 63:
-                return custom_color[5];
+		return palette[PAL_BRIGHT+5];
             case 64:
-                return custom_color[6];
+		return palette[PAL_BRIGHT+6];
             case 65:
-                return custom_color[7];
+		return palette[PAL_BRIGHT+7];
 
             default:
                 return null;
@@ -3136,13 +3209,8 @@ public class Term extends JComponent implements Accessible {
 
         n_paint++;
 
-        if (reverse_video) {
-            actual_foreground = getBackground();
-            actual_background = getForeground();
-        } else {
-            actual_foreground = getForeground();
-            actual_background = getBackground();
-        }
+	actual_foreground = palette[PAL_FG];
+	actual_background = palette[PAL_BG];
 
         // clear the screen
         g.setColor(actual_background);
@@ -4337,7 +4405,7 @@ public class Term extends JComponent implements Accessible {
             op_soft_reset();
             op_cl();	// clear screen, home cursor
             clearHistoryNoRefresh();
-            reverse_video = false;
+	    setReverseVideo(false);
             repaint(false);
         }
 
@@ -4934,7 +5002,16 @@ public class Term extends JComponent implements Accessible {
      * @param reverse_video The property value.
      */
     public void setReverseVideo(boolean reverse_video) {
+	if (this.reverse_video == reverse_video)
+	    return;		// nothing to do
+
         this.reverse_video = reverse_video;
+
+	// Swap PAL_FG and PAL_BG
+	Color tmp = palette[PAL_FG];
+	palette[PAL_FG] = palette[PAL_BG];
+	palette[PAL_BG] = tmp;
+
         repaint(false);
     }
 
@@ -5001,6 +5078,31 @@ public class Term extends JComponent implements Accessible {
         return active_color;
     }
     private Color active_color = Color.lightGray;
+
+    @Override
+    public void setBackground(Color c) {
+	super.setBackground(c);
+	// See setReverseVideo()
+        if (reverse_video) {
+	    palette[PAL_FG] = c;
+	} else {
+	    palette[PAL_BG] = c;
+	}
+    }
+
+    @Override
+    public void setForeground(Color c) {
+	super.setForeground(c);
+	// See setReverseVideo()
+        if (reverse_video) {
+	    palette[PAL_BG] = c;
+	    palette[PAL_BOLD] = c;
+	} else {
+	    palette[PAL_FG] = c;
+	    palette[PAL_BOLD] = c;
+	}
+    }
+
 
     /**
      * Control whether an anchor is set.
@@ -5193,12 +5295,15 @@ public class Term extends JComponent implements Accessible {
      * is the code we interpret as custom color #0.
      * @param number
      * @param c
+     * @deprecated
      */
     public void setCustomColor(int number, Color c) {
-        custom_color[number] = c;
+	if (c == null)
+	    throw new IllegalArgumentException();
+	if (number < 0 || number >= 8)
+	    throw new IllegalArgumentException();
+	palette[PAL_BRIGHT+number] = c;
     }
-    private final Color custom_color[] = new Color[8];
-    private final Color standard_color[] = new Color[8];
 
     /**
      * Get cursor row in buffer coordinates (0-origin).
@@ -6064,20 +6169,22 @@ public class Term extends JComponent implements Accessible {
         if (reverse) {
             int fcx = Attr.foregroundColor(attr);
             if (fcx != 0 && fcx <= 8) {
-                bg = standard_color[fcx - 1];
+		bg = palette[PAL_ANSI+fcx - 1];
             } else if (fcx > 8) {
-                bg = custom_color[fcx - 9];
+		bg = palette[PAL_ANSI+fcx - 1];
             } else {
-                bg = actual_foreground;
+		bg = palette[PAL_FG];
             }
 
         } else {
             int bcx = Attr.backgroundColor(attr);
             if (bcx != 0 && bcx <= 8) {
-                bg = standard_color[bcx - 1];
+		bg = palette[PAL_ANSI+bcx - 1];
             } else if (bcx > 8) {
-                bg = custom_color[bcx - 9];
-            }
+		bg = palette[PAL_ANSI+bcx - 1];
+            } else {
+		bg = palette[PAL_BG];
+	    }
         }
         return bg;
     }
@@ -6087,21 +6194,21 @@ public class Term extends JComponent implements Accessible {
         if (reverse) {
             int bcx = Attr.backgroundColor(attr);
             if (bcx != 0 && bcx <= 8) {
-                fg = standard_color[bcx - 1];
+		fg = palette[PAL_ANSI+bcx - 1];
             } else if (bcx > 8) {
-                fg = custom_color[bcx - 9];
+		fg = palette[PAL_ANSI+bcx - 1];
             } else {
-                fg = actual_background;
+		fg = palette[PAL_BG];
             }
 
         } else {
             int fcx = Attr.foregroundColor(attr);
             if (fcx != 0 && fcx <= 8) {
-                fg = standard_color[fcx - 1];
+		fg = palette[PAL_ANSI+fcx - 1];
             } else if (fcx > 8) {
-                fg = custom_color[fcx - 9];
+		fg = palette[PAL_ANSI+fcx - 1];
             } else {
-                fg = actual_foreground;
+		fg = palette[PAL_FG];
             }
         }
         return fg;

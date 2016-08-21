@@ -1,4 +1,102 @@
 242273 PARTFIX Please support 256 Colors in Terminal
+	Switch to a single palette implementation.
+
+	Previously Term used two "palettes" to map color indices into actual
+	Color's. The two palettes were 'standard_color' and 'custom_color'.
+	The former was strictly private and the latter was configurable via 
+	Term.setCustomColor(). The actual mapping was performed
+	in Term.foregroundColor() and backgroundColor().
+
+	We now use a single 'palette' with domain bases specified by
+	PAL_* constants:
+
+	OLD			NEW			FG	BG
+	---------------------------------------------------------------------
+	standard_color[n]	palette[PAL_ANSI+n]	30-37	40-47
+	custom_color[n]					50-57	60-67	OLD
+				palette[PAL_BRIGHT+n]	90-97	100-107	NEW
+	default foreground	palette[PAL_FG]
+	default background	palette[PAL_BG]
+				palette[PAL_RGB]
+				palette[PAL_GREY]
+
+	In short, custom colors now map to "bright" colors.
+
+		These custom colors were part of a proposal to enhance 
+		DtTerm which never made it. Being non-standard mucking
+		with them will have little impact except for how IO 
+		operations used it (See below).
+
+	While the palette is populated, in initializePalette(), with RGB and
+	GREY Colors no Interp handles RGB/GREY sequences yet.
+
+	The encoding of colors in Attr cells is still the old way (which
+	is offset by 1 to allow encoding of "default" as 0) and the
+	adjustments are all done in Term.foregroundColor() and
+	backgroundColor(). This will be optimized later.
+
+	Therefore, setCustomColor() has been deprecated.
+
+	Overriding Component
+	--------------------
+	Now that we have a single palette, setting of FG and BG colors 
+	should keep it up-to-date. That is done by overriding Component's 
+	setForeground() and setBackground(). This has to be done 
+	with due mindfluness of 'reverse_video'.
+
+	Reverse video tricks
+	--------------------
+	When reverse video is requested we swap palette[PAL_FG] and
+	palette[PAL_BG]. This means that when we handle setForeground()
+	or setBackground() we need to be mindful of the value of
+	'reverse_video'.
+
+	Inherit from L&F
+	----------------
+	The default fg and bg colors are now initialized using
+		UIManager.getColor("TextArea.foreground");
+		UIManager.getColor("TextArea.background");
+
+	Term.setCustomColor() never worked
+	----------------------------------
+	... because I had these InterpProtoANSI.dispatchAttr() functions which
+	screened the actual attribute values and none of them accepted
+	attribute values in the range 50-57 or 60-67.
+		This must've worked at some point in the past. Then,
+		when I was working on proper xterm emulation, I introduced
+		dispatchAttr() and neglected the "custom" atribute values.
+
+	The only serious place which used Term.setCustomColor() was the
+	mechanisms in TerminalInputOutput which supported IO-style setting
+	of Colors. See, for example, TerminalInputOutput.customColor() which 
+	added 50 to the color code. This has now been switched to add 90.
+
+		To see it "not work" run the project
+			lib/terminalemulator/examples/TermExample
+		Then choose Terminals->TestTerminalWithRichNativeExecution
+		Press OK.
+		At the very begining You'll see 
+			GREETINGS		green
+			Choose			blue
+			Unchoose		red
+			Select chosen		blue # SHOULDA been Color.ORANGE
+
+	The use of setCustomColor() in this fashion is temporary. Eventually
+	TerminalInputOutput should be able to use direct RGB color
+	setting using sequences like "ESC[48;2;...m".
+
+	Bug in Term.backgroundColor()
+	-----------------------------
+	In the !reverse case we never handled the case of bcx = 0.
+
+	Incidental
+	----------
+	- Get XTermTestSubject to force fg/bg colors on the xterm overriding
+	  XTerm properties so that it matches other TextSubjects.
+	- Enhance Test_attr to test "bright" attributes as well as running
+	  in "reverse video" mode.
+
+242273 PARTFIX Please support 256 Colors in Terminal
 	Redid Attr class into an enum as I will be playing more with
 	these bitfields in order to accomodate more colors.
 	Original Attr class saved as AttrSave.
