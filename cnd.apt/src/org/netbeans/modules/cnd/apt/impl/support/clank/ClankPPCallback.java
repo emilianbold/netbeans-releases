@@ -93,7 +93,7 @@ import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
-import static org.clang.basic.ClangGlobals.*;
+import static org.clang.basic.BasicClangGlobals.*;
 import org.clang.lex.MacroDefinition;
 import org.clank.support.NativePointer;
 import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
