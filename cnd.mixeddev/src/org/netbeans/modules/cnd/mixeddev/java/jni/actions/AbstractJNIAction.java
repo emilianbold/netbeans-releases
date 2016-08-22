@@ -101,10 +101,7 @@ public abstract class AbstractJNIAction extends AbstractAction {
     @Override
     public boolean isEnabled() {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
-        if (context != null) {
-            return isEnabledAtPosition(context.second, context.third);
-        }
-        return false;
+        return isEnabled(context);
     }
     
     protected final Triple<DataObject, Document, Integer> extractContext(Node[] activatedNodes) {
@@ -134,6 +131,10 @@ public abstract class AbstractJNIAction extends AbstractAction {
     }
     
     protected abstract boolean isEnabledAtPosition(Document doc, int caret);
+    
+    protected boolean isEnabled(Triple<DataObject, Document, Integer> context) {
+        return context == null ? false : isEnabledAtPosition(context.second, context.third);
+    }
     
     protected abstract void actionPerformedImpl(Node[] activatedNodes);
 }
