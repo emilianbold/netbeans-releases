@@ -862,23 +862,28 @@ final class CompletionContextFinder {
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "&".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_OPERATOR)
+                && TokenUtilities.textEquals(token.text(), "&"); // NOI18N
     }
 
     private static boolean isVariadic(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "...".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_OPERATOR)
+                && TokenUtilities.textEquals(token.text(), "..."); // NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), "("); // NOI18N
     }
 
     private static boolean isRightBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), ")"); // NOI18N
     }
 
     private static boolean isEqualSign(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "=".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_OPERATOR)
+                && TokenUtilities.textEquals(token.text(), "="); // NOI18N
     }
 
     private static boolean isParamSeparator(Token<PHPTokenId> token) {
@@ -887,7 +892,7 @@ final class CompletionContextFinder {
 
     private static boolean isReturnTypeSeparator(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN)
-                && ":".contentEquals(token.text()); // NOI18N
+                && TokenUtilities.textEquals(token.text(), ":"); // NOI18N
     }
 
     private static boolean isArray(Token<PHPTokenId> token) {
@@ -909,7 +914,8 @@ final class CompletionContextFinder {
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), ","); // NOI18N
     }
 
     private static boolean isWhiteSpace(Token<PHPTokenId> token) {
