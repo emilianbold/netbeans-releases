@@ -55,16 +55,16 @@ import java.nio.charset.Charset;
  */
 public class SectionHeader {
     public String name;            /* section name */
-    public long sh_name = 0;       /* section name */
-    public long sh_type = 0;       /* SHT_... */
-    public long sh_flags = 0;      /* SHF_... */
-    public long sh_addr = 0;       /* x virtual address */
-    public long sh_offset = 0;     /* x file offset */
-    public long sh_size = 0;       /* x section size */
-    public long sh_link = 0;       /* misc info */
-    public long sh_info = 0;       /* misc info */
-    public long sh_addralign = 0;  /* x memory alignment */
-    public long sh_entsize = 0;    /* x entry size if table */
+    public long sh_name = 0;       /* section name uint32_t */
+    public long sh_type = 0;       /* SHT_... uint32_t */
+    public long sh_flags = 0;      /* SHF_... uint32_t */
+    public long sh_addr = 0;       /* x virtual address ElfN_Addr(uintN_t) */
+    public long sh_offset = 0;     /* x file offset ElfN_Off(uintN_t) */
+    public long sh_size = 0;       /* x section size uintN_t */
+    public long sh_link = 0;       /* misc info uint32_t */
+    public long sh_info = 0;       /* misc info uint32_t */
+    public long sh_addralign = 0;  /* x memory alignment uintN_t */
+    public long sh_entsize = 0;    /* x entry size if table uintN_t */
 
     public long getSectionSize() {
         return sh_size;

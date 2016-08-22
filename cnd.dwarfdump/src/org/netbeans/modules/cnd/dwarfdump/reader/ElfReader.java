@@ -94,7 +94,9 @@ public class ElfReader extends ByteStreamReader {
             // Before reading all sections need to read ElfStringTable section.
             int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
             stringTableSection = new StringTableSection(this, elfStringTableIdx);
-            sections[elfStringTableIdx] = stringTableSection;
+            if (sections.length > elfStringTableIdx) {
+                sections[elfStringTableIdx] = stringTableSection;
+            }
         }
         
         // Initialize Name-To-Idx map
@@ -566,20 +568,22 @@ public class ElfReader extends ByteStreamReader {
                     sectionHeadersTable[i] = readSectionHeader();
                 }
             }
+        } else {
+            sectionHeadersTable = new SectionHeader[0];
         }
     }
     
     private SectionHeader readSectionHeader() throws IOException {
         SectionHeader h = new SectionHeader();
         
-        h.sh_name      = readInt();
-        h.sh_type      = readInt();
+        h.sh_name      = 0xFFFFFFFFL & readInt();
+        h.sh_type      = 0xFFFFFFFFL & readInt();
         h.sh_flags     = read3264();
         h.sh_addr      = read3264();
         h.sh_offset    = read3264()+shiftIvArchive;
         h.sh_size      = read3264();
-        h.sh_link      = readInt();
-        h.sh_info      = readInt();
+        h.sh_link      = 0xFFFFFFFFL & readInt();
+        h.sh_info      = 0xFFFFFFFFL & readInt();
         h.sh_addralign = read3264();
         h.sh_entsize   = read3264();
         
