@@ -45,7 +45,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -494,7 +493,7 @@ public class LaunchersConfig {
         private String buildCommand = "";
         private String runDir = "";
         private String symbolFiles = "";
-        private Map<String, String> env = new HashMap<>();
+        private Map<String, String> env = new TreeMap<>();
         private boolean hide = false;
         private boolean runInOwnTab = true;
         private boolean isModified = false;
@@ -609,7 +608,7 @@ public class LaunchersConfig {
             res.buildCommand = this.buildCommand;
             res.runDir = this.runDir;
             res.symbolFiles = this.symbolFiles;
-            res.env = new HashMap<>(env);
+            res.env = new TreeMap<>(env);
             return res;
         }
         
@@ -623,7 +622,7 @@ public class LaunchersConfig {
             res.buildCommand = this.buildCommand;
             res.runDir = this.runDir;
             res.symbolFiles = this.symbolFiles;
-            res.env = new HashMap<>(env);
+            res.env = new TreeMap<>(env);
             return res;
         }
 
