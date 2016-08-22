@@ -64,6 +64,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -114,6 +115,14 @@ public final class SourceRoots extends Roots {
      * Default label for tests node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
      */
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+    /**
+     * Default label for sources node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
+     */
+    public static final String DEFAULT_MODULE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_module.dir");
+    /**
+     * Default label for sources node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
+     */
+    public static final String DEFAULT_TEST_MODULE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.module.dir");
 
     private static final Logger LOG = Logger.getLogger(SourceRoots.class.getName());
     private static final String REF_PREFIX = "${file.reference."; //NOI18N
@@ -141,13 +150,26 @@ public final class SourceRoots extends Roots {
         Parameters.notNull("elementName", elementName); // NOI18N
         Parameters.notNull("newRootNameTemplate", newRootNameTemplate); // NOI18N
 
-        return new SourceRoots(helper, evaluator, refHelper, projectConfigurationNamespace, elementName, isTest,
-                newRootNameTemplate);
+        return new SourceRoots(helper, evaluator, refHelper, projectConfigurationNamespace, elementName,
+                JavaProjectConstants.SOURCES_TYPE_JAVA, isTest, newRootNameTemplate);
+    }
+
+    public static SourceRoots createModule(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
+            String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
+        Parameters.notNull("helper", helper); // NOI18N
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        Parameters.notNull("refHelper", refHelper); // NOI18N
+        Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); // NOI18N
+        Parameters.notNull("elementName", elementName); // NOI18N
+        Parameters.notNull("newRootNameTemplate", newRootNameTemplate); // NOI18N
+
+        return new SourceRoots(helper, evaluator, refHelper, projectConfigurationNamespace, elementName,
+                JavaProjectConstants.SOURCES_TYPE_MODULES, isTest, newRootNameTemplate);
     }
 
     private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
-            String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
-        super(true,true,JavaProjectConstants.SOURCES_TYPE_JAVA, isTest ? JavaProjectConstants.SOURCES_HINT_TEST : JavaProjectConstants.SOURCES_HINT_MAIN);
+            String projectConfigurationNamespace, String elementName, String type, boolean isTest, String newRootNameTemplate) {
+        super(true, true, type, isTest ? JavaProjectConstants.SOURCES_HINT_TEST : JavaProjectConstants.SOURCES_HINT_MAIN);
         assert helper != null;
         assert evaluator != null;
         assert refHelper != null;
@@ -301,22 +323,42 @@ public final class SourceRoots extends Roots {
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {
-                                File f = helper.getAntProjectHelper().resolveFile(prop);
-                                try {
-                                    URL url = Utilities.toURI(f).toURL();
-                                    if (!f.exists()) {
-                                        url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                    } else if (removeInvalidRoots && !f.isDirectory()) {
-                                        // file cannot be a source root (archives are not supported as source roots).
-                                        continue;
+                                String srcPath = null;
+                                int idx = prop.indexOf("/*/");
+                                if (idx >= 0) {
+                                    srcPath = prop.substring(idx + 3);
+                                    prop = prop.substring(0, idx);
+                                }
+                                List<File> files = new ArrayList<>();
+                                File file = helper.getAntProjectHelper().resolveFile(prop);
+                                if (file.isDirectory() && !isModule() && srcPath != null) {
+                                    if (idx > 0) {
+                                        for (File f : file.listFiles()) {
+                                            if (f.isDirectory()) {
+                                                files.add(new File(f, srcPath.substring(idx + 3)));
+                                            }
+                                        }
                                     }
-                                    assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
-                                            + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
-                                            + " file? " + f.isFile();
-                                    result.add(url);
-                                    listener.add(f);
-                                } catch (MalformedURLException e) {
-                                    Exceptions.printStackTrace(e);
+                                } else {
+                                    files.add(file);
+                                }
+                                for (File f : files) {
+                                    try {
+                                        URL url = Utilities.toURI(f).toURL();
+                                        if (!f.exists()) {
+                                            url = new URL(url.toExternalForm() + "/"); // NOI18N
+                                        } else if (removeInvalidRoots && !f.isDirectory()) {
+                                            // file cannot be a source root (archives are not supported as source roots).
+                                            continue;
+                                        }
+                                        assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
+                                                + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
+                                                + " file? " + f.isFile();
+                                        result.add(url);
+                                        listener.add(f);
+                                    } catch (MalformedURLException e) {
+                                        Exceptions.printStackTrace(e);
+                                    }
                                 }
                             }
                         }
@@ -476,10 +518,10 @@ public final class SourceRoots extends Roots {
     public String getRootDisplayName(String rootName, String propName) {
         if (rootName == null || rootName.length() == 0) {
             // if the prop is src.dir use the default name
-            if (isTest && "test.src.dir".equals(propName)) { //NOI18N
-                rootName = DEFAULT_TEST_LABEL;
-            } else if (!isTest && "src.dir".equals(propName)) { //NOI18N
-                rootName = DEFAULT_SOURCE_LABEL;
+            if (isTest && ("test.src.dir".equals(propName) || "test.src.dir.path".equals(propName))) { //NOI18N
+                rootName = isModule() ? DEFAULT_TEST_MODULE_LABEL : DEFAULT_TEST_LABEL;
+            } else if (!isTest && ("src.dir".equals(propName) || "src.dir.path".equals(propName))) { //NOI18N
+                rootName = isModule() ? DEFAULT_MODULE_LABEL : DEFAULT_SOURCE_LABEL;
             } else {
                 // if the name is not given, it should be either a relative path in the project dir
                 // or absolute path when the root is not under the project dir
@@ -507,7 +549,8 @@ public final class SourceRoots extends Roots {
                 rootName = sourceRoot.getAbsolutePath();
             }
         } else {
-            rootName = isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
+            rootName = isModule() ? isTest ? DEFAULT_TEST_MODULE_LABEL : DEFAULT_MODULE_LABEL
+                    : isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
         }
         return rootName;
     }
@@ -519,6 +562,10 @@ public final class SourceRoots extends Roots {
      */
     public boolean isTest() {
         return isTest;
+    }
+    
+    private boolean isModule() {
+        return JavaProjectConstants.SOURCES_TYPE_MODULES.equals(RootsAccessor.getInstance().getType(this));
     }
 
     private void resetCache(boolean isXMLChange, String propName) {
@@ -567,7 +614,10 @@ public final class SourceRoots extends Roots {
                     ((Element) nl.item(0)).getElementsByTagNameNS(projectConfigurationNamespace, "root"); //NOI18N
             for (int i = 0; i < roots.getLength(); i++) {
                 Element root = (Element) roots.item(i);
-                String value = root.getAttribute("id"); //NOI18N
+                String value = isModule() ? null : root.getAttribute("pathref"); //NOI18N
+                if (value == null || value.isEmpty()) {
+                    value = root.getAttribute("id"); //NOI18N
+                }
                 assert value.length() > 0 : "Illegal project.xml";
                 rootProps.add(value);
                 value = root.getAttribute("name"); //NOI18N

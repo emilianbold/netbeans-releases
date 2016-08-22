@@ -84,8 +84,8 @@ public class NewJ2SEModularProjectWizardIterator implements WizardDescriptor.Pro
     private NewJ2SEModularProjectWizardIterator() {
     }
 
-    @TemplateRegistration(folder="Project/Standard", position=350, displayName="#template_multimodule", iconBase="org/netbeans/modules/java/j2semodule/ui/resources/j2seModuleProject.png", description="../resources/emptyModuleProject.html")
-    @Messages("template_multimodule=Java Modular Project")
+//    @TemplateRegistration(folder="Project/Standard", position=350, displayName="#template_multimodule", iconBase="org/netbeans/modules/java/j2semodule/ui/resources/j2seModuleProject.png", description="../resources/emptyModuleProject.html")
+//    @Messages("template_multimodule=Java Modular Project")
     public static NewJ2SEModularProjectWizardIterator multiModule() {
         return new NewJ2SEModularProjectWizardIterator();
     }
@@ -126,7 +126,7 @@ public class NewJ2SEModularProjectWizardIterator implements WizardDescriptor.Pro
         String name = (String)myWiz.getProperty("name"); //NOI18N
         JavaPlatform platform = (JavaPlatform)myWiz.getProperty("javaPlatform"); //NOI18N
         handle.progress (NbBundle.getMessage (NewJ2SEModularProjectWizardIterator.class, "LBL_NewJ2SEModuleProjectWizardIterator_WizardProgress_CreatingProject"), 1);
-        J2SEModularProjectGenerator.createProject(dirF, name, platform, true);
+        J2SEModularProjectGenerator.createProject(dirF, name, platform);
         handle.progress (2);
         FileObject dir = FileUtil.toFileObject(dirF);
 

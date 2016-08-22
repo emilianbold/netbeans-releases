@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/3"
+                xmlns:j2semodularproject="http://www.netbeans.org/ns/j2se-modular-project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 exclude-result-prefixes="xalan project j2seproject">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
         <xsl:comment> You can turn off the Compile on Save (or Deploy on Save) setting </xsl:comment>
         <xsl:comment> in the project's Project Properties dialog box.</xsl:comment>
         
-        <xsl:variable name="name" select="/project:project/project:configuration/j2seproject:data/j2seproject:name"/>
+        <xsl:variable name="name" select="/project:project/project:configuration/j2semodularproject:data/j2semodularproject:name"/>
         <!-- Synch with build-impl.xsl: -->
         <!-- XXX really should translate all chars that are *not* safe (cf. PropertyUtils.getUsablePropertyName): -->
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>

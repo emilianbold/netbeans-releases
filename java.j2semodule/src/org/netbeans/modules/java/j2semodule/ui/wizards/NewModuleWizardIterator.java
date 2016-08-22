@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.java.j2semodule.J2SEModularProject;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -86,6 +87,26 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
         FileObject template = Templates.getTemplate(wiz);
         
         FileObject createdFolder = FileUtil.createFolder(dir, targetName);
+
+        Project p = Templates.getProject(wiz);
+        J2SEModularProject project = p != null ? p.getLookup().lookup(J2SEModularProject.class) : null;
+        if (project != null) {
+            for (String rootProp : project.getSourceRoots().getRootProperties()) {
+                String rootPath = project.evaluator().getProperty(rootProp);
+                int idx = rootPath.indexOf("/*/");
+                if (idx >= 0) {
+                    FileObject root = project.getAntProjectHelper().resolveFileObject(rootPath.substring(0, idx));
+                    if (root == dir) {
+                        String path = rootPath.substring(idx + 3);
+                        if (!path.isEmpty()) {
+                            createdFolder = createdFolder.createFolder(path);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
         DataFolder df = DataFolder.findFolder(createdFolder);
         DataObject dTemplate = DataObject.find(template);                
         DataObject dobj = dTemplate.createFromTemplate(df, null, Collections.singletonMap("moduleName", targetName)); //NOI18N
@@ -106,7 +127,7 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
             throw new NullPointerException ("No project found for: " + wiz);
         }
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_MODULES);
         assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;
         if (groups.length == 0) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC); 

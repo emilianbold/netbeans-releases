@@ -64,7 +64,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
@@ -123,37 +122,28 @@ public class J2SEModularProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(final File dir, final String name, final JavaPlatform platform, final boolean skipTests) throws IOException {
+    public static AntProjectHelper createProject(final File dir, final String name, final JavaPlatform platform) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
         
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
-        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                final SpecificationVersion sourceLevel = getSourceLevel(platform);
-                h[0] = createProject(dirFO, name, sourceLevel, "src", "test", skipTests, platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
-                final J2SEModularProject p = (J2SEModularProject) ProjectManager.getDefault().findProject(dirFO);
-                ProjectManager.getDefault().saveProject(p);
-                try {
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        @Override
-                        public Void run() throws Exception {
-                            ProjectManager.getDefault().saveProject (p);
-                            ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                            return null;
-                        }
-                    });
-                } catch (MutexException ex) {
-                    Exceptions.printStackTrace(ex.getException());
-                }
-
-                dirFO.createFolder("src"); //NOI18N
-                if (!skipTests) {
-                    dirFO.createFolder("test"); //NOI18N
-                }
+        dirFO.getFileSystem().runAtomicAction(() -> {
+            final SpecificationVersion sourceLevel = getSourceLevel(platform);
+            h[0] = createProject(dirFO, name, sourceLevel, "src", "*/classes", "*/tests", platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
+            final J2SEModularProject p = (J2SEModularProject) ProjectManager.getDefault().findProject(dirFO);
+            ProjectManager.getDefault().saveProject(p);
+            try {
+                ProjectManager.mutex().writeAccess((Mutex.ExceptionAction<Void>) () -> {
+                    ProjectManager.getDefault().saveProject (p);
+                    ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_MODULES);
+                    return null;
+                });
+            } catch (MutexException ex) {
+                Exceptions.printStackTrace(ex.getException());
             }
+            
+            dirFO.createFolder("src"); //NOI18N
         });
         return h[0];
     }
@@ -163,8 +153,8 @@ public class J2SEModularProjectGenerator {
             String name,
             SpecificationVersion sourceLevel,
             String srcRoot,
-            String testRoot,
-            boolean skipTests,
+            String srcRootPath,
+            String testSrcRootPath,
             @NonNull final String platformId
             ) throws IOException {
 
@@ -184,16 +174,20 @@ public class J2SEModularProjectGenerator {
         if (srcRoot != null) {
             Element root = doc.createElementNS (J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
+            root.setAttribute ("pathref","src.dir.path");   //NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
+            ep.setProperty("src.dir.path", "${src.dir}/" + srcRootPath); // NOI18N
         }
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-        if (testRoot != null) {
+        if (srcRoot != null) {
             Element root = doc.createElementNS (J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","test.src.dir");   //NOI18N
+            root.setAttribute ("pathref","test.src.dir.path");   //NOI18N
             testRoots.appendChild (root);
-            ep.setProperty("test.src.dir", testRoot); // NOI18N
+            ep.setProperty("test.src.dir", srcRoot); // NOI18N
+            ep.setProperty("test.src.dir.path", "${test.src.dir}/" + testSrcRootPath); // NOI18N
         }
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
@@ -228,10 +222,7 @@ public class J2SEModularProjectGenerator {
         ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
-        ep.setProperty("javac.test.classpath", skipTests ? new String[] { // NOI18N
-            ref(ProjectProperties.JAVAC_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_CLASSES_DIR, true)
-        } : new String[] { // NOI18N
+        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             ref(ProjectProperties.JAVAC_CLASSPATH, false),
             ref(ProjectProperties.BUILD_CLASSES_DIR, false),
             ref("libs.junit.classpath", false), // NOI18N

@@ -190,6 +190,8 @@ public final class J2SEModularProject implements Project {
     private final UpdateHelper updateHelper;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
+    private SourceRoots moduleRoots;
+    private SourceRoots testModuleRoots;
     private final ClassPathProviderImpl cpProvider;
     private final ClassPathModifier cpMod;
 
@@ -223,7 +225,7 @@ public final class J2SEModularProject implements Project {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEModularExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
 
-        this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
+        this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, null/*newProjectOperationsCallback(this, updateProject)*/);//TODO
     }
@@ -303,7 +305,7 @@ public final class J2SEModularProject implements Project {
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
-            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+//            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
 //            new AntArtifactProviderImpl(),
             ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
@@ -328,10 +330,10 @@ public final class J2SEModularProject implements Project {
 //                        addOpenPostAction(newUpdateCopyLibsAction()).
 //                        addClosePostAction(newStopMainUpdaterAction()).
                         build()),
-            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
+//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
-            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            QuerySupport.createSources(this, helper, evaluator(), getModuleRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+//            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl(),
             ProjectClassPathModifier.extenderForModifier(cpMod),
@@ -397,7 +399,7 @@ public final class J2SEModularProject implements Project {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
-       }
+        }
         return this.sourceRoots;
     }
 
@@ -407,6 +409,22 @@ public final class J2SEModularProject implements Project {
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
+    }
+
+    public synchronized SourceRoots getModuleRoots() {
+        if (this.moduleRoots == null) { //Local caching, no project metadata access
+            this.moduleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+                    J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
+        }
+        return this.moduleRoots;
+    }
+
+    public synchronized SourceRoots getTestModuleRoots() {
+        if (this.testModuleRoots == null) { //Local caching, no project metadata access
+            this.testModuleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+                    J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
+        }
+        return this.testModuleRoots;
     }
 
     File getTestClassesDirectory() {

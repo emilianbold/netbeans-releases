@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
                             <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:attribute name="id" use="required" type="xsd:token"/>
+                                    <xsd:attribute name="pathref" use="required" type="xsd:token"/>
                                     <xsd:attribute name="name" use="optional" type="xsd:token"/>
                                 </xsd:complexType>
                             </xsd:element>
@@ -81,6 +82,7 @@ made subject to such option by the copyright holder.
                             <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:attribute name="id" use="required" type="xsd:token"/>
+                                    <xsd:attribute name="pathref" use="required" type="xsd:token"/>
                                     <xsd:attribute name="name" use="optional" type="xsd:token"/>
                                 </xsd:complexType>
                             </xsd:element>

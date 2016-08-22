@@ -126,16 +126,16 @@ public class ModuleTargetChooserPanel implements WizardDescriptor.Panel<WizardDe
 
     @Override
     public boolean isValid() {
+        setErrorMessage( null );
         if (gui == null) {
-           setErrorMessage( null );
-           return false;
+            return false;
         }        
         if (gui.getTargetName() == null) {
             setErrorMessage("INFO_ModuleTargetChooser_ProvideModuleName"); // NOI18N
             return false;
         }
         if (!isValidModuleName(gui.getTargetName())) {
-            setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" ); // NOI18N
+            setErrorMessage( "ERR_ModuleTargetChooser_InvalidModule" ); // NOI18N
             return false;
         }
         if (!isValidModule(gui.getRootFolder(), gui.getTargetName())) {
