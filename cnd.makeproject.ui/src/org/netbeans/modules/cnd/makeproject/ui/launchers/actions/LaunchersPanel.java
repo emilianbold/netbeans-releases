@@ -510,6 +510,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         hideCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "HideTooltip")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(runInOwnTabCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runInOwnTabCheckBox.text")); // NOI18N
+        runInOwnTabCheckBox.setActionCommand(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runInOwnTabCheckBox.actionCommand")); // NOI18N
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
