@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -299,19 +300,23 @@ public class ParameterInfoSupport {
     }
 
     private static boolean isDolar(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), "$"); // NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), "("); // NOI18N
     }
 
     private static boolean isRightBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), ")"); // NOI18N
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), ","); // NOI18N
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
