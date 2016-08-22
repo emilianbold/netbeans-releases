@@ -61,6 +61,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ModuleElement;
@@ -275,7 +277,13 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
-                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                if (javaContext.getCheckSums().checkAndSet(
+                        active.indexable.getURL(),
+                        StreamSupport.stream(types.spliterator(), false)
+                                .filter((e) -> e.getKind().isClass() || e.getKind().isInterface())
+                                .map ((e) -> (TypeElement)e)
+                                .collect(Collectors.toList()),
+                        jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.analyze(Collections.singleton(unit.first()), jt, unit.second(), addedTypes, addedModules, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<>();

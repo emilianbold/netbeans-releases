@@ -68,6 +68,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -276,7 +277,13 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
-                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                if (javaContext.getCheckSums().checkAndSet(
+                        active.indexable.getURL(),
+                        activeTypes.stream()                                                
+                                .filter((e) -> e.getKind().isClass() || e.getKind().isInterface())
+                                .map ((e) -> (TypeElement)e)
+                                .collect(Collectors.toList()),
+                        jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, addedTypes, addedModules, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<>();
