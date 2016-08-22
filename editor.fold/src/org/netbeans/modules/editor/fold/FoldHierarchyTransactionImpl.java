@@ -95,6 +95,9 @@ public final class FoldHierarchyTransactionImpl {
 
     // -J-Dorg.netbeans.api.editor.fold.FoldHierarchy.level=FINE
     private static final Logger LOG = Logger.getLogger(org.netbeans.api.editor.fold.FoldHierarchy.class.getName());
+    static final Logger DEBUG_LOG = Logger.getLogger(org.netbeans.api.editor.fold.FoldHierarchy.class.getName() + ".debug");
+    
+    static final boolean debugFoldHierarchy = DEBUG_LOG.isLoggable(Level.FINE);
     
     private static final Fold[] EMPTY_FOLDS = new Fold[0];
 
@@ -178,10 +181,17 @@ public final class FoldHierarchyTransactionImpl {
     
     private final int dmgCounter;
     
+    private final boolean suppressEvents;
+    
     public FoldHierarchyTransactionImpl(FoldHierarchyExecution execution) {
+        this(execution, false);
+    }
+    
+    public FoldHierarchyTransactionImpl(FoldHierarchyExecution execution, boolean suppressEvents) {
         this.execution = execution;
         this.affectedStartOffset = -1;
         this.affectedEndOffset = -1;
+        this.suppressEvents = suppressEvents;
         
         this.transaction = SpiPackageAccessor.get().createFoldHierarchyTransaction(this);
         this.dmgCounter = execution.getDamagedCount();
@@ -196,14 +206,21 @@ public final class FoldHierarchyTransactionImpl {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            initialSnapshot = execution.toString() + 
-                              "\nContent at previous commit:\n====\n" + execution.getCommittedContent() + "\n====\n" +
-                              "\nText content:\n====\n" + t + "\n====\n";
+            if (debugFoldHierarchy) {
+                initialSnapshot = execution.toString() + 
+                                  "\nContent at previous commit:\n====\n" + execution.getCommittedContent() + "\n====\n" +
+                                  "\nText content:\n====\n" + t + "\n====\n";
+            }
         }
     }
     
     public FoldHierarchyTransaction getTransaction() {
         return transaction;
+    }
+    
+    public void resetCaches() {
+        this.lastOperationFold = null;
+        this.lastOperationIndex = -1;
     }
     
     void cancelled() {
@@ -224,7 +241,6 @@ public final class FoldHierarchyTransactionImpl {
      */
     public void commit() {
         checkNotCommitted();
-
         try {
             if (!isEmpty()) {
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -264,42 +280,49 @@ public final class FoldHierarchyTransactionImpl {
                     }
                 }
 
-                FoldStateChange[] stateChanges;
-                if (fold2StateChange != null) {
-                    stateChanges = new FoldStateChange[fold2StateChange.size()];
-                    fold2StateChange.values().toArray(stateChanges);
-                } else { // no state changes => use empty array
-                    stateChanges = EMPTY_FOLD_STATE_CHANGES;
-                }
-
-                for (int i = stateChanges.length - 1; i >= 0; i--) {
-                    FoldStateChange change = stateChanges[i];
-                    Fold fold = change.getFold();
-                    updateAffectedOffsets(fold);
-                    int startOffset = change.getOriginalStartOffset();
-                    int endOffset = change.getOriginalEndOffset();
-                    assert (endOffset < 0 || startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
-                    if (startOffset != -1) {
-                        updateAffectedStartOffset(startOffset);
+                committed = true;
+                execution.clearActiveTransaction();
+                FoldStateChange[] stateChanges = null;
+                
+                if (!suppressEvents) {
+                    if (fold2StateChange != null) {
+                        stateChanges = new FoldStateChange[fold2StateChange.size()];
+                        fold2StateChange.values().toArray(stateChanges);
+                    } else { // no state changes => use empty array
+                        stateChanges = EMPTY_FOLD_STATE_CHANGES;
                     }
-                    if (endOffset != -1) {
-                        updateAffectedEndOffset(endOffset);
-                    }
-                }
 
+                    for (int i = stateChanges.length - 1; i >= 0; i--) {
+                        FoldStateChange change = stateChanges[i];
+                        Fold fold = change.getFold();
+                        updateAffectedOffsets(fold);
+                        int startOffset = change.getOriginalStartOffset();
+                        int endOffset = change.getOriginalEndOffset();
+                        if (endOffset >= 0 && endOffset < startOffset) {
+                            LOG.warning("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N;
+                            endOffset = startOffset;
+                        }
+                        if (startOffset != -1) {
+                            updateAffectedStartOffset(startOffset);
+                        }
+                        if (endOffset != -1) {
+                            updateAffectedEndOffset(endOffset);
+                        }
+                    }
+
+                }
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.finer("FoldHierarchy AFTER transaction commit:\n" + execution);
                     execution.checkConsistency();
                 }
 
-                committed = true;
-                execution.clearActiveTransaction();
-
-                int so = Math.max(0, affectedStartOffset);
-                execution.createAndFireFoldHierarchyEvent(
-                    removedFolds, addedFolds, stateChanges,
-                    so, 
-                    Math.max(affectedEndOffset, so));
+                if (stateChanges != null) {
+                    int so = Math.max(0, affectedStartOffset);
+                    execution.createAndFireFoldHierarchyEvent(
+                        removedFolds, addedFolds, stateChanges,
+                        so, 
+                        Math.max(affectedEndOffset, so));
+                }
             } else {
                 committed = true;
                 execution.clearActiveTransaction();
@@ -312,6 +335,8 @@ public final class FoldHierarchyTransactionImpl {
                 LOG.warning(initialSnapshot);
                 LOG.warning("\n----------------------\nCurrent state:");
                 LOG.warning(execution.toString());
+                // will also reset the damaged count
+                execution.rebuildHierarchy();
             }
         }
     }
@@ -332,7 +357,8 @@ public final class FoldHierarchyTransactionImpl {
             ApiPackageAccessor api = ApiPackageAccessor.get();
             for (Iterator it = pp.iterator(); it.hasNext(); ) {
                 Fold childFold = (Fold)it.next();
-                removeFold(childFold);
+                // go through Operation to catch errors & rebuild hierarchy:
+                getOperation(childFold).removeFromHierarchy(childFold, this);
                 removeEmptyNotify(childFold);
             }
         }
@@ -1003,8 +1029,12 @@ public final class FoldHierarchyTransactionImpl {
                 if (ea) sbDebug.append("\n addFold8 INVOKE ApiPackageAccessor.get().foldExtractToChildren"
                 + " index:" + index + " nextIndex:" + nextIndex + " diff:" + (nextIndex - index)
                 + " parentFold.getFoldCount():" + parentFold.getFoldCount());
-                assert (nextIndex - index) >= 0 : "Negative length." + sbDebug.toString();
-                assert (nextIndex <= parentFold.getFoldCount()) : "End index exceeds children list size." + sbDebug.toString();
+                if (!((nextIndex - index) >= 0)) {
+                    throw new HierarchyErrorException(parentFold, fold, index, true, "Negative length");
+                }
+                if (!(nextIndex <= parentFold.getFoldCount())) {
+                    throw new HierarchyErrorException(parentFold, fold, index, true, "End index exceeds children list size." + sbDebug.toString());
+                }
                 ApiPackageAccessor.get().foldExtractToChildren(parentFold, index, nextIndex - index, fold);
                 
                 // sanity check:
@@ -1290,6 +1320,7 @@ public final class FoldHierarchyTransactionImpl {
             }
             reinsertSet.addAll(c);
         }
+        processUnblocked();
     }
     
     boolean isReinserting(Fold f) {

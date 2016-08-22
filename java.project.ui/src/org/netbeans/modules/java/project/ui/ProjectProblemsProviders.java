@@ -100,6 +100,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 import static org.netbeans.modules.java.project.ui.Bundle.*;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -435,7 +436,10 @@ public class ProjectProblemsProviders {
             if (prop == null) {
                 continue;
             }
-            if (!existPlatform(prop)) {
+            if (!existPlatform(
+                    FileOwnerQuery.getOwner(helper.getProjectDirectory()),
+                    evaluator,
+                    prop)) {
 
                 // XXX: the J2ME stores in project.properties also platform
                 // display name and so show this display name instead of just
@@ -488,7 +492,10 @@ public class ProjectProblemsProviders {
         return null != LibrariesSupport.resolveLibraryEntryFileObject(libBase, newUri);
     }
 
-    private static boolean existPlatform(String platform) {
+    private static boolean existPlatform(
+            @NullAllowed final Project prj,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String platform) {
         if (platform.equals("default_platform")) { // NOI18N
             return true;
         }
@@ -499,7 +506,9 @@ public class ProjectProblemsProviders {
                 return true;
             }
         }
-        return false;
+        return prj == null ?
+                false :
+                ProjectPlatform.forProject(prj, eval, "j2se") != null;   //NOI18N    //Todo: custom platform type?
     }
 
     @NonNull
