@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -53,6 +54,8 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCModuleDecl;
+import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
 import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -247,12 +250,28 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 if (aptEnabled) {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
-                List<TypeElement> activeTypes = new ArrayList<TypeElement>();
-                for (Tree tree : unit.getKey().getTypeDecls()) {
-                    if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.Tag.CLASSDEF) {
-                        ClassSymbol sym = ((JCClassDecl)tree).sym;
+                List<Element> activeTypes = new ArrayList<>();
+                if (unit.getValue().jfo.isNameCompatible("package-info", JavaFileObject.Kind.SOURCE)) {
+                    final PackageTree pt = unit.getKey().getPackage();
+                    if (pt instanceof JCPackageDecl) {                        
+                        final Element sym = ((JCPackageDecl)pt).packge;
                         if (sym != null)
                             activeTypes.add(sym);
+                    }
+                } else {
+                    for (Tree tree : unit.getKey().getTypeDecls()) {
+                        if (tree instanceof JCTree) {
+                            final JCTree jct = (JCTree)tree;
+                            if (jct.getTag() == JCTree.Tag.CLASSDEF) {
+                                final Element sym = ((JCClassDecl)tree).sym;
+                                if (sym != null)
+                                    activeTypes.add(sym);
+                            } else if (jct.getTag() == JCTree.Tag.MODULEDEF) {
+                                final Element sym = ((JCModuleDecl)tree).sym;
+                                if (sym != null)
+                                    activeTypes.add(sym);
+                            }
+                        }
                     }
                 }
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
