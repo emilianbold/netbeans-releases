@@ -47,7 +47,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -64,7 +63,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
@@ -512,6 +510,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         hideCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "HideTooltip")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(runInOwnTabCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runInOwnTabCheckBox.text")); // NOI18N
+        runInOwnTabCheckBox.setActionCommand(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runInOwnTabCheckBox.actionCommand")); // NOI18N
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);

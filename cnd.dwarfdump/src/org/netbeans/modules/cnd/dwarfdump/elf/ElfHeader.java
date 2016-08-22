@@ -54,19 +54,19 @@ public class ElfHeader {
     public int elfAbi = 0;         /* ABI version */
     
     // Elf Header
-    public short e_type = 0;       /* file type */
-    public short e_machine = 0;    /* target machine */
-    public int   e_version = 0;    /* file version */
-    public long  e_entry = 0;      /* start address */
-    public long  e_phoff = 0;      /* phdr file offset */
-    public long  e_shoff = 0;      /* shdr file offset */
-    public int   e_flags = 0;      /* file flags */
-    public short e_ehsize = 0;     /* sizeof ehdr */
-    public short e_phentsize = 0;  /* sizeof phdr */
-    public short e_phnum = 0;      /* number phdrs */
-    public short e_shentsize = 0;  /* sizeof shdr */
-    public short e_shnum = 0;      /* number shdrs */
-    public short e_shstrndx = 0;   /* shdr string index */
+    public short e_type = 0;       /* file type uint16_t */
+    public short e_machine = 0;    /* target machine uint16_t */
+    public int   e_version = 0;    /* file version uint32_t */
+    public long  e_entry = 0;      /* start address ElfN_Addr(uintN_t) */
+    public long  e_phoff = 0;      /* phdr file offset ElfN_Off(uintN_t) */
+    public long  e_shoff = 0;      /* shdr file offset ElfN_Off(uintN_t) */
+    public int   e_flags = 0;      /* file flags uint32_t */
+    public short e_ehsize = 0;     /* sizeof ehdr uint16_t */
+    public short e_phentsize = 0;  /* sizeof phdr uint16_t */
+    public short e_phnum = 0;      /* number phdrs uint16_t */
+    public short e_shentsize = 0;  /* sizeof shdr uint16_t */
+    public short e_shnum = 0;      /* number shdrs uint16_t */
+    public short e_shstrndx = 0;   /* shdr string index uint16_t */
       
     public boolean isMSBData() {
         return elfData == ElfConstants.ELFDATA2MSB;
