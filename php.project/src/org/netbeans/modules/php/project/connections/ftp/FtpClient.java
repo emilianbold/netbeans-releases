@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -766,7 +767,15 @@ public class FtpClient implements RemoteClient {
 
         @Override
         public long getTimestamp() {
-            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTime().getTime(), TimeUnit.MILLISECONDS) + getTimestampDiff();
+            long time;
+            Calendar timestamp = ftpFile.getTimestamp();
+            if (timestamp == null) {
+                // #267671 - use current time
+                time = System.currentTimeMillis();
+            } else {
+                time = timestamp.getTime().getTime();
+            }
+            return TimeUnit.SECONDS.convert(time, TimeUnit.MILLISECONDS) + getTimestampDiff();
         }
 
         @Override
