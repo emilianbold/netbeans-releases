@@ -364,6 +364,11 @@ public class TreeLoader extends LazyTreeLoader {
                     syms2trees.put(tree.sym, tree);
                 }
             }
+            @Override
+            public void visitModuleDef(JCTree.JCModuleDecl tree) {
+                ret.set(false);
+                super.visitModuleDef(tree);
+            }
         }.scan(tree);
         return ret.get();
     }
