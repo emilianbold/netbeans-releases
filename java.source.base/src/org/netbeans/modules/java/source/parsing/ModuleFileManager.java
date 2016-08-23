@@ -43,10 +43,14 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -58,6 +62,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,17 +75,21 @@ final class ModuleFileManager implements JavaFileManager {
 
     private final CachingArchiveProvider cap;
     private final ClassPath modulePath;
+    private final Function<URL,Collection<? extends URL>> peers;
     private final boolean cacheFile;
 
 
     public ModuleFileManager(
             @NonNull final CachingArchiveProvider cap,
             @NonNull final ClassPath modulePath,
+            @NonNull final Function<URL,Collection<? extends URL>> peers,
             final boolean cacheFile) {
         assert cap != null;
         assert modulePath != null;
+        assert peers != null;
         this.cap = cap;
         this.modulePath = modulePath;
+        this.peers = peers;
         this.cacheFile = cacheFile;
     }
 
@@ -95,32 +104,36 @@ final class ModuleFileManager implements JavaFileManager {
         final ModuleLocation ml = asModuleLocation(l);
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
-            final Archive archive = cap.getArchive(ml.getModuleRoot(), cacheFile);
-            if (archive != null) {
-                final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null, recursive);
-                if (LOG.isLoggable(Level.FINEST)) {
-                    final StringBuilder urls = new StringBuilder ();
-                    for (JavaFileObject jfo : entries) {
-                        urls.append(jfo.toUri().toString());
-                        urls.append(", ");  //NOI18N
+            final List<Iterable<JavaFileObject>> res = new ArrayList<>();
+            for (URL root : ml.getModuleRoots()) {
+                final Archive archive = cap.getArchive(root, cacheFile);
+                if (archive != null) {
+                    final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null, recursive);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        final StringBuilder urls = new StringBuilder ();
+                        for (JavaFileObject jfo : entries) {
+                            urls.append(jfo.toUri().toString());
+                            urls.append(", ");  //NOI18N
+                        }
+                        LOG.log(
+                            Level.FINEST,
+                            "Cache for {0} package: {1} type: {2} files: [{3}]",   //NOI18N
+                            new Object[] {
+                                l,
+                                packageName,
+                                kinds,
+                                urls
+                            });
                     }
+                    res.add(entries);
+                } else if (LOG.isLoggable(Level.FINEST)) {
                     LOG.log(
                         Level.FINEST,
-                        "Cache for {0} package: {1} type: {2} files: [{3}]",   //NOI18N
-                        new Object[] {
-                            l,
-                            packageName,
-                            kinds,
-                            urls
-                        });
+                        "No cache for: {0}",               //NOI18N
+                        ml.getModuleRoots());
                 }
-                return entries;
-            } else if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(
-                    Level.FINEST,
-                    "No cache for: {0}",               //NOI18N
-                    ml.getModuleRoot());
             }
+            return Iterators.chained(res);
         } catch (final IOException e) {
             Exceptions.printStackTrace(e);
         }
@@ -143,14 +156,16 @@ final class ModuleFileManager implements JavaFileManager {
         final ModuleLocation ml = asModuleLocation(l);
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
         try {
-            final Archive  archive = cap.getArchive (ml.getModuleRoot(), cacheFile);
-            if (archive != null) {
-                final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null, false);
-                for (JavaFileObject e : files) {
-                    final String ename = e.getName();
-                    if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
-                        kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
-                        return e;
+            for (URL root : ml.getModuleRoots()) {
+                final Archive  archive = cap.getArchive (root, cacheFile);
+                if (archive != null) {
+                    final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null, false);
+                    for (JavaFileObject e : files) {
+                        final String ename = e.getName();
+                        if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                            kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
+                            return e;
+                        }
                     }
                 }
             }
@@ -223,11 +238,17 @@ final class ModuleFileManager implements JavaFileManager {
     @NonNull
     public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
         final Set<Set<Location>> moduleRoots = new HashSet<>();
+        final Set<URL> seen = new HashSet<>();
         for (ClassPath.Entry e : modulePath.entries()) {
             final URL root = e.getURL();
-            final String moduleName = SourceUtils.getModuleName(root);
-            if (moduleName != null) {
-                moduleRoots.add(Collections.singleton(ModuleLocation.create(location, root, moduleName)));
+            if (!seen.contains(root)) {
+                final String moduleName = SourceUtils.getModuleName(root);
+                if (moduleName != null) {
+                    final Collection<? extends URL> p = peers.apply(root);
+                    moduleRoots.add(Collections.singleton(
+                            ModuleLocation.create(location, p, moduleName)));
+                    seen.addAll(p);
+                }
             }
         }
         return moduleRoots;
@@ -263,11 +284,13 @@ final class ModuleFileManager implements JavaFileManager {
         assert relativeName != null;
         final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
         try {
-            final Archive  archive = cap.getArchive (ml.getModuleRoot(), cacheFile);
-            if (archive != null) {
-                final JavaFileObject file = archive.getFile(resourceName);
-                if (file != null) {
-                    return file;
+            for (URL root : ml.getModuleRoots()) {
+                final Archive  archive = cap.getArchive (root, cacheFile);
+                if (archive != null) {
+                    final JavaFileObject file = archive.getFile(resourceName);
+                    if (file != null) {
+                        return file;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -282,5 +305,5 @@ final class ModuleFileManager implements JavaFileManager {
             throw new IllegalArgumentException (String.valueOf(l));
         }
         return (ModuleLocation) l;
-    }
+    }   
 }

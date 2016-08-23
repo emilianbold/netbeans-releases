@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.net.URL;
+import java.util.Collection;
 import javax.tools.JavaFileManager.Location;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -52,29 +53,25 @@ import org.netbeans.api.annotations.common.NonNull;
 final class ModuleLocation implements Location {
 
     private final Location base;
-    private final String name;
     private final String moduleName;
-    private final URL moduleRoot;
+    private final Collection<? extends URL> moduleRoots;
 
     ModuleLocation(
             @NonNull final Location base,
-            @NonNull final String name,
             @NonNull final String moduleName,
-            @NonNull final URL moduleRoot) {
+            @NonNull final Collection<? extends URL> moduleRoots) {
         assert base != null;
-        assert name != null;
         assert moduleName != null;
-        assert moduleRoot != null;
+        assert moduleRoots != null;
         this.base = base;
-        this.name = name;
         this.moduleName = moduleName;
-        this.moduleRoot = moduleRoot;
+        this.moduleRoots = moduleRoots;
     }
 
     @Override
     @NonNull
     public String getName() {
-        return name;
+        return moduleRoots.toString();
     }
 
     @Override
@@ -93,8 +90,8 @@ final class ModuleLocation implements Location {
     }
 
     @NonNull
-    URL getModuleRoot() {
-        return moduleRoot;
+    Collection<? extends URL> getModuleRoots() {
+        return moduleRoots;
     }
 
     @NonNull
@@ -105,9 +102,12 @@ final class ModuleLocation implements Location {
     @NonNull
     static ModuleLocation create(
             @NonNull final Location base,
-            @NonNull final URL moduleRoot,
+            @NonNull final Collection<? extends URL> moduleRoots,
             @NonNull final String moduleName) {
-        return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);
+        return new ModuleLocation(
+                base,
+                moduleName,
+                moduleRoots);
     }
 
 }

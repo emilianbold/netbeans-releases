@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +75,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Iterators;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -83,6 +85,7 @@ import org.netbeans.modules.java.source.util.Iterators;
 public final class ProxyFileManager implements JavaFileManager {
 
     private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
+    private static final Function<URL,Collection<? extends URL>> ROOT_TO_COLLECTION = (u) -> Collections.singleton(u);
 
     private static final Location ALL = new Location () {
         @Override
@@ -608,6 +611,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private final SiblingSource siblings;
         private final FileManagerTransaction fmTx;
         private final ProcessorGenerated processorGeneratedFiles;
+        private final Map<ClassPath,Function<URL,Collection<? extends URL>>> peersMap;
 
         private boolean useModifiedFiles = true;
         private JavaFileFilterImplementation filter;
@@ -647,6 +651,7 @@ public final class ProxyFileManager implements JavaFileManager {
             this.processorGeneratedFiles = processorGeneratedFiles;
             this.fileManagers = createFactories();
             this.emitted = new JavaFileManager[USER_MODULES+1];
+            this.peersMap = new IdentityHashMap<>();
         }
 
         public void setUseModifiedFiles(final boolean useModifiedFiles) {
@@ -672,6 +677,14 @@ public final class ProxyFileManager implements JavaFileManager {
 
         public boolean isIgnoreExcludes() {
             return this.ignoreExcludes;
+        }
+        
+        public void setPeers(
+                @NonNull final ClassPath cachedPath,
+                @NonNull final Function<URL,Collection<? extends URL>> provider) {
+            Parameters.notNull("cachedPath", cachedPath);   //NOI18N
+            Parameters.notNull("provider", provider);       //NOI18N
+            peersMap.put(cachedPath, provider);
         }
 
         @NonNull
@@ -855,6 +868,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 emitted[SYS_MODULES] = new ModuleFileManager(
                     cap,
                     moduleBoot,
+                    peersMap.getOrDefault(moduleBoot, ROOT_TO_COLLECTION),
                     true);
             }
             return emitted[SYS_MODULES];
@@ -866,6 +880,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 emitted[USER_MODULES] = new ModuleFileManager(
                     cap,
                     moduleCompile,
+                    peersMap.getOrDefault(moduleCompile, ROOT_TO_COLLECTION),
                     true);
             }
             return emitted[USER_MODULES];

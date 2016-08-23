@@ -46,13 +46,22 @@ package org.netbeans.api.java.source;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
@@ -68,14 +77,17 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -120,6 +132,7 @@ public final class ClasspathInfo {
     private final ChangeSupport listenerList;
     private final FileManagerTransaction fmTx;
     private final ProcessorGenerated pgTx;
+    private final Map<ClassPath,Function<URL,Collection<? extends URL>>> peerProviders;
 
     //@GuardedBy("this")
     private ClassIndex usagesQuery;
@@ -186,6 +199,8 @@ public final class ClasspathInfo {
             fmTx = FileManagerTransaction.treeLoaderOnly();
             pgTx = ProcessorGenerated.nullWrite();
         }
+        this.peerProviders = new IdentityHashMap<>();
+        this.peerProviders.put(cachedModuleCompilePath, new Peers(this.moduleCompilePath));
         assert fmTx != null : "No file manager transaction.";   //NOI18N
         assert pgTx != null : "No processor generated transaction.";   //NOI18N
     }
@@ -524,6 +539,9 @@ public final class ClasspathInfo {
         cfg.setFilter(filter);
         cfg.setIgnoreExcludes(ignoreExcludes);
         cfg.setUseModifiedFiles(useModifiedFiles);
+        for (Map.Entry<ClassPath,Function<URL,Collection<? extends URL>>> e : peerProviders.entrySet()) {
+            cfg.setPeers(e.getKey(), e.getValue());
+        }
         return new ProxyFileManager(cfg);
     }
 
@@ -578,6 +596,60 @@ public final class ClasspathInfo {
         }
     }
 
+    private static final class Peers implements Function<URL,Collection<? extends URL>>, PropertyChangeListener {        
+
+        private final ClassPath base;
+        private volatile Map<URL,Collection<? extends URL>> cache;
+        
+        Peers(@NonNull final ClassPath base) {
+            assert base != null;
+            this.base = base;
+            this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
+        }
+        
+        @Override
+        public Collection<? extends URL> apply(URL t) {
+            return getCache().getOrDefault(t, Collections.singleton(t));
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
+                cache = null;
+            }
+        }
+
+        private Map<URL,Collection<? extends URL>> getCache() {
+            Map<URL,Collection<? extends URL>> res = cache;
+            if (res == null) {
+                res = new HashMap<>();
+                final PathRegistry pr = PathRegistry.getDefault();
+                for (ClassPath.Entry e : base.entries()) {
+                    URL[] srcs = pr.sourceForBinaryQuery(e.getURL(), base, false);
+                    if (srcs != null) {
+                        final Collection<URL> cfs = Arrays.stream(srcs)
+                                .map((u) -> {
+                                    try {
+                                        return BaseUtilities.toURI(JavaIndex.getClassFolder(u)).toURL();
+                                    } catch (IOException ioe) {
+                                        return null;
+                                    }
+                                })
+                                .filter((u) -> u != null)
+                                .collect(Collectors.toList());
+                        if (cfs.size() > 1) {
+                            for (URL u : cfs) {
+                                res.put(u, cfs);
+                            }
+                        }
+                    }
+                }
+                cache = res;
+            }
+            return res;
+        }
+    }
+    
     private static class ClasspathInfoAccessorImpl extends ClasspathInfoAccessor {
 
         @Override
