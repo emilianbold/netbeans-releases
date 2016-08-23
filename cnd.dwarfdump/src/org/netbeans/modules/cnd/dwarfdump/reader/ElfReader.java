@@ -87,14 +87,17 @@ public class ElfReader extends ByteStreamReader {
         }
         readProgramHeaderTable();
         readSectionHeaderTable();
+        if (sectionHeadersTable == null) {
+            sectionHeadersTable = new SectionHeader[0];
+        }
         
         sections = new ElfSection[sectionHeadersTable.length];
         
         if (!isCoffFormat) {
             // Before reading all sections need to read ElfStringTable section.
             int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-            stringTableSection = new StringTableSection(this, elfStringTableIdx);
             if (sections.length > elfStringTableIdx) {
+                stringTableSection = new StringTableSection(this, elfStringTableIdx);
                 sections[elfStringTableIdx] = stringTableSection;
             }
         }
@@ -568,8 +571,6 @@ public class ElfReader extends ByteStreamReader {
                     sectionHeadersTable[i] = readSectionHeader();
                 }
             }
-        } else {
-            sectionHeadersTable = new SectionHeader[0];
         }
     }
     
