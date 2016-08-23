@@ -377,30 +377,29 @@ public class HighlightsViewUtils {
                         : Math.min(viewRectReadonly.getX() + hiEndSplitOffset * charWidth, viewRectReadonly.getMaxX());
                 Rectangle2D.Double renderPartRect = new Rectangle2D.Double(startX, viewRectReadonly.getY(), endX - startX, viewRectReadonly.getHeight());
                 fillBackground(g, renderPartRect, attrs, textComponent);
-                if (showNonPrintingChars && hiStartSplitOffset == 0) { // First part => render newline char visible representation
-                    TextLayout textLayout = docView.op.getNewlineCharTextLayout();
-                    boolean hitsClip = (clipBounds == null) || renderPartRect.intersects(clipBounds);
-                    if (hitsClip) {
-                        // First render background and background related highlights
-                        // Do not g.clip() before background is filled since otherwise there would be
-                        // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
-                        // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
-                        g.clip(renderPartRect);
-                        paintBackgroundHighlights(g, renderPartRect, attrs, docView);
-                        // Render foreground with proper color
-                        g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
-                        Object strikeThroughValue = (attrs != null)
-                                ? attrs.getAttribute(StyleConstants.StrikeThrough)
-                                : null;
+                boolean hitsClip = (clipBounds == null) || renderPartRect.intersects(clipBounds);
+                if (hitsClip) {
+                    // First render background and background related highlights
+                    // Do not g.clip() before background is filled since otherwise there would be
+                    // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
+                    // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
+                    g.clip(renderPartRect);
+                    paintBackgroundHighlights(g, renderPartRect, attrs, docView);
+                    // Render foreground with proper color
+                    g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
+                    Object strikeThroughValue = (attrs != null)
+                            ? attrs.getAttribute(StyleConstants.StrikeThrough)
+                            : null;
+                    if (showNonPrintingChars && hiStartSplitOffset == 0) { // First part => render newline char visible representation
+                        TextLayout textLayout = docView.op.getNewlineCharTextLayout();
                         if (textLayout != null) {
                             paintTextLayout(g, renderPartRect, textLayout, docView);
                         }
-                        if (strikeThroughValue != null) {
-                            paintStrikeThrough(g, viewRectReadonly, strikeThroughValue, attrs, docView);
-                        }
-                        g.setClip(origClip);
                     }
-
+                    if (strikeThroughValue != null) {
+                        paintStrikeThrough(g, viewRectReadonly, strikeThroughValue, attrs, docView);
+                    }
+                    g.setClip(origClip);
                 }
                 if (logFiner) {
                     ViewHierarchyImpl.PAINT_LOG.finer("        Highlight <" + 
