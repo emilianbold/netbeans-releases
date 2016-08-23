@@ -85,14 +85,19 @@ public final class OptionsFilter {
      * @param source source {@link TreeModel} - the data to show will be gathered from this model
      * @param acceptor acceptor specifying whether the given original tree node should or should not
      *                 be visible for given user's filter
+     * @param delegatingTreeModelListeners is allowing to delegate tree model listeners to tree 
      */
-    public void installFilteringModel(JTree tree, TreeModel source, Acceptor acceptor) {
+    public void installFilteringModel(JTree tree, TreeModel source, Acceptor acceptor, boolean delegatingTreeModelListeners) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Not in AWT Event Dispatch Thread");
         }
         
         usedCallback.run();
-        tree.setModel(new FilteringTreeModel(source, doc, acceptor));
+        tree.setModel(new FilteringTreeModel(source, doc, acceptor, delegatingTreeModelListeners));
+    }
+    
+    public void installFilteringModel(JTree tree, TreeModel source, Acceptor acceptor) {
+        installFilteringModel(tree, source, acceptor, false);
     }
 
     public interface Acceptor {
@@ -105,11 +110,13 @@ public final class OptionsFilter {
         private final Document filter;
         private final Acceptor acceptor;
         private final Map<Object, List<Object>> category2Nodes = new HashMap<Object, List<Object>>();
+        private final boolean delegatingTreeModelListener;
 
-        public FilteringTreeModel(TreeModel delegate, Document filter, Acceptor acceptor) {
+        public FilteringTreeModel(TreeModel delegate, Document filter, Acceptor acceptor, boolean delegatingTreeModelListeners) {
             this.delegate = delegate;
             this.filter = filter;
             this.acceptor = acceptor;
+            this.delegatingTreeModelListener = delegatingTreeModelListeners;
 
             this.delegate.addTreeModelListener(this);
             this.filter.addDocumentListener(this);
@@ -156,13 +163,17 @@ public final class OptionsFilter {
         @Override
         public synchronized void addTreeModelListener(TreeModelListener l) {
             listeners.add(l);
-            delegate.addTreeModelListener(l);
+            if (delegatingTreeModelListener) {
+                delegate.addTreeModelListener(l);
+            }
         }
 
         @Override
         public synchronized void removeTreeModelListener(TreeModelListener l) {
             listeners.remove(l);
-            delegate.removeTreeModelListener(l);
+            if (delegatingTreeModelListener) {
+                delegate.removeTreeModelListener(l);
+            }
         }
 
         private synchronized Iterable<? extends TreeModelListener> getListeners() {
