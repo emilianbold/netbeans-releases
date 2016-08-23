@@ -44,6 +44,9 @@ package org.netbeans.modules.java.preprocessorbridge.api;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
@@ -106,6 +109,26 @@ public class JavaSourceUtil {
         else {
             return new Handle(param[0], newId);
         }
+    }
+    
+    /**
+     * Generates a byte code for given class
+     * @param srcRoot the source owning root
+     * @param file the source file to generate
+     * @param content the optional new content of the source file
+     * @param diagnostics the optional {@link DiagnosticListener}
+     * @return the {@link Map} of binary names to class file data.
+     * @throws IOException in case of error
+     * @since 1.42
+     */
+    @NonNull
+    public static Map<String,byte[]> generate(
+            @NonNull final FileObject srcRoot,
+            @NonNull final FileObject file,
+            @NullAllowed final CharSequence content,
+            @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnostics) throws IOException {
+        final JavaSourceUtilImpl impl = getSPI();
+        return JavaSourceUtilImplAccessor.getInstance().generate(impl, srcRoot, file, content, diagnostics);
     }
 
     private static JavaSourceUtilImpl getSPI () {

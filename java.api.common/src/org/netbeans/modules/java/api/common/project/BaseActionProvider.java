@@ -117,6 +117,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarni
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -1116,7 +1117,11 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     @CheckForNull
     protected JavaPlatform getProjectPlatform() {
-        return CommonProjectUtils.getActivePlatform(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE));
+        JavaPlatform plat = CommonProjectUtils.getActivePlatform(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE));
+        if (plat == null) {
+            plat = ProjectPlatform.forProject(project, evaluator, CommonProjectUtils.J2SE_PLATFORM_TYPE);
+        }
+        return plat;
     }
 
     /**

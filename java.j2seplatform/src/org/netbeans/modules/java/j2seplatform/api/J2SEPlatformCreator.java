@@ -43,14 +43,9 @@
 package org.netbeans.modules.java.j2seplatform.api;
 
 import java.io.IOException;
-import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -71,7 +66,7 @@ public class J2SEPlatformCreator {
     @NonNull
     public static JavaPlatform createJ2SEPlatform(@NonNull final FileObject installFolder) throws IOException {
         Parameters.notNull("installFolder", installFolder); //NOI18N
-        return createJ2SEPlatformImpl(installFolder, null);
+        return J2SEPlatformFactory.getInstance().create(installFolder);
     }
 
     /**
@@ -89,71 +84,6 @@ public class J2SEPlatformCreator {
             @NonNull final String platformName) throws IOException , IllegalArgumentException {
         Parameters.notNull("installFolder", installFolder);  //NOI18N
         Parameters.notNull("platformName", platformName);    //NOI18N
-        for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-            if (platformName.equals(jp.getDisplayName())) {
-                throw new IllegalArgumentException(platformName);
-            }
-        }
-        return createJ2SEPlatformImpl(installFolder, platformName);
-    }
-
-    @NonNull
-    private static JavaPlatform createJ2SEPlatformImpl(
-            @NonNull final FileObject installFolder,
-            @NullAllowed String displayName) throws IOException {
-        NewJ2SEPlatform plat = NewJ2SEPlatform.create(installFolder);
-        plat.run();
-        if (!plat.isValid()) {
-            throw new IOException("Invalid J2SE platform in " + installFolder); // NOI18N
-        }
-        if (displayName == null) {
-            displayName = createPlatformDisplayName(plat);
-        }
-        final String antName = createPlatformAntName(displayName);
-        plat.setDisplayName(displayName);
-        plat.setAntName(antName);
-        return PlatformConvertor.create(plat);
-    }
-
-    @NonNull
-    private static String createPlatformDisplayName(@NonNull final JavaPlatform plat) {
-        final Map<String, String> m = plat.getSystemProperties();
-        final String vmVersion = m.get("java.specification.version"); // NOI18N
-        final StringBuilder displayName = new StringBuilder("JDK "); // NOI18N
-        if (vmVersion != null) {
-            displayName.append(vmVersion);
-        }
-        return displayName.toString();
-    }
-
-    @NonNull
-    private static String createPlatformAntName(@NonNull final String displayName) {
-        assert displayName != null && displayName.length() > 0;
-        String antName = PropertyUtils.getUsablePropertyName(displayName);
-        if (platformExists(antName)) {
-            final String baseName = antName;
-            int index = 1;
-            antName = baseName + Integer.toString(index);
-            while (platformExists(antName)) {
-                index ++;
-                antName = baseName + Integer.toString(index);
-            }
-        }
-        return antName;
-    }
-
-    /**
-     * Checks if the platform of given antName is already installed
-     */
-    private static boolean platformExists(@NonNull final String antName) {
-        assert antName != null && antName.length() > 0;
-        for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-            final String otherName = p.getProperties().get("platform.ant.name");  // NOI18N
-            if (antName.equals(otherName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+        return J2SEPlatformFactory.getInstance().create(installFolder, platformName, true);
+    }    
 }

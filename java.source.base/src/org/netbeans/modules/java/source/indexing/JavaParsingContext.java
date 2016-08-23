@@ -129,7 +129,8 @@ final class JavaParsingContext {
                 true,
                 context.isSourceForBinaryRootIndexing(),
                 false,
-                context.checkForEditorModifications());
+                context.checkForEditorModifications(),
+                null);
         } else {
             cpInfo = null;
         }
@@ -142,7 +143,7 @@ final class JavaParsingContext {
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
-                !virtualSources.isEmpty(), context.checkForEditorModifications());
+                !virtualSources.isEmpty(), context.checkForEditorModifications(), null);
         registerVirtualSources(cpInfo, virtualSources);
     }
     

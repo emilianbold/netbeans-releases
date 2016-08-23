@@ -75,6 +75,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="generate-class">
+            <api name="general"/>
+            <summary>Added a possibility to generate class for java source file</summary>
+            <version major="1" minor="42"/>
+            <date day="22" month="8" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a possibility to generate class for given java source file.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.preprocessorbridge.api" name="JavaSourceUtil"/>
+            <class package="org.netbeans.modules.java.preprocessorbridge.spi" name="JavaSourceUtilImpl"/>
+        </change>
         <change id="JavaIndexerPlugin">
             <api name="general"/>
             <summary>Added a possibility to plug into Java source indexing</summary>
