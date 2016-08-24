@@ -73,6 +73,7 @@ import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.ImportNode;
+import com.oracle.js.parser.ir.JsxAttributeNode;
 import com.oracle.js.parser.ir.JsxElementNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,13 +175,15 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken jsxToken = tokenStream.getToken(getStart(jsxElementNode));
         if (jsxToken != null) {
             assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
-            jsxToken = jsxToken.previous();
-            if (jsxToken != null) {
-                TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START), true);
+            if (jsxToken.getText().toString().startsWith("<")) {
+                FormatToken jsxTokenPrev = jsxToken.previous();
+                if (jsxTokenPrev != null) {
+                    TokenUtils.appendTokenAfterLastVirtual(jsxTokenPrev, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START), true);
+                }
             }
         }
         jsxToken = tokenUtils.getPreviousToken(getFinish(jsxElementNode) - 1, JsTokenId.JSX_TEXT);
-        if (jsxToken != null) {
+        if (jsxToken != null && jsxToken.getText().toString().endsWith(">")) {
             assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
             TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END), true);
         }
@@ -205,6 +208,29 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         return super.enterJsxElementNode(jsxElementNode);
+    }
+
+    @Override
+    public boolean enterJsxAttributeNode(JsxAttributeNode jsxAttributeNode) {
+        Expression e = jsxAttributeNode.getValue();
+        if (!(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
+            // assignmentExpression or unaryNode
+            int start = getStart(e);
+            FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_TEXT);
+            if (token != null) {
+                TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            }
+            int finish = getFinish(e);
+            token = tokenUtils.getNextToken(finish, JsTokenId.JSX_TEXT);
+            if (token != null) {
+                token = tokenUtils.getPreviousNonWhiteToken(token.getOffset(),
+                        start, JsTokenId.JSX_TEXT, true);
+                if (token != null) {
+                    TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                }
+            }
+        }
+        return super.enterJsxAttributeNode(jsxAttributeNode);
     }
 
     @Override
