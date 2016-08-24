@@ -60,8 +60,8 @@ var SUPPORT_LABEL        = "Support";
 var SUPPORT_DESCRIPTION  = "Flexible support options to help you stay focused on innovation.";
 
 // $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
-var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";
-var INFO_MESSAGE_OTHER = "{0} ({1} MB)<br>MD5: {2}";
+var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>SHA-256: {7}";
+var INFO_MESSAGE_OTHER = "{0} ({1} MB)<br>SHA-256: {2}";
 
 //DO NOT TRANSLATE
 var SUBSCRIPTION_PHP_URL = "http://services.netbeans.org/sub.php";
