@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -93,6 +94,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DeduceTemplateTypeStrategy;
@@ -774,6 +776,32 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return false;
+    }
+    
+    public static <T extends CsmObject> T getFirstVisible(List<T> objects, CsmFile contextFile) {
+        if (objects != null && !objects.isEmpty()) {
+            if (objects.size() > 1) {
+                for (T element : objects) {
+                    if (CsmIncludeResolver.getDefault().isObjectVisible(contextFile, element)) {
+                        return element;
+                    }
+                }
+            }
+            return objects.get(0); // FIXME: or null in case of no visible objects?
+        }
+        return null;
+    }
+    
+    public static <T extends CsmObject> List<T> filterByVisibility(List<T> objects, CsmFile contextFile) {
+        if (objects != null && objects.size() > 1) {
+            List<T> filtered = objects.stream()
+                    .filter((obj)->CsmIncludeResolver.getDefault().isObjectVisible(contextFile, obj))
+                    .collect(Collectors.toList());
+            if (!filtered.isEmpty()) {
+                return filtered;
+            }
+        }
+        return objects;
     }
 
     /** Filter the list of the methods (usually returned from

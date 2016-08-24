@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -2189,7 +2190,7 @@ abstract public class CsmCompletionQuery {
 //                                        if(res.isEmpty()) {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
-                                            CsmObject obj = res.isEmpty() ? null : (CsmObject) res.iterator().next();
+                                            CsmObject obj = CompletionSupport.getFirstVisible((List<CsmObject>) res, contextFile);
                                             lastType = getObjectType(obj, false);
                                             cont = (lastType != null);
                                             lastNamespace = null;
