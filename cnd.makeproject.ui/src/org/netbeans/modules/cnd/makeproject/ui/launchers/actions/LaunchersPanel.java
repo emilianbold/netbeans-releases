@@ -615,6 +615,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
         LauncherConfig newConfiguration = new LauncherConfig(max, true);
         newConfiguration.setName("launcher" + max); //NOI18N
+        newConfiguration.setCommand("\"${PROJECT_DIR}/${OUTPUT_PATH}\"");
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
