@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -60,11 +61,13 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -127,10 +130,20 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             CsmProject project = contextFile.getProject();
             // we'd prefer to start from real project, not artificial one
             if (project != null && project.isArtificial()) {
-                for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(contextFile, 0)) {
-                    if (cu.getStartFile() != null) {
-                        contextFile = cu.getStartFile();
-                        break;
+                boolean useCompilationUnit = true;
+                CsmResolveContext lastResolveContext = CsmResolveContext.getLast();
+                if (lastResolveContext != null && lastResolveContext.getFile() != null) {
+                    contextFile = lastResolveContext.getFile();
+                    if (contextFile.isSourceFile()) {
+                        useCompilationUnit = false;
+                    }
+                }
+                if (useCompilationUnit) {
+                    for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(contextFile, 0)) {
+                        if (cu.getStartFile() != null) {
+                            contextFile = cu.getStartFile();
+                            break;
+                        }
                     }
                 }
             }

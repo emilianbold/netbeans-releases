@@ -240,7 +240,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, params, specialize);
@@ -252,7 +252,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, CsmType type, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, type.getInstantiationParams(), specialize);
@@ -340,14 +340,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, CsmInstantiation instantiation, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, instantiation.getMapping(), specialize);
     }
 
     public CsmObject instantiate(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, mapping, specialize);
@@ -1773,13 +1773,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     private static CsmType[] wrapType(CsmType type) {
         return type != null ? new CsmType[]{type} : null;
-    }
-
-    private CsmResolveContext getLastResolveContext() {
-        CsmResolveContext context;
-        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
-        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
-        return context;
     }
 
     private static class TypeDigger {
