@@ -2452,7 +2452,11 @@ enumerator_list
     :           
                 (COMMA!)? // To increase parser recovery
                 enumerator
-                ( options {greedy=true;} : (COMMA!) enumerator )*  
+                ( options {greedy=true;} : 
+                    (COMMA!) 
+                    (COMMA!)?  // To increase parser recovery
+                    enumerator 
+                )*  
                 (COMMA!)?
 		{ #enumerator_list = #(#[CSM_ENUMERATOR_LIST, "CSM_ENUMERATOR_LIST"], #enumerator_list); }           
     | 

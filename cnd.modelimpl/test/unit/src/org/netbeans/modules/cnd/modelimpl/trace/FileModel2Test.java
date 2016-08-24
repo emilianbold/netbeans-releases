@@ -595,4 +595,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 255724 - inaccuracy tests: regression in DDD
         performTest("bug255724.c");
     }
+    
+    public void testBug267668Enums() throws Exception {
+        // Bug 267668 - Accuracy regression in LLVM since Aug 19.
+        performTest("bug267668Enums.cpp");
+    }
 }
