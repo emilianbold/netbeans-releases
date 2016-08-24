@@ -623,14 +623,14 @@ public final class CompletionSupport implements DocumentListener {
                 if (CsmBaseUtilities.isPointer(typ1)) {
                     // (pointer + int) case
                     if (!CsmBaseUtilities.isPointer(typ2)) {
-                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                         if (cls2 != null && CsmCompletion.isPrimitiveClass(cls2)) {
                             return typ1;
                         }
                     }
                 } else if (CsmBaseUtilities.isPointer(typ2)) {
                     // (int + pointer) case
-                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                     if (cls1 != null && CsmCompletion.isPrimitiveClass(cls1)) {
                         return typ2;
                     }
@@ -645,14 +645,14 @@ public final class CompletionSupport implements DocumentListener {
                         return CsmCompletion.INT_TYPE;
                     } else {
                         // (pointer - int) case
-                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                         if (cls2 != null && CsmCompletion.isPrimitiveClass(cls2)) {
                             return typ1;
                         }
                     }
                 } else if (CsmBaseUtilities.isPointer(typ2)) {
                     // (int - pointer) case. it is prohibited, but let's treat it as (pointer - int).
-                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                     if (cls1 != null && CsmCompletion.isPrimitiveClass(cls1)) {
                         return typ2;
                     }
@@ -891,7 +891,7 @@ public final class CompletionSupport implements DocumentListener {
                                     CsmClassifier classifier = typesMap.get(paramType);
                                     if (classifier == null) {
                                         if (ctx != null) {
-                                            classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
+                                            classifier = CsmBaseUtilities.getClassifier(paramType, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                                         } else {
                                             classifier = paramType.getClassifier();
                                         }
@@ -1112,7 +1112,7 @@ public final class CompletionSupport implements DocumentListener {
 
                 // we should check if this function is viable
                 CsmType retType = extractFunctionType(ctx, Arrays.asList(candidate.function), exp, paramTypes);
-                CsmClassifier cls = retType != null ? CsmBaseUtilities.getClassifier(retType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true) : null;
+                CsmClassifier cls = retType != null ? CsmBaseUtilities.getClassifier(retType, ctx.getLexicalContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true) : null;
                 validCandidate = (cls != null && cls.isValid());
             }
 
@@ -1653,7 +1653,7 @@ public final class CompletionSupport implements DocumentListener {
                                                 CsmFileInfoQuery.getDefault().getFileLanguageFlavor(context.getContextFile())
                                         );
                                         RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
-                                        type = CsmTypes.createType(renderedExpression.text, context.getContextScope(), new CsmTypes.SequenceDescriptor(
+                                        type = CsmTypes.createType(renderedExpression.text, context.getLexicalContextScope(), new CsmTypes.SequenceDescriptor(
                                             aptLangFlavor.first(),
                                             aptLangFlavor.second(),
                                             false,
@@ -2016,8 +2016,8 @@ public final class CompletionSupport implements DocumentListener {
 
     private static CsmScope getContextScope(Context context) {
         if (context != null) {
-            if (context.getContextScope() != null) {
-                return context.getContextScope();
+            if (context.getLexicalContextScope() != null) {
+                return context.getLexicalContextScope();
             }
             CsmOffsetableDeclaration contextElement = context.getContextElement();
             if (CsmKindUtilities.isScope(contextElement)) {
@@ -2159,9 +2159,9 @@ public final class CompletionSupport implements DocumentListener {
             CsmClassifier cls = type.getClassifier();
 
             if (deepResolving && (cls == null || CsmBaseUtilities.isUnresolved(cls))) {
-                if (ctx != null && CsmExpressionResolver.shouldResolveAsMacroType(type, ctx.getContextScope())) {
+                if (ctx != null && CsmExpressionResolver.shouldResolveAsMacroType(type, ctx.getLexicalContextScope())) {
                     List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(type);
-                    type = CsmExpressionResolver.resolveMacroType(type, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(typeInfo));
+                    type = CsmExpressionResolver.resolveMacroType(type, ctx.getLexicalContextScope(), instantiations, new ResolvedTypeInfoCollector(typeInfo));
                     cls = (type != null) ? type.getClassifier() : null;
                 }
             }
