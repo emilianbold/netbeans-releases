@@ -69,6 +69,7 @@ import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.openide.util.Exceptions;
 
@@ -204,12 +205,33 @@ public final class FoldOperationImpl {
     
     public boolean addToHierarchy(Fold fold, FoldHierarchyTransactionImpl transaction) {
         checkFoldOperation(fold);
-        return execution.add(fold, transaction);
+        try {
+            execution.incModCount();
+            return execution.add(fold, transaction);
+        } catch (HierarchyErrorException ex) {
+            try {
+                rebuildHierarchy(ex);
+                return execution.add(fold, transaction);
+            } catch (HierarchyErrorException ex2) {
+                Exceptions.printStackTrace(ex2);
+                return false;
+            }
+        }
     }
 
     public void removeFromHierarchy(Fold fold, FoldHierarchyTransactionImpl transaction) {
         checkFoldOperation(fold);
-        execution.remove(fold, transaction);
+        try {
+            execution.incModCount();
+            execution.remove(fold, transaction);
+        } catch (HierarchyErrorException ex) {
+            rebuildHierarchy(ex);
+            try {
+                execution.remove(fold, transaction);
+            } catch (HierarchyErrorException ex2) {
+                Exceptions.printStackTrace(ex2);
+            }
+        }
     }
     
     public boolean isAddedOrBlocked(Fold fold) {
@@ -263,6 +285,18 @@ public final class FoldOperationImpl {
     
     public boolean isReleased() {
         return released;
+    }
+    
+    public void rebuildHierarchy(HierarchyErrorException ex) {
+        LOG.log(Level.WARNING, "Hirerachy error in parent {0}, index {1}, fold {2}, operation: {3}",
+                new Object[] {
+                    ex.getParentFold(),
+                    ex.getOpAtIndex(),
+                    ex.getInsertOrRemove(),
+                    ex.isAdd() ? "add" : "remove"
+        });
+        LOG.log(Level.FINE, "Stacktrace: ", Exceptions.attachSeverity(ex, Level.FINER));
+        execution.rebuildHierarchy();
     }
     
     /**
@@ -377,7 +411,7 @@ public final class FoldOperationImpl {
         }
         
         public void remove() {
-            throw new IllegalArgumentException();
+            throw new UnsupportedOperationException();
         }
     }
     
@@ -487,14 +521,26 @@ public final class FoldOperationImpl {
     }
     
     public Map<FoldInfo, Fold> update(Collection<FoldInfo> fi, Collection<Fold> removed, Collection<FoldInfo> created) throws BadLocationException {
-        Refresher r = new Refresher(fi);
-        if (!isReleased()) {
-            if (!execution.isLockedByCaller()) {
-                throw new IllegalStateException("Update must run under FoldHierarchy lock");
-            }
-            r.run();
-        } else {
+        Refresher r;
+        if (isReleased()) {
             return null;
+        }
+        if (!execution.isLockedByCaller()) {
+            throw new IllegalStateException("Update must run under FoldHierarchy lock");
+        }
+        try {
+            r = new Refresher(fi);
+            r.run();
+        } catch (HierarchyErrorException ex) {
+            // second attempt:
+            rebuildHierarchy(ex);
+            r = new Refresher(fi);
+            try {
+                r.run();
+            } catch (HierarchyErrorException ex2) {
+                Exceptions.printStackTrace(ex2);
+                return null;
+            }
         }
         if (removed != null) {
             removed.addAll(r.toRemove);
@@ -503,6 +549,22 @@ public final class FoldOperationImpl {
             created.addAll(r.toAdd);
         }
         return r.currentFolds;
+    }
+    
+    private void checkLocked() {
+        Document d = getDocument();
+            if (d != null) {
+                // diagnostics, not throwing exceptions since it could disturb
+                // editing
+                if (!DocumentUtilities.isReadLocked(d)) {
+                    LOG.log(Level.WARNING, "Underlying document not read/write locked", 
+                            Exceptions.attachSeverity(new Throwable(), Level.FINE));
+                }
+                if (!execution.isLockedByCaller()) {
+                    LOG.log(Level.WARNING, "Fold hierarchy is not locked on transaction open", 
+                            Exceptions.attachSeverity(new Throwable(), Level.FINE));
+                }
+            }
     }
     
     public boolean getInitialState(FoldType ft) {
@@ -666,8 +728,20 @@ public final class FoldOperationImpl {
             foldIt = foldIterator();
             infoIt = ll.iterator();
             
-            tran = openTransaction();
             Document d = getDocument();
+            if (d != null) {
+                // diagnostics, not throwing exceptions since it could disturb
+                // editing
+                if (!DocumentUtilities.isReadLocked(d)) {
+                    LOG.log(Level.WARNING, "Underlying document not read/write locked", 
+                            Exceptions.attachSeverity(new Throwable(), Level.FINE));
+                }
+                if (!execution.isLockedByCaller()) {
+                    LOG.log(Level.WARNING, "Fold hierarchy is not locked on transaction open", 
+                            Exceptions.attachSeverity(new Throwable(), Level.FINE));
+                }
+            }
+            tran = openTransaction();
             int len = d.getLength();
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Updating fold hierarchy, doclen = {1}, foldInfos = " + ll, len );
@@ -769,6 +843,7 @@ public final class FoldOperationImpl {
                 }
             } finally {
                 tran.commit();
+                execution.incModCount();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "Updated fold hierarchy: " + getOperation().getHierarchy());
                 }
@@ -899,8 +974,31 @@ public final class FoldOperationImpl {
                 LOG.warning("FoldInfo: " + info + ", invalid start and end offsets");
                 return f;
             }
-            if (info.getStart() != soffs) {
-                acc.foldSetStartOffset(f, getDocument(), info.getStart());
+            Fold p = f.getParent();
+            int infoStart = info.getStart();
+            int infoEnd = info.getEnd();
+            if (p != null) {
+                int parentStart = p.getStartOffset();
+                int parentEnd = p.getEndOffset();
+
+                if (infoStart < parentStart) {
+                    execution.markDamaged();
+                    LOG.warning("Updated start < parent, dumping fold hierarchy: " + execution);
+                    LOG.warning("FoldInfo: " + info + ", fold: " + f);
+                    
+                    infoStart = parentStart;
+                }
+                if (infoEnd > parentEnd) {
+                    execution.markDamaged();
+                    LOG.warning("Updated end > parent, dumping fold hierarchy: " + execution);
+                    LOG.warning("FoldInfo: " + info + ", fold: " + f);
+                    
+                    infoEnd = parentEnd;
+                }
+            }
+            
+            if (infoStart != soffs) {
+                acc.foldSetStartOffset(f, getDocument(), infoStart);
                 FoldStateChange state = getFSCH(f);
                 if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < soffs) {
                     execution.markDamaged();
@@ -912,14 +1010,14 @@ public final class FoldOperationImpl {
             }
             int eoffs = f.getEndOffset();
             int origEnd = eoffs;
-            if (info.getEnd() != eoffs) {
+            if (infoEnd != eoffs) {
                 FoldStateChange state = getFSCH(f);
                 if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > eoffs) {
                     execution.markDamaged();
                     LOG.warning("Original end offset < start offset, dumping fold hierarchy: " + execution);
                     LOG.warning("FoldInfo: " + info + ", fold: " + f);
                 }
-                acc.foldSetEndOffset(f, getDocument(), info.getEnd());
+                acc.foldSetEndOffset(f, getDocument(), infoEnd);
                 acc.foldStateChangeEndOffsetChanged(state, eoffs);
                 eoffs = info.getEnd();
             }
@@ -930,7 +1028,6 @@ public final class FoldOperationImpl {
             }
             String desc = getInfoDescription(info);
             // sanity check
-            Fold p = f.getParent();
             if (p != null) {
                 int index = p.getFoldIndex(f);
                 if (index != -1) {

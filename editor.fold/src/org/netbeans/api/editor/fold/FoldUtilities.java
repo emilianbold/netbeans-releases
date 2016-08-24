@@ -371,20 +371,29 @@ public final class FoldUtilities {
     }
     
     /**
-     * Find nearest fold that either starts right at or follows
-     * the given offset.
+     * Find the fold nearest to the given offset. If the offset is positive or zero, finds the nearest
+     * fold that starts at or follows the offset. If the offset is negative, the method finds the nearest
+     * fold that ends at or before the negated offset value. Returns {@code null} if such a fold cannot be found,
+     * that is if no fold follows (or precedes, for negative offset values) the offset.
      * <br>
      * The search deep-dives into hierarchy.
      * 
-     * @param offset &gt=0 offset in a document.
-     * @return fold in the hierarchy that starts directly at the offset or follows it.
-     *  The most important is the lowest distance of the start of the fold
+     * @param offset offset in a document, or negated value of offset to indicate backwards search.
+     * @return fold in the hierarchy that is the nearest to the input offset.
+     *  The most important is the lowest distance of the start (end) of the fold
      *  to the given offset. If there would be a nearest fold having a first child that
      *  starts at the same position like the parent
-     *  then the parent would be returned.
+     *  then the parent would be returned. For backwards search, the deepest child will be returned.
+     * 
+     * @since 1.45 backward search added
      */
     public static Fold findNearestFold(FoldHierarchy hierarchy, int offset) {
-        return FoldUtilitiesImpl.findNearestFold(hierarchy, offset, Integer.MAX_VALUE);
+        if (offset < 0) {
+            return FoldUtilitiesImpl.findNearestFoldBackwards(hierarchy, offset, Integer.MIN_VALUE);
+        } else {
+            return FoldUtilitiesImpl.findNearestFold(hierarchy, offset, Integer.MAX_VALUE);
+        }
+        
     }
     
     /** 

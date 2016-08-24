@@ -715,7 +715,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             CodeCompletionHandler completer = getCompletable(controller);
             try {
                 // TODO: use the completion helper to get the contxt
-                if (completer != null) {
+                if (completer != null && offset != -1) {
                     prefix = completer.getPrefix(controller, offset, upToOffset);
                 }
                 if (prefix == null && doc != null) {

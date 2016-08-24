@@ -166,6 +166,8 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.api.java.platform</package>
                 <package>org.netbeans.modules.java.platform.implspi</package>
+                <package>org.netbeans.spi.java.platform</package>
+                <package>org.netbeans.spi.java.platform.support</package>
             </public-packages>
         </data>
     </configuration>
