@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -1295,7 +1296,7 @@ abstract public class CsmCompletionQuery {
             return contextFile;
         }
 
-        CsmScope getContextScope() {
+        CsmScope getLexicalContextScope() {
             // is not null when scope cannot be calculated from offset
             // (when resolving was started from macros)
             return contextScopes[0];
@@ -1317,7 +1318,7 @@ abstract public class CsmCompletionQuery {
             return sup.doc2context(pos);
         }
         
-        private CsmScope getLocalContextScope() {
+        private CsmScope getLogicalContextScope() {
             // this scope is changing while resolving qualified name:
             // AAA::BBB::CCC
             //           ^
@@ -1325,7 +1326,7 @@ abstract public class CsmCompletionQuery {
             return contextScopes[1];
         }
         
-        private void setLocalContextScope(CsmScope scope) { 
+        private void setLogicalContextScope(CsmScope scope) { 
             contextScopes[1] = scope;
         }
 
@@ -1548,9 +1549,9 @@ abstract public class CsmCompletionQuery {
         }
 
         private CsmClassifier extractLastTypeClassifier(ExprKind expKind) {
-            CsmClassifier lastTypeCls = extractTypeClassifier(lastType, getLocalContextScope(), expKind);
+            CsmClassifier lastTypeCls = extractTypeClassifier(lastType, getLogicalContextScope(), expKind);
             if (CsmKindUtilities.isScope(lastTypeCls)) {
-                setLocalContextScope((CsmScope) lastTypeCls);
+                setLogicalContextScope((CsmScope) lastTypeCls);
             }
             return lastTypeCls;
         }
@@ -2054,7 +2055,7 @@ abstract public class CsmCompletionQuery {
                                                 // restore old
                                                 compResolver.setResolveScope(old);
                                                 if (lastNamespace != null) {
-                                                    setLocalContextScope(lastNamespace);
+                                                    setLogicalContextScope(lastNamespace);
                                                     // clean up invisible backup
                                                     lastType = null;
                                                 }
@@ -2071,7 +2072,7 @@ abstract public class CsmCompletionQuery {
                                         int ad = lastType.getArrayDepth();
                                         if (staticOnly && ad == 0) { // can be inner class
                                             CsmClassifier classifier = extractLastTypeClassifier(kind);
-                                            CsmType nestedType = findNestedType(classifier, var, getLocalContextScope(), endOffset);
+                                            CsmType nestedType = findNestedType(classifier, var, getLogicalContextScope(), endOffset);
                                             if (nestedType != null) {
                                                 lastType = nestedType;
                                                 inner = true;
@@ -2079,7 +2080,7 @@ abstract public class CsmCompletionQuery {
                                         }
                                         if (!inner) { // not inner class name
                                             if (ad == 0 || (kind == ExprKind.ARROW)) { // zero array depth or deref array as pointer
-                                                CsmClassifier classifier = getClassifier(lastType, getLocalContextScope(), contextFile, endOffset);
+                                                CsmClassifier classifier = getClassifier(lastType, getLogicalContextScope(), contextFile, endOffset);
                                                 if (CsmKindUtilities.isClass(classifier)) {
                                                     CsmClass clazz = (CsmClass) classifier;
                                                     List elemList = finder.findFields(contextElement, clazz, var, true, staticOnly, true, true, scopeAccessedClassifier, this.sort);
@@ -2189,7 +2190,7 @@ abstract public class CsmCompletionQuery {
 //                                        if(res.isEmpty()) {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
-                                            CsmObject obj = res.isEmpty() ? null : (CsmObject) res.iterator().next();
+                                            CsmObject obj = CompletionSupport.getFirstVisible((List<CsmObject>) res, contextFile);
                                             lastType = getObjectType(obj, false);
                                             cont = (lastType != null);
                                             lastNamespace = null;
@@ -2213,7 +2214,7 @@ abstract public class CsmCompletionQuery {
                     lastType = resolveType(item.getParameter(0));
                     cont = false;
                     if (lastType != null) { // must be type
-                        CsmClassifier cls = getClassifier(lastType, getLocalContextScope(), contextFile, endOffset);
+                        CsmClassifier cls = getClassifier(lastType, getLogicalContextScope(), contextFile, endOffset);
                         if (cls != null) {
                             if (item.getParameterCount() == 2) { // index in array follows
                                 int ptrDepth = lastType.getPointerDepth();
@@ -2307,7 +2308,7 @@ abstract public class CsmCompletionQuery {
 
                             if (outsiderTypeAlias && CsmKindUtilities.isTypeAlias(obj)) {
                                 if (contextType != null) {
-                                    CsmClassifier classifier = getClassifier(contextType, getLocalContextScope(), contextFile, endOffset);
+                                    CsmClassifier classifier = getClassifier(contextType, getLogicalContextScope(), contextFile, endOffset);
                                     if (CsmKindUtilities.isClass(classifier)) {
                                         List<CsmClass> baseClasses = getBaseClasses(typ, classifier, nextKind, true);
                                         if (baseClasses == null || baseClasses.isEmpty()) {
@@ -2547,7 +2548,7 @@ abstract public class CsmCompletionQuery {
                                 }
 
                                 lastType = CsmCompletion.createType(
-                                    getClassifier(lastNestedType, getLocalContextScope(), contextFile, endOffset), 
+                                    getClassifier(lastNestedType, getLogicalContextScope(), contextFile, endOffset), 
                                     ptrDepth, 
                                     getReferenceValue(lastNestedType), 
                                     lastNestedType.getArrayDepth(), 
@@ -2970,7 +2971,7 @@ abstract public class CsmCompletionQuery {
                                                 assert previousType != null && previousClassifier != null;
                                                 // can be default constructor
                                                 if ((staticOnly || kind == ExprKind.SCOPE) && previousType.getArrayDepth() == 0) {
-                                                    lastType = findNestedType(previousClassifier, mtdName, getLocalContextScope(), endOffset);
+                                                    lastType = findNestedType(previousClassifier, mtdName, getLogicalContextScope(), endOffset);
                                                     returnImmediately = (lastType == null); // do not return if type is resolved
                                                 }
                                             }
@@ -3135,7 +3136,7 @@ abstract public class CsmCompletionQuery {
                 assert !instantiations.isEmpty() : "Instantiations must not be empty"; //NOI18N
                 // FIXME: what about nested classifiers based on template type? Like "_Tp::something".
                 // For now getClassifier() returns UnresolvedClass for such types.
-                CsmClassifier cls = getClassifier(lastType, getLocalContextScope(), contextFile, endOffset);
+                CsmClassifier cls = getClassifier(lastType, getLogicalContextScope(), contextFile, endOffset);
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
@@ -3157,7 +3158,7 @@ abstract public class CsmCompletionQuery {
                 }
 
                 if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
-                    CsmClassifier classifier = getClassifier(lastType, getLocalContextScope(), contextFile, endOffset);
+                    CsmClassifier classifier = getClassifier(lastType, getLogicalContextScope(), contextFile, endOffset);
                     if(CsmKindUtilities.isInstantiation(classifier)) {
                         boolean instantiatedByTemplateParam = false;
                         CsmInstantiation inst = (CsmInstantiation)classifier;
@@ -3198,8 +3199,8 @@ abstract public class CsmCompletionQuery {
                 }
                 if (bodyStartOffset >= 0) {
                     CsmContext context;
-                    if (getContextScope() != null) {
-                        context = CsmOffsetResolver.findContextFromScope(contextFile, bodyStartOffset, getContextScope());
+                    if (getLexicalContextScope() != null) {
+                        context = CsmOffsetResolver.findContextFromScope(contextFile, bodyStartOffset, getLexicalContextScope());
                     } else {
                         context = CsmOffsetResolver.findContext(contextFile, bodyStartOffset, getFileReferencesContext());
                     }
@@ -3250,7 +3251,7 @@ abstract public class CsmCompletionQuery {
         }
         
         private boolean findTypeViaOperator(CsmType type, CsmCompletionExpression opExp) {
-            CsmClassifier classifier = extractTypeClassifier(type, getLocalContextScope(), ExprKind.NONE);
+            CsmClassifier classifier = extractTypeClassifier(type, getLogicalContextScope(), ExprKind.NONE);
             if (CsmKindUtilities.isClass(classifier)) {
                 CsmClass cls = (CsmClass) classifier;
                 CsmFunction.OperatorKind opKind = CsmFunction.OperatorKind.getKindByImage(opExp.getTokenText(0), true);
@@ -3333,7 +3334,7 @@ abstract public class CsmCompletionQuery {
         
         private <T extends CsmFunctional> boolean adlLookupType(CsmType type, String name, Collection<T> mtdList, ClassifiersAntiLoop handledClasses, Set<CsmNamespace> handledNamespaces) {
             if (type != null) {
-                CsmClassifier typeCls = getClassifier(type, getContextScope(), contextFile, endOffset);
+                CsmClassifier typeCls = getClassifier(type, getLexicalContextScope(), contextFile, endOffset);
                 if (CsmKindUtilities.isClass(typeCls)) {
                     if (adlLookupClass((CsmClass) typeCls, name, mtdList, handledClasses, handledNamespaces)) {
                         return true;
@@ -3504,7 +3505,7 @@ abstract public class CsmCompletionQuery {
 
         private CsmFunctional lookForOperator(CsmType type) {
             if (type != null) {
-                CsmClassifier cls = getClassifier(type, getLocalContextScope(), contextFile, endOffset);
+                CsmClassifier cls = getClassifier(type, getLogicalContextScope(), contextFile, endOffset);
                 if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
                     return (CsmFunctional) cls;
                 } else if (CsmKindUtilities.isClosureClassifier(cls)) {

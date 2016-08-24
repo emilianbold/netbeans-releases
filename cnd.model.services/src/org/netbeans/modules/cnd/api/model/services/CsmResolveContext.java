@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Stack;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
@@ -64,6 +65,17 @@ public final class CsmResolveContext {
         return new CsmResolveContext(file, offset);
     }    
     
+    /**
+     * Finds last created and registered resolve context (This is done in CsmCompletionQuery)
+     * 
+     * @return last resolve context if there is one or null
+     */
+    public static CsmResolveContext getLast() {
+        CsmResolveContext context;
+        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
+        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
+        return context;
+    }
     
     public CsmFile getFile() {
         return file;
