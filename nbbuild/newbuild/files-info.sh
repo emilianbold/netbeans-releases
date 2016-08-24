@@ -45,9 +45,9 @@ if [ 0 -eq $? ] ; then
     alg=`type -p digest`
     alg="$alg -a md5"
 else
-    type md5sum >> /dev/null 2>&1
+    type sha256sum >> /dev/null 2>&1
     if [ 0 -eq $? ] ; then
-        alg=`type -p md5sum`
+        alg=`type -p sha256sum`
     else 
         type gmd5sum >> /dev/null 2>&1
         if [ 0 -eq $? ] ; then
