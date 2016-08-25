@@ -42,9 +42,11 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.js.parser.ir.FunctionNode;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +117,8 @@ public final class FormatContext {
     private final Stack<JsxBlock> jsxIndents = new Stack<>();
 
     private final Map<FormatToken, JsxBlock> jsxIndentsMap = new HashMap<>();
+    
+    private final Deque<JsxElement> jsxPath = new ArrayDeque<>();
 
     private LineWrap lastLineWrap;
 
@@ -213,7 +217,10 @@ public final class FormatContext {
         while (next != null && next.getId() != JsTokenId.JSX_TEXT) {
             next = next.next();
         }
-        Integer indent = next != null ? stream.getOriginalIndent(next) : null;
+        Integer indent = next != null ? getSuggestedIndentation(next.getOffset()) : null;
+        if (indent == null) {
+            indent = next != null ? stream.getOriginalIndent(next) : null;
+        }
         int value = indent != null ? indent : 0;
 
         int current = value;
@@ -264,23 +271,52 @@ public final class FormatContext {
     public boolean isInsideJsx() {
         return !jsxIndents.isEmpty();
     }
+    
+    public void updateJsxPath(char first, Character second) {
+        assert isInsideJsx();
+        switch (first) {
+            case '<':
+                jsxPath.push(new JsxElement(JsxElement.Type.TAG, null));
+                break;
+            case '>':
+                JsxElement element = jsxPath.isEmpty() ? null : jsxPath.peek();
+                if (element != null && element.getType() == JsxElement.Type.TAG) {
+                    jsxPath.pop();
+                }
+                break;
+            case '=':
+                if (!jsxPath.isEmpty() && jsxPath.peek().getType() == JsxElement.Type.TAG) {
+                    if (second != null) {
+                        if (second == '{') {
+                            jsxPath.push(new JsxElement(JsxElement.Type.ATTRIBUTE, '}'));
+                        } else if (second == '"' || second == '\'') {
+                            jsxPath.push(new JsxElement(JsxElement.Type.ATTRIBUTE, second));
+                        }
+                    }
+                }
+                break;
+            case '\'':
+            case '"':
+            case '}':
+                element = jsxPath.isEmpty() ? null : jsxPath.peek();
+                if (element != null && element.getType() == JsxElement.Type.ATTRIBUTE && element.getClosingChar() == first) {
+                    jsxPath.pop();
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     public Integer getSuggestedIndentation(FormatToken token) {
         if (jsxIndents.isEmpty()) {
             return 0;
         }
-        BaseDocument doc = getDocument();
-        Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
-        if (suggestedLineIndents != null) {
-            try {
-                int lineIndex = LineDocumentUtils.getLineIndex(doc, token.getOffset() + offsetDiff);
-                Integer indent = suggestedLineIndents.get(lineIndex);
-                return indent != null ? indent : 0;
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
+        if (!jsxPath.isEmpty() && jsxPath.peek().getType() == JsxElement.Type.ATTRIBUTE) {
+            return 0;
         }
-        return 0;
+        Integer value = getSuggestedIndentation(token.getOffset());
+        return value == null ? 0 : value;
     }
 
     public void setLastLineWrap(LineWrap lineWrap) {
@@ -645,6 +681,21 @@ public final class FormatContext {
         }
     }
 
+    private Integer getSuggestedIndentation(int offset) {
+        BaseDocument doc = getDocument();
+        Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
+        if (suggestedLineIndents != null) {
+            try {
+                int lineIndex = LineDocumentUtils.getLineIndex(doc, offset + offsetDiff);
+                Integer indent = suggestedLineIndents.get(lineIndex);
+                return indent != null ? indent : null;
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return null;
+    }
+
     // TODO would be better to hadle on upper levels
     private int computeLength(int voffset, int length) {
         if (!embedded) {
@@ -777,6 +828,34 @@ public final class FormatContext {
         public boolean isChange() {
             return change;
         }
+    }
+
+    public static class JsxElement {
+        
+        public enum Type {
+
+            TAG,
+            
+            ATTRIBUTE
+        }
+        
+        private final Type type;
+        
+        private final Character closingChar;
+
+        public JsxElement(Type type, Character closingChar) {
+            assert type == Type.TAG || closingChar != null;
+            this.type = type;
+            this.closingChar = closingChar;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public Character getClosingChar() {
+            return closingChar;
+        }        
     }
 
     private static class JsxBlock {

@@ -145,7 +145,7 @@ public class JsFormatter implements Formatter {
                         (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
-                FormatVisitor visitor = new FormatVisitor(tokenStream,
+                JsFormatVisitor visitor = new JsFormatVisitor(tokenStream,
                         ts, context.endOffset());
 
 
@@ -628,6 +628,7 @@ public class JsFormatter implements Formatter {
                     }
                     indentationSize += continuationIndent * continuationLevel;
                     indentationSize += formatContext.getSuggestedIndentation(tokenAfterEol);
+
                     FormatToken tokenAfterEolPrev = tokenAfterEol.previous();
                     // last empty line formatted by html
                     if (tokenAfterEol.getId() == JsTokenId.JSX_TEXT
@@ -882,7 +883,9 @@ public class JsFormatter implements Formatter {
 
         for (int i = 0; i < text.length(); i++) {
             char single = text.charAt(i);
-            if (single == '\n') { // NOI18N
+            Character next = text.length() > i + 1 ? text.charAt(i + 1) : null;
+            formatContext.updateJsxPath(single, next);
+            if (single == '\n') {
                 // if the line is exceeding right margin we wrap on previous position
                 FormatToken indentationEnd = wrapOnEol(tokens, formatContext, index - 1, codeStyle, initialIndent, continuationIndent, continuations, i);
                 FormatToken indentationEndNext = indentationEnd == null ? null : indentationEnd.next();

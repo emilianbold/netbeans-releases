@@ -88,7 +88,7 @@ import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
  *
  * @author Petr Hejl
  */
-public class FormatVisitor extends NodeVisitor {
+public class JsFormatVisitor extends NodeVisitor {
 
     private static final Set<TokenType> UNARY_TYPES = EnumSet.noneOf(TokenType.class);
 
@@ -107,7 +107,7 @@ public class FormatVisitor extends NodeVisitor {
     
     private final TokenUtils tokenUtils;
 
-    public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
+    public JsFormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
         super(new LexicalContext());
         this.ts = ts;
         this.tokenStream = tokenStream;
