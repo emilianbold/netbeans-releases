@@ -306,15 +306,15 @@ public abstract class BaseAction extends TextAction {
             String actionName = getValue(NAME) != null ? getValue(NAME).toString().toLowerCase() : null;
             if (actionName != null &&
                 !"default-typed".equals(actionName) && //NOI18N
-                -1 == actionName.indexOf("caret") && //NOI18N
-                -1 == actionName.indexOf("delete") && //NOI18N
-                -1 == actionName.indexOf("undo") &&//NOI18N
-                -1 == actionName.indexOf("redo") &&//NOI18N
-                -1 == actionName.indexOf("selection") && //NOI18N
+//                -1 == actionName.indexOf("caret") && //NOI18N
+//                -1 == actionName.indexOf("delete") && //NOI18N
+//                -1 == actionName.indexOf("undo") &&//NOI18N
+//                -1 == actionName.indexOf("redo") &&//NOI18N
+//                -1 == actionName.indexOf("selection") && //NOI18N
                 -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
                 -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
-                -1 == actionName.indexOf("page-up") &&//NOI18N
-                -1 == actionName.indexOf("page-down") &&//NOI18N
+//                -1 == actionName.indexOf("page-up") &&//NOI18N
+//                -1 == actionName.indexOf("page-down") &&//NOI18N
                 -1 == actionName.indexOf("-kit-install") //NOI18N
             ) {
                 LogRecord r = new LogRecord(Level.FINE, "UI_ACTION_EDITOR"); // NOI18N

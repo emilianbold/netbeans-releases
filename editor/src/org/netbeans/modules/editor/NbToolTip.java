@@ -76,6 +76,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.EditorUI;
@@ -240,8 +241,11 @@ public class NbToolTip extends FileChangeAdapter {
                                             ? HighlightingManager.getInstance(target).getBottomHighlights()
                                             : HighlightingManager.getInstance(target).getTopHighlights();
                                     HighlightsSequence seq = highlights.getHighlights(offset, offset + 1);
-                                    if (seq.moveNext() && seq.getAttributes() != null) {
-                                        tooltipAttributeValue = seq.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
+                                    if (seq.moveNext()) {
+                                        AttributeSet attrs = seq.getAttributes();
+                                        if (attrs != null) {
+                                            tooltipAttributeValue = attrs.getAttribute(EditorStyleConstants.Tooltip);
+                                        }
                                     }
                                     tops = !tops;
                                 } while (tooltipAttributeValue == null && tops);

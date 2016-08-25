@@ -52,6 +52,7 @@ import javax.swing.text.Position;
 import org.netbeans.modules.editor.fold.FoldOperationImpl;
 import org.netbeans.modules.editor.fold.FoldChildren;
 import org.netbeans.modules.editor.fold.FoldUtilitiesImpl;
+import org.netbeans.modules.editor.fold.HierarchyErrorException;
 
 /**
  * Fold is a building block of the code folding tree-based hierarchy.
@@ -386,12 +387,7 @@ public final class Fold {
                     int fs = f.getStartOffset();
                     int fe = f.getEndOffset();
                     if (fs < ps || fe > pe) {
-                        LOG.log(Level.WARNING, "Illegal attempt to replace-by-children fold. Parent fold: {0}, fold to be replaced: {1}, " +
-                                "at index {2}", new Object[] {
-                            this, toRemove, index
-                        });
-                        LOG.log(Level.WARNING, "Dumping hierarchy: " + getHierarchy(), new Throwable());
-                        break;
+                        foldChildren.throwHierarchyError(toRemove, index, false, "Illegal attempt to replace-by-children fold");
                     }
                 }
             }

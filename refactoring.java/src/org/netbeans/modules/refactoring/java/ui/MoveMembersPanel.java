@@ -1056,28 +1056,38 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             boolean inherited = isParentInherited || (null != parent && !parent.equals(e.getEnclosingElement()));
             Description d = new Description(e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), inherited);
 
-            if (e instanceof TypeElement) {
-                if(parent == null) {
-                    d.setSubs(new HashSet<Description>());
-                    d.setHtmlHeader(UIUtilities.createHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
-                } else {
-                    return null;
-                }
-            } else if (e instanceof ExecutableElement) {
-                d.setHtmlHeader(UIUtilities.createHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
-            } else if (e instanceof VariableElement) {
-                if (!(e.getKind() == ElementKind.FIELD)) {
-                    return null;
-                }
-                d.setHtmlHeader(UIUtilities.createHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
-            }
+            switch (e.getKind()) {
+                case CLASS:
+                case INTERFACE:
+                case ENUM:
+                case ANNOTATION_TYPE:
+                    if(parent == null) {
+                        d.setSubs(new HashSet<Description>());
+                        d.setHtmlHeader(UIUtilities.createHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
+                    } else {
+                        return null;
+                    }
+                    break;
 
+                case ENUM_CONSTANT:
+                case FIELD:
+                    d.setHtmlHeader(UIUtilities.createHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
+                    break;
+                  
+                case METHOD:
+                    d.setHtmlHeader(UIUtilities.createHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited(), true, false));
+                    break;
+                case CONSTRUCTOR:
+                    return null;
+                    
+                default:
+                    return null;
+                    
+            }
             d.setModifiers(e.getModifiers());
             d.setPos(getPosition(e, info, pos));
             d.setCpInfo(info.getClasspathInfo());
             d.setSelected(isSelected(e, info));
-            d.setIsConstructor(e.getKind() == ElementKind.CONSTRUCTOR);
-
             return d;
         }
 
