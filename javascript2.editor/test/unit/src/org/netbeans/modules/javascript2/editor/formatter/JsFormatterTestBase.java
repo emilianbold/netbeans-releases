@@ -97,7 +97,7 @@ public class JsFormatterTestBase extends JsTestBase {
 
         FormatTokenStream tokenStream = FormatTokenStream.create(null,
                 ts, startOffset, endOffset);
-        FormatVisitor visitor = new FormatVisitor(tokenStream,
+        JsFormatVisitor visitor = new JsFormatVisitor(tokenStream,
                 ts, endOffset);
 
         JsParser parser = new JsParser();
