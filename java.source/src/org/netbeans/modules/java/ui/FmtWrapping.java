@@ -91,6 +91,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         tryCombo.addFocusListener(this);
         multiCatchCombo.putClientProperty(OPTION_ID, wrapDisjunctiveCatchTypes);
         multiCatchCombo.addFocusListener(this);
+        afterBarCheckBox.putClientProperty(OPTION_ID, wrapAfterDisjunctiveCatchBar);
+        afterBarCheckBox.addFocusListener(this);
         forCombo.putClientProperty(OPTION_ID, wrapFor);
         forCombo.addFocusListener(this);
         forStatementCombo.putClientProperty(OPTION_ID, wrapForStatement );
@@ -187,6 +189,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         tryCombo = new javax.swing.JComboBox();
         multiCatchLabel = new javax.swing.JLabel();
         multiCatchCombo = new javax.swing.JComboBox();
+        afterBarCheckBox = new javax.swing.JCheckBox();
         forLabel = new javax.swing.JLabel();
         forCombo = new javax.swing.JComboBox();
         forStatementLabel = new javax.swing.JLabel();
@@ -391,6 +394,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(multiCatchCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(afterBarCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterBar")); // NOI18N
+        afterBarCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
+        panel1.add(afterBarCheckBox, gridBagConstraints);
 
         forLabel.setLabelFor(forCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_for")); // NOI18N
@@ -628,6 +639,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox afterAssignOpsCheckBox;
+    private javax.swing.JCheckBox afterBarCheckBox;
     private javax.swing.JCheckBox afterBinaryOpsCheckBox;
     private javax.swing.JCheckBox afterDotCheckBox;
     private javax.swing.JCheckBox afterLambdaArrowCheckBox;
