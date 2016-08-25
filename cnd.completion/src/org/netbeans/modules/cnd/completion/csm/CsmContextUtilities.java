@@ -858,13 +858,18 @@ public class CsmContextUtilities {
             // Compound literal in initializer starts with LBRACE, not with COMMA
             return null;
         }
-        Token<TokenId> rParen = findToken(
-            cppts,
-            true,
-            false,
-            Arrays.asList(CppTokenId.RPAREN),
-            CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-        );
+        Token<TokenId> rParen;
+        if (cppts.token() != null && cppts.token().id() == CppTokenId.RPAREN) {
+            rParen = cppts.token();
+        } else {
+            rParen = findToken(
+                cppts,
+                true,
+                false,
+                Arrays.asList(CppTokenId.RPAREN),
+                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+            );
+        }
         if (rParen != null) {
             int arrayDepth = 0;
             List<Token<TokenId>> nameTokens = new LinkedList<Token<TokenId>>();

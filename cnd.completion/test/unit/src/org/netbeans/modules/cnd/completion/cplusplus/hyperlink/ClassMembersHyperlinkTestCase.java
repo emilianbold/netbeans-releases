@@ -1323,6 +1323,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257822.c", 8, 8, "bug257822.c", 3, 5);
         performTest("bug257822.c", 18, 8, "bug257822.c", 3, 5);
         performTest("bug257822.c", 23, 8, "bug257822.c", 3, 5);
+        performTest("bug257822.c", 26, 44, "bug257822.c", 3, 5);
     }
     
     public void testBug257821() throws Exception {
