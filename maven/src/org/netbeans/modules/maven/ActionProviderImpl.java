@@ -611,7 +611,7 @@ public class ActionProviderImpl implements ActionProvider {
         @ActionReference(position = 1296, path = "Loaders/text/x-java/Actions"),
         @ActionReference(position = 1821, path = "Editors/text/x-java/Popup")
     })
-    @Messages({"LBL_Custom_Run=Custom", "LBL_Custom_Run_File=Run Maven"})
+    @Messages({"LBL_Custom_Run=Run Maven", "LBL_Custom_Run_File=Run Maven"})
     public static ContextAwareAction customPopupActions() {
         return new ConditionallyShownAction() {
             
