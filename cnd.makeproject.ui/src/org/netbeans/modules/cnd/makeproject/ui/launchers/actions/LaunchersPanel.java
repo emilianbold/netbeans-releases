@@ -42,11 +42,18 @@
 package org.netbeans.modules.cnd.makeproject.ui.launchers.actions;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -54,16 +61,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.InputMap;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableCellEditor;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.ui.launchers.actions.LaunchersConfig.LauncherConfig;
@@ -100,6 +117,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     private boolean modified = false;
     private volatile boolean resetFields = true;
     private final Preferences panelPreferences = NbPreferences.forModule(getClass()).node("launchers"); // NOI18N
+    private static final String COMMPLETION_ACTION = "completion"; //NOI18N
 
     /**
      * Creates new form LaunchersPanel
@@ -175,6 +193,30 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         };
         launcherNameTextField.getDocument().addDocumentListener(documentListener);
         runTextField.getDocument().addDocumentListener(documentListener);
+        {
+            InputMap im = runTextField.getInputMap();
+            ActionMap am = runTextField.getActionMap();
+            im.put(KeyStroke.getKeyStroke("ctrl SPACE"), COMMPLETION_ACTION); //NOI18N
+            am.put(COMMPLETION_ACTION, new CompletionAction(runTextField));
+        }
+        {
+            InputMap im = runDirTextField.getInputMap();
+            ActionMap am = runDirTextField.getActionMap();
+            im.put(KeyStroke.getKeyStroke("ctrl SPACE"), COMMPLETION_ACTION); //NOI18N
+            am.put(COMMPLETION_ACTION, new CompletionAction(runDirTextField));
+        }
+        {
+            InputMap im = buildTextField.getInputMap();
+            ActionMap am = buildTextField.getActionMap();
+            im.put(KeyStroke.getKeyStroke("ctrl SPACE"), COMMPLETION_ACTION); //NOI18N
+            am.put(COMMPLETION_ACTION, new CompletionAction(buildTextField));
+        }
+        {
+            InputMap im = symbolsTextField.getInputMap();
+            ActionMap am = symbolsTextField.getActionMap();
+            im.put(KeyStroke.getKeyStroke("ctrl SPACE"), COMMPLETION_ACTION); //NOI18N
+            am.put(COMMPLETION_ACTION, new CompletionAction(symbolsTextField));
+        }
     }
 
     @Override
@@ -459,6 +501,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
         runLabel.setLabelFor(runTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runLabel.text")); // NOI18N
+        runLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "RunCommandToolTipText")); // NOI18N
 
         buildLabel.setLabelFor(buildTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buildLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.buildLabel.text")); // NOI18N
@@ -615,7 +658,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
         LauncherConfig newConfiguration = new LauncherConfig(max, true);
         newConfiguration.setName("launcher" + max); //NOI18N
-        newConfiguration.setCommand("\"${PROJECT_DIR}/${OUTPUT_PATH}\"");
+        newConfiguration.setCommand("\"${PROJECT_DIR}/${OUTPUT_PATH}\""); //NOI18N
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
@@ -1100,4 +1143,103 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             return new Action[0];
         }
     }
+    
+    private class CompletionAction extends AbstractAction {
+        private final JTextComponent textComponent;
+
+        private CompletionAction(JTextComponent runTextField) {
+            this.textComponent = runTextField;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            final int position = textComponent.getCaretPosition();
+            Point location;
+            try {
+                location = textComponent.modelToView(position).getLocation();
+            } catch (BadLocationException e2) {
+                e2.printStackTrace(System.err);
+                return;
+            }
+            String text = textComponent.getText();
+            CompletionPanel suggestion = new CompletionPanel(textComponent, position, location);
+        }
+    }
+    
+    private static class CompletionPanel {
+        private final JList list;
+        private final JPopupMenu popupMenu;
+        private final int insertionPosition;
+        private final JTextComponent texComponent;
+
+        public CompletionPanel(JTextComponent textarea, int position, final Point location) {
+            this.insertionPosition = position;
+            this.texComponent = textarea;
+            popupMenu = new JPopupMenu();
+            popupMenu.removeAll();
+            popupMenu.setOpaque(false);
+            popupMenu.setBorder(null);
+            list = createSuggestionList();
+            popupMenu.add(list, BorderLayout.CENTER);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    int baseLine = textarea.getBaseline(0, 0);
+                    if (baseLine < 0) {
+                        baseLine = textarea.getHeight();
+                    }
+                    popupMenu.show(textarea, location.x, baseLine + location.y);
+                }
+            });
+        }
+
+        private JList createSuggestionList() {
+            String text = NbBundle.getMessage(LaunchersPanel.class, "CompletionListText"); //NOI18N
+            String[] data = text.split("\n"); //NOI18N
+            JList list = new JList(data);
+            list.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            list.setSelectedIndex(0);
+            list.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        insertSelection();
+                        e.consume();
+                    }
+                }
+            });
+            list.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        insertSelection();
+                        e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        hide();
+                        e.consume();
+                    }
+                }
+            });
+            return list;
+        }
+
+        private void hide() {
+            popupMenu.setVisible(false);
+        }
+        
+        private void insertSelection() {
+            hide();
+            if (list.getSelectedValue() != null) {
+                try {
+                    String selection = (String) list.getSelectedValue();
+                    final String selectedSuggestion = selection.substring(0, selection.indexOf(' '));
+                    texComponent.getDocument().insertString(insertionPosition, selectedSuggestion, null);
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace(System.err);
+                }
+            }
+        }
+    }
+        
 }
