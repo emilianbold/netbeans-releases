@@ -195,7 +195,6 @@ public final class CosUpdated extends Task {
                 return delegate.getOutputStream();
             }
 
-            @Override
             public int compareTo(Resource another) {
                 if (another instanceof CosResource) {
                     return delegate.compareTo(((CosResource)another).delegate);
