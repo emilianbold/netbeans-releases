@@ -193,7 +193,7 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
                 FileObject newOne = null;
                 for (FileObject fileObject : fileObjects) {
                     String orig = (String) fileObject.getAttribute("originalFile"); //NOI18N
-                    if(source.getNameExt().equals(orig)) {
+                    if(fileObject.isValid() && source.getNameExt().equals(orig)) {
                         newOne = fileObject;
                         break;
                     }

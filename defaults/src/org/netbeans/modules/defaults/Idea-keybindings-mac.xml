@@ -84,13 +84,6 @@ made subject to such option by the copyright holder.
         
     <bind key="O-I" actionName="generate-code"/>
     
-    <bind key="OS-J" remove="true"/>
-    <bind actionName="remove-last-caret" key="CS-G"/>
-    <bind key="O-J" remove="true"/>
-    <bind actionName="addCaretSelectNext" key="C-G"/>
-    <bind key="CSO-J" remove="true"/>
-    <bind actionName="addCaretSelectAll" key="CM-G"/>
-    
     <!-- Things we add only on the mac -->
     
     <bind actionName="selection-begin-line" key="MS-LEFT"/>

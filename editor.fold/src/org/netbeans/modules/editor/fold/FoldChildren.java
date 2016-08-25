@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.fold;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.fold.Fold;
@@ -109,15 +110,15 @@ public final class FoldChildren extends GapList {
      * @param index &gt;=0 &amp;&amp; &lt;{@link #getFoldCount()}
      *  index of the fold.
      */
-    private static int invalidIndexHierarchySnapshot;
+    private static AtomicInteger invalidIndexHierarchySnapshot = new AtomicInteger();
     public Fold getFold(int index) {
-        if (index >= getFoldCount() && invalidIndexHierarchySnapshot == 0) {
+        if (index >= getFoldCount() && invalidIndexHierarchySnapshot.get() == 0) {
             StringBuilder sb = new StringBuilder(200);
             sb.append("Invalid index=").append(index).append("; foldCount=").append(getFoldCount()).append('\n'); // NOI18N
             if (parent != null) {
-                invalidIndexHierarchySnapshot++;
+                invalidIndexHierarchySnapshot.incrementAndGet();
                 sb.append(parent.getHierarchy().toString());
-                invalidIndexHierarchySnapshot--;
+                invalidIndexHierarchySnapshot.decrementAndGet();
             }
             throw new IndexOutOfBoundsException(sb.toString());
         }
@@ -181,10 +182,8 @@ public final class FoldChildren extends GapList {
         int fe = fold.getEndOffset();
         
         if (fs < ps || fe > pe) {
-            LOG.log(Level.WARNING, "Illegal attempt to change hierarchy. Parent fold: {0}, fold to be inserted: {1}, extract from {2}, len {3}", new Object[] {
-                parent, fold, index, length
-            });
-            LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+            throwHierarchyError(fold, index, true,
+                    "Illegal attempt to reparent children");
         }
         
         
@@ -234,17 +233,36 @@ public final class FoldChildren extends GapList {
         }
     }
 
+    /**
+     * Throws a special runtime, which causes the entire hierarchy to rebuild.
+     * @param f the fold in error, or index of the operation
+     * @param index index of the fold within the parent
+     * @param b true for add, false for remove
+     * @param s message
+     */
+    public void throwHierarchyError(Fold f, int index, boolean b, String s) {
+        if (ApiPackageAccessor.get().foldGetExecution(this.parent.getHierarchy()).rebuilding) {
+            return;
+        }
+        throw new HierarchyErrorException(parent, f, index, b, s);
+    }
+
+    public void throwHierarchyError(Fold parent, Fold f, int index, boolean b, String s) {
+        if (ApiPackageAccessor.get().foldGetExecution(this.parent.getHierarchy()).rebuilding) {
+            return;
+        }
+        throw new HierarchyErrorException(parent, f, index, b, s);
+    }
+
     private void insertImpl(int index, Fold fold) {
         int ps = parent.getStartOffset();
         int pe = parent.getEndOffset();
         int fs = fold.getStartOffset();
         int fe = fold.getEndOffset();
+        //sometimesThrow(fold, index, true, "eee");
         if (fs < ps || fe > pe) {
-            LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, fold to be inserted: {1}, " +
-                    "at index {2}", new Object[] {
-                parent, fold, index
-            });
-            LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+            throwHierarchyError(fold, index, true,
+                    "Illegal attempt to insert fold");
         }
         indexGapLength--;
         indexGapIndex++;
@@ -263,11 +281,9 @@ public final class FoldChildren extends GapList {
                 int fs = f.getStartOffset();
                 int fe = f.getEndOffset();
                 if (fs < ps || fe > pe) {
-                    LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, folds to be inserted: {1}, " +
-                            "at index {2}", new Object[] {
-                        parent, Arrays.asList(folds), index
-                    });
-                    LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+                    throwHierarchyError(f, index, true,
+                        "Illegal attempt to insert fold"
+                    );
                     break;
                 }
             }

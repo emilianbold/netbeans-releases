@@ -102,7 +102,14 @@ public class CommentHandlerService implements CommentHandler {
     public void freeze() {
         frozen = true;
         for (CommentSetImpl impl : map.values()) {
-            impl.commentsMapped();
+            impl.commentsFrozen(true);
+        }
+    }
+
+    public void unFreeze() {
+        frozen = false;
+        for (CommentSetImpl impl : map.values()) {
+            impl.commentsFrozen(false);
         }
     }
     
@@ -120,7 +127,7 @@ public class CommentHandlerService implements CommentHandler {
                 // optimization NOT to retain empty CSImpls is not possible; the caller may modify the return value.
                 cs = new CommentSetImpl();
                 if (frozen) {
-                    cs.commentsMapped();
+                    cs.commentsFrozen(frozen);
                 }
                 map.put(tree, cs);
             }
@@ -153,7 +160,7 @@ public class CommentHandlerService implements CommentHandler {
                 if (to == null) {
                     map.put(toTree, to = new CommentSetImpl());
                     if (frozen) {
-                        to.commentsMapped();
+                        to.commentsFrozen(true);
                     }
                 }
                 for (RelativePosition pos : RelativePosition.values()) {
@@ -209,7 +216,7 @@ public class CommentHandlerService implements CommentHandler {
             if (set == null) {
                 set = new CommentSetImpl();
                 if (frozen) {
-                    set.commentsMapped();
+                    set.commentsFrozen(frozen);
                 }
                 map.put(tree, set);
             }

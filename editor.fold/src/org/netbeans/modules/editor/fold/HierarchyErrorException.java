@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,81 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seplatform.platformdefinition;
+package org.netbeans.modules.editor.fold;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.Specification;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.editor.fold.Fold;
 
 /**
- *
- * @author Tomas Zezula
+ * Exception thrown internally to indicate bad things inside
+ * the fold hierarchy.
+ * 
+ * @author sdedic
  */
-class ForwardingJavaPlatform extends JavaPlatform {
+public class HierarchyErrorException extends IllegalStateException {
+    private final Fold    parentFold;
+    private final Fold    insertOrRemove;
+    private final int     opAtIndex;
+    private final boolean add;
 
-    protected final JavaPlatform delegate;
-
-    ForwardingJavaPlatform(@NonNull final JavaPlatform delegate) {
-        this.delegate = delegate;
+    public HierarchyErrorException(Fold parentFold, Fold insertOrRemove, int opAtIndex, boolean add, String s) {
+        super(s);
+        this.parentFold = parentFold;
+        this.insertOrRemove = insertOrRemove;
+        this.opAtIndex = opAtIndex;
+        this.add = add;
     }
 
-
-    @Override
-    public String getDisplayName() {
-        return delegate.getDisplayName();
+    public Fold getParentFold() {
+        return parentFold;
     }
 
-    @Override
-    public Map<String, String> getProperties() {
-        return delegate.getProperties();
+    public Fold getInsertOrRemove() {
+        return insertOrRemove;
     }
 
-    @Override
-    public ClassPath getBootstrapLibraries() {
-        return delegate.getBootstrapLibraries();
+    public int getOpAtIndex() {
+        return opAtIndex;
     }
 
-    @Override
-    public ClassPath getStandardLibraries() {
-        return delegate.getStandardLibraries();
+    public boolean isAdd() {
+        return add;
     }
-
-    @Override
-    public String getVendor() {
-        return delegate.getVendor();
-    }
-
-    @Override
-    public Specification getSpecification() {
-        return delegate.getSpecification();
-    }
-
-    @Override
-    public Collection<FileObject> getInstallFolders() {
-        return delegate.getInstallFolders();
-    }
-
-    @Override
-    public FileObject findTool(String toolName) {
-        return delegate.findTool(toolName);
-    }
-
-    @Override
-    public ClassPath getSourceFolders() {
-        return delegate.getSourceFolders();
-    }
-
-    @Override
-    public List<URL> getJavadocFolders() {
-        return delegate.getJavadocFolders();
-    }
-
 }
