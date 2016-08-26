@@ -375,6 +375,7 @@ terminal T_COALESCE;
 non terminal Program thestart;
 non terminal List namespace_name;
 non terminal List group_namespace_parts;
+non terminal List non_empty_group_namespace_parts;
 non terminal SingleUseStatementPart group_namespace_part;
 non terminal UseStatementPart use_declaration;
 non terminal List use_declarations;
@@ -745,7 +746,20 @@ namespace_name:list
 
 // used only in group uses
 group_namespace_parts ::=
-group_namespace_parts:list T_COMMA group_namespace_part:part
+non_empty_group_namespace_parts:list
+{:
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+non_empty_group_namespace_parts ::=
+non_empty_group_namespace_parts:list T_COMMA group_namespace_part:part
 {:
 	list.add(part);
 	RESULT = list;

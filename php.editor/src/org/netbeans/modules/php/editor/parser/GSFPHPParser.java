@@ -282,13 +282,16 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private boolean isStatementOk(final Statement statement, final Context context) throws IOException {
         boolean isStatementOk = true;
         if (statement instanceof ASTError) {
-            // if there is an errot, try to sanitize only if there
-            // is a class or function inside the error
+            // if there is an error, try to sanitize only if there
+            // is a class, function, or use inside the error
             String errorCode = "<?php " + context.getSanitizedSource().substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
             ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
             Symbol token = fcScanner.next_token();
             while (token.sym != ASTPHP5Symbols.EOF) {
-                if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION || isRequireFunction(token)) {
+                if (token.sym == ASTPHP5Symbols.T_CLASS
+                        || token.sym == ASTPHP5Symbols.T_FUNCTION
+                        || token.sym == ASTPHP5Symbols.T_USE
+                        || isRequireFunction(token)) {
                     isStatementOk = false;
                     break;
                 }
