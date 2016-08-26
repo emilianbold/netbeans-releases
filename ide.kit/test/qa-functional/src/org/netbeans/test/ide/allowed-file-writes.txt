@@ -89,3 +89,6 @@ var/cache/jna/jnidispatch.dll
 
 # issue 230387
 config/Preferences/org/netbeans/core.properties
+
+# 258517
+/sbin/ldconfig
