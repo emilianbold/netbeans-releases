@@ -51,7 +51,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -1175,20 +1174,33 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         public CompletionPanel(JTextComponent textarea, int position, final Point location) {
             this.insertionPosition = position;
             this.texComponent = textarea;
-            popupMenu = new JPopupMenu();
+            list = createSuggestionList();
+            popupMenu = new JPopupMenu() {
+                @Override
+                public void requestFocus() {
+                    list.requestFocus();
+                }
+                
+                @Override
+                public boolean requestFocusInWindow() {
+                    return list.requestFocusInWindow();
+                }
+                
+            };
             popupMenu.removeAll();
             popupMenu.setOpaque(false);
             popupMenu.setBorder(null);
-            list = createSuggestionList();
             popupMenu.add(list, BorderLayout.CENTER);
+            int baseLine = texComponent.getBaseline(0, 0);
+            if (baseLine < 0) {
+                baseLine = texComponent.getHeight();
+            }
+            popupMenu.show(texComponent, location.x, baseLine + location.y);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    int baseLine = textarea.getBaseline(0, 0);
-                    if (baseLine < 0) {
-                        baseLine = textarea.getHeight();
-                    }
-                    popupMenu.show(textarea, location.x, baseLine + location.y);
+                    popupMenu.requestFocus();
+                    popupMenu.requestFocusInWindow();
                 }
             });
         }
