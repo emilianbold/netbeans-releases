@@ -117,6 +117,9 @@ import org.openide.util.NotImplementedException;
         return requestId;
     }
 
+    /**
+     * @return next package or null in the case timeout occurred
+     */
     public Package getNextPackage() throws InterruptedException, ExecutionException {
         if (RemoteFileSystemUtils.isUnitTestMode()) {
             long timeout = Integer.getInteger("remote.fs_server.timeout", 30000); //NOI18N
@@ -135,8 +138,15 @@ import org.openide.util.NotImplementedException;
         }
         return getNextPackage(0);
     }
-    
-    public Package getNextPackage(final long timeToWait) throws InterruptedException, ExecutionException {
+
+    /**
+     * @param timeToWait zero means not "forever", but "default timeout"
+     * @return next package or null in the case timeout occurred
+     */
+    public Package getNextPackage(long timeToWait) throws InterruptedException, ExecutionException {
+        if (timeToWait == 0) {
+            timeToWait = FSSTransport.DEFAULT_TIMEOUT;
+        }
         long timeElapsed = 0;
         while (true) {
             synchronized (lock) {

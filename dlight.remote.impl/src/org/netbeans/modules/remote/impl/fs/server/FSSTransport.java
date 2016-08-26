@@ -91,6 +91,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     public static final boolean USE_FS_SERVER = RemoteFileSystemUtils.getBoolean("remote.fs_server", true);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
+    /** Default timeout; zero means forever */
+    public static final int DEFAULT_TIMEOUT = Integer.getInteger("remote.fs_server.default.timeout", 60*100); //NOI18N
+
     private final ExecutionEnvironment env;
 
     private final FSSDispatcher dispatcher;
