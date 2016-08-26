@@ -194,8 +194,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage(timeoutMillis);
             if (pkg == null) {
-                String message = String.format("Timeout %d ms when getting %s for %s:%s", //NOI18N
-                        timeoutMillis, lstat ? "lstat" : "stat", env, path); //NOI18N
+                String message = timeoutMessage("getting " + (lstat ? "lstat" : "stat"), timeoutMillis, path); //NOI18N
                 RemoteLogger.fine(message);
                 throw new TimeoutException(message);
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
@@ -216,6 +215,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                     request.getId(), path, System.currentTimeMillis() - time);
         }
         
+    }
+
+    private String timeoutMessage(String operation, int timeoutMillis, String path) {
+        return String.format("Timeout %d ms when %s for %s:%s", //NOI18N
+                timeoutMillis, operation, env, path); //NOI18N
     }
 
     @Override
@@ -278,7 +282,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected MoveInfo move(String from, String to) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(env, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -300,7 +304,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     @Override
     protected DirEntryList readDirectory(String path) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
@@ -315,6 +319,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             // XXX: a temporary simplistic solution
             response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage();
+            if (pkg == null) { // timeout occurred
+                String message = timeoutMessage("reading directory", DEFAULT_TIMEOUT, path); //NOI18N
+                RemoteLogger.fine(message);
+                throw new TimeoutException(message);
+            }
             assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
             Buffer buf = pkg.getBuffer();
             buf.getChar();

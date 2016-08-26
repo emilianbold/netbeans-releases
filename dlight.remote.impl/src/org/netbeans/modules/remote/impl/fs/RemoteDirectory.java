@@ -61,6 +61,7 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
@@ -418,8 +419,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             RemoteLogger.finest(ex, this);
             return null;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            //RemoteLogger.finest(ex);
+            RemoteLogger.fine(ex);
             return null;
         }
     }
@@ -621,7 +621,8 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         return readEntryReqs.get();
     }
 
-    private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
+    private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) 
+            throws TimeoutException, IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
         }
@@ -786,7 +787,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 newEntries = readEntries(storage, true, newNameExt);
             } catch (FileNotFoundException ex) {
                 throw ex;
-            } catch (IOException | ExecutionException ex) {
+            } catch (IOException | ExecutionException | TimeoutException ex) {
                 problem = ex;
             }
             if (problem != null) {
@@ -1135,7 +1136,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 newEntries = readEntries(storage, forceRefresh, childName);
             }  catch (FileNotFoundException ex) {
                 throw ex;
-            }  catch (IOException | ExecutionException ex) {
+            }  catch (IOException | ExecutionException | TimeoutException ex) {
                 problem = ex;
             }
             if (problem != null) {
