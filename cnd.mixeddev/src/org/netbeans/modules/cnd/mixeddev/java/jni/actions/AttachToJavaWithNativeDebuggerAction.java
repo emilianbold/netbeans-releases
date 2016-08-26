@@ -123,7 +123,7 @@ public class AttachToJavaWithNativeDebuggerAction extends AbstractJNIAction {
                             true);
                     DebuggerManager.getDebuggerManager().setCurrentSession(session);
                 }
-                System.out.println("session=" + session.getName() + " locationName=" + session.getLocationName());
+                //System.out.println("session=" + session.getName() + " locationName=" + session.getLocationName());
             }
         }
 
