@@ -572,6 +572,17 @@ public class TokenFormatter {
                                             newLines = 1;
                                             countSpaces = indent;
                                         }
+                                        if (templateEdit) {
+                                            // #262205 don't add spaces if existing spaces have new lines
+                                            if (oldText == null) {
+                                                newLines = 0;
+                                                countSpaces = 0;
+                                            } else {
+                                                ws = countExistingWS(oldText);
+                                                newLines = ws.lines;
+                                                countSpaces = ws.spaces;
+                                            }
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_LEFT_BRACE:
                                         indentRule = true;
@@ -1198,7 +1209,15 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceBeforeComma ? 1 : 0;
                                         break;
                                     case WHITESPACE_AFTER_COMMA:
-                                        countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                        // #262205 don't add spaces if existing spaces have new lines
+                                        if (templateEdit
+                                                && index + 1 < formatTokens.size()
+                                                && formatTokens.get(index + 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
+                                                && countOfNewLines(formatTokens.get(index + 1).getOldText()) > 0) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_SEMI:
                                         countSpaces = docOptions.spaceBeforeSemi ? 1 : 0;
@@ -2413,6 +2432,7 @@ public class TokenFormatter {
 
                         if (replaceOldLength != replaceNewLength) {
                             delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
+                            return delta;
                         }
                     }
                     if (startOffset <= realOffset
