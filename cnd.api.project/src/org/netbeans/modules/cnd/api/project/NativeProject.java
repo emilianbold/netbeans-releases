@@ -89,8 +89,8 @@ public interface NativeProject {
      public List<NativeFileItem> getAllFiles();
 
      /**
-      * Returns a list of all files in the project.
-      * @return a list of all files in the project.
+      * Returns a list of standard headers indexers in the project.
+      * @return a list of standard headers indexers in the project.
       */
      public List<NativeFileItem> getStandardHeadersIndexers();
 
@@ -114,15 +114,15 @@ public interface NativeProject {
      public NativeFileItem findFileItem(FileObject fileObject);
      
     /**
-     * Returns a list <IncludeSearchPath> of compiler defined include paths used when parsing 'orpan' source files.
-     * @return a list <IncludeSearchPath> of compiler defined include paths.
+     * Returns a list <IncludePath> of compiler defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludePath> of compiler defined include paths.
      * A path is always an absolute path.
      */
     public List<IncludePath> getSystemIncludePaths();
     
     /**
-     * Returns a list <IncludeSearchPath> of user defined include paths used when parsing 'orpan' source files.
-     * @return a list <IncludeSearchPath> of user defined include paths.
+     * Returns a list <IncludePath> of user defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludePath> of user defined include paths.
      * A path is always an absolute path.
      * Include paths are not prefixed with the compiler include path option (usually -I).
      */
