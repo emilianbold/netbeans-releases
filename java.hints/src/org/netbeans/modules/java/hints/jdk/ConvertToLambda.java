@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
     "FIX_ConvertToLambda=Use lambda expression" //NOI18N    
 })
 @Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15", suppressWarnings="Convert2Lambda",
-        minSourceVersion = "7") //NOI18N
+        minSourceVersion = "8") //NOI18N
 public class ConvertToLambda {
 
     public static final String ID = "Javac_canUseLambda"; //NOI18N

@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.maven.hints.pom;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -175,7 +177,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                     if (deps == null || deps.isEmpty()) {
                         return;
                     }
-                    MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl, project);
+                    MoveToDependencyManagementPanel pnl= createPanel(fl);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
                     Object ret = DialogDisplayer.getDefault().notify(dd);
                     if (ret == DialogDescriptor.OK_OPTION) {
@@ -238,6 +240,24 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                             openParent(oldpos, depMdl);
                         }
                     }
+                }
+
+                private MoveToDependencyManagementPanel createPanel(File fl) {
+                    final MoveToDependencyManagementPanel[] pnl= new MoveToDependencyManagementPanel[1];
+                    final File ffl = fl;
+                    try {
+                        EventQueue.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                pnl[0] = new MoveToDependencyManagementPanel(ffl, project);
+                            }
+                        });
+                    } catch (InterruptedException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
+                    return pnl[0];
                 }
             });
             return info;

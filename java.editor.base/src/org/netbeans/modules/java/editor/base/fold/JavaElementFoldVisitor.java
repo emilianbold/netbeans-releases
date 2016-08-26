@@ -52,6 +52,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -247,9 +248,62 @@ public final class JavaElementFoldVisitor<T> extends CancellableTreePathScanner<
         int importsStart = Integer.MAX_VALUE;
         int importsEnd   = -1;
 
-        for (ImportTree imp : node.getImports()) {
+        TokenHierarchy<?> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
+        
+        IMP: for (ImportTree imp : node.getImports()) {
+            // eliminate invalid imports; erroenous imports at the start/end of import block
+            // will not be folder.
+            Tree qualIdent = imp.getQualifiedIdentifier();
+            if (qualIdent == null) {
+                continue;
+            }
+            while (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree)qualIdent;
+                if (mst.getIdentifier().contentEquals("<error>")) { // NOI18N
+                    // ignore erroneous imports
+                    continue IMP;
+                }
+                qualIdent = mst.getExpression();
+            }
+
+            // don't rely on Javac for the end position: in case of missing semicolon the import consumes all whitespace
+            // including comments / javadocs up to the following declaration or text. Rather scan tokens and consume only the import
+            // identifier + semi.
             int start = (int) sp.getStartPosition(cu, imp);
-            int end   = (int) sp.getEndPosition(cu, imp);
+            int identPos = (int) sp.getStartPosition(cu, qualIdent);
+            int end = identPos;
+            boolean firstNewline = true;
+            ts.move(identPos);
+            IDENT: while (ts.moveNext()) {
+                Token<JavaTokenId>  tukac = ts.token();
+                switch (tukac.id()) {
+                    case IDENTIFIER:
+                    case DOT:
+                    case STAR:
+                        firstNewline = false;
+                        end = ts.offset() + tukac.length();
+                        break;
+                    case SEMICOLON:
+                        end = (int) sp.getEndPosition(cu, imp);
+                        break IDENT;
+                    case WHITESPACE: {
+                        if (firstNewline) {
+                            int endl = tukac.text().toString().indexOf("\n"); // NOI18N
+                            if (endl > -1) {
+                                // remember the first newline after some ident/star/dot content
+                                end = ts.offset() + endl; 
+                                firstNewline = true;
+                            }
+                        }
+                        // fall through
+                    }
+                    case LINE_COMMENT: case BLOCK_COMMENT: 
+                        continue;
+                    default:
+                        break IDENT;
+                }
+            }
 
             if (importsStart > start)
                 importsStart = start;

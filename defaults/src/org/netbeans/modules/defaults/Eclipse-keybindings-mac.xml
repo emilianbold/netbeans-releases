@@ -56,11 +56,4 @@ made subject to such option by the copyright holder.
     <bind key="OS-R" remove="true" />
     <bind actionName="in-place-refactoring" key="DA-R"/>
 
-    <bind key="OS-J" remove="true"/>
-    <bind actionName="remove-last-caret" key="CS-G"/>
-    <bind key="O-J" remove="true"/>
-    <bind actionName="addCaretSelectNext" key="C-G"/>
-    <bind key="CSO-J" remove="true"/>
-    <bind actionName="addCaretSelectAll" key="CM-G"/>
-    
 </bindings>

@@ -55,6 +55,7 @@ import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.modules.editor.fold.ApiPackageAccessor;
 import org.netbeans.modules.editor.fold.FoldHierarchyTransactionImpl;
 import org.netbeans.modules.editor.fold.FoldOperationImpl;
+import org.netbeans.modules.editor.fold.HierarchyErrorException;
 import org.netbeans.modules.editor.fold.SpiPackageAccessor;
 import org.openide.util.Parameters;
 
