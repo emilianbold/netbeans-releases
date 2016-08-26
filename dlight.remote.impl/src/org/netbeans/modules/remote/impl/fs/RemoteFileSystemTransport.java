@@ -144,7 +144,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         DirEntryList entries = null;
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
@@ -247,7 +247,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static MoveInfo move(ExecutionEnvironment execEnv, String from, String to)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         return getInstanceSlow(execEnv).move(from, to);
     }
     
@@ -283,7 +283,7 @@ public abstract class RemoteFileSystemTransport {
     protected abstract boolean canMove(String from, String to);
 
     protected abstract MoveInfo move(String from, String to)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntry stat(String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
@@ -302,7 +302,7 @@ public abstract class RemoteFileSystemTransport {
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntryList readDirectory(String path) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     /**
      * Fast validity check - returns true if no problem (yet?) occurred

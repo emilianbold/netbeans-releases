@@ -762,11 +762,11 @@ public abstract class RemoteFileObjectBase {
         return RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
     }
 
-    public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+    public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws TimeoutException, IOException {
         return moveImpl(lock, target, name, ext, this);
     }
 
-    protected FileObject moveImpl(FileLock lock, FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    protected FileObject moveImpl(FileLock lock, FileObject target, String name, String ext, RemoteFileObjectBase orig) throws TimeoutException, IOException {
         if (!checkLock(lock)) {
             throw RemoteExceptions.createIOException(
                     NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
@@ -815,7 +815,7 @@ public abstract class RemoteFileObjectBase {
     }
 
     /** Copy-paste from FileObject.copy */
-    private FileObject superMove(FileLock lock, FileObject target, String name, String ext) throws IOException {
+    private FileObject superMove(FileLock lock, FileObject target, String name, String ext) throws IOException, TimeoutException {
         if (getOwnerFileObject().getParent().equals(target)) {
             // it is possible to do only rename
             rename(lock, name, ext);

@@ -59,10 +59,14 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -155,8 +159,18 @@ import org.openide.util.Exceptions;
             BufferedReader reader = new BufferedReader(outputReader);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String path = fetchPath(pattern.split(line));
-                if (path != null && HostInfoProvider.fileExists(execEnv, path)) {
-                    paths.add(path); // NOI18N
+                //if (path != null && HostInfoProvider.fileExists(execEnv, path)) {
+                if (path != null) {
+                    if (CndPathUtilities.isPathAbsolute(path)) {
+                        FileObject fo = FileSystemProvider.getFileObject(execEnv, path);
+                        if (fo != null && fo.isValid()) {
+                            paths.add(path); // NOI18N
+                        }
+                    } else {
+                        if (!"smb".equals(path)) {
+                            log.fine("The command `" + getShareCommand() + "` listed non-absolute path: " + path); //NOI18N
+                        }
+                    }
                 }
             }
         } catch (IOException ex) {

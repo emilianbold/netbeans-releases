@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
@@ -269,9 +270,13 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
-        FileObject result = getImplementor().move(lock, target, name, ext);
-        reassignLkp(this, result);
-        return result;
+        try {
+            FileObject result = getImplementor().move(lock, target, name, ext);
+            reassignLkp(this, result);
+            return result;
+        } catch (TimeoutException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public static void reassignLkp(FileObject from, FileObject to) {
