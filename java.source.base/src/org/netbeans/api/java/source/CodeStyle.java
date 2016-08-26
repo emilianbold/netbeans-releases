@@ -514,6 +514,13 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 2.18
+     */
+    public boolean wrapAfterDisjunctiveCatchBar() {
+        return preferences.getBoolean(wrapAfterDisjunctiveCatchBar, getDefaultAsBoolean(wrapAfterDisjunctiveCatchBar));
+    }
+
     public WrapStyle wrapFor() {
         String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
         return WrapStyle.valueOf(wrap);

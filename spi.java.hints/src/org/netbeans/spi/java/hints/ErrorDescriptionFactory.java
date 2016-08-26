@@ -65,6 +65,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
@@ -102,7 +104,8 @@ import org.openide.util.Parameters;
  * @author Jan Lahoda
  */
 public class ErrorDescriptionFactory {
-
+    private static final Logger LOG = Logger.getLogger(ErrorDescriptionFactory.class.getName());
+    
     private ErrorDescriptionFactory() {
     }
 
@@ -117,20 +120,28 @@ public class ErrorDescriptionFactory {
     public static ErrorDescription forTree(HintContext context, Tree tree, String text, Fix... fixes) {
         int start;
         int end;
-
+        int javacEnd;
+        
         if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
             start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
-            end = Math.min((int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
-                           findLineEnd(context.getInfo(), start));
+            javacEnd = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+            end = Math.min(javacEnd, findLineEnd(context.getInfo(), start));
         } else {
-            start = end = context.getCaretLocation();
+            start = javacEnd = end = context.getCaretLocation();
         }
 
         if (start != (-1) && end != (-1)) {
+            if (start > end) {
+                LOG.log(Level.WARNING, "Wrong positions reported for tree (start = {0}, end = {1}): {2}",
+                    new Object[] {
+                        start, end, 
+                        tree
+                    }
+                );
+            }
             LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
             return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), start, end);
         }
-
         return null;
     }
     
