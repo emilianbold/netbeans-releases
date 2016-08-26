@@ -242,17 +242,19 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             MakeConfiguration conf = descriptor.getActiveConfiguration();
             if (conf != null) {
                 List<NativeFileItem> list = new ArrayList<>();
-                if (indexerC == null) {
-                    indexerC = createIndexer(descriptor, this, NativeFileItem.Language.C);
-                }
-                if (indexerC != null) {
-                    list.add(indexerC);
-                }
-                if (indexerCpp == null) {
-                    indexerCpp = createIndexer(descriptor, this, NativeFileItem.Language.CPP);
-                }
-                if (indexerCpp != null) {
-                    list.add(indexerCpp);
+                synchronized(this) {
+                    if (indexerC == null) {
+                        indexerC = createIndexer(descriptor, this, NativeFileItem.Language.C);
+                    }
+                    if (indexerC != null) {
+                        list.add(indexerC);
+                    }
+                    if (indexerCpp == null) {
+                        indexerCpp = createIndexer(descriptor, this, NativeFileItem.Language.CPP);
+                    }
+                    if (indexerCpp != null) {
+                        list.add(indexerCpp);
+                    }
                 }
                 return list;
             }
