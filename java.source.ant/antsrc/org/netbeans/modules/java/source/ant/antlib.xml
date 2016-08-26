@@ -47,4 +47,5 @@ made subject to such option by the copyright holder.
     <taskdef name="javac" classname="org.netbeans.modules.java.source.ant.JavacTask"/>
     <taskdef name="delete" classname="org.netbeans.modules.java.source.ant.DeleteTask"/>
     <taskdef name="translate-classpath" classname="org.netbeans.modules.java.source.ant.TranslateClassPath"/>
+    <taskdef name="cos-updated" classname="org.netbeans.modules.java.source.ant.CosUpdated"/>
 </antlib>

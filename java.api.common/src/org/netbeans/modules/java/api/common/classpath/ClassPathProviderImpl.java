@@ -50,9 +50,11 @@ import java.util.Map;
 import java.util.HashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -94,6 +96,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] runTestClasspath;
     private final String[] endorsedClasspath;
     private final Union2<String,String[]> platform;
+    private final Project project;
     /**
      * ClassPaths cache
      * Index -> CP mapping
@@ -198,7 +201,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             runClasspath,
             runTestClasspath,
             endorsedClasspath,
-            Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE));
+            Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
+            null);
     }
 
     private ClassPathProviderImpl(
@@ -215,7 +219,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] runClasspath,
         @NonNull final String[] runTestClasspath,
         @NonNull final String[] endorsedClasspath,
-        @NonNull final Union2<String,String[]> platform) {
+        @NonNull final Union2<String,String[]> platform,
+        @NullAllowed final Project project) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
@@ -246,6 +251,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.runTestClasspath = runTestClasspath;
         this.endorsedClasspath = endorsedClasspath;
         this.platform = platform;
+        this.project = project;
     }
 
     /**
@@ -280,6 +286,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] runTestClasspath = DEFAULT_RUN_TEST_CLASS_PATH;
         private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
         private String[] bootClasspathProperties;
+        private Project project;
 
         private Builder(
             @NonNull final AntProjectHelper helper,
@@ -432,6 +439,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             this.bootClasspathProperties = Arrays.copyOf(bootClasspathProperties, bootClasspathProperties.length);
             return this;
         }
+        
+        @NonNull
+        public Builder setProject(@NonNull final Project project) {
+            Parameters.notNull("project", project); //NOI18N
+            this.project = project;
+            return this;
+        }
 
 
         /**
@@ -458,7 +472,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 runClasspath,
                 runTestClasspath,
                 endorsedClasspath,
-                platform);
+                platform,
+                project);
         }
 
         @NonNull
@@ -717,6 +732,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 cp = ClassPathFactory.createClassPath(
                     ClassPathSupportFactory.createBootClassPathImplementation(
                         evaluator,
+                        project,
                         getEndorsedClasspath(),
                         platform.first()));
             } else {

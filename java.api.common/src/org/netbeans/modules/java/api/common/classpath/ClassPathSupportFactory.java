@@ -46,6 +46,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -79,7 +80,7 @@ public final class ClassPathSupportFactory {
      * @since org.netbeans.modules.java.api.common/0 1.11
      */
     public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator, ClassPath endorsedClassPath) {
-        return createBootClassPathImplementation(evaluator, endorsedClassPath, null);
+        return createBootClassPathImplementation(evaluator, null, endorsedClassPath, null);
     }
 
     /**
@@ -95,7 +96,15 @@ public final class ClassPathSupportFactory {
             @NonNull final PropertyEvaluator evaluator,
             @NullAllowed final ClassPath endorsedClassPath,
             @NullAllowed final String platformType) {
-        return new BootClassPathImplementation(evaluator, endorsedClassPath, platformType);
+        return createBootClassPathImplementation(evaluator, null, endorsedClassPath, platformType);
+    }
+    
+    public static ClassPathImplementation createBootClassPathImplementation(
+            @NonNull final PropertyEvaluator evaluator,
+            @NullAllowed final Project project,
+            @NullAllowed final ClassPath endorsedClassPath,
+            @NullAllowed final String platformType) {
+        return new BootClassPathImplementation(project, evaluator, endorsedClassPath, platformType);
     }
 
     /**

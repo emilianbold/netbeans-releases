@@ -161,10 +161,10 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
      * was made after that point yet. When first change occurs, the original comment Map
      * should be cloned and preserved for code generation phase.
      * 
-     * @return 
+     * @return true, if this is the first comment change.
      */
     private boolean trackFirstChange() {
-        return commentsMapped && !changed;
+        return (commentsMapped || commentsFrozen) && !changed;
     }
     
     /**
@@ -277,8 +277,21 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         return sb.toString();
     }
     
+    /**
+     * @return indicate that comments for this Tree were mapped in from source.
+     */
     public boolean areCommentsMapped() {
         return commentsMapped;
+    }
+
+    /**
+     * Temporary flag during comment replication, which makes CommentSet to pretend
+     * it has all the comments already, so any change will result in comment cloning.
+     */
+    private boolean commentsFrozen;
+    
+    public void commentsFrozen(boolean freeze) {
+        this.commentsFrozen = freeze;
     }
     
     public void commentsMapped() {

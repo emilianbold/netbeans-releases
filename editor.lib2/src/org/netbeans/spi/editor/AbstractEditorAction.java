@@ -503,13 +503,13 @@ public abstract class AbstractEditorAction extends TextAction implements
     private static boolean isLogged(String actionName) {
         return actionName != null &&
                 !"default-typed".equals(actionName) && //NOI18N
-                -1 == actionName.indexOf("caret") && //NOI18N
-                -1 == actionName.indexOf("delete") && //NOI18N
-                -1 == actionName.indexOf("selection") && //NOI18N
+//                -1 == actionName.indexOf("caret") && //NOI18N
+//                -1 == actionName.indexOf("delete") && //NOI18N
+//                -1 == actionName.indexOf("selection") && //NOI18N
                 -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
                 -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
-                -1 == actionName.indexOf("page-up") &&//NOI18N
-                -1 == actionName.indexOf("page-down") &&//NOI18N
+//                -1 == actionName.indexOf("page-up") &&//NOI18N
+//                -1 == actionName.indexOf("page-down") &&//NOI18N
                 -1 == actionName.indexOf("-kit-install"); //NOI18N
     }
 
