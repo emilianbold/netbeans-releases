@@ -61,7 +61,7 @@ public final class JavaClassInfo implements JavaEntityInfo {
         this.qualifiedName = Collections.unmodifiableList(qualifiedName);
         StringBuilder res = new StringBuilder();
         for (QualifiedNamePart qualifiedNamePart : qualifiedName) {
-            res.append(qualifiedNamePart.toString()).append(".");
+            res.append(qualifiedNamePart.toString()).append('.');
         }
         if (qualifiedName.size() > 1) {
             res.deleteCharAt(res.length()-1);
