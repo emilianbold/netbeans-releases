@@ -103,45 +103,43 @@ import org.openide.util.Pair;
  */
 public final class JavaContextSupport {
     
-    private static final int TIMEOUT = 60;
+    private static final int TIMEOUT = 1000;
     
-    public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task) {
+    public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task, boolean immediately) {
         if (fObj != null && fObj.isValid() && fObj.isData()) {
-            JavaSource js = JavaSource.forFileObject(fObj);
-            if (js == null) {
-                return null;
-            }
-            try {
-                Future<Void> f = js.runWhenScanFinished(task, true);
-                f.get(TIMEOUT, TimeUnit.SECONDS);
-                if (f.isDone()){
-                    return task.getResult();
-                }
-            } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            return resolveContext(JavaSource.forFileObject(fObj), task, immediately);
         }
         return null;
     }       
     
-    public static <T> T resolveContext(Document doc, ResolveJavaContextTask<T> task) {
+    public static <T> T resolveContext(Document doc, ResolveJavaContextTask<T> task, boolean immediately) {
         if (doc != null) {
-            JavaSource js = JavaSource.forDocument(doc);
-            if (js == null) {
-                return null;
-            }
-            try {
-                Future<Void> f = js.runWhenScanFinished(task, true);
-                f.get(TIMEOUT, TimeUnit.SECONDS);
-                if (f.isDone()){
-                    return task.getResult();
-                }
-            } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            return resolveContext(JavaSource.forDocument(doc), task, immediately);
         }
         return null;
     }   
+    
+    private static <T> T resolveContext(JavaSource js, ResolveJavaContextTask<T> task, boolean immediately) {
+        if (js != null) {
+            try {
+                if (immediately) {
+                    js.runUserActionTask(task, true);
+                    return task.getResult();
+                } else {
+                    Future<Void> f = js.runWhenScanFinished(task, true);
+                    f.get(TIMEOUT, TimeUnit.SECONDS);
+                    if (f.isDone()){
+                        return task.getResult();
+                    }
+                }
+            } catch (IOException ioEx) {
+                Exceptions.printStackTrace(ioEx);
+            } catch (InterruptedException | ExecutionException | TimeoutException ex)  {
+                // just ignore it
+            }
+        }
+        return null;
+    }
     
     public static int[] getIdentifierSpan(final Document doc, final int offset, final Token<JavaTokenId>[] token) {
         if (getFileObject(doc) == null) {

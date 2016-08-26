@@ -598,6 +598,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
+        public List<NativeFileItem> getStandardHeadersIndexers() {
+            return Collections.<NativeFileItem>emptyList();
+        }
+
+        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized (listenersLock) {
                 listeners.add(listener);

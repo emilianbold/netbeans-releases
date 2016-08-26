@@ -1571,30 +1571,44 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(GroupUseStatementPart node) {
         scan(node.getBaseNamespaceName());
         List<SingleUseStatementPart> items = node.getItems();
-        if (items.size() > 0) {
-            while (ts.moveNext()
-                    && ts.offset() < items.get(0).getStartOffset()
-                    && lastIndex < ts.index()) {
-                if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE, ts.offset()));
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
-                }
-                addFormatToken(formatTokens);
-            }
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_GROUP_USE_LEFT_BRACE, ts.offset()));
+        int start;
+        // #262205 if there is an error in group uses, the list is empty
+        if (items.isEmpty()) {
+            // find "{" until "}", so use the end offset
+            start = node.getEndOffset() - 1;
+        } else {
+            start = items.get(0).getStartOffset();
+        }
 
+        while (ts.moveNext()
+                && ts.offset() < start
+                && lastIndex < ts.index()) {
+            if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE, ts.offset()));
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
+                if (items.isEmpty()) {
+                    addFormatToken(formatTokens);
+                    break;
+                }
+            }
+            addFormatToken(formatTokens);
+        }
+
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_GROUP_USE_LEFT_BRACE, ts.offset()));
+
+        if (!items.isEmpty()) {
             ts.movePrevious();
             addListOfNodes(items, FormatToken.Kind.WHITESPACE_IN_GROUP_USE_LIST);
+        }
 
-            while (ts.moveNext()
-                    && ts.offset() < node.getEndOffset()
-                    && lastIndex < ts.index()) {
-                if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE, ts.offset()));
-                }
-                addFormatToken(formatTokens);
+        while (ts.moveNext()
+                && ts.offset() < node.getEndOffset()
+                && lastIndex < ts.index()) {
+            if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE, ts.offset()));
             }
+            addFormatToken(formatTokens);
         }
     }
 

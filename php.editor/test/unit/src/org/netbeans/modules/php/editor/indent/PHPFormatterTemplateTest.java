@@ -532,4 +532,25 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatting/templates/groupUseWrapAlways_06.php", options, true);
     }
+
+    public void testIssue262205_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue262205_01.php", options, true);
+    }
+
+    public void testIssue262205_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue262205_02.php", options, true);
+    }
+
+    public void testIssue262205_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue262205_03.php", options, true);
+    }
+
+    public void testIssue262205_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue262205_04.php", options, true);
+    }
+
 }
