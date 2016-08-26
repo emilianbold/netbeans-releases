@@ -46,11 +46,8 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +63,9 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.TempEnv;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider.MacroConverter;
+import org.netbeans.modules.cnd.makeproject.StandardHeadersProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -81,17 +77,11 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
@@ -115,6 +105,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         public abstract Item createInBaseDir(FileObject baseDirFileObject, String path);
         public abstract Item createInFileSystem(FileSystem fileSystem, String path);
         public abstract Item createDetachedViewItem(FileSystem fileSystem, String path);
+        public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, NativeFileItem.Language language) {
+            return DEFAULT.createIndexer(descriptor, nativeProject, language);
+        }
 
         private static final class Default extends ItemFactory {
 
@@ -133,6 +126,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 CndUtils.assertNonUiThread();
                 Item out = new Item(fileSystem, path);
                 return out;
+            }
+
+            @Override
+            public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, final NativeFileItem.Language language) {
+                FileObject projectDir = descriptor.getProject().getProjectDirectory();
+                FileObject indexer;
+                if (language == NativeFileItem.Language.C) {
+                    indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.C_STANDARD_HEADERS_INDEXER); //NOI18N
+                } else {
+                    indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.CPP_STANDARD_HEADERS_INDEXER); //NOI18N
+                }
+                if (indexer != null && indexer.isValid()) {
+                    return new NativeFileIndexer(nativeProject, indexer, language);
+                }
+                return null;
             }
         }    
     }
@@ -550,12 +558,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (makeConfiguration.isMakefileConfiguration()) {
                     vec.addAll(IncludePath.toIncludePathList(fs, compiler.getSystemIncludeDirectories(getImportantFlags())));
                 } else {
-                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    String importantFlags = NativeProjectProvider.SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
                     vec.addAll(IncludePath.toIncludePathList(fs, compiler.getSystemIncludeDirectories(importantFlags)));
                 }
             }
         }
-        return SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
+        return NativeProjectProvider.SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
     }
 
     /**
@@ -584,7 +592,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (makeConfiguration.isMakefileConfiguration()) {
                     vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(getImportantFlags())));
                 } else {
-                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    String importantFlags = NativeProjectProvider.SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
                     vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(importantFlags)));
                 }
             }
@@ -651,9 +659,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 }
             }
             List<IncludePath> vec3 = new ArrayList<>();
-            vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
+            vec3 = NativeProjectProvider.SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
             result.addAll(vec3);
-            return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
+            return NativeProjectProvider.SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return Collections.<IncludePath>emptyList();
     }
@@ -761,7 +769,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (makeConfiguration.isMakefileConfiguration()) {
                      vec.addAll(compiler.getSystemPreprocessorSymbols(getImportantFlags()));
                 } else {
-                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    String importantFlags = NativeProjectProvider.SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
                     vec.addAll(compiler.getSystemPreprocessorSymbols(importantFlags));
                 }
             }
@@ -815,7 +823,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
             addToMap(res, cccCompilerConfiguration.getPreprocessorConfiguration().getValue(), true);
             addToList(res, vec);
-            vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
+            vec = NativeProjectProvider.SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
@@ -892,7 +900,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             if (compilerConfiguration instanceof CCCCompilerConfiguration) {
                 // Get include paths from compiler
                 if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
-                    final String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    final String importantFlags = NativeProjectProvider.SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
                     if (importantFlags != null) {
                         return importantFlags;
                     }
@@ -994,7 +1002,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         if (itemConfiguration.isCompilerToolConfiguration()) {
                             BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                             if (compilerConfiguration != null) {
-                                LanguageFlavor aFlavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
+                                LanguageFlavor aFlavor = NativeProjectProvider.SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
                                 if (aFlavor != LanguageFlavor.UNKNOWN) {
                                     flavor = aFlavor;
                                 }
@@ -1122,8 +1130,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String toString() {
         return path.toString();
     }
-    private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
-
     public boolean hasImportantAttributes() {
         for (ItemConfiguration conf : getItemConfigurations()) {
             if (conf != null && !conf.isDefaultConfiguration() ) {
@@ -1136,113 +1142,103 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     protected void onAddedToFolder(Folder folder) {
     }
 
-    private static final class SpiAccessor {
+    private static class NativeFileIndexer implements NativeFileItem {
 
-        private Collection<? extends UserOptionsProvider> uoProviders;
-        private Collection<? extends IncludePathExpansionProvider> ipeProviders;
+        private final FileObject indexer;
+        private final Language language;
+        private final NativeProject nativeProject;
 
-        private synchronized Collection<? extends UserOptionsProvider> getUserOptionsProviders() {
-            if (uoProviders == null) {
-                uoProviders = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
-            }
-            return uoProviders;
-        }
-
-        private synchronized Collection<? extends IncludePathExpansionProvider> getIncludePathExpansionProviders() {
-            if (ipeProviders == null) {
-                ipeProviders = Lookup.getDefault().lookupAll(IncludePathExpansionProvider.class);
-            }
-            return ipeProviders;
-        }
-        
-        private SpiAccessor() {
+        public NativeFileIndexer(NativeProject nativeProject, FileObject indexer, Language language) {
+            this.nativeProject = nativeProject;
+            this.indexer = indexer;
+            this.language = language;
         }
 
-        private List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getUserOptionsProviders().isEmpty()) {
-                List<IncludePath> res = new ArrayList<>(includes);
-                getUserOptionsProviders().forEach((provider) -> {
-                    res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
-                });
-                return res;
-            } else {
-                return includes;
-            }
+        @Override
+        public NativeProject getNativeProject() {
+            return nativeProject;
         }
 
-        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>(macros);
-                getUserOptionsProviders().forEach((provider) -> {
-                    res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
-                });
-                return res;
-            } else {
-                return macros;
-            }
+        @Override
+        public String getAbsolutePath() {
+            return indexer.getPath();
         }
 
-        private String getImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getUserOptionsProviders().isEmpty()) {
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
-                    String itemImportantFlags = provider.getItemImportantFlags(compilerOptions, compiler, makeConfiguration);
-                    if (itemImportantFlags != null) {
-                        return itemImportantFlags;
-                    }
-                }
-            }
-            return null;
+        @Override
+        public String getName() {
+            return indexer.getNameExt();
         }
-        
-        private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getUserOptionsProviders().isEmpty()) {
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
-                    LanguageFlavor languageFlavor = provider.getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
-                    if(languageFlavor != null && languageFlavor != LanguageFlavor.UNKNOWN) {
-                        return languageFlavor;
-                    }
-                }
-                return LanguageFlavor.UNKNOWN;
-            } else {
-                return LanguageFlavor.UNKNOWN;
-            }
+
+        @Override
+        public FileObject getFileObject() {
+            return indexer;
         }
-        
-        private List<IncludePath> expandIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            for (IncludePathExpansionProvider provider : getIncludePathExpansionProviders()) {
-                includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+
+        @Override
+        public List<IncludePath> getSystemIncludePaths() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getSystemIncludePaths(language);
             }
-            return includes;
+            return nativeProject.getSystemIncludePaths();
+        }
+
+        @Override
+        public List<IncludePath> getUserIncludePaths() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getUserIncludePaths(language);
+            }
+            return nativeProject.getUserIncludePaths();
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getSystemIncludeHeaders(language);
+            }
+            return nativeProject.getSystemIncludeHeaders();
+        }
+
+        @Override
+        public List<FSPath> getIncludeFiles() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getIncludeFiles(language);
+            }
+            return nativeProject.getIncludeFiles();
+        }
+
+        @Override
+        public List<String> getSystemMacroDefinitions() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getSystemMacroDefinitions(language);
+            }
+            return nativeProject.getSystemMacroDefinitions();
+        }
+
+        @Override
+        public List<String> getUserMacroDefinitions() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getUserMacroDefinitions(language);
+            }
+            return nativeProject.getUserMacroDefinitions();
+        }
+
+        @Override
+        public NativeFileItem.Language getLanguage() {
+            return language;
+        }
+
+        @Override
+        public NativeFileItem.LanguageFlavor getLanguageFlavor() {
+            if (nativeProject instanceof NativeProjectProvider) {
+                return ((NativeProjectProvider)nativeProject).getLanguageFlavor(language);
+            }
+            return LanguageFlavor.UNKNOWN;
+        }
+
+        @Override
+        public boolean isExcluded() {
+            return false;
         }
     }
-    
-    private static final class MacroConverter {
 
-        private final MacroExpander expander;
-        private final Map<String, String> envVariables;
-
-        public MacroConverter(ExecutionEnvironment env) {
-            envVariables = new HashMap<>();
-            if (HostInfoUtils.isHostInfoAvailable(env)) {
-                try {
-                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                    envVariables.putAll(hostInfo.getEnvironment());                    
-                } catch (IOException | CancellationException ex) {
-                    // should never == null occur if isHostInfoAvailable(env) => report
-                    Exceptions.printStackTrace(ex);
-                }                    
-            }
-            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
-            this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
-        }
-
-        public String expand(String in) {
-            try {
-                return expander != null ? expander.expandMacros(in, envVariables) : in;
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return in;
-        }
-    }
 }

@@ -43,10 +43,13 @@ package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -89,7 +92,11 @@ public class ItemEx extends Item {
                 CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
                 return out;
             }
-        
+
+        @Override
+        public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, Language language) {
+            return super.createIndexer(descriptor, nativeProject, language);
+        }
     }
     
     private DataObject lastDataObject = null;

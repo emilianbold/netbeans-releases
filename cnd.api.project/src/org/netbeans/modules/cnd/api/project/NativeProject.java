@@ -89,6 +89,12 @@ public interface NativeProject {
      public List<NativeFileItem> getAllFiles();
 
      /**
+      * Returns a list of all files in the project.
+      * @return a list of all files in the project.
+      */
+     public List<NativeFileItem> getStandardHeadersIndexers();
+
+     /**
       * Adds a listener to changes when items are added to or removed from the project.
       * @param listener a listener to add
       */
