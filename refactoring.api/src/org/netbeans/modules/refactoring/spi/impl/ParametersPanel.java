@@ -118,6 +118,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private boolean cancelRequest = false;
     private boolean canceledDialog;
     private boolean inspect = false;
+    
+    private int suppressChecks;
+    private boolean checkNeeded;
 
     /**
      * Enables/disables Preview button of dialog. Can be used by
@@ -181,6 +184,17 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 }
             }
         });
+    }
+    
+    public void withBatchedChanges(Runnable r) {
+        suppressChecks++;
+        try {
+            r.run();
+        } finally {
+            if (--suppressChecks == 0) {
+                recheck();
+            }
+        }
     }
 
     @Override
@@ -966,6 +980,20 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        if (!checkNeeded) {
+            checkNeeded = true;
+            SwingUtilities.invokeLater(this::recheck);
+        }
+    }
+    
+    private void recheck() {
+        if (suppressChecks != 0) {
+            checkNeeded = true;
+            return;
+        } else if (!checkNeeded) {
+            return;
+        }
+        checkNeeded = false;
         if (rui instanceof RefactoringUIBypass && ((RefactoringUIBypass) rui).isRefactoringBypassRequired()) {
             showProblem(null);
         } else {

@@ -43,6 +43,11 @@
 package org.netbeans.modules.java.preprocessorbridge.spi;
 
 import java.io.IOException;
+import java.util.Map;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.openide.filesystems.FileObject;
 
@@ -69,6 +74,10 @@ public abstract class JavaSourceUtilImpl {
 
     protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
+    @NonNull
+    protected Map<String, byte[]> generate(@NonNull FileObject root, @NonNull FileObject file, @NullAllowed CharSequence content, @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnostics) throws IOException {
+        throw new UnsupportedOperationException("Not supported in the registered implementation: " + getClass().getName()); //NOI18N
+    }
 
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
@@ -76,6 +85,18 @@ public abstract class JavaSourceUtilImpl {
         public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException {
             assert spi != null;
             return spi.createTaggedCompilationController(fo, currentTag, out);
+        }
+
+        @Override
+        @NonNull
+        public Map<String, byte[]> generate(
+                @NonNull final JavaSourceUtilImpl spi,
+                @NonNull final FileObject srcRoot,
+                @NonNull final FileObject file,
+                @NullAllowed final CharSequence content,
+                @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnostics) throws IOException {
+            assert spi != null;
+            return spi.generate(srcRoot, file, content, diagnostics);
         }
     }
 }

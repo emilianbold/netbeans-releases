@@ -111,13 +111,19 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                     CompilationController controller = result != null ? CompilationController.get(result) : null;
                                     if (controller != null && Phase.PARSED.compareTo(controller.toPhase(Phase.PARSED)) <= 0) {
                                         TreeUtilities tu = controller.getTreeUtilities();
+                                        int eo = endOffset;
+                                        int so = startOffset;
+                                        if (so >= 0) {
+                                            so = result.getSnapshot().getEmbeddedOffset(startOffset);
+                                        }
                                         if (endOffset >= 0) {
+                                            eo = result.getSnapshot().getEmbeddedOffset(endOffset);
                                             TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(controller.getTokenHierarchy(), startOffset);
                                             int delta = ts.move(startOffset);
                                             if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
-                                                delta = ts.move(endOffset);
+                                                delta = ts.move(eo);
                                                 if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
-                                                    String selectedText = controller.getText().substring(startOffset, endOffset).trim();
+                                                    String selectedText = controller.getText().substring(startOffset, eo).trim();
                                                     SourcePositions[] sp = new SourcePositions[1];
                                                     ExpressionTree expr = selectedText.length() > 0 ? tu.parseExpression(selectedText, sp) : null;
                                                     if (expr != null && expr.getKind() != Tree.Kind.IDENTIFIER && !Utilities.containErrors(expr) && sp[0].getEndPosition(null, expr) >= selectedText.length()) {
@@ -126,16 +132,16 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                                 }
                                             }
                                         }
-                                        Tree tree = tu.pathFor(startOffset).getLeaf();
-                                        if (endOffset >= 0 && startOffset != endOffset) {
-                                            if (tu.pathFor(endOffset).getLeaf() != tree) {
+                                        Tree tree = tu.pathFor(so).getLeaf();
+                                        if (endOffset >= 0 && so != eo) {
+                                            if (tu.pathFor(eo).getLeaf() != tree) {
                                                 return;
                                             }
                                         }
                                         treeKindCtx = tree.getKind();
                                         switch (treeKindCtx) {
                                             case CASE:
-                                                if (startOffset < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
+                                                if (so < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
                                                     treeKindCtx = null;
                                                 }
                                                 break;
@@ -145,7 +151,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                                 if (startPos <= 0) {
                                                     startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
                                                 }
-                                                String headerText = controller.getText().substring(startPos, startOffset);
+                                                String headerText = controller.getText().substring(startPos, so);
                                                 int idx = headerText.indexOf('{'); //NOI18N
                                                 if (idx < 0) {
                                                     treeKindCtx = null;
@@ -157,7 +163,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                             case WHILE_LOOP:
                                                 sp = controller.getTrees().getSourcePositions();
                                                 startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
-                                                String text = controller.getText().substring(startPos, startOffset);
+                                                String text = controller.getText().substring(startPos, so);
                                                 if (!text.trim().endsWith(")")) {
                                                     treeKindCtx = null;
                                                 }

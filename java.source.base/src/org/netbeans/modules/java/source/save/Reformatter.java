@@ -2090,7 +2090,7 @@ public class Reformatter implements ReformatTask {
         public Boolean visitUnionType(UnionTypeTree node, Void p) {
             List<? extends Tree> alts = node.getTypeAlternatives();
             if (alts != null && !alts.isEmpty()) {
-                wrapList(cs.wrapDisjunctiveCatchTypes(), cs.alignMultilineDisjunctiveCatchTypes(), false, BAR, alts);
+                wrapList(cs.wrapDisjunctiveCatchTypes(), cs.alignMultilineDisjunctiveCatchTypes(), false, BAR, cs.wrapAfterDisjunctiveCatchBar(), alts);
             }
             return true;
         }
@@ -3997,6 +3997,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, JavaTokenId separator, List<? extends Tree> trees) {
+            wrapList(wrapStyle, align, prependSpace, separator, true, trees);
+        }
+
+        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, JavaTokenId separator, boolean wrapAfterSeparator, List<? extends Tree> trees) {
             boolean first = true;
             int alignIndent = -1;
             boolean spaceBeforeSeparator, spaceAfterSeparator;
@@ -4046,14 +4050,16 @@ public class Reformatter implements ReformatTask {
                             scan(impl, null);
                         }
                     }
-                } else {
+                } else if (wrapAfterSeparator) {
+                    boolean containedNewLine = spaces(spaceBeforeSeparator ? 1 : 0, false);
+                    if (separator.equals(accept(separator)) && containedNewLine) {
+                        newline();
+                    }
                     wrapTree(wrapStyle, alignIndent, spaceAfterSeparator ? 1 : 0, impl);
+                } else {
+                    wrapOperatorAndTree(wrapStyle, alignIndent, spaceAfterSeparator ? 1 : 0, impl);
                 }
                 first = false;
-                if (it.hasNext()) {
-                    spaces(spaceBeforeSeparator ? 1 : 0);
-                    accept(separator);
-                }
             }
         }
         
