@@ -3,7 +3,7 @@ namespace ExampleNamespace;
 
 use Some\Classes\{ClassA, ClassB, ClassC as C};
 
-class Example {
+class Example implements Iface1, Iface2, Iface3 {
 
     public function ifExample ($a, $b) {
         if (convert($a) > $b) {
@@ -71,7 +71,18 @@ public function anonymousClassExample($arg) {
     };
     return $instance;
 }
+
+// Wrapping: Method Parameters must be set
+public function alignParamsExample($arg1,
+        $arg2, $arg3,
+        $arg4, $arg5) {
 }
+}
+
+// Wrapping: Method Call Arguments must be set
+(new Example())->alignParamsExample('one',
+        'two', 'three',
+        'four', 'five');
 
 $shortName=10;
 $veryLooongName=20;
