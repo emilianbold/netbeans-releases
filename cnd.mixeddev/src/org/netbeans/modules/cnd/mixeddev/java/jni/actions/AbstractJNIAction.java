@@ -127,7 +127,7 @@ public abstract class AbstractJNIAction extends AbstractAction {
     }
     
     protected JavaEntityInfo resolveJavaEntity(Document doc, int caret) {
-        return JavaContextSupport.resolveContext(doc, new ResolveJavaEntityTask(caret));
+        return JavaContextSupport.resolveContext(doc, new ResolveJavaEntityTask(caret), false);
     }
     
     protected abstract boolean isEnabledAtPosition(Document doc, int caret);

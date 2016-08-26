@@ -78,7 +78,11 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 public final class JNASupport {
     
     public static JavaEntityInfo getJNAEntity(Document doc, int offset) {
-        return JavaContextSupport.resolveContext(doc, new ResolveJNAEntityTask(offset));
+        return getJNAEntity(doc, offset, false);
+    }
+    
+    public static JavaEntityInfo getJNAEntity(Document doc, int offset, boolean immediately) {
+        return JavaContextSupport.resolveContext(doc, new ResolveJNAEntityTask(offset), immediately);
     }
     
     public static String getCppMethodSignature(JavaMethodInfo methodInfo) {
