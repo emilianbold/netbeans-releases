@@ -66,6 +66,8 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.general.IconNodeWidget;
+import org.netbeans.api.visual.widget.general.IconNodeWidget.TextOrientation;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
@@ -110,7 +112,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     private Timer hoverTimer;
     private Color hoverBorderC;
 
-    private Widget artifactW;
+    private IconNodeWidget artifactW;
     private LabelWidget versionW;
     private Widget contentW;
     private ImageWidget lockW, fixHintW;
@@ -282,18 +284,16 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
 
         //Artifact name (with optional project icon on the left)
-        artifactW = new Widget(scene);
-        artifactW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
+        artifactW = new IconNodeWidget(scene, TextOrientation.RIGHT_CENTER);
+        artifactW.setLabel(artifact.getArtifactId() + "  ");
         if (null != icon) {
-            artifactW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
+            artifactW.setImage(ImageUtilities.icon2Image(icon));
         }
-        final LabelWidget labelWidget = new LabelWidget(scene, artifact.getArtifactId() + "  ");
-        labelWidget.setUseGlyphVector(true);
-        artifactW.addChild(labelWidget);
-      
+        artifactW.getLabelWidget().setUseGlyphVector(true);
+
         if (node.isRoot()) {
             Font defF = scene.getDefaultFont();
-            artifactW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
+            artifactW.getLabelWidget().setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
         }
         contentW.addChild(artifactW);
         Widget versionDetW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
@@ -301,6 +301,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         contentW.addChild(versionDetW);
         versionW = new LabelWidget(scene);
         versionW.setLabel(artifact.getVersion());
+        versionW.setUseGlyphVector(true);
         int mngState = node.getManagedState();
         if (mngState != ArtifactGraphNode.UNMANAGED) {
              lockW = new ImageWidget(scene,
@@ -481,7 +482,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         if (updateNeeded) {
-            updateContent(((DependencyGraphScene)getScene()).isAnimated());
+            updateContent();
         } else if (repaintNeeded) {
             repaint();
         }
@@ -490,7 +491,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     @Override public void actionPerformed(ActionEvent e) {
         enlargedFromHover = true;
-        updateContent(((DependencyGraphScene)getScene()).isAnimated());
+        updateContent();
     }
 
     public void setReadable (boolean readable) {
@@ -498,7 +499,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             return;
         }
         this.readable = readable;
-        updateContent(((DependencyGraphScene)getScene()).isAnimated());
+        updateContent();
     }
 
     public boolean isReadable () {
@@ -514,17 +515,13 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
      */
     void updateReadableZoom() {
         if (isReadable()) {
-            updateContent(false);
+            updateContent();
         }
     }
 
-    private void updateContent (boolean isAnimated) {
+    private void updateContent () {
 
-        if (isAnimated) {
-            artifactW.setPreferredBounds(artifactW.getPreferredBounds());
-        }
-
-        boolean makeReadable = getState().isSelected() || enlargedFromHover || readable;
+        boolean makeReadable = getState().isSelected() || readable;
 
         Font origF = getOrigFont();
         Font newF = origF;
@@ -534,12 +531,8 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             newF = getReadable(getScene(), origF);
         }
 
-        artifactW.setFont(newF);
+        artifactW.getLabelWidget().setFont(newF);
         versionW.setFont(newF);
-
-        if (isAnimated) {
-            getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
-        }
 
         if (fixHintW != null) {
             fixHintW.setVisible(makeReadable);
