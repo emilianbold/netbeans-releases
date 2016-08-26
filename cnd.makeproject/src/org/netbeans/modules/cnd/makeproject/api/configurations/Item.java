@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider.MacroConverter;
-import org.netbeans.modules.cnd.makeproject.StandardHeadersProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -105,9 +104,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         public abstract Item createInBaseDir(FileObject baseDirFileObject, String path);
         public abstract Item createInFileSystem(FileSystem fileSystem, String path);
         public abstract Item createDetachedViewItem(FileSystem fileSystem, String path);
-        public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, NativeFileItem.Language language) {
-            return DEFAULT.createIndexer(descriptor, nativeProject, language);
-        }
 
         private static final class Default extends ItemFactory {
 
@@ -126,21 +122,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 CndUtils.assertNonUiThread();
                 Item out = new Item(fileSystem, path);
                 return out;
-            }
-
-            @Override
-            public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, final NativeFileItem.Language language) {
-                FileObject projectDir = descriptor.getProject().getProjectDirectory();
-                FileObject indexer;
-                if (language == NativeFileItem.Language.C) {
-                    indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.C_STANDARD_HEADERS_INDEXER); //NOI18N
-                } else {
-                    indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.CPP_STANDARD_HEADERS_INDEXER); //NOI18N
-                }
-                if (indexer != null && indexer.isValid()) {
-                    return new NativeFileIndexer(nativeProject, indexer, language);
-                }
-                return null;
             }
         }    
     }
@@ -1141,104 +1122,4 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     protected void onAddedToFolder(Folder folder) {
     }
-
-    private static class NativeFileIndexer implements NativeFileItem {
-
-        private final FileObject indexer;
-        private final Language language;
-        private final NativeProject nativeProject;
-
-        public NativeFileIndexer(NativeProject nativeProject, FileObject indexer, Language language) {
-            this.nativeProject = nativeProject;
-            this.indexer = indexer;
-            this.language = language;
-        }
-
-        @Override
-        public NativeProject getNativeProject() {
-            return nativeProject;
-        }
-
-        @Override
-        public String getAbsolutePath() {
-            return indexer.getPath();
-        }
-
-        @Override
-        public String getName() {
-            return indexer.getNameExt();
-        }
-
-        @Override
-        public FileObject getFileObject() {
-            return indexer;
-        }
-
-        @Override
-        public List<IncludePath> getSystemIncludePaths() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getSystemIncludePaths(language);
-            }
-            return nativeProject.getSystemIncludePaths();
-        }
-
-        @Override
-        public List<IncludePath> getUserIncludePaths() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getUserIncludePaths(language);
-            }
-            return nativeProject.getUserIncludePaths();
-        }
-
-        @Override
-        public List<FSPath> getSystemIncludeHeaders() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getSystemIncludeHeaders(language);
-            }
-            return nativeProject.getSystemIncludeHeaders();
-        }
-
-        @Override
-        public List<FSPath> getIncludeFiles() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getIncludeFiles(language);
-            }
-            return nativeProject.getIncludeFiles();
-        }
-
-        @Override
-        public List<String> getSystemMacroDefinitions() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getSystemMacroDefinitions(language);
-            }
-            return nativeProject.getSystemMacroDefinitions();
-        }
-
-        @Override
-        public List<String> getUserMacroDefinitions() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getUserMacroDefinitions(language);
-            }
-            return nativeProject.getUserMacroDefinitions();
-        }
-
-        @Override
-        public NativeFileItem.Language getLanguage() {
-            return language;
-        }
-
-        @Override
-        public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            if (nativeProject instanceof NativeProjectProvider) {
-                return ((NativeProjectProvider)nativeProject).getLanguageFlavor(language);
-            }
-            return LanguageFlavor.UNKNOWN;
-        }
-
-        @Override
-        public boolean isExcluded() {
-            return false;
-        }
-    }
-
 }

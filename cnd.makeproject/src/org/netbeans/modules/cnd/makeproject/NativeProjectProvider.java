@@ -124,7 +124,6 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
     private final FileSystem fileSystem;
     private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<>();
-    private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final RequestProcessor RPCC = new RequestProcessor("NativeProjectProvider.CheckConfiguration", 1); // NOI18N
     private NativeFileItem indexerC;
     private NativeFileItem indexerCpp;
@@ -244,13 +243,13 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (conf != null) {
                 List<NativeFileItem> list = new ArrayList<>();
                 if (indexerC == null) {
-                    indexerC = Item.ItemFactory.getDefault().createIndexer(descriptor, this, NativeFileItem.Language.C);
+                    indexerC = createIndexer(descriptor, this, NativeFileItem.Language.C);
                 }
                 if (indexerC != null) {
                     list.add(indexerC);
                 }
                 if (indexerCpp == null) {
-                    indexerCpp = Item.ItemFactory.getDefault().createIndexer(descriptor, this, NativeFileItem.Language.CPP);
+                    indexerCpp = createIndexer(descriptor, this, NativeFileItem.Language.CPP);
                 }
                 if (indexerCpp != null) {
                     list.add(indexerCpp);
@@ -259,6 +258,20 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
         return Collections.emptyList();
+    }
+
+    private NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProjectProvider nativeProject, final NativeFileItem.Language language) {
+        FileObject projectDir = descriptor.getProject().getProjectDirectory();
+        FileObject indexer;
+        if (language == NativeFileItem.Language.C) {
+            indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.C_STANDARD_HEADERS_INDEXER); //NOI18N
+        } else {
+            indexer = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER+"/"+StandardHeadersProjectMetadataFactory.CPP_STANDARD_HEADERS_INDEXER); //NOI18N
+        }
+        if (indexer != null && indexer.isValid()) {
+            return new NativeFileIndexer(nativeProject, indexer, language);
+        }
+        return null;
     }
     
     private Reference<List<NativeProject>> cachedDependency = new SoftReference<>(null);
@@ -1255,6 +1268,84 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                 Exceptions.printStackTrace(ex);
             }
             return in;
+        }
+    }
+    
+    private static class NativeFileIndexer implements NativeFileItem {
+
+        private final FileObject indexer;
+        private final NativeFileItem.Language language;
+        private final NativeProjectProvider nativeProject;
+
+        public NativeFileIndexer(NativeProjectProvider nativeProject, FileObject indexer, NativeFileItem.Language language) {
+            this.nativeProject = nativeProject;
+            this.indexer = indexer;
+            this.language = language;
+        }
+
+        @Override
+        public NativeProject getNativeProject() {
+            return nativeProject;
+        }
+
+        @Override
+        public String getAbsolutePath() {
+            return indexer.getPath();
+        }
+
+        @Override
+        public String getName() {
+            return indexer.getNameExt();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return indexer;
+        }
+
+        @Override
+        public List<IncludePath> getSystemIncludePaths() {
+            return nativeProject.getSystemIncludePaths(language);
+        }
+
+        @Override
+        public List<IncludePath> getUserIncludePaths() {
+            return nativeProject.getUserIncludePaths(language);
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            return nativeProject.getSystemIncludeHeaders(language);
+        }
+
+        @Override
+        public List<FSPath> getIncludeFiles() {
+            return nativeProject.getIncludeFiles(language);
+        }
+
+        @Override
+        public List<String> getSystemMacroDefinitions() {
+            return nativeProject.getSystemMacroDefinitions(language);
+        }
+
+        @Override
+        public List<String> getUserMacroDefinitions() {
+            return nativeProject.getUserMacroDefinitions(language);
+        }
+
+        @Override
+        public NativeFileItem.Language getLanguage() {
+            return language;
+        }
+
+        @Override
+        public NativeFileItem.LanguageFlavor getLanguageFlavor() {
+            return nativeProject.getLanguageFlavor(language);
+        }
+
+        @Override
+        public boolean isExcluded() {
+            return false;
         }
     }
 }

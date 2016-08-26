@@ -43,13 +43,10 @@ package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -68,34 +65,29 @@ public class ItemEx extends Item {
     @org.openide.util.lookup.ServiceProvider(service=Item.ItemFactory.class)
     public static final class ItemFactoryEx extends ItemFactory {
 
-            @Override
-            public Item createInBaseDir(FileObject baseDirFileObject, String path) {
-                return new ItemEx(baseDirFileObject, path);
-            }
-
-            @Override
-            public Item createInFileSystem(FileSystem fileSystem, String path) {
-                return new ItemEx(fileSystem, path);
-            }
-
-            @Override
-            public Item createDetachedViewItem(FileSystem fileSystem, String path) {
-                CndUtils.assertNonUiThread();
-                ItemEx out = new ItemEx(fileSystem, path);
-                // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
-                // If we call this method here then result will be calculated and cached. So cached version will be
-                // used in createNodes and won't freeze EDT.
-                // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
-                DataObject dobj = out.getDataObject();
-                // detach resources to prevent memory leaks
-                out.detachFrom(dobj);
-                CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
-                return out;
-            }
+        @Override
+        public Item createInBaseDir(FileObject baseDirFileObject, String path) {
+            return new ItemEx(baseDirFileObject, path);
+        }
 
         @Override
-        public NativeFileItem createIndexer(MakeConfigurationDescriptor descriptor, NativeProject nativeProject, Language language) {
-            return super.createIndexer(descriptor, nativeProject, language);
+        public Item createInFileSystem(FileSystem fileSystem, String path) {
+            return new ItemEx(fileSystem, path);
+        }
+
+        @Override
+        public Item createDetachedViewItem(FileSystem fileSystem, String path) {
+            CndUtils.assertNonUiThread();
+            ItemEx out = new ItemEx(fileSystem, path);
+            // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+            // If we call this method here then result will be calculated and cached. So cached version will be
+            // used in createNodes and won't freeze EDT.
+            // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+            DataObject dobj = out.getDataObject();
+            // detach resources to prevent memory leaks
+            out.detachFrom(dobj);
+            CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
+            return out;
         }
     }
     
