@@ -1050,7 +1050,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-
+        sources.addAll(nativeProject.getStandardHeadersIndexers());
         if (TraceFlags.TIMING) {
             time = System.currentTimeMillis() - time;
             System.err.printf("Getting files from project system took  %d ms for %s%n", time, getName());

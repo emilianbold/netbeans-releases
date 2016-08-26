@@ -93,7 +93,18 @@ public final class JNISupport {
      * @return true if it is a class and it has JNI methods, false otherwise
      */
     public static boolean isJNIClass(Document doc, int caret) {
-        Boolean res = JavaContextSupport.resolveContext(doc, new IsJNIClassTask(caret));
+        return isJNIClass(doc, caret, false);
+    }
+    
+    /**
+     * Checks if class in java file at the given offset has JNI methods
+     * @param doc
+     * @param caret
+     * @param immediately - whether to execute that operation immediately or it can wait a bit
+     * @return true if it is a class and it has JNI methods, false otherwise
+     */
+    public static boolean isJNIClass(Document doc, int caret, boolean immediately) {
+        Boolean res = JavaContextSupport.resolveContext(doc, new IsJNIClassTask(caret), immediately);
         return res != null ? res : false;
     }
     
@@ -104,34 +115,63 @@ public final class JNISupport {
      * @return JNI class or null if there caret is not denoting JNI class
      */
     public static JNIClass getJNIClass(Document doc, int caret) {
-        return JavaContextSupport.resolveContext(doc, new GetJNIClassTask(caret));
+        return getJNIClass(doc, caret, false);
+    }
+    
+    /**
+     * 
+     * @param doc
+     * @param caret
+     * @param immediately - whether to execute that operation immediately or it can wait a bit
+     * @return JNI class or null if there caret is not denoting JNI class
+     */
+    public static JNIClass getJNIClass(Document doc, int caret, boolean immediately) {
+        return JavaContextSupport.resolveContext(doc, new GetJNIClassTask(caret), immediately);
     }
 
     /**
      * Finds JNI Classes in java file.
      * @param fObj
+     * @param immediately - whether to execute that operation immediately or it can wait a bit
      * @return qualified names of all classes with JNI methods in fObj
      */
+    public static List<String> getJNIClassNames(FileObject fObj, boolean immediately) {
+        return JavaContextSupport.resolveContext(fObj, new GetJavaJNIClassesNamesTask(), immediately);
+    }    
+    
     public static List<String> getJNIClassNames(FileObject fObj) {
-        return JavaContextSupport.resolveContext(fObj, new GetJavaJNIClassesNamesTask());
+        return getJNIClassNames(fObj, false);
+    }    
+    
+    public static List<String> getJNIClassNames(Document doc, boolean immediately) {
+        return JavaContextSupport.resolveContext(doc, new GetJavaJNIClassesNamesTask(), immediately);
     }    
     
     public static List<String> getJNIClassNames(Document doc) {
-        return JavaContextSupport.resolveContext(doc, new GetJavaJNIClassesNamesTask());
+        return getJNIClassNames(doc, false);
     }    
     
     /**
      * Finds JNI method in java file at the given offset.
      * @param fObj
      * @param offset
+     * @param immediately - whether to execute that operation immediately or it can wait a bit
      * @return method if there is one or null
      */
-    public static JavaMethodInfo getJNIMethod(FileObject fObj, int offset) {
-        return JavaContextSupport.resolveContext(fObj, new ResolveJNIMethodTask(offset));
+    public static JavaMethodInfo getJNIMethod(FileObject fObj, int offset, boolean immediately) {
+        return JavaContextSupport.resolveContext(fObj, new ResolveJNIMethodTask(offset), immediately);
     }    
     
+    public static JavaMethodInfo getJNIMethod(FileObject fObj, int offset) {
+        return getJNIMethod(fObj, offset, false);
+    }    
+    
+    public static JavaMethodInfo getJNIMethod(Document doc, int offset, boolean immediately) {
+        return JavaContextSupport.resolveContext(doc, new ResolveJNIMethodTask(offset), immediately);
+    }
+    
     public static JavaMethodInfo getJNIMethod(Document doc, int offset) {
-        return JavaContextSupport.resolveContext(doc, new ResolveJNIMethodTask(offset));
+        return getJNIMethod(doc, offset, false);
     }
     
     /**

@@ -174,6 +174,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                     }
                 }
             }
+            list.addAll(nativeProject.getStandardHeadersIndexers());
             itemsPropertiesChangedImpl(list, true);
         } else {
             if (TraceFlags.TIMING) {

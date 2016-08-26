@@ -103,7 +103,7 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
             @Override
             public String[] getNativeNames(Document doc, int offset) {
                 String cppNames[] = null;
-                JavaEntityInfo entity = JNISupport.getJNIMethod(doc, offset);
+                JavaEntityInfo entity = JNISupport.getJNIMethod(doc, offset, true);
                 if (entity instanceof JavaMethodInfo) {
                     cppNames = JNISupport.getCppMethodSignatures((JavaMethodInfo) entity);
                 }
@@ -117,7 +117,7 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
             @Override
             public String[] getNativeNames(Document doc, int offset) {
                 String cppName = null;
-                JavaEntityInfo entity = JNASupport.getJNAEntity(doc, offset);
+                JavaEntityInfo entity = JNASupport.getJNAEntity(doc, offset, true);
                 if (entity instanceof JavaMethodInfo) {
                     cppName = JNASupport.getCppMethodSignature((JavaMethodInfo) entity);
                 }
