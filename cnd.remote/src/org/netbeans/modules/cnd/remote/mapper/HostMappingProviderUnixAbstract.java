@@ -167,7 +167,7 @@ import org.openide.util.Exceptions;
                             paths.add(path); // NOI18N
                         }
                     } else {
-                        if (!"smb".equals(path)) {
+                        if (!"smb".equals(path)) { // NOI18N
                             log.fine("The command `" + getShareCommand() + "` listed non-absolute path: " + path); //NOI18N
                         }
                     }
