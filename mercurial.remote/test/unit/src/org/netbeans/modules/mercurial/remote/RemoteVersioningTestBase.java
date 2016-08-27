@@ -163,6 +163,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         String remoteDir = mkTempAndRefreshParent(true);
         ProcessUtils.execute(execEnv, "umask", "0002");
         FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
+        assertNotNull("Failed to find file object for a directory that was just created " + remoteDir, remoteDirFO);
         remoteDirFO = remoteDirFO.createFolder("remoteMercurial");
         remoteDir = remoteDirFO.getPath();
         //
