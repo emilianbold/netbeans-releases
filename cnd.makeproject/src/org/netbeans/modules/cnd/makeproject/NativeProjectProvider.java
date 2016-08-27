@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -949,10 +950,14 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
     
     private String getImportantFlags(NativeFileItem.Language language) {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        if (makeConfiguration != null) {
+        if (makeConfiguration == null) {
             return "";
         }
-        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        CompilerSet2Configuration compilerSetConfiguration = makeConfiguration.getCompilerSet();
+        if (compilerSetConfiguration == null) { // that's probably a paranoia, the reason of NPE was
+            return ""; // in incorrect comparison 5 lines above
+        }
+        CompilerSet compilerSet = compilerSetConfiguration.getCompilerSet();
         if (compilerSet == null) {
             return "";
         }
