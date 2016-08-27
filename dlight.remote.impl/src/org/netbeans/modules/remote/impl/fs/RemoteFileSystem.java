@@ -211,7 +211,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     private List<String> getFixedAutoMounts() {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
         String t = System.getProperty("remote.autofs.list"); //NOI18N
         if (t != null) {
             String[] paths = t.split(","); //NOI18N
