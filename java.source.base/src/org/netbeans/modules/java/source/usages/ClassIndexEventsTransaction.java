@@ -130,7 +130,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
         assert addedModule == null || module == null;
-        addedModule = module;
+        addedModule = reduce(addedModule, module);
         addedTypes.addAll(added);
         changesInRoot = root;
     }
@@ -151,7 +151,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
         assert removedModule == null || module == null;
-        removedModule = module;
+        removedModule = reduce(removedModule, module);
         removedTypes.addAll(removed);
         changesInRoot = root;
     }
@@ -172,7 +172,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
         assert changedModule == null || module == null;
-        changedModule = module;
+        changedModule = reduce(changedModule, module);
         changedTypes.addAll(changed);
         changesInRoot = root;
     }
@@ -290,6 +290,12 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     private void closeTx() {
         checkClosedTx();
         closed = true;
+    }
+    
+    private static <T> T reduce(T oldValue, T newValue) {
+        return newValue != null ?
+                newValue :
+                oldValue;
     }
 
     /**
