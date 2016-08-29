@@ -179,7 +179,7 @@ public class JsFormatter implements Formatter {
                 startTime = System.nanoTime();
 
                 CodeStyle.Holder codeStyle = CodeStyle.get(formatContext).toHolder();
-                
+
                 int indentLevelSize = codeStyle.indentSize;
 
                 int initialIndent = codeStyle.initialIndent;
@@ -290,7 +290,7 @@ public class JsFormatter implements Formatter {
                     } else if (token.getKind() == FormatToken.Kind.AFTER_END_BRACE) {
                         if (!openedBraces.isEmpty()
                                 && getBracePlacement(openedBraces.pop(), codeStyle) == CodeStyle.BracePlacement.NEW_LINE_INDENTED) {
-                            // token representing closing brace of block with "new line indented" indentation  
+                            // token representing closing brace of block with "new line indented" indentation
                             // therefore decrease the indentation
                             formatContext.decIndentationLevel();
                         }
@@ -349,7 +349,7 @@ public class JsFormatter implements Formatter {
                         // proper indentation even on a blank line
                         if (indentationEnd != null
                                 && (indentationEnd.getKind() != FormatToken.Kind.EOL || templateEdit)) {
-                            
+
                             indentLine(token, formatContext, codeStyle, continuations, indentationEnd, indentationStart.getOffset(),
                                     initialIndent, indentLevelSize, continuationIndent, started, false, null, null, null);
                         }
@@ -391,7 +391,7 @@ public class JsFormatter implements Formatter {
                         : indentation;
                 if (offsetDiff != null) {
                     formatContext.indentLineWithOffsetDiff(indentationStartOffset, indentationSize,
-                            checked, offsetDiff, codeStyle);                    
+                            checked, offsetDiff, codeStyle);
                 } else {
                     formatContext.indentLine(indentationStartOffset, indentationSize,
                             checked, codeStyle);
@@ -440,7 +440,7 @@ public class JsFormatter implements Formatter {
         // there is + 1 for eol
         formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
                 + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
-        
+
         FormatToken indentationEnd = FormatTokenStream.getNextNonWhite(lastWrap.getToken(), false);
         assert indentationEnd != null;
 
@@ -806,7 +806,7 @@ public class JsFormatter implements Formatter {
         }
         return false;
     }
-    
+
     private void formatComment(FormatToken comment, FormatContext formatContext, CodeStyle.Holder codeStyle, int indent) {
         // this assumes the firts line is already indented by EOL logic
         assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
@@ -1361,7 +1361,7 @@ public class JsFormatter implements Formatter {
         }
         return null;
     }
-    
+
     private static FormatToken getEndingEol(FormatToken token, CodeStyle.Holder codeStyle, List<FormatToken> eols, FormatToken defaultEnd) {
         FormatToken end = defaultEnd;
         if (codeStyle.maxPreservedObjectLines > 0
@@ -1944,7 +1944,7 @@ public class JsFormatter implements Formatter {
                 endOffset = doc.getLength();
             }
 
-            
+
             final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
             int initialIndent = 0;
