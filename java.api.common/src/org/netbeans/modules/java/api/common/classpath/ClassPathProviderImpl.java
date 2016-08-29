@@ -48,13 +48,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -710,15 +712,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         ClassPath cp = cache[2+type];
         if (cp == null) {
-            final ClassPath modules = ClassPathFactory.createClassPath(
-                ModuleClassPaths.createModuleInfoBasedPath(
-                    getModuleCompilePath(type),
-                    type == 0 ? sourceRoots : testSourceRoots,
-                    getModuleBootPath(),
-                    getJava8ClassPath(type),
-                    null));
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(getJava8ClassPath(type), modules));
+                    createSourceLevelSelector(
+                            ()->getJava8ClassPath(type),
+                            ()->ClassPathFactory.createClassPath(
+                                ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleCompilePath(type),
+                                    type == 0 ? sourceRoots : testSourceRoots,
+                                    getModuleBootPath(),
+                                    getJava8ClassPath(type),
+                                    null))));
             cache[2+type] = cp;
         }
         return cp;
@@ -777,16 +780,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         
         ClassPath cp = cache[index];
         if ( cp == null) {
-            ClassPathImplementation modules = ModuleClassPaths.createModuleInfoBasedPath(
-                    getModuleExecutePath(type),
-                    index != 5 ? sourceRoots : testSourceRoots,
-                    getModuleBootPath(),
-                    getJava8RunTimeClassPath(type),
-                    getFilter(type));
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
-                            getJava8RunTimeClassPath(type),
-                            ClassPathFactory.createClassPath(modules)));
+                            ()->getJava8RunTimeClassPath(type),
+                            ()->ClassPathFactory.createClassPath(
+                                ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleExecutePath(type),
+                                    index != 5 ? sourceRoots : testSourceRoots,
+                                    getModuleBootPath(),
+                                    getJava8RunTimeClassPath(type),
+                                    getFilter(type)))));
             cache[index] = cp;
         }
         return cp;
@@ -834,17 +837,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         ClassPath cp = cache[7];
         if ( cp == null ) {
             if (platform.hasFirst()) {
-                cp = ClassPathFactory.createClassPath(
-                    ClassPathSupportFactory.createBootClassPathImplementation(
-                        evaluator,
-                        getEndorsedClasspath(),
-                        platform.first()));
-                final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
-                    getModuleBootPath(),
-                    sourceRoots,
-                    null));
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                        createSourceLevelSelector(cp,moduleSytemPath));
+                        createSourceLevelSelector(
+                                ()->ClassPathFactory.createClassPath(
+                                    ClassPathSupportFactory.createBootClassPathImplementation(
+                                        evaluator,
+                                        getEndorsedClasspath(),
+                                        platform.first())),
+                                ()->ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleBootPath(),
+                                    sourceRoots,
+                                    null))));
             } else {
                 assert platform.hasSecond();
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
@@ -865,16 +868,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         ClassPath cp = cache[11];
         if ( cp == null ) {
             if (platform.hasFirst()) {
-                cp = ClassPathFactory.createClassPath(
-                    ClassPathSupportFactory.createBootClassPathImplementation(
-                        evaluator,
-                        getEndorsedClasspath(),
-                        platform.first()));
-                final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createPlatformModulePath(
-                    evaluator,
-                    platform.first()));
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                        createSourceLevelSelector(cp, moduleSytemPath));
+                        createSourceLevelSelector(
+                                ()->ClassPathFactory.createClassPath(
+                                    ClassPathSupportFactory.createBootClassPathImplementation(
+                                        evaluator,
+                                        getEndorsedClasspath(),
+                                        platform.first())),
+                                ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPlatformModulePath(
+                                    evaluator,
+                                    platform.first()))));
             } else {
                 cp = ClassPath.EMPTY;
             }
@@ -897,12 +900,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert type >=0 && type <=1;
         ClassPath cp = cache[12+type];
         if ( cp == null ) {
-            final ClassPath modules = ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
-                    projectDirectory,
-                    evaluator,
-                    type == 0 ? modulePath : testModulePath));
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(ClassPath.EMPTY, modules));
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
+                                projectDirectory,
+                                evaluator,
+                                type == 0 ? modulePath : testModulePath))));
             cache[12+type] = cp;
         }
         return cp;
@@ -923,7 +927,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         ClassPath cp = cache[14+type];
         if (cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(ClassPath.EMPTY, getJava8ClassPath(type)));
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->getJava8ClassPath(type)));
             cache[14+type] = cp;
         }
         return cp;
@@ -982,8 +988,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
-                            ClassPath.EMPTY,
-                            ClassPathFactory.createClassPath(modules)));
+                            ()->ClassPath.EMPTY,
+                            ()->ClassPathFactory.createClassPath(modules)));
             cache[index] = cp;
         }
         return cp;
@@ -1015,8 +1021,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
-                            ClassPath.EMPTY,
-                            getJava8RunTimeClassPath(type)));
+                            ()->ClassPath.EMPTY,
+                            ()->getJava8RunTimeClassPath(type)));
             cache[index] = cp;
         }
         return cp;
@@ -1294,12 +1300,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     @NonNull
     private org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector createSourceLevelSelector(
-            @NonNull final ClassPath preJdk9,
-            @NonNull final ClassPath jdk9) {
+            @NonNull final Supplier<? extends ClassPath> preJdk9,
+            @NonNull final Supplier<? extends ClassPath> jdk9) {
+        final List<Supplier<? extends ClassPath>> cps =
+                new ArrayList<>(2);
+        cps.add(preJdk9);
+        cps.add(jdk9);
         return new SourceLevelSelector(
                 evaluator,
                 javacSource,
-                new ClassPath[] {preJdk9, jdk9});
+                cps);
     }
     
     private class Filter implements Function<URL, Boolean>{        
@@ -1338,53 +1348,67 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
     }
 
-    private static final class SourceLevelSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector, PropertyChangeListener {
+    /*test*/ static final class SourceLevelSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector, PropertyChangeListener {
 
         private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
 
         private final PropertyEvaluator eval;
         private final String sourceLevelPropName;
-        private final ClassPath[] cps;
+        private final List<? extends Supplier<? extends ClassPath>> cpfs;
         private final PropertyChangeSupport listeners;
         private volatile ClassPath active;
+        private volatile ClassPath[] cps;
 
 
         SourceLevelSelector(
                 @NonNull final PropertyEvaluator eval,
                 @NonNull final String sourceLevelPropName,
-                @NonNull final ClassPath[] classpaths) {
+                @NonNull final List<? extends Supplier<? extends ClassPath>> cpFactories) {
             Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("sourceLevelPropName", sourceLevelPropName); //NOI18N
-            Parameters.notNull("classpaths", classpaths); //NOI18N
-            if (classpaths.length != 2) {
-                throw new IllegalArgumentException("Invalid classpaths: " + Arrays.toString(classpaths));  //NOI18N
+            Parameters.notNull("cpFactories", cpFactories); //NOI18N
+            if (cpFactories.size() != 2) {
+                throw new IllegalArgumentException("Invalid classpaths: " + cpFactories);  //NOI18N
             }
-            for (ClassPath cp : classpaths) {
-                if (cp == null) {
-                    throw new NullPointerException("Classpaths contain null: " + Arrays.toString(classpaths));  //NOI18N
+            for (Supplier<?> f : cpFactories) {
+                if (f == null) {
+                    throw new NullPointerException("Classpaths contain null: " + cpFactories);  //NOI18N
                 }
             }
             this.eval = eval;
             this.sourceLevelPropName = sourceLevelPropName;
-            this.cps = classpaths;
+            this.cpfs = cpFactories;
             this.listeners = new PropertyChangeSupport(this);
+            this.cps = new ClassPath[2];
             this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
         }
 
         @Override
+        @NonNull
         public ClassPath getActiveClassPath() {
             ClassPath res = active;
             if (res == null) {
-                res = cps[0];
+                int index = 0;
                 final String sl = eval.getProperty(this.sourceLevelPropName);
                 if (sl != null) {
                     try {
                         if (JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
-                            res = cps[1];
+                            index = 1;
                         }
                     } catch (NumberFormatException e) {
                         //pass
                     }
+                }
+                res = cps[index];   //RB
+                if (res == null) {
+                    res = cpfs.get(index).get();
+                    if (res == null) {
+                        throw new IllegalStateException(String.format(
+                                "ClassPathFactory: %s returned null",   //NOI18N
+                                cpfs.get(index)));
+                    }
+                    cps[index] = res;
+                    cps = cps;  //WB
                 }
                 active = res;
             }
