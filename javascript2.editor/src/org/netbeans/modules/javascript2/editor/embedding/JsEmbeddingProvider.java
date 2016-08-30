@@ -643,6 +643,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public List<Embedding> translate(Snapshot snapshot) {
 
             TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                return Collections.<Embedding>emptyList();
+            }
             TokenSequence<JsTokenId> sequence = th.tokenSequence(JsTokenId.javascriptLanguage());
 
             sequence.moveStart();
