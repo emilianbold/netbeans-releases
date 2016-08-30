@@ -499,6 +499,7 @@ final class ModuleClassPaths {
             final Collection<File> newModuleInfos = new ArrayDeque<>();
             final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
             final Map<String,URL> modulesByName = getModulesByName(base, newActiveProjectSourceRoots);
+            Collections.addAll(newActiveProjectSourceRoots, sources.getRootURLs());
             synchronized (this) {
                 if (activeProjectSourceRoots != null) {
                     activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
@@ -530,18 +531,14 @@ final class ModuleClassPaths {
                 final List<PathResourceImplementation> selfResResources;
                 final ClassPath bootModules;
                 final ClassPath userModules;
-                final ClassPath bootCp;
                 if (systemModules != null) {
                     selfResResources = Collections.emptyList();
                     bootModules = systemModules;
                     userModules = base;
-                    bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(
-                        findJavaBase(getModulesByName(systemModules, null)));
                 } else {
                     selfResResources = findJavaBase(modulesByName);
                     bootModules = base;
                     userModules = ClassPath.EMPTY;
-                    bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(selfResResources);
                 }
                 LOG.log(
                     Level.FINER,
@@ -553,12 +550,11 @@ final class ModuleClassPaths {
                     });
                 LOG.log(
                     Level.FINEST,
-                    "{0} for {1} bootModules: {2}, bootCp: {3},  modules: {4}",    //NOI18N
+                    "{0} for {1} bootModules: {2}, modules: {4}",    //NOI18N
                     new Object[]{
                         ModuleInfoClassPathImplementation.class.getSimpleName(),
                         base,
                         bootModules,
-                        bootCp,
                         modulesByName
                     });
                 selfRes.set(new Object[]{
@@ -583,9 +579,13 @@ final class ModuleClassPaths {
                                 });
                         }
                     }
+                    final List<PathResourceImplementation> bcprs = systemModules != null ?
+                                findJavaBase(getModulesByName(systemModules, null)) :
+                                selfResResources;   //java.base
+                    final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
-                    final Collection<String> additionalModules;
-                    if (found != null) {
+                    final Collection<String> additionalModules;                    
+                    if (found != null) {                        
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
                                         .setModuleBootPath(bootModules)
@@ -625,7 +625,7 @@ final class ModuleClassPaths {
                                     if (dependsOnUnnamed[0]) {
                                         for (String additionalRootModule : additionalModules) {
                                             Optional.ofNullable(resolveModule(cc, additionalRootModule))
-                                                .map((m) -> collectRequiredModules(m, true, true, modulesByName))
+                                                    .map((m) -> collectRequiredModules(m, true, true, modulesByName))
                                                     .ifPresent(requires::addAll);
                                         }
                                     }
@@ -711,6 +711,10 @@ final class ModuleClassPaths {
 
         @Override
         public void fileDeleted(FileEvent fe) {
+            final ClasspathInfo info = ClasspathInfo.create(
+                ClassPath.EMPTY,
+                ClassPath.EMPTY,
+                org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()));
             resetCache(TOMBSTONE, true);
         }
 
