@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -138,12 +139,14 @@ public class J2SEFileWizardIterator implements JavaFileWizardIteratorFactory {
             @Override
             public void initialize(WizardDescriptor wizard) {
                 this.wiz = wizard;
-                final J2SEProject project = (J2SEProject) Templates.getProject(wizard);
+                final Project project = Templates.getProject(wizard);
                 if (project == null) throw new NullPointerException ("No project found for: " + wizard);
-                final EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                final J2SEProject j2seProject = project.getLookup().lookup(J2SEProject.class);
+                if (j2seProject == null) throw new NullPointerException ("No j2seproject found in: " + project);
+                final EditableProperties ep = j2seProject.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 if (hasAnyRef(ep, ProjectProperties.JAVAC_CLASSPATH)
                         && !hasAnyRef(ep, ProjectProperties.JAVAC_MODULEPATH)) {
-                    panel = new MoveToModulePathPanel(project, ep);
+                    panel = new MoveToModulePathPanel(j2seProject, ep);
                 }
             }
 
