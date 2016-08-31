@@ -73,7 +73,7 @@ public final class ImportantFilesImpl implements ImportantFilesImplementation, P
     public ImportantFilesImpl(Project project) {
         assert project != null;
         this.project = project;
-        defaultConfigSupport = ImportantFilesSupport.create(project.getProjectDirectory(), Codecept.CODECEPTION_CONFIG_FILE_NAME);
+        defaultConfigSupport = ImportantFilesSupport.create(project.getProjectDirectory(), Codecept.CODECEPTION_CONFIG_FILE_NAME, Codecept.CODECEPTION_DIST_CONFIG_FILE_NAME);
     }
 
     @Override
@@ -91,8 +91,8 @@ public final class ImportantFilesImpl implements ImportantFilesImplementation, P
         List<FileInfo> files = new ArrayList<>();
         files.addAll(defaultConfigSupport.getFiles(null));
         if (CodeceptionPreferences.isCustomCodeceptionYmlEnabled(phpModule)) {
-            FileObject codeceptionYml = Codecept.getCodeceptionYml(phpModule);
-            if (codeceptionYml != null) {
+            List<FileObject> codeceptionYmls = Codecept.getCodeceptionYmls(phpModule);
+            for (FileObject codeceptionYml : codeceptionYmls) {
                 files.add(new FileInfo(codeceptionYml));
             }
         }

@@ -163,6 +163,8 @@ public final class Codecept {
     public static final File COVERAGE_LOG;
 
     public static final String CODECEPTION_CONFIG_FILE_NAME = "codeception.yml"; // NOI18N
+    public static final String CODECEPTION_DIST_CONFIG_FILE_NAME = "codeception.dist.yml"; // NOI18N
+    public static final List<String> CODECEPTION_CONFIG_FILE_NAMES = Arrays.asList(CODECEPTION_CONFIG_FILE_NAME, CODECEPTION_DIST_CONFIG_FILE_NAME);
     public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
 
     private final String codeceptPath;
@@ -245,10 +247,14 @@ public final class Codecept {
     @CheckForNull
     public Future<Integer> bootstrap(PhpModule phpModule) {
         assert phpModule != null;
-        FileObject codeceptionYml = getCodeceptionYml(phpModule);
-        if (codeceptionYml != null) {
-            userWarning(Bundle.Codecept_file_exists());
-            return null;
+        List<FileObject> codeceptionYmls = getCodeceptionYmls(phpModule);
+        if (!codeceptionYmls.isEmpty()) {
+            for (FileObject codeceptionYml : codeceptionYmls) {
+                if (CODECEPTION_CONFIG_FILE_NAME.equals(codeceptionYml.getNameExt())) {
+                    userWarning(Bundle.Codecept_file_exists());
+                    return null;
+                }
+            }
         }
 
         // allow only the project directory
@@ -352,9 +358,9 @@ public final class Codecept {
         if (!runInfo.allTests()) {
             // codeception can't run multiple tests
             for (FileObject startFile : startFiles) {
-                FileObject codeceptionYml = getCodeceptionYml(phpModule);
-                if (codeceptionYml != null) {
-                    FileObject parent = codeceptionYml.getParent();
+                List<FileObject> codeceptionYmls = getCodeceptionYmls(phpModule);
+                if (!codeceptionYmls.isEmpty()) {
+                    FileObject parent = codeceptionYmls.get(0).getParent();
                     String relativePath = FileUtil.getRelativePath(parent, startFile);
                     if (relativePath != null) {
                         if (startFile.isFolder() && !relativePath.endsWith("/")) { // NOI18N
@@ -465,9 +471,9 @@ public final class Codecept {
     @CheckForNull
     private File getWorkingDirectory(PhpModule phpModule) {
         assert phpModule != null;
-        FileObject codeceptionYml = getCodeceptionYml(phpModule);
-        if (codeceptionYml != null) {
-            FileObject parent = codeceptionYml.getParent();
+        List<FileObject> codeceptionYmls = getCodeceptionYmls(phpModule);
+        if (!codeceptionYmls.isEmpty()) {
+            FileObject parent = codeceptionYmls.get(0).getParent();
             if (parent != null) {
                 return FileUtil.toFile(parent);
             }
@@ -505,10 +511,16 @@ public final class Codecept {
         return result.getWarnings().get(0).getMessage();
     }
 
-    @CheckForNull
-    public static FileObject getCodeceptionYml(PhpModule phpModule) {
+    /**
+     * Get configuration files(codeception.yml, codeception.dist.yml).
+     *
+     * @see http://codeception.com/docs/02-GettingStarted#Configuration
+     * @param phpModule
+     * @return configuration files(codeception.yml, codeception.dist.yml).
+     */
+    public static List<FileObject> getCodeceptionYmls(PhpModule phpModule) {
         if (phpModule == null) {
-            return null;
+            return Collections.emptyList();
         }
         // custom
         // A PHP Framework may have a codeception.yml in an inner directory.
@@ -518,15 +530,22 @@ public final class Codecept {
             assert ymlPath != null;
             File file = new File(ymlPath);
             if (file.exists()) {
-                return FileUtil.toFileObject(file);
+                return Collections.singletonList(FileUtil.toFileObject(file));
             }
         }
         // default
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
-            return null;
+            return Collections.emptyList();
         }
-        return sourceDirectory.getFileObject(CODECEPTION_CONFIG_FILE_NAME);
+        List<FileObject> configFiles = new ArrayList<>();
+        for (String configFileName : CODECEPTION_CONFIG_FILE_NAMES) {
+            FileObject configFile = sourceDirectory.getFileObject(configFileName);
+            if (configFile != null) {
+                configFiles.add(configFile);
+            }
+        }
+        return configFiles;
     }
 
     void cleanupLogFiles() {
