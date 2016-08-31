@@ -236,7 +236,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
             } catch (IOException ex) {
                 errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
                 DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
                 DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
             } finally {
@@ -470,7 +470,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
             }
         } catch (IOException ex) {
             DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
