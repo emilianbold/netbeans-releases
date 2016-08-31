@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.util.Map;
+
 /**
  *
  * @author martin
@@ -50,15 +52,22 @@ class ClassToInvoke {
     final String className;
     final byte[] bytecode;
     final String methodInvoke;
+    final Map<String, byte[]> innerClasses;
 
-    ClassToInvoke(String className, byte[] bytecode, String methodInvoke) {
+    ClassToInvoke(String className, byte[] bytecode, String methodInvoke,
+                  Map<String, byte[]> subClasses) {
         this.className = className;
         this.bytecode = bytecode;
         this.methodInvoke = methodInvoke;
+        this.innerClasses = subClasses;
     }
 
     @Override
     public String toString() {
-        return "ClassToInvoke{" + "className=" + className + ", bytecode=" + bytecode + ", methodInvoke=" + methodInvoke + '}';
+        return "ClassToInvoke{" + "className=" + className +
+                                ", bytecode=" + bytecode +
+                                ", methodInvoke=" + methodInvoke +
+                                ", innerClasses=" + innerClasses +
+                            '}';
     }
 }
