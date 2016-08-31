@@ -67,6 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
@@ -371,7 +372,7 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
-                    return DocumentUtil.elementHandleConvertor();
+                    return DocumentUtil.typeElementConvertor();
                 }
             });
     }
@@ -398,7 +399,7 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
-                    return DocumentUtil.elementHandleConvertor();
+                    return DocumentUtil.typeElementConvertor();
                 }
             });
     }
@@ -552,19 +553,47 @@ public final class ClassIndex {
             final @NonNull String name,
             final @NonNull NameKind kind,
             final @NonNull Set<? extends SearchScopeType> scope) {
+        return searchImpl(name, kind, scope, DocumentUtil.typeElementConvertor());        
+    }
+    
+    /**
+     * Returns {@link ElementHandle}s for all declared modules in given classpath corresponding to the name.
+     * @param name case sensitive prefix, case insensitive prefix, exact simple name,
+     * camel case or regular expression depending on the kind parameter.
+     * @param kind of the name {@see NameKind}
+     * @param scope to search in {@see SearchScope}
+     * @return set of all matched modules
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
+     * @since 2.19
+     */
+    @NullUnknown
+    public Set<ElementHandle<ModuleElement>> getDeclaredModules (
+            final @NonNull String name,
+            final @NonNull NameKind kind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
+        return searchImpl(name, kind, scope, DocumentUtil.moduleElementConvertor());
+    }
+    
+    @NullUnknown
+    private <T extends Element> Set<ElementHandle<T>> searchImpl(
+            final @NonNull String name,
+            final @NonNull NameKind kind,
+            final @NonNull Set<? extends SearchScopeType> scope,
+            final Convertor<Document, ElementHandle<T>> ehConvertor) {
         assert name != null;
         assert kind != null;
-        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
+        final Set<ElementHandle<T>> result = new HashSet<>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {
-                    query.getDeclaredTypes (
+                    query.getDeclaredElements (
                         name,
                         kind,
                         scope,
-                        thConvertor,
+                        DocumentUtil.declaredTypesFieldSelector(false, false),
+                        ehConvertor,
                         result);
                 } catch (Index.IndexClosedException e) {
                     logClosedIndex (query);
@@ -575,7 +604,7 @@ public final class ClassIndex {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(
                         Level.FINE,
-                        "ClassIndex.getDeclaredTypes returned {0} elements\n",  //NOI18N
+                        "ClassIndex found {0} elements\n",  //NOI18N
                         result.size());
             }
             return Collections.unmodifiableSet(result);
@@ -603,7 +632,7 @@ public final class ClassIndex {
         Parameters.notNull("kind", kind);
         final Map<ElementHandle<TypeElement>,Set<String>> result = new HashMap<ElementHandle<TypeElement>,Set<String>>();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.typeElementConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {

@@ -245,7 +245,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                             final ClassIndexImpl impl = manager.getUsagesQuery(root.toURL(), true);
                             if (impl != null) {
                                 final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<>();
-                                impl.getDeclaredElements(ident, kind, DocumentUtil.elementHandleConvertor(),r);
+                                impl.getDeclaredElements(ident, kind, DocumentUtil.typeElementConvertor(),r);
                                 if (!r.isEmpty()) {
                                     for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
                                         final ElementHandle<TypeElement> owner = p.getKey();

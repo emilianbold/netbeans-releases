@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -82,9 +83,11 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
@@ -715,7 +718,13 @@ final class ModuleClassPaths {
                 ClassPath.EMPTY,
                 ClassPath.EMPTY,
                 org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()));
-            resetCache(TOMBSTONE, true);
+            final Set<ElementHandle<ModuleElement>> mods = info.getClassIndex().getDeclaredModules(
+                    "", //NOI18N
+                    ClassIndex.NameKind.PREFIX,
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            if (mods.isEmpty()) {
+                resetCache(TOMBSTONE, true);
+            }
         }
 
         @Override

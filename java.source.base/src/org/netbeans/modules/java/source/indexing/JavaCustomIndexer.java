@@ -607,7 +607,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                             for (File f : children) {
                                 String className = FileObjects.getBinaryName(f, classFolder);
                                 javaContext.getFQNs().remove(className, relURLPair.second());
-                                toDelete.add(Pair.<String, String>of(className, null));
+                                toDelete.add(
+                                        FileObjects.MODULE_INFO.equals(className) ?
+                                                Pair.<String, String>of(null, relURLPair.first()) :
+                                                Pair.<String, String>of(className, null));
                                 removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 fmTx.delete(f);

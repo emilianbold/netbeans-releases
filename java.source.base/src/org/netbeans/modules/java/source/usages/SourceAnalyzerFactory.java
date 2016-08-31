@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
@@ -591,24 +592,7 @@ public final class SourceAnalyzerFactory {
             this.state = currState;
             return null;
         }
-
-        @Override
-        @CheckForNull
-        public Void visitModule(
-                @NonNull final ModuleTree node,
-                @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
-            if (newModules != null && FileObjects.getPackageAndName(sourceName)[0].isEmpty()) {
-                final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
-                if (sym != null) {
-                    newModules.add ((ElementHandle<ModuleElement>)
-                            ElementHandleAccessor.getInstance().create(
-                                    ElementKind.MODULE,
-                                    sym.getQualifiedName().toString()));
-                }
-            }
-            return super.visitModule(node, p);
-        }
-
+                
         @Override
         @CheckForNull
         public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
@@ -838,6 +822,50 @@ public final class SourceAnalyzerFactory {
                 addIdent(activeClass.peek(), node.getName(), p, true);
             }
             return super.visitVariable(node, p);
+        }
+        
+        @Override
+        @CheckForNull
+        public Void visitModule(
+                @NonNull final ModuleTree node,
+                @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
+            final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
+            final String[] pkgName = FileObjects.getPackageAndName(sourceName);
+            if (sym != null && pkgName[0].isEmpty()) {
+                final String qname = sym.getQualifiedName().toString();
+                final String resourceName = new StringBuilder(pkgName[1])
+                        .append('.')  //NOI18N
+                        .append(FileObjects.getExtension(siblingUrl.getPath()))
+                        .toString();
+                final Pair<BinaryName,String> name = Pair.of(
+                        BinaryName.create(qname, ElementKind.MODULE, false, 0),
+                        resourceName);
+                getData(name, p);
+                if (newModules != null ) {
+                    newModules.add ((ElementHandle<ModuleElement>)
+                            ElementHandleAccessor.getInstance().create(
+                                    ElementKind.MODULE,
+                                    qname));
+                }
+                activeClass.push(name);
+                try {
+                    node.accept(new TreeScanner<Void, Set<Symbol>>() {
+                                @Override
+                                public Void visitExports(ExportsTree node, Set<Symbol> p) {
+                                    final Symbol sym = ((JCTree.JCExports)node).directive.packge;
+                                    if (sym != null) {
+                                        p.add(sym);
+                                    }
+                                    return null;
+                                }                                
+                            },
+                            unusedPkgImports);
+                    super.visitModule(node, p);
+                } finally {
+                    activeClass.pop();
+                }
+            }
+            return null;
         }
 
         private void addAndClearImports(
@@ -1079,7 +1107,7 @@ public final class SourceAnalyzerFactory {
                         break;
                 }
             }
-        }
+        }        
 
     }
     
