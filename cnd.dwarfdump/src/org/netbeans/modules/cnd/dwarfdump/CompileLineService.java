@@ -326,7 +326,7 @@ public class CompileLineService {
             }
         } catch (IOException ex) {
             Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Dwarf.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {
