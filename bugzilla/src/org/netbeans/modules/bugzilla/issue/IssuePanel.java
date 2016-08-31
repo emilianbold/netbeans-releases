@@ -3441,7 +3441,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void run() {
                 boolean submitOK = false;
                 try {
-                    submitOK = true; //  issue.submitAndRefresh();
+                    submitOK = issue.submitAndRefresh();
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
