@@ -137,7 +137,7 @@ public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbr
             FileObjects.convertFolder2Package(FileObjects.stripExtension(path)));        
         final JavaFileObject toCompile = FileObjects.memoryFileObject(
                 ncs[0],
-                ncs[1],
+                ncs[1]+'.'+file.getExt(),
                 content);
         boolean success = false;
         final TransactionContext ctx = TransactionContext.beginTrans()
@@ -177,12 +177,6 @@ public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbr
                     jfmProvider);
             final APTUtils aptUtils = APTUtils.get(srcRoot);
             final SourceLevelQuery.Result r = SourceLevelQuery.getSourceLevel2(file);            
-            FQN2Files dcc = null;        
-            try {
-                dcc = FQN2Files.forRoot(srcRoot.toURL());
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
             final JavacTaskImpl  jt = JavacParser.createJavacTask(
                     cpInfo,
                     diagnostics != null ?
@@ -191,7 +185,7 @@ public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbr
                     r.getSourceLevel(),
                     r.getProfile(),
                     null,
-                    dcc,
+                    null,
                     null,
                     aptUtils);
             final Iterable<? extends JavaFileObject> generated = jt.generate(
