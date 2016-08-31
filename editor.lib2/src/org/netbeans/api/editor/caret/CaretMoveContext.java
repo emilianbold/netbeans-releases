@@ -113,14 +113,14 @@ public final class CaretMoveContext {
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})
      *  or true otherwise.
      */
-    public boolean setDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
+    public boolean setDot(@NonNull CaretInfo caret, @NonNull Position dotPos, @NonNull Position.Bias dotBias) {
         NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
         if (naviFilter != null) {
             FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
             naviFilter.setDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
             return fbi.getResult();
         } else {
-            return setDotAndMark(caret, dotPos, dotPos);
+            return setDotAndMark(caret, dotPos, dotBias, dotPos, dotBias);
         }
     }
     
@@ -132,14 +132,14 @@ public final class CaretMoveContext {
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})
      *  or true otherwise.
      */
-    public boolean moveDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
+    public boolean moveDot(@NonNull CaretInfo caret, @NonNull Position dotPos, @NonNull Position.Bias dotBias) {
         NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
         if (naviFilter != null) {
             FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
             naviFilter.moveDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
             return fbi.getResult();
         } else {
-            return transaction.moveDot(caret.getCaretItem(), dotPos);
+            return transaction.moveDot(caret.getCaretItem(), dotPos, dotBias);
         }
     }
     
@@ -155,8 +155,9 @@ public final class CaretMoveContext {
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})
      *  or true otherwise.
      */
-    public boolean setDotAndMark(@NonNull CaretInfo caret, @NonNull Position dotPos, @NonNull Position markPos) {
-        return transaction.setDotAndMark(caret.getCaretItem(), dotPos, markPos);
+    public boolean setDotAndMark(@NonNull CaretInfo caret, @NonNull Position dotPos, @NonNull Position.Bias dotBias,
+            @NonNull Position markPos, @NonNull Position.Bias markBias) {
+        return transaction.setDotAndMark(caret.getCaretItem(), dotPos, dotBias, markPos, markBias);
     }
 
     /**
