@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.projects;
@@ -62,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -77,6 +78,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -93,6 +95,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -415,7 +418,7 @@ class PreferredCCParser {
     }
 
     /**
-     * Parse the expression into AST tree and traverse is via the provided visitor.
+     * Parse the expression into AST tree and traverse it via the provided visitor.
      *
      * @return the visitor value or <code>null</code>.
      */
@@ -444,37 +447,9 @@ class PreferredCCParser {
             final CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
             final ParseExpressionTask<D> task = new ParseExpressionTask<D>(expression, line, context);
-            if (fo != null && SourceUtils.isScanInProgress()) {
-                try {
-                    final FileObject file = fo;
-                    ParserManager.parse(Collections.singleton(Source.create(fo)), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            CompilationController ci = EditorContextSupport.retrieveController(resultIterator, file);
-                            if (ci != null) {
-                                task.run(ci);
-                            }
-                        }
-                    });
-                } catch (ParseException pex) {
-                    Exceptions.printStackTrace(pex);
-                    return null;
-                }
-            } else if (ci == null) {
-                js.runUserActionTask(task, false);
-            } else {
-                try {
-                    runGuarded(ci, new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            task.run(ci);
-                            return null;
-                        }
-                    });
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
+            boolean parsed = task.parse(fo, js, ci);
+            if (!parsed) {
+                return null;
             }
             TreePath treePath = task.getTreePath();
             Tree tree = task.getTree();
@@ -496,7 +471,95 @@ class PreferredCCParser {
             return null;
         }
     }
-
+    
+    /**
+     * Parse the expression into AST tree and either traverse it via the provided interpreter,
+     * or compile it into an extra method in a new class and interpret the method invocation.
+     *
+     * @return the visitor value or <code>null</code>.
+     */
+    public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+                                          final TreePathScanner<Boolean,D> canInterpret,
+                                          final TreePathScanner<R,D> interpreter,
+                                          final D context, boolean staticContext,
+                                          final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
+                                          final SourcePathProvider sp) throws InvalidExpressionException {
+        JavaSource js = null;
+        FileObject fo = null;
+        if (url != null) {
+            try {
+                fo = URLMapper.findFileObject(new URL(url));
+                if (fo != null) {
+                    js = JavaSource.forFileObject(fo);
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(Exceptions.attachSeverity(ex, Level.WARNING));
+            }
+        }
+        if (js == null) {
+            js = getJavaSource(sp);
+        }
+        //long t1, t2, t3, t4;
+        //t1 = System.nanoTime();
+        try {
+            final CompilationController ci = getPreferredCompilationController(fo, js);
+            //t2 = System.nanoTime();
+            ParseExpressionTask<D> task = new ParseExpressionTask<>(code, line, context);
+            boolean parsed = task.parse(fo, js, ci);
+            if (!parsed) {
+                return null;
+            }
+            TreePath treePath = task.getTreePath();
+            Tree tree = task.getTree();
+            //t3 = System.nanoTime();
+            Boolean canIntrpt;
+            if (treePath != null) {
+                canIntrpt = canInterpret.scan(treePath, context);
+            } else {
+                if (tree == null) {
+                    throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+                }
+                canIntrpt = tree.accept(canInterpret, context);
+            }
+            if (Boolean.FALSE.equals(canIntrpt)) {
+                // Can not interpret, compile:
+                ClassToInvoke compiledClass =
+                        CodeSnippetCompiler.compileToClass(ci, code, task.getCodeOffset(),
+                                                           js, fo, line, treePath, tree,
+                                                           staticContext);
+                LOG.log(Level.FINE, "Compiled to: {0}", compiledClass);
+                if (compiledClass != null) {
+                    boolean success = compiledClassHandler.apply(Pair.of(compiledClass.className, compiledClass.bytecode));
+                    if (success) {
+                        // Class is uploaded, interpret the class' method invocation:
+                        task = new ParseExpressionTask<>(compiledClass.methodInvoke, line, context);
+                        parsed = task.parse(fo, js, ci);
+                        if (!parsed) {
+                            return null;
+                        }
+                        treePath = task.getTreePath();
+                        tree = task.getTree();
+                    }
+                } // else when compiledClass == null, try to interpret the original anyway...
+            }
+            R retValue;
+            if (treePath != null) {
+                retValue = interpreter.scan(treePath, context);
+            } else {
+                if (tree == null) {
+                    throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+                }
+                retValue = tree.accept(interpreter, context);
+            }
+            //t4 = System.nanoTime();
+            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
+            return retValue;
+        } catch (IOException ioex) {
+            Exceptions.printStackTrace(ioex);
+            return null;
+        }
+    }
+    
     private static class ParseExpressionTask<D> implements Task<CompilationController> {
 
         private final int line;
@@ -504,11 +567,48 @@ class PreferredCCParser {
         private final D context;
         private TreePath treePath;
         private Tree tree;
+        private int codeOffset;
 
         public ParseExpressionTask(String expression, int line, D context) {
             this.expression = expression;
             this.line = line;
             this.context = context;
+        }
+        
+        boolean parse(FileObject fo, JavaSource js, CompilationController ci) throws IOException {
+            if (fo != null && SourceUtils.isScanInProgress()) {
+                try {
+                    final FileObject file = fo;
+                    ParserManager.parse(Collections.singleton(Source.create(fo)), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            CompilationController ci = EditorContextSupport.retrieveController(resultIterator, file);
+                            if (ci != null) {
+                                ParseExpressionTask.this.run(ci);
+                            }
+                        }
+                    });
+                } catch (ParseException pex) {
+                    Exceptions.printStackTrace(pex);
+                    return false;
+                }
+            } else if (ci == null) {
+                js.runUserActionTask(this, false);
+            } else {
+                try {
+                    runGuarded(ci, new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
+                            ParseExpressionTask.this.run(ci);
+                            return null;
+                        }
+                    });
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
@@ -516,6 +616,7 @@ class PreferredCCParser {
             if (!toPhase(ci, JavaSource.Phase.PARSED, LOG)) {
                 return ;
             }
+            TreeUtilities treeUtilities = ci.getTreeUtilities();
             Scope scope = null;
             int offset = 0;
             LineMap lineMap;
@@ -526,28 +627,31 @@ class PreferredCCParser {
             }
             if (lineMap != null) {
                 offset = findLineOffset(lineMap, ci.getSnapshot().getText(), line);
-                scope = ci.getTreeUtilities().scopeFor(offset);
+                scope = treeUtilities.scopeFor(offset);
             }
             SourcePositions[] sourcePtr = new SourcePositions[] { null };
             // first, try to parse as a block of statements
-            tree = ci.getTreeUtilities().parseStatement(
+            tree = treeUtilities.parseStatement(
                     "{\n" + expression + ";\n}", // NOI18N
                     sourcePtr
             );
+            codeOffset = 2;
             if (isErroneous(tree)) {
                 Tree asBlockTree = tree;
                 // when block parsing fails, try to parse an expression
-                tree = ci.getTreeUtilities().parseExpression(
+                tree = treeUtilities.parseExpression(
                         expression,
                         sourcePtr
                 );
                 if (isErroneous(tree)) {
                     tree = asBlockTree;
+                } else {
+                    codeOffset = 0;
                 }
             }
             if (scope != null) {
-                scope = ci.getTreeUtilities().toScopeWithDisabledAccessibilityChecks(scope);
-                ci.getTreeUtilities().attributeTree(tree, scope);
+                scope = treeUtilities.toScopeWithDisabledAccessibilityChecks(scope);
+                treeUtilities.attributeTree(tree, scope);
             }
             try {
                 //context.setTrees(ci.getTrees());
@@ -567,7 +671,7 @@ class PreferredCCParser {
                 java.lang.reflect.Method setTreePathMethod =
                         context.getClass().getMethod("setTreePath", new Class[] { TreePath.class });
                 if (lineMap != null) {
-                    treePath = ci.getTreeUtilities().pathFor(offset);
+                    treePath = treeUtilities.pathFor(offset);
                     treePath = new TreePath(treePath, tree);
                     setTreePathMethod.invoke(context, treePath);
                 }
@@ -580,6 +684,10 @@ class PreferredCCParser {
 
         public Tree getTree() {
             return tree;
+        }
+        
+        public int getCodeOffset() {
+            return codeOffset;
         }
     }
 
