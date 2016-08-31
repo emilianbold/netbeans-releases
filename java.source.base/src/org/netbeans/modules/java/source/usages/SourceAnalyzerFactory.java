@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
@@ -848,32 +849,23 @@ public final class SourceAnalyzerFactory {
                 }
                 activeClass.push(name);
                 try {
+                    node.accept(new TreeScanner<Void, Set<Symbol>>() {
+                                @Override
+                                public Void visitExports(ExportsTree node, Set<Symbol> p) {
+                                    final Symbol sym = ((JCTree.JCExports)node).directive.packge;
+                                    if (sym != null) {
+                                        p.add(sym);
+                                    }
+                                    return null;
+                                }                                
+                            },
+                            unusedPkgImports);
                     super.visitModule(node, p);
                 } finally {
                     activeClass.pop();
                 }
             }
             return null;
-        }
-
-        @Override
-        public Void visitRequires(RequiresTree node, Map<Pair<BinaryName, String>, UsagesData<String>> p) {
-            return null;
-        }
-
-        @Override
-        public Void visitExports(ExportsTree node, Map<Pair<BinaryName, String>, UsagesData<String>> p) {
-            return null;
-        }
-
-        @Override
-        public Void visitUses(UsesTree node, Map<Pair<BinaryName, String>, UsagesData<String>> p) {
-            return super.visitUses(node, p);
-        }
-
-        @Override
-        public Void visitProvides(ProvidesTree node, Map<Pair<BinaryName, String>, UsagesData<String>> p) {
-            return super.visitProvides(node, p);
         }
 
         private void addAndClearImports(
