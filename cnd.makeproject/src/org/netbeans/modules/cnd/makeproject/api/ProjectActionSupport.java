@@ -359,7 +359,13 @@ public class ProjectActionSupport {
         }
 
         private String getTabName(ProjectActionEvent[] paes) {
-            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
+            //when ATTACH and no project will get NPE here
+            //see bz#267620
+            //will just check to null as otherwise need to introduce new interface
+            //as in case of ATTACH there is a DebugTarget not Project that is not accessible from this class
+            String projectName = paes[0].getProject() == null ?
+                    NbBundle.getMessage(ProjectActionSupport.class, "NO_PROJECT")//NOI18N
+                    :  ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
             StringBuilder name = new StringBuilder(projectName);
             name.append(" ("); // NOI18N
             int counter = 0;
