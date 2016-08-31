@@ -386,6 +386,14 @@ public class ClassFile {
     public final boolean isEnum() {
 	return (classAccess & Access.ENUM) == Access.ENUM;
     }
+    
+    /**
+     * Returns true if this class defines a module.
+     * @since 1.50
+     */
+    public final boolean isModule() {
+        return (classAccess & Access.MODULE) == Access.MODULE;
+    }
 
     /**
      * Returns a map of the raw attributes for this classfile.  

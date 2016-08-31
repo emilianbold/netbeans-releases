@@ -70,7 +70,7 @@ public class ModuleTest extends TestCase {
     public void testJavaDesktopModule() throws IOException {
         doTest("java.desktop");    //NOI18N
     }
-
+    
     private void doTest(String moduleName) throws IOException {
         System.out.println(moduleName);
         final Path modulesRoot = getModulesRoot();
@@ -80,6 +80,7 @@ public class ModuleTest extends TestCase {
             try (InputStream in = Files.newInputStream(javaBase)) {
                 final ClassFile cf = new ClassFile(in, true);
                 assertNotNull(cf);
+                assertTrue(cf.isModule());
                 final Module mod = cf.getModule();
                 assertNotNull(mod);
 
