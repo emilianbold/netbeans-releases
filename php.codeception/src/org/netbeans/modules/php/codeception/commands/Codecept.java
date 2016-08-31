@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -129,6 +131,8 @@ public final class Codecept {
     public static final String CEPT_CLASS_SUFFIX = "Cept"; // NOI18N
     private static final String CEPT_FILE_SUFFIX = CEPT_CLASS_SUFFIX + ".php"; // NOI18N
     private static final String SUITE_CONFIG_SUFFIX = ".suite.yml"; // NOI18N
+    private static final String SUITE_DIST_CONFIG_SUFFIX = ".suite.dist.yml"; // NOI18N
+    private static final List<String> SUITE_CONFIG_SUFFIXES = Arrays.asList(SUITE_CONFIG_SUFFIX, SUITE_DIST_CONFIG_SUFFIX);
     // test method prefix
     public static final String TEST_METHOD_PREFIX = "test"; // NOI18N
 
@@ -543,18 +547,20 @@ public final class Codecept {
         DialogDisplayer.getDefault().notify(message);
     }
 
-    public static List<String> getSuiteNames(PhpModule phpMoudle) {
+    public static Set<String> getSuiteNames(PhpModule phpMoudle) {
         List<FileObject> testDirectories = phpMoudle.getTestDirectories();
-        List<String> suites = new ArrayList<>();
+        Set<String> suites = new TreeSet<>();
         for (FileObject testDirectory : testDirectories) {
             for (FileObject child : testDirectory.getChildren()) {
                 if (child.isFolder()) {
                     continue;
                 }
                 String name = child.getNameExt();
-                int lastIndexOfSuiteSuffix = name.lastIndexOf(SUITE_CONFIG_SUFFIX);
-                if (lastIndexOfSuiteSuffix != -1) {
-                    suites.add(name.substring(0, lastIndexOfSuiteSuffix));
+                for (String suffix : SUITE_CONFIG_SUFFIXES) {
+                    int lastIndexOfSuiteSuffix = name.lastIndexOf(suffix);
+                    if (lastIndexOfSuiteSuffix > 0) {
+                        suites.add(name.substring(0, lastIndexOfSuiteSuffix));
+                    }
                 }
             }
         }
