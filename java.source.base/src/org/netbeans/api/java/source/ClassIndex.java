@@ -553,37 +553,7 @@ public final class ClassIndex {
             final @NonNull String name,
             final @NonNull NameKind kind,
             final @NonNull Set<? extends SearchScopeType> scope) {
-        assert name != null;
-        assert kind != null;
-        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
-        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.typeElementConvertor();
-        try {
-            for (ClassIndexImpl query : queries) {
-                try {
-                    query.getDeclaredElements (
-                        name,
-                        kind,
-                        scope,
-                        DocumentUtil.declaredTypesFieldSelector(false, false),
-                        thConvertor,
-                        result);
-                } catch (Index.IndexClosedException e) {
-                    logClosedIndex (query);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(
-                        Level.FINE,
-                        "ClassIndex.getDeclaredTypes returned {0} elements\n",  //NOI18N
-                        result.size());
-            }
-            return Collections.unmodifiableSet(result);
-        } catch (InterruptedException e) {
-            return null;
-        }
+        return searchImpl(name, kind, scope, DocumentUtil.typeElementConvertor());        
     }
     
     /**
@@ -602,11 +572,19 @@ public final class ClassIndex {
             final @NonNull String name,
             final @NonNull NameKind kind,
             final @NonNull Set<? extends SearchScopeType> scope) {
+        return searchImpl(name, kind, scope, DocumentUtil.moduleElementConvertor());
+    }
+    
+    @NullUnknown
+    private <T extends Element> Set<ElementHandle<T>> searchImpl(
+            final @NonNull String name,
+            final @NonNull NameKind kind,
+            final @NonNull Set<? extends SearchScopeType> scope,
+            final Convertor<Document, ElementHandle<T>> ehConvertor) {
         assert name != null;
         assert kind != null;
-        final Set<ElementHandle<ModuleElement>> result = new HashSet<>();        
+        final Set<ElementHandle<T>> result = new HashSet<>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<Document, ElementHandle<ModuleElement>> thConvertor = DocumentUtil.moduleElementConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {
@@ -615,7 +593,7 @@ public final class ClassIndex {
                         kind,
                         scope,
                         DocumentUtil.declaredTypesFieldSelector(false, false),
-                        thConvertor,
+                        ehConvertor,
                         result);
                 } catch (Index.IndexClosedException e) {
                     logClosedIndex (query);
@@ -626,7 +604,7 @@ public final class ClassIndex {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(
                         Level.FINE,
-                        "ClassIndex.getDeclaredTypes returned {0} elements\n",  //NOI18N
+                        "ClassIndex found {0} elements\n",  //NOI18N
                         result.size());
             }
             return Collections.unmodifiableSet(result);
