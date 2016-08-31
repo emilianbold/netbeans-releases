@@ -696,7 +696,7 @@ public class JavaTypeProvider implements TypeProvider {
                 searchScope = baseSearchScope;
             }
             try {
-                index.getDeclaredTypes(
+                index.getDeclaredElements(
                     typeName,
                     kind,
                     Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
@@ -795,7 +795,7 @@ public class JavaTypeProvider implements TypeProvider {
         private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {
 
             private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(\\$.+)?");   //NOI18N
-            private static final Convertor<Document,ElementHandle<TypeElement>> HANDLE_CONVERTOR = DocumentUtil.elementHandleConvertor();
+            private static final Convertor<Document,ElementHandle<TypeElement>> HANDLE_CONVERTOR = DocumentUtil.typeElementConvertor();
             private static final Convertor<Document,String> SOURCE_CONVERTOR = DocumentUtil.sourceNameConvertor();
 
             private final CacheItem ci;

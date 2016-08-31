@@ -104,7 +104,7 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         final List<Document> res = new ArrayList<>(PKG_COUNT*CLZ_IN_PKG_COUNT);
         Set<ClassIndex.SearchScopeType> scopes = new HashSet<>();
         scopes.add(ClassIndex.SearchScope.SOURCE);
-        index.getDeclaredTypes(
+        index.getDeclaredElements(
                 "", //NOI18N
                 ClassIndex.NameKind.PREFIX,
                 scopes,
@@ -120,7 +120,7 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         scopes.add(ClassIndex.createPackageSearchScope(
             ClassIndex.SearchScope.SOURCE,
             pkgs.toArray(new String[pkgs.size()])));
-        index.getDeclaredTypes(
+        index.getDeclaredElements(
                 "", //NOI18N
                 ClassIndex.NameKind.PREFIX,
                 scopes,
@@ -136,7 +136,7 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         final List<Document> res = new ArrayList<>(PKG_COUNT*CLZ_IN_PKG_COUNT);
         Set<ClassIndex.SearchScopeType> scopes = new HashSet<>();
         scopes.add(ClassIndex.SearchScope.SOURCE);
-        index.getDeclaredTypes(
+        index.getDeclaredElements(
                 "", //NOI18N
                 ClassIndex.NameKind.PREFIX,
                 scopes,
@@ -151,7 +151,7 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         scopes.add(ClassIndex.createPackageSearchScope(
             ClassIndex.SearchScope.SOURCE,
             pkgs.toArray(new String[pkgs.size()])));
-        index.getDeclaredTypes(
+        index.getDeclaredElements(
                 "", //NOI18N
                 ClassIndex.NameKind.PREFIX,
                 scopes,
@@ -168,7 +168,7 @@ public class PersistentClassIndexScopesTest extends NbTestCase {
         scopes.add(ClassIndex.createPackageSearchScope(
             ClassIndex.SearchScope.SOURCE,
             pkgs.toArray(new String[pkgs.size()])));
-        index.getDeclaredTypes(
+        index.getDeclaredElements(
                 "", //NOI18N
                 ClassIndex.NameKind.PREFIX,
                 scopes,

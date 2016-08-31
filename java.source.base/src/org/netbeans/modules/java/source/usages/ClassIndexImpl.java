@@ -128,28 +128,13 @@ public abstract class ClassIndexImpl {
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Set<? super T> result) throws IOException, InterruptedException;
 
-    public abstract <T> void getDeclaredTypes (
+    public abstract <T> void getDeclaredElements (
             @NonNull String name,
             @NonNull ClassIndex.NameKind kind,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull FieldSelector selector,
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Collection<? super T> result) throws IOException, InterruptedException;
-
-    public final <T> void getDeclaredTypes (
-            @NonNull String name,
-            @NonNull ClassIndex.NameKind kind,
-            @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
-            @NonNull Convertor<? super Document, T> convertor,
-            @NonNull Collection<? super T> result) throws IOException, InterruptedException {
-        getDeclaredTypes(
-            name,
-            kind,
-            scope,
-            DocumentUtil.declaredTypesFieldSelector(false, false),
-            convertor,
-            result);
-    }
 
     public abstract <T> void getDeclaredElements (
             String ident,
