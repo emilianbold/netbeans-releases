@@ -77,12 +77,25 @@ public class StandardHeadersProjectMetadataFactory implements ProjectMetadataFac
         if (nbProjectFolder == null) {  
             return;
         }
-        final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+        FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+        if (privateNbFolder == null) {
+            FileObject projectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+            if (projectFolder == null || !projectFolder.canWrite()) {
+                return;
+            }
+            try {
+                privateNbFolder = nbProjectFolder.createFolder(MakeConfiguration.PRIVATE_FOLDER);
+            } catch (IOException ex) {
+                //Exceptions.printStackTrace(ex);
+            }
+        }
         FileObject c_standard = null;
         FileObject cpp_standard = null;
-        if (privateNbFolder != null && privateNbFolder.isValid()) {
+        if (privateNbFolder != null && privateNbFolder.isValid() && privateNbFolder.canWrite()) {
             c_standard = privateNbFolder.getFileObject(C_STANDARD_HEADERS_INDEXER);
             cpp_standard = privateNbFolder.getFileObject(CPP_STANDARD_HEADERS_INDEXER);
+        } else {
+            return;
         }
         try {
             if (c_standard == null || !c_standard.isValid()) {

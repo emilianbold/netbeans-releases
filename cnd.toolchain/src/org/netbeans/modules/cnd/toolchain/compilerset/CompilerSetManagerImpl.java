@@ -263,6 +263,19 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 if (isPending()) {
                     log.log(Level.WARNING, "calling getPlatform() on uninitialized {0}", getClass().getSimpleName());
                 }
+                HostInfo hostInfo = null;
+                if (HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
+                    try {
+                        hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex); // should never occur since isHostInfoAvailable is checked
+                    } catch (ConnectionManager.CancellationException ex) {
+                        Exceptions.printStackTrace(ex); // should never occur since isHostInfoAvailable is checked
+                    }
+                }
+                if (hostInfo != null) {
+                    return PlatformTypes.getPlatformFromHostInfo(hostInfo);
+                }
             }
         }
         return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
