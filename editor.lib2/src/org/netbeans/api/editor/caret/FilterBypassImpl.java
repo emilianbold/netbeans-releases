@@ -101,28 +101,25 @@ class FilterBypassImpl extends NavigationFilterBypass {
     }
     
     @Override
-    public void setDot(final int dot, Position.Bias bias) {
-        Position dotPos = createPosition(dot, bias);
+    public void setDot(final int dot, Position.Bias dotBias) {
+        Position dotPos = createPosition(dot);
         result = transaction.setDotAndMark(item.getCaretItem(),
-                dotPos, dotPos);
+                dotPos, dotBias, dotPos, dotBias);
     }
     
-    private Position createPosition(final int dot, Position.Bias bias) {
+    private Position createPosition(final int dot) {
         final Position[] p = new Position[1];
         
         doc.render(new Runnable() {
             public void run() {
-                p[0] = createPosition0(dot, null);
+                p[0] = createPosition0(dot);
             }
         });
         return p[0];
     }
     
-    private Position createPosition0(int dot, Position.Bias bias) {
+    private Position createPosition0(int dot) {
         try {
-            // FIXME: bias is not used. LineDocument should be used
-            // in preference to document to create biased positions.
-            // bypass handlers
             if (dot < 0) {
                 return doc.createPosition(0);
             } else if (dot > doc.getLength()) {
@@ -138,10 +135,10 @@ class FilterBypassImpl extends NavigationFilterBypass {
     }
 
     @Override
-    public void moveDot(int dot, Position.Bias bias) {
+    public void moveDot(int dot, Position.Bias dotBias) {
         result = transaction.setDotAndMark(item.getCaretItem(), 
-                createPosition(dot, bias),
-                item.getMarkPosition()
+                createPosition(dot), dotBias,
+                item.getMarkPosition(), item.getMarkBias()
         );
     }
     

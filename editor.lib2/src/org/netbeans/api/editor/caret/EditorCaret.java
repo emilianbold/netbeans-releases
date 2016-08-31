@@ -593,7 +593,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.setDot(context.getOriginalLastCaret(), pos);
+                        context.setDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
@@ -650,7 +650,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.moveDot(context.getOriginalLastCaret(), pos);
+                        context.moveDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
