@@ -62,6 +62,7 @@ import javax.swing.BoxLayout;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import static javax.swing.JComponent.LEFT_ALIGNMENT;
@@ -788,7 +789,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
                                                                          cellHasFocus);
             if (r instanceof JLabel) {
                 JLabel label = (JLabel) r;
-                label.setIcon((Icon) icon);
+                label.setIcon(new ImageIcon(icon));
             }
             return r;
         }

@@ -1277,16 +1277,21 @@ public class ActionFactory {
                                         boolean beeped = false;
                                         for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                             try {
-                                                int dotPos = caretInfo.getDot();
-                                                if (caretInfo.isSelection()) { // valid selection
-                                                    int startPos = Math.min(caretInfo.getDot(), caretInfo.getMark());
-                                                    int endPos = Math.max(caretInfo.getDot(), caretInfo.getMark());
-                                                    Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
-                                                    context.setDot(caretInfo, doc.createPosition(dotPos == startPos ? endPos : startPos));
-                                                    context.moveDot(caretInfo, doc.createPosition(dotPos == startPos ? startPos : endPos));
+                                                int dotOffset = caretInfo.getDot();
+                                                Position.Bias dotBias = caretInfo.getDotBias();
+                                                int markOffset = caretInfo.getMark();
+                                                Position.Bias markBias = caretInfo.getMarkBias();
+                                                if (dotOffset != markOffset) { // valid selection
+                                                    int startOffset = Math.min(dotOffset, markOffset);
+                                                    int endOffset = Math.max(dotOffset, markOffset);
+                                                    Utilities.changeCase(doc, startOffset, endOffset - startOffset, changeCaseMode);
+                                                    // Recreate positions since they might move by removals in changeCase()
+                                                    context.setDotAndMark(caretInfo,
+                                                            doc.createPosition(dotOffset), dotBias,
+                                                            doc.createPosition(markOffset), markBias);
                                                 } else { // no selection - change current char
-                                                    Utilities.changeCase(doc, dotPos, 1, changeCaseMode);
-                                                    context.setDot(caretInfo, doc.createPosition(dotPos + 1));
+                                                    Utilities.changeCase(doc, dotOffset, 1, changeCaseMode);
+                                                    context.setDot(caretInfo, doc.createPosition(dotOffset + 1), Position.Bias.Forward);
                                                 }
                                             } catch (BadLocationException e) {
                                                 if (!beeped) {
@@ -2036,15 +2041,15 @@ public class ActionFactory {
                                     for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                         try {
                                             if (caretInfo.isSelectionShowing()) {
-                                                context.setDot(caretInfo, caretInfo.getDotPosition()); // unselect if anything selected
+                                                context.setDot(caretInfo, caretInfo.getDotPosition(), caretInfo.getDotBias()); // unselect if anything selected
                                             } else {
                                                 BaseDocument doc = (BaseDocument) context.getDocument(); // selection not visible
                                                 int block[] = Utilities.getIdentifierBlock(doc,
                                                         caretInfo.getDot());
                                                 if (block != null) {
                                                     context.setDotAndMark(caretInfo,
-                                                            doc.createPosition(block[0]),
-                                                            doc.createPosition(block[1]));
+                                                            doc.createPosition(block[0]), Position.Bias.Forward,
+                                                            doc.createPosition(block[1]), Position.Bias.Forward);
                                                 }
                                             }
                                         } catch (BadLocationException e) {
@@ -2556,7 +2561,7 @@ public class ActionFactory {
                                             Position newDotPos = doc.createPosition(eolDot + 1);
                                             indenter.reindent(eolDot + 1);
 
-                                            context.setDot(caretInfo, newDotPos);
+                                            context.setDot(caretInfo, newDotPos, Position.Bias.Forward);
                                         } catch (BadLocationException ex) {
                                             ex.printStackTrace();
                                         }

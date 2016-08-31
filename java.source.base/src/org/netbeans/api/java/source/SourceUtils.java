@@ -1105,6 +1105,11 @@ public class SourceUtils {
         
         if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) tm;
+            TypeElement el = (TypeElement) dt.asElement();
+            if (((DeclaredType)el.asType()).getTypeArguments().size() != dt.getTypeArguments().size()) {
+                return info.getTypes().getDeclaredType(el);
+            }
+            
             List<TypeMirror> typeArguments = new LinkedList<>();
             
             for (TypeMirror t : dt.getTypeArguments()) {
@@ -1113,9 +1118,9 @@ public class SourceUtils {
             
             final TypeMirror enclosingType = dt.getEnclosingType();
             if (enclosingType.getKind() == TypeKind.DECLARED) {
-                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, el, typeArguments.toArray(new TypeMirror[0]));
             } else {
-                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+                return info.getTypes().getDeclaredType(el, typeArguments.toArray(new TypeMirror[0]));
             }
         }
 
