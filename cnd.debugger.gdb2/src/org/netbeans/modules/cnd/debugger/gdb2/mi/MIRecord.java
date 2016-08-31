@@ -179,7 +179,7 @@ public class MIRecord {
 	if (isStream) {
 	    s.append('"').append(stream).append('"'); // NOI18N
 	} else {
-	    if (results.isEmpty())
+	    if (isEmpty())
 		s.append(cls);
 	    else
 		s.append(cls).append(',').append(results.toString()); // NOI18N
