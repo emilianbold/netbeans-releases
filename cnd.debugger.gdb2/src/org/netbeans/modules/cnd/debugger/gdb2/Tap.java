@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.LinkedList;
-import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
@@ -72,9 +71,11 @@ import org.openide.util.RequestProcessor;
 
     // characters from gdb accumulate here and are forwarded to the tap
     private final StringBuilder interceptBuffer = new StringBuilder();
+    private boolean interceptBufferTerminated;
     private final LinkedList<String> interceptedLines = new LinkedList<String>();
 
     private final StringBuilder toTermBuf = new StringBuilder();
+    private boolean toTermBufTerminated;
     private MIProxy miProxy;
     private GdbDebuggerImpl debugger;
     private boolean prompted = false;
@@ -165,6 +166,9 @@ import org.openide.util.RequestProcessor;
     private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
     private static final boolean TRACING_IN_CONSOLE = CndUtils.getBoolean("cnd.gdb.trace.console", false); // NOI18N
 
+    private static final int TERMINAL_LINE_SIZE_LIMIT = Integer.getInteger("gdb.terminal.linesize", 64*1024); //NOI18N
+    private static final int MI_LINE_SIZE_LIMIT = Integer.getInteger("gdb.mi.linesize", 16*1024*1024); // NOI18N
+
     // interface MICommandInjector
     @Override
     public void inject(String cmd) {
@@ -243,9 +247,31 @@ import org.openide.util.RequestProcessor;
      * Process character from gdb to console.
      */
     private void processCharFromGdb(char c) {
-        toTermBuf.append(c);
-
-        interceptBuffer.append(c);
+        if (c == KeyProcessing.ESCAPES.CHAR_LF) {
+            if (toTermBufTerminated) {
+                toTermBuf.append("..."); //NOI18N
+                toTermBufTerminated = false;
+            }
+            toTermBuf.append(c);
+            if (interceptBufferTerminated) {
+                interceptBuffer.append("..."); //NOI18N
+                toTermBufTerminated = false;
+            }
+            interceptBuffer.append(c);
+        } else {
+            if (toTermBuf.length() < TERMINAL_LINE_SIZE_LIMIT) {
+                toTermBuf.append(c);
+                toTermBufTerminated = false;
+            } else {
+                toTermBufTerminated = true;
+            }
+            if (interceptBuffer.length() < MI_LINE_SIZE_LIMIT) {
+                interceptBuffer.append(c);
+                interceptBufferTerminated = false;
+            } else {
+                interceptBufferTerminated = true;
+            }
+        }
 
         // detected EOL
         if (c == KeyProcessing.ESCAPES.CHAR_LF) {

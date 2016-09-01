@@ -59,6 +59,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
@@ -1054,6 +1055,22 @@ public final class GeneratorUtilities {
         return make.Method(make.Modifiers(mods), setterName, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
+    /**
+     * Creates a default lambda body.
+     *
+     * @param lambda a lambda to generate body for
+     * @param method a method of a functional interface to be implemented by the lambda expression
+     * @return the lambda body
+     * @since 2.19
+     */
+    public BlockTree createDefaultLambdaBody(LambdaExpressionTree lambda, ExecutableElement method) {
+        try {
+            String bodyTemplate = "{" + readFromTemplate(LAMBDA_BODY, createBindings(null, method)) + "\n}"; //NOI18N
+            return copy.getTreeMaker().createLambdaBody(lambda, bodyTemplate);
+        } catch (Exception e) {}
+        return copy.getTreeMaker().Block(Collections.emptyList(), false);
+    }
+    
     private boolean isStarImport(ImportTree imp) {
         Tree qualIdent = imp.getQualifiedIdentifier();        
         boolean isStar = qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && ((MemberSelectTree)qualIdent).getIdentifier().contentEquals("*"); // NOI18N
@@ -1909,56 +1926,62 @@ public final class GeneratorUtilities {
 
     private Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
         CodeStyle cs = DiffContext.getCodeStyle(copy);       
-        Map<String, Object> bindings = new HashMap<String, Object>();
-        bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
-        bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
-        bindings.put(METHOD_NAME, element.getSimpleName().toString());
-        bindings.put(METHOD_RETURN_TYPE, element.getReturnType().toString()); //NOI18N
-        Object value;
-        switch(element.getReturnType().getKind()) {
-            case BOOLEAN:
-                value = "false"; //NOI18N
-                break;
-            case BYTE:
-            case CHAR:
-            case DOUBLE:
-            case FLOAT:
-            case INT:
-            case LONG:
-            case SHORT:
-                value = 0;
-                break;
-            default:
-                value = "null"; //NOI18N
+        Map<String, Object> bindings = new HashMap<>();
+        if (clazz != null) {
+            bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
+            bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
         }
-        bindings.put(DEFAULT_RETURN_TYPE_VALUE, value);
-        StringBuilder sb = new StringBuilder();
-        if (element.isDefault() && element.getEnclosingElement().getKind().isInterface()) {
-            Types types = copy.getTypes();
-            Context ctx = ((JavacTaskImpl) copy.impl.getJavacTask()).getContext();
-            com.sun.tools.javac.code.Types typesImpl = com.sun.tools.javac.code.Types.instance(ctx);
-            TypeMirror enclType = typesImpl.asSuper((Type)clazz.asType(), ((Type)element.getEnclosingElement().asType()).tsym);
-            if (!types.isSubtype(clazz.getSuperclass(), enclType)) {
-                TypeMirror selected = enclType;
-                for (TypeMirror iface : clazz.getInterfaces()) {
-                    if (types.isSubtype(iface, selected) &&
-                        !types.isSameType(iface, enclType)) {
-                        selected = iface;
-                        break;
-                    }
-                }
-                sb.append(((DeclaredType)selected).asElement().getSimpleName()).append('.');
+        if (element != null) {
+            bindings.put(METHOD_NAME, element.getSimpleName().toString());
+            bindings.put(METHOD_RETURN_TYPE, element.getReturnType().toString()); //NOI18N
+            Object value;
+            switch(element.getReturnType().getKind()) {
+                case BOOLEAN:
+                    value = "false"; //NOI18N
+                    break;
+                case BYTE:
+                case CHAR:
+                case DOUBLE:
+                case FLOAT:
+                case INT:
+                case LONG:
+                case SHORT:
+                    value = 0;
+                    break;
+                default:
+                    value = "null"; //NOI18N
             }
+            bindings.put(DEFAULT_RETURN_TYPE_VALUE, value);
         }
-        sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
-        for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
-            VariableElement ve = it.next();
-            sb.append(addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs));
-            if (it.hasNext())
-                sb.append(","); //NOI18N
+        if (clazz != null && element != null) {
+            StringBuilder sb = new StringBuilder();
+            if (element.isDefault() && element.getEnclosingElement().getKind().isInterface()) {
+                Types types = copy.getTypes();
+                Context ctx = ((JavacTaskImpl) copy.impl.getJavacTask()).getContext();
+                com.sun.tools.javac.code.Types typesImpl = com.sun.tools.javac.code.Types.instance(ctx);
+                TypeMirror enclType = typesImpl.asSuper((Type)clazz.asType(), ((Type)element.getEnclosingElement().asType()).tsym);
+                if (!types.isSubtype(clazz.getSuperclass(), enclType)) {
+                    TypeMirror selected = enclType;
+                    for (TypeMirror iface : clazz.getInterfaces()) {
+                        if (types.isSubtype(iface, selected) &&
+                            !types.isSameType(iface, enclType)) {
+                            selected = iface;
+                            break;
+                        }
+                    }
+                    sb.append(((DeclaredType)selected).asElement().getSimpleName()).append('.');
+                }
+            }
+            sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
+            for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
+                VariableElement ve = it.next();
+                sb.append(addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs));
+                if (it.hasNext())
+                    sb.append(","); //NOI18N
+            }
+            sb.append(')'); //NOI18N
+            bindings.put(SUPER_METHOD_CALL, sb);
         }
-        sb.append(')'); //NOI18N
-        bindings.put(SUPER_METHOD_CALL, sb);
         return bindings;
     }
 
@@ -2166,6 +2189,7 @@ public final class GeneratorUtilities {
     
     private static final String GENERATED_METHOD_BODY = "Templates/Classes/Code/GeneratedMethodBody"; //NOI18N
     private static final String OVERRIDDEN_METHOD_BODY = "Templates/Classes/Code/OverriddenMethodBody"; //NOI18N
+    private static final String LAMBDA_BODY = "Templates/Classes/Code/LambdaBody"; //NOI18N
     private static final String METHOD_RETURN_TYPE = "method_return_type"; //NOI18N
     private static final String DEFAULT_RETURN_TYPE_VALUE = "default_return_value"; //NOI18N
     private static final String SUPER_METHOD_CALL = "super_method_call"; //NOI18N
