@@ -264,7 +264,8 @@ public class ProjectActionSupport {
                 }
             }
         }
-        return false;
+        //it is OK for ATTACH that project is NULL as we have DebugTarget instead
+        return pae.getType() == PredefinedType.ATTACH;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
