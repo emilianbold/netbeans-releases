@@ -113,6 +113,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SmartSteppingCallback.StopOrStep;
 import org.openide.util.Exceptions;
@@ -518,7 +519,16 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         boolean stepAdded = false;
         boolean[] setStoppedStateNoContinue = new boolean[] { false };
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
-        JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
+        JPDAThreadImpl tr = null;
+        try {
+            ThreadReference eventThreadReference = Operator.getEventThread(event);
+            if (eventThreadReference != null) {
+                tr = debuggerImpl.getThread(eventThreadReference);
+            }
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {}
+        if (tr == null) {
+            tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
+        }
         tr.accessLock.readLock().lock();
         try {
             wasInBoxingUnboxingLocation = isInBoxingUnboxingLocation;

@@ -2573,6 +2573,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         ExpressionTree classIdentifier = arg0.getIdentifier();
         Mirror clazz = classIdentifier.accept(this, evaluationContext);
+        if (clazz instanceof ClassObjectReference) {
+            clazz = ((ClassObjectReference) clazz).reflectedType();
+        }
         if (!(clazz instanceof ClassType)) {
             Assert.error(classIdentifier, "unknownType", classIdentifier.toString());
         }
@@ -2690,6 +2693,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (enclosing != null && enclosing instanceof ObjectReference) {
                 ObjectReference enclosingObject = (ObjectReference) enclosing;
                 argVals.add(0, enclosingObject);
+                argTypes.add(0, enclosingObject.referenceType());
                 firstParamSignature = enclosingObject.referenceType().signature();
             } else if (thisObject != null) {
                 String className = classType.name();
@@ -2704,25 +2708,27 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.
                             argVals.add(0, thisObject);
+                            argTypes.add(0, outerClass);
                             firstParamSignature = outerClass.signature();
                         } else {
                             // 'this' is likely an instance of some inner class, use this$0 (this$1,...)
                             ObjectReference enclosingObject = findEnclosingObject(arg0, thisObject, outerClass, null, null);
                             if (enclosingObject != null) {
                                 argVals.add(0, enclosingObject);
+                                argTypes.add(0, outerClass);
                                 firstParamSignature = outerClass.signature();
                             }
                         }
                     }
                 }
-                
+                /*
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
                     if (!nested.isStatic() && nested.equals(classType)) {
                         argVals.add(0, thisObject);
                         argTypes.add(0, thisObject.type());
                     }
-                }
+                }*/
             }
         }
         try {
@@ -2800,6 +2806,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                      Collections.singletonList((Value) constantNameRef), evaluationContext, false);
         return enumValue;
     }
+    
+    private static boolean hasBinaryName(TypeElement te) {
+        try {
+            String className = ElementUtilities.getBinaryName(te);
+            return className != null;
+        } catch (IllegalArgumentException ex) {}
+        return false;
+    }
 
     @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
@@ -2812,7 +2826,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 memberSelectPath = currentPath;
             }
             elm = evaluationContext.getTrees().getElement(memberSelectPath);
-            if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+            if (elm instanceof TypeElement &&
+                ((TypeElement) elm).asType() instanceof ErrorType &&
+                !hasBinaryName((TypeElement) elm)) {
+                
                 currentPath = null; // Elements not resolved correctly
             }
         }
