@@ -164,6 +164,7 @@ public final class Codecept {
 
     public static final String CODECEPTION_CONFIG_FILE_NAME = "codeception.yml"; // NOI18N
     public static final String CODECEPTION_DIST_CONFIG_FILE_NAME = "codeception.dist.yml"; // NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "Immutable collection")
     public static final List<String> CODECEPTION_CONFIG_FILE_NAMES = Arrays.asList(CODECEPTION_CONFIG_FILE_NAME, CODECEPTION_DIST_CONFIG_FILE_NAME);
     public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
 
