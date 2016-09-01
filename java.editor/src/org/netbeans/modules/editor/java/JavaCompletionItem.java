@@ -4183,8 +4183,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     while (method != null && path.getLeaf() != path.getCompilationUnit()) {
                                         Tree tree = path.getLeaf();
                                         if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-                                            MethodTree mth = GeneratorUtilities.get(copy).createAbstractMethodImplementation((TypeElement)method.getEnclosingElement(), method);
-                                            copy.rewrite(((LambdaExpressionTree)tree).getBody(), mth.getBody());
+                                            BlockTree body = GeneratorUtilities.get(copy).createDefaultLambdaBody((LambdaExpressionTree)tree, method);
+                                            copy.rewrite(((LambdaExpressionTree)tree).getBody(), body);
                                             break;
                                         }
                                         path = path.getParentPath();
