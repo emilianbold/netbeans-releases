@@ -660,15 +660,15 @@ public class BinaryAnalyser {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
-    private void delete (final String className) throws IOException {
-        assert className != null;
-        this.toDelete.add(Pair.<String,String>of(className,null));
+    private void delete (@NullAllowed final String className, @NullAllowed final String fileName) throws IOException {
+        assert className != null || fileName != null;
+        this.toDelete.add(Pair.<String,String>of(className, fileName));
     }
 
     private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
         final ClassFileProcessor cfp = cfg.createProcessor(classFile);
-        this.delete (cfp.getClassName());
+        this.delete (cfp.getClassName(), cfp.getFileName());
         final UsagesData<ClassName> usages = cfp.analyse();
         final Pair<BinaryName,String> pair = Pair.of(
                 BinaryName.create(
@@ -677,7 +677,7 @@ public class BinaryAnalyser {
                         isLocal(classFile),
                         getSimpleNameIndex(classFile)
                         ),
-                null);
+                cfp.getFileName());
         addReferences (pair, usages);
     }
 
@@ -699,6 +699,8 @@ public class BinaryAnalyser {
             return ElementKind.ENUM;
         } else if (cf.isAnnotation()) {
             return ElementKind.ANNOTATION_TYPE;
+        } else if (cf.isModule()) {
+            return ElementKind.MODULE;
         } else if ((cf.getAccess() & Access.INTERFACE) == Access.INTERFACE) {
             return ElementKind.INTERFACE;
         } else {
@@ -711,6 +713,9 @@ public class BinaryAnalyser {
     }
 
     private static int getSimpleNameIndex(@NonNull final ClassFile cf) {
+        if (cf.isModule()) {
+            return 0;
+        }
         final ClassName me = cf.getName();
         final String simpleName = me.getSimpleName();
         int len = simpleName.length();
@@ -736,28 +741,39 @@ public class BinaryAnalyser {
     private static class ClassFileProcessor {
 
         private static final Convertor<ClassName,String> CONVERTOR =
-                new Convertor<ClassName, String>() {
-                    @Override
-                    public String convert(ClassName p) {
-                        return p.getInternalName().replace('/', '.');        // NOI18N
-                    }
-                };
+                (ClassName p) -> p.getInternalName().replace('/', '.'); // NOI18N
 
         private final ClassFile classFile;
         private final Config.IdentLevel idLvl;
         private final String className;
+        private final String fileName;
         private final UsagesData<ClassName> usages = new UsagesData<>(CONVERTOR);
 
         ClassFileProcessor(
                 @NonNull final ClassFile classFile,
                 @NonNull final Config.IdentLevel idLvl) {
             this.classFile = classFile;
-            this.className = CONVERTOR.convert(classFile.getName ());
+            final ClassName name = classFile.getName ();
+            if (classFile.isModule()) {
+                this.className = FileObjects.getPackageAndName(CONVERTOR.convert(name))[0];
+                final String simpleName = name.getSimpleName();
+                assert FileObjects.MODULE_INFO.equals(simpleName);
+                this.fileName = String.format("%s.%s", simpleName, FileObjects.CLASS);    //NOI18N
+            } else {
+                this.className = CONVERTOR.convert(name);
+                this.fileName = null;
+            }
             this.idLvl = idLvl;
         }
 
+        @NonNull
         final String getClassName() {
             return this.className;
+        }
+        
+        @CheckForNull
+        final String getFileName() {
+            return this.fileName;
         }
 
         @NonNull
@@ -1366,7 +1382,11 @@ public class BinaryAnalyser {
                 }
             }
             for (String deleted : getTimeStamps().second()) {
-                delete(deleted);
+                if (FileObjects.MODULE_INFO.equals(deleted)) {
+                    delete(null,String.format("%s.%s", FileObjects.MODULE_INFO, FileObjects.CLASS));  //NOI18N
+                } else {
+                    delete(deleted, null);  //TODO
+                }
                 markChanged();
             }
             return true;
