@@ -556,7 +556,8 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return;
         }
         for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
-            if (e.getMethodName().equals("execEnv") && e.getClassName().equals("org.netbeans.modules.mercurial.util.HgCommand")) {
+            if (e.getMethodName().equals("execEnv") && e.getClassName().equals("org.netbeans.modules.mercurial.util.HgCommand") ||
+                e.getMethodName().equals("loadLibrary") && e.getClassName().equals("com.sun.jna.Native")) {
                 return;
             }
         }
