@@ -43,6 +43,8 @@ package org.netbeans.modules.php.symfony2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -68,6 +70,8 @@ import org.openide.util.NbBundle;
  * PHP framework provider for Symfony 2/3 PHP framework.
  */
 public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(SymfonyPhpFrameworkProvider.class.getName());
 
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
     private static final String ICON_PATH = "org/netbeans/modules/php/symfony2/ui/resources/symfony_badge_8.png"; // NOI18N
@@ -144,10 +148,14 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             properties = properties.setWebRoot(web);
         }
         SymfonyVersion symfonyVersion = SymfonyVersion.forPhpModule(phpModule);
-        assert symfonyVersion != null : phpModule;
-        FileObject tests = symfonyVersion.getTests();
-        if (tests != null) {
-            properties = properties.setTests(tests);
+        if (symfonyVersion == null) {
+            // #267818 - incorrect symfony installer file
+            LOGGER.log(Level.INFO, "No Symfony version detected for project {0} - perhaps invalid Symfony installer selected in IDE Options?", phpModule.getDisplayName());
+        } else {
+            FileObject tests = symfonyVersion.getTests();
+            if (tests != null) {
+                properties = properties.setTests(tests);
+            }
         }
         return properties;
     }
