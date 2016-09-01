@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.projects;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.tools.Diagnostic;
@@ -97,14 +98,24 @@ class CodeSnippetCompiler {
             throw new InvalidExpressionException(ioe);
         }
         String classFQN = null;
+        Map<String, byte[]> innerClasses = null;
         for (String ccName : compiledClass.keySet()) {
             if (ccName.endsWith(className)) {
                 classFQN = ccName;
+            } else if (ccName.contains(className)) {
+                // A sub-class
+                if (innerClasses == null) {
+                    innerClasses = new LinkedHashMap<>();
+                }
+                innerClasses.put(ccName, compiledClass.get(ccName));
             }
         }
         if (classFQN == null) {
             return null;
         }
-        return new ClassToInvoke(classFQN, compiledClass.get(classFQN), "new "+className+"()."+methodInvoke);
+        return new ClassToInvoke(classFQN,
+                                 compiledClass.get(classFQN),
+                                 "new "+className+"()."+methodInvoke,
+                                 innerClasses);
     }
 }

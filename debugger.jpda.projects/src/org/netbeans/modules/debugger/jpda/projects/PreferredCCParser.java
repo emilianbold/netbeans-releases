@@ -530,6 +530,14 @@ class PreferredCCParser {
                 LOG.log(Level.FINE, "Compiled to: {0}", compiledClass);
                 if (compiledClass != null) {
                     boolean success = compiledClassHandler.apply(Pair.of(compiledClass.className, compiledClass.bytecode));
+                    if (compiledClass.innerClasses != null && !compiledClass.innerClasses.isEmpty()) {
+                        for (Map.Entry<String, byte[]> entry : compiledClass.innerClasses.entrySet()) {
+                            success = compiledClassHandler.apply(Pair.of(entry.getKey(), entry.getValue()));
+                            if (!success) {
+                                break;
+                            }
+                        }
+                    }
                     if (success) {
                         // Class is uploaded, interpret the class' method invocation:
                         task = new ParseExpressionTask<>(compiledClass.methodInvoke, line, context);
