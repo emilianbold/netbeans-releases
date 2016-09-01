@@ -1389,8 +1389,9 @@ public class ETable extends JTable {
                 filteredRowCount = -1;
                 //System.err.println("selected rows in model = "+Arrays.toString(selectedRowsWhenTableChanged.rowsInModel));
             }
-            int[] invSortPermutation = sortingPermutationsWhenTableChanged[1];
             TableModelEvent se = e;
+            /* Not necessary to transform, as we're still in the UI coordinates.
+            int[] invSortPermutation = sortingPermutationsWhenTableChanged[1];
             if (invSortPermutation != null) {
                 int fr = e.getFirstRow();
                 if (fr >= 0 && fr < invSortPermutation.length) {
@@ -1401,7 +1402,7 @@ public class ETable extends JTable {
                     lr = invSortPermutation[lr];
                 }
                 se = new TableModelEvent((TableModel) e.getSource(), fr, lr, e.getColumn(), e.getType());
-            }
+            }*/
             super.tableChanged(se);
             int first = e.getFirstRow();
             int last = e.getLastRow();
