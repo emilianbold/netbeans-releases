@@ -120,14 +120,14 @@ import org.openide.util.WeakListeners;
 public final class ClassPath {
 
     static  {
-        ClassPathAccessor.DEFAULT = new ClassPathAccessor() {
+        ClassPathAccessor.setDefault(new ClassPathAccessor() {
             public ClassPath createClassPath(ClassPathImplementation spiClasspath) {
                 return new ClassPath(spiClasspath);
             }
             public ClassPathImplementation getClassPathImpl(ClassPath cp) {
                 return cp == null ? null : cp.impl;
             }
-        };
+        });
     }
 
     /**

@@ -66,7 +66,7 @@ public final class ClassPathFactory {
      * @return instance of API classpath
      */
     public static ClassPath createClassPath(ClassPathImplementation spiClasspath) {
-        return ClassPathAccessor.DEFAULT.createClassPath(spiClasspath);
+        return ClassPathAccessor.getDefault().createClassPath(spiClasspath);
     }
     
 }

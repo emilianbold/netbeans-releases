@@ -99,15 +99,6 @@ class IntroduceClass {
             }
             method = parentPath;
         }
-        /*
-        // Find static context
-        if (!TreeUtilities.CLASS_TREE_KINDS.contains(method.getLeaf().getKind())) {
-            // We're not out of a method
-            Element methodElement = info.getTrees().getElement(method);
-            if (methodElement != null) {
-                this.staticContext = methodElement.getModifiers().contains(Modifier.STATIC);
-            }
-        }*/
         CompilationUnitTree compilationUnit = info.getCompilationUnit();
         SourcePositions sourcePositions = info.getTrees().getSourcePositions();
         long endPosition = sourcePositions.getEndPosition(compilationUnit, method.getLeaf());
@@ -118,7 +109,7 @@ class IntroduceClass {
             // Can generate an inner class after this endPosition
             this.classGeneratePosition = endPosition + 1;
         }
-        List<? extends StatementTree> blockStatements = getStatements(block);//IntroduceHint.getStatements(block);
+        List<? extends StatementTree> blockStatements = getStatements(block);
         StatementTree lastStatement = blockStatements.isEmpty() ? null : blockStatements.get(blockStatements.size() - 1);
         ScanLocalVars scanner = new ScanLocalVars(info, lastStatement);
         scanner.scan(block, null);
@@ -159,14 +150,9 @@ class IntroduceClass {
                 returnType = info.getTypes().getNoType(TypeKind.VOID).toString();
             }
         }
-        int index = 0;
         for (StatementTree s : blockStatements) {
-            TreePath path = new TreePath(block, s);
-            //if (index >= statements[0] && index <= statements[1]) {
-                exceptions.addAll(info.getTreeUtilities().getUncaughtExceptions(path));
-                //pathsOfStatementsToWrap.add(path);
-            //}
-            index++;
+            TreePath path = new TreePath(treePath, s);
+            exceptions.addAll(info.getTreeUtilities().getUncaughtExceptions(path));
         }
         Set<VariableElement> referencedVariables = scanner.getReferencedVariables();
         StringBuilder declaration = new StringBuilder(returnType);
