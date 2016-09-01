@@ -444,7 +444,9 @@ public class CsmContextUtilities {
     private static boolean canBreak(int offsetInScope, CsmScopeElement elem, CsmContext fullContext) {
         // break if element already is in context
         // or element is after offset
-        if (offsetInScope == CsmContext.CsmContextEntry.WHOLE_SCOPE) {
+        if (elem == null) {
+            return false;
+        } else if (offsetInScope == CsmContext.CsmContextEntry.WHOLE_SCOPE) {
             return isInContext(fullContext, elem);
         } else if (CsmKindUtilities.isOffsetable(elem)) {
             return ((CsmOffsetable)elem).getStartOffset() >= offsetInScope || isInContext(fullContext, elem);
