@@ -660,6 +660,7 @@ abstract class BaseTask extends UserTask {
         private boolean insideClass = false;
         private Set<? extends TypeMirror> smartTypes = null;
         private Set<Element> excludes = null;
+        private Set<String> kws = new HashSet<>();
         private boolean addSemicolon = false;
         private boolean checkAddSemicolon = true;
         private int assignToVarPos = -2;
@@ -779,6 +780,16 @@ abstract class BaseTask extends UserTask {
 
         public Set<? extends Element> getExcludes() {
             return excludes;
+        }
+
+        public void addExcludedKW(String kw) {
+            if (kw != null) {
+                kws.add(kw);
+            }
+        }
+
+        public boolean isExcludedKW(String kw) {
+            return kws.contains(kw);
         }
 
         public void skipAccessibilityCheck() {

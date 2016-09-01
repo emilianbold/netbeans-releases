@@ -122,7 +122,9 @@ import org.openide.util.Utilities;
         // use DebugBreakProcess on windows
         if (exEnv.isLocal() && Utilities.isWindows()) {
             File f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", "org.netbeans.modules.cnd.debugger.common2", false); // NOI18N
-            if (f.exists()) {
+            //bz#258406 - NullPointerException at org.netbeans.modules.cnd.debugger.common2.utils.ExecutorCND.interrupt
+            //looks loke GdbKillProc file could not be located, will just check for null
+            if (f != null && f.exists()) {
                 ProcessUtils.execute(exEnv, f.getAbsolutePath(), "-s", "INT", Long.toString(pid)); //NOI18N
             }
         } else {
