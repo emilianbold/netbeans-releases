@@ -2383,6 +2383,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GENERIC_TYPE_OPEN:// a < (
                     case MEMBER_POINTER_OPEN:// *(
                     case UNARY_OPERATOR: // !(
+                    case TERNARY_OPERATOR: // x ? (
                         pushExp(createTokenExp(PARENTHESIS_OPEN));
                         break;
 
