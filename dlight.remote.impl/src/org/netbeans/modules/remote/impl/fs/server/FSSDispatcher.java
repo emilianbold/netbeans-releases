@@ -634,10 +634,10 @@ import org.openide.util.RequestProcessor;
         if (srv == null) {
             return; // this should not happen, but server is not final => need to check
         }
-        StringBuilder sb = new StringBuilder("dirs-forbidden-to-stat=");
+        StringBuilder sb = new StringBuilder("dirs-forbidden-to-stat="); // NOI18N
         boolean first = true;
         for (String path : forbiddenPaths) {
-            sb.append(path).append(first ? "" : ":");
+            sb.append(path).append(first ? "" : ":"); // NOI18N
             first = false;
         }
         FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_OPTION, sb.toString());
