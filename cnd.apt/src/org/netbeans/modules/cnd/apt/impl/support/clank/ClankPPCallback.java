@@ -158,8 +158,6 @@ public final class ClankPPCallback extends FileInfoCallback {
             PreprocHandler.State stateWhenMetErrorDirective = APTHandlersSupport.createCleanPreprocState(this.ppHandler.getState());
             ClankErrorDirectiveWrapper errorDirectiveWrapper = new ClankErrorDirectiveWrapper(directive, stateWhenMetErrorDirective);
             directive.setAnnotation(errorDirectiveWrapper);
-            // APT-style recovery from #error, cut only the current file
-            getPreprocessor().cutOffCurFilePreprocessing();
         }
         interrupter.updateStateFromDelegate();
     }
@@ -222,6 +220,12 @@ public final class ClankPPCallback extends FileInfoCallback {
             }
         }
         interrupter.updateStateFromDelegate();
+    }
+    
+    @Override
+    protected void recoverFromErrorDirective() {
+        // APT-style recovery from #error, cut only the current file
+        getPreprocessor().cutOffCurFilePreprocessing();
     }
 
     private ResolvedPath createResolvedPath(FileInfo curFile, InclusionDirectiveInfo directive) {
