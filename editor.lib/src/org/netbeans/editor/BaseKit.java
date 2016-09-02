@@ -2567,30 +2567,37 @@ public class BaseKit extends DefaultEditorKit {
                             editorCaret.moveCarets(new CaretMoveHandler() {
                                 @Override
                                 public void moveCarets(CaretMoveContext context) {
+                                    Position.Bias[] biasRet = new Position.Bias[] { Position.Bias.Forward }; // Initial value in case it would stay non-updated
                                     for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                         try {
                                             int dot = caretInfo.getDot();
-                                            Point p = caretInfo.getMagicCaretPosition();
-                                            if (p == null) {
-                                                Rectangle r = target.modelToView(dot);
-                                                if (r != null) {
-                                                    p = new Point(r.x, r.y);
-                                                    context.setMagicCaretPosition(caretInfo, p);
+                                            Point magicPos = caretInfo.getMagicCaretPosition();
+                                            if (magicPos == null) {
+                                                Rectangle origDotRect = target.modelToView(dot);
+                                                if (origDotRect != null) {
+                                                    magicPos = new Point(origDotRect.x, origDotRect.y);
+                                                    context.setMagicCaretPosition(caretInfo, magicPos);
                                                 } else {
                                                     return; // model to view failed
                                                 }
                                             }
                                             try {
-                                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                                dot = target.getUI().getNextVisualPositionFrom(target, dot, caretInfo.getDotBias(), SwingConstants.NORTH, biasRet);
+                                                if (magicPos != null) { 
+                                                    Rectangle dotRect = target.modelToView(dot);
+                                                    if (dotRect != null) {
+                                                        dot = target.viewToModel(new Point(magicPos.x, dotRect.y)); // Combine magic pos x and y from dotRect
+                                                    }
+                                                }
                                                 Position dotPos = doc.createPosition(dot);
                                                 boolean select = selectionUpAction.equals(getValue(Action.NAME));
                                                 if (select) {
-                                                    context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
+                                                    context.moveDot(caretInfo, dotPos, biasRet[0]);
                                                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                                         RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                                     }
                                                 } else {
-                                                    context.setDot(caretInfo, dotPos, Position.Bias.Forward);
+                                                    context.setDot(caretInfo, dotPos, biasRet[0]);
                                                 }
                                             } catch (BadLocationException e) {
                                                 // the position stays the same
@@ -2666,30 +2673,37 @@ public class BaseKit extends DefaultEditorKit {
                             editorCaret.moveCarets(new CaretMoveHandler() {
                                 @Override
                                 public void moveCarets(CaretMoveContext context) {
+                                    Position.Bias[] biasRet = new Position.Bias[] { Position.Bias.Forward }; // Initial value in case it would stay non-updated
                                     for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                         try {
                                             int dot = caretInfo.getDot();
-                                            Point p = caretInfo.getMagicCaretPosition();
-                                            if (p == null) {
-                                                Rectangle r = target.modelToView(dot);
-                                                if (r != null) {
-                                                    p = new Point(r.x, r.y);
-                                                    context.setMagicCaretPosition(caretInfo, p);
+                                            Point magicPos = caretInfo.getMagicCaretPosition();
+                                            if (magicPos == null) {
+                                                Rectangle origDotRect = target.modelToView(dot);
+                                                if (origDotRect != null) {
+                                                    magicPos = new Point(origDotRect.x, origDotRect.y);
+                                                    context.setMagicCaretPosition(caretInfo, magicPos);
                                                 } else {
                                                     return; // model to view failed
                                                 }
                                             }
                                             try {
-                                                dot = Utilities.getPositionBelow(target, dot, p.x);
+                                                dot = target.getUI().getNextVisualPositionFrom(target, dot, caretInfo.getDotBias(), SwingConstants.SOUTH, biasRet);
+                                                if (magicPos != null) { 
+                                                    Rectangle dotRect = target.modelToView(dot);
+                                                    if (dotRect != null) {
+                                                        dot = target.viewToModel(new Point(magicPos.x, dotRect.y)); // Combine magic pos x and y from dotRect
+                                                    }
+                                                }
                                                 Position dotPos = doc.createPosition(dot);
                                                 boolean select = selectionDownAction.equals(getValue(Action.NAME));
                                                 if (select) {
-                                                    context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
+                                                    context.moveDot(caretInfo, dotPos, biasRet[0]);
                                                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                                         RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                                     }
                                                 } else {
-                                                    context.setDot(caretInfo, dotPos, Position.Bias.Forward);
+                                                    context.setDot(caretInfo, dotPos, biasRet[0]);
                                                 }
                                             } catch (BadLocationException e) {
                                                 // position stays the same
