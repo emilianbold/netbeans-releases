@@ -82,6 +82,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.impl.fs.ui.RemoteNotifier;
@@ -134,7 +135,18 @@ import org.openide.util.RequestProcessor;
     
     private volatile FileSystemProvider.AccessCheckType accessCheckType;
     
-    private static final String MIN_SERVER_VERSION = "1.7.0"; // NOI18N
+    private String getMinServerVersion() {
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                if (HostInfoUtils.getHostInfo(env).getCpuFamily() == HostInfo.CpuFamily.ARM) {
+                    return "1.7.0"; // NOI18N
+                }
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return "1.10.2"; // NOI18N
+    }
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -147,10 +159,14 @@ import org.openide.util.RequestProcessor;
     }
     
     private void addToRefresh(String path) {
-        RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
+        RefreshManager refreshManager = getFileSystem().getRefreshManager();
         refreshManager.scheduleRefreshExistent(Arrays.asList(path), false);
     }
-    
+
+    private RemoteFileSystem getFileSystem() {
+        return RemoteFileSystemManager.getInstance().getFileSystem(env);
+    }
+
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
         synchronized (instanceLock) {
             FSSDispatcher instance = instances.get(env);
@@ -169,7 +185,7 @@ import org.openide.util.RequestProcessor;
     public void connected() {
         boolean wasValid  = valid;
         valid = true;
-        if (wasValid && RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+        if (wasValid && getFileSystem().getRoot().getImplementor().hasCache()) {
             RP.post(new ConnectTask());
         }
     }
@@ -597,6 +613,7 @@ import org.openide.util.RequestProcessor;
                 RP.post(new ErrorReader(server.getProcess().getErrorStream()));
                 try {
                     handShake();
+                    setupProhibitedToLstat();
                 } catch (InitializationException ex) {
                     server = null;
                     setInvalid(true);
@@ -608,6 +625,25 @@ import org.openide.util.RequestProcessor;
         }
     }
     
+    private void setupProhibitedToLstat() {
+        List<String> forbiddenPaths = getFileSystem().getDirsProhibitedToStat(traceName);
+        if(forbiddenPaths == null || forbiddenPaths.isEmpty()) {
+            return;
+        }
+        FsServer srv = server;
+        if (srv == null) {
+            return; // this should not happen, but server is not final => need to check
+        }
+        StringBuilder sb = new StringBuilder("dirs-forbidden-to-stat=");
+        boolean first = true;
+        for (String path : forbiddenPaths) {
+            sb.append(path).append(first ? "" : ":");
+            first = false;
+        }
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_OPTION, sb.toString());
+        sendRequest(server.getWriter(), req);
+    }
+
     private void handShake() throws IOException, InitializationException, InterruptedException {
         FSSRequest infoReq = new FSSRequest(FSSRequestKind.FS_REQ_SERVER_INFO, "");
         sendRequest(server.getWriter(), infoReq);
@@ -628,7 +664,7 @@ import org.openide.util.RequestProcessor;
             int respId = buf.getInt();
             RemoteLogger.assertTrue(respId == infoReq.getId());
             String version = buf.getRest().trim();
-            checkVersions(MIN_SERVER_VERSION, version);
+            checkVersions(getMinServerVersion(), version);
             if (accessCheckType != FileSystemProvider.AccessCheckType.FULL) {
                 sendAccessTypeChangeRequest(accessCheckType);
             }
@@ -682,7 +718,7 @@ import org.openide.util.RequestProcessor;
                 throw new InitializationException("Wrong version format: " + fact); // NOI18N
             }
             if (factValue < refValue) {
-                throw new InitializationException("Wrong server version: " + fact + " should be more or equal to " + MIN_SERVER_VERSION); // NOI18N`
+                throw new InitializationException("Wrong server version: " + fact + " should be more or equal to " + ref); // NOI18N
             } else if (factValue > refValue) {
                 break; // minor version does not matter
             }
@@ -770,7 +806,7 @@ import org.openide.util.RequestProcessor;
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
             } else {
-                if (!RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+                if (!getFileSystem().getRoot().getImplementor().hasCache()) {
                     // there is no cache locally => clean remote cache as well
                     argsList.add("-c"); // NOI18N
                 }
