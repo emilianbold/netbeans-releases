@@ -195,6 +195,7 @@ bool get_home_dir(char* home, int size) {
     return false;
 }
 
+/// NB: does not take settings->forbidden... into account
 bool file_exists(const char* path) {
     struct stat stat_buf;
     if (lstat(path, &stat_buf) == -1 ) {
@@ -203,6 +204,7 @@ bool file_exists(const char* path) {
     return true;
 }
 
+/// NB: does not take settings->forbidden... into account
 bool dir_exists(const char* path) {
     struct stat stat_buf;
     if (lstat(path, &stat_buf) == -1 ) {
@@ -433,7 +435,7 @@ static bool removing_visitor(char* name, struct stat *stat_buf, char* link, cons
 
 bool clean_dir(const char* path) {
     bool res = true;
-    visit_dir_entries(path, removing_visitor, NULL, &res);
+    visit_dir_entries(path, removing_visitor, NULL, NULL, &res);
     return res;
 }
 
@@ -463,6 +465,7 @@ void default_error_handler(bool dir_itself, const char* path, int err, const cha
 int visit_dir_entries(const char* path, 
         bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
         void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
+        const settings_str* settings,
         void *data) {
     if (!error_handler) {
         error_handler = default_error_handler;
@@ -474,12 +477,16 @@ int visit_dir_entries(const char* path,
             char b[MAXNAMLEN + 1];
         } entry_buf;
         entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
-        int buf_size = PATH_MAX;
+        int buf_size = PATH_MAX + 1;
         char *abspath = malloc_wrapper(buf_size);
         char *link = malloc_wrapper(buf_size);
-        // TODO: error processing (malloc() can return null)
-        int base_len = strlen(path);
-        strcpy(abspath, path);
+        int base_len;
+        if (path[0] == '/' && path[1] == '\0') {
+            base_len = 0;
+        } else {
+            base_len = strlen(path);
+            strcpy(abspath, path);
+        }
         abspath[base_len] = '/';
         struct dirent *entry;
         while (true) {
@@ -495,7 +502,7 @@ int visit_dir_entries(const char* path,
             }
             strcpy(abspath + base_len + 1, entry->d_name);
             struct stat stat_buf;
-            if (lstat(abspath, &stat_buf) == 0) {
+            if (lstat_wrapper(abspath, &stat_buf, settings) == 0) {
                 bool is_link = S_ISLNK(stat_buf.st_mode);
                 if (is_link) {
                     ssize_t sz = readlink(abspath, link, buf_size);
@@ -690,3 +697,27 @@ bool can_exec(const struct stat *stat) {
     return can(stat, ALL_X, GRP_X, USR_X);
 }
 
+static void fill_dummy_stat(struct stat *stat_buf) {
+    memset(stat_buf, '\0', sizeof(struct stat));
+    stat_buf->st_mode = S_IFDIR | S_IROTH | S_IXOTH;
+}
+
+int lstat_wrapper(const char *path, struct stat *stat_buf, const settings_str* settings) {
+    if (is_dir_forbidden_to_stat(path, settings)) {
+        trace(TRACE_FINEST, "Skipping forbidden lstat for %s\n", path);
+        fill_dummy_stat(stat_buf);
+        return 0;
+    } else {
+        return lstat(path, stat_buf);
+    }
+}
+
+int stat_wrapper(const char *path, struct stat *stat_buf, const settings_str* settings) {
+    if (is_dir_forbidden_to_stat(path, settings)) {
+        trace(TRACE_FINEST, "Skipping forbidden stat for %s\n", path);
+        fill_dummy_stat(stat_buf);
+        return 0;
+    } else {
+        return stat(path, stat_buf);
+    }
+}
