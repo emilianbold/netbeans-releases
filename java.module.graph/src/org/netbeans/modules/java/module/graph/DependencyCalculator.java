@@ -141,7 +141,8 @@ final class DependencyCalculator {
 
     private boolean isJDK(final ModuleElement me, ClasspathInfo cpinfo) {
         boolean isJDK = false;
-        JavaFileObject cf = ((Symbol.ModuleSymbol) me).module_info.classfile;
+        Symbol.ClassSymbol mi = ((Symbol.ModuleSymbol) me).module_info;
+        JavaFileObject cf = mi != null ? mi.classfile : null;
         if(cf != null) {
             URI uri = cf.toUri();
             ClassPath cp = cpinfo.getClassPath(ClasspathInfo.PathKind.BOOT);
