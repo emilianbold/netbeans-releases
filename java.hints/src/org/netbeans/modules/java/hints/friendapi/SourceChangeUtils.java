@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.errors;
+package org.netbeans.modules.java.hints.friendapi;
 
-import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spi.ErrorRule;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.OrganizeImports;
 
 /**
- * The interface is an optional mixing which can be present on the ErrorRule implementation and takes care of potential
- * transformation of the standard message to something more precise. If present, it will be called as part of error
- * conversion to annotations to produce a different error message. If more rules matching diagnostic key respond
- * to the createMessage call, the infrastructure will choose a message or several messages to appear. All fixes will be available from that
- * message.
- * <p/>
- * Note that the customized message does not propagate into the task list; the task list will show the original javac message.
+ * Provides access to selected functions for friend modules. Not an official API - 
+ * may be changed without further notice.
+ * @author sdedic
+ * @since 1.82
  */
-public interface OverrideErrorMessage<T> extends ErrorRule<T> {
+public class SourceChangeUtils {
     /**
-     * Provides a custom error message to replace the one in Diagnostic. If the implementation does not want to produce
-     * a custom message, it should return {@code null}, the default message will be used. If the Rule stores a data 
-     * into the 'data' holder, that data will be available later, in the call to run() method. 
+     * Organizes imports. Adds imports according to parameters, reorganizes imports
+     * to use stars accoridng to coding style. If 'cleanImports' is true, 
      * 
-     * @param info context
-     * @param diagnosticKey error message key
-     * @param offset offset in the Source
-     * @param treePath path to the error, if available
-     * @return an override message to be displayed instead of the standard one or {@code null} to use the standard one.
+     * @param copy
+     * @param addImports imports to add
+     * @param cleanImports if true, attempts to cleanup star imports
+     * @throws IllegalStateException 
      */
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<T> data);
+    public static void doOrganizeImports(WorkingCopy copy, Set<Element> addImports, boolean cleanImports) throws IllegalStateException {
+        OrganizeImports.doOrganizeImports(copy, addImports, cleanImports);
+    }
 }
