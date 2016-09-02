@@ -348,42 +348,39 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     private DirEntryList readEntries(FSSResponse response, String path, long reqId, AtomicInteger cnt) 
             throws IOException, InterruptedException, ExecutionException {
-        try {
-            RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
-                    reqId, path);
-            List<FSSResponse.Package> packages = new ArrayList<>();
-            for (FSSResponse.Package pkg = response.getNextPackage(); 
-                    pkg.getKind() != FSSResponseKind.FS_RSP_END; 
-                    pkg = response.getNextPackage()) {
-                if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
-                    break;
-                }
-                if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
-                    throw createIOException(pkg);
-                }
-                cnt.incrementAndGet();
-                if (VERBOSE_RESPONSE) {
-                    RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
-                            reqId, cnt.get(), pkg.getData());
-                }
-                packages.add(pkg);
+        RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
+                reqId, path);
+        List<FSSResponse.Package> packages = new ArrayList<>();
+        for (FSSResponse.Package pkg = response.getNextPackage(); 
+                pkg.getKind() != FSSResponseKind.FS_RSP_END; 
+                pkg = response.getNextPackage()) {
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
+                break;
             }
-            RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
-                    reqId, path);
-            List<DirEntry> result = new ArrayList<>();
-            for (FSSResponse.Package pkg : packages) {
-                try {
-                    assert pkg != null;
-                    DirEntry entry = createDirEntry(pkg, reqId, env);
-                    // TODO: windows names
-                    result.add(entry);
-                } catch (Throwable thr) {
-                    thr.printStackTrace(System.err);
-                }
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                throw createIOException(pkg);
             }
-            return new DirEntryList(result, System.currentTimeMillis());
-        } finally {
+            cnt.incrementAndGet();
+            if (VERBOSE_RESPONSE) {
+                RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
+                        reqId, cnt.get(), pkg.getData());
+            }
+            packages.add(pkg);
         }
+        RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
+                reqId, path);
+        List<DirEntry> result = new ArrayList<>();
+        for (FSSResponse.Package pkg : packages) {
+            try {
+                assert pkg != null;
+                DirEntry entry = createDirEntry(pkg, reqId, env);
+                // TODO: windows names
+                result.add(entry);
+            } catch (Throwable thr) {
+                thr.printStackTrace(System.err);
+            }
+        }
+        return new DirEntryList(result, System.currentTimeMillis());
     }
 
     private DirEntry createDirEntry(FSSResponse.Package pkg, long reqId, ExecutionEnvironment env) {
