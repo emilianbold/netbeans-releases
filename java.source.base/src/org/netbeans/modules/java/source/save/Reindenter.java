@@ -225,7 +225,7 @@ public class Reindenter implements IndentTask {
                     currentEmbeddingLength = tseq.offset() - currentEmbeddingStartOffset;
                     break;
                 }
-                tseq = tseq.embedded();
+                tseq = tseq.embeddedJoined();
             }
             if (ts == null) {
                 return false;                

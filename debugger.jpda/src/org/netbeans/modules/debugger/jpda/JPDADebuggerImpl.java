@@ -407,7 +407,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     return true;
                 }
             }
-            if (!starting && state != STATE_STARTING || throwable != null) {
+            if (!starting && state > STATE_STARTING || throwable != null) {
                 return true; // We're already running
             }
             try {

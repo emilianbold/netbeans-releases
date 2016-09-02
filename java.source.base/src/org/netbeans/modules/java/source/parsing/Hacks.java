@@ -96,4 +96,26 @@ public class Hacks {
         }
         return null;
     }
+    
+    /**
+     * Extracts diagnostic params from a diagnostic. Gets under hood of Javac
+     * Diagnostic objects and extracts parameters which are otherwise just used
+     * to produce a message. <b>Keep in mind that the positions and types of parameters
+     * may change in each nbjavac update!</b>
+     * @param d diagnostic
+     * @param index parameter index to extract
+     * @return parameter value, null if index is out of range
+     */
+    public static Object getDiagnosticParam(Diagnostic<?> d, int index) {
+        JCDiagnostic jcd = getJCDiagnostic(d);
+        if (jcd == null) {
+            return null;
+        }
+        Object[] args = jcd.getArgs();
+        if (args == null || args.length <= index) {
+            return null;
+        }
+        return args[index];
+    }
+    
 }

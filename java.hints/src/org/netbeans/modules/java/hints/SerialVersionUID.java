@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.hints.errors.OverrideErrorMessage;
+import org.netbeans.modules.java.hints.friendapi.OverrideErrorMessage;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.STATIC;
+import javax.tools.Diagnostic;
 
 /**
  * @author Michal Hlavac
@@ -98,7 +99,7 @@ public class SerialVersionUID implements ErrorRule<Void>, OverrideErrorMessage<V
     }
 
     @Override
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data data) {
+    public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data data) {
         if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
             return null;
         }
