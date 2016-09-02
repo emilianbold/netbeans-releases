@@ -48,6 +48,5 @@ import org.netbeans.api.java.source.ClasspathInfo;
  *
  * @author Tomas Zezula
  */
-public interface ClasspathInfoProvider {
-    public ClasspathInfo getClasspathInfo ();
+public interface ClasspathInfoProvider extends ClasspathInfo.Provider {
 }

@@ -100,8 +100,8 @@ public class ClassParser extends Parser {
         final FileObject file = source.getFileObject();
         assert file != null;
         if (info == null) {
-            if ((task instanceof ClasspathInfoProvider)) {
-                info =((ClasspathInfoProvider)task).getClasspathInfo();
+            if ((task instanceof ClasspathInfo.Provider)) {
+                info =((ClasspathInfo.Provider)task).getClasspathInfo();
             }
             if (info == null) {
                 ClassPath bootPath = ClassPath.getClassPath(file, ClassPath.BOOT);
@@ -167,8 +167,8 @@ public class ClassParser extends Parser {
             } else {
                 requiredPhase = JavaSource.Phase.RESOLVED;
             }
-            if (task instanceof ClasspathInfoProvider) {
-                final ClasspathInfo taskProvidedCpInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+            if (task instanceof ClasspathInfo.Provider) {
+                final ClasspathInfo taskProvidedCpInfo = ((ClasspathInfo.Provider)task).getClasspathInfo();
                 if (taskProvidedCpInfo != null && !taskProvidedCpInfo.equals(info)) {
                     assert info != null;
                     assert wl != null;
