@@ -24,7 +24,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -111,7 +110,7 @@ final class DependencyCalculator {
         @NonNull final Collection<? super DependencyEdge> deps,
         ClasspathInfo classpathInfo) {
         List<Dependency> dependencies = new ArrayList<>();
-        if (!me.isUnnamed()) {
+        if (!me.isUnnamed()) {            
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                     final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;
@@ -125,7 +124,7 @@ final class DependencyCalculator {
                         unseen = true;
                     } else {
                         unseen = false;
-                    }
+                    }                                        
                     dependencies.add(new Dependency(n, reqD, unseen));
                 }
             }
