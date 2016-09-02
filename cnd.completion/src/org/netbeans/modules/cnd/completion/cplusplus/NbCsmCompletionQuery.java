@@ -225,14 +225,17 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private static final int FILE_LOCAL_FUNCTION_PRIORITY = FILE_LOCAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_LOCAL_MACRO_PRIORITY = FILE_LOCAL_FUNCTION_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_INCLUDED_PRJ_MACRO_PRIORITY = FILE_LOCAL_MACRO_PRIORITY + PRIORITY_SHIFT;
-    
+
     private static final int GLOBAL_VAR_PRIORITY = FILE_INCLUDED_PRJ_MACRO_PRIORITY + PRIORITY_SHIFT;
     private static final int GLOBAL_ENUMERATOR_PRIORITY = GLOBAL_VAR_PRIORITY + PRIORITY_SHIFT;
     private static final int GLOBAL_MACRO_PRIORITY = GLOBAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
     private static final int GLOBAL_FUN_PRIORITY = GLOBAL_MACRO_PRIORITY + PRIORITY_SHIFT;
-    private static final int GLOBAL_NAMESPACE_PRIORITY = GLOBAL_FUN_PRIORITY + PRIORITY_SHIFT;
-    private static final int GLOBAL_NAMESPACE_ALIAS_PRIORITY = GLOBAL_NAMESPACE_PRIORITY; // same as project ns
+
+    // 650 is priority for abbreviations
     
+    private static final int GLOBAL_NAMESPACE_PRIORITY = 1000;
+    private static final int GLOBAL_NAMESPACE_ALIAS_PRIORITY = GLOBAL_NAMESPACE_PRIORITY; // same as project ns
+
     private static final int LIB_CLASS_PRIORITY = GLOBAL_NAMESPACE_ALIAS_PRIORITY + PRIORITY_SHIFT;
     private static final int LIB_ENUM_PRIORITY = LIB_CLASS_PRIORITY; // same as class
     private static final int LIB_TYPEDEF_PRIORITY = LIB_CLASS_PRIORITY; // same as class
@@ -245,8 +248,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private static final int LIB_NAMESPACE_PRIORITY = LIB_FUN_PRIORITY + PRIORITY_SHIFT;    
     private static final int LIB_NAMESPACE_ALIAS_PRIORITY = LIB_NAMESPACE_PRIORITY; // same as lib ns
        
-    // 550 is priority for abbreviations, we'd like to be above
-    
+    public static final int KEYWORDS_PRIORITY = 5000;
+
     public static final class NbCsmItemFactory implements CsmCompletionQuery.CsmItemFactory {
         public NbCsmItemFactory() {
         }
