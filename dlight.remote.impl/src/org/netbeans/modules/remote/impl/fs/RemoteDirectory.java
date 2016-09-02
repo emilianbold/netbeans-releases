@@ -554,26 +554,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         }
     }
 
-    private boolean isProhibited() {
-        final String path = getPath();
-        if (path.equals("/proc") || getPath().equals("/dev")) { //NOI18N
-            return true;
-        }
-        if (path.equals("/run")) { //NOI18N
-        if (HostInfoUtils.isHostInfoAvailable(getExecutionEnvironment())) {
-                try {
-                    HostInfo hi = HostInfoUtils.getHostInfo(getExecutionEnvironment());
-                    if (hi.getOSFamily() == HostInfo.OSFamily.LINUX) {
-                        return true;
-                    }
-                } catch (IOException | ConnectionManager.CancellationException ex) {
-                    Exceptions.printStackTrace(ex); // should never be the case if isHostInfoAvailable retured true
-                }
-            }
-        }
-        return false;
-    }
-
     private void warmupDirs() {
         if (RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
             setFlag(MASK_WARMUP, true);
@@ -627,7 +607,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) 
             throws TimeoutException, IOException, InterruptedException, ExecutionException, CancellationException {
-        if (isProhibited()) {
+        if (getFileSystem().isProhibitedToEnter(getPath())) {
             return Collections.<String, DirEntry>emptyMap();
         }
         readEntryReqs.incrementAndGet();

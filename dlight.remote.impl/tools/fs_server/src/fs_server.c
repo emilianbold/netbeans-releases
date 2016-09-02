@@ -42,6 +42,7 @@
 #include "exitcodes.h"
 #include "dirtab.h"
 #include "array.h"
+#include "settings.h"
 
 #include <pthread.h>
 #include <stddef.h>
@@ -95,8 +96,8 @@ static unsigned long locker_pid_to_kill = 0;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 9
-#define FS_SERVER_MINOR_VERSION 0
+#define FS_SERVER_MID_VERSION 10
+#define FS_SERVER_MINOR_VERSION 2
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -441,16 +442,16 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
  */
 static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
-    // format: 
-    // Version 1: 
+    // format:
+    // Version 1:
     // name_len name uid gid mode size mtime link_len link
-    // Version 1 example: 
+    // Version 1 example:
     // 20 abi-3.2.0-70-generic 0 0 33188 796014 1411590344000 10 lnk_target
     // Version 2:
     // name_len name uid gid mode size mtime access device inode link_len link
     // Version 2 example:
     // 20 abi-3.2.0-70-generic 0 0 33188 796014 1411590344000 r-x 123 45678 10 lnk_target
-    
+
     fs_entry tmp; // a temporary one since we don't know names size
 
     const char* p = decode_int(buf, &tmp.name_len);
@@ -549,7 +550,7 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
         }
         return false;
     }
-    
+
     *persistence_version = 1;
     // in version 1 version string was not written into file
     size_t version_labe_len = strlen(persistence_version_label);
@@ -612,7 +613,7 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc_wrapper(buf_size);
-        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, 
+        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf,
                 buf_size, path, persistence_version);
         free(buf);
         fclose(cache_fp);
@@ -621,47 +622,25 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     return success;
 }
 
-/** 
- * Implementation for  set_full_access_check and need_full_access_check. 
- * The idea is just to hide both full_access_check field and its mutex
- */
-static bool __full_access_check(const bool *new_value) {
-    static bool full_access_check = true;
-    static pthread_mutex_t full_access_mutex = PTHREAD_MUTEX_INITIALIZER;    
-    bool result;
-    mutex_lock_wrapper(&full_access_mutex);
-    if (new_value) {
-        full_access_check = *new_value;
-        trace(TRACE_FINEST, "Setting full access check %s\n", full_access_check ? "ON" : "OFF");
-    }
-    result = full_access_check;
-    mutex_unlock_wrapper(&full_access_mutex);
-    return result;
-}
-
 static void set_full_access_check(bool full) {
-    __full_access_check(&full);
+    change_settings(NULL, &full);
 }
 
-static bool need_full_access_check() {
-    return __full_access_check(NULL);
-}
-
-static void get_access_c(const char *abspath, const struct stat *stat_buf, char *r, char *w, char *x) {
-    if (need_full_access_check()) {
+static void get_access_c(const char *abspath, const struct stat *stat_buf, char *r, char *w, char *x, const settings_str* settings) {
+    if (settings->full_access_check) {
         // NB: access() returns 0 if user can access file
         *r = access(abspath, R_OK) ? '-' : 'r';
         *w = access(abspath, W_OK) ? '-' : 'w';
         *x = access(abspath, X_OK) ? '-' : 'x';
-    } else {        
+    } else {
         *r = can_read(stat_buf) ?  'r' : '-';
         *w = can_write(stat_buf) ? 'w' : '-';
         *x = can_exec(stat_buf) ?  'x' : '-';
     }
 }
 
-static void get_access_e(const char *abspath, const struct stat *stat_buf, fs_entry *entry) {
-    if (need_full_access_check()) {
+static void get_access_e(const char *abspath, const struct stat *stat_buf, fs_entry *entry, const settings_str* settings) {
+    if (settings->full_access_check) {
         entry->can_read = !access(abspath, R_OK);
         entry->can_write = !access(abspath, W_OK);
         entry->can_exec = !access(abspath, X_OK);
@@ -672,7 +651,13 @@ static void get_access_e(const char *abspath, const struct stat *stat_buf, fs_en
     }
 }
 
+typedef struct {
+    array* array;
+    const settings_str* settings;
+} entry_creating_visitor_data;
+
 static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
+    entry_creating_visitor_data* my_data = (entry_creating_visitor_data*) data;
     fs_entry tmp;
     tmp.name_len = strlen(name);
     tmp.name = name;
@@ -688,30 +673,33 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
         tmp.can_write = true;
         tmp.can_exec = true;
     } else {
-        get_access_e(abspath, stat_buf, &tmp);
+        get_access_e(abspath, stat_buf, &tmp, my_data->settings);
     }
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
     fs_entry* new_entry = create_fs_entry(&tmp);
     if (new_entry) {
-        array_add((array*)data, new_entry);
+        array_add(my_data->array, new_entry);
     } else {
         report_error("error creating entry for %s\n", abspath);
     }
     return need_to_proceed();
 }
 
-static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
+static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path, const settings_str* settings) {
     array_init(entries, 100);
-    visit_dir_entries(path, fs_entry_creating_visitor, NULL, entries);
+    entry_creating_visitor_data data;
+    data.array = entries;
+    data.settings = settings;
+    visit_dir_entries(path, fs_entry_creating_visitor, NULL, settings, &data);
     array_truncate(entries);
 }
 
 static bool response_entry_create(buffer response_buf,
         const char *abspath, const char *basename,
-        buffer work_buf) {
+        buffer work_buf, const settings_str* settings) {
     struct stat stat_buf;
-    if (lstat(abspath, &stat_buf) == 0) {
+    if (lstat_wrapper(abspath, &stat_buf, settings) == 0) {
 
         //int escaped_name_size = escape_strlen(entry->d_name);
         escape_strcpy(work_buf.data, basename);
@@ -748,7 +736,7 @@ static bool response_entry_create(buffer response_buf,
                 escape_strcpy(escaped_link, link);
             }
         } else {
-            get_access_c(abspath, &stat_buf, &can_read, &can_write, &can_exec);
+            get_access_c(abspath, &stat_buf, &can_read, &can_write, &can_exec, settings);
         }
 
         // name_len name type size mtime access device inode link_len link
@@ -776,6 +764,7 @@ typedef struct {
     buffer response_buf;
     buffer work_buf;
     FILE *cache_fp;
+    const settings_str* settings;
 } response_ls_data;
 
 static void response_end(int request_id, const char* path);
@@ -792,7 +781,7 @@ static void ls_error_handler(bool dir_itself, const char* path, int err, const c
     }
 }
 
-static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
+static void response_ls(int request_id, const char* path, bool recursive, bool inner, const settings_str* settings) {
 
     if (is_broken_pipe() || !state_get_proceed()) {
         return;
@@ -821,8 +810,8 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
         }
     }
 
-    response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
-    visit_dir_entries(path, response_ls_plain_visitor, ls_error_handler, &data);
+    response_ls_data data = { request_id, response_buf, work_buf, cache_fp, settings };
+    visit_dir_entries(path, response_ls_plain_visitor, ls_error_handler, settings, &data);
 
     response_end(request_id, path);
 
@@ -835,7 +824,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     }
 
     if (recursive) {
-        visit_dir_entries(path, response_ls_recursive_visitor, NULL, &data);
+        visit_dir_entries(path, response_ls_recursive_visitor, NULL, settings, &data);
         if (!inner) {
             response_end(request_id, path);
         }
@@ -860,7 +849,7 @@ static void response_info(int request_id) {
     my_fflush(STDOUT);
 }
 
-static void response_delete(int request_id, const char* path) {
+static void response_delete(int request_id, const char* path, const settings_str* settings) {
 
     const char* last_slash = strrchr(path, '/');
     if (!last_slash) {
@@ -882,7 +871,7 @@ static void response_delete(int request_id, const char* path) {
     }
 
     struct stat stat_buf;
-    if (lstat(path, &stat_buf) == 0) {
+    if (lstat_wrapper(path, &stat_buf, settings) == 0) {
         if (S_ISDIR(stat_buf.st_mode)) {
             if (!clean_dir(path)) {
                 response_error(request_id, path, errno, "can't remote directory content");
@@ -903,7 +892,7 @@ static void response_delete(int request_id, const char* path) {
     }
 
     // the file or directory successfully removed
-    response_ls(request_id, canonical_parent, false, false);
+    response_ls(request_id, canonical_parent, false, false, settings);
 }
 
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
@@ -919,7 +908,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
         report_error("skipping entry %s\n", name);
         return need_to_proceed();
     }
-    if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf)) {
+    if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf, data->settings)) {
         my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
         if (data->cache_fp) {
             fprintf(data->cache_fp, "%s", data->response_buf.data); // trailing '\n' already there, added by form_entry_response
@@ -934,15 +923,15 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
     response_ls_data *data = p;
     if (S_ISDIR(stat_buf->st_mode)) {
-        response_ls(data->request_id, child_abspath, true, true);
+        response_ls(data->request_id, child_abspath, true, true, data->settings);
     }
     return need_to_proceed();
 }
 
 
-static void response_stat(int request_id, const char* path) {
+static void response_stat(int request_id, const char* path, const settings_str* settings) {
     struct stat stat_buf;
-    if (stat(path, &stat_buf) == 0) {
+    if (stat_wrapper(path, &stat_buf, settings) == 0) {
         int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
         char* escaped_name = malloc_wrapper(buf_size);
         const char* basename = get_basename(path);
@@ -951,8 +940,8 @@ static void response_stat(int request_id, const char* path) {
 
         // in contrary to lstat, we call access() even for links)
         char can_read, can_write, can_exec;
-        get_access_c(path, &stat_buf, &can_read, &can_write, &can_exec);
-        
+        get_access_c(path, &stat_buf, &can_read, &can_write, &can_exec, settings);
+
         // name_len name type size mtime access device inode link_len link
         my_fprintf(STDOUT, "%c %i %i %s %c %lu %llu %c%c%c %lu %lu %i %s\n",
                 FS_RSP_ENTRY,
@@ -980,16 +969,16 @@ static bool copy_symlink(const char* path, const char* path2,int id);
 static bool copy_plain_file(const char* path, const char* path2, int id);
 static bool copy_dir(const char* path, const char* path2, int id);
 
-static void response_copy(const fs_request* request) {
+static void response_copy(const fs_request* request, const settings_str* settings) {
 
     // if file exists, return error
     struct stat stat_buf;
-    if (lstat(request->path2, &stat_buf) == 0) {
+    if (lstat_wrapper(request->path2, &stat_buf, settings) == 0) {
         response_error(request->id, request->path2, 0, "file already exists");
         response_end(request->id, request->path2);
         return;
     }
-    if (lstat(request->path, &stat_buf) == -1) {
+    if (lstat_wrapper(request->path, &stat_buf, settings) == -1) {
         response_error(request->id, request->path, errno, err_to_string(errno));
         response_end(request->id, request->path2);
         return;
@@ -1009,7 +998,7 @@ static void response_copy(const fs_request* request) {
         char *last_slash = strrchr(dst_parent, '/');
         if (last_slash) {
             *last_slash = 0;
-            response_ls(request->id, dst_parent, false, true);
+            response_ls(request->id, dst_parent, false, true, settings);
             // response_end() is called from response_ls
         } else {
             response_error(request->id, dst_parent, 0, "path does not contain '/'");
@@ -1062,7 +1051,7 @@ static bool copy_dir(const char* path, const char* path2, int id) {
     cds->dst_path_base_end = cds->dst_path + len + 1;
     cds->dst_max_append_size = PATH_MAX - len - 1;
 
-    visit_dir_entries(path, copy_dir_visitor, NULL, cds);
+    visit_dir_entries(path, copy_dir_visitor, NULL, NULL, cds);
 
     bool success = cds->success;
     free(cds);
@@ -1147,11 +1136,11 @@ static bool copy_symlink(const char* path, const char* path2, int id) {
     return success;
 }
 
-static void response_lstat(int request_id, const char* path) {
+static void response_lstat(int request_id, const char* path, const settings_str* settings) {
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // *2 because of escaping. TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
     const char* basename = get_basename(path);
-    if (response_entry_create(response_buf, path, basename, work_buf)) {
+    if (response_entry_create(response_buf, path, basename, work_buf, settings)) {
         my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf.data);
         my_fflush(STDOUT);
 //        if (cache_fp) {
@@ -1166,11 +1155,11 @@ static void response_lstat(int request_id, const char* path) {
     buffer_free(&work_buf);
 }
 
-static void response_move(const fs_request* request) {
+static void response_move(const fs_request* request, const settings_str* settings) {
     // check whether it is directory and print clear error message
     // (copy_plain_file will print unclear "Operation not permitted" in this case)
     struct stat stat_buf;
-    if (lstat(request->path, &stat_buf) == -1) {
+    if (lstat_wrapper(request->path, &stat_buf, settings) == -1) {
         response_error(request->id, request->path, errno, err_to_string(errno));
         return;
     }
@@ -1183,7 +1172,7 @@ static void response_move(const fs_request* request) {
             response_error(request->id, request->path, errno, "can't remove file");
             return;
         }
-        response_lstat(request->id, request->path2);
+        response_lstat(request->id, request->path2, settings);
     }
     // in the case of failure, copy_plain_file() already reported it)
 }
@@ -1268,8 +1257,14 @@ static bool entries_differ(fs_entry *new_entry, fs_entry *old_entry, int persist
     return false;
 }
 
+typedef struct {
+    fs_request *request;
+    const settings_str* settings;
+} refresh_visitor_data;
+
 static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
-    fs_request *request = data;
+    refresh_visitor_data *my_data = data;
+    fs_request *request = my_data->request;
     if (is_prohibited(path)) {
         trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
         return need_to_proceed();
@@ -1296,7 +1291,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         trace(TRACE_FINER, "refresh manager: already marked as removed %s\n", path);
         return need_to_proceed();
     }
-    if (!dir_exists(path)) {
+    if (!dir_exists(path)) { // that's OK to call lstat here: few lines below we'll even read this dir!
         dirtab_set_state(el, DE_STATE_REMOVED);
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh manager: does not exist, marking as removed %s\n", path);
@@ -1312,13 +1307,13 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     bool success = read_entries_from_cache(&old_entries, el, path, &persistence_version);
     bool differs;
     if (success) {
-        read_entries_from_dir(&new_entries, path);
+        read_entries_from_dir(&new_entries, path, my_data->settings);
         array_qsort(&old_entries, entry_comparator);
         array_qsort(&new_entries, entry_comparator);
         differs = false;
     } else {
         array_init(&new_entries, 4);
-        if (persistence_version == -1 ||  persistence_version == persistence_version_curr) { 
+        if (persistence_version == -1 ||  persistence_version == persistence_version_curr) {
             // -1 means that there was error reading,
             // version equals to current => there was an unexpected error => report
             // version != current => just old cache version found => do not report
@@ -1371,19 +1366,22 @@ static void thread_shutdown() {
     err_shutdown();
 }
 
-static void refresh_cycle_impl(fs_request* request) {
+static void refresh_cycle_impl(fs_request* request, const settings_str* settings) {
     stopwatch_start();
     if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_REFRESH, request->id, (long) utf8_strlen(request->path), request->path);
     }
-    dirtab_visit(refresh_visitor, request);
+    refresh_visitor_data data;
+    data.request = request;
+    data.settings = settings;
+    dirtab_visit(refresh_visitor, &data);
     if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         response_end(request->id, request->path);
     }
     stopwatch_stop(TRACE_FINE, "refresh cycle");
 }
 
-static void refresh_cycle(fs_request* request) {
+static void refresh_cycle(fs_request* request, const settings_str* settings) {
 
     dirtab_flush(); // TODO: find the appropriate place
     const char* path = request ? request->path : "/";
@@ -1412,7 +1410,7 @@ static void refresh_cycle(fs_request* request) {
 
     while (true) {
         trace(TRACE_FINEST, "refreshing %s...\n", path);
-        refresh_cycle_impl(request);
+        refresh_cycle_impl(request, settings);
         trace(TRACE_FINEST, "refreshing %s completed\n", path);
 
         dirtab_lock(el);
@@ -1448,7 +1446,9 @@ static void *refresh_loop(void *data) {
     while (need_to_proceed()) {
         pass++;
         trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
-        refresh_cycle(NULL);
+        settings_str settings;
+        clone_global_settings(&settings);
+        refresh_cycle(NULL, &settings);
         if (refresh_sleep) {
             sleep(refresh_sleep);
         }
@@ -1458,8 +1458,8 @@ static void *refresh_loop(void *data) {
     return NULL;
 }
 
-static void response_refresh(fs_request* request) {
-    refresh_cycle(request);
+static void response_refresh(fs_request* request, const settings_str* settings) {
+    refresh_cycle(request, settings);
 }
 
 static void process_option(const char* option, const char* value) {
@@ -1467,11 +1467,13 @@ static void process_option(const char* option, const char* value) {
     if (strcmp(option, "access") == 0) {
         if (strcmp(value, "fast") == 0) {
             set_full_access_check(false);
-        } else if (strcmp(value, "full") == 0) {            
+        } else if (strcmp(value, "full") == 0) {
             set_full_access_check(true);
         } else {
             report_error("Unexpected option value: %s=%s\n", option, value);
         }
+    } else if (strcmp(option, "dirs-forbidden-to-stat") == 0) {
+        set_dirs_forbidden_to_stat(value);        
     } else {
         report_error("Unexpected option key: %s\n", option);
     }
@@ -1504,7 +1506,7 @@ static void response_options(fs_request* request) {
             value = p+1;
         }
         p++;
-    };    
+    };
 }
 
 static void response_help() {
@@ -1529,24 +1531,26 @@ static void response_help() {
 }
 
 static void process_request(fs_request* request) {
+    settings_str settings;
+    clone_global_settings(&settings);
     switch (request->kind) {
         case FS_REQ_DELETE:
-            response_delete(request->id, request->path);
+            response_delete(request->id, request->path, &settings);
             break;
         case FS_REQ_SERVER_INFO:
             response_info(request->id);
             break;
         case FS_REQ_LS:
-            response_ls(request->id, request->path, false, false);
+            response_ls(request->id, request->path, false, false, &settings);
             break;
         case FS_REQ_RECURSIVE_LS:
-            response_ls(request->id, request->path, true, false);
+            response_ls(request->id, request->path, true, false, &settings);
             break;
         case FS_REQ_STAT:
-            response_stat(request->id, request->path);
+            response_stat(request->id, request->path, &settings);
             break;
         case FS_REQ_LSTAT:
-            response_lstat(request->id, request->path);
+            response_lstat(request->id, request->path, &settings);
             break;
         case FS_REQ_ADD_WATCH:
             response_add_or_remove_watch(request->id, request->path, true);
@@ -1555,13 +1559,13 @@ static void process_request(fs_request* request) {
             response_add_or_remove_watch(request->id, request->path, false);
             break;
         case FS_REQ_REFRESH:
-            response_refresh(request);
+            response_refresh(request, &settings);
             break;
         case FS_REQ_COPY:
-            response_copy(request);
+            response_copy(request, &settings);
             break;
         case FS_REQ_MOVE:
-            response_move(request);
+            response_move(request, &settings);
             break;
         case FS_REQ_HELP:
             response_help();
@@ -1983,6 +1987,7 @@ static void shutdown() {
     dirtab_free();
     log_close();
     err_shutdown();
+    free_settings();
     trace(TRACE_INFO, "Shut down.\n");
     exit(0);
 }

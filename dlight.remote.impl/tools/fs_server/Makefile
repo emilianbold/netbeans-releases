@@ -116,6 +116,7 @@ SOURCES=\
 	$(ROOT_DIR)/src/blocking_queue.c \
 	$(ROOT_DIR)/src/util.c \
 	$(ROOT_DIR)/src/dirtab.c \
+	$(ROOT_DIR)/src/settings.c \
 	$(ROOT_DIR)/src/array.c
 
 SRC_DIRS=\

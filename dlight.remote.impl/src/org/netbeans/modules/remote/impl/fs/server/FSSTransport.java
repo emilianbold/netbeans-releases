@@ -1,5 +1,3 @@
-package org.netbeans.modules.remote.impl.fs.server;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,6 +39,8 @@ package org.netbeans.modules.remote.impl.fs.server;
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
+package org.netbeans.modules.remote.impl.fs.server;
 
 import java.io.File;
 import java.io.FileNotFoundException;

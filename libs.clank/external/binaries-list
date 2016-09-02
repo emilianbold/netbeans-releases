@@ -1,9 +1,7 @@
-#changeset:   19424:bd5fb1de1156
+#changeset:   19438:c0c1e6e72c89
 #branch:      jclank
 #tag:         tip
-#parent:      19278:e341ab824bb1
-#parent:      19423:5186c7d3969c
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Aug 22 19:53:06 2016 +0300
-#summary:     merging jclank_39_upgrade work into jclank
-371AD978F940F80738D147BA611D646BF82538A5 clank_0.3.6.zip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Fri Sep 02 20:20:24 2016 +0300
+#summary:     Fixing #258049 - [newcodemodel] New parser doesn't highlight inaccessible macro
+5E0E2BDEFE842E63FE33F0AE4E877426CBBF306B clank_0.3.6.zip
