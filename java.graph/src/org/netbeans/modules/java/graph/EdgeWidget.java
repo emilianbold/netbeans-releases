@@ -132,7 +132,7 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
         }
     }
 
-    public void setState (int state) {
+    public void setState (int state) {        
         this.state = state;
         updateAppearance(((DependencyGraphScene)getScene()).isAnimated());
     }
@@ -242,7 +242,7 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
                     ? NodeWidget.getReadable(getScene(), origF) : origF);
         }
 
-        setVisible(state != DISABLED);
+        setVisible(state != DISABLED && ((DependencyGraphScene)getScene()).isVisible(edge));
 
         setStroke(stroke);
 

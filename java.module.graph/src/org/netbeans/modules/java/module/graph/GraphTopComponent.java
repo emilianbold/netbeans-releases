@@ -6,6 +6,7 @@
 package org.netbeans.modules.java.module.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -14,8 +15,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
@@ -31,6 +37,9 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.java.graph.DependencyGraphScene;
+import org.netbeans.modules.java.graph.GraphEdge;
+import org.netbeans.modules.java.graph.GraphNode;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -66,7 +75,7 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private boolean needsRefresh;
     private MultiViewElementCallback callback;
     private EditorToolbar toolbar;
-    private DependencyGraphScene scene;
+    private DependencyGraphScene<ModuleNode> scene;
 
     private Timer timer = new Timer(500, new ActionListener() {
         @Override public void actionPerformed(ActionEvent arg0) {
@@ -87,8 +96,6 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
-        timer.setDelay(500);
-        timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent arg0) {
                 timer.restart();
@@ -103,6 +110,11 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             }
         });
         
+        jdkComboBox.setModel(new DefaultComboBoxModel(JDKVisibility.values()));
+        jdkComboBox.setRenderer(new JDKRenderer());
+        
+        timer.setDelay(500);
+        timer.setRepeats(false);
     }
 
     @Override
@@ -128,6 +140,9 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             toolbar.addSeparator(space);
             toolbar.add(lblPath);
             toolbar.add(maxPathSpinner);
+            toolbar.addSeparator(space);
+            toolbar.add(jdkLabel);
+            toolbar.add(jdkComboBox);
 //            toolbar.addSeparator(space);
 //            toolbar.add(lblScopes);
 //            toolbar.add(comScopes);
@@ -184,7 +199,6 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         return CloseOperationState.STATE_OK;
     }
 
-    @Override
     public void run() {
         final FileObject moduleInfo = getLookup().lookup(FileObject.class);
         assert moduleInfo != null;
@@ -208,6 +222,7 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jComboBox1 = new javax.swing.JComboBox<>();
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         zoomIn = new javax.swing.JButton();
@@ -216,6 +231,10 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         txtFind = new javax.swing.JTextField();
         lblPath = new javax.swing.JLabel();
         maxPathSpinner = new javax.swing.JSpinner();
+        jdkLabel = new javax.swing.JLabel();
+        jdkComboBox = new javax.swing.JComboBox<>();
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         setLayout(new java.awt.BorderLayout());
 
@@ -273,6 +292,16 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         });
         jPanel1.add(maxPathSpinner);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jdkLabel, org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.jdkLabel.text")); // NOI18N
+        jPanel1.add(jdkLabel);
+
+        jdkComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jdkComboBoxItemStateChanged(evt);
+            }
+        });
+        jPanel1.add(jdkComboBox);
+
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -302,9 +331,18 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         scene.highlightDepth(getSelectedDepth());
     }//GEN-LAST:event_maxPathSpinnerStateChanged
 
+    private void jdkComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jdkComboBoxItemStateChanged
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED && scene != null) {                        
+            scene.updateVisibility();
+        }
+    }//GEN-LAST:event_jdkComboBoxItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JComboBox<String> jdkComboBox;
+    private javax.swing.JLabel jdkLabel;
     private javax.swing.JLabel lblFind;
     private javax.swing.JLabel lblPath;
     private javax.swing.JSpinner maxPathSpinner;
@@ -349,7 +387,44 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             @NonNull final Collection<? extends ModuleNode> nodes,
             @NonNull final Collection<? extends DependencyEdge> edges) {
         
-        scene = new DependencyGraphScene(null, null, GraphTopComponent.this::getSelectedDepth, null, null);
+        DependencyGraphScene.VisibilityProvider<ModuleNode> visibilityProvider = new DependencyGraphScene.VisibilityProvider<ModuleNode>() {
+            @Override
+            public boolean isNodeVisible(ModuleNode node) {
+                switch((JDKVisibility)jdkComboBox.getSelectedItem()) {
+                    case ALL:
+                        return true;
+                    case DIRECT:
+                        if(!node.isJdk()) {
+                            return true;
+                        } else {
+                            Collection<GraphEdge<ModuleNode>> e = scene.findNodeEdges(scene.getGraphNodeRepresentant(node), true, true);                            
+                            return e.stream().anyMatch((GraphEdge<ModuleNode> t) -> !t.getSource().isJdk());
+                        }
+                    case NONE:
+                        return !node.isJdk();                        
+                    default:
+                        assert false;
+                        return true;
+                }
+            }
+
+            @Override
+            public boolean isEdgeVisible(ModuleNode source, ModuleNode target) {
+                switch((JDKVisibility)jdkComboBox.getSelectedItem()) {
+                    case ALL:
+                        return true;
+                    case DIRECT:
+                        return !source.isJdk();
+                    case NONE:
+                        return !(source.isJdk() || target.isJdk());                        
+                    default:
+                        assert false;
+                        return true;
+                }
+            }
+        };
+                
+        scene = new DependencyGraphScene<>(null, null, GraphTopComponent.this::getSelectedDepth, null, null, visibilityProvider);
         nodes.stream().forEach((n)-> {
             scene.addGraphNodeImpl(n);
         });
@@ -486,6 +561,32 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             if (currentDoc != null) {
                 currentDoc.addDocumentListener(this);
             }
+        }
+    }
+    
+    @NbBundle.Messages({
+        "LBL_All=Show all JDK modules",
+        "LBL_Direct=Show only direct JDK dependencies",
+        "LBL_None=Hide all JDK modules"
+    })
+    private enum JDKVisibility {
+        ALL(Bundle.LBL_All()),
+        DIRECT(Bundle.LBL_Direct()),
+        NONE(Bundle.LBL_None());        
+        final String displayName;
+        private JDKVisibility(String displayName) {
+            this.displayName = displayName;
+        }
+    }
+    
+    private static class JDKRenderer extends DefaultListCellRenderer {
+        @Override
+        @SuppressWarnings({"AssignmentToMethodParameter"})
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof JDKVisibility) {
+                value = ((JDKVisibility)value).displayName;
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
 }

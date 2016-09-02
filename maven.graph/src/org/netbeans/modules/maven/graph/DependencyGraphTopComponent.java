@@ -604,7 +604,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             new MavenActionsProvider(DependencyGraphTopComponent.this, nbProj, model), 
                             DependencyGraphTopComponent.this::getSelectedDepth, 
                             versionProvider, 
-                            MavenDependencyNode::getScopeColor);
+                            MavenDependencyNode::getScopeColor, 
+                            null);
                     
                     GraphConstructor constr = new GraphConstructor(scene2, prj);
                     constr.accept(root);

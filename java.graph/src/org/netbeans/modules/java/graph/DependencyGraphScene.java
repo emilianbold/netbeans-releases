@@ -104,6 +104,11 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         Color getColor(I impl);
     }
     
+    public interface VisibilityProvider<I extends GraphNodeImplementation> {        
+        boolean isNodeVisible(I node);
+        boolean isEdgeVisible(I source, I target);
+    }
+    
     public interface HighlightDepthProvider {
         int getDepth();
     }
@@ -131,6 +136,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     private final ActionsProvider nodeActionProvider;
     private final ScopeProvider scopeProvider;
     private final HighlightDepthProvider highlightProvider;
+    private final VisibilityProvider<I> visibilityProvider;
     
     private LayerWidget mainLayer;
     private final LayerWidget connectionLayer;
@@ -159,15 +165,16 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     private HighlightVisitor highlightV;
     
     public DependencyGraphScene(JScrollPane pane) {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
     
-    public DependencyGraphScene(IconProvider<I> iconProvider, ActionsProvider<I> nodeActionProvider, HighlightDepthProvider highlightProvider, VersionProvider<I> versionProvider, ScopeProvider<I> scopeProvider) {                
+    public DependencyGraphScene(IconProvider<I> iconProvider, ActionsProvider<I> nodeActionProvider, HighlightDepthProvider highlightProvider, VersionProvider<I> versionProvider, ScopeProvider<I> scopeProvider, VisibilityProvider<I> visibilityProvider) {                
         this.iconProvider = iconProvider;        
         this.nodeActionProvider = nodeActionProvider;
         this.highlightProvider = highlightProvider;
         this.versionProvider = versionProvider;
         this.scopeProvider = scopeProvider;
+        this.visibilityProvider = visibilityProvider;
         
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
@@ -207,6 +214,14 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         getActions().addAction(popupMenuAction);
     }
 
+    boolean isVisible(GraphEdge<I> e) {
+        return visibilityProvider == null || visibilityProvider.isEdgeVisible(e.getSource(), e.getTarget());
+    }   
+    
+    boolean isVisible(GraphNode<I> n) {
+        return visibilityProvider == null || visibilityProvider.isNodeVisible(n.getImpl());
+    }   
+    
     public void addGraphNodeImpl(I d) {
         super.addNode(new GraphNode<>(d));
     }
@@ -399,6 +414,15 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             GraphNode target) {
         NodeWidget wid = (NodeWidget)findWidget(target);
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(wid));
+    }    
+    
+    public void updateVisibility() {
+        getEdges().stream().forEach((edge) -> findWidget(edge).setVisible(visibilityProvider == null || visibilityProvider.isEdgeVisible(edge.getSource(), edge.getTarget())));
+        getNodes().stream().forEach((node) -> findWidget(node).setVisible(visibilityProvider == null || visibilityProvider.isNodeVisible(node.getImpl())));
+        validate();
+        repaint();
+        revalidate();
+        repaint();
     }
     
     public void calculatePrimaryPathsAndLevels() {
@@ -409,7 +433,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             addPathToRoot(n, primaryPathEdges, importantNodes);
             for (GraphEdge pe : primaryPathEdges) {
                 pe.setPrimaryPath(true);
-            }
+                }
             int level = primaryPathEdges.size();
             n.setPrimaryLevel(level);
             if (level > maxDepth) {

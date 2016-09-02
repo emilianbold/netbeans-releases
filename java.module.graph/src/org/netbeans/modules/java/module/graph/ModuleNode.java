@@ -30,14 +30,17 @@ final class ModuleNode implements GraphNodeImplementation {
     private List<ModuleNode> children;
     private ModuleNode parent;
     private final String toolTipText;
+    private final boolean jdk;
     
     ModuleNode(
         @NonNull final String moduleName,
         final boolean unnamed,
+        final boolean jdk,
         @NonNull final FileObject moduleInfo) {
         Parameters.notNull("moduleNode", moduleName);
         this.moduleName = moduleName;
         this.unnamed = unnamed;
+        this.jdk = jdk;
         this.toolTipText = unnamed ?
                 getUnnamedModuleToolTip(moduleInfo) :
                 null;
@@ -56,6 +59,10 @@ final class ModuleNode implements GraphNodeImplementation {
         return unnamed;
     }
 
+    public boolean isJdk() {
+        return jdk;
+    }
+    
     @Override
     public boolean equals(Object other) {
         if (other == this) {

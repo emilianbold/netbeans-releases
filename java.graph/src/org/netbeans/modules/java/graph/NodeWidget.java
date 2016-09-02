@@ -295,6 +295,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         setToolTipText(paintState != EdgeWidget.DISABLED ? tooltipText : null);
 
         contentW.repaint();
+        setVisible(((DependencyGraphScene)getScene()).isVisible(node));
     }
 
     @Messages("ACT_FixVersionConflict=Fix Version Conflict...")
