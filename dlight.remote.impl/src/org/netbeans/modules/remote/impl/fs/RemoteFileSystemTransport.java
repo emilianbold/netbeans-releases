@@ -93,7 +93,7 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static void refreshFast(RemoteDirectory directory, boolean expected) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (!directory.hasCache()) {
             return;
         }
@@ -207,6 +207,8 @@ public abstract class RemoteFileSystemTransport {
             InterruptedIOException ioe = new InterruptedIOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } catch (TimeoutException ex) {
+            throw new IOException(ex);
         }
     }
 
@@ -229,7 +231,7 @@ public abstract class RemoteFileSystemTransport {
      */
     public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         return getInstanceSlow(execEnv).copy(from, to, subdirectoryExceptions);
     }
 
@@ -278,7 +280,7 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean canMove(String from, String to);
 
@@ -329,7 +331,7 @@ public abstract class RemoteFileSystemTransport {
     protected abstract boolean canRefreshFast();
     
     protected abstract void refreshFast(String path, boolean expected)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
     
     protected abstract void registerDirectoryImpl(RemoteDirectory directory);
 
@@ -355,7 +357,7 @@ public abstract class RemoteFileSystemTransport {
      * just calling RemoteFileSystemTransport.readDirectory
      * @return parent directory content (can be null - see above)
      */
-    protected abstract DirEntryList delete(String path, boolean directory) throws ConnectException, IOException;
+    protected abstract DirEntryList delete(String path, boolean directory) throws TimeoutException, ConnectException, IOException;
 
     protected void onConnect() {
     }

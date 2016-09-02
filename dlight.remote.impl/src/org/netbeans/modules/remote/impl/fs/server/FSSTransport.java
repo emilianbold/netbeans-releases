@@ -84,10 +84,10 @@ import org.openide.util.RequestProcessor;
  * @author vkvashin
  */
 public class FSSTransport extends RemoteFileSystemTransport implements ConnectionListener {
-    
+
     private static final Map<ExecutionEnvironment, FSSTransport> instances = new HashMap<>();
     private static final Object instancesLock = new Object();
-    
+
     public static final boolean USE_FS_SERVER = RemoteFileSystemUtils.getBoolean("remote.fs_server", true);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
@@ -97,10 +97,10 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     private final ExecutionEnvironment env;
 
     private final FSSDispatcher dispatcher;
-    
+
     private final AtomicInteger dirReadCnt = new AtomicInteger(0);
     private final AtomicInteger warmupCnt = new AtomicInteger(0);
-    
+
     public static FSSTransport getInstance(ExecutionEnvironment env) {
         if (!USE_FS_SERVER) {
             return null;
@@ -118,16 +118,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     private FSSTransport(ExecutionEnvironment env) {
         this.env = env;
-        this.dispatcher = FSSDispatcher.getInstance(env);        
+        this.dispatcher = FSSDispatcher.getInstance(env);
     }
-    
+
     @Override
     public boolean isValidFast() {
         return dispatcher.isValidFast();
     }
 
     @Override
-    protected boolean isValidSlow() 
+    protected boolean isValidSlow()
             throws ConnectException, InterruptedException, CancellationException {
         if (!dispatcher.isValidFast()) {
             return false;
@@ -189,15 +189,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 lstat ? "fs_server_lstat" : "fs_server_stat", path); // NOI18N
         FSSResponse response = null;
         try {
-            RemoteLogger.finest("Sending stat/lstat request #{0} for {1} to fs_server", 
+            RemoteLogger.finest("Sending stat/lstat request #{0} for {1} to fs_server",
                     request.getId(), path);
             response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage(timeoutMillis);
-            if (pkg == null) {
-                String message = timeoutMessage("getting " + (lstat ? "lstat" : "stat"), timeoutMillis, path); //NOI18N
-                RemoteLogger.fine(message);
-                throw new TimeoutException(message);
-            } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
                 return createDirEntry(pkg, request.getId(), env);
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 IOException ioe = createIOException(pkg);
@@ -205,7 +201,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             } else {
                 throw new IllegalStateException("wrong response: " + pkg); //NOI18N
             }
-            
+
         } finally {
             if (response != null) {
                 response.dispose();
@@ -214,7 +210,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             RemoteLogger.finest("Getting stat/lstat #{0} from fs_server for {1} took {2} ms",
                     request.getId(), path, System.currentTimeMillis() - time);
         }
-        
+
     }
 
     private String timeoutMessage(String operation, int timeoutMillis, String path) {
@@ -228,9 +224,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected DirEntryList copy(String from, String to, 
-            Collection<IOException> subdirectoryExceptions) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList copy(String from, String to,
+            Collection<IOException> subdirectoryExceptions)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
         FSSResponse response = null;
@@ -238,7 +234,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         long time = System.currentTimeMillis();
         try {
             RemoteLogger.finest("Sending request #{0} for copying {1} to {2} to fs_server", request.getId(), from, to);
-            response = dispatcher.dispatch(request);            
+            response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage();
             while (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 IOException ex = createIOException(pkg);
@@ -257,8 +253,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             } else {
                 throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
             }
-        } catch (ConnectException | CancellationException | InterruptedException ex) {
-            throw new IOException(ex);
         } catch (ExecutionException ex) {
             if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                 throw new FileNotFoundException(from + " or " + to); //NOI18N
@@ -281,7 +275,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected MoveInfo move(String from, String to) 
+    protected MoveInfo move(String from, String to)
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(env, from, to);
         f.get();
@@ -294,16 +288,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     private IOException createIOException(FSSResponse.Package pkg) {
         Buffer buf = pkg.getBuffer();
-        buf.getChar(); // skip kind                
+        buf.getChar(); // skip kind
         buf.getInt(); // unused
         int errno = buf.getInt();
         String emsg = buf.getRest();
         IOException ioe = FSSUtil.createIOException(errno, emsg, env);
         return ioe;
     }
-    
+
     @Override
-    protected DirEntryList readDirectory(String path) 
+    protected DirEntryList readDirectory(String path)
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
@@ -314,17 +308,12 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         AtomicInteger realCnt = new AtomicInteger(0);
         FSSResponse response = null;
         try {
-            RemoteLogger.finest("Sending request #{0} for directory {1} to fs_server", 
+            RemoteLogger.finest("Sending request #{0} for directory {1} to fs_server",
                     request.getId(), path);
             // XXX: a temporary simplistic solution
             response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage();
-            if (pkg == null) { // timeout occurred
-                String message = timeoutMessage("reading directory", DEFAULT_TIMEOUT, path); //NOI18N
-                RemoteLogger.fine(message);
-                throw new TimeoutException(message);
-            }
-            assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
+            assert pkg.getKind() == FSSResponseKind.FS_RSP_LS : "Wrong package kind: " + pkg.getKind();
             Buffer buf = pkg.getBuffer();
             buf.getChar();
             int respId = buf.getInt();
@@ -346,44 +335,41 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
 
-    private DirEntryList readEntries(FSSResponse response, String path, long reqId, AtomicInteger cnt) 
-            throws IOException, InterruptedException, ExecutionException {
-        try {
-            RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
-                    reqId, path);
-            List<FSSResponse.Package> packages = new ArrayList<>();
-            for (FSSResponse.Package pkg = response.getNextPackage(); 
-                    pkg.getKind() != FSSResponseKind.FS_RSP_END; 
-                    pkg = response.getNextPackage()) {
-                if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
-                    break;
-                }
-                if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
-                    throw createIOException(pkg);
-                }
-                cnt.incrementAndGet();
-                if (VERBOSE_RESPONSE) {
-                    RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
-                            reqId, cnt.get(), pkg.getData());
-                }
-                packages.add(pkg);
+    private DirEntryList readEntries(FSSResponse response, String path, long reqId, AtomicInteger cnt)
+            throws TimeoutException, IOException, InterruptedException, ExecutionException {
+        RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
+                reqId, path);
+        List<FSSResponse.Package> packages = new ArrayList<>();
+        for (FSSResponse.Package pkg = response.getNextPackage();
+                pkg.getKind() != FSSResponseKind.FS_RSP_END;
+                pkg = response.getNextPackage()) {
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
+                break;
             }
-            RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
-                    reqId, path);
-            List<DirEntry> result = new ArrayList<>();
-            for (FSSResponse.Package pkg : packages) {
-                try {
-                    assert pkg != null;
-                    DirEntry entry = createDirEntry(pkg, reqId, env);
-                    // TODO: windows names
-                    result.add(entry);
-                } catch (Throwable thr) {
-                    thr.printStackTrace(System.err);
-                }
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                throw createIOException(pkg);
             }
-            return new DirEntryList(result, System.currentTimeMillis());
-        } finally {
+            cnt.incrementAndGet();
+            if (VERBOSE_RESPONSE) {
+                RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
+                        reqId, cnt.get(), pkg.getData());
+            }
+            packages.add(pkg);
         }
+        RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
+                reqId, path);
+        List<DirEntry> result = new ArrayList<>();
+        for (FSSResponse.Package pkg : packages) {
+            try {
+                assert pkg != null;
+                DirEntry entry = createDirEntry(pkg, reqId, env);
+                // TODO: windows names
+                result.add(entry);
+            } catch (Throwable thr) {
+                thr.printStackTrace(System.err);
+            }
+        }
+        return new DirEntryList(result, System.currentTimeMillis());
     }
 
     private DirEntry createDirEntry(FSSResponse.Package pkg, long reqId, ExecutionEnvironment env) {
@@ -395,7 +381,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             int id = buf.getInt();
             assert id == reqId;
             //        name       type size  date          acc dev  ino lnk
-            // e 1 10 lost+found d   16384 1398697954000  --- 2049 11  0 
+            // e 1 10 lost+found d   16384 1398697954000  --- 2049 11  0
             String name = buf.getString();
 
             char type = buf.getChar();
@@ -428,7 +414,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             throw new IllegalArgumentException("Error processing response " + pkg, thr); // NOI18N
         }
     }
-    
+
     @Override
     public void connected(ExecutionEnvironment env) {
         if (env.equals(this.env)) {
@@ -439,11 +425,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     public void disconnected(ExecutionEnvironment env) {
     }
-    
+
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);
     }
-    
+
     public static final void testDumpInstances(PrintStream ps) {
         Collection<FSSTransport> transports;
         synchronized (instancesLock) {
@@ -453,7 +439,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             tr.testDump(ps);
         }
     }
-    
+
     protected void testDump(PrintStream ps) {
         this.dispatcher.testDump(ps);
     }
@@ -472,9 +458,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected void unregisterDirectoryImpl(String path) {
-        
+
     }
-    
+
     @Override
     protected void onConnect() {
         // nothing: see ConnectTask
@@ -493,7 +479,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
         }
     }
-    
+
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
             // file system root has empty path
@@ -507,13 +493,13 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected void refreshFast(String path, boolean expected) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshFast(String path, boolean expected)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         long time = System.currentTimeMillis();
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_fast_refresh", path); // NOI18N
         FSSResponse response = null;
-        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, false);        
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, false);
         try {
             RemoteLogger.finest("Sending request #{0} for directory {1} to fs_server", request.getId(), path);
             response = dispatcher.dispatch(request);
@@ -565,7 +551,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             RemoteStatistics.stopChannelActivity(activityID, 0);
             RemoteLogger.finest("Fast refresh #{0} of {1} took {2} ms",
                     request.getId(), path, System.currentTimeMillis() - time);
-        }        
+        }
     }
 
     @Override
@@ -573,10 +559,10 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         WarmupImpl warmup = new WarmupImpl(path);
         warmup.start();
         return warmup;
-    }            
-    
+    }
+
     @Override
-    protected DirEntryList delete(String path, boolean directory) throws ConnectException, IOException {
+    protected DirEntryList delete(String path, boolean directory) throws TimeoutException, ConnectException, IOException {
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE, path);
         FSSResponse response = null;
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_delete", path); // NOI18N
@@ -605,11 +591,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+    protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
             throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
-        
+
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                srcFile, env, pathToUpload, null, -1, false, null, false);        
+                srcFile, env, pathToUpload, null, -1, false, null, false);
         Future<CommonTasksSupport.UploadStatus> task = CommonTasksSupport.uploadFile(params);
         CommonTasksSupport.UploadStatus uploadStatus = task.get();
         if (uploadStatus.isOK()) {
@@ -624,7 +610,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
         }
     }
-    
+
     private DirEntry renameAfterUpload(String pathToUpload, String pathToRename)
             throws IOException, InterruptedException, CancellationException, ExecutionException {
 
@@ -644,7 +630,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             } else {
                 throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
             }
-        } catch (ConnectException ex) {
+        } catch (ConnectException | TimeoutException ex) {
             throw new IOException(ex);
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
@@ -655,7 +641,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
         }
     }
-    
+
 
     @Override
     protected boolean canSetAccessCheckType() {
@@ -687,7 +673,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             rp = useListener ? null : new RequestProcessor("Warming Up " + env + ':' + this.path, 1); //NOI18N
         }
 
-        public void start() {            
+        public void start() {
             if (useListener) {
                 try {
                     sendRequest();
@@ -699,7 +685,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                     // don't log InterruptedException
                 }
             } else {
-                rp.post(this);                
+                rp.post(this);
             }
         }
 
@@ -708,7 +694,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             if (useListener) {
                 synchronized (lock) {
                     lock.notifyAll();
-                }                
+                }
             }
         }
 
@@ -724,7 +710,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 }
             }
         }
-        
+
 
         @Override
         public DirEntryList tryGetAndRemove(String path) {
@@ -745,15 +731,15 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             }
         }
 
-        
+
         @Override
         public void run() {
             long time = System.currentTimeMillis();
-            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_warmup", path); // NOI18N            
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_warmup", path); // NOI18N
             try {
                 RemoteLogger.fine("Warming up fs_server for {0}", path);
                 warmapImpl();
-            } catch (IOException ex) {
+            } catch (IOException | TimeoutException ex) {
                 ex.printStackTrace(System.err);
             } catch (InterruptedException ex) {
                 // don't report InterruptedException
@@ -762,10 +748,10 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 RemoteStatistics.stopChannelActivity(activityID, 0);
                 RemoteLogger.fine("Warming up fs_server for {0} took {1} ms",
                         path, System.currentTimeMillis() - time);
-            }            
+            }
         }
 
-        private FSSResponse sendRequest() 
+        private FSSResponse sendRequest()
                 throws IOException, ConnectException, ExecutionException,
                 CancellationException, InterruptedException {
 
@@ -775,12 +761,12 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             return dispatcher.dispatch(request, this);
         }
 
-        private void warmapImpl() throws IOException, InterruptedException {
+        private void warmapImpl() throws TimeoutException, IOException, InterruptedException {
             long time = System.currentTimeMillis();
             AtomicInteger realCnt = new AtomicInteger(0);
             try {
                 synchronized (lock) {
-                    response = sendRequest();                    
+                    response = sendRequest();
                 }
 
                 while (true) {
@@ -800,13 +786,13 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                         lock.notifyAll();
                     }
                 }
-                
+
             } catch (CancellationException ex) {
                 // don't report CancellationException
                 synchronized (lock) {
                     cache.clear();
                 }
-            } catch (ConnectException | ExecutionException ex) {
+            } catch (ConnectException | ExecutionException | TimeoutException ex) {
                 ex.printStackTrace(System.err);
             } finally {
                 FSSResponse r;
