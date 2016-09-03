@@ -3,4 +3,4 @@
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
 #date:        Fri Sep 02 21:11:31 2016 +0300
 #summary:     Fixing #267715 (Tests can't add remote host, because "New Remote Host Setup" wizard fails): native code changes
-734BB2E30626B4A5B998C0BE110F855E7E0E8190 fs_server-1.0.zip
+C9EE1ACA53AA71183590274D658ABD0A6AD6B2BE fs_server-1.0.zip
