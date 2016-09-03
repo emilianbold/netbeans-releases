@@ -547,4 +547,14 @@ public final class ClasspathInfo {
             return cpInfo.memoryFileManager.unregister(fqn);
         }
     }
+
+    /** Interface for {@link Task}s that want to provide {@link ClasspathInfo}. The interface is to be implemented
+     * on a {@link Task}, which needs to provide its own classpath information. When the task is run, reinitializes the parser
+     * to use that classpath.
+     * 
+     * @since 2.20
+     */
+    public interface Provider {
+        public ClasspathInfo getClasspathInfo ();
+    }
 }

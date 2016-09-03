@@ -1154,8 +1154,13 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    public @Override void setMagicCaretPosition(Point p) {
-        getLastCaretItem().setMagicCaretPosition(p);
+    public @Override void setMagicCaretPosition(final Point p) {
+        runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, new CaretMoveHandler() {
+            @Override
+            public void moveCarets(CaretMoveContext context) {
+                context.setMagicCaretPosition(context.getOriginalLastCaret(), p);
+            }
+        }, MoveCaretsOrigin.DISABLE_FILTERS);
     }
 
     public @Override final Point getMagicCaretPosition() {
@@ -1571,19 +1576,27 @@ public final class EditorCaret implements Caret {
                             if (replaceItems != null) {
                                 caretItems = replaceItems;
                                 diffCount = replaceItems.size() - caretItems.size();
-                                for (CaretItem caretItem : caretItems) {
-                                    if (caretItem.getAndClearInfoObsolete()) {
-                                        caretItem.clearInfo();
-                                    }
-                                }
-                               sortedCaretItems = activeTransaction.getSortedCaretItems();
-                               assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
+                                sortedCaretItems = activeTransaction.getSortedCaretItems();
+                                assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
-                            if (activeTransaction.isAnyChange()) {
+                            boolean chg = false;
+                            if (activeTransaction.isDotOrStructuralChange()) {
                                 caretInfos = null;
                                 sortedCaretInfos = null;
                                 if (inAtomicSectionL) {
                                     atomicSectionAnyCaretChange = true;
+                                }
+                                chg = true;
+                            } else if (activeTransaction.isMagicPosChange()) {
+                                caretInfos = null;
+                                sortedCaretInfos = null;
+                                chg = true;
+                            }
+                            if (chg) {
+                                for (CaretItem caretItem : caretItems) {
+                                    if (caretItem.getAndClearInfoObsolete()) {
+                                        caretItem.clearInfo();
+                                    }
                                 }
                             }
                             scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
@@ -1621,7 +1634,7 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
-                        if (activeTransaction.isAnyChange()) {
+                        if (activeTransaction.isDotOrStructuralChange()) {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
@@ -2698,6 +2711,7 @@ public final class EditorCaret implements Caret {
                                 }
                             } else if (evt.isShiftDown()) { // Select till offset
                                 moveDot(offset);
+                                setMagicCaretPosition(null);
                                 adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                                 mouseState = MouseState.CHAR_SELECTION;
                             } else // Regular press
@@ -2707,6 +2721,7 @@ public final class EditorCaret implements Caret {
                             } else { // Drag not possible
                                 mouseState = MouseState.CHAR_SELECTION;
                                 setDot(offset);
+                                setMagicCaretPosition(null);
                             }
                             break;
 
@@ -2863,6 +2878,7 @@ public final class EditorCaret implements Caret {
                                     try {
                                         doc.insertString(offset, pastingString, null);
                                         setDot(offset + pastingString.length());
+                                        setMagicCaretPosition(null);
                                     } catch (BadLocationException exc) {
                                     }
                                 }

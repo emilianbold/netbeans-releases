@@ -212,6 +212,9 @@ public abstract class GuardedSectionImpl {
         int begin = bounds.getBegin().getOffset();
         int end = bounds.getEnd().getOffset();
         
+        if (end == doc.getLength() + 1) {
+            end--;
+        }
         GuardedRegionMarker marker = LineDocumentUtils.as(doc, GuardedRegionMarker.class);
         if (marker != null) {
             if (mark) {

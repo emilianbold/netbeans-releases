@@ -101,6 +101,8 @@ final class CaretTransaction {
 
     private boolean anyMarkChanged;
     
+    private boolean magicPosChanged;
+    
     private boolean scrollToLastCaret;
     
     private GapList<CaretItem> replaceItems;
@@ -147,7 +149,14 @@ final class CaretTransaction {
         return doc;
     }
     
-    boolean isAnyChange() {
+    /**
+     * Check for a change in caret structure or dot or mark change but
+     * it does not include magic caret position change which is checked by
+     * {@link #isMagicPosChange() }.
+     *
+     * @return true if change happened during transaction.
+     */
+    boolean isDotOrStructuralChange() {
         return addOrRemove || anyDotChanged || anyMarkChanged;
     }
     
@@ -157,6 +166,10 @@ final class CaretTransaction {
     
     boolean isAnyMarkChanged() {
         return anyMarkChanged;
+    }
+    
+    boolean isMagicPosChange() {
+        return magicPosChanged;
     }
     
     boolean moveDot(@NonNull CaretItem caret, @NonNull Position dotPos, @NonNull Position.Bias dotBias) {
@@ -213,6 +226,7 @@ final class CaretTransaction {
         int index = findCaretItemIndex(origCaretItems, caretItem);
         if (index != -1) {
             caretItem.setMagicCaretPosition(p);
+            magicPosChanged = true;
             caretItem.markInfoObsolete();
             updateAffectedIndexes(index, index + 1);
             return true;
