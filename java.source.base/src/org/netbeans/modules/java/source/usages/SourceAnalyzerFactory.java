@@ -508,7 +508,7 @@ public final class SourceAnalyzerFactory {
                 if (sym != null) {
                     if (sym.kind == Kinds.Kind.ERR) {
                         final Symbol owner = sym.getEnclosingElement();
-                        if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                        if (owner != null && (owner.getKind().isClass() || owner.getKind().isInterface())) {
                             addUsage(owner, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     }
