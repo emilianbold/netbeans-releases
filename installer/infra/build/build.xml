@@ -256,7 +256,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="8.2.0.0.${nb.build.number}"/>
+             value="9.0.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}"/>
