@@ -74,7 +74,8 @@ public enum HarnessVersion {
     V74("1.35"),
     V80("1.37"),
     V81("1.40"),
-    V82("1.42");
+    V82("1.42"),
+    V90("1.43");
 
     /** spec version of org-netbeans-modules-apisupport-harness.jar */
     private final String minimumSpecVersion;
@@ -102,6 +103,7 @@ public enum HarnessVersion {
         "LBL_harness_version_8.0=8.0",
         "LBL_harness_version_8.1=8.1",
         "LBL_harness_version_8.2=8.2",
+        "LBL_harness_version_9.0=9.0",
         "LBL_harness_version_unknown=unknown"
     })
     public String getDisplayName() {
@@ -140,6 +142,8 @@ public enum HarnessVersion {
                 return LBL_harness_version_8_1();
             case V82:
                 return LBL_harness_version_8_2();
+            case V90:
+                return LBL_harness_version_9_0();
             default:
                 assert this == UNKNOWN;
         }
