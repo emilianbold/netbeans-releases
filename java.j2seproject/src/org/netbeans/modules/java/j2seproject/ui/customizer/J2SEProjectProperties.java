@@ -321,8 +321,7 @@ public class J2SEProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
         final Collection<? extends PlatformFilter> filters = project.getLookup().lookupAll(PlatformFilter.class);
-        PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(PLATFORM_ACTIVE)) :
-                PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(PLATFORM_ACTIVE), filters);
+        PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (project, evaluator, evaluator.getProperty(PLATFORM_ACTIVE), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();

@@ -205,10 +205,9 @@ public class MessageDestinationSupportImpl implements MessageDestinationSupport 
     }
 
 //---------------------------------------- WRITING --------------------------------------
+    @Override
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type)
             throws UnsupportedOperationException, ConfigurationException {
-
-//        return new WildflyMessageDestination(name, type);
         if (!resourceDir.exists()) {
             resourceDir.mkdir();
         }
@@ -217,7 +216,7 @@ public class MessageDestinationSupportImpl implements MessageDestinationSupport 
             getMessageDestinationModel(true);
         }
 
-        DataObject destinationsDO = null;
+        DataObject destinationsDO;
         try {
             destinationsDO = DataObject.find(destinationsFO);
         } catch (DataObjectNotFoundException donfe) {
@@ -304,6 +303,11 @@ public class MessageDestinationSupportImpl implements MessageDestinationSupport 
                 // already exists
                 return null;
             }
+        }
+        if(model.getServer(0) == null) {
+            ServerType server = new ServerType();
+            server.setJmsDestinations(server.newJmsDestinations());            
+            model.addServer(server);
         }
         if (type == MessageDestination.Type.QUEUE) {
             JmsQueueType queue = new JmsQueueType();

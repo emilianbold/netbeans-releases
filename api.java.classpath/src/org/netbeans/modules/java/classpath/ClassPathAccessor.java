@@ -43,22 +43,36 @@
  */
 package org.netbeans.modules.java.classpath;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 
 public abstract class ClassPathAccessor {
 
-    public static ClassPathAccessor DEFAULT;
+    private static volatile ClassPathAccessor DEFAULT;
 
-    // force loading of ClassPath class. That will set DEFAULT variable.
-    static {
-        Class c = ClassPath.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    
+    public static synchronized ClassPathAccessor getDefault() {
+        ClassPathAccessor instance = DEFAULT;
+        if (instance == null) {
+            Class c = ClassPath.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+                instance = DEFAULT;
+                assert instance != null;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+        return instance;
+    }
+    
+    public static void setDefault(@NonNull final ClassPathAccessor accessor) {
+        Parameters.notNull("accessor", accessor);   //NOI18N
+        DEFAULT = accessor;
     }
 
     public abstract ClassPath createClassPath(ClassPathImplementation spiClasspath);

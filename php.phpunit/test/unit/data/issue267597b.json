@@ -1,0 +1,764 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 36
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "tests": 6
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testSetText"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testSetText",
+    "status": "warning",
+    "time": 0.010755062103271,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::setText\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testSetTextEmpty"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testSetTextEmpty",
+    "status": "pass",
+    "time": 0.012868881225586,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetText"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetText",
+    "status": "warning",
+    "time": 0.0046639442443848,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::getText\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testAddRecipient"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testAddRecipient",
+    "status": "warning",
+    "time": 0.0045859813690186,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::addRecipient\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetRecipient"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetRecipient",
+    "status": "warning",
+    "time": 0.0089991092681885,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::getRecipient\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetRecipients"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\MessageModelTest",
+    "test": "SmsZilla\\MessageModelTest::testGetRecipients",
+    "status": "warning",
+    "time": 0.011499881744385,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::getRecipients\".\n",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "tests": 12
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testConstructor"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testConstructor",
+    "status": "pass",
+    "time": 0.013461112976074,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetText"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetText",
+    "status": "pass",
+    "time": 0.0045549869537354,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetTextEmptyEncoding"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetTextEmptyEncoding",
+    "status": "fail",
+    "time": 0.0053918361663818,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Failed asserting that exception of type \"\\InvalidArgumentException\" is thrown.\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetText"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetText",
+    "status": "pass",
+    "time": 0.004317045211792,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetMessage"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetMessage",
+    "status": "warning",
+    "time": 0.0044479370117188,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::setText\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetMessage"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetMessage",
+    "status": "pass",
+    "time": 0.012295007705688,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetRecipient"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetRecipient",
+    "status": "pass",
+    "time": 0.006227970123291,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetRecipients"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetRecipients",
+    "status": "pass",
+    "time": 0.0060908794403076,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSend"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSend",
+    "status": "pass",
+    "time": 0.0069470405578613,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSend2"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSend2",
+    "status": "pass",
+    "time": 0.0063822269439697,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetAdapter"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testGetAdapter",
+    "status": "pass",
+    "time": 0.012250900268555,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetCountryCode"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\SmsSenderTest",
+    "test": "SmsZilla\\SmsSenderTest::testSetCountryCode",
+    "status": "pass",
+    "time": 0.0063002109527588,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "tests": 3
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSendConfigError"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSendConfigError",
+    "status": "pass",
+    "time": 0.010007858276367,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSend"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSend",
+    "status": "fail",
+    "time": 0.01254415512085,
+    "trace": [
+        {
+            "file": "C:\\inetpub\\wwwroot\\github\\orajo\\sms-zilla\\tests\\src\\SmsZilla\\Adapter\\CiscoAdapterTest.php",
+            "line": 58,
+            "function": "assertTrue",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Failed asserting that false is true.\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSendSsh"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSendSsh",
+    "status": "warning",
+    "time": 0.012570858001709,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\MessageModel::setText\".\n",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\CiscoAdapterTest",
+    "test": "SmsZilla\\Adapter\\CiscoAdapterTest::testSendSsh",
+    "status": "fail",
+    "time": 0.012570858001709,
+    "trace": [
+        {
+            "file": "C:\\inetpub\\wwwroot\\github\\orajo\\sms-zilla\\tests\\src\\SmsZilla\\Adapter\\CiscoAdapterTest.php",
+            "line": 81,
+            "function": "assertTrue",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Failed asserting that false is true.\n",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "tests": 4
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testConstructor"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testConstructor",
+    "status": "pass",
+    "time": 0.0043768882751465,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSendConfigError"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSendConfigError",
+    "status": "pass",
+    "time": 0.0046088695526123,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSend"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSend",
+    "status": "pass",
+    "time": 0.014374017715454,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSetParams"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\FileAdapterTest",
+    "test": "SmsZilla\\Adapter\\FileAdapterTest::testSetParams",
+    "status": "pass",
+    "time": 0.0090770721435547,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "tests": 5
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testSend"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testSend",
+    "status": "warning",
+    "time": 0.0045380592346191,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\Adapter\\MockGateway::send\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetSentMessages"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetSentMessages",
+    "status": "warning",
+    "time": 0.004155158996582,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\Adapter\\MockGateway::getSentMessages\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetParam"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetParam",
+    "status": "warning",
+    "time": 0.0068440437316895,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"\\SmsZilla\\Adapter\\AbstractAdapter::getParams\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetParam2"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testGetParam2",
+    "status": "warning",
+    "time": 0.0045220851898193,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"\\SmsZilla\\Adapter\\AbstractAdapter::getParams\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testSetParam"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\MockAdapterTest",
+    "test": "SmsZilla\\Adapter\\MockAdapterTest::testSetParam",
+    "status": "warning",
+    "time": 0.0048670768737793,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"\\SmsZilla\\Adapter\\AbstractAdapter::getParams\".\n",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "tests": 4
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testTokenConfigError"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testTokenConfigError",
+    "status": "pass",
+    "time": 0.0066030025482178,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSenderConfigError"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSenderConfigError",
+    "status": "warning",
+    "time": 0.006141185760498,
+    "trace": [
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Trying to @cover or @use not existing method \"SmsZilla\\Adapter\\AbstractAdapter::getParams\".\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSend"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSend",
+    "status": "fail",
+    "time": 0.8218731880188,
+    "trace": [
+        {
+            "file": "C:\\inetpub\\wwwroot\\github\\orajo\\sms-zilla\\tests\\src\\SmsZilla\\Adapter\\SmsApiAdapterTest.php",
+            "line": 72,
+            "function": "assertTrue",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 162,
+            "function": "doRun",
+            "class": "PHPUnit_TextUI_TestRunner",
+            "type": "->"
+        },
+        {
+            "file": "C:\\Users\\Jarek\\AppData\\Roaming\\Composer\\vendor\\phpunit\\phpunit\\src\\TextUI\\Command.php",
+            "line": 113,
+            "function": "run",
+            "class": "PHPUnit_TextUI_Command",
+            "type": "->"
+        }
+    ],
+    "message": "Failed asserting that false is true.\n",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSetParams"
+}{
+    "event": "test",
+    "suite": "SmsZilla\\Adapter\\SmsApiAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsApiAdapterTest::testSetParams",
+    "status": "pass",
+    "time": 0.015404939651489,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "suiteStart",
+    "suite": "SmsZilla\\Adapter\\SmsCenterAdapterTest",
+    "tests": 2
+}{
+    "event": "testStart",
+    "suite": "SmsZilla\\Adapter\\SmsCenterAdapterTest",
+    "test": "SmsZilla\\Adapter\\SmsCenterAdapterTest::testSend"
+}

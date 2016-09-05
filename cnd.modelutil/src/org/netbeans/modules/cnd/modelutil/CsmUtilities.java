@@ -1608,6 +1608,59 @@ public class CsmUtilities {
         }
         
     }
+    
+//    private static Pattern INSTANCE_PATTERN = Pattern.compile("@[0-9]+");
+//    
+//    public static boolean TURNON_DBLOG = false;
+//    
+//    public static int INDENT_DBLOG = 0;
+//    
+//    public static void enterDebugLog(String text) {
+//        enterDebugLog(text, false);
+//    }
+//    
+//    public static void enterDebugLog(String text, boolean withStack) {
+//        debugLog(text, withStack, 2);
+//    }
+//    
+//    public static void exitDebugLog(String text) {
+//        exitDebugLog(text, false);
+//    }
+//    
+//    public static void exitDebugLog(String text, boolean withStack) {
+//        debugLog(text, withStack, -2);
+//    }
+//    
+//    public static void debugLog(String text) {
+//        debugLog(text, false, 0);
+//    }
+//    
+//    public static void debugLog(String text, boolean withStack, int indentDelta) {
+//        if (TURNON_DBLOG) {
+//            if (text.contains("@")) {
+//                text = INSTANCE_PATTERN.matcher(text).replaceAll("");
+//            }
+//            try(FileWriter fw = new FileWriter("/home/petrk/devmisc/idelog", true);
+//                BufferedWriter bw = new BufferedWriter(fw);
+//                PrintWriter out = new PrintWriter(bw))
+//            {
+//                String[] split = text.split("\n");
+//                for (String line : split) {
+//                    for (int i = 0; i < INDENT_DBLOG; ++i) {
+//                        out.print(' ');
+//                    }
+//                    out.println(line);
+//                }
+//                if (withStack) {
+//                    out.println("STACK:");
+//                    new Exception().printStackTrace(out);
+//                }
+//            } catch (IOException e) {
+//                //exception handling left as an exercise for the reader
+//            }
+//            INDENT_DBLOG += indentDelta;
+//        }
+//    }
 
     private CsmUtilities() {
     }

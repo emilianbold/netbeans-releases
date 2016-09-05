@@ -142,6 +142,7 @@ public class FmtOptions {
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapTryResources = "wrapTryResources"; //NOI18N
     public static final String wrapDisjunctiveCatchTypes = "wrapDisjunctiveCatchTypes"; //NOI18N
+    public static final String wrapAfterDisjunctiveCatchBar = "wrapAfterDisjunctiveCatchBar"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
@@ -440,6 +441,7 @@ public class FmtOptions {
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapTryResources, WRAP_NEVER}, //NOI18N
             { wrapDisjunctiveCatchTypes, WRAP_NEVER}, //NOI18N
+            { wrapAfterDisjunctiveCatchBar, FALSE}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N

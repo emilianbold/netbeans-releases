@@ -66,19 +66,28 @@ class Buffer {
      * For some odd reason Vector.removeRange is protected, so 
      * we have to do this to gain access to it.
      */
-    static class OurVector<T> extends Vector<T> {
+    private static class OurVector<T> extends Vector<T> {
 
         @Override
         public void removeRange(int fromIndex, int toIndex) {
             super.removeRange(fromIndex, toIndex);
         }
     }
-    private OurVector<Line> lines = new OurVector<Line>();	// buffer
-    public int nlines;		// number of lines in buffer
+    private final OurVector<Line> lines = new OurVector<>();	// buffer
+
     // How is this different from lines.length?
+    private int nlines;		// number of lines in buffer
+
     private int visible_cols;	// number of columns visible in view
     private int extra_cols;	// columns needed to support lines longer
-    // than visible_cols. Only grows.
+    				// than visible_cols. Only grows.
+
+    /**
+     * @return nlines
+     */
+    int nlines() {
+	return nlines;
+    }
 
     public int visibleCols() {
         return visible_cols;
@@ -214,7 +223,7 @@ class Buffer {
             visitor.visit(l, begin.row, begin.col, end.col);
 
         } else {
-            boolean cont = false;
+            boolean cont;
 
             // range spans multiple lines
             l = lineAt(begin.row);
@@ -264,7 +273,7 @@ class Buffer {
             visitor.visit(l, begin.row, begin.col, end.col);
 
         } else {
-            boolean cont = false;
+            boolean cont;
 
             // range spans multiple lines
             l = lineAt(end.row);
@@ -395,6 +404,7 @@ class Buffer {
      * <br>
      * Returns null if 'c' is at the last character of the buffer.
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public BCoord advance(BCoord c) {
         int row = c.row;
         int col = c.col;

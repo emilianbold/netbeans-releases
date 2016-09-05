@@ -62,7 +62,7 @@ public class InterpANSI extends InterpProtoANSI {
 	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
 	}
 
-	static final class ACT_PRINT implements Actor {
+	private static final class ACT_PRINT implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		// Ignored for now, except for 'dump time'
@@ -87,7 +87,7 @@ public class InterpANSI extends InterpProtoANSI {
 	}
     }
 
-    private InterpTypeANSI type;
+    private final InterpTypeANSI type;
 
     private static final InterpTypeANSI type_singleton = new InterpTypeANSI();
 

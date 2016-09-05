@@ -42,10 +42,11 @@
 
 @TemplateRegistrations({
     @TemplateRegistration(folder = "Classes/Code", position = 100, content = "resources/GeneratedMethodBody.template", scriptEngine = "freemarker", displayName = "#GeneratedMethodBody", category = "java-code-snippet"),
-    @TemplateRegistration(folder = "Classes/Code", position = 200, content = "resources/OverriddenMethodBody.template", scriptEngine = "freemarker", displayName = "#OverriddenMethodBody", category = "java-code-snippet")
+    @TemplateRegistration(folder = "Classes/Code", position = 200, content = "resources/OverriddenMethodBody.template", scriptEngine = "freemarker", displayName = "#OverriddenMethodBody", category = "java-code-snippet"),
+    @TemplateRegistration(folder = "Classes/Code", position = 300, content = "resources/LambdaBody.template", scriptEngine = "freemarker", displayName = "#LambdaBody", category = "java-code-snippet")
 })
 @NbBundle.Messages({
-    "GeneratedMethodBody=Generated Method Body", "OverriddenMethodBody=Overridden Method Body" //NOI18N
+    "GeneratedMethodBody=Generated Method Body", "OverriddenMethodBody=Overridden Method Body", "LambdaBody=Generated Lambda Body" //NOI18N
 })
 package org.netbeans.modules.java.source;
 

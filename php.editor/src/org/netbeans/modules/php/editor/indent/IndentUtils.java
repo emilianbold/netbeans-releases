@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.indent;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -155,8 +156,8 @@ public final class IndentUtils {
             while (token.id() != PHPTokenId.PHP_CURLY_OPEN
                     && token.id() != PHPTokenId.PHP_SEMICOLON
                     && !(token.id() == PHPTokenId.PHP_TOKEN
-                    && ("(".equals(token.text().toString()) // NOI18N
-                    || "[".equals(token.text().toString()))) // NOI18N
+                    && (TokenUtilities.textEquals(token.text(), "(") // NOI18N
+                    || TokenUtilities.textEquals(token.text(), "["))) // NOI18N
                     && ts.movePrevious()) {
                 token = ts.token();
             }

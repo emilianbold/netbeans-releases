@@ -3262,6 +3262,26 @@ public final class TreeMaker {
     }
 
     /**
+     * Creates a new BlockTree for provided <tt>bodyText</tt>.
+     * 
+     * @param   lambda    figures out the scope for attribution.
+     * @param   bodyText  text which will be used for lambda body creation.
+     * @return  a new tree for <tt>bodyText</tt>.
+     * @since 2.19
+     */
+    public BlockTree createLambdaBody(LambdaExpressionTree lambda, String bodyText) {
+        SourcePositions[] positions = new SourcePositions[1];
+        final TreeUtilities treeUtils = copy.getTreeUtilities();
+        StatementTree body = treeUtils.parseStatement(bodyText, positions);
+        assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
+        Scope scope = copy.getTrees().getScope(TreePath.getPath(copy.getCompilationUnit(), lambda));
+        treeUtils.attributeTree(body, scope);
+        mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
+        new TreePosCleaner().scan(body, null);
+        return (BlockTree) body;
+    }
+
+    /**
      * Creates a new MethodTree.
      *
      * @param modifiers the modifiers of this method.

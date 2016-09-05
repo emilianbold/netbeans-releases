@@ -546,6 +546,8 @@ public final class JavaPluginUtils {
             } else {
                 List<Tree> typeDeclarations = new LinkedList<Tree>(newCompilation.getTypeDecls());
                 Tree templateClazz = typeDeclarations.remove(0); // TODO: Check for class with correct name, template could start with another type.
+                // mark the template CU as removed; any untransfered comments will be (?) lost.
+                workingCopy.getTreeMaker().asRemoved(templateClazz);
                 if (workingCopy.getTreeUtilities().getComments(typeDecl, true).isEmpty()) {
                     genUtils.copyComments(templateClazz, typeDecl, true);
                 } else if (workingCopy.getTreeUtilities().getComments(typeDecl, false).isEmpty()) {

@@ -181,7 +181,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         for (FileObject fo : tests.getRoots()) {
             File test = FileUtil.toFile(fo);
             if (test != null) {
-                assert test.isDirectory() : test;
                 String relPath = PropertyUtils.relativizeFile(root, test);
                 if (isUnderneath(relPath)) {
                     String pattern = relPath + "/"; // NOI18N

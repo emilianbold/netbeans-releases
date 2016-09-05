@@ -616,6 +616,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private boolean useModifiedFiles = true;
         private JavaFileFilterImplementation filter;
         private boolean ignoreExcludes;
+        private Function<JavaFileManager.Location, JavaFileManager> jfmProvider;
 
         private Configuration(
                 @NonNull final ClassPath moduleBoot,
@@ -685,6 +686,10 @@ public final class ProxyFileManager implements JavaFileManager {
             Parameters.notNull("cachedPath", cachedPath);   //NOI18N
             Parameters.notNull("provider", provider);       //NOI18N
             peersMap.put(cachedPath, provider);
+        }
+        
+        public void setCustomFileManagerProvider(@NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
+            this.jfmProvider = jfmProvider;
         }
 
         @NonNull
@@ -821,15 +826,24 @@ public final class ProxyFileManager implements JavaFileManager {
         private JavaFileManager createOutputFileManager() {
             if (emitted[OUTPUT] == null) {
                 final boolean hasSources = this.srcCached != ClassPath.EMPTY;
-                emitted[OUTPUT] = hasSources ?
-                        new OutputFileManager(
+                final JavaFileManager outFm;
+                if (hasSources) {
+                    JavaFileManager tmp;
+                    if (jfmProvider != null && (tmp = jfmProvider.apply(StandardLocation.CLASS_OUTPUT)) != null) {
+                        outFm = tmp;
+                    } else {
+                        outFm = new OutputFileManager(
                             cap,
                             outputCached,
                             srcCached,
                             this.aptSrcCached,
                             siblings.getProvider(),
-                            fmTx) :
-                        null;
+                            fmTx);
+                    }
+                } else {
+                    outFm = null;
+                }
+                emitted[OUTPUT] = outFm;
             }
             return emitted[OUTPUT];
         }

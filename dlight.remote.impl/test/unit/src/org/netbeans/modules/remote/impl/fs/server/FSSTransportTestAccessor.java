@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
 
@@ -56,7 +57,7 @@ import org.netbeans.modules.remote.impl.fs.DirEntry;
 public class FSSTransportTestAccessor {
  
     public static List<DirEntry> readDirectory(ExecutionEnvironment execEnv, String path) 
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return FSSTransport.getInstance(execEnv).readDirectory(path).getEntries();
     }

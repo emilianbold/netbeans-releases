@@ -44,6 +44,7 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.nodes.AbstractNode;
@@ -60,7 +61,7 @@ public class WildflyDestinationNode extends AbstractNode {
 
     public WildflyDestinationNode(String name, MessageDestination destination, Lookup lookup) {
         super(Children.LEAF);
-        getCookieSet().add(new UndeployModuleCookieImpl(destination.getName(), lookup));
+        getCookieSet().add(new UndeployModuleCookieImpl(destination.getName(), destination.getType() == MessageDestination.Type.QUEUE ? ResourceType.QUEUE : ResourceType.TOPIC,lookup));
         setDisplayName(destination.getName());
         setName(name);
         setShortDescription(destination.getName());

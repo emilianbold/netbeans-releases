@@ -45,6 +45,8 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -65,6 +67,8 @@ import org.openide.util.RequestProcessor;
  */
 @CodeEvaluator.EvaluatorService.Registration(path = "netbeans-JPDASession")
 public class JPDACodeEvaluator extends CodeEvaluator.EvaluatorService {
+    
+    private static final Logger LOG = Logger.getLogger(JPDACodeEvaluator.class.getName());
     
     private final JPDADebugger debugger;
     private final DebuggerChangeListener debuggerListener;
@@ -201,6 +205,12 @@ public class JPDACodeEvaluator extends CodeEvaluator.EvaluatorService {
                     t.printStackTrace(p);
                     p.close();
                     message += " \n" + s.toString();
+                }
+                if (message == null || message.trim().isEmpty()) {
+                    // Some exceptions do not have a message!
+                    // Like ClassNotPreparedException
+                    message = t.toString();
+                    LOG.log(Level.INFO, message, t);
                 }
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(message));

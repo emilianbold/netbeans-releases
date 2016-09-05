@@ -407,7 +407,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     return true;
                 }
             }
-            if (!starting && state != STATE_STARTING || throwable != null) {
+            if (!starting && state > STATE_STARTING || throwable != null) {
                 return true; // We're already running
             }
             try {
@@ -2426,7 +2426,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (jsr45EngineProviders == null) {
             jsr45EngineProviders = new HashSet<JSR45DebuggerEngineProvider>(1);
         }
-        JSR45DebuggerEngineProvider provider = new JSR45DebuggerEngineProvider(language);
+        JSR45DebuggerEngineProvider provider = new JSR45DebuggerEngineProvider(language, getRequestProcessor());
         jsr45EngineProviders.add(provider);
         return DebuggerInfo.create (
             "netbeans-jpda-JSR45DICookie-" + language,

@@ -399,7 +399,8 @@ public class NativeExecutionTestSupport {
     
     public static String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
         String[] mkTempArgs;
-        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+        OSFamily osFamily = HostInfoUtils.getHostInfo(execEnv).getOSFamily();
+        if (osFamily == OSFamily.MACOSX || osFamily == OSFamily.FREEBSD) {
             mkTempArgs = directory ? new String[] { "-t", "tmp", "-d" } : new String[] { "-t", "tmp" };
         } else {
             mkTempArgs = directory ? new String[] { "-d" } : new String[0];

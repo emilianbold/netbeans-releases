@@ -43,8 +43,8 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.actions.PropertiesAction;
@@ -65,7 +65,7 @@ public class WildflyDatasourceNode extends AbstractNode {
 
     public WildflyDatasourceNode(String name, Datasource ds, Lookup lookup) {
         super(Children.LEAF);
-        getCookieSet().add(new UndeployModuleCookieImpl(ds.getDisplayName(), lookup));
+        getCookieSet().add(new UndeployModuleCookieImpl(name, ResourceType.DATASOURCE, lookup));
         setDisplayName(ds.getJndiName());
         setName(name);
         setShortDescription(ds.getDisplayName());

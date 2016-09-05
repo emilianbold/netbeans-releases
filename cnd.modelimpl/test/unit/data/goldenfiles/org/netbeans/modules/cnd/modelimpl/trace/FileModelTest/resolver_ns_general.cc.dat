@@ -27,7 +27,7 @@ NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
                         FIELD PRIVATE a [12:17/183-12:23/189]  TYPE: int TEXT=int  [12:17/183-12:20/186]  INIT: null  SCOPE: CCC 
                         FIELD PRIVATE static b [13:17/206-13:40/229]  TYPE: const int TEXT=const int  [13:17/206-13:33/222]  INIT: text='5'  SCOPE: CCC 
                         FUNCTION boo [14:25/254-14:35/264] MethodImpl SCOPE: CCC 
-                            DEFINITION: null
+                            DEFINITION: boo  [45:5/762-48:6/829]
                             SIGNATURE boo()
                             UNIQUE NAME F:rng::C::CC::CCC::boo()
                             PARAMETERS:
@@ -63,8 +63,8 @@ NAMESPACE DEFINITOIN rng [39:1/678-49:2/831] SCOPE: resolver_ns_general.cc
             STATEMENT RETURN  [42:9/741-42:18/750] SCOPE: Stmt  [40:19/712-43:6/756] text: 'return a;'
     FUNCTION DEFINITION boo  [45:5/762-48:6/829] FunctionDefinitionImpl SCOPE: resolver_ns_general.cc
         SIGNATURE boo()
-        UNIQUE NAME f:rng::CC::CCC::boo()
-        DECLARATION: null
+        UNIQUE NAME f:rng::C::CC::CCC::boo()
+        DECLARATION: boo  [14:25/254-14:35/264]
         PARAMETERS:
         RETURNS int TEXT=int  [45:5/762-45:8/765]
         STATEMENT COMPOUND  [45:24/781-48:6/829] SCOPE: boo 
@@ -106,7 +106,7 @@ NAMESPACE rng (rng)
                         FIELD PRIVATE a [12:17/183-12:23/189]  TYPE: int TEXT=int  [12:17/183-12:20/186]  INIT: null  SCOPE: CCC 
                         FIELD PRIVATE static b [13:17/206-13:40/229]  TYPE: const int TEXT=const int  [13:17/206-13:33/222]  INIT: text='5'  SCOPE: CCC 
                         FUNCTION boo [14:25/254-14:35/264] MethodImpl SCOPE: CCC 
-                            DEFINITION: null
+                            DEFINITION: boo  [45:5/762-48:6/829]
                             SIGNATURE boo()
                             UNIQUE NAME F:rng::C::CC::CCC::boo()
                             PARAMETERS:

@@ -907,7 +907,7 @@ public class WorkingCopy extends CompilationController {
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
-            new CommentReplicator(presentInResult.keySet()).scan(diffContext.origUnit, null);
+            new CommentReplicator(presentInResult.keySet()).process(diffContext.origUnit);
             addCommentsToContext(diffContext);
             for (ClassTree ct : classes) {
                 ia.classLeft();
@@ -1062,6 +1062,15 @@ public class WorkingCopy extends CompilationController {
             this.commentHandler = CommentHandlerService.instance(impl.getJavacTask().getContext());
         }
         
+        private void process(CompilationUnitTree unit) {
+            commentHandler.freeze();
+            try {
+                scan(unit, null);
+            } finally {
+                commentHandler.unFreeze();
+            }
+        }
+        
         private Object scanAndReduce(Tree node, Object p, Object r) {
             return reduce(scan(node, p), r);
         }
@@ -1163,9 +1172,11 @@ public class WorkingCopy extends CompilationController {
             return v;
         }
     }
-        
-    private void moveComments(Tree from, Tree to, RelativePosition relPos, Set<Comment> used) {
-        
+    
+    private static class CopyEntry {
+        private RelativePosition pos;
+        private Tree commentSource;
+        private boolean copyNonEmpty;
     }
     
     private Tree resolveRewriteHint(Tree orig) {
@@ -1197,7 +1208,8 @@ public class WorkingCopy extends CompilationController {
                 CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.sourceFileObject(targetFile, targetFile.getParent())).iterator().next();
                 CompilationUnitTree importComments = GeneratorUtilities.get(this).importComments(templateCUT, templateCUT);
 
-                changes.put(importComments, t);
+                rewrite(importComments, getTreeMaker().asRemoved(t));
+                //changes.put(importComments, t);
 
                 StringWriter target = new StringWriter();
 

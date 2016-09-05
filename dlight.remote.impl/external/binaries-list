@@ -1,8 +1,6 @@
-#changeset:   305800:d5940d7755ef
-#branch:      release81
+#changeset:   300397:f579585d35b5
 #tag:         tip
-#parent:      305793:7e52687a19b6
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Jan 28 13:29:03 2016 +0300
-#summary:     fixing #256151 - Freeze after remote disconnection
-0F89C62CA701D20BA9A9A526D4D017888C3B5A65 fs_server-1.0.zip
+#date:        Fri Sep 02 21:11:31 2016 +0300
+#summary:     Fixing #267715 (Tests can't add remote host, because "New Remote Host Setup" wizard fails): native code changes
+C9EE1ACA53AA71183590274D658ABD0A6AD6B2BE fs_server-1.0.zip

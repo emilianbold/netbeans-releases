@@ -56,11 +56,14 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.highlight.hints.DisableHintFix;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -116,6 +119,36 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
             out.printf("%s\n", txt);
             if (TRACE) {
                 System.err.printf("%s\n", txt);
+            }
+        }
+        compareReferenceFiles(datafileName, datafileName);
+    }
+    
+    protected Collection<Fix> getFixes(BaseDocument doc, CsmFile csmFile) {
+        final List<Fix> result = new ArrayList<>();
+        Collection<CsmErrorInfo> errors = getErrors(doc, csmFile);        
+        for (CsmErrorInfo error : errors) {
+            result.addAll(CsmErrorInfoHintProvider.getFixes(error));
+        }
+        
+        return result;
+    }
+    
+    protected final void performFixesTest(String sourceFileName) throws Exception {
+        String datafileName = sourceFileName.replace('/', '_').replace('\\', '_') + ".dat";
+        File testSourceFile = getDataFile(sourceFileName);
+        File workDir = getWorkDir();
+        File output = new File(workDir, datafileName);
+        PrintStream out = new PrintStream(output);
+        CsmFile csmFile = getCsmFile(testSourceFile);
+        BaseDocument doc = getBaseDocument(testSourceFile);
+        Collection<Fix> fixes = getFixes(doc, csmFile);
+        for (Fix fix : fixes) {
+            if(!(fix instanceof DisableHintFix)) {
+                out.printf("%s\n", fix.getText());
+                if (TRACE) {
+                    System.err.printf("%s\n", fix.getText());
+                }
             }
         }
         compareReferenceFiles(datafileName, datafileName);

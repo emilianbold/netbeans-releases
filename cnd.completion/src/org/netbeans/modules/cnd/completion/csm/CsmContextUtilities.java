@@ -444,7 +444,9 @@ public class CsmContextUtilities {
     private static boolean canBreak(int offsetInScope, CsmScopeElement elem, CsmContext fullContext) {
         // break if element already is in context
         // or element is after offset
-        if (offsetInScope == CsmContext.CsmContextEntry.WHOLE_SCOPE) {
+        if (elem == null) {
+            return false;
+        } else if (offsetInScope == CsmContext.CsmContextEntry.WHOLE_SCOPE) {
             return isInContext(fullContext, elem);
         } else if (CsmKindUtilities.isOffsetable(elem)) {
             return ((CsmOffsetable)elem).getStartOffset() >= offsetInScope || isInContext(fullContext, elem);
@@ -858,13 +860,18 @@ public class CsmContextUtilities {
             // Compound literal in initializer starts with LBRACE, not with COMMA
             return null;
         }
-        Token<TokenId> rParen = findToken(
-            cppts,
-            true,
-            false,
-            Arrays.asList(CppTokenId.RPAREN),
-            CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-        );
+        Token<TokenId> rParen;
+        if (cppts.token() != null && cppts.token().id() == CppTokenId.RPAREN) {
+            rParen = cppts.token();
+        } else {
+            rParen = findToken(
+                cppts,
+                true,
+                false,
+                Arrays.asList(CppTokenId.RPAREN),
+                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+            );
+        }
         if (rParen != null) {
             int arrayDepth = 0;
             List<Token<TokenId>> nameTokens = new LinkedList<Token<TokenId>>();

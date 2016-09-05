@@ -209,7 +209,6 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             }
         }
         if (create) {
-            CndUtils.assertNonUiThread();
             synchronized (lock) {
                 // double check in items and unlisted (now synchronized)
                 for (RemoteServerRecord record : items) {

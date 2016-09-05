@@ -51,47 +51,44 @@
 package org.netbeans.lib.terminalemulator;
 
 class Attr {
-    // 'f' suffix for oFfset
-    // 'w' suffix for Width
-    // 'm' suffix for mask
-    private final static int BGCOLORf = 0;
-    private final static int BGCOLORw = 5;
-    private final static int BGCOLORm = 0xf;
+    private final static int BGCOLOR_OFF = 0;
+    private final static int BGCOLOR_WIDTH = 5;
+    private final static int BGCOLOR_MASK = 0xf;
     @SuppressWarnings("PointlessBitwiseExpression")
-    public final static int BGCOLOR = BGCOLORm << BGCOLORf;
+    public final static int BGCOLOR = BGCOLOR_MASK << BGCOLOR_OFF;
 
-    private final static int FGCOLORf = BGCOLORf + BGCOLORw;
-    private final static int FGCOLORw = 5;
-    private final static int FGCOLORm = 0xf;
-    public final static int FGCOLOR = FGCOLORm << FGCOLORf;
+    private final static int FGCOLOR_OFF = BGCOLOR_OFF + BGCOLOR_WIDTH;
+    private final static int FGCOLOR_WIDTH = 5;
+    private final static int FGCOLOR_MASK = 0xf;
+    public final static int FGCOLOR = FGCOLOR_MASK << FGCOLOR_OFF;
 
-    private final static int HIDDENf = FGCOLORf + FGCOLORw;
-    private final static int HIDDENw = 1;
-    public final static int HIDDEN = 0x1 << HIDDENf;
+    private final static int HIDDEN_OFF = FGCOLOR_OFF + FGCOLOR_WIDTH;
+    private final static int HIDDEN_WIDTH = 1;
+    public final static int HIDDEN = 0x1 << HIDDEN_OFF;
 
-    private final static int REVERSEf = HIDDENf + HIDDENw;
-    private final static int REVERSEw = 1;
-    public final static int REVERSE = 0x1 << REVERSEf;
+    private final static int REVERSE_OFF = HIDDEN_OFF + HIDDEN_WIDTH;
+    private final static int REVERSE_WIDTH = 1;
+    public final static int REVERSE = 0x1 << REVERSE_OFF;
 
-    private final static int BLINKf = REVERSEf + REVERSEw;
-    private final static int BLINKw = 1;
-    public final static int BLINK = 0x1 << BLINKf;
+    private final static int BLINK_OFF = REVERSE_OFF + REVERSE_WIDTH;
+    private final static int BLINK_WIDTH = 1;
+    public final static int BLINK = 0x1 << BLINK_OFF;
 
-    private final static int UNDERSCOREf = BLINKf + BLINKw;
-    private final static int UNDERSCOREw = 1;
-    public final static int UNDERSCORE = 0x1 << UNDERSCOREf;
+    private final static int UNDERSCORE_OFF = BLINK_OFF + BLINK_WIDTH;
+    private final static int UNDERSCORE_WIDTH = 1;
+    public final static int UNDERSCORE = 0x1 << UNDERSCORE_OFF;
 
-    private final static int BRIGHTf = UNDERSCOREf + UNDERSCOREw;
-    private final static int BRIGHTw = 1;
-    public final static int BRIGHT = 0x1 << BRIGHTf;
+    private final static int BRIGHT_OFF = UNDERSCORE_OFF + UNDERSCORE_WIDTH;
+    private final static int BRIGHT_WIDTH = 1;
+    public final static int BRIGHT = 0x1 << BRIGHT_OFF;
 
-    private final static int DIMf = BRIGHTf + BRIGHTw;
-    private final static int DIMw = 1;
-    public final static int DIM = 0x1 << DIMf;
+    private final static int DIM_OFF = BRIGHT_OFF + BRIGHT_WIDTH;
+    private final static int DIM_WIDTH = 1;
+    public final static int DIM = 0x1 << DIM_OFF;
 
-    private final static int ACTIVEf = DIMf + DIMw;
-    private final static int ACTIVEw = 1;
-    public final static int ACTIVE = 0x1 << ACTIVEf;
+    private final static int ACTIVE_OFF = DIM_OFF + DIM_WIDTH;
+    private final static int ACTIVE_WIDTH = 1;
+    public final static int ACTIVE = 0x1 << ACTIVE_OFF;
 
     // Since an attr value of 0 means render using default attributes
     // We need a value that signifies that no attribute has been set.
@@ -105,11 +102,11 @@ class Attr {
      * attr = Attr.setBackgroundColor(attr, 7);
      */
 
-    @SuppressWarnings("PointlessBitwiseExpression")
+    @SuppressWarnings({"PointlessBitwiseExpression", "AssignmentToMethodParameter"})
     public static int setBackgroundColor(int attr, int code) {
-	code &= BGCOLORm;	// throw all but lowest relevant bits away
+	code &= BGCOLOR_MASK;	// throw all but lowest relevant bits away
 	attr &= ~ BGCOLOR;	// 0 out existing bits
-	attr |= code << BGCOLORf;
+	attr |= code << BGCOLOR_OFF;
 	return attr;
     } 
 
@@ -118,10 +115,11 @@ class Attr {
      * attr = Attr.setForegroundColor(attr, 7);
      */
 
+    @SuppressWarnings("AssignmentToMethodParameter")
     public static int setForegroundColor(int attr, int code) {
-	code &= FGCOLORm;	// throw all but lowest relevant bits away
+	code &= FGCOLOR_MASK;	// throw all but lowest relevant bits away
 	attr &= ~ FGCOLOR;	// 0 out existing bits
-	attr |= code << FGCOLORf;
+	attr |= code << FGCOLOR_OFF;
 	return attr;
     }
 
@@ -129,7 +127,7 @@ class Attr {
      * Use this to get at the FG color value embedded in an attr.
      */
     public static int foregroundColor(int attr) {
-	return (attr >> FGCOLORf) & FGCOLORm;
+	return (attr >> FGCOLOR_OFF) & FGCOLOR_MASK;
     } 
 
     /**
@@ -137,12 +135,13 @@ class Attr {
      */
     @SuppressWarnings("PointlessBitwiseExpression")
     public static int backgroundColor(int attr) {
-	return (attr >> BGCOLORf) & BGCOLORm;
+	return (attr >> BGCOLOR_OFF) & BGCOLOR_MASK;
     }
 
     /*
      * Read-modify-write utility for setting bitfields in 'attr'.
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public static int setAttribute(int attr, int value) {
 	switch (value) {
 	    case 0:
@@ -265,6 +264,7 @@ class Attr {
      * Note: this doesn't cover the unsetting operations which
      * setAttributes does.
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public static int unsetAttribute(int attr, int value) {
 	switch (value) {
 	    case 0:

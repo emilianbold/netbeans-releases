@@ -169,16 +169,18 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 @Override
                 public void run() {
                     JEditorPane[] openedPanes = ces.getOpenedPanes();
-                    for (JEditorPane pane : openedPanes) {
-                        EditorUI eui = Utilities.getEditorUI(pane);
-                        if (eui == null) {
-                            continue;
-                        }
-                        synchronized (watchToAnnotation) {
-                            for (Watch watch : pws) {
-                                EditorPin epin = (EditorPin) watch.getPin();
-                                Line line = lines.getOriginal(epin.getLine());
-                                pin(watch, eui, line);
+                    if (openedPanes != null) {
+                        for (JEditorPane pane : openedPanes) {
+                            EditorUI eui = Utilities.getEditorUI(pane);
+                            if (eui == null) {
+                                continue;
+                            }
+                            synchronized (watchToAnnotation) {
+                                for (Watch watch : pws) {
+                                    EditorPin epin = (EditorPin) watch.getPin();
+                                    Line line = lines.getOriginal(epin.getLine());
+                                    pin(watch, eui, line);
+                                }
                             }
                         }
                     }

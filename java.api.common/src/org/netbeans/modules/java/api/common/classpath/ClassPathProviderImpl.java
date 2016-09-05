@@ -63,6 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -112,6 +113,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] testModuleExecutePath;
     private final Union2<String,String[]> platform;
     private final String javacSource;
+    private final Project project;
     /**
      * ClassPaths cache.
      * Index -> CP mapping
@@ -235,7 +237,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             Builder.DEFAULT_MODULE_EXECUTE_PATH,
             Builder.DEFAULT_TEST_MODULE_EXECUTE_PATH,
             Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
-            Builder.DEFAULT_JAVAC_SOURCE);
+            Builder.DEFAULT_JAVAC_SOURCE,
+            null);
     }
 
     private ClassPathProviderImpl(
@@ -257,7 +260,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] moduleExecutePath,
         @NonNull final String[] testModuleExecutePath,
         @NonNull final Union2<String,String[]> platform,
-        @NonNull final String javacSource) {
+        @NonNull final String javacSource,
+        @NullAllowed final Project project) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
@@ -298,6 +302,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.testModuleExecutePath = testModuleExecutePath;
         this.platform = platform;
         this.javacSource = javacSource;
+        this.project = project;
     }
 
     /**
@@ -342,6 +347,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] testModuleExecutePath = DEFAULT_TEST_MODULE_EXECUTE_PATH;
         private String[] bootClasspathProperties;
         private String javacSource = DEFAULT_JAVAC_SOURCE;
+        private Project project;
 
         private Builder(
             @NonNull final AntProjectHelper helper,
@@ -546,6 +552,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             this.bootClasspathProperties = Arrays.copyOf(bootClasspathProperties, bootClasspathProperties.length);
             return this;
         }
+        
+        @NonNull
+        public Builder setProject(@NonNull final Project project) {
+            Parameters.notNull("project", project); //NOI18N
+            this.project = project;
+            return this;
+        }
 
         /**
          * Sets javac source level property.
@@ -589,7 +602,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 moduleExecutePath,
                 testModuleExecutePath,
                 platform,
-                javacSource);
+                javacSource,
+                project);
         }
 
         @NonNull
@@ -842,6 +856,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                 ()->ClassPathFactory.createClassPath(
                                     ClassPathSupportFactory.createBootClassPathImplementation(
                                         evaluator,
+                                        project,
                                         getEndorsedClasspath(),
                                         platform.first())),
                                 ()->ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(

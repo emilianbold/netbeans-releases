@@ -123,6 +123,9 @@ class MappingTokenizer implements Iterable<Mapping> {
                         lastNameIndex += parser.next();
                         mapping.setNameIndex(lastNameIndex);
                     }
+                } else {
+                    // ignore mapping of length 1:
+                    return next();
                 }
             }
             return mapping;

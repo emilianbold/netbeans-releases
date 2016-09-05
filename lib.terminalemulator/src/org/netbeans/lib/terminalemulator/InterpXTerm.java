@@ -69,14 +69,14 @@ class InterpXTerm extends InterpProtoANSIX {
 	    st_wait.setAction('\\', st_base, act_done_collect_escbs);
 	}
 
-	static final class ACT_XTERM_CAPITAL_T implements Actor {
+	private static final class ACT_XTERM_CAPITAL_T implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_T: UNIMPLEMENTED";  // NOI18N
             }
         }
 
-	static final class ACT_XTERM_c implements Actor {
+	private static final class ACT_XTERM_c implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 // first number: 0 for vt100, 1 for vt220
@@ -87,35 +87,35 @@ class InterpXTerm extends InterpProtoANSIX {
             }
         }
 
-	static final class ACT_XTERM_m implements Actor {
+	private static final class ACT_XTERM_m implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_m: UNIMPLEMENTED";  // NOI18N
             }
         }
 
-	static final class ACT_XTERM_n implements Actor {
+	private static final class ACT_XTERM_n implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_n: UNIMPLEMENTED";  // NOI18N
             }
         }
 
-	static final class ACT_XTERM_p implements Actor {
+	private static final class ACT_XTERM_p implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_p: UNIMPLEMENTED";  // NOI18N
             }
         }
 
-	static final class ACT_XTERM_t implements Actor {
+	private static final class ACT_XTERM_t implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_t: UNIMPLEMENTED";  // NOI18N
             }
         }
 
-	static final class ACT_DONE_COLLECT_ESCBS implements Actor {
+	private static final class ACT_DONE_COLLECT_ESCBS implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
@@ -159,7 +159,7 @@ class InterpXTerm extends InterpProtoANSIX {
 
     }
 
-    private InterpTypeXTerm type;
+    private final InterpTypeXTerm type;
 
     private static final InterpTypeXTerm type_singleton = new InterpTypeXTerm();
 

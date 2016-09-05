@@ -261,7 +261,7 @@ public class JavacParser extends Parser {
     }
 
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
-        final boolean explicitCpInfo = (task instanceof ClasspathInfoProvider) && ((ClasspathInfoProvider)task).getClasspathInfo() != null;
+        final boolean explicitCpInfo = (task instanceof ClasspathInfo.Provider) && ((ClasspathInfo.Provider)task).getClasspathInfo() != null;
         if (!initialized) {
             final Source source = snapshot.getSource();
             final FileObject sourceFile = source.getFileObject();
@@ -269,7 +269,7 @@ public class JavacParser extends Parser {
             this.file = sourceFile;
             final ClasspathInfo oldInfo = this.cpInfo;
             if (explicitCpInfo) {
-                cpInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+                cpInfo = ((ClasspathInfo.Provider)task).getClasspathInfo();
             }
             else {
                 cpInfo = ClasspathInfo.create(sourceFile);
@@ -322,8 +322,8 @@ public class JavacParser extends Parser {
     private void init(final Task task) {
         if (!initialized) {
             ClasspathInfo _tmpInfo = null;
-            if (task instanceof ClasspathInfoProvider &&
-                (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+            if (task instanceof ClasspathInfo.Provider &&
+                (_tmpInfo = ((ClasspathInfo.Provider)task).getClasspathInfo()) != null) {
                 if (cpInfo != null && weakCpListener != null) {
                     cpInfo.removeChangeListener(weakCpListener);
                     this.weakCpListener = null;
@@ -458,7 +458,7 @@ public class JavacParser extends Parser {
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
         final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
-        final boolean isClasspathInfoProvider = task instanceof ClasspathInfoProvider;
+        final boolean isClasspathInfoProvider = task instanceof ClasspathInfo.Provider;
 
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid || isClasspathInfoProvider) {
@@ -466,7 +466,7 @@ public class JavacParser extends Parser {
                 LOGGER.fine ("Invalid, reparse");    //NOI18N
             }
             if (isClasspathInfoProvider) {
-                final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+                final ClasspathInfo providedInfo = ((ClasspathInfo.Provider)task).getClasspathInfo();
                 if (providedInfo != null && !providedInfo.equals(cpInfo)) {
                     if (sourceCount != 0) {
                         LOGGER.log (Level.FINE, "Task {0} has changed ClasspathInfo form: {1} to:{2}", new Object[]{task, cpInfo, providedInfo}); //NOI18N

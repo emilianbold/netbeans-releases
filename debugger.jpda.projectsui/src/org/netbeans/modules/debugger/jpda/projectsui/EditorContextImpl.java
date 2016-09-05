@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.swing.JEditorPane;
@@ -97,6 +98,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -847,6 +849,20 @@ public class EditorContextImpl extends EditorContext {
                                    final TreePathScanner<R,D> visitor, final D context,
                                    final SourcePathProvider sp) throws InvalidExpressionException {
         return EditorContextSupport.parseExpression(expression, url, line, visitor, context, sp);
+    }
+
+    public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+                                          final TreePathScanner<Boolean,D> canInterpret,
+                                          final TreePathScanner<R,D> interpreter,
+                                          final D context, final boolean staticContext,
+                                          final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
+                                          final SourcePathProvider sp) throws InvalidExpressionException {
+        return EditorContextSupport.interpretOrCompileCode(code, url, line,
+                                                           canInterpret,
+                                                           interpreter,
+                                                           context, staticContext,
+                                                           compiledClassHandler,
+                                                           sp);
     }
 
     /**

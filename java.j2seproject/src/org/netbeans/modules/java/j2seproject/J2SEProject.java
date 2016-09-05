@@ -224,7 +224,9 @@ public final class J2SEProject implements Project {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
 
-        this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
+        this.cpProvider = ClassPathProviderImpl.Builder.create(helper, evaluator(), getSourceRoots(), getTestSourceRoots())
+                .setProject(this)
+                .build();
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, newProjectOperationsCallback(this, updateProject));
     }

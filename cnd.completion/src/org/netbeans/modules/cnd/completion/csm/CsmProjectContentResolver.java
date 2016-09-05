@@ -1344,7 +1344,7 @@ public final class CsmProjectContentResolver {
                                 }
                             }
                         }
-                        VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
+                        VisibilityInfo nextInfo = getNextInheritanceInfo(contextDeclaration, minVisibility, inherit, inheritanceLevel, friend);
                         CsmVisibility nextMinVisibility = nextInfo.visibility;
                         int nextInheritanceLevel = nextInfo.inheritanceLevel;
 
@@ -1392,7 +1392,7 @@ public final class CsmProjectContentResolver {
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
             if (baseClass != null) {
                 if (!baseClass.equals(csmClass)) {
-                    VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
+                    VisibilityInfo nextInfo = getNextInheritanceInfo(contextDeclaration, minVisibility, inherit, inheritanceLevel, friend);
                     CsmVisibility nextMinVisibility = nextInfo.visibility;
                     int nextInheritanceLevel = nextInfo.inheritanceLevel;
                     if (nextMinVisibility != CsmVisibility.NONE) {
@@ -1666,13 +1666,18 @@ public final class CsmProjectContentResolver {
         return new VisibilityInfo(inheritanceLevel, minVisibility, friend);
     }
 
-    private VisibilityInfo getNextInheritanceInfo(CsmVisibility curMinVisibility, CsmInheritance inherit, int curInheritanceLevel, boolean friend) {
+    private VisibilityInfo getNextInheritanceInfo(CsmOffsetableDeclaration contextDeclaration, CsmVisibility curMinVisibility, CsmInheritance inherit, int curInheritanceLevel, boolean friend) {
         CsmVisibility nextMinVisibility;
         int nextInheritanceLevel = curInheritanceLevel;
         if (curInheritanceLevel == NO_INHERITANCE) {
             if(friend) {
                 nextMinVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(curMinVisibility, inherit.getVisibility());
                 nextInheritanceLevel = CHILD_INHERITANCE;
+            } else if (contextDeclaration == null && curMinVisibility == CsmInheritanceUtilities.MAX_VISIBILITY && inherit.getVisibility() == CsmVisibility.PUBLIC) {
+                // We are in global context => it may be a definition of inner member (which must be visible)
+                // so keep the MAX_VISIBILITY. Note, that this is a hack and different compilers have different behavior on that matter
+                nextMinVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
+                nextInheritanceLevel = NO_INHERITANCE;
             } else {
                 nextMinVisibility = CsmInheritanceUtilities.mergeExtInheritedVisibility(curMinVisibility, inherit.getVisibility());
                 nextInheritanceLevel = NO_INHERITANCE;

@@ -3918,7 +3918,10 @@ public class CasualDiff {
     // note: the oldTreeStartPos must be the real start, without preceding comments.
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer, boolean doNotDelete) {
         if (parent instanceof FieldGroupTree) {
-            return localPointer;
+            FieldGroupTree fgt = (FieldGroupTree)parent;
+            if (!fgt.getVariables().isEmpty() && fgt.getVariables().get(0) == oldT) {
+                return localPointer;
+            }
         }
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
@@ -3952,7 +3955,8 @@ public class CasualDiff {
         
         List<Comment> oldTrailingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.TRAILING) : old.getComments(CommentSet.RelativePosition.TRAILING);
         List<Comment> newTrailingComments = cs.getComments(CommentSet.RelativePosition.TRAILING);
-        if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments)) {
+        boolean sameInline = sameComments(oldInlineComments, newInlineComments);
+        if (sameInline && sameComments(oldTrailingComments, newTrailingComments)) {
             // copy the comments
             if (oldInlineComments.isEmpty() && oldTrailingComments.isEmpty()) {
                 return localPointer;
@@ -3962,27 +3966,27 @@ public class CasualDiff {
         }
 
         //XXX: hack: the upper diff might already add '\n' to the result, need to skip it if diffing inline comments
-        if (!sameComments(oldInlineComments, newInlineComments)) {
-            while (printer.out.isWhitespaceLine())
+        if (!sameInline) {
+            while (printer.out.isWhitespaceLine()) {
                 printer.eatChars(1);
-        }
-        
-        localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, null, null, false, false, false, false, localPointer);
+            }
+            localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, null, null, false, false, false, false, localPointer);
+            boolean containedEmbeddedNewLine = false;
+            boolean containsEmbeddedNewLine = false;
 
-        boolean containedEmbeddedNewLine = false;
-        boolean containsEmbeddedNewLine = false;
+            for (Comment oldComment : oldInlineComments) {
+                if (oldComment.style() == Style.LINE) containedEmbeddedNewLine = true;
+            }
 
-        for (Comment oldComment : oldInlineComments) {
-            if (oldComment.style() == Style.LINE) containedEmbeddedNewLine = true;
-        }
-        
-        for (Comment nueComment : newInlineComments) {
-            if (nueComment.style() == Style.LINE) containsEmbeddedNewLine = true;
+            for (Comment nueComment : newInlineComments) {
+                if (nueComment.style() == Style.LINE) containsEmbeddedNewLine = true;
+            }
+
+            if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
+                printer.print("\n");
+            }
         }
 
-        if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
-            printer.print("\n");
-        }
         int lp = diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, null, null, true, false, false, false, localPointer);
         boolean commentsCreated = oldInlineComments.isEmpty() && oldTrailingComments.isEmpty();
         // if comments were added, it may be possible that the immediately following newline
@@ -3996,6 +4000,11 @@ public class CasualDiff {
                 while (printer.out.isWhitespaceLine()) {
                     printer.eatChars(1);
                 }
+            }
+            // we have created a comment; if the local pointer is at the beginning of a new line,
+            // we should reset the printer to the line start as well
+            if (lp > 0 && diffContext.origText.charAt(lp - 1) == '\n') {
+                printer.out.toLineStart();
             }
         }
         return lp;

@@ -77,9 +77,15 @@ public class UseTraitStatement extends Statement {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (UseTraitStatementPart useTraitStatementPart : parts) {
-            sb.append(useTraitStatementPart).append(","); //NOI18N
+            if (sb.length() > 0) {
+                sb.append(","); // NOI18N
+            }
+            sb.append(useTraitStatementPart);
         }
-        return "use " + sb.toString() + getBody(); //NOI18N
+        if (body != null) {
+            sb.append(body);
+        }
+        return "use " + sb.toString(); //NOI18N
     }
 
 }

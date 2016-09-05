@@ -281,6 +281,10 @@ public final class MacroExpanderFactory {
                     soext = "so"; // NOI18N
                     osname = "Linux"; // NOI18N
                     break;
+                case FREEBSD:
+                    soext = "so"; // NOI18N
+                    osname = "FreeBSD"; // NOI18N
+                    break;
                 default:
                     osname = hostInfo.getOSFamily().name();
                     soext = "so"; // NOI18N

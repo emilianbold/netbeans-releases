@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.util.function.Function;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -54,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 
 /**
@@ -99,7 +101,8 @@ public abstract class ClasspathInfoAccessor {
             boolean backgroundCompilation,
             boolean ignoreExcludes,
             boolean hasMemoryFileManager,
-            boolean useModifiedFiles);
+            boolean useModifiedFiles,
+            @NullAllowed Function<JavaFileManager.Location, JavaFileManager> jfmProvider);
 
     public abstract ClasspathInfo create (FileObject fo,
             JavaFileFilterImplementation filter,

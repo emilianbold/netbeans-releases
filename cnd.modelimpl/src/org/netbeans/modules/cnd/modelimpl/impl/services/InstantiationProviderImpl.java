@@ -125,6 +125,7 @@ import org.openide.util.Pair;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isReference;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.tryGetFunctionPointerType;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.TemplateParameterResolver;
 import org.netbeans.modules.cnd.utils.Antiloop;
 
 /**
@@ -164,14 +165,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     List<Qualificator> templateTypeQuals = templateTypeInfo.qualificators;
                     List<CsmType> results = new ArrayList<>();
                     for (CsmType targetType : targetTypes) {
-                        TypeInfoCollector targetTypeInfo = new CsmUtilities.TypeInfoCollector();
-                        CsmType targetUnderlyingType = CsmUtilities.iterateTypeChain(targetType, targetTypeInfo);
-                        List<Qualificator> targetTypeQuals = targetTypeInfo.qualificators;
-
                         ListIterator<Qualificator> templateQualIter = templateTypeQuals.listIterator(templateTypeQuals.size());
-                        ListIterator<Qualificator> targetQualIter = targetTypeQuals.listIterator(targetTypeQuals.size());
-
+                        
                         if (templateQualIter.hasPrevious()) {
+                            TypeInfoCollector targetTypeInfo = new CsmUtilities.TypeInfoCollector();
+                            CsmType targetUnderlyingType = CsmUtilities.iterateTypeChain(targetType, targetTypeInfo);
+                            List<Qualificator> targetTypeQuals = targetTypeInfo.qualificators;
+                            ListIterator<Qualificator> targetQualIter = targetTypeQuals.listIterator(targetTypeQuals.size());
+                            
                             // Qualificators must be changed
                             boolean qualsError = false;
                             while (templateQualIter.hasPrevious()) {
@@ -223,7 +224,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
                             results.add(CsmTypes.createType(targetUnderlyingType, td));
                         } else {
-                            results.add(targetUnderlyingType);
+                            results.add(targetType);
                         }
                     }
                     return results.toArray(new CsmType[results.size()]);
@@ -239,7 +240,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, params, specialize);
@@ -251,7 +252,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, CsmType type, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, type.getInstantiationParams(), specialize);
@@ -339,14 +340,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     public CsmObject instantiate(CsmTemplate template, CsmInstantiation instantiation, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, instantiation.getMapping(), specialize);
     }
 
     public CsmObject instantiate(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
-        CsmResolveContext context = getLastResolveContext();
+        CsmResolveContext context = CsmResolveContext.getLast();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
         int contextOffset = (context != null) ? context.getOffset() : 0;
         return instantiate(template, contextFile, contextOffset, mapping, specialize);
@@ -1033,20 +1034,30 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             CsmSpecializationParameter param = instParams.get(i);
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) &&
                                     CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                                CsmType instSpecParam = paramsType.get(i);
-                                CsmTypeBasedSpecializationParameter declSpecParam = (CsmTypeBasedSpecializationParameter) specParam;
-                                CsmClassifier declCls = declSpecParam.getClassifier();
-                                if (declCls != null && !CsmKindUtilities.isTemplateParameter(declCls)) {
-                                    String declClsQualifiedName = declCls.getQualifiedName().toString();
-                                    if (declClsQualifiedName.equals(paramsText.get(i))) {
+                                CsmTypeBasedSpecializationParameter typeSpecParam = (CsmTypeBasedSpecializationParameter) specParam;
+                                CsmClassifier specParamCls = typeSpecParam.getClassifier();
+                                if (specParamCls != null && !CsmKindUtilities.isTemplateParameter(specParamCls)) {
+                                    String specClsQualifiedName = specParamCls.getQualifiedName().toString();
+                                    if (specClsQualifiedName.equals(paramsText.get(i))) {
                                         match += 2;
-                                    } else if (declCls.isValid()) {
-                                        final Set<String> nestedQualifiedNames = getNestedTypeNames(instSpecParam, tryFullResolve);
+                                    } else if (specParamCls.isValid()) {
                                         int matchValue = 0;
-                                        for (String nestedQualifiedName : nestedQualifiedNames) {
-                                            matchValue = getQualifiedNamesMatchValue(nestedQualifiedName, declClsQualifiedName);
-                                            if (matchValue > 0) {
+                                        final Set<String> specParamNames = getNestedTypeNames(typeSpecParam.getType(), tryFullResolve);
+                                        final Set<String> instParamNames = getNestedTypeNames(paramsType.get(i), tryFullResolve);
+                                        for (String specParamName : specParamNames) {
+                                            if (instParamNames.contains(specParamName)) {
+                                                matchValue = 2;
                                                 break;
+                                            }
+                                        }
+                                        if (matchValue == 0) {
+                                            for (String specParamName : specParamNames) {
+                                                for (String instParamName : instParamNames) {
+                                                    matchValue = getQualifiedNamesMatchValue(instParamName, specParamName);
+                                                    if (matchValue > 0) {
+                                                        break;
+                                                    }
+                                                }
                                             }
                                         }
                                         if (matchValue > 0) {
@@ -1056,7 +1067,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                         }*/
                                     }
                                 }
-                                CsmFunctionPointerType declSpecFunType = tryGetFunctionPointerType(declSpecParam.getType());
+                                CsmFunctionPointerType declSpecFunType = tryGetFunctionPointerType(typeSpecParam.getType());
                                 if (CsmKindUtilities.isFunctionPointerType(declSpecFunType)) {
                                     CsmFunctionPointerType paramFunType = tryGetFunctionPointerType(paramsType.get(i));
                                     if (CsmKindUtilities.isFunctionPointerType(paramFunType)) {
@@ -1070,14 +1081,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             match += 1;
                                         }
                                     }
-                                } else if (isPointer(declSpecParam.getType()) && isPointer(paramsType.get(i))) {
+                                } else if (isPointer(typeSpecParam.getType()) && isPointer(paramsType.get(i))) {
                                     match += 1;
                                 }
-                                if (declSpecParam.isReference()) {
+                                if (typeSpecParam.isReference()) {
                                     int checkReference = isReference(paramsType.get(i));
                                     if (checkReference > 0) {
                                         match += 1;
-                                        if ((checkReference == 2) == declSpecParam.isRValueReference()) {
+                                        if ((checkReference == CsmTypes.TypeDescriptor.RVALUE_REFERENCE) == typeSpecParam.isRValueReference()) {
                                             match +=1;
                                         }
                                     }
@@ -1101,20 +1112,33 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     private static Set<String> getNestedTypeNames(CsmType instSpecParam, final boolean resolveTypeChain) {
-        final Set<String> nestedQualifiedNames = new HashSet<>();
-        CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
-            @Override
-            public boolean check(CsmType value) {
-                CsmClassifier classifier = value.getClassifier();
-                if (classifier != null) {
-                    if (!nestedQualifiedNames.add(classifier.getQualifiedName().toString())) {
-                        return true;
+        // TODO: it seems to be good idea to do caching in iterateTypeChain method instead of this local cache.
+        CsmCacheMap cache = getNestedTypesCache();
+        NestedTypesRequest request = new NestedTypesRequest(instSpecParam, resolveTypeChain);
+        Set<String> result = (Set<String>) CsmCacheMap.getFromCache(cache, request, null);
+        if (result == null) {
+            long time = System.currentTimeMillis();
+            final Set<String> nestedQualifiedNames = new HashSet<>();
+            CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
+                @Override
+                public boolean check(CsmType value) {
+                    CsmClassifier classifier = value.getClassifier();
+                    if (classifier != null) {
+                        if (!nestedQualifiedNames.add(classifier.getQualifiedName().toString())) {
+                            return true;
+                        }
                     }
+                    return !resolveTypeChain;
                 }
-                return !resolveTypeChain;
+            });
+            time = System.currentTimeMillis() - time;
+            if (cache != null) {
+                cache.put(request, CsmCacheMap.toValue(nestedQualifiedNames, time));
             }
-        });
-        return nestedQualifiedNames;
+            return nestedQualifiedNames;
+        } else {
+            return result;
+        }
     }
 
     private static int getQualifiedNamesMatchValue(String qn1, String qn2) {
@@ -1335,6 +1359,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             // non first inst
             List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> sps = getInstantiationParams(decl);
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : sps) {
+                CsmInstantiation currentInstantiation = i;
                 CsmSpecializationParameter instParam = pair.first();
                 List<CsmInstantiation> instantiations = pair.second();
                 if (CsmKindUtilities.isVariadicSpecalizationParameter(instParam)) {
@@ -1373,9 +1398,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     if (!asType.isPointer() && !asType.isConst() 
                             && !asType.isVolatile() && !asType.isReference() 
                             && !asType.isRValueReference()) {
-                        CsmSpecializationParameter newTp = m.get(paramType.getParameter());
+                        // TODO: paramResolver should be used in case of variadic parameters (template parameter packs) as well.
+                        TemplateParameterResolver paramResolver = new Instantiation.TemplateParameterResolver();
+                        CsmSpecializationParameter newTp = paramResolver.resolveTemplateParameter(paramType.getParameter(), new MapHierarchy<>(m));
                         if (newTp != null && newTp != instParam) {
                             instantiations.clear();
+                            currentInstantiation = paramResolver.alterInstantiation(currentInstantiation);
                             res.add(Pair.of(newTp, instantiations));
                         } else {
                             res.add(pair);
@@ -1386,7 +1414,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 } else {
                     res.add(pair);
                 }
-                instantiations.add(i);
+                if (currentInstantiation != null) {
+                    instantiations.add(currentInstantiation);
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -1689,6 +1719,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         if (true) return null;
         return CsmCacheManager.getClientCache(SpecializeRequest.class, SPECIALIZE_INITIALIZER);
     }
+    
+    private static CsmCacheMap getNestedTypesCache() {
+        if (false) return null;
+        return CsmCacheManager.getClientCache(NestedTypesRequest.class, NESTED_TYPES_CACHE);
+    }
 
     private static <T> int howMany(Collection<T> collection, T elem) {
         int counter = 0;
@@ -1738,13 +1773,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     private static CsmType[] wrapType(CsmType type) {
         return type != null ? new CsmType[]{type} : null;
-    }
-
-    private CsmResolveContext getLastResolveContext() {
-        CsmResolveContext context;
-        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
-        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
-        return context;
     }
 
     private static class TypeDigger {
@@ -1848,7 +1876,43 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             CsmType result = CsmUtilities.iterateTypeChain(type, new CsmUtilities.Predicate<CsmType>() {
                 @Override
                 public boolean check(CsmType value) {
-                    return value != null && value.isInstantiation();
+                    // In fact we always must unfold all types prior to deducing template parameter.
+                    // The same is true for pattern type. If we are ever consider doing
+                    // that we must bind template parameter we are deducing to some 
+                    // subtype inside the most unfolded type (Synonym of that operation
+                    // is modifiyng pattern type).
+                    
+                    // Example (CCC specialized via alias1 and instantiated via alias2):
+                    /*
+                        template <typename T>
+                        struct AAA {};
+
+                        template <typename T>
+                        struct BBB {};
+
+                        template <typename T>
+                        using alias1 = BBB<T>;
+
+                        template <typename T>
+                        using alias2 = alias1<AAA<T> >;
+
+                        template <typename T>
+                        struct CCC {};
+
+                        template <typename T>
+                        struct CCC<alias1<T> > {
+                            typedef T type;
+                        };
+
+                        int main() {
+                            CCC<alias2<int>>::type var;
+                            std::cout << typeid(var).name() << std::endl;
+                            return 0;
+                        }
+                    */
+                    return value != null // just precaution to not get NullPointerException
+                            && value.isInstantiation() // value must be instantation
+                            && value.hasInstantiationParams(); // value must have instantiation parameters
                 }
             });
             return (result != null && result.isInstantiation()) ? result  : null;
@@ -2348,6 +2412,50 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
             }
             return hasNullTypes ? classifier.equals(other.classifier) : true;
+        }
+    }
+    
+    private static final Callable<CsmCacheMap> NESTED_TYPES_CACHE = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("Nested Type Names Cache", 1); // NOI18N
+        }
+
+    };
+
+    /**
+     * Compares two types by reference
+     */
+    private static class NestedTypesRequest {
+
+        private final CsmType type;
+        
+        private final boolean fullResolve;
+
+        public NestedTypesRequest(CsmType type, boolean fullResolve) {
+            this.type = type;
+            this.fullResolve = fullResolve;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + System.identityHashCode(this.type);
+            hash = 67 * hash + (this.fullResolve ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NestedTypesRequest other = (NestedTypesRequest) obj;
+            return other.type == type && other.fullResolve == fullResolve;
         }
     }
 

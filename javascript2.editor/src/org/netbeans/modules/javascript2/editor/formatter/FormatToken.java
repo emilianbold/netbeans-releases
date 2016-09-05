@@ -814,7 +814,20 @@ public final class FormatToken {
 
         // array literal brackets
         AFTER_ARRAY_LITERAL_BRACKET,
-        BEFORE_ARRAY_LITERAL_BRACKET;
+        BEFORE_ARRAY_LITERAL_BRACKET,
+
+        BEFORE_JSX_BLOCK_START {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_JSX_BLOCK_END {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        };
 
         public boolean isLineWrapMarker() {
             return false;

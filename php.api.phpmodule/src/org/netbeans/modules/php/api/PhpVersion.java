@@ -108,13 +108,15 @@ public enum PhpVersion {
     }
 
     /**
-     * Return legacy PHP version. This usually means
-     * the oldest yet supported PHP version.
+     * Return legacy PHP version, the one before the latest one.
+     * <p>
+     * This usually means the oldest yet supported PHP version.
      * @return the legacy PHP version
      * @since 2.41
      */
     public static PhpVersion getLegacy() {
-        return PHP_55;
+        PhpVersion[] phpVersions = PhpVersion.values();
+        return phpVersions[phpVersions.length - 2];
     }
 
     /**

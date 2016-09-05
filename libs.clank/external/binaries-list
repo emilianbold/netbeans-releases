@@ -1,7 +1,7 @@
-#changeset:   19034:9e7b983e54e5
+#changeset:   19438:c0c1e6e72c89
 #branch:      jclank
 #tag:         tip
 #user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Tue Jul 19 18:06:38 2016 +0300
-#summary:     Fixed #257048 - Guard block hint issue
-A22324F86EB1673E0D54D0FFF5C8047FAED4A2BA clank_0.3.6.zip
+#date:        Fri Sep 02 20:20:24 2016 +0300
+#summary:     Fixing #258049 - [newcodemodel] New parser doesn't highlight inaccessible macro
+5E0E2BDEFE842E63FE33F0AE4E877426CBBF306B clank_0.3.6.zip

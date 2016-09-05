@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.grammar;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Reader;
@@ -89,7 +90,7 @@ class ShowEffPomDiffAction extends AbstractAction {
 
     ShowEffPomDiffAction(Lookup lookup) {
         putValue(NAME, "Show diff");
-        putValue(Action.SMALL_ICON, ImageUtilities.loadImage(ICON));
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(ICON, false));
         putValue(SHORT_DESCRIPTION, "Show diff between the current effective pom and alternate ones");
         this.lookup = lookup;
     }

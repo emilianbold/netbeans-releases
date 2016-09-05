@@ -1486,7 +1486,7 @@ public class BaseKit extends DefaultEditorKit {
                                                     indenter.reindent(dotPos);
 
                                                     // adjust the caret
-                                                    context.setDot(c, newDotPos);
+                                                    context.setDot(c, newDotPos, Position.Bias.Forward);
                                                 } finally {
                                                     DocumentUtilities.setTypingModification(doc, false);
                                                 }
@@ -1754,8 +1754,8 @@ public class BaseKit extends DefaultEditorKit {
                                                                 int lineStartOffset = Utilities.getRowStart(doc, start);
                                                                 if (lineStartOffset != newSelectionStartOffset) {
                                                                     context.setDotAndMark(caretInfo,
-                                                                                            doc.createPosition(lineStartOffset),
-                                                                                            doc.createPosition(end));
+                                                                        doc.createPosition(lineStartOffset), Position.Bias.Forward,
+                                                                        doc.createPosition(end), Position.Bias.Forward);
                                                                 }
                                                             }
                                                         }
@@ -1788,7 +1788,7 @@ public class BaseKit extends DefaultEditorKit {
                                                                 // Fix of #32240
                                                                 dotOffset = caretInfo.getDot();
                                                                 Position newDotPos = doc.createPosition(Utilities.getRowEnd(doc, dotOffset));
-                                                                context.setDot(caretInfo, newDotPos);
+                                                                context.setDot(caretInfo, newDotPos, Position.Bias.Forward);
                                                             }
                                                         } else { // already chars on the line
                                                             insertTabString(doc, dotOffset);
@@ -2567,30 +2567,37 @@ public class BaseKit extends DefaultEditorKit {
                             editorCaret.moveCarets(new CaretMoveHandler() {
                                 @Override
                                 public void moveCarets(CaretMoveContext context) {
+                                    Position.Bias[] biasRet = new Position.Bias[] { Position.Bias.Forward }; // Initial value in case it would stay non-updated
                                     for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                         try {
                                             int dot = caretInfo.getDot();
-                                            Point p = caretInfo.getMagicCaretPosition();
-                                            if (p == null) {
-                                                Rectangle r = target.modelToView(dot);
-                                                if (r != null) {
-                                                    p = new Point(r.x, r.y);
-                                                    context.setMagicCaretPosition(caretInfo, p);
+                                            Point magicPos = caretInfo.getMagicCaretPosition();
+                                            if (magicPos == null) {
+                                                Rectangle origDotRect = target.modelToView(dot);
+                                                if (origDotRect != null) {
+                                                    magicPos = new Point(origDotRect.x, origDotRect.y);
+                                                    context.setMagicCaretPosition(caretInfo, magicPos);
                                                 } else {
                                                     return; // model to view failed
                                                 }
                                             }
                                             try {
-                                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                                dot = target.getUI().getNextVisualPositionFrom(target, dot, caretInfo.getDotBias(), SwingConstants.NORTH, biasRet);
+                                                if (magicPos != null) { 
+                                                    Rectangle dotRect = target.modelToView(dot);
+                                                    if (dotRect != null) {
+                                                        dot = target.viewToModel(new Point(magicPos.x, dotRect.y)); // Combine magic pos x and y from dotRect
+                                                    }
+                                                }
                                                 Position dotPos = doc.createPosition(dot);
                                                 boolean select = selectionUpAction.equals(getValue(Action.NAME));
                                                 if (select) {
-                                                    context.moveDot(caretInfo, dotPos);
+                                                    context.moveDot(caretInfo, dotPos, biasRet[0]);
                                                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                                         RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                                     }
                                                 } else {
-                                                    context.setDot(caretInfo, dotPos);
+                                                    context.setDot(caretInfo, dotPos, biasRet[0]);
                                                 }
                                             } catch (BadLocationException e) {
                                                 // the position stays the same
@@ -2666,30 +2673,37 @@ public class BaseKit extends DefaultEditorKit {
                             editorCaret.moveCarets(new CaretMoveHandler() {
                                 @Override
                                 public void moveCarets(CaretMoveContext context) {
+                                    Position.Bias[] biasRet = new Position.Bias[] { Position.Bias.Forward }; // Initial value in case it would stay non-updated
                                     for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
                                         try {
                                             int dot = caretInfo.getDot();
-                                            Point p = caretInfo.getMagicCaretPosition();
-                                            if (p == null) {
-                                                Rectangle r = target.modelToView(dot);
-                                                if (r != null) {
-                                                    p = new Point(r.x, r.y);
-                                                    context.setMagicCaretPosition(caretInfo, p);
+                                            Point magicPos = caretInfo.getMagicCaretPosition();
+                                            if (magicPos == null) {
+                                                Rectangle origDotRect = target.modelToView(dot);
+                                                if (origDotRect != null) {
+                                                    magicPos = new Point(origDotRect.x, origDotRect.y);
+                                                    context.setMagicCaretPosition(caretInfo, magicPos);
                                                 } else {
                                                     return; // model to view failed
                                                 }
                                             }
                                             try {
-                                                dot = Utilities.getPositionBelow(target, dot, p.x);
+                                                dot = target.getUI().getNextVisualPositionFrom(target, dot, caretInfo.getDotBias(), SwingConstants.SOUTH, biasRet);
+                                                if (magicPos != null) { 
+                                                    Rectangle dotRect = target.modelToView(dot);
+                                                    if (dotRect != null) {
+                                                        dot = target.viewToModel(new Point(magicPos.x, dotRect.y)); // Combine magic pos x and y from dotRect
+                                                    }
+                                                }
                                                 Position dotPos = doc.createPosition(dot);
                                                 boolean select = selectionDownAction.equals(getValue(Action.NAME));
                                                 if (select) {
-                                                    context.moveDot(caretInfo, dotPos);
+                                                    context.moveDot(caretInfo, dotPos, biasRet[0]);
                                                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                                         RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                                     }
                                                 } else {
-                                                    context.setDot(caretInfo, dotPos);
+                                                    context.setDot(caretInfo, dotPos, biasRet[0]);
                                                 }
                                             } catch (BadLocationException e) {
                                                 // position stays the same
@@ -2842,9 +2856,9 @@ public class BaseKit extends DefaultEditorKit {
                                                 boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
                                                 Position newCaretPos = doc.createPosition(newCaretOffset);
                                                 if (select) {
-                                                    context.moveDot(caretInfo, newCaretPos);
+                                                    context.moveDot(caretInfo, newCaretPos, Position.Bias.Forward);
                                                 } else {
-                                                    context.setDot(caretInfo, newCaretPos);
+                                                    context.setDot(caretInfo, newCaretPos, Position.Bias.Forward);
                                                 }
 
                                                 // Update magic caret position
@@ -2983,16 +2997,16 @@ public class BaseKit extends DefaultEditorKit {
                                             try {
                                                 if (!select && caretInfo.isSelection()) {
                                                     int offset = caretInfo.getSelectionEnd();
-                                                    context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
+                                                    context.setDot(caretInfo, doc.createPosition(offset), Position.Bias.Forward); // Should destroy the selection
                                                 } else {
                                                     int offset = caretInfo.getDot();
                                                     offset = target.getUI().getNextVisualPositionFrom(target,
                                                             offset, Position.Bias.Forward, SwingConstants.EAST, null);
                                                     Position dotPos = doc.createPosition(offset);
                                                     if (select) {
-                                                        context.moveDot(caretInfo, dotPos);
+                                                        context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
                                                     } else {
-                                                        context.setDot(caretInfo, dotPos);
+                                                        context.setDot(caretInfo, dotPos, Position.Bias.Forward);
                                                     }
                                                 }
                                             } catch (BadLocationException ex) {
@@ -3138,9 +3152,9 @@ public class BaseKit extends DefaultEditorKit {
                                                 boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
                                                 Position newCaretPos = doc.createPosition(newCaretOffset);
                                                 if (select) {
-                                                    context.moveDot(caretInfo, newCaretPos);
+                                                    context.moveDot(caretInfo, newCaretPos, Position.Bias.Forward);
                                                 } else {
-                                                    context.setDot(caretInfo, newCaretPos);
+                                                    context.setDot(caretInfo, newCaretPos, Position.Bias.Forward);
                                                 }
 
                                                 // Update magic caret position
@@ -3274,16 +3288,16 @@ public class BaseKit extends DefaultEditorKit {
                                             try {
                                                 if (!select && caretInfo.isSelection()) {
                                                     int offset = caretInfo.getSelectionStart();
-                                                    context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
+                                                    context.setDot(caretInfo, doc.createPosition(offset), Position.Bias.Forward); // Should destroy the selection
                                                 } else {
                                                     int offset = caretInfo.getDot();
                                                     offset = target.getUI().getNextVisualPositionFrom(target,
                                                             offset, Position.Bias.Backward, SwingConstants.WEST, null);
                                                     Position dotPos = doc.createPosition(offset);
                                                     if (select) {
-                                                        context.moveDot(caretInfo, dotPos);
+                                                        context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
                                                     } else {
-                                                        context.setDot(caretInfo, dotPos);
+                                                        context.setDot(caretInfo, dotPos, Position.Bias.Forward);
                                                     }
                                                 }
                                             } catch (BadLocationException ex) {
@@ -3426,9 +3440,9 @@ public class BaseKit extends DefaultEditorKit {
 
                                             Position dotPos = doc.createPosition(dot);
                                             if (select) {
-                                                context.moveDot(caretInfo, dotPos);
+                                                context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
                                             } else {
-                                                context.setDot(caretInfo, dotPos);
+                                                context.setDot(caretInfo, dotPos, Position.Bias.Forward);
                                             }
                                         } catch (BadLocationException e) {
                                             target.getToolkit().beep();
@@ -3554,9 +3568,9 @@ public class BaseKit extends DefaultEditorKit {
                                             boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
                                             Position dotPos = context.getDocument().createPosition(dot);
                                             if (select) {
-                                                context.moveDot(caretInfo, dotPos);
+                                                context.moveDot(caretInfo, dotPos, Position.Bias.Forward);
                                             } else {
-                                                context.setDot(caretInfo, dotPos);
+                                                context.setDot(caretInfo, dotPos, Position.Bias.Forward);
                                             }
                                             // now move the magic caret position far to the right
                                             Rectangle r = target.modelToView(dot);

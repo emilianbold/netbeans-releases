@@ -47,11 +47,13 @@ package org.netbeans.core.windows.services;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GridBagConstraints;
@@ -84,6 +86,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.FocusManager;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
@@ -256,7 +259,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             // #55273: Dialogs created by DialogDisplayer are not disposed after close
             setDefaultCloseOperation (WindowConstants.DISPOSE_ON_CLOSE);
         }
-        
+        if (!Constants.AUTO_FOCUS) {
+            setAutoRequestFocus(false);
+        }
+
         descriptor = d;
 
         buttonListener = new ButtonListener();
@@ -283,11 +289,26 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if(comp == null) {
             return;
         }
-        
-        if(!(comp instanceof JComponent) 
-            || !((JComponent)comp).requestDefaultFocus()) {
-                
-            comp.requestFocus();
+
+        if (/*!Constants.AUTO_FOCUS &&*/ FocusManager.getCurrentManager().getActiveWindow() == null) {
+            // Do not steal focus if no Java window have it
+            Component defComp = null;
+            Container nearestRoot =
+                (comp instanceof Container && ((Container) comp).isFocusCycleRoot()) ? (Container) comp : comp.getFocusCycleRootAncestor();
+            if (nearestRoot != null) {
+                defComp = nearestRoot.getFocusTraversalPolicy().getDefaultComponent(nearestRoot);
+            }
+            if (defComp != null) {
+                defComp.requestFocusInWindow();
+            } else {
+                comp.requestFocusInWindow();
+            }
+        } else {
+            if (!(comp instanceof JComponent)
+                || !((JComponent)comp).requestDefaultFocus()) {
+
+                comp.requestFocus();
+            }
         }
     }
     

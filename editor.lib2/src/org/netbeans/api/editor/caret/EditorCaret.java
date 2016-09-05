@@ -593,7 +593,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.setDot(context.getOriginalLastCaret(), pos);
+                        context.setDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
@@ -650,7 +650,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.moveDot(context.getOriginalLastCaret(), pos);
+                        context.moveDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
@@ -1154,8 +1154,13 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    public @Override void setMagicCaretPosition(Point p) {
-        getLastCaretItem().setMagicCaretPosition(p);
+    public @Override void setMagicCaretPosition(final Point p) {
+        runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, new CaretMoveHandler() {
+            @Override
+            public void moveCarets(CaretMoveContext context) {
+                context.setMagicCaretPosition(context.getOriginalLastCaret(), p);
+            }
+        }, MoveCaretsOrigin.DISABLE_FILTERS);
     }
 
     public @Override final Point getMagicCaretPosition() {
@@ -1571,19 +1576,27 @@ public final class EditorCaret implements Caret {
                             if (replaceItems != null) {
                                 caretItems = replaceItems;
                                 diffCount = replaceItems.size() - caretItems.size();
-                                for (CaretItem caretItem : caretItems) {
-                                    if (caretItem.getAndClearInfoObsolete()) {
-                                        caretItem.clearInfo();
-                                    }
-                                }
-                               sortedCaretItems = activeTransaction.getSortedCaretItems();
-                               assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
+                                sortedCaretItems = activeTransaction.getSortedCaretItems();
+                                assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
-                            if (activeTransaction.isAnyChange()) {
+                            boolean chg = false;
+                            if (activeTransaction.isDotOrStructuralChange()) {
                                 caretInfos = null;
                                 sortedCaretInfos = null;
                                 if (inAtomicSectionL) {
                                     atomicSectionAnyCaretChange = true;
+                                }
+                                chg = true;
+                            } else if (activeTransaction.isMagicPosChange()) {
+                                caretInfos = null;
+                                sortedCaretInfos = null;
+                                chg = true;
+                            }
+                            if (chg) {
+                                for (CaretItem caretItem : caretItems) {
+                                    if (caretItem.getAndClearInfoObsolete()) {
+                                        caretItem.clearInfo();
+                                    }
                                 }
                             }
                             scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
@@ -1621,7 +1634,7 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
-                        if (activeTransaction.isAnyChange()) {
+                        if (activeTransaction.isDotOrStructuralChange()) {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
@@ -2685,17 +2698,20 @@ public final class EditorCaret implements Caret {
                             }
                             c.setDragEnabled(true);
                             if (evt.isControlDown() && evt.isShiftDown()) {
-                                mouseState = MouseState.CHAR_SELECTION;
+                                // "Add multicaret" mode
+                                mouseState = MouseState.DEFAULT;
                                 try {
                                     Position pos = doc.createPosition(offset);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward) }, null);
+                                    //add/remove caret
+                                    runTransaction(CaretTransaction.RemoveType.TOGGLE_CARET, 0,
+                                            new CaretItem[]{new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward)}, null);
                                     evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
                                 }
                             } else if (evt.isShiftDown()) { // Select till offset
                                 moveDot(offset);
+                                setMagicCaretPosition(null);
                                 adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                                 mouseState = MouseState.CHAR_SELECTION;
                             } else // Regular press
@@ -2705,6 +2721,7 @@ public final class EditorCaret implements Caret {
                             } else { // Drag not possible
                                 mouseState = MouseState.CHAR_SELECTION;
                                 setDot(offset);
+                                setMagicCaretPosition(null);
                             }
                             break;
 
@@ -2720,18 +2737,8 @@ public final class EditorCaret implements Caret {
                                 }
                                 if (!foldExpanded) {
                                     if (evt.isControlDown() && evt.isShiftDown()) {
-                                        try {
-                                            int begOffs = Utilities.getWordStart(c, offset);
-                                            int endOffs = Utilities.getWordEnd(c, offset);
-                                            Position beginPos = doc.createPosition(begOffs);
-                                            Position endPos = doc.createPosition(endOffs);
-                                            runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                                     new CaretItem[] { new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward) }, null);
-                                            minSelectionStartOffset = begOffs;
-                                            minSelectionEndOffset = endOffs;
-                                        } catch (BadLocationException ex) {
-                                            // Do nothing
-                                        }
+                                        // "Add multicaret" mode only with single click
+                                        mouseState = MouseState.DEFAULT;
                                     } else {
                                         if (selectWordAction == null) {
                                             selectWordAction = EditorActionUtilities.getAction(
@@ -2755,18 +2762,8 @@ public final class EditorCaret implements Caret {
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
                             if (evt.isControlDown() && evt.isShiftDown()) {
-                                try {
-                                    int begOffs = Utilities.getRowStart(c, offset);
-                                    int endOffs = Utilities.getRowEnd(c, offset);
-                                    Position beginPos = doc.createPosition(begOffs);
-                                    Position endPos = doc.createPosition(endOffs);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                                            new CaretItem[]{new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward)}, null);
-                                    minSelectionStartOffset = begOffs;
-                                    minSelectionEndOffset = endOffs;
-                                } catch (BadLocationException ex) {
-                                    // Do nothing
-                                }
+                                // "Add multicaret" mode only with single click
+                                mouseState = MouseState.DEFAULT;
                             } else {
                                 if (selectLineAction == null) {
                                     selectLineAction = EditorActionUtilities.getAction(
@@ -2881,6 +2878,7 @@ public final class EditorCaret implements Caret {
                                     try {
                                         doc.insertString(offset, pastingString, null);
                                         setDot(offset + pastingString.length());
+                                        setMagicCaretPosition(null);
                                     } catch (BadLocationException exc) {
                                     }
                                 }

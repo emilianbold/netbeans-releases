@@ -81,7 +81,7 @@ public class DbgAttachActionHandler extends DbgActionHandler {
 	executionStarted();
 
         target = pae.getContext().lookup(DebugTarget.class);
-        NativeDebuggerManager.get().attach(target, this);
+        NativeDebuggerManagerAccessor.get().attach(target, this);
         
         // executionFinished is called when debugger really finish (NativeDebuggerImpl.preKill)
 //	executionFinished(0);

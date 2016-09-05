@@ -92,6 +92,10 @@ class ModelElementFactory {
         }
         int start = Token.descPosition(functionNode.getFirstToken());
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
+        if (end <= start) {
+            end = start + 1;  
+            assert false: "The end offset of a function is before the start offset: [" + start + ", " + end + "] in file: " + parserResult.getSnapshot().getSource().getFileObject().getPath(); //NOI18N
+        }
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
         for(IdentNode node: functionNode.getParameters()) {
             Identifier param = create(parserResult, node);

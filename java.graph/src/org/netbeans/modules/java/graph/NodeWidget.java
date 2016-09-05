@@ -73,6 +73,8 @@ import static org.netbeans.modules.java.graph.Bundle.TIP_SingleConflict;
 import static org.netbeans.modules.java.graph.Bundle.TIP_SingleWarning;
 import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_CONFLICT;
 import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_NO_CONFLICT;
+import org.netbeans.api.visual.widget.general.IconNodeWidget;
+import org.netbeans.api.visual.widget.general.IconNodeWidget.TextOrientation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
@@ -111,7 +113,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     private Timer hoverTimer;
     private Color hoverBorderC;
 
-    private Widget nodeW;
+    private IconNodeWidget nodeW;
     private LabelWidget versionW;
     private Widget contentW;
     private ImageWidget lockW, fixHintW;
@@ -304,19 +306,19 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         contentW.setBorder(BorderFactory.createLineBorder(10));
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
 
-        //dependecy node name (with optional project icon on the left)
-        nodeW = new Widget(scene);
-        nodeW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
+        //Artifact name (with optional project icon on the left)
+        nodeW = new IconNodeWidget(scene, TextOrientation.RIGHT_CENTER);
+        nodeW.setLabel(node.getImpl().getQualifiedName() + "  ");
+
         if (null != icon) {
-            nodeW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
+            nodeW.setImage(ImageUtilities.icon2Image(icon));
         }
-        final LabelWidget labelWidget = new LabelWidget(scene, impl.getName() + "  ");
-        labelWidget.setUseGlyphVector(true);
-        nodeW.addChild(labelWidget);
-      
+
+        nodeW.getLabelWidget().setUseGlyphVector(true);
+
         if (node.isRoot()) {
             Font defF = scene.getDefaultFont();
-            nodeW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
+            nodeW.getLabelWidget().setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
         }
         contentW.addChild(nodeW);
         
@@ -326,6 +328,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
             contentW.addChild(versionDetW);
             versionW = new LabelWidget(scene);
             versionW.setLabel(scene.getVersion(node.getImpl()));
+            versionW.setUseGlyphVector(true);
             int mngState = node.getManagedState();
             if (mngState != GraphNode.UNMANAGED) { 
                  lockW = new ImageWidget(scene,
@@ -512,7 +515,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         }
 
         if (updateNeeded) {
-            updateContent(getDependencyGraphScene().isAnimated());
+            updateContent();
         } else if (repaintNeeded) {
             repaint();
         }
@@ -521,7 +524,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
 
     @Override public void actionPerformed(ActionEvent e) {
         enlargedFromHover = true;
-        updateContent(getDependencyGraphScene().isAnimated());
+        updateContent();
     }
 
     public void setReadable (boolean readable) {
@@ -529,7 +532,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
             return;
         }
         this.readable = readable;
-        updateContent(getDependencyGraphScene().isAnimated());
+        updateContent();
     }
 
     public boolean isReadable () {
@@ -545,17 +548,13 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
      */
     public void updateReadableZoom() {
         if (isReadable()) {
-            updateContent(false);
+            updateContent();
         }
     }
 
-    private void updateContent (boolean isAnimated) {
+    private void updateContent () {
 
-        if (isAnimated) {
-            nodeW.setPreferredBounds(nodeW.getPreferredBounds());
-        }
-
-        boolean makeReadable = getState().isSelected() || enlargedFromHover || readable;
+        boolean makeReadable = getState().isSelected() || readable;
 
         Font origF = getOrigFont();
         Font newF = origF;
@@ -565,15 +564,10 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
             newF = getReadable(getScene(), origF);
         }
 
-        nodeW.setFont(newF);
-        if(versionW != null) {
+        nodeW.getLabelWidget().setFont(newF);
+        if (versionW != null) {
             versionW.setFont(newF);
         }
-
-        if (isAnimated) {
-            getScene().getSceneAnimator().animatePreferredBounds(nodeW, null);
-        }
-
         if (fixHintW != null) {
             fixHintW.setVisible(makeReadable);
         }

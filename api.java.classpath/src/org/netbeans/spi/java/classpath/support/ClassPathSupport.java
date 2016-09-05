@@ -194,7 +194,7 @@ public class ClassPathSupport {
         assert delegates != null;
         ClassPathImplementation[] impls = new ClassPathImplementation [delegates.length];
         for (int i = 0; i < delegates.length; i++) {
-             impls[i] = ClassPathAccessor.DEFAULT.getClassPathImpl (delegates[i]);
+             impls[i] = ClassPathAccessor.getDefault().getClassPathImpl (delegates[i]);
         }
         return ClassPathFactory.createClassPath (createProxyClassPathImplementation(impls));
     }

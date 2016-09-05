@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.HashMap;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -51,13 +52,12 @@ import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
-public class JsFormatterEmbeddedTest extends JsTestBase {
+public class JsFormatterEmbeddedTest extends JsFormatterTestBase {
 
     public JsFormatterEmbeddedTest(String name) {
         super(name);
@@ -124,13 +124,109 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
     public void testEmbeddedTrimmed1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedTrimmed1.html", new IndentPrefs(4,4));
     }
-    
+
     public void testEmbeddedMultipleSections1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections1.html", new IndentPrefs(4,4));
     }
 
     public void testEmbeddedMultipleSections2() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
+    }
+
+    public void testJsx1() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx1.js");
+    }
+
+    public void testJsx2() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx2.js");
+    }
+
+    public void testJsx3() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx3.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx3.js");
+    }
+
+    public void testJsx4() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx4.js");
+    }
+
+    public void testJsx5() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx5.js");
+    }
+
+    public void testJsx6() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx6.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx6Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx6.js");
+    }
+
+    public void testJsx7BinaryBeforeIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, false);
+        reformatFileContents("testfiles/formatter/jsx7.js", options, ".binaryBefore.IfLong.formatted");
+    }
+
+    public void testJsx7BinaryAfterIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/jsx7.js", options, ".binaryAfter.IfLong.formatted");
+    }
+
+    public void testJsx7Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx7.js");
+    }
+    
+    public void testJsx8BinaryBeforeIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, false);
+        reformatFileContents("testfiles/formatter/jsx8.js", options, ".binaryBefore.IfLong.formatted");
+    }
+
+    public void testJsx8BinaryAfterIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/jsx8.js", options, ".binaryAfter.IfLong.formatted");
+    }
+
+    public void testJsx8Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx8.js");
+    }
+
+    public void testJsx9() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx9.js",new IndentPrefs(4, 4));
+    }
+
+    public void testJsx9Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx9.js");
+    }
+
+    public void testBroken1() throws Exception {
+        reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));
     }
 
     public void testIssue225749() throws Exception {

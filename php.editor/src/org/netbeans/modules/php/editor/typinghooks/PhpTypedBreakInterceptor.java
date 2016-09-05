@@ -51,6 +51,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -323,7 +324,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
     }
 
     private static boolean isLineCommentDelimiter(Token<? extends PHPTokenId> token) {
-        return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT && ("//".equals(token.text().toString()) || "#".equals(token.text().toString()));
+        return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT
+                && (TokenUtilities.textEquals(token.text(), "//") || TokenUtilities.textEquals(token.text(), "#")); // NOI18N
     }
 
     private static boolean canBeAddedSemicolonAfterCloseBrace(PHPTokenId completeIn, TokenSequence<? extends PHPTokenId> ts) {
@@ -364,7 +366,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CLOSETAG));
         if (bracketColumnToken != null
                 && (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN
-                || (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())))) {
+                || (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(ts.token().text(), ":")))) { // NOI18N
             startOfContext[0] = ts.offset();
             // we are interested only in adding end for { or alternative syntax :
             List<PHPTokenId> lookFor = Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE, //PHPTokenId.PHP_SEMICOLON,
@@ -375,7 +377,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_DEFAULT);
             Token<? extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
             while (keyToken.id() == PHPTokenId.PHP_TOKEN) {
-                if ("?".equals(keyToken.text().toString())) { //NOI18N
+                if (TokenUtilities.textEquals(keyToken.text(), "?")) { // NOI18N
                     return null;
                 }
                 ts.movePrevious();
@@ -405,7 +407,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     result = PHPTokenId.PHP_CURLY_OPEN;
                 }
             } else {
-                if (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && ":".equals(bracketColumnToken.text().toString())) {
+                if (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(bracketColumnToken.text(), ":")) { // NOI18N
                     if (keyToken.id() != PHPTokenId.PHP_OPENTAG
                             && keyToken.id() != PHPTokenId.PHP_CLASS
                             && keyToken.id() != PHPTokenId.PHP_FUNCTION) {
@@ -446,7 +448,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     curlyBalance--;
                     curlyProcessed = true;
                 } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN
-                        || (token.id() == PHPTokenId.PHP_TOKEN && "${".equals(token.text().toString()))) { //NOI18N
+                        || (token.id() == PHPTokenId.PHP_TOKEN && TokenUtilities.textEquals(token.text(), "${"))) { // NOI18N
                     curlyBalance++;
                     curlyProcessed = true;
                 } else if (token.id() == PHPTokenId.PHP_COMMENT_START || token.id() == PHPTokenId.PHPDOC_COMMENT_START) {
@@ -494,7 +496,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 } else if (token.id() == startTokenId) {
                     checkAlternativeSyntax = true;
                 } else if (token.id() == PHPTokenId.PHP_TOKEN
-                        && ":".equals(token.text().toString())
+                        && TokenUtilities.textEquals(token.text(), ":") // NOI18N
                         && checkAlternativeSyntax) {
                     balance++;
                     checkAlternativeSyntax = false;
@@ -556,7 +558,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
 
     private static boolean isMultiline(Token<? extends PHPTokenId> token) {
         assert token != null;
-        return token.text().toString().contains("\n"); //NOI18N
+        return TokenUtilities.indexOf(token.text(), '\n') != -1; //NOI18N
     }
 
     private static boolean isPartOfHereOrNowDoc(TokenSequence<? extends PHPTokenId> ts) {

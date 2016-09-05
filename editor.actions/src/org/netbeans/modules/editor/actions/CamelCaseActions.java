@@ -279,7 +279,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset + length);
-            context.setDot(caretInfo, pos);
+            context.setDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -300,7 +300,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset);
-            context.setDot(caretInfo, pos);
+            context.setDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -324,7 +324,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset + length);
-            context.moveDot(caretInfo, pos);
+            context.moveDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -347,7 +347,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset);
-            context.moveDot(caretInfo, pos);
+            context.moveDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 

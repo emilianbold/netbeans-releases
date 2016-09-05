@@ -289,7 +289,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             // TODO: do we need this with CancelletionException? 
             // unfortunately CancellationException is RuntimeException, so I'm not sure
             return new ByteArrayInputStream(new byte[]{});
-        } catch (IOException | InterruptedException | ExecutionException ex) {
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw newFileNotFoundException(ex);
         }
     }

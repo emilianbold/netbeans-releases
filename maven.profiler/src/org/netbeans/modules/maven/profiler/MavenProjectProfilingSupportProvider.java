@@ -47,8 +47,10 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.api.JavaPlatform;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,11 +60,17 @@ import org.netbeans.spi.project.ProjectServiceProvider;
                         projectType="org-netbeans-modules-maven") // NOI18N
 public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     
+    final private Set<String> supportedJ2eePTypes = new HashSet<String>() {
+        {
+            add(NbMavenProject.TYPE_WAR);
+            add(NbMavenProject.TYPE_EJB);
+        }
+    };
+    
     final private Set<String> supportedPTypes = new HashSet<String>() {
         {
             add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
+            addAll(supportedJ2eePTypes);
             add(NbMavenProject.TYPE_NBM);
             add(NbMavenProject.TYPE_NBM_APPLICATION);
             add(NbMavenProject.TYPE_OSGI);
@@ -77,10 +85,51 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
 
     @Override
     public boolean isProfilingSupported() {
-        NbMavenProject mproject = getProject().getLookup().lookup(NbMavenProject.class);
+        NbMavenProject mproject = getMavenProject();
         return mproject == null ? false : supportedPTypes.contains(mproject.getPackagingType());
     }
+    
+    @Override
+    public boolean checkProjectCanBeProfiled(FileObject file) {
+        if (isJ2EEProject(getMavenProject())) {
+            // Java EE project
+            return true;
+        } else {
+            // Java SE project
+            return super.checkProjectCanBeProfiled(file);
+        }
+    }
+    
+    @Override
+    public boolean isFileObjectSupported(FileObject file) {
+        if (isJ2EEProject(getMavenProject())) {
+            // Java EE project
+            return isHttpServlet(file) || isJSP(file);
+        } else {
+            // Java SE project
+            return super.isFileObjectSupported(file);
+        }
+    }
         
+    
+    private boolean isHttpServlet(FileObject fo) {
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
+        return src != null && src.isInstanceOf("javax.servlet.http.HttpServlet"); // NOI18N
+    }
+
+    private boolean isJSP(FileObject fo) {
+        return "jsp".equals(fo.getExt()); // NOI18N
+    }
+    
+    private boolean isJ2EEProject(NbMavenProject mproject) {
+        return supportedJ2eePTypes.contains(mproject.getPackagingType());
+    }
+    
+    private NbMavenProject getMavenProject() {
+        return getProject().getLookup().lookup(NbMavenProject.class);
+    }
+    
+    
     public MavenProjectProfilingSupportProvider(Project project) {
         super(project);
     }

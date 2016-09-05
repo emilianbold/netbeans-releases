@@ -58,7 +58,8 @@ public class ClankToAPTTest {
     public void testTokenKindsConversion() {
         for (/*ushort*/char clankTokenKind = tok.TokenKind.comment; clankTokenKind <= tok.TokenKind.kw___unknown_anytype; clankTokenKind++) {
             if (clankTokenKind == tok.TokenKind.hashat ||
-                clankTokenKind == tok.TokenKind.greatergreatergreater ||
+                clankTokenKind == tok.TokenKind.greatergreatergreater || 
+                clankTokenKind == tok.TokenKind.caretcaret ||
                 clankTokenKind == tok.TokenKind.lesslessless) {
                 // we don't have pair in APT
                 continue;

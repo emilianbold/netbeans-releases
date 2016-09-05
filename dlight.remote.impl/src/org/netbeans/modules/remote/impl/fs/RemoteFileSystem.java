@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -155,8 +156,19 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
      */
     private volatile boolean connectionChanged;
 
-    /** @guarded by self */
+    /**
+     * @guarded by self
+     * Also guards autoMountsAnalyzed
+     */
     private final List<String> autoMounts;
+
+    /** 
+     * True if auto mounts are analyzed, otherwise false.
+     * Access must be synchronized by autoMounts, if you need to wait until it becomes true,
+     * wait on autoMounts either
+     * @guarded by autoMounts 
+     */
+    private boolean autoMountsAnalyzed = false;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -202,16 +214,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         });
+        autoMounts = getFixedAutoMounts(); // before adding connection listeners and schdulling connectionTask!
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         connectionChanged = false; // volatile
         connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
-        autoMounts = getFixedAutoMounts();
     }
 
     private List<String> getFixedAutoMounts() {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
         String t = System.getProperty("remote.autofs.list"); //NOI18N
         if (t != null) {
             String[] paths = t.split(","); //NOI18N
@@ -228,6 +240,32 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         synchronized (autoMounts) {
             return autoMounts.contains(path);
         }
+    }
+
+    public List<String> getDirsProhibitedToStat(String path) {
+        waitAutoMountsAnalyzed();
+        synchronized (autoMounts) {
+            return Collections.unmodifiableList(autoMounts);
+        }
+    }
+
+    public boolean isProhibitedToEnter(String path) {
+        if (path.equals("/proc") || path.equals("/dev")) { //NOI18N
+            return true;
+        }
+        if (path.equals("/run")) { //NOI18N
+        if (HostInfoUtils.isHostInfoAvailable(getExecutionEnvironment())) {
+                try {
+                    HostInfo hi = HostInfoUtils.getHostInfo(getExecutionEnvironment());
+                    if (hi.getOSFamily() == HostInfo.OSFamily.LINUX) {
+                        return true;
+                    }
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    Exceptions.printStackTrace(ex); // should never be the case if isHostInfoAvailable retured true
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isDirectAutoMountChild(String path) {
@@ -298,6 +336,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         @Override
         public void run() {
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                maintainAutoMounts();
+            }
             if (connectionChanged) {
                 if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                     refreshManager.scheduleRefreshOnConnect();
@@ -306,27 +347,54 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     fo.connectionChanged();
                 }
             }
-            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                maintainAutoMounts();
-            }
         }
 
         private void maintainAutoMounts() {
-            long time = System.currentTimeMillis();
-            RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
-            AutoMountsProvider amp = new AutoMountsProvider(execEnv);
-            if (amp.analyze()) {
-                List<String> newAutoMounts = amp.getAutoMounts();
-                synchronized (autoMounts) {
-                    autoMounts.clear();
-                    autoMounts.addAll(newAutoMounts);
+            synchronized (autoMounts) {
+                if (autoMountsAnalyzed) {
+                    return;
                 }
-                if (RemoteLogger.isLoggable(Level.FINE)) {
+            }
+            long time = System.currentTimeMillis();
+            try {
+                RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
+                AutoMountsProvider amp = new AutoMountsProvider(execEnv);
+                if (amp.analyze()) {
+                    List<String> newAutoMounts = amp.getAutoMounts();
+                    synchronized (autoMounts) {
+                        autoMounts.clear();
+                        autoMounts.addAll(newAutoMounts);
+                    }
+                }
+            } finally {
+                synchronized (autoMounts) {
+                    autoMountsAnalyzed = true;
+                    autoMounts.notifyAll();
+                }
+            }
+            if (RemoteLogger.isLoggable(Level.FINE)) {
+                synchronized (autoMounts) {
                     RemoteLogger.fine("Getting automount list for {0} took {1} ms", //NOI18N
                             execEnv, System.currentTimeMillis() - time);
-                    for (String path : newAutoMounts) {
+                    for (String path : autoMounts) {
                         RemoteLogger.fine("\t{0}", path);
                     }
+                }
+            }
+        }
+    }
+
+    private void waitAutoMountsAnalyzed() {
+        while (true) {
+            synchronized (autoMounts) {
+                if (autoMountsAnalyzed) {
+                    return;
+                }
+                try {
+                    autoMounts.wait(1000);
+                } catch (InterruptedException ex) {
+                    RemoteLogger.finest(ex);
+                    return;
                 }
             }
         }

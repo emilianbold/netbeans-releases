@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Method;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -93,7 +94,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
                 bufferShift = bufferShift + MAX_BUF_SIZE/2;
                 bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
                 ByteOrder order = buffer.order();
-                buffer.clear();
+                bufferCleaner();
                 buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
                 buffer.order(order);
                 buffer.position((int)(position-bufferShift));
@@ -130,7 +131,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             bufferShift = Math.max(position - MAX_BUF_SIZE/2, 0L);
             bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
-            buffer.clear();
+            bufferCleaner();
             buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
             buffer.order(order);
             buffer.position((int)(position-bufferShift));
@@ -181,16 +182,39 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             bufferShift = Math.max(pos - MAX_BUF_SIZE/2, 0);
             bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
-            buffer.clear();
+            bufferCleaner();
             buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
             buffer.order(order);
             buffer.position((int)(pos - bufferShift));
         }
     }
 
+    private void bufferCleaner() {
+        buffer.clear();
+        if (!buffer.isDirect()) {
+            return;
+        }
+        // Work around of clear memory
+        // See also JDK-4724038 : (fs) Add unmap method to MappedByteBuffer
+        // http://bugs.java.com/view_bug.do?bug_id=4724038
+        try {
+            Method cleaner = buffer.getClass().getMethod("cleaner"); //NOI18N
+            cleaner.setAccessible(true);
+            // TODO: does not work on Java 9
+            // It seems EA of Java 9 have class jdk.internal.ref.Cleaner instead sun.misc.Cleaner
+            // But Java 9 prevent to access to class jdk.internal.ref.Cleaner due to module system
+            Method clean = Class.forName("sun.misc.Cleaner").getMethod("clean"); //NOI18N
+            clean.setAccessible(true);
+            clean.invoke(cleaner.invoke(buffer));
+        } catch (Throwable e) {
+            // do nothing
+            //e.printStackTrace(System.err);
+        }
+    }
+
     public void dispose() {
         try {
-            buffer.clear();
+            bufferCleaner();
             channel.close();
             close();
         } catch (IOException ex) {
@@ -198,3 +222,4 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         }
     }
 }
+ 

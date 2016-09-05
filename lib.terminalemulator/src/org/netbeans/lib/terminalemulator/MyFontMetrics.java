@@ -143,7 +143,7 @@ class MyFontMetrics {
                 entry.down();
             }
         }
-        private static AbstractMap<FontMetrics, WidthCache> map = new HashMap<FontMetrics, WidthCache>();
+        private static final AbstractMap<FontMetrics, WidthCache> map = new HashMap<>();
 
     }
 

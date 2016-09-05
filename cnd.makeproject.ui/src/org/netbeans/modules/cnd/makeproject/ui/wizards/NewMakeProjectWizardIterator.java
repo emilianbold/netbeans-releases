@@ -447,7 +447,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (wizardtype == TYPE_DB_APPLICATION) {
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
-                    provider.setupReleaseConfiguration(debug);
+                    provider.setupDebugConfiguration(debug);
                 }                
             }
             MakeConfiguration release = MakeConfiguration.createConfiguration(dirF, "Release", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N

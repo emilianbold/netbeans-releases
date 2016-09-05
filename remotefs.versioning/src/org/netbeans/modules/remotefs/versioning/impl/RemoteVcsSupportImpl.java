@@ -80,8 +80,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = RemoteVcsSupportImplementation.class)
 public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger("remote.vcs.logger"); //NOI18N
-
     public RemoteVcsSupportImpl() {
     }
 
@@ -346,6 +344,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     switch (HostInfoUtils.getHostInfo(env).getOSFamily()) {
                         case LINUX:
                         case MACOSX:
+                        case FREEBSD:
                         case SUNOS:
                             return true;
                         case WINDOWS:

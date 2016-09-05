@@ -112,14 +112,15 @@ public class MagicCache {
                      return false;
                 }
                 updateCache();
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+                ex.printStackTrace(System.err);
+                return false;
             } catch (InterruptedIOException ex) {
                 // don't report interruptions
+                return false;
             } catch (IOException ex) {                
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace(System.err);
+                return false;
             }
         }
         if (od.exists()) {

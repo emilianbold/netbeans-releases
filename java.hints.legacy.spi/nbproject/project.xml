@@ -150,6 +150,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.web.beans</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
                 <package>org.netbeans.modules.java.hints.spi.support</package>
             </friend-packages>

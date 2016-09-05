@@ -65,6 +65,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
@@ -79,7 +80,6 @@ import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.api.PhpVersion;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -1093,7 +1093,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
                 tokenSequence.movePrevious();
             }
-            String varName = tokenSequence.token().text().toString();
+            final CharSequence varName = tokenSequence.token().text();
             tokenSequence.moveNext();
 
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
@@ -1102,29 +1102,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             boolean selfContext = false;
             boolean staticLateBindingContext = false;
             boolean specialVariable = false;
-            switch (varName) {
-                case "$this": // NOI18N
-                    specialVariable = true;
-                    break;
-                case "self": //NOI18N
-                    staticContext = true;
-                    selfContext = true;
-                    specialVariable = true;
-                    break;
-                case "parent": //NOI18N
-                    invalidProposalsForClsMembers = Collections.emptyList();
-                    staticContext = true;
-                    instanceContext = true;
-                    specialVariable = true;
-                    break;
-                case "static": //NOI18N
-                    staticContext = true;
-                    instanceContext = false;
-                    staticLateBindingContext = true;
-                    specialVariable = true;
-                    break;
-                default:
-                    // no-op
+            if (TokenUtilities.textEquals(varName, "$this")) { // NOI18N
+                specialVariable = true;
+            } else if (TokenUtilities.textEquals(varName, "self")) { // NOI18N
+                staticContext = true;
+                selfContext = true;
+                specialVariable = true;
+            } else if (TokenUtilities.textEquals(varName, "parent")) { // NOI18N
+                invalidProposalsForClsMembers = Collections.emptyList();
+                staticContext = true;
+                instanceContext = true;
+                specialVariable = true;
+            } else if (TokenUtilities.textEquals(varName, "static")) { // NOI18N
+                staticContext = true;
+                instanceContext = false;
+                staticLateBindingContext = true;
+                specialVariable = true;
             }
 
             Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor, specialVariable);
@@ -1199,9 +1192,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
     }
 
-    private static boolean isVariableAccess(String varName) {
+    private static boolean isVariableAccess(CharSequence varName) {
         // "]" : array
-        return !StringUtils.isEmpty(varName) && (varName.startsWith("$") || varName.equals("]")); // NOI18N
+        return varName != null
+                && (varName.charAt(0) == '$' || varName.charAt(0) == ']'); // NOI18N
     }
 
     private void autoCompleteClassFields(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request) {

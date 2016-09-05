@@ -116,15 +116,15 @@ class Utilities {
             } 
         } else if (type.startsWith("unsigned")) {                  // NOI18N
             if (type.contains("char")) {                           // NOI18N
-                return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
+                return Arrays.asList("hhu", "hho", "hhx", "hhX");  // NOI18N
             } else if (type.contains("short")) {                   // NOI18N
-                return Arrays.asList("ho", "hu", "hx", "hX");      // NOI18N
+                return Arrays.asList("hu", "ho", "hx", "hX");      // NOI18N
             } else if (type.contains("long long")) {               // NOI18N
-                return Arrays.asList("llo", "llu", "llx", "llX");  // NOI18N
+                return Arrays.asList("llu", "llo", "llx", "llX");  // NOI18N
             } else if (type.contains("long")) {                    // NOI18N
-                return Arrays.asList("lo", "lu", "lx", "lX");      // NOI18N
+                return Arrays.asList("lu", "lo", "lx", "lX");      // NOI18N
             } else if (type.contains("int")) {                     // NOI18N
-                return Arrays.asList("o", "u", "x", "X");          // NOI18N
+                return Arrays.asList("u", "o", "x", "X");          // NOI18N
             }
         } else {
             if (type.contains("signed char")) {                           // NOI18N

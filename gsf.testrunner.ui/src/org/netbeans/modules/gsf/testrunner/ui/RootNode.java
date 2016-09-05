@@ -322,7 +322,7 @@ final class RootNode extends AbstractNode {
         }
 
         if (msg != null) {
-            msg += MSG_TestSuiteElapsedTime(elapsedTimeMillis / 1000d);
+            msg += ' ' + MSG_TestSuiteElapsedTime(elapsedTimeMillis / 1000d);
         }
 
         if (this.message != null) {

@@ -139,6 +139,9 @@ final class ViewHierarchy {
             if( null == mainFrame ) {
                 mainFrame = new JFrame();
                 mainFrame.setName( "NbMainWindow" ); //NOI18N
+                if (!Constants.AUTO_FOCUS) {
+                    mainFrame.setAutoRequestFocus(false);
+                }
             }
             if( "Aqua".equals(UIManager.getLookAndFeel().getID())
                     && null == System.getProperty("apple.awt.brushMetalLook") ) {//NOI18N 

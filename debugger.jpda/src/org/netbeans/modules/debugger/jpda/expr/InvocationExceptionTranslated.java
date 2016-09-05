@@ -545,7 +545,11 @@ public class InvocationExceptionTranslated extends ApplicationException {
                             new Value [0],
                             this
                         );
-                    methodName = StringReferenceWrapper.value(sr);
+                    if (sr != null) {
+                        methodName = StringReferenceWrapper.value(sr);
+                    } else {
+                        methodName = null;
+                    }
                 } catch (InvalidExpressionException ex) {
                     methodName = ex.getLocalizedMessage();
                 }

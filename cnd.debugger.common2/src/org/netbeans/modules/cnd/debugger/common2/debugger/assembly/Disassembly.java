@@ -236,7 +236,10 @@ public abstract class Disassembly implements StateModel.Listener {
     
     public static void close() {
         try {
-            getDataObject().getCookie(CloseCookie.class).close();
+            final DataObject dataObject = getDataObject();
+            if (dataObject != null) {
+                dataObject.getCookie(CloseCookie.class).close();
+            }
             opened = false;
             // TODO: check for correct close on debug close
             Disassembly dis = getCurrent();
@@ -247,7 +250,7 @@ public abstract class Disassembly implements StateModel.Listener {
                         // #238339
             if (e instanceof NullPointerException) {
                 DataObject dObj = getDataObject();
-                LOG.log(Level.INFO, "dObj={0}; cookie={1}", new Object[]{dObj, dObj.getCookie(CloseCookie.class)});
+                LOG.log(Level.INFO, "dObj={0}; cookie={1}", new Object[]{dObj, dObj == null ? null : dObj.getCookie(CloseCookie.class)});
             }
             Exceptions.printStackTrace(e);
         }

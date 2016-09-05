@@ -645,6 +645,7 @@ public final class Terminal extends JComponent {
         term.setClickToType(termOptions.getClickToType());
         term.setScrollOnInput(termOptions.getScrollOnInput());
         term.setScrollOnOutput(termOptions.getScrollOnOutput());
+        term.setAltSendsEscape(termOptions.getAltSendsEscape());
         if (initial) {
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
 	}
