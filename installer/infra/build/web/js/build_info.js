@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,18 +54,19 @@ build_info.ADDITIONAL_BUILD_LOCATION   = "{alternative.languages.page.url}";
 
 build_info.BUILD_LOCATION = "";
 
-build_info.LOAD_OMNITURE_CODE          = 0;
-build_info.LOAD_GOOGLE_ANALYTICS_CODE  = 0;
+build_info.LOAD_OMNITURE_CODE          = 1;
+build_info.LOAD_GOOGLE_ANALYTICS_CODE  = 1;
 build_info.USE_BOUNCER                 = 0;
 build_info.ADD_VERSION_INFO_TO_URL     = 0;
 
 build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-build_info.USE_HTML_ZIP_LISTING = 0;
+build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("8.1", "http://netbeans.org/downloads/");
-	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
+	add_download_tab("8.2 RC");
+	add_download_tab(DEVELOPMENT_TITLE,DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
 add_build_info(build_info);

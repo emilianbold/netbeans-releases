@@ -2,7 +2,7 @@
 
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2012-2016 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -48,7 +48,7 @@ cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
 
 if [ -z ${BUILD_DESC} ]; then
-    export BUILD_DESC=trunk-nightly
+    export BUILD_DESC=8.2rc
 fi
 
 source init.sh

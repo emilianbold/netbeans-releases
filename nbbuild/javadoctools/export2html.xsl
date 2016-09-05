@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
 
         <center>
             <h1>NetBeans API List</h1>
-            <h3>Current Development Version</h3>
+            <h3>Version 8.2</h3>
             <xsl:if test="$date" >
                 <xsl:value-of select="$date" />
                 <p/>
@@ -104,10 +104,11 @@ made subject to such option by the copyright holder.
         <em>NetBeans</em> one is free to choose the set of modules and their APIs 
         to satisfy one's needs.
         <p>
-        This is a list of APIs for development version, if you want to see
+        This is a list of APIs for NetBeans 8.2 version, if you want to see
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/dev/javadoc/" target="_top">Dev</a> - Javadoc as released for development version</li>
             <li><a href="http://bits.netbeans.org/8.1/javadoc/" target="_top">8.1</a> - Javadoc as released for NetBeans IDE 8.1</li>
             <li><a href="http://bits.netbeans.org/8.0.1/javadoc/" target="_top">8.0.1</a> - Javadoc as released for NetBeans IDE 8.0.1</li>
             <li><a href="http://bits.netbeans.org/8.0/javadoc/" target="_top">8.0</a> - Javadoc as released for NetBeans IDE 8.0</li>

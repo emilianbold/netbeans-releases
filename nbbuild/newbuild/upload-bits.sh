@@ -2,7 +2,7 @@
 
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -46,7 +46,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=trunk-nightly
+export BUILD_DESC=8.2rc
 source init.sh
 
 ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/.$DATESTAMP
