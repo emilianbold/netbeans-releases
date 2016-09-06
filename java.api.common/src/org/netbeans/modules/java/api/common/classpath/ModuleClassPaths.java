@@ -593,6 +593,7 @@ final class ModuleClassPaths {
                                 new ClasspathInfo.Builder(bootCp)
                                         .setModuleBootPath(bootModules)
                                         .setModuleCompilePath(userModules)
+                                        .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
                                         .build(),
                                 found);
                         additionalModules = getAddMods();
