@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.NonNull;
@@ -71,6 +72,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.TestJavaPlatform;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -80,6 +82,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -164,6 +167,55 @@ public class ModuleClassPathsTest extends NbTestCase {
                 systemModules,
                 src,
                 null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        final Collection<URL> expectedURLs = reads(systemModules, "java.compact1");  //NOI18N
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testProjectMutexWriteDeadlock() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final FileObject moduleInfo = createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                systemModules,
+                src,
+                null));
+        final RequestProcessor deadLockMaker = new RequestProcessor("DeadLock Maker", 1);
+        final ClasspathInfo info = new ClasspathInfo.Builder(systemModules)
+                .build();
+        final CountDownLatch startThread = new CountDownLatch(1);
+        final CountDownLatch startSelf = new CountDownLatch(1);
+        final CountDownLatch endThread = new CountDownLatch(1);
+        deadLockMaker.execute(() -> {
+            try {
+                final JavaSource js = JavaSource.create(info);
+                js.runUserActionTask((cc)->{
+                        startThread.await();
+                        startSelf.countDown();
+                        ProjectManager.mutex().readAccess(()->{
+                            System.out.println("EXECUTED");
+                        });
+                    },
+                        true);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            } finally {
+                endThread.countDown();
+            }
+        });
+        ProjectManager.mutex().writeAccess(()-> {
+            try {
+                startThread.countDown();
+                startSelf.await();
+                cp.entries();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });                
+        endThread.await();
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(systemModules, "java.compact1");  //NOI18N
         assertEquals(expectedURLs, resURLs);
