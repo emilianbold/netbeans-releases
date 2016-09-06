@@ -49,12 +49,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
@@ -62,7 +65,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -258,7 +263,86 @@ public final class CompilerOptionsQueryMergerTest extends NbTestCase {
                 Arrays.asList("a1","a2","b1","b2"), //NOI18N
                 res.getArguments());
     }
+    
+    public void testDeadlock_PropChangeUnderProjectMutexWriteAccess() throws Exception {
+        final DeadlockCompilerOptionsQueryImpl impl = new DeadlockCompilerOptionsQueryImpl();
+        final Lookup baseLkp = Lookups.fixed(impl);
+        final CompilerOptionsQueryImplementation merged =
+                LookupMergerSupport.createCompilerOptionsQueryMerger()
+                .merge(baseLkp);
+        final CompilerOptionsQueryImplementation.Result res = merged.getOptions(root1);
+        assertEquals(Collections.singletonList("DEFAULT"), res.getArguments());    //NOI18N
+        final RequestProcessor deadLockMaker = new RequestProcessor("Deadlock Maker", 1);   //NOI18N
+        final CountDownLatch startTread = new CountDownLatch(1);
+        final CountDownLatch startSelf = new CountDownLatch(1);
+        final CountDownLatch endThread = new CountDownLatch(1);
+        deadLockMaker.execute(()-> {
+            try {
+                Utilities.acquireParserLock();
+                try {
+                    startTread.await();
+                    startSelf.countDown();
+                    ProjectManager.mutex().readAccess(() -> {
+                        System.out.println("EXEC");
+                    });
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                } finally {
+                    Utilities.releaseParserLock();
+                }
+            } finally {
+                endThread.countDown();
+            }
+        });
+        ProjectManager.mutex().writeAccess((Mutex.ExceptionAction<Void>)() -> {
+            startTread.countDown();
+            startSelf.await();
+            impl.change("NEW"); //NOI18N
+            return null;
+        });                
+        endThread.await();
+        assertEquals(Collections.singletonList("NEW"), res.getArguments());    //NOI18N
+    }
 
+    private static final class DeadlockCompilerOptionsQueryImpl implements CompilerOptionsQueryImplementation {
+        private final R res = new R();
+
+        @Override
+        public Result getOptions(FileObject file) {
+            return res;
+        }
+        
+        void change(String newValue) {
+            res.option = newValue;
+            res.cs.fireChange();
+        }
+        
+        private static final class R extends CompilerOptionsQueryImplementation.Result {
+            private final ChangeSupport cs = new ChangeSupport(this);
+            private volatile String option = "DEFAULT";
+
+            @Override
+            public List<? extends String> getArguments() {
+                Utilities.acquireParserLock();
+                try {
+                    return Collections.singletonList(option);
+                } finally {
+                    Utilities.releaseParserLock();
+                }
+            }
+
+            @Override
+            public void addChangeListener(ChangeListener listener) {
+                cs.addChangeListener(listener);
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener listener) {
+                cs.removeChangeListener(listener);
+            }            
+        }
+        
+    }
 
     private static final class CompilerOptionsQueryImpl implements CompilerOptionsQueryImplementation {
         private final Res res;

@@ -55,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
@@ -159,19 +160,29 @@ final class CompilerOptionsQueryMerger implements LookupMerger<CompilerOptionsQu
 
             @Override
             public void resultChanged(LookupEvent ev) {
-                checkProviders();
-                listeners.fireChange();
+                update();
             }
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                checkProviders();
-                listeners.fireChange();
+                update();
             }
 
             boolean isEmpty() {
                 final List<Pair<Result,ChangeListener>> l = currentResults;
                 return l == null ? true : l.isEmpty();
+            }
+            
+            private void update() {
+                final Runnable resetAction = () -> {
+                    checkProviders();
+                    listeners.fireChange();
+                };
+                if (ProjectManager.mutex().isWriteAccess()) {
+                    ProjectManager.mutex().postReadRequest(resetAction);
+                } else {
+                    resetAction.run();
+                }
             }
 
             private void checkProviders() {
