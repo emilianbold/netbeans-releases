@@ -587,7 +587,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         }
         options.add(Options.ALL_COMPLETION);
-        addTypes(env, EnumSet.of(INTERFACE), null);
+        addTypes(env, EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE), null);
     }
 
     private void insideRequires(Env env) throws IOException {
@@ -619,7 +619,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         }
         options.add(Options.ALL_COMPLETION);
-        addTypes(env, EnumSet.of(INTERFACE), null);
+        addTypes(env, EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE), null);
     }
 
     private void insidePackage(Env env) {
@@ -1647,7 +1647,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     addPackages(env, fqnPrefix, true);
                     return;
                 } else if (parent.getKind() == Tree.Kind.PROVIDES) {
-                    kinds = EnumSet.of(((ProvidesTree)parent).getServiceName() == fa ? INTERFACE : CLASS);
+                    kinds = ((ProvidesTree)parent).getServiceName() == fa ? EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE) : EnumSet.of(CLASS);
+                } else if (parent.getKind() == Tree.Kind.USES) {
+                    kinds = EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE);
                 } else {
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
                 }
