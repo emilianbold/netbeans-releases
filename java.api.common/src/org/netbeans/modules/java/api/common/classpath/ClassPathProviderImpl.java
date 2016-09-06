@@ -1205,6 +1205,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
             return getModuleLegacyClassPath(0);
         }
+        if (JavaClassPathConstants.MODULE_EXECUTE_PATH.equals(type)) {
+            return getModuleExecutePath(0);
+        }
+        if (JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH.equals(type)) {
+            return getModuleLegacyExecuteClassPath(0);
+        }
         assert false : "Unknown classpath type: " + type;   //NOI18N
         return null;
     }
