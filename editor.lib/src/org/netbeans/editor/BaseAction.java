@@ -123,6 +123,12 @@ public abstract class BaseAction extends TextAction {
     /** logger for reporting invoked actions */
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
     
+    /**
+     * Whether invoked actions not logged by default, such as caret moves, should be logged too.
+     * -J-Dorg.netbeans.editor.ui.actions.logging.detailed=true
+     */
+    private static final boolean UI_LOG_DETAILED = Boolean.getBoolean("org.netbeans.editor.ui.actions.logging.detailed");
+    
     /** Bit mask of what should be updated when the action is performed before
     * the action's real task is invoked.
     */
@@ -306,16 +312,18 @@ public abstract class BaseAction extends TextAction {
             String actionName = getValue(NAME) != null ? getValue(NAME).toString().toLowerCase() : null;
             if (actionName != null &&
                 !"default-typed".equals(actionName) && //NOI18N
-//                -1 == actionName.indexOf("caret") && //NOI18N
-//                -1 == actionName.indexOf("delete") && //NOI18N
-//                -1 == actionName.indexOf("undo") &&//NOI18N
-//                -1 == actionName.indexOf("redo") &&//NOI18N
-//                -1 == actionName.indexOf("selection") && //NOI18N
                 -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
                 -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
-//                -1 == actionName.indexOf("page-up") &&//NOI18N
-//                -1 == actionName.indexOf("page-down") &&//NOI18N
-                -1 == actionName.indexOf("-kit-install") //NOI18N
+                -1 == actionName.indexOf("-kit-install") && //NOI18N
+                (UI_LOG_DETAILED || (
+                    -1 == actionName.indexOf("caret") && //NOI18N
+                    -1 == actionName.indexOf("delete") && //NOI18N
+                    -1 == actionName.indexOf("undo") &&//NOI18N
+                    -1 == actionName.indexOf("redo") &&//NOI18N
+                    -1 == actionName.indexOf("selection") && //NOI18N
+                    -1 == actionName.indexOf("page-up") &&//NOI18N
+                    -1 == actionName.indexOf("page-down") //NOI18N
+                ))
             ) {
                 LogRecord r = new LogRecord(Level.FINE, "UI_ACTION_EDITOR"); // NOI18N
                 r.setResourceBundle(NbBundle.getBundle(BaseAction.class));
