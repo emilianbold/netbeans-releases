@@ -1,7 +1,9 @@
-#changeset:   19438:c0c1e6e72c89
+#changeset:   19483:256e2aaef21f
 #branch:      jclank
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Fri Sep 02 20:20:24 2016 +0300
-#summary:     Fixing #258049 - [newcodemodel] New parser doesn't highlight inaccessible macro
-5E0E2BDEFE842E63FE33F0AE4E877426CBBF306B clank_0.3.6.zip
+#parent:      19461:67bd03f4034a
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Wed Sep 07 21:36:21 2016 +0300
+#summary:     fixed #259002 - [newcodemodel] AssertionError: Path should be absolute: StringRef{\\ALEX-PC\Users\alex\CppApplication_2\main.cpp
+BC155E7BC6F6CC456E726C11AF33CF2C1974E7F8 clank_0.3.6.zip
+
