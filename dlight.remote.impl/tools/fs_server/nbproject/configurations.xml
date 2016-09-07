@@ -81,7 +81,7 @@ Contributor(s):
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g"/>
+        <element flagsID="0" commonFlags="-std=c99 -g -m32"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -93,7 +93,7 @@ Contributor(s):
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
+              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
@@ -129,9 +129,9 @@ Contributor(s):
         <cTool flags="0">
         </cTool>
       </item>
-      <item path="src/settings.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/settings.h" ex="false" tool="3" flavor2="0">
+      <item path="src/settings.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
@@ -441,16 +441,14 @@ Contributor(s):
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
+              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
-              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -479,9 +477,9 @@ Contributor(s):
         <cTool flags="0">
         </cTool>
       </item>
-      <item path="src/settings.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/settings.h" ex="false" tool="3" flavor2="0">
+      <item path="src/settings.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
