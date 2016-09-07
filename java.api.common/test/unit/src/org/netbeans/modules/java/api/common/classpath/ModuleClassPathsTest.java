@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.NonNull;
@@ -72,7 +73,6 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.TestJavaPlatform;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -93,6 +93,12 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private static final Comparator<Object> LEX_COMPARATOR =
             (a,b) -> a.toString().compareTo(b.toString());
+    private static final Predicate<ModuleElement> NON_JAVA_PUB = (e) -> 
+                           !e.getQualifiedName().toString().startsWith("java.") &&  //NOI18N
+                            e.getDirectives().stream()
+                                .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
+                                .map((d) -> (ModuleElement.ExportsDirective)d)
+                                .anyMatch((ed) -> ed.getTargetModules() == null);
     
     private SourceRoots src;
     private ClassPath systemModules;
@@ -135,7 +141,9 @@ public class ModuleClassPathsTest extends NbTestCase {
                 src,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, "java.se");  //NOI18N
+        final Collection<URL> expectedURLs = reads(
+                systemModules,
+                NamePredicate.create("java.se").or(NON_JAVA_PUB));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -152,7 +160,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 src,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, "java.base");  //NOI18N
+        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.base"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -168,7 +176,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 src,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, "java.compact1");  //NOI18N
+        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.compact1"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -217,7 +225,7 @@ public class ModuleClassPathsTest extends NbTestCase {
         });                
         endThread.await();
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, "java.compact1");  //NOI18N
+        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.compact1"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -283,14 +291,22 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private Collection<URL> reads(
             @NonNull final ClassPath base,
-            @NonNull final String moduleName) throws IOException {
+            @NonNull final Predicate<ModuleElement> predicate) throws IOException {
         final ClasspathInfo info = new ClasspathInfo.Builder(base)
                 .setModuleBootPath(base)
                 .build();
         final Set<String> moduleNames = new HashSet<>();
         JavaSource.create(info).runUserActionTask((cc)-> {
-                final ModuleElement root = cc.getElements().getModuleElement(moduleName);
-                collectDeps(root, moduleNames);
+                final Set<ModuleElement> rootModules = base.entries().stream()
+                        .map((e) -> SourceUtils.getModuleName(e.getURL()))
+                        .filter((n) -> n != null)
+                        .map(cc.getElements()::getModuleElement)
+                        .filter((m) -> m != null)
+                        .filter(predicate)
+                        .collect(Collectors.toSet());
+                for (ModuleElement rootModule : rootModules) {
+                    collectDeps(rootModule, moduleNames);
+                }
             },
             true);
         return base.entries().stream()
@@ -325,4 +341,22 @@ public class ModuleClassPathsTest extends NbTestCase {
                 .map((mn) -> "java.base".equals(mn))
                 .orElse(Boolean.FALSE);
     }
+    
+    private static final class NamePredicate implements Predicate<ModuleElement> {
+        private final String name;
+                
+        private NamePredicate(@NonNull final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean test(ModuleElement t) {
+            return name.equals(t.getQualifiedName().toString());
+        }       
+        
+        @NonNull
+        static Predicate<ModuleElement> create(@NonNull final String name) {
+            return new NamePredicate(name);
+        }
+    }    
 }
