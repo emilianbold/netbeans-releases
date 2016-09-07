@@ -535,7 +535,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private ModelChangeDelegator sessionUpdater = new ModelChangeDelegator();
 
     public void registerSessionModel(ModelListenerSupport model) {
-        sessionUpdater.setListener(model);
+        sessionUpdater.addListener(model);
     }
 
     public ModelListener sessionUpdater() {
