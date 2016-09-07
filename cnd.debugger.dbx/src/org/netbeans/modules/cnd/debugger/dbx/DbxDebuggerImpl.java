@@ -2212,7 +2212,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public void registerWatchModel(WatchModel model) {
-	watchUpdater().setListener(model);
+	watchUpdater().addListener(model);
 
 	if (postedKill)
 	    return;
@@ -2383,7 +2383,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     LocalEnableLatch localEnabler = new LocalEnableLatch(); 
 
     public void registerLocalModel(LocalModel model) {
-	localUpdater.setListener(model);
+	localUpdater.addListener(model);
 
 	if (postedKill)
 	    return;
@@ -2496,7 +2496,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public void registerStackModel(StackModel model) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 	    System.out.printf("\t registerModel.model_registered = true \n"); // NOI18N
-	stackUpdater.setListener(model);
+	stackUpdater.addListener(model);
 
 	if (postedKill)
 	    return;
@@ -2609,7 +2609,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private boolean get_threads = false; // indicate Thread View open/close
 
     public void registerThreadModel(ThreadModel model) {
-	threadUpdater.setListener(model);
+	threadUpdater.addListener(model);
 
 	if (postedKill)
 	    return;
@@ -3147,7 +3147,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return optionDebug;
     }
 
-    public void balloonEvaluate(final Line.Part lp, final String expr) {
+    public void balloonEvaluate(final Line.Part lp, final String expr, final boolean forceExtractExpression) {
         if (!DebuggerOption.BALLOON_EVAL.isEnabled(manager().globalOptions())) {
             return;
         }
@@ -3158,7 +3158,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    balloonEvaluate(lp, expr);
+                    balloonEvaluate(lp, expr, forceExtractExpression);
                 }
             });
             return;
@@ -3179,7 +3179,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         
         String text = expr;
-        if (lp.getColumn() >= 0) {
+        if (forceExtractExpression) {
             text = EvalAnnotation.extractExpr(lp, expr);
         }
         if (Disassembly.isInDisasm()) {
