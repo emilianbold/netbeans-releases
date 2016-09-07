@@ -696,8 +696,10 @@ public final class WebLogicDeployer {
                         parameters.add(sb.toString());
                     }
                     String name = getName(artifact.getFile(), artifact.getName());
-                    parameters.add("-name"); // NOI18N
-                    parameters.add(name);
+                    if (!artifact.isLibrary() || artifact.getName() != null) {
+                        parameters.add("-name"); // NOI18N
+                        parameters.add(name);
+                    }
                     if (artifact.isLibrary()) {
                         parameters.add("-library"); // NOI18N
                     }

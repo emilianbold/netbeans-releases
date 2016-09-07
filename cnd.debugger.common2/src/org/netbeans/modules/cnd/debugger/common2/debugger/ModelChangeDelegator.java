@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.ModelEvent;
 
@@ -67,50 +69,96 @@ import org.netbeans.spi.viewmodel.ModelEvent;
  */
 
 public class ModelChangeDelegator implements ModelListener {
-    private ModelListener listener;
+    private final List<ModelListener> listeners = new ArrayList();
+    private static final class Lock {
+    }
+    private final Object listenersLock = new Lock();
+
     private boolean	firechange;
     private boolean	batchmode = false;
 
-    public void setListener(ModelListener listener) {
-	this.listener = listener;
-
+    public void addListener(ModelListener listener) {
+        if (listener  == null) {
+            return;
+        }
+        synchronized( listenersLock ) {
+            listeners.add(listener);
+        }
 	// Listener may have been registered after treeChanged() was called.
 	// LATER? treeChanged();
     }
+    public void removeListener(ModelListener listener) {
+            synchronized( listenersLock ) {
+		listeners.remove(listener);
+	    }
+	// Listener may have been registered after treeChanged() was called.
+	// LATER? treeChanged();
+    }    
 
     public boolean hasListener() {
-	return listener != null;
+	return !listeners.isEmpty();
     }
 
     // interface ModelListener
     @Override
     public void modelChanged(ModelEvent e) {
 	firechange = true;
-	if (listener != null && !batchmode) {
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+	if (!batchmode) {
 	    //System.out.println("\tmodelChanged");
-	    listener.modelChanged(e);
+            for (ModelListener listener : listenersCopy) {
+                listener.modelChanged(e);
+            }	    
         }
     }
 
     // interface ex-TreeModelListener
     public void treeChanged() {
 	firechange = true;
-	if (listener != null && !batchmode) {
-	    // OLD listener.treeChanged();
-	    //System.out.println("\ttreeChanged");
-	    listener.modelChanged(new ModelEvent.TreeChanged(this));
-	}
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+	if (!batchmode) {
+	    //System.out.println("\tmodelChanged");
+            for (ModelListener listener : listenersCopy) {
+                listener.modelChanged(new ModelEvent.TreeChanged(this));
+            }	    
+        }       
     }
 
     // interface ex-TreeModelListener
     public void treeNodeChanged(Object node) {
 	firechange = true;
-	if (listener != null && !batchmode) {
-	    // OLD listener.treeNodeChanged(node);
-	    // System.out.println("\ttreeNodeChanged");
-	    listener.modelChanged(new ModelEvent.NodeChanged(this, node));
-	}
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+	if (!batchmode) {
+	    //System.out.println("\tmodelChanged");
+            for (ModelListener listener : listenersCopy) {
+                listener.modelChanged(new ModelEvent.NodeChanged(this, node));
+            }	    
+        }         
     }
+    
+    // interface ex-TreeModelListener
+    public void treeNodeChanged(Object node, int changed) {
+	firechange = true;
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+	if (!batchmode) {
+	    //System.out.println("\tmodelChanged");
+            for (ModelListener listener : listenersCopy) {
+                listener.modelChanged(new ModelEvent.NodeChanged(this, node, changed));
+            }	    
+        }         
+    }    
 
     public boolean batchMode() {
 	return batchmode;
@@ -123,10 +171,16 @@ public class ModelChangeDelegator implements ModelListener {
 
     public void batchOff() {
 	batchmode = false;
-	if (listener != null && firechange) {
-	    //System.out.println("\tbatchOff");
-	    listener.modelChanged(new ModelEvent.TreeChanged(this));
-	}
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+	if (firechange) {
+	    //System.out.println("\tmodelChanged");
+            for (ModelListener listener : listenersCopy) {
+                listener.modelChanged(new ModelEvent.TreeChanged(this));
+            }	    
+        }        
     }
 
     /**
@@ -134,9 +188,12 @@ public class ModelChangeDelegator implements ModelListener {
      */
     public void batchOffForce() {
 	batchmode = false;
-	if (listener != null) {
-	    //System.out.println("\tbatchOff");
-	    listener.modelChanged(new ModelEvent.TreeChanged(this));
-	}
+        List<ModelListener> listenersCopy;
+        synchronized( listenersLock ) {
+            listenersCopy = new ArrayList<>(listeners);
+        }          
+        for (ModelListener listener : listenersCopy) {
+            listener.modelChanged(new ModelEvent.TreeChanged(this));
+        }	    
     }
 }

@@ -522,6 +522,8 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
                     DirEntry dirEntry = RemoteFileSystemTransport.uploadAndRename(
                             RemotePlainFile.this.getExecutionEnvironment(), RemotePlainFile.this.getCache(), pathToUpload, pathToRename);                    
                     updateStatAndSendEvents(dirEntry, false);
+                } catch (TimeoutException ex) {
+                    throw new IOException(ex);
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
                 } catch (ExecutionException ex) {

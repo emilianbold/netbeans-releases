@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -175,7 +176,7 @@ abstract public class FileOperationsProvider {
                 return entry.isDirectory(); 
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -205,7 +206,7 @@ abstract public class FileOperationsProvider {
                 return entry.getLastModified().getTime();
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -228,7 +229,7 @@ abstract public class FileOperationsProvider {
                             } else {
                                 return !e.isDirectory();
                             }
-                        } catch (IOException | InterruptedException | CancellationException | ExecutionException e) {
+                        } catch (IOException | InterruptedException | CancellationException | ExecutionException | TimeoutException e) {
                             RemoteLogger.finest(e);
                         }
                     }
@@ -251,7 +252,7 @@ abstract public class FileOperationsProvider {
                 return entry.isPlainFile(); 
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -275,7 +276,7 @@ abstract public class FileOperationsProvider {
                 return entry.canWrite();
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -328,7 +329,7 @@ abstract public class FileOperationsProvider {
                 return entry != null;
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {

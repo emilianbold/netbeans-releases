@@ -675,7 +675,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) 
-            throws ConnectException, IOException, InterruptedException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         DirEntry entry;
         try {
             entry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);

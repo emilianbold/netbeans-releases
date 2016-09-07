@@ -216,6 +216,7 @@ public final class LocalModel extends VariableModel
 	if (node == ROOT) {
 	    return new Action[] {
 		WatchModel.NEW_WATCH_ACTION,
+                WatchModel.SHOW_PINNED_WATCHES_ACTION,                
 		new WatchModel.DeleteAllAction(),
 		null,
 		canDoIn ? Action_INHERITED_MEMBERS : null,

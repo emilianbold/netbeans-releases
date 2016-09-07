@@ -61,6 +61,6 @@ public interface WatchVariable extends ListMapItem {
 
     public NativeWatch getNativeWatch();
     public void setNativeWatch(NativeWatch parent);
-
+        
     public int getRoutingToken();
 }
