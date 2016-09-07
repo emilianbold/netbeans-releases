@@ -1,6 +1,44 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
  -->
 <html>
   <head>
@@ -35,7 +73,7 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
     <p>
        <b>Use Build Analyzer.</b> This option is selected by default to enable the IDE to
       gather information from the build by analyzing system library exec calls on Oracle Solaris,
-      Linux, and Mac platforms.  
+      Linux, and Mac platforms.
       See <a href="CodeAssistance.html">Configuring Code Assistance For Projects with Existing Sources</a>
       for more information about code assistance and the build analyzer.
     </p>
@@ -49,9 +87,9 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
        <b>Transient Macros.</b> Macros are specified as -D<i>macro-name</i> on the compiler command line and sometimes used to provide
       transient values such as time, date, or specific environment information. Such transient values
       should not be stored in project metadata for projects shared with other developers in a version
-      control system. You can set dummy values for transient macros by specifying them here in the form 
+      control system. You can set dummy values for transient macros by specifying them here in the form
       macro=value macro2=value2 and so on. You must preserve the type of the value. For example, if you have
-      macros called DATE set in "YYYY-MM-DD" format and TIME set in "HH:MM:SS" format, you could set dummy values as 
+      macros called DATE set in "YYYY-MM-DD" format and TIME set in "HH:MM:SS" format, you could set dummy values as
       DATE="0000-00-00" TIME="00:00:00" for this property.
     </p>
     <p>
