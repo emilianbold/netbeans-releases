@@ -176,7 +176,7 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static DirEntry stat(ExecutionEnvironment execEnv, String path)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstanceSlow(execEnv).stat(path);
     }
@@ -188,7 +188,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstanceSlow(execEnv).lstat(path);
      }
@@ -255,7 +255,7 @@ public abstract class RemoteFileSystemTransport {
     
     public static DirEntry uploadAndRename(ExecutionEnvironment execEnv, File src, 
             String pathToUpload, String pathToRename) 
-            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
         return getInstanceSlow(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
     }
 
@@ -288,7 +288,7 @@ public abstract class RemoteFileSystemTransport {
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntry stat(String path)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     // TODO: should only versions with timeout be kept?
     // Should other methods have a timeout parameter? (or probably there should be a static default?)
@@ -298,7 +298,7 @@ public abstract class RemoteFileSystemTransport {
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntry lstat(String path)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntry lstat(String path, int timeoutMillis)
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
@@ -340,7 +340,7 @@ public abstract class RemoteFileSystemTransport {
     protected abstract void scheduleRefresh(Collection<String> paths);
     
     protected abstract DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
-            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException;
 
     protected abstract boolean canSetAccessCheckType();
 

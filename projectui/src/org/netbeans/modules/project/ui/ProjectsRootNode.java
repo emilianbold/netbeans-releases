@@ -341,9 +341,9 @@ public class ProjectsRootNode extends AbstractNode {
                         
             if (type == PHYSICAL_VIEW) {
                 final Sources sources = p.data.second().first();
-                final SourceGroup[] groups = p.data.second().second();
                 sources.removeChangeListener( this );
                 sources.addChangeListener( this );
+                final SourceGroup[] groups = p.data.second().second();
                 sources2projects.put( sources, new WeakReference<Project>( project ) );
                 final List<Node> nodes = new ArrayList<>(groups.length);
                 for (SourceGroup group : groups) {

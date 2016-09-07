@@ -143,12 +143,12 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntry stat(String path)
-            throws ConnectException, IOException, InterruptedException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         try {
             return stat_or_lstat(path, false, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
-            return null;
+            throw ex;
         }
     }
 
@@ -160,12 +160,12 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntry lstat(String path)
-            throws ConnectException, IOException, InterruptedException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         try {
             return stat_or_lstat(path, true, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
-            return null;
+            throw ex;
         }
     }
 
@@ -592,7 +592,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
-            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
 
         CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
                 srcFile, env, pathToUpload, null, -1, false, null, false);
