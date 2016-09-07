@@ -68,6 +68,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -436,8 +437,14 @@ final class ModuleClassPaths {
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
         private static final String MOD_JAVA_SE = "java.se";        //NOI18N
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
+        private static final String JAVA_ = "java.";            //NOI18N
         private static final String ARG_ADDMODS = "-addmods";       //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
+        private static final Predicate<ModuleElement> NON_JAVA_PUBEXP = (e) -> 
+                !e.getQualifiedName().toString().startsWith(JAVA_) &&
+                e.getDirectives().stream()
+                    .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
+                    .anyMatch((d) -> ((ModuleElement.ExportsDirective)d).getTargetModules() == null);
         private final ClassPath base;
         private final SourceRoots sources;
         private final ClassPath systemModules;
@@ -593,7 +600,7 @@ final class ModuleClassPaths {
                                 selfResResources;   //java.base
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
-                    final Collection<String> additionalModules;                    
+                    final Predicate<ModuleElement> rootModulesPredicate;
                     if (found != null) {                        
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -602,7 +609,9 @@ final class ModuleClassPaths {
                                         .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
                                         .build(),
                                 found);
-                        additionalModules = getAddMods();
+                        final Set<String> additionalModules = getAddMods();
+                        additionalModules.remove(MOD_ALL_UNNAMED);
+                        rootModulesPredicate = ModuleNames.create(additionalModules);
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -610,13 +619,16 @@ final class ModuleClassPaths {
                                         .setModuleCompilePath(userModules)
                                         .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
                                         .build());
-                        additionalModules = new HashSet<>();
+                        final Set<String> additionalModules = getAddMods();
+                        additionalModules.remove(MOD_ALL_UNNAMED);
                         if (systemModules == null) {
                             additionalModules.add(MOD_JAVA_SE);
+                            rootModulesPredicate = ModuleNames.create(additionalModules)
+                                    .or(NON_JAVA_PUBEXP);
+                        } else {
+                            rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        additionalModules.addAll(getAddMods());
                     }
-                    additionalModules.remove(MOD_ALL_UNNAMED);
                     final boolean[] dependsOnUnnamed = new boolean[]{true};
                     if (src != null) {
                         try {
@@ -633,8 +645,9 @@ final class ModuleClassPaths {
                                         }
                                     }
                                     if (dependsOnUnnamed[0]) {
-                                        for (String additionalRootModule : additionalModules) {
-                                            Optional.ofNullable(resolveModule(cc, additionalRootModule))
+                                        for (String moduleName : modulesByName.keySet()) {
+                                            Optional.ofNullable(resolveModule(cc, moduleName))
+                                                    .filter(rootModulesPredicate)
                                                     .map((m) -> collectRequiredModules(m, true, true, modulesByName))
                                                     .ifPresent(requires::addAll);
                                         }
@@ -845,7 +858,7 @@ final class ModuleClassPaths {
             return res;
         }
         
-        private Collection<String> getAddMods() {
+        private Set<String> getAddMods() {
             final Set<String> mods = new HashSet<>();
             final CompilerOptionsQuery.Result res = getCompilerOptions();
             if (res != null) {
@@ -956,7 +969,7 @@ final class ModuleClassPaths {
                     res.add(dependencyURL);
                 }
             }
-            collectRequiredModulesImpl(module, transitive, true, modulesByName, seen, res);
+            collectRequiredModulesImpl(module, transitive, !includeTopLevel, modulesByName, seen, res);
             return res;
         }
 
@@ -971,7 +984,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
-                        if (topLevel || req.isPublic()) {
+                        if (topLevel || req.isPublic() || isMandated(req)) {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {
@@ -1021,6 +1034,30 @@ final class ModuleClassPaths {
             }
             return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(src.getRootURLs())
                     .findResource("java/util/zip/CRC32C.java") != null;   //NOI18N
+        }
+        
+        private static boolean isMandated(@NonNull final ModuleElement.RequiresDirective rd) {
+            return Optional.ofNullable(rd.getDependency())
+                    .map((me) -> MOD_JAVA_BASE.equals(me.getQualifiedName().toString()))
+                    .orElse(Boolean.FALSE);
+        }
+        
+        private static final class ModuleNames implements Predicate<ModuleElement> {
+            private final Set<? extends String> moduleNames;
+
+            private ModuleNames(@NonNull final Set<? extends String> names) {
+                this.moduleNames = names;
+            }
+
+            @Override
+            public boolean test(ModuleElement t) {
+                return moduleNames.contains(t.getQualifiedName().toString());
+            }       
+
+            @NonNull
+            static Predicate<ModuleElement> create(@NonNull final Set<? extends String> name) {
+                return new ModuleNames(name);
+            }
         }
     }
 
