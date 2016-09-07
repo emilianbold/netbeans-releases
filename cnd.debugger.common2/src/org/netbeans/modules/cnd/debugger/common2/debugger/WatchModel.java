@@ -419,7 +419,7 @@ public final class WatchModel extends VariableModel
     }
     public static final Action SHOW_PINNED_WATCHES_ACTION = new CheckBoxAction
         (NbBundle.getBundle(WatchModel.class).getString("CTL_WatchAction_ShowPinned"),
-         "showPinned") {
+         "showPinned") {//NOI18N
             @Override protected boolean isSelected() {
                 return showPinnedWatches.isShowPinnedWatches();
             }
