@@ -553,19 +553,22 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     private boolean ensureActiveProviders() {
-        String mime = getMimePath(getActiveComponent());
-        if (activeProviders != null) {
-            if (mime == null) {
-                return false;
-            }
-            if (mime.equals(currentMimePath)) {
-                return true;
-            }
-        }
         JTextComponent component = getActiveComponent();
-        activeProviders = (component != null)
-                ? getCompletionProvidersForComponent(component, mime, false)
-                : null;
+        if (component == null) {
+            activeProviders = null;
+            currentMimePath = null;
+        } else {
+            String mime = getMimePath(component);
+            if (activeProviders != null) {
+                if (mime == null) {
+                    return false;
+                }
+                if (mime.equals(currentMimePath)) {
+                    return true;
+                }
+            }
+            activeProviders = getCompletionProvidersForComponent(component, mime, false);
+        }
         if (LOG.isLoggable(Level.FINE)) {
             StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
             if (activeProviders != null) {
@@ -601,7 +604,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private String getMimePathBasic(JTextComponent component) {
         final Document doc = component.getDocument();
         // original mimeType code
-        Object mimeTypeObj =  DocumentUtilities.getMimeType(doc);  //NOI18N
+        Object mimeTypeObj =  doc == null ? null : DocumentUtilities.getMimeType(doc);  //NOI18N
         String mimeType;
 
         if (mimeTypeObj instanceof String) {
@@ -627,7 +630,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         final int offset = component.getCaretPosition();
         final MimePath[] mimePathR = new MimePath[1];
         final Document doc = component.getDocument();
-        
+        if (doc == null) {
+            return null;
+        }
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -732,6 +737,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             Collection<? extends Lookup.Item> allItems = lookup.lookupResult(CompletionProvider.class).allItems();
             for (Lookup.Item i : allItems) {
                 String id = i.getId();
+                // hack, relies on that each provider has a different filename; which is typically
+                // true as providers are registered using classnames.
                 int lastSlash = id.lastIndexOf('/'); // NOI18N
                 if (lastSlash > 0) {
                     String fname = id.substring(lastSlash + 1, id.length());

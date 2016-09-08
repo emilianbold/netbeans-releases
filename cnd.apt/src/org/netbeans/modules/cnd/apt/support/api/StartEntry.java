@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Parameters;
@@ -68,6 +70,10 @@ public final class StartEntry implements SelfPersistent {
     public StartEntry(FileSystem fs, String startFile, Key startFileProject) {
         Parameters.notNull("startFileProject", startFileProject); //NOI18N
         this.fileSystem = fs;
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrue(CndFileSystemProvider.isAbsolute(fs, startFile),
+                    "Start entry path should be absolute! FS=" + fileSystem + " Path=" + startFile); //NOI18N
+        }
         this.startFile = FilePathCache.getManager().getString(startFile);
         this.startFileProject = startFileProject;
     }
