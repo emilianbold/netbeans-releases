@@ -56,6 +56,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -105,6 +106,7 @@ import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.modules.editor.lib2.CaretUndo;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib2.document.ContentEdit;
@@ -2296,10 +2298,22 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     class AtomicCompoundEdit extends StableCompoundEdit {
 
+        private static final int MERGE_INDEX_NOT_INITIALIZED = -1;
+        /**
+         * Marker value for mergeEditIndex to signal that the merge is not possible
+         * (value must be less than MERGE_INDEX_NOT_INITIALIZED).
+         */
+        private static final int MERGE_PROHIBITED = -2;
+
         private UndoableEdit previousEdit;
 
         private boolean nonSignificant;
-
+        
+        /**
+         * If an edit gets added that prohibits merge then this flag is set to true.
+         */
+        private int mergeEditIndex = MERGE_INDEX_NOT_INITIALIZED;
+        
         public @Override void undo() throws CannotUndoException {
             atomicLockImpl ();
             try {
@@ -2372,23 +2386,40 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             return getEdits().size();
         }
 
+        @Override
+        public boolean addEdit(UndoableEdit anEdit) {
+            if (super.addEdit(anEdit)) {
+                if (mergeEditIndex >= MERGE_INDEX_NOT_INITIALIZED) { // Valid or not inited
+                    if (anEdit instanceof BaseDocumentEvent) {
+                        mergeEditIndex = size() - 1;
+                    } else if (anEdit.getClass() != BaseDocument.AtomicCompoundEdit.class &&
+                        !CaretUndo.isCaretUndoEdit(anEdit)
+                    ) {
+                        mergeEditIndex = MERGE_PROHIBITED; // Do not allow merging if there are unknown undoable edits
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+        
         public @Override boolean replaceEdit(UndoableEdit anEdit) {
-            UndoableEdit childEdit;
             if (nonSignificant) { // Non-significant edit must be replacing
                 previousEdit = anEdit;
                 // Becomes significant
                 nonSignificant = false;
                 return true;
             }
-            if (size() == 1 && ((childEdit = (UndoableEdit)getEdits().get(0)) instanceof BaseDocumentEvent)) {
-                BaseDocumentEvent childEvt = (BaseDocumentEvent)childEdit;
+            if (!undoMergeReset && mergeEditIndex >= 0) { // Only merge if this edit contains BaseDocumentEvent child item
+                List<UndoableEdit> thisEdits = getEdits();
+                BaseDocumentEvent thisMergeEdit = (BaseDocumentEvent) thisEdits.get(mergeEditIndex);
                 if (anEdit instanceof BaseDocument.AtomicCompoundEdit) {
-                    BaseDocument.AtomicCompoundEdit compEdit
+                    BaseDocument.AtomicCompoundEdit anAtomicEdit
                             = (BaseDocument.AtomicCompoundEdit)anEdit;
-
-                    if (!undoMergeReset && compEdit.getEdits().size() == 1) {
-                        UndoableEdit edit = (UndoableEdit)compEdit.getEdits().get(0);
-                        if (edit instanceof BaseDocumentEvent && childEvt.canMerge((BaseDocumentEvent)edit)) {
+                    List<UndoableEdit> anAtomicEditChildren = anAtomicEdit.getEdits();
+                    for (int i = 0; i < anAtomicEditChildren.size(); i++) {
+                        UndoableEdit child = (UndoableEdit)anAtomicEditChildren.get(i);
+                        if (child instanceof BaseDocumentEvent && thisMergeEdit.canMerge((BaseDocumentEvent)child)) {
                             previousEdit = anEdit;
                             return true;
                         }
@@ -2396,7 +2427,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 } else if (anEdit instanceof BaseDocumentEvent) {
                     BaseDocumentEvent evt = (BaseDocumentEvent)anEdit;
 
-                    if (!undoMergeReset && childEvt.canMerge(evt)) {
+                    if (thisMergeEdit.canMerge(evt)) {
                         previousEdit = anEdit;
                         return true;
                     }
@@ -2412,6 +2443,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         public void setSignificant(boolean significant) {
             this.nonSignificant = !significant;
+        }
+        
+        BaseDocumentEvent getMergeEdit() {
+            return (BaseDocumentEvent) ((mergeEditIndex >= 0) ? getEdits().get(mergeEditIndex) : null);
         }
 
     } // End of AtomicCompoundEdit
