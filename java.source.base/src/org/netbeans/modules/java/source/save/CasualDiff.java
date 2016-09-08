@@ -126,6 +126,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCProvides;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSwitch;
@@ -137,6 +138,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCTypeUnion;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.JCTree.JCUses;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -705,6 +707,31 @@ public class CasualDiff {
             }
             copyTo(localPointer, bounds[1]);
         }
+        return bounds[1];
+    }
+    
+    protected int diffProvides(JCProvides oldT, JCProvides newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // service
+        int[] servBounds = getBounds(oldT.getServiceName());
+        copyTo(localPointer, servBounds[0]);
+        localPointer = diffTree(oldT.getServiceName(), newT.getServiceName(), servBounds);
+        // implementation
+        int[] implBounds = getBounds(oldT.getImplementationName());
+        copyTo(localPointer, implBounds[0]);
+        localPointer = diffTree(oldT.getImplementationName(), newT.getImplementationName(), implBounds);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
+    }
+
+    protected int diffUses(JCUses oldT, JCUses newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // service
+        int[] servBounds = getBounds(oldT.getServiceName());
+        copyTo(localPointer, servBounds[0]);
+        localPointer = diffTree(oldT.getServiceName(), newT.getServiceName(), servBounds);
+        copyTo(localPointer, bounds[1]);
+
         return bounds[1];
     }
 
@@ -5040,6 +5067,12 @@ public class CasualDiff {
               break;
           case MODULEDEF:
               retVal = diffModuleDef((JCModuleDecl)oldT, (JCModuleDecl)newT, elementBounds);
+              break;
+          case PROVIDES:
+              retVal = diffProvides((JCProvides)oldT, (JCProvides)newT, elementBounds);
+              break;
+          case USES:
+              retVal = diffUses((JCUses)oldT, (JCUses)newT, elementBounds);
               break;
           case PACKAGEDEF:
               retVal = diffPackage((JCPackageDecl)oldT, (JCPackageDecl)newT, getOldPos(oldT));
