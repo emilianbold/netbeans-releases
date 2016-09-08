@@ -43,6 +43,8 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -79,6 +81,10 @@ public class NewRemoteProjectAction extends SingleHostAction {
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
         ActionListener performer = Lookups.forPath("CND/Toobar/Services/NewRemoteProject").lookup(ActionListener.class); //NOI18N
-        performer.actionPerformed(new ActionEvent(node, 0, null));
+        if (performer != null) {
+            performer.actionPerformed(new ActionEvent(node, 0, null));
+        } else {
+            RemoteUtil.LOGGER.info("Can not find NewRemoteProject action"); //NOI18N
+        }
     }
 }
