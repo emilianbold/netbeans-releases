@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.java.source.JavaParserResultTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -64,7 +67,7 @@ import org.netbeans.spi.editor.hints.HintsController;
  * @author sdedic
  */
 
-public class EmbeddedHintsCollector extends IndexingAwareParserResultTask<Parser.Result> {
+public class EmbeddedHintsCollector extends JavaParserResultTask<Parser.Result> {
     private static final Map<Snapshot, List<ErrorDescription>> hints = new WeakHashMap();
     
     public static void setAnnotations(Snapshot snap, List<ErrorDescription> descs) {
@@ -83,7 +86,7 @@ public class EmbeddedHintsCollector extends IndexingAwareParserResultTask<Parser
     private volatile boolean cancelled;
     
     public EmbeddedHintsCollector() {
-        super(TaskIndexingMode.DISALLOWED_DURING_SCAN);
+        super(Phase.PARSED, TaskIndexingMode.DISALLOWED_DURING_SCAN);
     }
     
     private List<ErrorDescription>  allHints;
