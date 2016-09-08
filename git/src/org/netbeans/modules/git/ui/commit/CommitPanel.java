@@ -49,11 +49,16 @@
 package org.netbeans.modules.git.ui.commit;
 
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -106,6 +111,7 @@ public class CommitPanel extends javax.swing.JPanel {
         
         initCommitMessage(commitMessage, preferredMessage);
         attacheMessageListener();
+        initActions();
     }
 
     private void setCaretPosition(JComboBox cbo) {
@@ -217,8 +223,10 @@ public class CommitPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel3.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(templatesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.text")); // NOI18N
+        templatesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.TTtext")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(recentLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.text")); // NOI18N
+        recentLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.TTtext")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(amendCheckBox, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.amendCheckBox.text")); // NOI18N
         amendCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.amendCheckBox.TTtext")); // NOI18N
@@ -328,6 +336,21 @@ public class CommitPanel extends javax.swing.JPanel {
         authors.add(0, user);
         model = new DefaultComboBoxModel(authors.toArray(new String[authors.size()]));
         return model;
+    }
+
+    private void initActions () {
+        InputMap inputMap = getInputMap( WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
+        ActionMap actionMap = getActionMap();
+        Object action = recentLabel.getClientProperty("openAction");
+        if (action instanceof Action) {
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK, false ), "messageHistory" ); //NOI18N
+            actionMap.put("messageHistory", (Action) action); //NOI18N
+        }
+        action = templatesLabel.getClientProperty("openAction");
+        if (action instanceof Action) {
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK, false ), "messageTemplate" ); //NOI18N
+            actionMap.put("messageTemplate", (Action) action); //NOI18N
+        }
     }
     
     

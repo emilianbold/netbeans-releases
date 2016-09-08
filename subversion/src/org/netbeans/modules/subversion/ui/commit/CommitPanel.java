@@ -112,10 +112,14 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
+import javax.swing.InputMap;
+import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
 import javax.swing.KeyStroke;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
@@ -474,6 +478,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
         });
         Spellchecker.register (messageTextArea);
+        initActions();
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -649,5 +654,24 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
         }
         return modifiedFiles;
+    }
+
+    private void initActions () {
+        InputMap inputMap = getInputMap( WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
+        ActionMap actionMap = getActionMap();
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK, false ), "messageHistory" ); //NOI18N
+        actionMap.put("messageHistory", new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                onBrowseRecentMessages();
+            }
+        });
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK, false ), "messageTemplate" ); //NOI18N
+        actionMap.put("messageTemplate", new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                onTemplate();
+            }
+        });
     }
 }
