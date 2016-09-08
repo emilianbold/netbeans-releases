@@ -105,12 +105,12 @@ made subject to such option by the copyright holder.
                             <replacestring from="${module.root.abs.internal}" to=""/>
                         </filtermapper>
                         <cutdirsmapper dirs="1"/>
-                        <packagemapper from="*" to="-XaddExports:${run.test.addexport.source.module.internal}/*=ALL-UNNAMED"/>
+                        <packagemapper from="*" to="--add-exports ${run.test.addexport.source.module.internal}/*=ALL-UNNAMED"/>
                     </chainedmapper>
                 </pathconvert>
                 <condition property="run.test.jvmargs"
-                        value="-addmods ${module.name} -XaddReads:${module.name}=ALL-UNNAMED ${run.test.addexports.internal}"
-                        else="-Xpatch:${related.module.name}=${module.root} -addmods ${related.module.name} -XaddReads:${related.module.name}=ALL-UNNAMED ${run.test.addexports.internal}">
+                        value="--add-modules ${module.name} --add-reads ${module.name}=ALL-UNNAMED ${run.test.addexports.internal}"
+                        else="--patch-module ${related.module.name}=${module.root} --add-modules ${related.module.name} --add-reads ${related.module.name}=ALL-UNNAMED ${run.test.addexports.internal}">
                     <and>
                         <isset property="module.name"/>
                         <length length="0" string="${module.name}" when="greater"/>
@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
                         <propertyref prefix="test-sys-prop."/>
                         <mapper from="test-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
-                    <jvmarg value="-modulepath"/>
+                    <jvmarg value="--module-path"/>
                     <jvmarg path="${modulepath-translated}"/>
                     <jvmarg line="${run.test.jvmargs}"/>
                 </junit>

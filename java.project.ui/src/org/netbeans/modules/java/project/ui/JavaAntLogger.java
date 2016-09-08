@@ -198,8 +198,8 @@ public final class JavaAntLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CLASSPATH_ARGS = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n"); // NOI18N
-    private static final Pattern MODULEPATH_ARGS = Pattern.compile("\r?\n'-modulepath'\r?\n'(.*)'\r?\n"); // NOI18N
-    private static final Pattern UPGRADE_MODULEPATH_ARGS = Pattern.compile("\r?\n'-upgrademodulepath'\r?\n'(.*)'\r?\n"); // NOI18N
+    private static final Pattern MODULEPATH_ARGS = Pattern.compile("\r?\n'--module-path'\r?\n'(.*)'\r?\n"); // NOI18N
+    private static final Pattern UPGRADE_MODULEPATH_ARGS = Pattern.compile("\r?\n'--upgrade-module-path'\r?\n'(.*)'\r?\n"); // NOI18N
     
     /**
      * Regexp matching part of a Java task's invocation debug message

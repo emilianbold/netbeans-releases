@@ -396,7 +396,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                     }
                     final List<String> result = Arrays.asList(
                     String.format("-Xmodule:%s", moduleName),      //NOI18N
-                    String.format("-XaddReads:%s=ALL-UNNAMED",     //NOI18N
+                    String.format("--add-reads %s=ALL-UNNAMED",     //NOI18N
                                     moduleName
                     ));
                     return Collections.unmodifiableList(result);
@@ -414,7 +414,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                     return moduleName == null ?
                             Collections.emptyList() :
                             Collections.singletonList(
-                                    String.format("-XaddReads:%s=ALL-UNNAMED",  //NOI18N
+                                    String.format("--add-reads %s=ALL-UNNAMED",  //NOI18N
                                         moduleName
                                 ));
                 }

@@ -438,7 +438,7 @@ final class ModuleClassPaths {
         private static final String MOD_JAVA_SE = "java.se";        //NOI18N
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
         private static final String JAVA_ = "java.";            //NOI18N
-        private static final String ARG_ADDMODS = "-addmods";       //NOI18N
+        private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private static final Predicate<ModuleElement> NON_JAVA_PUBEXP = (e) -> 
                 !e.getQualifiedName().toString().startsWith(JAVA_) &&
