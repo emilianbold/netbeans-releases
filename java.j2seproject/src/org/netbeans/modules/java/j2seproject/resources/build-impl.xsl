@@ -226,7 +226,7 @@ is divided into following sections:
                 <property name="debug.modulepath" value="${{run.modulepath}}"/>
                 <property name="javac.upgrademodulepath" value=""/>
                 <property name="run.upgrademodulepath" value="${{javac.upgrademodulepath}}"/>
-                <condition property="javac.systemmodulepath.cmd.line.arg" value="-system '${{javac.systemmodulepath}}'" else="">
+                <condition property="javac.systemmodulepath.cmd.line.arg" value="--system '${{javac.systemmodulepath}}'" else="">
                     <and>
                         <isset property="javac.systemmodulepath"/>
                         <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
@@ -976,7 +976,7 @@ is divided into following sections:
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg value="-modulepath"/>
+                            <jvmarg value="--module-path"/>
                             <jvmarg path="${{run.test.modulepath}}:${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
@@ -2221,7 +2221,7 @@ is divided into following sections:
                     <path path="${{run.modulepath}}"/>
                     <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
                 </pathconvert>
-                <condition property="jar.usage.message.module.path" value=" -modulepath ${{run.modulepath.with.dist.jar}}" else="">
+                <condition property="jar.usage.message.module.path" value=" --module-path ${{run.modulepath.with.dist.jar}}" else="">
                     <and>
                         <isset property="modules.supported.internal"/>
                         <length length="0" string="${{run.modulepath.with.dist.jar}}" when="greater"/>
@@ -2626,7 +2626,7 @@ is divided into following sections:
                             </xsl:call-template>
                     </xsl:attribute>
                 </j2seproject3:modulename>
-                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=ALL-UNNAMED" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED">
+                <condition property="javac.test.compilerargs" value="--add-reads ${{test.module.name}}=ALL-UNNAMED" else="-Xmodule:${{module.name}} --add-reads ${{module.name}}=ALL-UNNAMED">
                     <and>
                         <isset property="test.module.name"/>
                         <length length="0" string="${{test.module.name}}" when="greater"/>
@@ -2650,10 +2650,10 @@ is divided into following sections:
                             <replacestring from="${{build.test.classes.dir.abs.internal}}" to=""/>
                         </filtermapper>
                         <cutdirsmapper dirs="1"/>
-                        <packagemapper from="*" to="-XaddExports:${{run.test.addexport.source.module.internal}}/*=ALL-UNNAMED"/>
+                        <packagemapper from="*" to="--add-exports ${{run.test.addexport.source.module.internal}}/*=ALL-UNNAMED"/>
                     </chainedmapper>
                 </pathconvert>
-                <condition property ="run.test.jvmargs" value="-addmods ${{test.module.name}} -XaddReads:${{test.module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}" else="-Xpatch:${{module.name}}=${{build.test.classes.dir}} -addmods ${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}">
+                <condition property ="run.test.jvmargs" value="--add-modules ${{test.module.name}} --add-reads ${{test.module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}" else="--patch-module ${{module.name}}=${{build.test.classes.dir}} --add-modules ${{module.name}} --add-reads ${{module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}">
                     <and>
                         <isset property="test.module.name"/>
                         <length length="0" string="${{test.module.name}}" when="greater"/>

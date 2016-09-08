@@ -370,7 +370,7 @@ public final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQ
                     }
                     final List<String> result = Arrays.asList(
                     String.format("-Xmodule:%s", moduleName),      //NOI18N
-                    String.format("-XaddReads:%s=ALL-UNNAMED",     //NOI18N
+                    String.format("--add-reads %s=ALL-UNNAMED",     //NOI18N
                                     moduleName
                     ));
                     return Collections.unmodifiableList(result);
@@ -388,7 +388,7 @@ public final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQ
                     return moduleName == null ?
                             Collections.emptyList() :
                             Collections.singletonList(
-                                    String.format("-XaddReads:%s=ALL-UNNAMED",  //NOI18N
+                                    String.format("--add-reads %s=ALL-UNNAMED",  //NOI18N
                                         moduleName
                                 ));
                 }

@@ -991,13 +991,13 @@ public class JavacParser extends Parser {
         final List<String> res = new ArrayList<>();
         for (int i = 0; i < options.size(); i++) {
             String option = options.get(i);
-            if (option.startsWith("-XaddExports:") ||   //NOI18N
-                option.startsWith("-Xmodule:") ||       //NOI18N
-                option.startsWith("-XaddReads:")) {     //NOI18N
+            if (option.startsWith("-Xmodule:")) {     //NOI18N
                 res.add(option);
             } else if (i+1 < options.size() && (
-                    option.equals("-addmods") ||
-                    option.equals("-limitmods"))) {         //NOI18N
+                    option.equals("--add-modules") ||   //NOI18N
+                    option.equals("--limit-modules") || //NOI18N
+                    option.equals("--add-exports") ||   //NOI18N
+                    option.equals("--add-reads"))) {    //NOI18N
                 res.add(option);
                 option = options.get(++i);
                 res.add(option);

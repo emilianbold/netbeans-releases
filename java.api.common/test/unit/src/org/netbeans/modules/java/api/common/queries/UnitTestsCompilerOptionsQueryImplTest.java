@@ -147,7 +147,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
@@ -166,7 +166,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         final List<? extends String> args = r.getArguments();
         assertEquals(
             Arrays.asList(
-                String.format("-XaddReads:%s=ALL-UNNAMED", testModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", testModuleName) //NOI18N
             ),
             args);
     }
@@ -205,7 +205,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
@@ -235,7 +235,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
@@ -258,7 +258,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
@@ -276,7 +276,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
         final MockChangeListener mcl = new MockChangeListener();
@@ -288,7 +288,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", newSrcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=ALL-UNNAMED", newSrcModuleName) //NOI18N
+                String.format("--add-reads %s=ALL-UNNAMED", newSrcModuleName) //NOI18N
             ),
             args);
     }
