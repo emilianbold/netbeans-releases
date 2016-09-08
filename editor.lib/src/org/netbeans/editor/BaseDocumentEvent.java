@@ -520,9 +520,9 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             BaseDocument.AtomicCompoundEdit compEdit
                     = (BaseDocument.AtomicCompoundEdit)anEdit;
 
-            if (!doc.undoMergeReset && compEdit.getEdits().size() == 1) {
-                UndoableEdit edit = (UndoableEdit)compEdit.getEdits().get(0);
-                if (edit instanceof BaseDocumentEvent && canMerge((BaseDocumentEvent)edit)) {
+            BaseDocumentEvent aMergeEdit = compEdit.getMergeEdit();
+            if (!doc.undoMergeReset && aMergeEdit != null) {
+                if (canMerge(aMergeEdit)) {
                     previous = anEdit;
                     return true;
                 }
