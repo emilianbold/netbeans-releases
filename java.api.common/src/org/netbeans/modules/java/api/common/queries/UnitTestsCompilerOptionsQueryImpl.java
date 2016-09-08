@@ -395,10 +395,9 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         return Collections.emptyList();
                     }
                     final List<String> result = Arrays.asList(
-                    String.format("-Xmodule:%s", moduleName),      //NOI18N
-                    String.format("--add-reads %s=ALL-UNNAMED",     //NOI18N
-                                    moduleName
-                    ));
+                        String.format("-Xmodule:%s", moduleName),      //NOI18N
+                        "--add-reads",  //NOI18N
+                        String.format("%s=ALL-UNNAMED", moduleName));  //NOI18N                                    
                     return Collections.unmodifiableList(result);
                 }
             },
@@ -411,12 +410,13 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         @NullAllowed final FileObject srcModuleInfo,
                         @NullAllowed final FileObject testModuleInfo) {
                     final String moduleName = getModuleName(testModuleInfo);
-                    return moduleName == null ?
-                            Collections.emptyList() :
-                            Collections.singletonList(
-                                    String.format("--add-reads %s=ALL-UNNAMED",  //NOI18N
-                                        moduleName
-                                ));
+                    if (moduleName == null) {
+                        return Collections.emptyList();
+                    }
+                    final List<String> result = Arrays.asList(
+                        "--add-reads",  //NOI18N
+                        String.format("%s=ALL-UNNAMED", moduleName));  //NOI18N                                    
+                    return Collections.unmodifiableList(result);
                 }
             };
 
