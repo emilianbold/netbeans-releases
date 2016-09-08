@@ -1497,7 +1497,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (CndUtils.isDebugMode()) {
             FileSystem curPrjFS = getFileSystem();
             FileSystem nativeProjectFS = nativeFile.getNativeProject().getFileSystem();
-            CndUtils.assertTrue(nativeProjectFS.equals(curPrjFS), "File systems differ: incoming=" + nativeProjectFS + ";cur=" + curPrjFS); //NOI18N
+            CndUtils.assertTrue(nativeProjectFS.equals(curPrjFS), "File systems differ: incoming=" + nativeProjectFS + ";cur=" + curPrjFS + //NOI18N
+                    "; project=" + this +  "; file=" + nativeFile); //NOI18N
         }
         StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, getUIDKey());
         APTFileSearch searcher = null;
