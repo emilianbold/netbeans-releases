@@ -68,9 +68,18 @@ public class WatchBag {
 	ArrayList<WatchVariable> ws = new ArrayList<WatchVariable>();
 	for (NativeWatch w : watches) {
 	    WatchVariable dw = w.findByDebugger(debugger);
-	    if (dw != null) {
+            if (dw == null) {
+                continue;
+            }             
+            if (WatchModel.showPinnedWatches.isShowPinnedWatches()) {
                 ws.add(dw);
+            } else {
+                boolean isPinWatch = w.watch().getPin() != null;
+                if (!isPinWatch) {
+                    ws.add(dw);
+                }
             }
+            
 	}
 	return ws.toArray(new WatchVariable[ws.size()]);
     }

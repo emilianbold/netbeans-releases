@@ -1890,6 +1890,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     
     @Override
     public void registerDebuggingViewModel(ModelListener model) {
-        debuggingViewUpdater.setListener(model);
+        debuggingViewUpdater.addListener(model);
     }
 }
