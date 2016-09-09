@@ -378,11 +378,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         TypeMirror returnType = 
                                 Utilities.convertIfAnonymous(Utilities.resolveCapturedType(info, 
                                         resolveType(info, resolved)));
-                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), 
-                                h, params, TypeMirrorHandle.create(returnType), 
-                                exceptionHandles, duplicatesCount, typeVars, end, 
-                                viableTargets);
-                        methodFix.setTargetIsInterface(allIfaces.get());
+                        if (Utilities.isValidType(returnType)) {
+                            methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), 
+                                    h, params, TypeMirrorHandle.create(returnType), 
+                                    exceptionHandles, duplicatesCount, typeVars, end, 
+                                    viableTargets);
+                            methodFix.setTargetIsInterface(allIfaces.get());
+                        }
                     }
                 }
             }
@@ -889,8 +891,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 tm = object != null ? object.asType() : null;
             }
         }
-        
-        return tm;
+        if (!Utilities.isValidType(tm)) {
+            return null;
+        } else {
+            return tm;
+        }
     }
 
     static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
