@@ -110,7 +110,7 @@ public abstract class PatternSandbox extends JPanel
         lblPattern = new JLabel();
         lblPattern.setLabelFor(cboxPattern);
         lblHint = new JLabel();
-        lblHint.setForeground(SystemColor.controlDkShadow);
+        lblHint.setEnabled(false);
         lblOptions = new JLabel();
         textPane = new JTextPane();
         textScrollPane = new JScrollPane();
