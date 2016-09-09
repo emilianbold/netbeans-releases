@@ -46,6 +46,7 @@ package org.netbeans.modules.java.hints.legacy.spi;
 
 import com.sun.source.tree.Tree;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -231,7 +232,10 @@ public class RulesManager implements FileChangeListener {
                     FileObject mimeFolder = fo.getParent();
                     Object o = mimeFolder.getAttribute("inherit.rules");
                     if (Boolean.TRUE == o) {
-                        map.putAll(dest.get("text/x-java"));
+                        Map<String, List<ErrorRule>> inheritMap = dest.get("text/x-java");
+                        for (String c : inheritMap.keySet()) {
+                            map.put(c, new ArrayList<ErrorRule>(inheritMap.get(c)));
+                        }
                     }
                 }
 
