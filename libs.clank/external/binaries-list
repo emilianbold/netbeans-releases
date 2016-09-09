@@ -1,9 +1,9 @@
-#changeset:   19483:256e2aaef21f
+#changeset:   19523:2581582db920
 #branch:      jclank
 #tag:         tip
-#parent:      19461:67bd03f4034a
+#parent:      19519:f9cd6b0de7c6
+#parent:      19522:056956744e12
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Sep 07 21:36:21 2016 +0300
-#summary:     fixed #259002 - [newcodemodel] AssertionError: Path should be absolute: StringRef{\\ALEX-PC\Users\alex\CppApplication_2\main.cpp
-BC155E7BC6F6CC456E726C11AF33CF2C1974E7F8 clank_0.3.6.zip
-
+#date:        Fri Sep 09 23:23:53 2016 +0300
+#summary:     Merged jclank_39_upgrade into jclank
+D43D5D67A1D7DC1E62ABA7C01F90BEFFD8A74A65 clank_0.3.6.zip
