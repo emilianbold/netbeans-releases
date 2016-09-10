@@ -46,6 +46,7 @@ Contributor(s):
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <package>groovy.lang</package>
                 <package>groovyjarjarantlr</package>

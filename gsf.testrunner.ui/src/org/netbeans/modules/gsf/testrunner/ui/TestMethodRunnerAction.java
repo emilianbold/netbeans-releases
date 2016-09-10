@@ -60,14 +60,18 @@ import org.openide.util.actions.NodeAction;
  * @author Theofanis Oikonomou
  */
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.TestMethodRunnerAction", category = "CommonTestRunner")
-@ActionRegistration(displayName = "#LBL_Action_RunTestMethod")
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup", position=1795)})
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_RunTestMethod")
+@ActionReferences(value = {
+    @ActionReference(path = "Editors/text/x-java/Popup", position = 1795)})
 @NbBundle.Messages({"LBL_Action_RunTestMethod=Run Focused Test Method"})
 public class TestMethodRunnerAction extends NodeAction {
+
     private RequestProcessor.Task runMethodTask;
     private TestMethodRunnerProvider runMethodProvider;
-    
-    /** Creates a new instance of TestMethodRunnerAction */
+
+    /**
+     * Creates a new instance of TestMethodRunnerAction
+     */
     public TestMethodRunnerAction() {
         putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }
@@ -81,7 +85,7 @@ public class TestMethodRunnerAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     public boolean asynchronous() {
         return false;
@@ -89,37 +93,37 @@ public class TestMethodRunnerAction extends NodeAction {
 
     @Override
     @NbBundle.Messages({"Search_For_Provider=Searching for provider to handle the test method",
-	"No_Provider_Found=No provider can handle the test method",
-	"Scanning_In_Progress=Scanning in progress, cannot yet identify the name of the test method"})
+        "No_Provider_Found=No provider can handle the test method",
+        "Scanning_In_Progress=Scanning in progress, cannot yet identify the name of the test method"})
     protected void performAction(final Node[] activatedNodes) {
         final Collection<? extends TestMethodRunnerProvider> providers = Lookup.getDefault().lookupAll(TestMethodRunnerProvider.class);
-	RequestProcessor RP = new RequestProcessor("TestMethodRunnerAction", 1, true);   // NOI18N
-	runMethodTask = RP.create(new Runnable() {
-	    @Override
-	    public void run() {
-		for (TestMethodRunnerProvider provider : providers) {
-		    if (provider.canHandle(activatedNodes[0])) {
-			runMethodProvider = provider;
-			break;
-		    }
-		}
-	    }
-	});
-	final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.Search_For_Provider(), runMethodTask);
-	runMethodTask.addTaskListener(new TaskListener() {
-	    @Override
-	    public void taskFinished(org.openide.util.Task task) {
-		ph.finish();
-		if(runMethodProvider == null) {
+        RequestProcessor RP = new RequestProcessor("TestMethodRunnerAction", 1, true);   // NOI18N
+        runMethodTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                for (TestMethodRunnerProvider provider : providers) {
+                    if (provider.canHandle(activatedNodes[0])) {
+                        runMethodProvider = provider;
+                        break;
+                    }
+                }
+            }
+        });
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.Search_For_Provider(), runMethodTask);
+        runMethodTask.addTaskListener(new TaskListener() {
+            @Override
+            public void taskFinished(org.openide.util.Task task) {
+                ph.finish();
+                if (runMethodProvider == null) {
                     boolean isIndexing = IndexingManager.getDefault().isIndexing();
                     StatusDisplayer.getDefault().setStatusText(isIndexing ? Bundle.Scanning_In_Progress() : Bundle.No_Provider_Found());
-		} else {
-		    runMethodProvider.runTestMethod(activatedNodes[0]);
-		}
-	    }
-	});
-	ph.start();
-	runMethodTask.schedule(0);
+                } else {
+                    runMethodProvider.runTestMethod(activatedNodes[0]);
+                }
+            }
+        });
+        ph.start();
+        runMethodTask.schedule(0);
     }
 
     @Override
@@ -127,9 +131,9 @@ public class TestMethodRunnerAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return false;
         }
-	if(runMethodTask != null && !runMethodTask.isFinished()) {
-	    return false;
-	}
+        if (runMethodTask != null && !runMethodTask.isFinished()) {
+            return false;
+        }
         Collection<? extends TestMethodRunnerProvider> providers = Lookup.getDefault().lookupAll(TestMethodRunnerProvider.class);
         for (TestMethodRunnerProvider provider : providers) {
             if (provider.isTestClass(activatedNodes[0])) {
