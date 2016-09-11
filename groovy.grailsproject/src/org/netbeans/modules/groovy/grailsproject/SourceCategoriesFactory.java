@@ -41,54 +41,57 @@
  */
 package org.netbeans.modules.groovy.grailsproject;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
+
 /**
- * Represents a grails source category.
+ * This factory provides source categories for a given version of grails.
  * @author Bruno Flavio
  */
-public class SourceCategory {
-
-    private final String relativePath;
-
-    private final String command;
-
-    private final String suffix;
-
+public class SourceCategoriesFactory {
+    
+    private static final Map<Version, SourceCategoriesInterface> versions = 
+            new TreeMap<>(Collections.reverseOrder());
+    
+    static {
+        /*
+        Registers the available Source Categories handlers and their minimum version.
+        */
+        versions.put(SourceCategoriesGrails11.MIN_VERSION, new SourceCategoriesGrails11());
+        versions.put(SourceCategoriesGrails301.MIN_VERSION, new SourceCategoriesGrails301());
+    }
+    
+    private SourceCategoriesInterface categories;
+    
     /**
-     * Creates a grails source category.
-     * @param relativePath place where files of this category should be stored
-     * @param command grails command that should be invoked to create a file of this category
-     * @param suffix suffix present in every file name of this category
+     * Creates a source categories factory using the current Grails Platform default version.
      */
-    SourceCategory(String relativePath, String command, String suffix) {
-        this.relativePath = relativePath;
-        this.command = command;
-        this.suffix = suffix;
+    public SourceCategoriesFactory() {
+        this(GrailsPlatform.getDefault().getVersion());
+    }
+    
+    /**
+     * Creates a source categories factory using the specified Grails version.
+     * @param version - Grails version to use.
+     */
+    public SourceCategoriesFactory(GrailsPlatform.Version version) {
+        this.categories =  SourceCategoriesFactory.versions.entrySet().stream()
+                .filter(map -> version.compareTo(map.getKey()) >= 0)
+                .map( map -> map.getValue() )
+                .findFirst()
+                .orElse(new SourceCategoriesGrails11());
+    }
+    
+    /**
+     * Returns the source category for a given source category type.
+     * @param type Source category type to retrieve
+     * @return The source category found for this type and factory version.
+     */
+    public SourceCategory getSourceCategory(SourceCategoryType type) {
+        return categories.getSourceCategory(type);
     }
 
-    /**
-     * Returns this category relative path, i.e the folder where source files
-     * of this category should be placed.
-     * 
-     * @return the relative path.
-     */
-    public String getRelativePath() {
-        return relativePath;
-    }
-
-    /**
-     * Returns the grails command that creates files of this category.
-     * @return the grails command.
-     */
-    public String getCommand() {
-        return command;
-    }
-
-    /**
-     * Returns the filename suffix that should be applied by convention to this
-     * source category.
-     * @return  filename suffix.
-     */
-    public String getSuffix() {
-        return suffix;
-    }
 }

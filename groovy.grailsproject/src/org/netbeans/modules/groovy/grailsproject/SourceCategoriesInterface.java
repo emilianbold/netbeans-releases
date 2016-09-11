@@ -42,53 +42,11 @@
 package org.netbeans.modules.groovy.grailsproject;
 
 /**
- * Represents a grails source category.
+ *
  * @author Bruno Flavio
  */
-public class SourceCategory {
+public interface SourceCategoriesInterface {
 
-    private final String relativePath;
+    SourceCategory getSourceCategory(SourceCategoryType type);
 
-    private final String command;
-
-    private final String suffix;
-
-    /**
-     * Creates a grails source category.
-     * @param relativePath place where files of this category should be stored
-     * @param command grails command that should be invoked to create a file of this category
-     * @param suffix suffix present in every file name of this category
-     */
-    SourceCategory(String relativePath, String command, String suffix) {
-        this.relativePath = relativePath;
-        this.command = command;
-        this.suffix = suffix;
-    }
-
-    /**
-     * Returns this category relative path, i.e the folder where source files
-     * of this category should be placed.
-     * 
-     * @return the relative path.
-     */
-    public String getRelativePath() {
-        return relativePath;
-    }
-
-    /**
-     * Returns the grails command that creates files of this category.
-     * @return the grails command.
-     */
-    public String getCommand() {
-        return command;
-    }
-
-    /**
-     * Returns the filename suffix that should be applied by convention to this
-     * source category.
-     * @return  filename suffix.
-     */
-    public String getSuffix() {
-        return suffix;
-    }
 }
