@@ -305,7 +305,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     methodInvokePath = currentPath;
                 }
                 elm = evaluationContext.getTrees().getElement(methodInvokePath);
-                methodName = elm.getSimpleName().toString();
+                if (elm != null) {
+                    methodName = elm.getSimpleName().toString();
+                } else {
+                    methodName = expr.toString();
+                }
             } else {
                 elm = null;
                 methodName = expr.toString();
