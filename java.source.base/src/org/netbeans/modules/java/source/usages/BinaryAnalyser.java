@@ -103,6 +103,7 @@ import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ConstantPool;
 import org.netbeans.modules.classfile.ElementValue;
+import org.netbeans.modules.classfile.EnclosingMethod;
 import org.netbeans.modules.classfile.EnumElementValue;
 import org.netbeans.modules.classfile.Field;
 import org.netbeans.modules.classfile.InnerClass;
@@ -678,7 +679,7 @@ public class BinaryAnalyser {
                         getSimpleNameIndex(classFile)
                         ),
                 null);
-        addReferences (pair, usages);
+        addReferences (pair, usages);        
     }
 
     private void addReferences (
@@ -720,10 +721,16 @@ public class BinaryAnalyser {
                 if (innerName != null && !innerName.isEmpty()) {
                     len = innerName.length();
                 } else {
-                    final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
-                    if (sepIndex > 0) {
-                        len -= sepIndex+1;
-                    }                                                                             
+                    final EnclosingMethod enclosingMethod = cf.getEnclosingMethod();
+                    if (enclosingMethod != null) {
+                        final String encSimpleName = enclosingMethod.getClassName().getSimpleName();
+                        len -= encSimpleName.length() + 1;
+                    } else {
+                        final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
+                        if (sepIndex > 0) {
+                            len -= sepIndex+1;
+                        }
+                    }
                 }
                 break;
             }
