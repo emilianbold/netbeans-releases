@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.launch.PropertyNames;
+import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
@@ -96,6 +97,7 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
         if (!enabled) {
             return true;
         }
+        LaunchedProjectOpener.init();
         
         Project project = config.getProject();
         boolean isDebug = config.getActionName().equals("debug");

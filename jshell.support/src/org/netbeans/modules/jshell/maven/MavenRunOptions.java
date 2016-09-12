@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.jshell.maven;
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.ChangeEvent;
@@ -125,7 +130,34 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
         if (debug == null) {
             debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         }
-        nestedOptions.readOptions(run.getProperties());
+        /*
+        if (run == null) {
+            // disable
+            Queue<JComponent> comps = new ArrayDeque<>();
+            comps.add(nestedOptions);
+            while (!comps.isEmpty()) {
+                JComponent c = comps.poll();
+                c.setEnabled(false);
+                if (c.getComponentCount() > 0) {
+                    Component[] children = c.getComponents();
+                    for (Component cc : children) {
+                        if (cc instanceof JComponent) {
+                            comps.offer((JComponent)cc);
+                        }
+                    }
+                }
+            }
+        } else {
+            nestedOptions.readOptions(run.getProperties());
+        }
+        */
+        CardLayout cl = (CardLayout)detailPanel.getLayout();
+        if (run == null) {
+            cl.show(detailPanel, "disabled");
+        } else {
+            nestedOptions.readOptions(run.getProperties());
+            cl.show(detailPanel, "jshell");
+        }
     }
     
     private boolean updateMessage() {
@@ -140,6 +172,9 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
     
     private void optionsChanged(ChangeEvent e) {
         if (updateMessage()) {
+            return;
+        }
+        if (run == null) {
             return;
         }
         ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) cbConfiguration.getSelectedItem());
@@ -189,9 +224,41 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
 
         jLabel1 = new javax.swing.JLabel();
         cbConfiguration = new javax.swing.JComboBox();
+        detailPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
         pOptions = new JShellOptions2(project);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MavenRunOptions.class, "MavenRunOptions.jLabel1.text")); // NOI18N
+
+        detailPanel.setLayout(new java.awt.CardLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MavenRunOptions.class, "MavenRunOptions.jLabel2.text")); // NOI18N
+        jLabel2.setEnabled(false);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 492, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 115, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+
+        detailPanel.add(jPanel1, "disabled");
+        detailPanel.add(pOptions, "jshell");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -200,11 +267,11 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pOptions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(detailPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbConfiguration, 0, 378, Short.MAX_VALUE)))
+                        .addComponent(cbConfiguration, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -214,8 +281,8 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(cbConfiguration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pOptions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(detailPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -223,7 +290,10 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbConfiguration;
+    private javax.swing.JPanel detailPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel pOptions;
     // End of variables declaration//GEN-END:variables
 }

@@ -41,37 +41,45 @@
  */
 package org.netbeans.modules.jshell.env;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.lookup.ServiceProvider;
+
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+@ServiceProvider(service = FileOwnerQueryImplementation.class, position = 50)
+public class ShellOwnerQueryImpl implements FileOwnerQueryImplementation {
+
+    @Override
+    public Project getOwner(URI file) {
+        return getOwner(uri2FileObject(file));
+    }
+
+    private static FileObject uri2FileObject(URI u) {
+        URL url;
+        try {
+            url = u.toURL();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            assert false : u;
+            return null;
+        }
+        return URLMapper.findFileObject(url);
+    }
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
+    @Override
+    public Project getOwner(FileObject file) {
+        if (file == null || !"text/x-repl".equals(file.getMIMEType())) {
+            return null;
+        }
+        return ShellRegistry.get().findProject(file);
+    }
     
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
-    
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
 }

@@ -111,7 +111,7 @@ class JShellDataObject extends MultiDataObject {
     
     private CloneableEditorSupport.Pane createPane0() {
         CloneableEditorSupport cls = (CloneableEditorSupport)getLookup().lookup(EditorCookie.class);
-        CloneableEditor cle = new ConsoleEditor(cls);
+        CloneableEditor cle = new ConsoleEditor(cls, getLookup());
         return cle;
     }
 

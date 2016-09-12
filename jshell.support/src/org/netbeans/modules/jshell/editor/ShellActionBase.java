@@ -62,7 +62,7 @@ public abstract class ShellActionBase extends BaseAction {
     public ShellActionBase(String name, int updateMask) {
         super(name, updateMask);
     }
-
+    
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target == null) {
             return;

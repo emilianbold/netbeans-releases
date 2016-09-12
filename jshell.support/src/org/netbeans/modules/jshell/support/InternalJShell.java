@@ -205,14 +205,20 @@ public class InternalJShell {
         mapSnippet = new LinkedHashMap<>();
         currentNameSpace = startNamespace;
 
-        state = createJShellInstance();
-        analysis = state.sourceCodeAnalysis();
-        shutdownSubscription = state.onShutdown((JShell deadState) -> {
-            if (deadState == state && !live) {
-                hard("State engine terminated.  See /history");
-                live = false;
-            }
-        });
+        ClassLoader origCL = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(InternalJShell.class.getClassLoader());
+        try {
+            state = createJShellInstance();
+            analysis = state.sourceCodeAnalysis();
+            shutdownSubscription = state.onShutdown((JShell deadState) -> {
+                if (deadState == state && !live) {
+                    hard("State engine terminated.  See /history");
+                    live = false;
+                }
+            });
+        } finally {
+            Thread.currentThread().setContextClassLoader(origCL);
+        }
         live = true;
 
         if (cmdlineClasspath != null) {

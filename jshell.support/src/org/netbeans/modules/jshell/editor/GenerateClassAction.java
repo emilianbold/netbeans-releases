@@ -99,10 +99,6 @@ public class GenerateClassAction extends ShellActionBase {
     })
     private void doGenerateForSession(JTextComponent target, ShellSession s, FileObject anchor) {
         Project p = s.getEnv().getProject();
-        if (p == null) {
-            // cannot generate
-            return;
-        }
         String n = (String)target.getClientProperty(CLASSNAME_PROPERTY);
         if (anchor == null) {
             anchor = (FileObject)target.getClientProperty(FOLDER_PROPERTY);

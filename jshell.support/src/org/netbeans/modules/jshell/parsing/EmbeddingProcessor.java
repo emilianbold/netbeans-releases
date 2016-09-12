@@ -109,7 +109,19 @@ final class EmbeddingProcessor {
             e = s;
         }
         int ts = info.getWrappedPosition(s);
-        int te = info.getWrappedPosition(e);
+        int te;
+        int index = source.length() - 1;
+        while (true) {
+            te = info.getWrappedPosition(e);
+            if (te > ts || index < 0) {
+                break;
+            }
+            if (!Character.isWhitespace(source.charAt(index--))) {
+                break;
+            }
+            index--;
+            e--;
+        }
         
         if (ts == -1 || te == -1) {
             // fall back: tell that the snippet text itself is the embedding
@@ -118,8 +130,10 @@ final class EmbeddingProcessor {
         }
         boolean lengthMismatch = (te - ts) != (e - s);
         
-        te++;
+        te = Math.min(contents.length(), te + 1);
         
+        // this will produce file with a stable content. For the purposes of parsing,
+        // class name will be replaced so compiler does not complain about duplicate classes.
         FileObject snipFile = session.snippetFile(info, 
                 model.getInputSection() == section ? snippetIndex++ : -1);
         if (snipFile == null) {
@@ -137,6 +151,9 @@ final class EmbeddingProcessor {
                         prologText.substring(indexOfClass);
             }
         }
+        // hack: this embedding processor never works for files. Replace junk classnames
+        // so they are unique (do not collide with indexed stuff). 
+        prologText = prologText.replace("class $JShell$", "class $JSHELL$");
         
         Embedding prolog = snapshot.create(prologText, "text/x-java");
         Embedding epilog = snapshot.create(contents.substring(te), "text/x-java");
@@ -194,13 +211,16 @@ final class EmbeddingProcessor {
             Rng r = fragments[i];
             // the document may have changed, and the console model has already
             // accommodated the change.
-            if (r.end > l) {
+            if (r.start > l) {
                 continue;
             }
             int fragStart = r.start;
             int fragLen = r.len();
-            if (activeInput == section && lastSnippet && i == fragments.length - 1) {
+            if (activeInput != null && activeInput.getStart() == section.getStart() && lastSnippet && i == fragments.length - 1) {
                 fragLen = snapshot.getText().length() - fragStart;
+            } else if (r.end > l) {
+                // not last fragment of input section, but still beyond...
+                continue;
             }
             if (lengthMismatch && (sourcePos <= endSourceDeclPos && sourcePos + fragLen >= endSourceDeclPos)) {
                 int xl = (endSourceDeclPos - sourcePos);
@@ -247,7 +267,7 @@ final class EmbeddingProcessor {
                 if (!text.endsWith(";")) {
                     precedingImports.append(";");
                 }
-            } 
+            }
             defineEmbedding(s, ranges[index++], index == snippets.size());
         }
     }

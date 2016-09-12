@@ -55,6 +55,8 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -78,9 +80,11 @@ import org.netbeans.spi.editor.caret.CascadingNavigationFilter;
 import org.netbeans.spi.editor.caret.NavigationFilterBypass;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -106,9 +110,11 @@ public class ConsoleEditor extends CloneableEditor {
 
     private ShellSession session;
     private CL cl;
+    private Lookup lookup;
     
-    public ConsoleEditor(CloneableEditorSupport support) {
+    public ConsoleEditor(CloneableEditorSupport support, Lookup lookup) {
         super(support);
+        this.lookup = lookup;
     }
 
     @Override
@@ -120,8 +126,13 @@ public class ConsoleEditor extends CloneableEditor {
     protected void componentShowing() {
         super.componentShowing();
         if (session == null) {
+            Node n = lookup.lookup(Node.class);
+            if (n != null) {
+                getLookup(); // will initialize Lookup
+                setActivatedNodes(new Node[] { n });
+            }
             initialize();
-            if (session == null) {
+            if (session == null && pane != null) {
                 pane.addPropertyChangeListener("document", 
                         (e) -> initialize());
             }
@@ -141,13 +152,14 @@ public class ConsoleEditor extends CloneableEditor {
         ShellStatus status = env.getStatus();
 
         if (status == ShellStatus.STARTING) {
-            showProgressIndicator(prepareInitPanel(), 0);
+            showProgressIndicator(prepareInitPanel(), 0, null);
             return;
         } else if (status == ShellStatus.EXECUTE) {
+            String label = env.getSession().getExecutionLabel();
             ConsoleModel model = session.getModel();
             ConsoleSection e = model.getExecutingSection();
             if (e != null) {
-                showHourglass(e.getEnd());
+                showHourglass(e.getEnd(), label);
                 return;
             }
         } 
@@ -182,7 +194,11 @@ public class ConsoleEditor extends CloneableEditor {
     
     private void initialize() {
         assert SwingUtilities.isEventDispatchThread();
-        
+        JEditorPane pane = getEditorPane();
+        if (pane == null) {
+            return;
+        }
+        this.pane = pane;
         Document d = getEditorPane().getDocument();
         ShellSession s  = ShellSession.get(d);
 
@@ -211,8 +227,24 @@ public class ConsoleEditor extends CloneableEditor {
             SwingUtilities.invokeLater(this::initialResetCaret);
         });
         
-        (pane = getEditorPane()).setNavigationFilter(new NavFilter());
+        pane.setNavigationFilter(new NavFilter());
         
+        d.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                maybeDiscardEdits();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                maybeDiscardEdits();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                maybeDiscardEdits();
+            }
+        });
         d.putProperty(WrapperFactory.class, new WrapperFactory() {
             @Override
             public Trees wrapTrees(Trees trees) {
@@ -276,7 +308,8 @@ public class ConsoleEditor extends CloneableEditor {
      * </ul>
      */
     private class NavFilter extends CascadingNavigationFilter {
-
+        private JEditorPane lastPane;
+        
         @Override
         public void moveDot(FilterBypass fb, int dot, Position.Bias bias) {
             if (handle(fb, dot, bias, true)) {
@@ -298,6 +331,7 @@ public class ConsoleEditor extends CloneableEditor {
             if (p == null) {
                 return true;
             }
+            this.lastPane = p;
             if (p.getClientProperty("navigational.action") == null) {
                 if (!(fb instanceof NavigationFilterBypass)) {
                     return true;
@@ -343,7 +377,7 @@ public class ConsoleEditor extends CloneableEditor {
         private boolean filterWithinSection(ConsoleSection s, FilterBypass fb, int dot, Position.Bias bias, boolean setOrMove) {
             Caret c = fb.getCaret();
             int curPos = c.getDot();
-            LineDocument ld = LineDocumentUtils.as(getEditorPane().getDocument(), LineDocument.class);
+            LineDocument ld = LineDocumentUtils.as(lastPane.getDocument(), LineDocument.class);
             if (ld == null) {
                 return true;
             }
@@ -409,7 +443,7 @@ public class ConsoleEditor extends CloneableEditor {
             }
             
             // magicPosition is set, so the move is accross the lines (in Y axis)
-            LineDocument ld = LineDocumentUtils.as(getEditorPane().getDocument(), LineDocument.class);
+            LineDocument ld = LineDocumentUtils.as(lastPane.getDocument(), LineDocument.class);
             if (ld == null) {
                 return true;
             }
@@ -426,9 +460,9 @@ public class ConsoleEditor extends CloneableEditor {
             if (curLine == ref) {
                 return true;
             }
-            Rectangle rect = getEditorPane().getUI().modelToView(getEditorPane(), ref);
+            Rectangle rect = lastPane.getUI().modelToView(lastPane, ref);
             rect.x = magPosition.x;
-            int pos = getEditorPane().getUI().viewToModel(getEditorPane(), rect.getLocation());
+            int pos = lastPane.getUI().viewToModel(lastPane, rect.getLocation());
             if (pos < 0) {
                 return true;
             }
@@ -455,11 +489,27 @@ public class ConsoleEditor extends CloneableEditor {
         
     }
     
+    private void maybeDiscardEdits() {
+        ShellStatus s = env.getStatus();
+        ShellSession session = env.getSession();
+        if (session == null || session.getModel() == null) {
+            return;
+        }
+        if (session.getModel().isWritingResponse()) {
+            OverrideEditorActions.flushUndoQueue(env.getConsoleDocument());   
+        } else if (s == ShellStatus.INIT || s == ShellStatus.EXECUTE || s == ShellStatus.STARTING) {
+            OverrideEditorActions.flushUndoQueue(env.getConsoleDocument());   
+        }
+    }
+    
     private void updateStatusAndActivate() {
         updateHourglass();
         ShellStatus s = env.getStatus();
         if (s == ShellStatus.READY) {
             this.requestVisible();
+            OverrideEditorActions.flushUndoQueue(env.getConsoleDocument());
+        } else if (s == ShellStatus.EXECUTE) {
+            OverrideEditorActions.flushUndoQueue(env.getConsoleDocument());
         }
     }
     
@@ -469,6 +519,10 @@ public class ConsoleEditor extends CloneableEditor {
         
         private CL() {
             this.saveSession = session;
+        }
+
+        @Override
+        public void shellCreated(ShellEvent ev) {
         }
 
         @Override
@@ -531,10 +585,10 @@ public class ConsoleEditor extends CloneableEditor {
         }
     }
     
-    private JPanel  executeWaitPanel;
+    private ExecutingGlassPanel  executeWaitPanel;
     private JLabel  initializingPanel;
     
-    private JPanel prepareWaitPanel() {
+    private ExecutingGlassPanel prepareWaitPanel() {
         if (executeWaitPanel == null) {
             ExecutingGlassPanel p = new ExecutingGlassPanel();
             p.addStopListener(this::stopExecution);
@@ -584,7 +638,7 @@ public class ConsoleEditor extends CloneableEditor {
         
     }
     
-    private void showProgressIndicator(JComponent indicator, int position) {
+    private void showProgressIndicator(JComponent indicator, int position, String label) {
         removeProgressIndicator();
         try {
             if (pane == null) {
@@ -617,8 +671,10 @@ public class ConsoleEditor extends CloneableEditor {
             "MSG_Evaluating=Evaluating, please wait...",
             "MSG_Initializing=Loading and initializing Java Shell. Please wait..."
     })
-    private void showHourglass(int offset) {
-        showProgressIndicator(prepareWaitPanel(), offset + 1); // the character AFTER the termianting newline; should be on the next line.
+    private void showHourglass(int offset, String label) {
+        ExecutingGlassPanel panel = prepareWaitPanel();
+        panel.setMessage(label);
+        showProgressIndicator(panel, offset + 1, label); // the character AFTER the termianting newline; should be on the next line.
     }
 
     @Override

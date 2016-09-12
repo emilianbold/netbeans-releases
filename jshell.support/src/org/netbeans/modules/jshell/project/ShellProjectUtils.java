@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.jshell.launch.PropertyNames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -78,10 +79,10 @@ public final class ShellProjectUtils {
      */
     public static boolean isJShellRunEnabled(Project p) {
         J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-        if (prjEval == null) {
-            return false;
+        if (prjEval != null) {
+            return Boolean.parseBoolean(prjEval.evaluator().evaluate("${" + PropertyNames.JSHELL_ENABLED +"}"));
         }
-        return Boolean.parseBoolean(prjEval.evaluator().evaluate("${jshell.run.enable}"));
+        return false;
     }
     
     /**

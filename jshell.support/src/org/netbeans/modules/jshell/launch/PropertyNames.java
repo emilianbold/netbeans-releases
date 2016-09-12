@@ -51,6 +51,8 @@ public class PropertyNames {
      */
     public static final String JSHELL_ENABLED = "jshell.run.enable"; // NOI18N
     
+    public static final String JSHELL_AUTO_OPEN = "jshell.run.show"; // NOI18N
+    
     /**
      * JShell class loading policy: {system, class, eval}, see LoaderPolicy enum
      */

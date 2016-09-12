@@ -79,7 +79,7 @@ public class JShellLauncher extends InternalJShell {
 
     
     protected String prompt(boolean continuation) {
-        int index = state.snippets().size() + 1;
+        int index = state == null ? 0 :  state.snippets().size() + 1;
         if (continuation) {
             return ">> "; // NOI18N 
         } else if (feedback() == Feedback.Concise) {
@@ -154,15 +154,22 @@ public class JShellLauncher extends InternalJShell {
                     executionEngine(execGen);
             String s = System.getProperty("jshell.logging.properties");
             if (s == null) {
-                b = b.remoteVMOptions("-classpath", classpath);
+                b = b.remoteVMOptions("-classpath", quote(classpath));
             } else {
-                b = b.remoteVMOptions("-classpath", classpath, "-Djava.util.logging.config.file=" + s);
+                b = b.remoteVMOptions("-classpath", quote(classpath), quote("-Djava.util.logging.config.file=" + s));
             }
             JShell ret = b.build();
             return ret;
         } finally {
             Thread.currentThread().setContextClassLoader(ctxLoader);
         }
+    }
+    
+    private static String quote(String s) {
+        if (s.indexOf(' ') == -1) {
+            return s;
+        }
+        return '"' + s + '"';
     }
     
     private String decorateLaunchArgs(String s) {

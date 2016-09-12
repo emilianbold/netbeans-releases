@@ -29,10 +29,11 @@ import org.openide.windows.InputOutput;
  */
 class ProjectShellEnv extends JShellEnvironment {
     private final ShellAgent agent;
-
-    public ProjectShellEnv(ShellAgent agent, Project project, String displayName) {
+    private final String startupMode;
+    public ProjectShellEnv(ShellAgent agent, Project project, String displayName, String startupMode) {
         super(project, displayName);
         this.agent = agent;
+        this.startupMode = startupMode;
     }
 
     @Override
@@ -115,5 +116,10 @@ class ProjectShellEnv extends JShellEnvironment {
         @Override
         public void handshakeCompleted(ShellLaunchEvent ev) {}
 
+    }
+
+    @Override
+    public String getMode() {
+        return startupMode;
     }
 }

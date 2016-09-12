@@ -131,71 +131,113 @@ final class CompletionFilter extends DocTrees {
 
     @Override
     public Tree getTree(Element elmnt) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getTree(elmnt);
     }
 
     @Override
     public ClassTree getTree(TypeElement te) {
+        if (te == null) {
+            return null;
+        }
         return delegate.getTree(te);
     }
 
     @Override
     public MethodTree getTree(ExecutableElement ee) {
+        if (ee == null) {
+            return null;
+        }
         return delegate.getTree(ee);
     }
 
     @Override
     public Tree getTree(Element elmnt, AnnotationMirror am) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getTree(elmnt, am);
     }
 
     @Override
     public Tree getTree(Element elmnt, AnnotationMirror am, AnnotationValue av) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getTree(elmnt, am, av);
     }
 
     @Override
     public TreePath getPath(CompilationUnitTree cut, Tree tree) {
+        if (tree == null || cut == null) {
+            return null;
+        }
         return delegate.getPath(cut, tree);
     }
 
     @Override
     public TreePath getPath(Element elmnt) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getPath(elmnt);
     }
 
     @Override
     public TreePath getPath(Element elmnt, AnnotationMirror am) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getPath(elmnt, am);
     }
 
     @Override
     public TreePath getPath(Element elmnt, AnnotationMirror am, AnnotationValue av) {
+        if (elmnt == null) {
+            return null;
+        }
         return delegate.getPath(elmnt, am, av);
     }
 
     @Override
     public Element getElement(TreePath tp) {
+        if (tp == null) {
+            return null;
+        }
         return delegate.getElement(tp);
     }
 
     @Override
     public TypeMirror getTypeMirror(TreePath tp) {
+        if (tp == null) {
+            return null;
+        }
         return delegate.getTypeMirror(tp);
     }
 
     @Override
     public Scope getScope(TreePath tp) {
+        if (tp == null) {
+            return null;
+        }
         return delegate.getScope(tp);
     }
 
     @Override
     public String getDocComment(TreePath tp) {
+        if (tp == null) {
+            return null;
+        }
         return delegate.getDocComment(tp);
     }
 
     @Override
     public boolean isAccessible(Scope scope, TypeElement te) {
+        if (te == null || scope == null) {
+            return false;
+        }
         if (te.getQualifiedName().toString().startsWith("REPL.")) {
             return false;
         }
@@ -225,6 +267,9 @@ final class CompletionFilter extends DocTrees {
 
     @Override
     public DocTreePath getDocTreePath(FileObject fileObject) {
+        if (delegate == null) {
+            return null;
+        }
         return delegate.getDocTreePath(fileObject);
     }
 

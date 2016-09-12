@@ -44,31 +44,19 @@ package org.netbeans.modules.jshell.env;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.ByteArrayInputStream;
+import java.io.FilterReader;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.Document;
-import jdk.jshell.spi.ExecutionControl;
-import jdk.jshell.spi.ExecutionEnv;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
-import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
@@ -77,9 +65,9 @@ import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
@@ -190,8 +178,17 @@ public class JShellEnvironment {
             throw new IllegalStateException("not started");
         }
         return new ReaderInputStream(
-                inputOutput.getIn(), "UTF-8" // NOI18N
+                new FilterReader(inputOutput.getIn()) {
+                    @Override
+                    public void close() throws IOException {
+                        // do not close the input, JShell may be reset.
+                    }
+                }, "UTF-8" // NOI18N
         );
+    }
+    
+    public Lookup getLookup() {
+        return consoleFile.getLookup();
     }
     
     public PrintStream getOutputStream() throws IOException {
@@ -200,9 +197,12 @@ public class JShellEnvironment {
         }
         synchronized (this) {
             if (outStream == null) {
-                outStream = new PrintStream(
-                        new WriterOutputStream(inputOutput.getOut())
-                );
+                outStream = new PrintStream(new WriterOutputStream(inputOutput.getOut())) {
+                    @Override
+                    public void close() {
+                        // suppress close
+                    }
+                };
             }
         }
         return outStream;
@@ -215,8 +215,13 @@ public class JShellEnvironment {
         synchronized (this) {
             if (errStream == null) {
                 errStream = new PrintStream(
-                        new WriterOutputStream(inputOutput.getErr())
-                );
+                    new WriterOutputStream(inputOutput.getOut())) {
+                    @Override
+                    public void close() {
+                        // suppress close
+                    }
+                    
+                };
             }
         }
         return errStream;
@@ -497,6 +502,15 @@ public class JShellEnvironment {
         }
         ShellEvent e = new ShellEvent(this);
         ll.stream().forEach(l -> l.shellShutdown(e));
+        if (controlsIO && inputOutput != null) {
+            try {
+                inputOutput.getIn().close();
+                inputOutput.getOut().close();
+                inputOutput.getErr().close();
+            } catch (IOException ex) {
+                // expected
+            }
+        }
     }
     
     public boolean isClosed() {
@@ -536,5 +550,9 @@ public class JShellEnvironment {
             return true;
         }
         return cake.close();
+    }
+    
+    public String getMode() {
+        return "launch"; // NOI18N
     }
 }

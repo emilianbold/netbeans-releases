@@ -271,7 +271,6 @@ public final class ConsoleSection {
      */
     public Rng[] computeFragments(Rng jr) {
         Rng[] parts = getPartRanges();
-
         int partIndex = 0;
         List<Rng> res = new ArrayList<>();
         Rng pr = parts[partIndex];

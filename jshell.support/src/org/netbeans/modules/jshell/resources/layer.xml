@@ -11,10 +11,32 @@
             </file>
         </folder>
     </folder>
+    <folder name="jshell-snippets"/>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-repl">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jshell.resources.Bundle"/>
+                
+                <folder name="Actions">
+                    <file name="jshell-select-run-saved-snippets.instance">
+                        <!--org.netbeans.modules.jshell.editor.RunScriptAction-->
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/editor/resources/last_edit_location_16.png"/>
+                        <attr
+                            bundlevalue="org.netbeans.modules.jshell.editor.Bundle#LBL_RunSavedScript" name="displayName"/>
+                        <attr
+                            bundlevalue="org.netbeans.modules.jshell.editor.Bundle#LBL_RunSavedScript" name="ShortDescription"/>
+                        <attr
+                            bundlevalue="org.netbeans.modules.jshell.editor.Bundle#LBL_RunSavedScript" name="menuText"/>
+                        <attr
+                            bundlevalue="org.netbeans.modules.jshell.editor.Bundle#LBL_RunSavedScript" name="popupText"/>
+                        <attr name="Name" stringvalue="jshell-select-run-saved-snippets"/>
+                        <attr name="helpID" stringvalue="jshell-select-run-saved-snippets"/>
+                        <attr
+                            newvalue="org.netbeans.modules.jshell.editor.RunScriptAction" name="instanceCreate"/>
+                        <!--<attr boolvalue="true" name="WrapperActionKey"/>-->
+                        <attr name="delegate" newvalue="org.netbeans.modules.jshell.editor.RunScriptAction"/>
+                    </file>
+                </folder>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -59,6 +81,9 @@
                         </file>
                         <file name="jshell-save-to-class">
                             <attr name="position" intvalue="20010"/>
+                        </file>
+                        <file name="jshell-select-run-saved-snippets">
+                            <attr name="position" intvalue="20015"/>
                         </file>
                     </folder>
                 </folder>
@@ -125,6 +150,14 @@
 
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Actions">
+                <file name="org-netbeans-modules-jshell-project-REPLAction2.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-jshell-project-REPLAction2.instance"/>
+                    <attr name="position" intvalue="1150"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-maven">
             <folder name="Actions">
                 <file name="org-netbeans-modules-jshell-project-REPLAction2.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-jshell-project-REPLAction2.instance"/>

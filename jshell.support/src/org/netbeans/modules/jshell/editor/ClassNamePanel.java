@@ -45,6 +45,9 @@ import java.awt.Component;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Comparator;
 import javax.lang.model.SourceVersion;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -59,9 +62,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
@@ -76,7 +81,7 @@ import org.openide.util.RequestProcessor;
 class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
     private RequestProcessor RP = new RequestProcessor(ClassNamePanel.class);
     
-    private final Project       project;
+    private Project             project;
     private final FileObject    anchor;
     private final RequestProcessor.Task checkTask = RP.create(this::delayedCheck, true);
     private ChangeListener listener;
@@ -90,6 +95,19 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
         this.anchor = anchor;
         initComponents();
         
+        Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
+        Arrays.sort( openProjects, new ProjectByDisplayNameComparator());
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+        projectSelector.setModel( projectsModel );                
+        if (project != null) {
+            projectSelector.setSelectedItem( project );
+            projectSelector.setEnabled(false);
+            projectLabel.setEnabled(false);
+        } else if (projectsModel.getSize() > 0) {
+            this.project = (Project)projectsModel.getElementAt(0);
+            projectsModel.setSelectedItem(this.project);
+        }
+        projectSelector.setRenderer(new ProjectCellRenderer());
         locationSelect.setRenderer(new GroupCellRenderer());
         packageSelect.setRenderer(PackageView.listRenderer());
         
@@ -102,6 +120,7 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
         locationSelect.addActionListener(al);
         packageSelect.addActionListener(al);
         packageSelect.getEditor().addActionListener(al);
+        projectSelector.addActionListener(al);
         className.getDocument().addDocumentListener(this);
         
         if (initialName != null) {
@@ -140,17 +159,20 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        packageLabel = new javax.swing.JLabel();
+        classLabel = new javax.swing.JLabel();
         className = new javax.swing.JTextField();
         packageSelect = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
+        locationLabel = new javax.swing.JLabel();
         locationSelect = new javax.swing.JComboBox();
         message = new javax.swing.JLabel();
+        projectSelector = new javax.swing.JComboBox<>();
+        projectLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.packageLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classLabel, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.classLabel.text")); // NOI18N
 
         className.setText(org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.className.text")); // NOI18N
         className.addActionListener(new java.awt.event.ActionListener() {
@@ -159,49 +181,70 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.locationLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(message, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.message.text")); // NOI18N
+
+        projectLabel.setLabelFor(projectSelector);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ClassNamePanel.class, "ClassNamePanel.projectLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(message, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(locationSelect, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel3)
-                        .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addComponent(projectLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                            .addComponent(projectSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addComponent(locationLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(locationSelect, javax.swing.GroupLayout.PREFERRED_SIZE, 297, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel1)
-                                .addComponent(jLabel2))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(packageLabel)
+                                .addComponent(classLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGap(43, 43, 43)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(className)
-                                .addComponent(packageSelect, 0, 328, Short.MAX_VALUE)))))
-                .addContainerGap(20, Short.MAX_VALUE))
+                                .addComponent(packageSelect, 0, 297, Short.MAX_VALUE)
+                                .addComponent(className))))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(19, 19, 19)
+                .addComponent(message, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(16, 16, 16)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(locationSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(packageSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(className, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
-                .addComponent(message)
-                .addContainerGap())
+                    .addComponent(projectLabel)
+                    .addComponent(projectSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(message)
+                        .addGap(24, 24, 24))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(11, 11, 11)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(locationSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(locationLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(packageSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(packageLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(classLabel)
+                            .addComponent(className, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -211,13 +254,16 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel classLabel;
     private javax.swing.JTextField className;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel locationLabel;
     private javax.swing.JComboBox locationSelect;
     private javax.swing.JLabel message;
+    private javax.swing.JLabel packageLabel;
     private javax.swing.JComboBox packageSelect;
+    private javax.swing.JLabel projectLabel;
+    private javax.swing.JComboBox<String> projectSelector;
     // End of variables declaration//GEN-END:variables
 
 
@@ -245,7 +291,9 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
     
     
     private void actionPerformed(ActionEvent e) {
-        if (e.getSource() == locationSelect) {
+        if (e.getSource() == projectSelector) {
+            projectSelected(e);
+        } else if (e.getSource() == locationSelect) {
             updatePackages();
             checkErrors();
         } else if (e.getSource() == packageSelect) {
@@ -255,7 +303,35 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
         }
     }
     
+    private void projectSelected(ActionEvent e) {
+        Project p = (Project)projectSelector.getSelectedItem();
+        if (p == null) {
+            return;
+        }
+        this.project = p;
+        updateRoots();
+        updatePackages();
+        checkErrors();
+    }
+    
+    private void enableDisable() {
+        boolean enableLocation = project != null;
+        boolean enablePackage = enableLocation && locationSelect.getSelectedItem() != null;
+        boolean enableClass = enablePackage && packageSelect.getSelectedItem() != null;
+        
+        locationSelect.setEnabled(enableLocation);
+        locationLabel.setEnabled(enableLocation);
+        packageSelect.setEnabled(enablePackage);
+        packageLabel.setEnabled(enablePackage);
+        className.setEnabled(enableClass);
+        classLabel.setEnabled(enableClass);
+    }
+    
     private void updateRoots() {
+        enableDisable();
+        if (project == null) {
+            return;
+        }
         Sources sources = ProjectUtils.getSources(project);
         groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         // XXX why?? This is probably wrong. If the project has no Java groups,
@@ -282,6 +358,7 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
     }
 
     private void updatePackages() {
+        enableDisable();
         SourceGroup g = (SourceGroup) locationSelect.getSelectedItem();
         packageSelect.setModel(g != null
                 ? PackageView.createListView(g)
@@ -301,9 +378,15 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
        "ERR_ClassnameInvalid=Error: {0} is not a valid Java class name",
        "ERR_PackagDoesNotExist=Error: existing package must be selected",
        "ERR_NoSourceGroups=Error: no place to generate class, set up a Source folder",
-       "INFO_ClassAlreadyExists=Note: The class already exists. It will be overwritten."
+       "INFO_ClassAlreadyExists=Note: The class already exists. It will be overwritten.",
+       "ERR_ProjectNotSelected=Project is not selected"
     })
     private void checkErrors() {
+        enableDisable();
+        if (project == null) {
+            reportError(Bundle.ERR_ProjectNotSelected());
+            return;
+        }
         if (packageSelect.getItemCount() == 0) {
             reportError(Bundle.ERR_NoSourceGroups());
             return;
@@ -443,4 +526,60 @@ class ClassNamePanel extends javax.swing.JPanel implements DocumentListener {
         }
     }
     
+
+    /** Projects combo renderer, used also in MoveMembersPanel */
+    static class ProjectCellRenderer extends BaseCellRenderer {
+        
+        @Override
+        public Component getListCellRendererComponent(
+            JList list,
+            Object value,
+            int index,
+            boolean isSelected,
+            boolean cellHasFocus) {
+        
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            if ( value != null ) {
+                ProjectInformation pi = ProjectUtils.getInformation((Project)value);
+                setText(pi.getDisplayName());
+                setIcon(pi.getIcon());
+            }
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+    }
+    
+    //Copy/pasted from OpenProjectList
+    //remove this code as soon as #68827 is fixed.
+    static class ProjectByDisplayNameComparator implements Comparator {
+        
+        private static Comparator COLLATOR = Collator.getInstance();
+        
+        @Override
+        public int compare(Object o1, Object o2) {
+            
+            if ( !( o1 instanceof Project ) ) {
+                return 1;
+            }
+            if ( !( o2 instanceof Project ) ) {
+                return -1;
+            }
+            
+            Project p1 = (Project)o1;
+            Project p2 = (Project)o2;
+            
+            return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
+        }
+    }    
 }

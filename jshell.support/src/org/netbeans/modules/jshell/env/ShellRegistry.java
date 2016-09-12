@@ -138,6 +138,35 @@ public class ShellRegistry {
     private Map<Project, JShellEnvironment>     projectSessions = new HashMap<>();
     private Map<FileObject, Reference<JShellEnvironment>>  fileIndex = new HashMap<>();
     private JShellEnvironment                   defaultSession;
+    private final Collection<ShellListener>           shellListeners= new ArrayList<>();
+    
+    private void fireEnvCreated(JShellEnvironment env) {
+        Collection<ShellListener> ll;
+        synchronized (shellListeners) {
+            if (shellListeners.isEmpty()) {
+                return;
+            }
+            ll = new ArrayList<>(shellListeners);
+        }
+        ShellEvent ev = new ShellEvent(env);
+        for (ShellListener l : ll) {
+            l.shellCreated(ev);
+        }
+    }
+    
+    public void addShellListener(ShellListener ll) {
+        synchronized (shellListeners) {
+            if (!shellListeners.contains(ll)) {
+                shellListeners.add(ll);
+            }
+        }
+    }
+    
+    public void removeShellListener(ShellListener ll) {
+        synchronized (shellListeners) {
+            shellListeners.remove(ll);
+        }
+    }
     
     //@GuardedBy(this)
     private FileObject  createCacheRoot() throws IOException {
@@ -208,19 +237,30 @@ public class ShellRegistry {
                     ProjectUtils.getInformation(p).getDisplayName());
             s = new LaunchJShellEnv(p, dispName); // may throw IOE
             register(s);
+            projectSessions.put(p, s);
         }
-        synchronized (this) {
-            JShellEnvironment env = projectSessions.get(p);
-            if (env != null) {
-                return env;
-            }
-        }
+        fireEnvCreated(s);
         s.start();
         return s;
     }
     
+    public Project findProject(FileObject consoleFile) {
+        synchronized (this) {
+            Reference<JShellEnvironment> refEnv = fileIndex.get(consoleFile);
+            if (refEnv == null) {
+                return null;
+            }
+            JShellEnvironment env = refEnv.get();
+            if (env == null) {
+                return null;
+            }
+            return env.getProject();
+        }
+    }
+    
     public void startJShell(JShellEnvironment env) throws IOException {
         register(env);
+        fireEnvCreated(env);
         env.start();
     }
     
@@ -293,6 +333,7 @@ public class ShellRegistry {
             register(s);
             defaultSession = s;
         }
+        fireEnvCreated(s);
         return s;
     }
     

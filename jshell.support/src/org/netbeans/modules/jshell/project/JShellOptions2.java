@@ -82,7 +82,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider.ConfigChangeListener;
-import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.jshell.project.RunOptionsModel.LoaderPolicy;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -176,7 +175,7 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
             return;
         }
         
-        class UT extends UserTask implements ClasspathInfoProvider {
+        class UT extends UserTask implements ClasspathInfo.Provider {
 
             @Override
             public ClasspathInfo getClasspathInfo() {
@@ -495,6 +494,12 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
         DefaultComboBoxModel mdl = new DefaultComboBoxModel(descs.toArray(new MemberDescription[descs.size()]));
         cbMember.setModel(mdl);
         cbMember.setSelectedItem(old);
+        if (cbMember.getItemCount() == 0) {
+            cbMember.setEnabled(false);
+            return;
+        } else {
+            cbMember.setEnabled(true);
+        }
         if (cbMember.getSelectedItem() == null || !cbMember.getSelectedItem().equals(old)) {
             cbMember.setSelectedIndex(0);
             if (!disableUpdates) {

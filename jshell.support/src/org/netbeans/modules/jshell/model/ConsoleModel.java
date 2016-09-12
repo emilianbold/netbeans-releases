@@ -168,6 +168,12 @@ public class ConsoleModel {
     
     private Position inputOffset;
     
+    private boolean writingResponse;
+    
+    public boolean isWritingResponse() {
+        return writingResponse;
+    }
+    
     public int getWritablePos() {
         ConsoleSection s = getInputSection();
         return s == null ? document.getLength() + 1 : s.getPartBegin();
@@ -180,6 +186,15 @@ public class ConsoleModel {
     
     private int getScrollbackEnd() {
         if (isExecute()) {
+            if (executingSection == null) {
+                if (lastSection != null) {
+                   return lastSection.getEnd();
+                }
+                ConsoleSection s = getInputSection();
+                if (s != null) {
+                    return s.getStart();
+                }
+            }
             return document.getLength();
         }
         ConsoleSection s = getInputSection();
@@ -213,6 +228,7 @@ public class ConsoleModel {
      */
     private int progressPos = -1;
     
+    private boolean external;
     private volatile boolean executing;
     
     public void setProgressPos(int pos) {
@@ -460,7 +476,9 @@ public class ConsoleModel {
         }
         
         private void propagateResults() {
-            runUpdate();
+            synchronized (ConsoleModel.this) {
+                runUpdate();
+            }
         }
         
         protected void doUpdates() {
@@ -482,6 +500,10 @@ public class ConsoleModel {
             }
             if (updateSections != null) {
                 for (ConsoleSection s : updateSections) {
+                    if (lastSection != null && 
+                        lastSection.getStart() > s.getStart()) {
+                        continue;
+                    }
                     addOrUpdate(s);
                 }
             }
@@ -551,7 +573,7 @@ public class ConsoleModel {
             TokenHierarchy th;
             TokenSequence seq;
             int limit = contents.length();
-            
+            int initPos = 0;
             if (processSnapshot == null) {
                 th = TokenHierarchy.get(getDocument()); 
                 seq = th.tokenSequence();
@@ -561,13 +583,13 @@ public class ConsoleModel {
                 th = TokenHierarchy.create(contents, Language.find("text/x-repl"));
                 seq = th.tokenSequence();
                 seq.move(0);
+                initPos = inputStart;
             }
             
             JShellParser parser2 = new JShellParser(
                     (evaluator.isRequestProcessorThread() || !isExecute())  ? 
                             shell : 
-                            createPrivateShell(), seq, 0, limit);
-            
+                            createPrivateShell(), seq, initPos, limit);
             parser2.execute();
             
             List<ConsoleSection> newSections = new ArrayList<>(parser2.sections());
@@ -741,7 +763,7 @@ public class ConsoleModel {
                 int start = s.getStart();
 
                 if (lastSection != null) {
-                    if (start == lastSection.getStart()) {
+                    if (start >= lastSection.getStart() && start <= lastSection.getEnd()) {
                         updated.add(s);
                     } else if (start < lastSection.getEnd()) {
                         throw new IllegalStateException();
@@ -800,14 +822,20 @@ public class ConsoleModel {
             return;
         }
         
-        new EventBuffer() {
-            @Override
-            protected void doUpdates() {
-                for (ConsoleSection s : sections) {
-                    addOrUpdate(s);
+        synchronized(ConsoleModel.this) {
+            new EventBuffer() {
+                @Override
+                protected void doUpdates() {
+                    for (ConsoleSection s : sections) {
+                        if (lastSection != null &&
+                            s.getStart() < lastSection.getStart()) {
+                            continue;
+                        }
+                        addOrUpdate(s);
+                    }
                 }
-            }
-        }.runUpdate();
+            }.runUpdate();
+        }
         invalidate();
     }
     
@@ -825,7 +853,7 @@ public class ConsoleModel {
         int s = e.getOffset();
         int l = e.getLength();
         ConsoleSection i = getInputSection();
-        if (isExecute() || (i != null && s < i.getStart())) {
+        if (isExecute() /* || (i != null && s < i.getStart()) */) {
             if (progressPos != -1 && s >= progressPos) {
                 return;
             }
@@ -867,7 +895,7 @@ public class ConsoleModel {
      * input section to the scrollback
      * 
      */
-    void beforeExecution() {
+    void beforeExecution(boolean external) {
         Task t = null;
         ConsoleSection is = null;
         while (true) {
@@ -884,6 +912,7 @@ public class ConsoleModel {
                 if (inputTask == null) {
                     // no refresh is pending, change mode
                     executingSection = is;
+                    this.external = external;
                     executing = true;
                     break;
                 }
@@ -892,13 +921,15 @@ public class ConsoleModel {
         synchronized (this) {
             ConsoleSection finIs = is;
             if (finIs != null) {
-                // the input will be added to the scrollback; if something is still
-                // buffered in the lastSection, add it first:
-                if (lastSection != null) {
-                    scrollbackSections.add(lastSection);
+                if (executingSection != null) {
+                    // the input will be added to the scrollback; if something is still
+                    // buffered in the lastSection, add it first:
+                    if (lastSection != null) {
+                        scrollbackSections.add(lastSection);
+                    }
+                    lastSection = null;
+                    scrollbackSections.add(executingSection);
                 }
-                lastSection = null;
-                scrollbackSections.add(executingSection);
             }
             if (is != null) {
                 RP.post(() -> { 
@@ -916,6 +947,7 @@ public class ConsoleModel {
 //        if (lastSection != null) {
 //            scrollbackSections.add(lastSection);
 //        }
+        external = false;
         ConsoleSection s = executingSection;
         if (s != null) {
             RP.post(() -> { 
@@ -970,6 +1002,15 @@ public class ConsoleModel {
     }
     
     private synchronized int registerNewSnippet0(SnippetWrapping snip, ConsoleSection section, int sectionOffset) {
+        if (section == null || external) {
+            if (snip.getSnippet() != null) {
+                SnippetHandle handle = new SnippetHandle(
+                        null,
+                        null, snip);
+                sections.put(snip.getSnippet(), handle);
+            }
+            return -1;
+        }
         List<SnippetHandle> sectionSnippets = snippets.get(section);
         if (sectionSnippets == null) {
             sectionSnippets = new ArrayList<>(1);
@@ -1241,11 +1282,23 @@ public class ConsoleModel {
         return "";
     }
     
+    public void insertResponseString(int offset, String text, AttributeSet attrs) throws BadLocationException {
+        boolean saveResponse = writingResponse;
+        try {
+            writingResponse = true;
+            getProtectionBypass().insertString(offset, text, null);   
+        } finally {
+            writingResponse = saveResponse;
+        }
+    }
+    
     public void writeToShellDocument(String text) {
         AtomicLockDocument ald = LineDocumentUtils.asRequired(
                 document, AtomicLockDocument.class);
+        final boolean saveResponse = writingResponse;       
         try {
             ald.runAtomic(()-> {
+                writingResponse = true;
                 try {
                     int offset = getInputOffset();
                     if (offset == -1) {
@@ -1254,6 +1307,8 @@ public class ConsoleModel {
                     getProtectionBypass().insertString(offset, text, null);
                     textAppended(offset);
                 } catch (BadLocationException ex) {
+                } finally {
+                    writingResponse = saveResponse;
                 }
             });
         } finally {
@@ -1294,11 +1349,12 @@ public class ConsoleModel {
         }
         
         public int start() {
-            return fragments[0].start;
+            return fragments == null ? 0 : fragments[0].start;
         }
         
         public int end() {
-            return fragments[fragments.length - 1].end;
+            return fragments == null ? wrapping.getSource().length() : 
+                    fragments[fragments.length - 1].end;
         }
 
         /**
@@ -1385,11 +1441,11 @@ public class ConsoleModel {
 
 //        @Override
         public void beforeExecution(ConsoleModel model) {
-            model.beforeExecution();
+            model.beforeExecution(false);
         }
         
-        public void execute(ConsoleModel model, Runnable c, Supplier<String> prompt)  {
-            model.beforeExecution();
+        public void execute(ConsoleModel model, boolean external, Runnable c, Supplier<String> prompt)  {
+            model.beforeExecution(external);
             try {
                 c.run();
             } finally {

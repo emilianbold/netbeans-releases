@@ -99,7 +99,7 @@ public class JShellParser {
             return;
         }
         ModelAccessor.INSTANCE.extendSection(section, 
-                lineContentsStart, sequence.offset(),
+                p(lineContentsStart), p(sequence.offset()),
                 ranges,
                 snippets);
         sectionList.add(section);
@@ -116,7 +116,7 @@ public class JShellParser {
                     l = limit - s;
                 }
                 ModelAccessor.INSTANCE.extendSection(section, 
-                        s, s + l, null, null);
+                        p(s), p(s + l), null, null);
                 return;
             }
             finishSection();
@@ -124,7 +124,7 @@ public class JShellParser {
         if (lineStart + l >= limit) {
             l = limit - lineStart;
         }
-        section = new ConsoleSection(lineStart, type, l);
+        section = new ConsoleSection(p(lineStart), type, l);
         ranges  = new ArrayList<>();
         snippets = new ArrayList<>();
     }
@@ -139,7 +139,7 @@ public class JShellParser {
             snippets.set(i, r);
         } else {
             int b = a + len;
-            snippets.add(new Rng(a, b));
+            snippets.add(new Rng(p(a), p(b)));
         }
     }
     
@@ -155,14 +155,14 @@ public class JShellParser {
         if (!ranges.isEmpty()) {
             int l = ranges.size() -1;
             Rng r = ranges.get(l);
-            int a = ls;
+            int a = p(ls);
             // potentially join ranges
             if (r.end == a || r.start == a) {
-                ranges.set(l, new Rng(r.start, le));
+                ranges.set(l, new Rng(r.start, p(le)));
                 return;
             }
         }
-        ranges.add(new Rng(ls, le));
+        ranges.add(new Rng(p(ls), p(le)));
     }
     
     private void addSnippetText(int pos, CharSequence text) {

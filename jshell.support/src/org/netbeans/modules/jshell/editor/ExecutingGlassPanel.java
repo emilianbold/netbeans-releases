@@ -43,6 +43,7 @@ package org.netbeans.modules.jshell.editor;
 
 import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
+import org.openide.util.NbBundle;
 
 /**
  * Flying panel with progress indicator and the stop button
@@ -62,6 +63,15 @@ final class ExecutingGlassPanel extends javax.swing.JPanel {
         super.addNotify();
         stopButton.setEnabled(true);
     }
+    
+    @NbBundle.Messages({
+        "MSG_ExecutingGeneric=Executing, please wait",
+        "# {0} - label/name for the executed task",
+        "MSG_ExecutingWithLabel=Executing {0}, please wait"
+    })
+    public void setMessage(String label) {
+        msgLabel.setText(label == null ? Bundle.MSG_ExecutingGeneric() : Bundle.MSG_ExecutingWithLabel(label));
+    }
 
     public void addStopListener(ActionListener al) {
         this.stopButton.addActionListener(al);
@@ -78,17 +88,17 @@ final class ExecutingGlassPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        msgLabel = new javax.swing.JLabel();
         stopButton = new javax.swing.JButton();
 
         setOpaque(false);
 
-        jLabel1.setIcon(new ImageIcon(
+        msgLabel.setIcon(new ImageIcon(
             getClass().getClassLoader().getResource(
                 "org/netbeans/modules/jshell/resources/wait16.gif"
             )
         ));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ExecutingGlassPanel.class, "ExecutingGlassPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(msgLabel, org.openide.util.NbBundle.getMessage(ExecutingGlassPanel.class, "ExecutingGlassPanel.msgLabel.text")); // NOI18N
 
         stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/jshell/resources/stop.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(stopButton, org.openide.util.NbBundle.getMessage(ExecutingGlassPanel.class, "ExecutingGlassPanel.stopButton.text")); // NOI18N
@@ -105,7 +115,7 @@ final class ExecutingGlassPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(msgLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(stopButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -115,7 +125,7 @@ final class ExecutingGlassPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(1, 1, 1)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(msgLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -123,7 +133,7 @@ final class ExecutingGlassPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel msgLabel;
     private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 }

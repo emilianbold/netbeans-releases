@@ -39,39 +39,42 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.support;
+
+import org.openide.filesystems.FileObject;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+public interface SnippetStorage {
+    static final String ACTION_RUN = "run";
+    static final String ACTION_DEBUG = "debug";
+    static final String ACTION_LAUNCH = "launch";
     
     /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance
-     * of ShellSession.
-     * @param ev 
+     * Existing storage folder. For project systems, some existing folder underneath
+     * the project; possibly project root.
+     * @return 
      */
-    public void shellStarted(ShellEvent ev);
+    public FileObject   getStorageFolder(boolean createIfMissing);
     
     /**
-     * The status of the shell has been changed
-     * @param ev 
+     * Path prefix where the snippets reside. Path prefix is provided in order to avoid
+     * premature creation of folders. All files listed from or stored to this storage
+     * will be located under <code>{@link #getStorageFolder()}.createFolder(resourcePrefix)</code>
+     * @return resouce prefix within the storage folder.
      */
-    public void shellStatusChanged(ShellEvent ev);
+    public String       resourcePrefix();
     
     /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
+     * Name of a folder which holds classes (snippets), that should be run
+     * during shell startup. Null means the startup folder is not defined.
+     * 'runAction' parameter determines the startup mode for the JShell VM. Currently,
+     * it may be one of the ACTION_* constants. The implementation may or may not use
+     * this value to select the startup folder.
+     * 
+     * @return startup snippet folder, or {@code null}.
      */
-    public void shellShutdown(ShellEvent ev);
+    public String       startupSnippets(String runAction);
 }

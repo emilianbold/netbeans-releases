@@ -51,9 +51,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.hints.friendapi.OverrideErrorMessage;
-import org.netbeans.modules.java.source.parsing.Hacks;
-import org.openide.util.Exceptions;
 
 /**
  * Suppresses error warning that a semicolon is missing from the input. JShell automatically
@@ -66,7 +65,10 @@ public class SemicolonMissingRule implements OverrideErrorMessage {
     
     @Override
     public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data data) {
-        Object dp = Hacks.getDiagnosticParam(d, 0);
+        if (!info.getSnapshot().getMimeType().equals("text/x-repl")) {
+            return null;
+        }
+        Object dp = SourceUtils.getDiagnosticParam(d, 0);
         if (dp != Tokens.TokenKind.SEMI) {
             return null;
         }

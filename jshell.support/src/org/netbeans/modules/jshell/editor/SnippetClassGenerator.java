@@ -63,7 +63,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.FileBuilder;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.java.hints.OrganizeImports;
+import org.netbeans.modules.java.hints.friendapi.SourceChangeUtils;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -302,7 +302,7 @@ public class SnippetClassGenerator implements Runnable {
             src.runModificationTask(wc ->  {
                 wc.toPhase(JavaSource.Phase.RESOLVED);
                this.copy = wc;
-               OrganizeImports.doOrganizeImports(copy, null, true);
+                SourceChangeUtils.doOrganizeImports(copy, null, true);
             }).commit();
             editor.saveDocument();
         } catch (IOException ex) {

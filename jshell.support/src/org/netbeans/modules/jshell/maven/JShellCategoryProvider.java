@@ -42,11 +42,15 @@
 package org.netbeans.modules.jshell.maven;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;

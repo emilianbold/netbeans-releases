@@ -12,6 +12,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.Action;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -25,6 +26,8 @@ import static javax.swing.text.DefaultEditorKit.selectionBeginLineAction;
 import static javax.swing.text.DefaultEditorKit.upAction;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
@@ -43,7 +46,11 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
+import org.openide.text.EditorSupport.Editor;
 import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -322,7 +329,7 @@ public class OverrideEditorActions {
                 return;
             }
             ConsoleModel mod = session.getModel();
-            ConsoleSection sec = mod.processInputSection(false);
+            ConsoleSection sec = mod.processInputSection(true);
             // the interceptor is executed even if a break insertion fails, e.g. is
             // filtered out by DocumentFilter. Accept and process only those inserts,
             // which happen in the input section
@@ -349,6 +356,7 @@ public class OverrideEditorActions {
                 }
             });
             if (execute) {
+                flushUndoQueue(doc);
                 try {
                     ShellSession.get(context.getDocument()).evaluate(null);
                 } catch (IOException ex) {
@@ -373,6 +381,30 @@ public class OverrideEditorActions {
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
             return new ExecuteInterceptor();
         }
+    }
+    
+    static void flushUndoQueue(Document d) {
+        SwingUtilities.invokeLater(() -> {
+        if (d == null) {
+            return;
+        }
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (!(tc instanceof ConsoleEditor)) {
+                continue;
+            }
+            ConsoleEditor cake = (ConsoleEditor)tc;
+            if (cake.getEditorPane() == null) {
+                continue;
+            }
+            Document check = cake.getEditorPane().getDocument();
+            if (check != d) {
+                continue;
+            }
+            UndoRedo ur = tc.getUndoRedo();
+            if (ur instanceof UndoManager) {
+                ((UndoManager)ur).discardAllEdits();
+            }
+        }});
     }
     
     public static final String JSHELL_EXECUTE = "jshell-execute"; // NOI18N
@@ -401,10 +433,11 @@ public class OverrideEditorActions {
                 return;
             }
             ConsoleModel mod = s.getModel();
-            ConsoleSection sec = mod.processInputSection(false);
+            ConsoleSection sec = mod.processInputSection(true);
             if (sec == null || sec.isIncomplete()) {
                 return;
             }
+            flushUndoQueue(doc);
             try {
                 s.evaluate(null);
                 target.setCaretPosition(doc.getLength());

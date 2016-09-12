@@ -104,6 +104,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.execution.ExecutorTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
@@ -111,10 +112,13 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -348,7 +352,7 @@ public class ShellSession {
                 ald.runAtomic(()-> {
                     try {
                         int offset = consoleDocument.getLength();
-                        model.getProtectionBypass().insertString(offset,
+                        model.insertResponseString(offset,
                                 String.copyValueOf(cbuf, off, len), null);
                     } catch (BadLocationException ex) {
                         exception = ex;
@@ -587,7 +591,7 @@ public class ShellSession {
 
         return Pair.of(previous, evaluator.post(() -> {
 
-            ModelAccessor.INSTANCE.execute(model, () -> {
+            ModelAccessor.INSTANCE.execute(model, false, () -> {
                 try {
                     URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
                     IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
@@ -624,7 +628,7 @@ public class ShellSession {
             }
             File f = FileUtil.toFile(ar);
             if (f != null) {
-                if (prev.length() > 0) {
+                if (sb.length() > 0) {
                     sb.append(File.pathSeparatorChar);
                 }
                 sb.append(f.getPath());
@@ -780,7 +784,7 @@ public class ShellSession {
         reportShellMessage(s);
     }
     
-    private void reportErrorMessage(Throwable t) {
+    public void reportErrorMessage(Throwable t) {
         LOG.log(Level.INFO, "Error in JSHell", t);
         reportShellMessage(buildErrorMessage(t));
     }
@@ -832,6 +836,8 @@ public class ShellSession {
     
     private boolean erroneous;
     
+    private Set<Snippet>    excludedSnippets = new HashSet<>();
+    
     private void acceptSnippet(SnippetEvent e) {
         if (launcher == null) {
             return;
@@ -847,6 +853,9 @@ public class ShellSession {
                         model.getInfo(e.snippet()), 
                         null, false
                 );
+            if (recordNoSave) {
+                excludedSnippets.add(e.snippet());
+            }
         }
     }
     
@@ -994,6 +1003,18 @@ public class ShellSession {
             JShellEnvironment env) {
         return new ShellSession(env);
     }
+    
+    public static ShellSession get(FileObject f) {
+        EditorCookie cake = f.getLookup().lookup(EditorCookie.class);
+        if (cake == null) {
+            return null;
+        }
+        Document d = cake.getDocument();
+        if (d == null) {
+            return null;
+        }
+        return get(d);
+    }
 
     public static ShellSession get(Document d) {
         if (d == null) {
@@ -1032,23 +1053,74 @@ public class ShellSession {
             }
         });
     }
+
+    private void clearAndAddNewline(int offset) {
+        AtomicLockDocument ald = LineDocumentUtils.asRequired(consoleDocument, AtomicLockDocument.class);
+        ald.runAtomic(() -> {
+            try {
+                DocumentUtilities.setTypingModification(consoleDocument, false);
+                consoleDocument.remove(offset, consoleDocument.getLength() - offset);
+                consoleDocument.insertString(offset, "\n", null);
+            } catch (BadLocationException ex) {
+                
+            }
+        });
+    }
+
+    private boolean recordNoSave = false;
+    
+    private String executionLabel;
+
+    public String getExecutionLabel() {
+        return executionLabel;
+    }
     
     public void evaluate(String command) throws IOException {
+        evaluate(command, false, null);
+    }
+    
+    public void clearInputAndEvaluateExternal(String command, String label) throws IOException {
         // evaluate even though the connection is not active; perhaps
         // we get access to the history.
         post(() -> {
-            String c = command;
-            if (c == null) {
-                ConsoleSection s = model.processInputSection(true);
-                if (s == null) {
-                    return;
-                }
-                c = s.getContents(consoleDocument);
-                if (!c.endsWith("\n")) { // NOI18N
-                    addNewline(s.getEnd());
-                }
+            ConsoleSection s = model.processInputSection(true);
+            if (s == null) {
+                return;
             }
-            doExecuteCommands();
+            clearAndAddNewline(s.getPartBegin());
+            boolean saveSave = this.recordNoSave;
+            try {
+                recordNoSave = true;
+                this.executionLabel = label;
+                doExecuteCommands(command);
+            } finally {
+                this.executionLabel = null;
+                this.recordNoSave = saveSave;
+            }
+        });
+    }
+    
+    public void evaluate(String command, boolean excludeFromSave, String label) throws IOException {
+        // evaluate even though the connection is not active; perhaps
+        // we get access to the history.
+        post(() -> {
+            ConsoleSection s = model.processInputSection(true);
+            if (s == null) {
+                return;
+            }
+            String c = s.getContents(consoleDocument);
+            if (!c.endsWith("\n")) { // NOI18N
+                addNewline(s.getEnd());
+            }
+            boolean saveSave = this.recordNoSave;
+            try {
+                recordNoSave = excludeFromSave;
+                this.executionLabel = label;
+                doExecuteCommands(command);
+            } finally {
+                this.executionLabel = null;
+                this.recordNoSave = saveSave;
+            }
         });
     }
 
@@ -1064,7 +1136,7 @@ public class ShellSession {
     @NbBundle.Messages({
         "MSG_ErrorExecutingCommand=Note: You may need to restart the Java Shell to resume proper operation"
     })
-    private void doExecuteCommands() {
+    private void doExecuteCommands(final String cmd) {
         ConsoleSection sec = model.processInputSection(true);
         if (sec == null) {
             return;
@@ -1072,28 +1144,34 @@ public class ShellSession {
 
         // rely on JShell's own parsing from the input section
         // just for case:
-        ModelAccessor.INSTANCE.execute(model, () -> {
+        ModelAccessor.INSTANCE.execute(model, cmd != null, () -> {
             ConsoleSection exec = model.getExecutingSection();
             erroneous = false;
             try {
                 final List<String> toExec = new ArrayList<>();
-                if (exec.getType() == ConsoleSection.Type.COMMAND) {
-                    // execute entire section
-                    consoleDocument.render(() -> {
-                        toExec.add(exec.getContents(consoleDocument));
-                    });
+                if (cmd != null) {
+                    toExec.add(cmd);
                 } else {
-                    consoleDocument.render(() -> {
-                        for (Rng r : exec.getAllSnippetBounds()) {
-                            toExec.add(exec.getRangeContents(consoleDocument, r));
-                        }
-                    });
+                    if (exec.getType() == ConsoleSection.Type.COMMAND) {
+                        // execute entire section
+                        consoleDocument.render(() -> {
+                            toExec.add(exec.getContents(consoleDocument));
+                        });
+                    } else {
+                        consoleDocument.render(() -> {
+                            for (Rng r : exec.getAllSnippetBounds()) {
+                                toExec.add(exec.getRangeContents(consoleDocument, r));
+                            }
+                        });
+                    }
                 }
-                Rng[] ranges = exec.getAllSnippetBounds();
+                Rng[] ranges = cmd == null ? exec.getAllSnippetBounds() : null;
                 int index = 0;
                 try {
                     for (String s : toExec) {
-                            ModelAccessor.INSTANCE.setSnippetOffset(model, exec.offsetToContents(ranges[index].start, true));
+                            if (ranges != null) {
+                                ModelAccessor.INSTANCE.setSnippetOffset(model, exec.offsetToContents(ranges[index].start, true));
+                            }
                             launcher.evaluate(s, index == toExec.size() - 1);
                             if (erroneous) {
                                 break;
@@ -1130,7 +1208,11 @@ public class ShellSession {
             if (shell != null && unsub != null) {
                 shell.unsubscribe(unsub);
             }
-            launcher.closeState();
+            try {
+                launcher.closeState();
+            } catch (InternalError ex) {
+                // ignore
+            }
             forceCloseStreams();
         });
     }
@@ -1243,6 +1325,7 @@ public class ShellSession {
         List<Snippet> snips = new ArrayList<>(sh.snippets());
         if (onlyUser) {
             snips.removeAll(initial);
+            snips.removeAll(excludedSnippets);
         }
         if (onlyValid) {
             for (Iterator<Snippet> it = snips.iterator(); it.hasNext(); ) {

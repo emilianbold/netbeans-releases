@@ -83,7 +83,7 @@ public abstract class ModelAccessor {
     
     public abstract void setSectionComplete(ConsoleSection target, boolean complete);
     
-    public abstract void execute(ConsoleModel model, Runnable r, Supplier<String> prompt);
+    public abstract void execute(ConsoleModel model, boolean external, Runnable r, Supplier<String> prompt);
     //public abstract void beforeExecution(ConsoleModel model);
     //public abstract void afterExecution(ConsoleModel model);
     public abstract void setSnippetOffset(ConsoleModel model, int offset);

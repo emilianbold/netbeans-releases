@@ -39,39 +39,37 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.support;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+@ProjectServiceProvider(service = SnippetStorage.class,
+        projectType = "org-netbeans-modules-java-j2seproject")
+public class J2SESnippetStorage implements SnippetStorage {
+    private final Project project;
+
+    public J2SESnippetStorage(Project project) {
+        this.project = project;
+    }
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
-    
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
-    
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
+    @Override
+    public FileObject getStorageFolder(boolean createIfMissing) {
+        return project.getProjectDirectory().getFileObject("nbproject/private");
+    }
+
+    @Override
+    public String resourcePrefix() {
+        return "jshell-snippets";
+    }
+
+    @Override
+    public String startupSnippets(String action) {
+        return "startup";
+    }
 }

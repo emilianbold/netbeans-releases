@@ -49,11 +49,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
 import org.netbeans.modules.jshell.env.ShellStatus;
+import org.netbeans.modules.jshell.launch.PropertyNames;
 import org.netbeans.modules.jshell.launch.ShellLaunchEvent;
 import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.launch.ShellOptions;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
@@ -86,12 +88,30 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
     })
     @Override
     public void handshakeCompleted(ShellLaunchEvent ev) {
-        if (opts.isOpenConsole()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    openAgentShell(ev.getAgent());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                maybeOpenAgentShell(ev.getAgent());
+            }
+        });
+    }
+    
+    public void maybeOpenAgentShell(ShellAgent agent) {
+        Project p = agent.getProject();
+        if (p == null) {
+            return;
+        }
+        AuxiliaryProperties auxProps = p.getLookup().lookup(AuxiliaryProperties.class);
+        if (auxProps != null) {
+            String s = auxProps.get(PropertyNames.JSHELL_AUTO_OPEN, true);
+            if (s != null) {
+                if (Boolean.parseBoolean(s)) {
+                    openAgentShell(agent);
                 }
-            });
+                return;
+            }
+        }
+        if (opts.isOpenConsole()) {
+            openAgentShell(agent);
         }
     }
     
@@ -99,7 +119,10 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
         Project p = agent.getProject();
         String dispName = agent.getDisplayName();
         final JShellEnvironment attachEnv = new ProjectShellEnv(agent, p, 
-                Bundle.Title_JShellOnDebugger(dispName));
+                Bundle.Title_JShellOnDebugger(dispName),
+                agent.getDebuggerMachine() == null ?
+                        "run" : "debug"
+        );
         
         // find some old project shell, which is already dead:
         if (opts.isReuseDeadConsoles()) {
