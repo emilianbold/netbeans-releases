@@ -1,6 +1,5 @@
-#changeset:   300397:f579585d35b5
-#tag:         tip
+#changeset:   300533:4cd06f905ed3
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Sep 02 21:11:31 2016 +0300
-#summary:     Fixing #267715 (Tests can't add remote host, because "New Remote Host Setup" wizard fails): native code changes
-C9EE1ACA53AA71183590274D658ABD0A6AD6B2BE fs_server-1.0.zip
+#date:        Mon Sep 12 20:14:52 2016 +0300
+#summary:     better error processing, sources (fixing #267975 - NullPointerException at org.netbeans.modules.subversion.remote.RepositoryFile.<init>)
+18E39A0D10357B72EDB76F2070E27019317792F1 fs_server-1.0.zip
