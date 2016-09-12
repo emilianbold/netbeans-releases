@@ -361,6 +361,7 @@ public abstract class ContextAction extends NodeAction {
         SVNUrl repository = null;
         try {
             repository = ContextAction.getSvnUrl(ctx);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
@@ -371,6 +372,7 @@ public abstract class ContextAction extends NodeAction {
         SVNUrl repository = null;
         try {
             repository = getSvnUrl(nodes);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(getContext(nodes), ex, false, false);
         }        
@@ -404,9 +406,10 @@ public abstract class ContextAction extends NodeAction {
                     }
                 }
                 url = ContextAction.getSvnUrl(actionContext);
+                // NB: repository can be null here
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
-            }                    
+            }
             return start(rp, url, runningName);
         }
 

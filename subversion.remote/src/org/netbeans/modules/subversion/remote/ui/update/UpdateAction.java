@@ -359,6 +359,7 @@ public class UpdateAction extends ContextAction {
         SVNUrl repository;
         try {
             repository = ContextAction.getSvnUrl(context);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
@@ -390,6 +391,10 @@ public class UpdateAction extends ContextAction {
         final SVNUrl repository;
         try {
             repository = ContextAction.getSvnUrl(context);
+            if (repository == null) {
+                SvnClientExceptionHandler.notifyNullUrl(context);
+                return; // otherwise exceptions in update() below
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
