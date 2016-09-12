@@ -282,6 +282,7 @@ public final class SvnProperties implements ActionListener {
         final Context context = new Context(roots);
         try {
             repositoryUrl = ContextAction.getSvnUrl(context);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
@@ -361,6 +362,7 @@ public final class SvnProperties implements ActionListener {
         final Context context = new Context(roots);
         try {
             repositoryUrl = ContextAction.getSvnUrl(context);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
@@ -476,6 +478,7 @@ public final class SvnProperties implements ActionListener {
         final Context context = new Context(roots);
         try {
             repositoryUrl = ContextAction.getSvnUrl(context);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;

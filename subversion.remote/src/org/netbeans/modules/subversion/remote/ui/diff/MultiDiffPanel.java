@@ -883,6 +883,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         final SVNUrl url;
         try {
             url = ContextAction.getSvnUrl(context);
+            // url can be null here; but it seems thre code below processes it
         } catch(SVNClientException ex)  {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;

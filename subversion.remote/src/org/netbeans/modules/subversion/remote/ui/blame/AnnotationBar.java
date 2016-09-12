@@ -606,6 +606,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNUrl url;
         try {
             url = ContextAction.getSvnUrl(ctx);
+            if (url == null) {
+                SvnClientExceptionHandler.notifyNullUrl(ctx);
+                return; // otherwise we get NPE, see iz #267975
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
@@ -635,6 +639,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final Context context = new Context(file);
         try {
             repoUrl = ContextAction.getSvnUrl(context);
+            if (repoUrl == null) {
+                SvnClientExceptionHandler.notifyNullUrl(context);
+                return; // otherwise we'll get NPE in rollback below
+            }
             fileUrl = SvnUtils.getRepositoryUrl(file);
             svnRev = SVNRevision.getRevision(revision);
         } catch (SVNClientException ex) {
@@ -661,6 +669,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final Context context = new Context(file);
         try {
             repositoryRoot = ContextAction.getSvnUrl(context);
+            if (repositoryRoot == null) {
+                SvnClientExceptionHandler.notifyNullUrl(context);
+                return; // otherwise we'll get NPE in openInRevision
+            }
             repositoryUrl = SvnUtils.getRepositoryUrl(file);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
