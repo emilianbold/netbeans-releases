@@ -171,6 +171,10 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/org-clang-parse.jar</runtime-relative-path>
                 <binary-origin>external/org-clang-parse.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-ir.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/org-llvm-ir.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
