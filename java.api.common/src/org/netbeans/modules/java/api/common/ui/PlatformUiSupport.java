@@ -1163,6 +1163,7 @@ public final class PlatformUiSupport {
         @Override
         public void setSelectedItem(@NullAllowed final Object anItem) {
             assert anItem == null || anItem instanceof Union2 : anItem;
+            init();
             selectedItem = (Union2<SourceLevelQuery.Profile,String>) anItem;
             fireContentsChanged(this, -1, -1);
         }
@@ -1170,6 +1171,7 @@ public final class PlatformUiSupport {
         @Override
         @CheckForNull
         public Object getSelectedItem() {
+            init();
             return selectedItem;
         }
 
