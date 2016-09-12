@@ -200,6 +200,10 @@ public final class WindowsSupport {
                             // Looks like this one is msys...
                             // As no valid cygwin was found - use it
                             return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
+                        } else if (new File(parent, "msys-2.0.dll").exists()) { // NOI18N
+                            // Looks like this one is msys2...
+                            // As no valid cygwin was found - use it
+                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
                         }
                     }
                 }
