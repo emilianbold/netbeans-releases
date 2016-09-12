@@ -97,7 +97,7 @@ static unsigned long locker_pid_to_kill = 0;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 10
-#define FS_SERVER_MINOR_VERSION 2
+#define FS_SERVER_MINOR_VERSION 3
 
 typedef struct fs_entry {
     int /*short?*/ name_len;

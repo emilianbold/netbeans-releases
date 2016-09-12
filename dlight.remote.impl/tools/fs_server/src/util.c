@@ -166,15 +166,17 @@ void *realloc_wrapper(void *ptr, size_t size) {
 }
 
 void mutex_lock_wrapper(pthread_mutex_t *mutex) {
-    if (pthread_mutex_lock(mutex)) {
-        report_error("error locking mutex: %s\n", strerror(errno));
+    int err = pthread_mutex_lock(mutex);
+    if (err) {
+        report_error("error locking mutex: %s\n", strerror(err));
         exit(FAILURE_LOCKING_MUTEX);
     }
 }
 
 void mutex_unlock_wrapper(pthread_mutex_t *mutex) {
-    if (pthread_mutex_unlock(mutex)) {
-        report_error("error unlocking mutex: %s\n", strerror(errno));
+    int err = pthread_mutex_unlock(mutex);
+    if (err) {
+        report_error("error unlocking mutex: %s\n", strerror(err));
         exit(FAILURE_UNLOCKING_MUTEX);
     }
 }
