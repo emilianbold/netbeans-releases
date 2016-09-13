@@ -56,6 +56,7 @@ import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardComponent;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
@@ -81,6 +82,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             if(p.getUid().equals(BASE_IDE_UID)) {
                 installLocation = new File(p.getInstallationLocation(), JavaUtils.JRE_NESTED_SUBDIR);
                 product.setInstallationLocation(installLocation);
+                p.setProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY, installLocation.getAbsolutePath());
             }
         }
         
