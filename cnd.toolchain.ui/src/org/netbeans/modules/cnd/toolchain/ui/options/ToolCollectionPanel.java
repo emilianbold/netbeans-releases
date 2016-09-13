@@ -1421,7 +1421,7 @@ import org.openide.util.Utilities;
             if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
                 ToolchainUtilities.setModifyBuildPath(cs, panel.getModifyBuildPath());
                 ToolchainUtilities.setModifyRunPath(cs, panel.getModifyRunPath());
-                manager.setChanged(true);
+                manager.fireToolColectionPanelChanged();
             }
         }
     }//GEN-LAST:event_btPathEditActionPerformed
