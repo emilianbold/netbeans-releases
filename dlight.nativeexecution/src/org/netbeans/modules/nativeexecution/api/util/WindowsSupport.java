@@ -181,7 +181,19 @@ public final class WindowsSupport {
                     if ("bin".equals(parent.getName())) { // NOI18N
                         // Looks like we have found something...
                         // An attempt to understand what exactly we have found
-                        if (new File(parent, "cygcheck.exe").exists()) { // NOI18N
+                         if (new File(parent, "msysinfo").exists()) { // NOI18N
+                            // Looks like this one is msys...
+                            // As no valid cygwin was found - use it
+                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
+                        } else if (new File(parent, "msys-2.0.dll").exists()) { // NOI18N
+                            // Looks like this one is msys2...
+                            // As no valid cygwin was found - use it
+                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
+                        } else if (new File(parent, "cygwin1.dll").exists()) { // NOI18N
+                            // Looks like this one is sygwin...
+                            // As no valid cygwin was found - use it
+                            return new Shell(ShellType.CYGWIN, sh.getAbsolutePath(), parent);
+                        } else if (new File(parent, "cygcheck.exe").exists()) { // NOI18N
                             // Well ...
                             // The problem is that is is not in registry...
                             // I.e. we will use it if on msys found on the system...
@@ -196,14 +208,6 @@ public final class WindowsSupport {
                             if (validationStatus.isValid() && !validationStatus.hasWarnings()) {
                                 return candidate;
                             }
-                        } else if (new File(parent, "msysinfo").exists()) { // NOI18N
-                            // Looks like this one is msys...
-                            // As no valid cygwin was found - use it
-                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
-                        } else if (new File(parent, "msys-2.0.dll").exists()) { // NOI18N
-                            // Looks like this one is msys2...
-                            // As no valid cygwin was found - use it
-                            return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
                         }
                     }
                 }
