@@ -146,9 +146,13 @@ public class JavaUtils {
     }
     
     public static JavaInfo getInfo(final File javaHome) {
+        return getInfo(javaHome, false);
+    }
+    
+    public static JavaInfo getInfo(final File javaHome, boolean ignoreKnownJdks) {
         File location = FileUtils.getNormalizedPathFile(javaHome);
         
-        if (knownJdks.get(location) != null) {
+        if (!ignoreKnownJdks && knownJdks.get(location) != null) {
             return knownJdks.get(location);
         }
         
