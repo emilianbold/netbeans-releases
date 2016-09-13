@@ -159,6 +159,7 @@ public class JFXProjectGenerator {
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject[] srcFolder = new FileObject[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
@@ -184,11 +185,12 @@ public class JFXProjectGenerator {
                 } catch (MutexException ex) {
                     Exceptions.printStackTrace(ex.getException());
                 }
-                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-//                dirFO.createFolder("test"); // NOI18N
-                createFiles(mainClass, fxmlName, srcFolder, type);
+                srcFolder[0] = dirFO.createFolder("src"); // NOI18N
             }
         });
+        if (srcFolder[0] != null) {
+            createFiles(mainClass, fxmlName, srcFolder[0], type);
+        }
         return h[0];
     }
    
@@ -315,6 +317,7 @@ public class JFXProjectGenerator {
 
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject[] srcFolder = new FileObject[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
@@ -342,15 +345,13 @@ public class JFXProjectGenerator {
                     });
                 } catch (MutexException ex) {
                     Exceptions.printStackTrace(ex.getException());
-                }
-                
-                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-//                dirFO.createFolder("test"); // NOI18N
-                if (preloaderClassName != null) {
-                    createPreloaderClass(preloaderClassName, srcFolder);
-                }
+                }                
+                srcFolder[0] = dirFO.createFolder("src"); // NOI18N
             }
         });
+        if (srcFolder[0] != null && preloaderClassName != null) {
+            createPreloaderClass(preloaderClassName, srcFolder[0]);
+        }
         JavaFXProjectWizardIterator.createManifest(FileUtil.toFileObject(dir), true);
 
         return h[0];
