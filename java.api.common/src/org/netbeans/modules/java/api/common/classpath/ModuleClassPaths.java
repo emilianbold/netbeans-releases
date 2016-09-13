@@ -94,6 +94,7 @@ import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -101,12 +102,15 @@ import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOU
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -713,23 +717,23 @@ final class ModuleClassPaths {
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || ClassPath.PROP_ENTRIES.equals(propName) || SourceRoots.PROP_ROOTS.equals(propName)) {
-                resetOutsideWriteAccess();
+                resetOutsideWriteAccess(null);
             }
         }
         
         @Override
         public void stateChanged(@NonNull final ChangeEvent evt) {
-            resetOutsideWriteAccess();
+            resetOutsideWriteAccess(null);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            resetCache(TOMBSTONE, true);
+            resetOutsideWriteAccess(fe.getFile());
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            resetCache(TOMBSTONE, true);
+            resetOutsideWriteAccess(fe.getFile());
         }
 
         @Override
@@ -743,13 +747,13 @@ final class ModuleClassPaths {
                     ClassIndex.NameKind.PREFIX,
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (mods.isEmpty()) {
-                resetCache(TOMBSTONE, true);
+                resetOutsideWriteAccess(null);
             }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            resetCache(TOMBSTONE, true);
+            resetOutsideWriteAccess(fe.getFile());
         }
 
         @Override
@@ -783,9 +787,28 @@ final class ModuleClassPaths {
             handleModuleChange(event);
         }
         
-        private void resetOutsideWriteAccess() {
+        private void resetOutsideWriteAccess(FileObject artifact) {
+            final boolean hasDocExclusiveLock = Optional.ofNullable(artifact)
+                    .map((fo) -> {
+                        try {
+                            return DataObject.find(fo).getLookup().lookup(EditorCookie.class);
+                        } catch (DataObjectNotFoundException e) {
+                            return null;
+                        }
+                    })
+                    .map((ec) -> ec.getDocument())
+                    .map(DocumentUtilities::isWriteLocked)
+                    .orElse(Boolean.FALSE);
             final Runnable action = () -> resetCache(TOMBSTONE, true);
-            if (ProjectManager.mutex().isWriteAccess()) {
+            if (hasDocExclusiveLock) {
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.log(
+                            Level.WARNING,
+                            "Firing under editor write lock: {0}",   //NOI18N
+                            Arrays.toString(Thread.currentThread().getStackTrace()));
+                }
+                CLASS_INDEX_FIRER.execute(action);
+            } else if (ProjectManager.mutex().isWriteAccess()) {
                 ProjectManager.mutex().postReadRequest(action);
             } else {
                 action.run();
