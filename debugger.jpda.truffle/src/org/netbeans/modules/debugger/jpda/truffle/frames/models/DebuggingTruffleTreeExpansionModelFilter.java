@@ -52,6 +52,7 @@ import java.util.Set;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -160,7 +161,8 @@ public class DebuggingTruffleTreeExpansionModelFilter implements TreeExpansionMo
     }
 
     private void currentStackFrameChanged(CallStackFrame csf) {
-        if (csf != null && csf.getThread() == TruffleAccess.getCurrentPCInfo(debugger).getThread()) {
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        if (csf != null && currentPCInfo != null && csf.getThread() == currentPCInfo.getThread()) {
             JPDAThread thread = csf.getThread();
             suspendedTruffleThread = new WeakReference<>(thread);
             try {
