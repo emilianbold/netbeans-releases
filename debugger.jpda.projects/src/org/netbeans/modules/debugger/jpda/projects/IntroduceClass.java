@@ -115,36 +115,39 @@ class IntroduceClass {
         scanner.scan(block, null);
         Set<TypeMirror> exceptions = new HashSet<>();
         String returnType = scanner.getReturnType();
-        if (returnType == null) {
-            Element lastStatementElement;
-            if (lastStatement != null && (lastStatementElement = getElement(info, new TreePath(treePath, lastStatement))) != null) {
-                TypeMirror type = lastStatementElement.asType();
-                if (TypeKind.EXECUTABLE.equals(type.getKind())) {
-                    ExecutableType eType = (ExecutableType) type;
-                    type = eType.getReturnType();
-                    // Check that it ends with a semicolon:
-                    long lsEnd = sourcePositions.getEndPosition(compilationUnit, lastStatement);
-                    if (lsEnd < 0) {
-                        lsEnd = this.snippetCode.length() - 1;
-                    } else {
-                        lsEnd -= codeOffset;
-                    }
-                    if (';' != this.snippetCode.charAt((int) lsEnd)) {
-                        this.snippetCode = new StringBuilder(this.snippetCode)
-                                .insert((int) lsEnd + 1, ";")
-                                .toString();
+        if (returnType == null || !scanner.hasReturns()) {
+            TypeMirror type = scanner.getReturnTypeMirror();
+            if (type == null) {
+                Element lastStatementElement;
+                if (lastStatement != null && (lastStatementElement = getElement(info, new TreePath(treePath, lastStatement))) != null) {
+                    type = lastStatementElement.asType();
+                    if (TypeKind.EXECUTABLE.equals(type.getKind())) {
+                        ExecutableType eType = (ExecutableType) type;
+                        type = eType.getReturnType();
+                        // Check that it ends with a semicolon:
+                        long lsEnd = sourcePositions.getEndPosition(compilationUnit, lastStatement);
+                        if (lsEnd < 0) {
+                            lsEnd = this.snippetCode.length() - 1;
+                        } else {
+                            lsEnd -= codeOffset;
+                        }
+                        if (';' != this.snippetCode.charAt((int) lsEnd)) {
+                            this.snippetCode = new StringBuilder(this.snippetCode)
+                                    .insert((int) lsEnd + 1, ";")
+                                    .toString();
+                        }
                     }
                 }
-                if (!TypeKind.VOID.equals(type.getKind())) {
-                    returnType = type.toString();
-                    // Prepend a return statement:
-                    long lsBegin = sourcePositions.getStartPosition(compilationUnit, lastStatement);
-                    // Make it relative to the beginning of the code snippet:
-                    lsBegin -= codeOffset;
-                    this.snippetCode = new StringBuilder(this.snippetCode)
-                            .insert((int) lsBegin, "return ")
-                            .toString();
-                }
+            }
+            if (type != null && !TypeKind.VOID.equals(type.getKind())) {
+                returnType = type.toString();
+                // Prepend a return statement:
+                long lsBegin = sourcePositions.getStartPosition(compilationUnit, lastStatement);
+                // Make it relative to the beginning of the code snippet:
+                lsBegin -= codeOffset;
+                this.snippetCode = new StringBuilder(this.snippetCode)
+                        .insert((int) lsBegin, "return ")
+                        .toString();
             }
             if (returnType == null) {
                 returnType = info.getTypes().getNoType(TypeKind.VOID).toString();
@@ -251,7 +254,12 @@ class IntroduceClass {
                 statements = ((CaseTree) parentsLeaf).getStatements();
                 break;
             default:
-                statements = Collections.singletonList((StatementTree) firstLeaf.getLeaf());
+                Tree first = firstLeaf.getLeaf();
+                if (Tree.Kind.EXPRESSION_STATEMENT.equals(first.getKind())) {
+                    statements = Collections.singletonList((StatementTree) firstLeaf.getLeaf());
+                } else {
+                    statements = Collections.EMPTY_LIST;
+                }
         }
         int s = statements.size();
         boolean haveOriginalStatements = true;
