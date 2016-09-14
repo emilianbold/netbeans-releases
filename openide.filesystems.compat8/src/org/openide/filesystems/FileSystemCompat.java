@@ -52,7 +52,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Set;
-import org.omg.CORBA.Environment;
 import static org.openide.filesystems.FileSystem.LOG;
 import org.openide.modules.PatchFor;
 import org.openide.util.Exceptions;

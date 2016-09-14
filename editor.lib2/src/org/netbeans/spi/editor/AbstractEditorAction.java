@@ -263,6 +263,12 @@ public abstract class AbstractEditorAction extends TextAction implements
     /** Logger for reporting invoked actions */
     private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
     
+    /**
+     * Whether invoked actions not logged by default, such as caret moves, should be logged too.
+     * -J-Dorg.netbeans.editor.ui.actions.logging.detailed=true
+     */
+    private static final boolean UI_LOG_DETAILED = Boolean.getBoolean("org.netbeans.editor.ui.actions.logging.detailed");
+    
     // -J-Dorg.netbeans.spi.editor.AbstractEditorAction.level=FINE
     private static final Logger LOG = Logger.getLogger(AbstractEditorAction.class.getName());
 
@@ -503,14 +509,18 @@ public abstract class AbstractEditorAction extends TextAction implements
     private static boolean isLogged(String actionName) {
         return actionName != null &&
                 !"default-typed".equals(actionName) && //NOI18N
-//                -1 == actionName.indexOf("caret") && //NOI18N
-//                -1 == actionName.indexOf("delete") && //NOI18N
-//                -1 == actionName.indexOf("selection") && //NOI18N
                 -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
                 -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
-//                -1 == actionName.indexOf("page-up") &&//NOI18N
-//                -1 == actionName.indexOf("page-down") &&//NOI18N
-                -1 == actionName.indexOf("-kit-install"); //NOI18N
+                -1 == actionName.indexOf("-kit-install") && //NOI18N
+                (UI_LOG_DETAILED || (
+                    -1 == actionName.indexOf("caret") && //NOI18N
+                    -1 == actionName.indexOf("delete") && //NOI18N
+                    -1 == actionName.indexOf("undo") &&//NOI18N
+                    -1 == actionName.indexOf("redo") &&//NOI18N
+                    -1 == actionName.indexOf("selection") && //NOI18N
+                    -1 == actionName.indexOf("page-up") &&//NOI18N
+                    -1 == actionName.indexOf("page-down") //NOI18N
+                ));
     }
 
     @Override

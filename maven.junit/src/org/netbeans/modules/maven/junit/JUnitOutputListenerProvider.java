@@ -62,6 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Document;
@@ -266,6 +267,42 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
     public @Override void sequenceStart(String sequenceId, OutputVisitor visitor) {
         session = null;
+	// Fix for #257563 / SUREFIRE-1158, where surefire 2.19.x
+	// removed the printing of the output directory. Get the directory from
+	// the configuration directly or fallback to the plugin standard
+	if (usingSurefire219(this.config.getMavenProject())) {
+	    // http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#reportsDirectory
+	    String reportsDirectory = PluginPropertyUtils.getPluginProperty(config.getMavenProject(),
+		    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportsDirectory", "test", null); // NOI18N
+	    if (null == reportsDirectory) {
+		// fallback to default value
+		try {
+		    Object defaultValue = PluginPropertyUtils.createEvaluator(config.getMavenProject())
+			    .evaluate("${project.build.directory}/surefire-reports");
+		    if (defaultValue instanceof String) {
+			reportsDirectory = (String) defaultValue;
+		    }
+		} catch (ExpressionEvaluationException ex) {
+		    // NOP could not resolved default value
+		}
+	    }
+	    if (null != reportsDirectory) {
+		File absoluteFile = new File(reportsDirectory);
+		// configuration might be "target/directory", which is relative
+		// to the maven project or an absolute path
+		File relativeFile = new File(this.config.getMavenProject().getBasedir(), reportsDirectory);
+		if (absoluteFile.exists() && absoluteFile.isDirectory()) {
+		    outputDir = absoluteFile;
+		} else {
+		    if (relativeFile.exists() && relativeFile.isDirectory()) {
+			outputDir = relativeFile;
+		    }
+		}
+		if (null != outputDir) {
+		    createSession(outputDir);
+		}
+	    }
+	}
     }
 
     //#179703 allow multiple sessions per project, in case there are multiple executions of surefire plugin.
@@ -407,6 +444,11 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 	}
     }
     
+    private boolean usingSurefire219(MavenProject prj) {
+	String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+	return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.19")) >= 0;
+    }
+
     private boolean usingSurefire2121(MavenProject prj) {
         String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
         return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.12.1")) >= 0;

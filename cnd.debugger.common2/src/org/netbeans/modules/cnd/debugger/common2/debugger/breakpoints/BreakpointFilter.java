@@ -381,7 +381,7 @@ public final class BreakpointFilter extends ModelListenerSupport
         @Override
 	public void addModelListener(ModelListener l) {
 		if (super.addModelListenerHelp(l)) {
-			manager().breakpointUpdater().setListener(this);
+			manager().breakpointUpdater().addListener(this);
 		}
 	}
 
@@ -389,7 +389,7 @@ public final class BreakpointFilter extends ModelListenerSupport
         @Override
 	public void removeModelListener(ModelListener l) {
 		if (super.removeModelListenerHelp(l)) {
-			manager().breakpointUpdater().setListener(null);
+			manager().breakpointUpdater().removeListener(l);
 		}
 	}
 

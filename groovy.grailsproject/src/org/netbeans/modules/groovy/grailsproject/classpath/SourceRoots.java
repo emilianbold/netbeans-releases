@@ -54,6 +54,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoriesFactory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoryType;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.openide.filesystems.FileObject;
@@ -136,18 +138,19 @@ public class SourceRoots {
     }
 
     private void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONF, result);
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONTROLLERS, result);
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_DOMAIN, result);
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_SERVICES, result);
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_TAGLIB, result);
-        addRoot(projectRoot, SourceCategory.GRAILSAPP_UTILS, result);
-        addRoot(projectRoot, SourceCategory.SCRIPTS, result);
-        addRoot(projectRoot, SourceCategory.SRC_GROOVY, result);
-        addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
-        addRoot(projectRoot, SourceCategory.SRC_GWT, result);
-        addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
-        addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
+        SourceCategoriesFactory sourceCategoriesFactory = project.getSourceCategoriesFactory();
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_CONF), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_CONTROLLERS), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_DOMAIN), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_SERVICES), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_TAGLIB), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.GRAILSAPP_UTILS), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.SCRIPTS), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.SRC_GROOVY), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.SRC_JAVA), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.SRC_GWT), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.TEST_INTEGRATION), result);
+        addRoot(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.TEST_UNIT), result);
 
         File pluginsDirFile = project == null ? null : project.getBuildConfig().getProjectPluginsDir();
         FileObject pluginsDir = pluginsDirFile == null ? null : FileUtil.toFileObject(

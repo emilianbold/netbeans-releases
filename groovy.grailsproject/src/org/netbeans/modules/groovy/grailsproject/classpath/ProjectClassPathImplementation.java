@@ -59,7 +59,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoriesFactory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoryType;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
@@ -83,6 +84,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     private final BuildConfigListener buildConfigListener = new BuildConfigListener();
     private final GrailsProjectConfig projectConfig;
     private final File projectRoot;
+    private final SourceCategoriesFactory sourceCategoriesFactory;
 
     private List<PathResourceImplementation> resources;
     private GrailsPlatform.Version version;
@@ -95,6 +97,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         this.projectConfig = projectConfig;
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
         this.version = projectConfig.getGrailsPlatform().getVersion();
+
+        //TODO: would be nice to reuse the project source categories factory here:
+        this.sourceCategoriesFactory = new SourceCategoriesFactory();
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
@@ -134,7 +139,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         // http://grails.org/GWT+Plugin
         GrailsPluginSupport pluginSupport = GrailsPluginSupport.forProject(projectConfig.getProject());
         if (pluginSupport != null && pluginSupport.usesPlugin("gwt")) { // NOI18N
-            File gwtDir = new File(new File(projectRoot, SourceCategory.LIB.getRelativePath()), "gwt"); // NOI18N
+            File gwtDir = new File(new File(projectRoot, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.LIB).getRelativePath()), "gwt"); // NOI18N
             if (gwtDir.exists() && gwtDir.isDirectory()) {
                 addJars(gwtDir, result, false);
             }
@@ -242,7 +247,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             return;
         }
 
-        File libDir = new File(root, SourceCategory.LIB.getRelativePath());
+        File libDir = new File(root, sourceCategoriesFactory.getSourceCategory(SourceCategoryType.LIB).getRelativePath());
         if (!libDir.exists() || !libDir.isDirectory()) {
             return;
         }

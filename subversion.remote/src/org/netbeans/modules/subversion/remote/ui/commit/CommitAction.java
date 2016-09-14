@@ -234,6 +234,7 @@ public class CommitAction extends ContextAction {
         SVNUrl repository = null;
         try {
             repository = ContextAction.getSvnUrl(ctx);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -413,6 +414,7 @@ public class CommitAction extends ContextAction {
         SVNUrl url = null;
         try {
             url = ContextAction.getSvnUrl(ctx);
+            // url can be null here; but it seems thre code below processes it ok
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }

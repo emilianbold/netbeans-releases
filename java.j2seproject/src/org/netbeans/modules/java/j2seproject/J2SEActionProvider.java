@@ -706,7 +706,10 @@ public class J2SEActionProvider extends BaseActionProvider {
             try {
                 final Project p = FileOwnerQuery.getOwner(root.toURI());
                 if (p != null) {
-                    p.getLookup().lookup(ActionProvider.class).getSupportedActions();   //Force initialization
+                    ActionProvider prov = p.getLookup().lookup(ActionProvider.class);  
+                    if (prov != null) {
+                        prov.getSupportedActions(); //Force initialization
+                    }
                     final CosAction action = CosAction.getInstance(p);
                     return action;
                 }

@@ -85,6 +85,10 @@ public class UpdateToAction extends UpdateAction {
 
         try {
             rootUrl = ContextAction.getSvnUrl(ctx);
+            if (rootUrl == null) {
+                SvnClientExceptionHandler.notifyNullUrl(ctx);
+                return null; // otherwise NPE, see #267975
+            }
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);

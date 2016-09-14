@@ -47,10 +47,12 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -112,17 +114,24 @@ public abstract class VCSCommitParameters {
     }
     
     public static JLabel createRecentMessagesLink(final JTextArea text, final Preferences preferences) {
-        JLabel recentLink = new JLabel();
+        final JLabel recentLink = new JLabel();
         recentLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/recent_messages.png"))); // NOI18N
         recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N            
 
         recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        final AbstractAction openRecentAction = new AbstractAction() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                onBrowseRecentMessages(text, preferences);
+            }
+        };
         recentLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                onBrowseRecentMessages(text, preferences);
+                openRecentAction.actionPerformed(new ActionEvent(recentLink, ActionEvent.ACTION_PERFORMED, null));
             }
-        });                    
+        });
+        recentLink.putClientProperty("openAction", openRecentAction);
         return recentLink;
     }
     
@@ -134,17 +143,24 @@ public abstract class VCSCommitParameters {
     }
     
     protected static JLabel createMessagesTemplateLink(final JTextArea text, final Preferences preferences, final String helpCtxId) {
-        JLabel templateLink = new JLabel();
+        final JLabel templateLink = new JLabel();
         templateLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N            
 
         templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        final AbstractAction openTemplatesAction = new AbstractAction() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                onTemplate(text, preferences, helpCtxId);
+            }
+        };
         templateLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                onTemplate(text, preferences, helpCtxId);
+                openTemplatesAction.actionPerformed(new ActionEvent(templateLink, ActionEvent.ACTION_PERFORMED, null));
             }
-        });    
+        });
+        templateLink.putClientProperty("openAction", openTemplatesAction);
         return templateLink;
     }
     

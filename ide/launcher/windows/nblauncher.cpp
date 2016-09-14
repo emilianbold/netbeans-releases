@@ -537,9 +537,10 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         else
             maxheap = 1024;
         // find how much memory we have and add -Xmx as 1/5 of the memory
-        MEMORYSTATUS ms = {0};
-        GlobalMemoryStatus(&ms);
-        int memory = (int)((ms.dwTotalPhys / 1024 / 1024) / 5);
+        MEMORYSTATUSEX ms;
+        ms.dwLength = sizeof (ms);
+        GlobalMemoryStatusEx(&ms);
+        int memory = (int)((ms.ullTotalPhys / 1024 / 1024) / 5);
         if (memory < 96) {
             memory = 96;
         }

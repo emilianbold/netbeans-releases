@@ -1617,7 +1617,10 @@ public class Utilities {
     }
     
     public static boolean isValidType(TypeMirror m) {
-        return m != null && (m.getKind() != TypeKind.OTHER && m.getKind() != TypeKind.ERROR);
+        return m != null && (
+                m.getKind() != TypeKind.PACKAGE &&
+                m.getKind() != TypeKind.OTHER && 
+                m.getKind() != TypeKind.ERROR);
     }
 
     /**

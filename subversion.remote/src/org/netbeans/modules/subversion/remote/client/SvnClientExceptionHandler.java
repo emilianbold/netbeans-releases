@@ -867,6 +867,10 @@ public class SvnClientExceptionHandler {
                 || message.contains("working copy needs to be upgraded"); //NOI18N
     }
 
+    public static void notifyNullUrl(Context context) {
+        Subversion.LOG.log(Level.FINE, "Unexpected null root URL for " + context); //NOI18N
+    }
+
     public static void notifyException(Context context, Exception ex, boolean annotate, boolean isUI) {
         String message = ex.getMessage();
         if (isUI && isTooOldWorkingCopy(message)) {

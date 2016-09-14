@@ -113,6 +113,7 @@ public final class EvalAnnotation extends Annotation {
 
     private void evalExpression(final Part lp) {
         try {
+            boolean forceExtractExpression = true;
             Line line = lp.getLine();
             Lookup lineLookup = line.getLookup();
             DataObject dobj = lineLookup.lookup(DataObject.class);
@@ -168,12 +169,13 @@ public final class EvalAnnotation extends Annotation {
                 // "-1" is a hint to the engine to skip it's own parsing which
 		// I may do by calling back to EvalAnnotation.extractExpression()
                 pos = -1;
+                forceExtractExpression = false;
             }
 
             NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
             if (debugger != null) {
                 lastAnnotation = this;
-                debugger.balloonEvaluate(lp, expr);
+                debugger.balloonEvaluate(lp, expr, forceExtractExpression);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

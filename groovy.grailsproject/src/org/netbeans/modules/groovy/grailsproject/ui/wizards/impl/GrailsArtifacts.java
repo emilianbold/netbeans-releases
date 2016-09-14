@@ -46,6 +46,8 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoriesFactory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoryType;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class GrailsArtifacts {
 
-    public static SourceCategory getCategoryForFolder(FileObject projectRoot, FileObject fileObject) {
+    public static SourceCategoryType getCategoryTypeForFolder(FileObject projectRoot, FileObject fileObject, SourceCategoriesFactory sourceCategoriesFactory) {
         String dirName = null;
         if (projectRoot != null && fileObject.isFolder()) {
             dirName = FileUtil.getRelativePath(projectRoot, fileObject);
@@ -64,64 +66,65 @@ public class GrailsArtifacts {
         if (dirName == null) {
             return null;
         }
-        if (SourceCategory.GRAILSAPP_CONF.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_CONF;
-        } else if (SourceCategory.GRAILSAPP_CONTROLLERS.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_CONTROLLERS;
-        } else if (SourceCategory.GRAILSAPP_DOMAIN.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_DOMAIN;
-        } else if (SourceCategory.TEST_INTEGRATION.getRelativePath().equals(dirName)) {
-            return SourceCategory.TEST_INTEGRATION;
-        } else if (SourceCategory.LIB.getRelativePath().equals(dirName)) {
-            return SourceCategory.LIB;
-        } else if (SourceCategory.GRAILSAPP_I18N.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_I18N;
-        } else if (SourceCategory.SCRIPTS.getRelativePath().equals(dirName)) {
-            return SourceCategory.SCRIPTS;
-        } else if (SourceCategory.GRAILSAPP_SERVICES.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_SERVICES;
-        } else if (SourceCategory.SRC_GROOVY.getRelativePath().equals(dirName)) {
-            return SourceCategory.SRC_GROOVY;
-        } else if (SourceCategory.SRC_JAVA.getRelativePath().equals(dirName)) {
-            return SourceCategory.SRC_JAVA;
-        } else if (SourceCategory.SRC_GWT.getRelativePath().equals(dirName)) {
-            return SourceCategory.SRC_GWT;
-        } else if (SourceCategory.GRAILSAPP_TAGLIB.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_TAGLIB;
-        } else if (SourceCategory.TEST_UNIT.getRelativePath().equals(dirName)) {
-            return SourceCategory.TEST_UNIT;
-        } else if (SourceCategory.GRAILSAPP_UTILS.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_UTILS;
-        } else if (SourceCategory.GRAILSAPP_VIEWS.getRelativePath().equals(dirName)) {
-            return SourceCategory.GRAILSAPP_VIEWS;
-        } else if (SourceCategory.WEBAPP.getRelativePath().equals(dirName)) {
-            return SourceCategory.WEBAPP;
+
+        if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_CONF).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_CONF;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_CONTROLLERS).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_CONTROLLERS;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_DOMAIN).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_DOMAIN;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.TEST_INTEGRATION).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.TEST_INTEGRATION;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.LIB).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.LIB;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_I18N).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_I18N;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.SCRIPTS).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.SCRIPTS;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_SERVICES).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_SERVICES;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.SRC_GROOVY).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.SRC_GROOVY;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.SRC_JAVA).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.SRC_JAVA;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.SRC_GWT).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.SRC_GWT;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_TAGLIB).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_TAGLIB;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.TEST_UNIT).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.TEST_UNIT;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_UTILS).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_UTILS;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.GRAILSAPP_VIEWS).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.GRAILSAPP_VIEWS;
+        } else if (sourceCategoriesFactory.getSourceCategory( SourceCategoryType.WEBAPP).getRelativePath().equals(dirName)) {
+            return SourceCategoryType.WEBAPP;
         }
         return null;
     }
 
-    public static SourceCategory getCategoryForTemplate(FileObject template) {
+    public static SourceCategoryType getCategoryTypeForTemplate(FileObject template) {
         String templatePath = template.getPath();
         if (TemplatesImpl.CONTROLLER.equals(templatePath)) { // NOI18N
-            return SourceCategory.GRAILSAPP_CONTROLLERS;
+            return SourceCategoryType.GRAILSAPP_CONTROLLERS;
         } else if (TemplatesImpl.DOMAIN_CLASS.equals(templatePath)) {
-            return SourceCategory.GRAILSAPP_DOMAIN;
+            return SourceCategoryType.GRAILSAPP_DOMAIN;
         } else if (TemplatesImpl.GANT_SCRIPT.equals(templatePath)) {
-            return SourceCategory.SCRIPTS;
+            return SourceCategoryType.SCRIPTS;
         } else if (TemplatesImpl.GROOVY_CLASS.equals(templatePath)) {
-            return SourceCategory.SRC_GROOVY;
+            return SourceCategoryType.SRC_GROOVY;
         } else if (TemplatesImpl.GROOVY_SCRIPT.equals(templatePath)) {
-            return SourceCategory.SCRIPTS;
+            return SourceCategoryType.SCRIPTS;
         } else if (TemplatesImpl.GSP.equals(templatePath)) {
-            return SourceCategory.GRAILSAPP_VIEWS;
+            return SourceCategoryType.GRAILSAPP_VIEWS;
         } else if (TemplatesImpl.INTEGRATION_TEST.equals(templatePath)) {
-            return SourceCategory.TEST_INTEGRATION;
+            return SourceCategoryType.TEST_INTEGRATION;
         } else if (TemplatesImpl.SERVICE.equals(templatePath)) {
-            return SourceCategory.GRAILSAPP_SERVICES;
+            return SourceCategoryType.GRAILSAPP_SERVICES;
         } else if (TemplatesImpl.TAG_LIB.equals(templatePath)) {
-            return SourceCategory.GRAILSAPP_TAGLIB;
+            return SourceCategoryType.GRAILSAPP_TAGLIB;
         } else if (TemplatesImpl.UNIT_TEST.equals(templatePath)) {
-            return SourceCategory.TEST_UNIT;
+            return SourceCategoryType.TEST_UNIT;
         }
         return null;
     }

@@ -171,12 +171,13 @@ public class CustomHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         Element node = context.getCurrentNode();
-        if (node.type() != ElementType.OPEN_TAG) {
+        FileObject fileObject = context.getResult().getSnapshot().getSource().getFileObject();
+        if (node.type() != ElementType.OPEN_TAG || fileObject == null) {
             return Collections.emptyList();
         }
         OpenTag ot = (OpenTag) node;
         List<CompletionItem> items = new ArrayList<>();
-        Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
+        Configuration conf = Configuration.get(fileObject);
         String tagName = ((OpenTag) node).name().toString();
         Tag t = conf.getTag(tagName);
         if (t != null) {

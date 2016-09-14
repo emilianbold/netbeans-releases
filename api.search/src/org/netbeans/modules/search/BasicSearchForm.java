@@ -243,7 +243,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblTextToFind.setLabelFor(cboxTextToFind.getComponent());
         btnTestTextToFind = new JButton();
         lblTextToFindHint = new JLabel();
-        lblTextToFindHint.setForeground(SystemColor.controlDkShadow);
+        lblTextToFindHint.setEnabled(false);
         setLengthFilter(cboxTextToFind.getComponent());
 
         if (searchAndReplace) {
@@ -263,7 +263,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         lblFileNamePattern = new JLabel();
         lblFileNameHint = new JLabel();
-        lblFileNameHint.setForeground(SystemColor.controlDkShadow);
+        lblFileNameHint.setEnabled(false);
         cboxFileNamePattern = ComponentUtils.adjustComboForFileName(
                 new JComboBox<String>());
         lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());

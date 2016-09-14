@@ -278,6 +278,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                     || !saved.getEncoding().equals(current.getEncoding())) {
                 return true;
             }
+            if (!saved.getModifyBuildPath().equals(current.getModifyBuildPath())
+                    || !saved.getModifyRunPath().equals(current.getModifyRunPath())) {
+                return true;
+            }
             List<Tool> savedTools = saved.getTools();
             List<Tool> currentTools = current.getTools();
             if (savedTools.size() != currentTools.size()) {

@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.debugger.jpda.projects;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -59,6 +62,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -154,7 +158,13 @@ final class ScanLocalVars extends TreePathScanner<Void, Void> {
             hasReturns = true;
             Element retExpElem = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression())); //.asType().toString();
             if (retExpElem != null) {
-                returnTypes.add(((ExecutableElement) retExpElem).getReturnType());
+                returnTypes.add(getElementType(retExpElem));
+            } else {
+                // Unresolved element
+                TypeElement object = info.getElements().getTypeElement("java.lang.Object");
+                if (object != null) {
+                    returnTypes.add(object.asType());
+                }
             }
         }
         return super.visitReturn(node, p);
@@ -164,15 +174,37 @@ final class ScanLocalVars extends TreePathScanner<Void, Void> {
     public Void visitExpressionStatement(ExpressionStatementTree node, Void p) {
         if (node == lastStatement) {
             if (!hasReturns) {
-                Element retExpElem = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+                ExpressionTree expression = node.getExpression();
+                Element retExpElem = info.getTrees().getElement(new TreePath(getCurrentPath(), expression));
+                if (retExpElem == null) {
+                    TreePath elementPath = null;
+                    if (Tree.Kind.ASSIGNMENT.equals(expression.getKind())) {
+                        elementPath = new TreePath(getCurrentPath(), ((AssignmentTree) expression).getVariable());
+                    } else if (Tree.Kind.VARIABLE.equals(expression.getKind())) {
+                        elementPath = new TreePath(getCurrentPath(), ((VariableTree) expression));
+                    }
+                    if (elementPath != null) {
+                        retExpElem = info.getTrees().getElement(elementPath);
+                    }
+                }
                 if (retExpElem != null && !TypeKind.ERROR.equals(retExpElem.asType().getKind())) {
-                    returnTypes.add(((ExecutableElement) retExpElem).getReturnType());
+                    returnTypes.add(getElementType(retExpElem));
                 }
             }
         }
         return super.visitExpressionStatement(node, p);
     }
     
+    private TypeMirror getElementType(Element element) {
+        switch (element.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                return ((ExecutableElement) element).getReturnType();
+            default:
+                return element.asType();
+        }
+    }
+
     Set<VariableElement> getReferencedVariables() {
         return referencedVariables;
     }
@@ -180,12 +212,21 @@ final class ScanLocalVars extends TreePathScanner<Void, Void> {
     String getReturnType() {
         if (returnTypes.isEmpty()) {
             return null;
+        } else {
+            return returnTypes.iterator().next().toString();
         }
-        String ret = null;
-        for (TypeMirror tm : returnTypes) {
-            tm.toString();
+    }
+
+    TypeMirror getReturnTypeMirror() {
+        if (returnTypes.isEmpty()) {
+            return null;
+        } else {
+            return returnTypes.iterator().next();
         }
-        return ret;
+    }
+
+    boolean hasReturns() {
+        return hasReturns;
     }
     
 }

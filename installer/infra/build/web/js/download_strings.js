@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,7 +44,7 @@ var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in 
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
 var JDK_DOWNLOAD_LINK    = "http://www.oracle.com/technetwork/java/javase/downloads/index.html";
-var NBJDK_DOWNLOAD_LINK  = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-7-netbeans-download-432126.html";
+var NBJDK_DOWNLOAD_LINK  = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-netbeans-jsp-142931.html";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
