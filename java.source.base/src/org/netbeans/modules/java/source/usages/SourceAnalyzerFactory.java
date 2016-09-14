@@ -849,6 +849,7 @@ public final class SourceAnalyzerFactory {
                 }
                 activeClass.push(name);
                 try {
+                    addAndClearImports(name, p);
                     node.accept(new TreeScanner<Void, Set<Symbol>>() {
                                 @Override
                                 public Void visitExports(ExportsTree node, Set<Symbol> p) {
@@ -861,6 +862,7 @@ public final class SourceAnalyzerFactory {
                             },
                             unusedPkgImports);
                     super.visitModule(node, p);
+                    addAndClearUnusedPkgImports(name, p);
                 } finally {
                     activeClass.pop();
                 }
