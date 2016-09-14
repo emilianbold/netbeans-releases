@@ -210,17 +210,6 @@ if [ `uname` = "Darwin" ] ; then
     fi
 fi
 
-# addExports for JDK9
-case "`uname`" in
-    Darwin*)
-        addExports="-DaddExports:java.desktop/com.apple.eawt=ALL-UNNAMED -DaddExports:java.desktop/sun.awt=ALL-UNNAMED -DaddExports:java.base/jdk.internal.jrtfs=ALL-UNNAMED -DaddExports:java.desktop/apple.laf=ALL-UNNAMED -DaddExports:java.desktop/java.awt.peer=ALL-UNNAMED -DaddExports:java.desktop/com.sun.beans.editors=ALL-UNNAMED -DaddExports:java.desktop/sun.awt.im=ALL-UNNAMED -DaddExports:java.management/sun.management=ALL-UNNAMED"
-    ;;
-    *)
-        addExports="-DaddExports:java.desktop/sun.awt=ALL-UNNAMED -DaddExports:java.base/jdk.internal.jrtfs=ALL-UNNAMED -DaddExports:java.desktop/java.awt.peer=ALL-UNNAMED -DaddExports:java.desktop/com.sun.beans.editors=ALL-UNNAMED -DaddExports:java.desktop/sun.awt.im=ALL-UNNAMED -DaddExports:java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED -DaddExports:java.management/sun.management=ALL-UNNAMED"
-    ;;
-esac
-jargs="$jargs $addExports"
-
 jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
 if [ -z "`echo $jargs | grep -- "-XX:HeapDumpPath="`" ] ; then
   jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""

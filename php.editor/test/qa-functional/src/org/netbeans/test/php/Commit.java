@@ -268,7 +268,7 @@ public class Commit extends GeneralPHP {
                     "$GLOBALS",
                     "LC_MONETARY",
                     "ibase_wait_event",
-                    "mysql_error",
+                    "mysqli_error",
                     "openssl_pkcs12_export_to_file",
                     "str_word_count"
                 };
