@@ -52,6 +52,9 @@ Contributor(s):
             <file name="ReparseProjectAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction"/>
             </file>
+            <file name="ForceReparseProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.ForceReparseProjectAction"/>
+            </file>
             <file name="CodeModelDiagnosticAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.CodeModelDiagnosticAction"/>
             </file>
@@ -129,6 +132,10 @@ Contributor(s):
             <file name="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/ReparseProjectAction.instance"/>
                 <attr name="position" intvalue="150"/>
+            </file>
+            <file name="org.netbeans.modules.cnd.modelui.actions.ForceReparseProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/ForceReparseProjectAction.instance"/>
+                <attr name="position" intvalue="151"/>
             </file>
             <file name="TestProjectAllReferencesPerformanceAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
