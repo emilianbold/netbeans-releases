@@ -107,6 +107,9 @@ public class WatchesReader implements Properties.Reader {
                 return null;
             }
             FileObject fo = URLMapper.findFileObject(url);
+            if (fo == null) {
+                return null;    // The file's gone.
+            }
             int line = properties.getInt(PIN_LINE, 0);
             Point location = new Point(properties.getInt(PIN_LOCATION_X, 0),
                                        properties.getInt(PIN_LOCATION_Y, 0));
