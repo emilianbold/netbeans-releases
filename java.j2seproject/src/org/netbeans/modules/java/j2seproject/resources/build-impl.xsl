@@ -194,10 +194,10 @@ is divided into following sections:
                 </macrodef>
             </target>
             <target name="-init-source-module-properties" depends="-init-modules-supported,-init-macrodef-modulename" if="modules.supported.internal">
-                <fail message="Java 9 support requires Ant 1.9.7 or higher.">
+                <fail message="Java 9 support requires Ant 1.10.0 or higher.">
                     <condition>
                         <not>
-                            <antversion atleast="1.9.7"/>
+                            <antversion atleast="1.10.0"/>
                         </not>
                     </condition>
                 </fail>
@@ -952,7 +952,6 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <property name="empty.dir" location="${{build.dir}}/empty"/>
                         <property name="junit.forkmode" value="perTest"/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
@@ -972,12 +971,13 @@ is divided into following sections:
                             <classpath>
                                 <path path="${{run.test.classpath}}"/>
                             </classpath>
+                            <modulepath>
+                                <path path="${{run.test.modulepath}}"/>
+                            </modulepath>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg value="--module-path"/>
-                            <jvmarg path="${{run.test.modulepath}}:${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
                         </junit>

@@ -127,8 +127,7 @@ made subject to such option by the copyright holder.
                         <propertyref prefix="test-sys-prop."/>
                         <mapper from="test-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
-                    <jvmarg value="--module-path"/>
-                    <jvmarg path="${modulepath-translated}"/>
+                    <modulepath path="${modulepath-translated}"/>
                     <jvmarg line="${run.test.jvmargs}"/>
                 </junit>
             </sequential>
