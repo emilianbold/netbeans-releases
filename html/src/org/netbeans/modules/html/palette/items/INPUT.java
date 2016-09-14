@@ -95,6 +95,9 @@ public class INPUT implements ActiveEditorDrop {
         String strName = " name=\"" + name + "\""; // NOI18N
 
         String strValue = " value=\"" + value + "\""; // NOI18N
+        if ("file".equals(type) || "image".equals(type)){ // NOI18N
+            strValue = "";// NOI18N
+        }
 
         String strReadOnly = (readonly ? " readonly=\"readonly\"" : ""); // NOI18N
         String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
