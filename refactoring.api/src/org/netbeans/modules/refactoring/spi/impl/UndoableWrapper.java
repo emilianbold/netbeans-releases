@@ -142,7 +142,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
             if (focusedComponent != null) {
                 if (focusedComponent.getDocument() == ces.getDocument()) {
                     //call global undo only for focused component
-                    undoManager.undo(session);
+                    undoManager.undo(session, ces.getDocument());
                 }
             }
             //delegate.undo();
