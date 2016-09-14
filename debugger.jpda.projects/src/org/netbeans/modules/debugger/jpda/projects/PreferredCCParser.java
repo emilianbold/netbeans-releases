@@ -519,7 +519,7 @@ class PreferredCCParser {
                 if (tree == null) {
                     throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
                 }
-                canIntrpt = tree.accept(canInterpret, context);
+                canIntrpt = true; // Can not compile without tree path
             }
             if (Boolean.FALSE.equals(canIntrpt)) {
                 // Can not interpret, compile:
