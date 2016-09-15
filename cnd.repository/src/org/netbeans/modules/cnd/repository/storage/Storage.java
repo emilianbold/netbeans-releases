@@ -188,6 +188,7 @@ import org.openide.util.lookup.Lookups;
         }
 
         updateUnitsTranslationMap(clientUnitDescriptor);
+        dumpStorage();
         return storageMask.layerToClient(clientShortUnitID);
     }
 
@@ -953,7 +954,8 @@ import org.openide.util.lookup.Lookups;
     private void dumpStorage() {
         System.err.println("--------Dump storage internals--------:\n");//NOI18N
         for (Layer l : layers) {
-            System.err.println("Later.unitsTable is: \n" + l.getUnitsTable());//NOI18N
+            System.err.println("Layer.fileSystemsList is: \n" + l.getFileSystemsTable());//NOI18N
+            System.err.println("Layer.unitsTable is: \n" + l.getUnitsTable());//NOI18N
             final LayerDescriptor ld = l.getLayerDescriptor();
             // For LayerDescriptor -> map of translation clientShortUnitID => unitIDInLayer
             Map<Integer, Integer> unitsMap = unitsTranslationMap.get(ld);
