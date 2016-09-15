@@ -96,6 +96,7 @@ import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -430,9 +431,18 @@ final class ModuleClassPaths {
         @NonNull
         private static Stream<File> findModules(@NonNull final File modulesFolder) {
             //No project's dist folder do File.list
-            File[] modules = modulesFolder.listFiles();
+            File[] modules = modulesFolder.listFiles((File f) -> {
+                try {
+                    return f.isFile() &&
+                            VisibilityQuery.getDefault().isVisible(f) &&
+                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL());
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                    return false;
+                }
+            });
             return modules == null ?
-               Collections.<File>emptyList().stream():
+               Stream.empty():
                Arrays.stream(modules);
         }
     }
