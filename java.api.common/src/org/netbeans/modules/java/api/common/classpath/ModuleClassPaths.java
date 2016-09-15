@@ -71,6 +71,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
@@ -443,6 +445,9 @@ final class ModuleClassPaths {
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
         private static final String JAVA_ = "java.";            //NOI18N
         private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
+        private static final String ARG_XMODULE = "-Xmodule";      //NOI18N
+        private static final Pattern MATCHER_XMODULE =
+                Pattern.compile(String.format("%s:(\\S+)", ARG_XMODULE));  //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private static final Predicate<ModuleElement> NON_JAVA_PUBEXP = (e) -> 
                 !e.getQualifiedName().toString().startsWith(JAVA_) &&
@@ -605,6 +610,7 @@ final class ModuleClassPaths {
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
+                    final String xmodule;
                     if (found != null) {                        
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -616,6 +622,7 @@ final class ModuleClassPaths {
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
                         rootModulesPredicate = ModuleNames.create(additionalModules);
+                        xmodule = null;
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -632,6 +639,9 @@ final class ModuleClassPaths {
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
+                        xmodule = Optional.ofNullable(getXModule())
+                                .filter((n) -> modulesByName.keySet().contains(n))
+                                .orElse(null);
                     }
                     final boolean[] dependsOnUnnamed = new boolean[]{true};
                     if (src != null) {
@@ -641,8 +651,18 @@ final class ModuleClassPaths {
                             src.runUserActionTask((CompilationController cc) -> {
                                     cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                     final Set<URL> requires = new HashSet<>();
-                                    if (cc.getFileObject() != null) {
-                                        final ModuleElement myModule = parseModule(cc);
+                                    final FileObject moduleInfo = cc.getFileObject();
+                                    if (moduleInfo != null || xmodule != null) {
+                                        final ModuleElement myModule;
+                                        if (moduleInfo != null) {
+                                            myModule = parseModule(cc);
+                                        } else {
+                                            final URL xmoduleLoc = modulesByName.get(xmodule);
+                                            myModule = resolveModule(cc, xmodule);
+                                            if (myModule != null) {
+                                                requires.add(xmoduleLoc);
+                                            }
+                                        }
                                         if (myModule != null) {
                                             dependsOnUnnamed[0] = dependsOnUnnamed(myModule, true);
                                             requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
@@ -896,6 +916,22 @@ final class ModuleClassPaths {
                 }
             }
             return mods;
+        }
+        
+        @CheckForNull
+        private String getXModule() {
+            String module = null;
+            final CompilerOptionsQuery.Result res = getCompilerOptions();
+            if (res != null) {
+                for (String arg : res.getArguments()) {                    
+                    final Matcher m = MATCHER_XMODULE.matcher(arg);
+                    if (m.matches()) {
+                        module = m.group(1);
+                        break;
+                    }
+                }
+            }
+            return module;
         }
                 
         @CheckForNull
