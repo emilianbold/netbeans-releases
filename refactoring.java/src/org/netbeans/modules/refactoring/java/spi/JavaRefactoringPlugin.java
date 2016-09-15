@@ -52,6 +52,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -304,9 +305,21 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                     //javac requires at least java.lang
                     bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
                 }
+                ClassPath moduleBootPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
+                if (moduleBootPath == null) {
+                    moduleBootPath = EMPTY_PATH;
+                }
                 ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
                 if (compilePath == null) {
                     compilePath = EMPTY_PATH;
+                }
+                ClassPath moduleClassPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_CLASS_PATH);
+                if (moduleClassPath == null) {
+                    moduleClassPath = EMPTY_PATH;
+                }
+                ClassPath moduleCompilePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                if (moduleCompilePath == null) {
+                    moduleCompilePath = EMPTY_PATH;
                 }
                 ClassPath executePath = ClassPath.getClassPath(root, ClassPath.EXECUTE);
                 if (executePath == null) {
@@ -316,10 +329,13 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 if (srcPath == null) {
                     srcPath = EMPTY_PATH;
                 }
-                info = ClasspathInfo.create(
-                        bootPath,
-                        ClassPathSupport.createProxyClassPath(compilePath,executePath),
-                        srcPath);
+                info = new ClasspathInfo.Builder(bootPath)
+                        .setModuleBootPath(moduleBootPath)
+                        .setClassPath(ClassPathSupport.createProxyClassPath(compilePath,executePath))
+                        .setModuleClassPath(moduleClassPath)
+                        .setModuleCompilePath(moduleCompilePath)
+                        .setSourcePath(srcPath)
+                        .build();
             }
             final JavaSource javaSource = JavaSource.create(info, entry.getValue());
             if (modification) {

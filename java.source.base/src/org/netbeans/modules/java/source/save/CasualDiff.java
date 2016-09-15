@@ -105,6 +105,7 @@ import com.sun.tools.javac.tree.JCTree.JCDirective;
 import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
+import com.sun.tools.javac.tree.JCTree.JCExports;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -684,9 +685,9 @@ public class CasualDiff {
     protected int diffModuleDef(JCModuleDecl oldT, JCModuleDecl newT, int[] bounds) {
         int localPointer = bounds[0];
 
-        int[] qualBounds = getBounds(oldT.getName());
+        int[] qualBounds = getBounds(oldT.qualId);
         copyTo(localPointer, qualBounds[0]);
-        localPointer = diffTree(oldT.getName(), newT.getName(), qualBounds);
+        localPointer = diffTree(oldT.qualId, newT.qualId, qualBounds);
 
         int insertHint = oldT.directives.isEmpty() ? endPos(oldT) - 1 : oldT.directives.get(0).getStartPosition() - 1;
         tokenSequence.move(insertHint);
@@ -710,16 +711,37 @@ public class CasualDiff {
         return bounds[1];
     }
     
+    protected int diffExports(JCExports oldT, JCExports newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // export name
+        int[] expNameBounds = getBounds(oldT.qualid);
+        copyTo(localPointer, expNameBounds[0]);
+        localPointer = diffTree(oldT.qualid, newT.qualid, expNameBounds);
+        // modules
+        int posHint;
+        if (oldT.moduleNames == null || oldT.moduleNames.isEmpty()) {
+            posHint = endPos(oldT) - 1;
+        } else {
+            posHint = oldT.moduleNames.iterator().next().getStartPosition();
+        }
+        if (newT.moduleNames != null && !newT.moduleNames.isEmpty()) //do not copy the "to" keyword:
+            copyTo(localPointer, localPointer = posHint);
+        PositionEstimator est = EstimatorFactory.exportsTo(oldT.moduleNames, newT.moduleNames, diffContext);
+        localPointer = diffList2(oldT.moduleNames, newT.moduleNames, posHint, est);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];        
+    }
+
     protected int diffProvides(JCProvides oldT, JCProvides newT, int[] bounds) {
         int localPointer = bounds[0];
         // service
-        int[] servBounds = getBounds(oldT.getServiceName());
+        int[] servBounds = getBounds(oldT.serviceName);
         copyTo(localPointer, servBounds[0]);
-        localPointer = diffTree(oldT.getServiceName(), newT.getServiceName(), servBounds);
+        localPointer = diffTree(oldT.serviceName, newT.serviceName, servBounds);
         // implementation
-        int[] implBounds = getBounds(oldT.getImplementationName());
+        int[] implBounds = getBounds(oldT.implName);
         copyTo(localPointer, implBounds[0]);
-        localPointer = diffTree(oldT.getImplementationName(), newT.getImplementationName(), implBounds);
+        localPointer = diffTree(oldT.implName, newT.implName, implBounds);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -727,9 +749,9 @@ public class CasualDiff {
     protected int diffUses(JCUses oldT, JCUses newT, int[] bounds) {
         int localPointer = bounds[0];
         // service
-        int[] servBounds = getBounds(oldT.getServiceName());
+        int[] servBounds = getBounds(oldT.qualid);
         copyTo(localPointer, servBounds[0]);
-        localPointer = diffTree(oldT.getServiceName(), newT.getServiceName(), servBounds);
+        localPointer = diffTree(oldT.qualid, newT.qualid, servBounds);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
@@ -5067,6 +5089,9 @@ public class CasualDiff {
               break;
           case MODULEDEF:
               retVal = diffModuleDef((JCModuleDecl)oldT, (JCModuleDecl)newT, elementBounds);
+              break;
+          case EXPORTS:
+              retVal = diffExports((JCExports)oldT, (JCExports)newT, elementBounds);
               break;
           case PROVIDES:
               retVal = diffProvides((JCProvides)oldT, (JCProvides)newT, elementBounds);

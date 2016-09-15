@@ -390,11 +390,14 @@ public class TreeFactory {
     }
 
     public ExportsTree Exports(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
-        ListBuffer<JCExpression> names = new ListBuffer<>();
-        for (ExpressionTree name : moduleNames) {
-            names.add((JCExpression) name);
+        ListBuffer<JCExpression> names = null;
+        if (moduleNames != null) {
+            names = new ListBuffer<>();
+            for (ExpressionTree name : moduleNames) {
+                names.add((JCExpression) name);
+            }
         }
-        return make.at(NOPOS).Exports((JCExpression) qualId, names.toList());
+        return make.at(NOPOS).Exports((JCExpression) qualId, names != null ? names.toList() : null);
     }
 
     public ExpressionStatementTree ExpressionStatement(ExpressionTree expression) {
