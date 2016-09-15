@@ -577,7 +577,9 @@ public final class RepositoryQueries {
         Map<RepositoryIndexQueryProvider, List<RepositoryInfo>> i2r = getQueryProvider2Repo(repos);
         for(Entry<RepositoryIndexQueryProvider, List<RepositoryInfo>> e : i2r.entrySet()) {
             ContextLoadedQuery clq = e.getKey().getContextLoadedQuery();
-            toRet.addAll(clq.getLoaded(repos));
+            if(clq != null) {
+                toRet.addAll(clq.getLoaded(repos));
+            }
         }
         return toRet;
     }
