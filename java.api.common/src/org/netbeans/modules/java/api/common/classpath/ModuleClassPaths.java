@@ -96,7 +96,6 @@ import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -434,7 +433,7 @@ final class ModuleClassPaths {
             File[] modules = modulesFolder.listFiles((File f) -> {
                 try {
                     return f.isFile() &&
-                            VisibilityQuery.getDefault().isVisible(f) &&
+                            !f.getName().startsWith(".") &&
                             FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL());
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);
