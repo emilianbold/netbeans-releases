@@ -49,16 +49,24 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.AtomicLockEvent;
+import org.netbeans.api.editor.document.AtomicLockListener;
+import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -86,6 +94,18 @@ public final class UndoManager {
     private static UndoManager instance;
     
     public boolean autoConfirm = false;
+    
+    /**
+     * Suppresses saveAll operation; if suppressed, the sources will be saved
+     * after the refactoring operation completes.
+     */
+    private boolean suppressSaveAll;
+    
+    boolean setSupressSaveAll(boolean suppressSaveAll) {
+        boolean res = this.suppressSaveAll;
+        this.suppressSaveAll = suppressSaveAll;
+        return res;
+    }
 
     /**
      * Set the value of autoConfirm.
@@ -185,6 +205,52 @@ public final class UndoManager {
             }
         }
         fireChange();
+    }
+    
+    private static final RequestProcessor SAVE_RP = new RequestProcessor(UndoManager.class);
+    
+    /**
+     * Undoes the last transaction. If the document is under an atomic lock,
+     * postpones save-all on the modified sources until after the document unlocks.
+     * This method should be used from within operations which start with the document
+     * already locked. Saving [all] documents leads to numerous low-level events, which
+     * may wake up unrelated processes that can deadlock on the already-locked document.
+     * 
+     * @param session refactoring session
+     * @param doc reference document.
+     */
+    void undo(RefactoringSession session, Document doc) {
+        if (!DocumentUtilities.isWriteLocked(doc)) {
+            undo(session);
+        } else {
+            AtomicLockDocument ald = LineDocumentUtils.as(doc, AtomicLockDocument.class);
+            if (ald == null) {
+                undo(session);
+            } else {
+                final boolean orig = setSupressSaveAll(true);
+
+                class L implements AtomicLockListener, Runnable {
+                    @Override
+                    public void atomicLock(AtomicLockEvent evt) {
+                    }
+
+                    @Override
+                    public void atomicUnlock(AtomicLockEvent evt) {
+                        setSupressSaveAll(orig);
+                        SAVE_RP.post(this);
+                        ald.removeAtomicLockListener(this);
+                    }
+
+                    @Override
+                    public void run() {
+                        LifecycleManager.getDefault().saveAll();
+                    }
+                }
+                final L l = new L();
+                ald.addAtomicLockListener(l);
+                undo(session);
+            }
+        }
     }
 
     /**
@@ -461,12 +527,12 @@ public final class UndoManager {
 
         @Override
         public void undo() {
-            change.undoRefactoring(true);
+            change.undoRefactoring(!suppressSaveAll);
         }
 
         @Override
         public void redo() {
-            change.doRefactoring(true);
+            change.doRefactoring(!suppressSaveAll);
         }
     }
 }
