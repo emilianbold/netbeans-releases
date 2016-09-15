@@ -430,9 +430,18 @@ final class ModuleClassPaths {
         @NonNull
         private static Stream<File> findModules(@NonNull final File modulesFolder) {
             //No project's dist folder do File.list
-            File[] modules = modulesFolder.listFiles();
+            File[] modules = modulesFolder.listFiles((File f) -> {
+                try {
+                    return f.isFile() &&
+                            !f.getName().startsWith(".") &&
+                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL());
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                    return false;
+                }
+            });
             return modules == null ?
-               Collections.<File>emptyList().stream():
+               Stream.empty():
                Arrays.stream(modules);
         }
     }
