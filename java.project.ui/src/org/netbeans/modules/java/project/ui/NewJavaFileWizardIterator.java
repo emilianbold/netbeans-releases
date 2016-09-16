@@ -371,7 +371,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                 name.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
             }
         }
-        if (name.length() == 0) {
+        if (isTest) {
             name.append(Bundle.TXT_Test());
         }
         return name.toString();
