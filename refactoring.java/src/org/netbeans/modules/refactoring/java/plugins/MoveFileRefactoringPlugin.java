@@ -456,7 +456,13 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
     private Set<FileObject> getRelevantFiles(TreePathHandle tph) {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
-        Set<FileObject> set = new HashSet<FileObject>();
+        Set<FileObject> set = new LinkedHashSet<FileObject>();
+        if(!isRenameRefactoring) {
+            TreePathHandle targetHandle = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
+            if(targetHandle != null) {
+                set.add(targetHandle.getFileObject());
+            }
+        }
         for (ElementHandle<TypeElement> elementHandle : classes) {
             //set.add(SourceUtils.getFile(el, cpInfo));
             Set<FileObject> files = idx.getResources(elementHandle, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
@@ -482,12 +488,6 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                     ClassIndex.SearchKind.IMPLEMENTORS),
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             elementHandles.addAll(handles);
-        }
-        if(!isRenameRefactoring) {
-            TreePathHandle targetHandle = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
-            if(targetHandle != null) {
-                set.add(targetHandle.getFileObject());
-            }
         }
         return set;
     }    
