@@ -490,7 +490,9 @@ public final class WatchModel extends VariableModel
 	    Variable v = (Variable) o;
 	    return v.getActions(true);
 
-	} else {
+	} else if (o instanceof EmptyWatch) {
+            return new Action[]{SHOW_PINNED_WATCHES_ACTION};
+        } else {
 	    throw new UnknownTypeException(o);
 	}
     }
