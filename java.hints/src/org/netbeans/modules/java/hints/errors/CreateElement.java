@@ -90,6 +90,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
@@ -569,7 +570,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.emptyMap();
         }
         
-        Sources src = p.getLookup().lookup(Sources.class);
+        Sources src = ProjectUtils.getSources(p);
         SourceGroup[] sGroups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         SourceGroup sourceGroup = null;
