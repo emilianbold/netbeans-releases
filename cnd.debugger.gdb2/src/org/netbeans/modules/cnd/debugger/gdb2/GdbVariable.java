@@ -306,6 +306,7 @@ class GdbVariable extends Variable {
 	if (isWatch) {
 	    return new Action[] {
                 WatchModel.NEW_WATCH_ACTION,
+                WatchModel.SHOW_PINNED_WATCHES_ACTION,
 		null,
 		new WatchModel.DeleteAllAction(),
 		null,
@@ -320,6 +321,7 @@ class GdbVariable extends Variable {
             return new Action[] {
 		// LATER VariableModel.Action_INHERITED_MEMBERS,
                 // LATER VariableModel.Action_DYNAMIC_TYPE,
+                WatchModel.SHOW_PINNED_WATCHES_ACTION,
                 VariableModel.getWatchAction(this),
                 VariableModel.getOutputFormatAction(this),
                 null,
