@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
@@ -708,6 +709,9 @@ public class RefactoringUtils {
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
+        if (boot == null) {
+            boot = JavaPlatform.getDefault().getBootstrapLibraries();
+        }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot == null? nullPath : boot, compile == null? nullPath : compile, rcp);
         return cpInfo;
     }
