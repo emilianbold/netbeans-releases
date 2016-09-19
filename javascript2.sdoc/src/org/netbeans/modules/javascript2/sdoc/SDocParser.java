@@ -76,6 +76,9 @@ public class SDocParser {
     public static Map<Integer, SDocComment> parse(Snapshot snapshot) {
         Map<Integer, SDocComment> blocks = new HashMap<Integer, SDocComment>();
 
+        if (snapshot == null || snapshot.getTokenHierarchy() == null) {
+            return blocks;
+        }
         TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
         if (tokenSequence == null) {
             return blocks;

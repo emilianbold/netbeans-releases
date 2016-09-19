@@ -265,9 +265,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
             // See bug #228730
             if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows() 
-                    && pae.getExecutable().contains("make") // NOI18N
                     && CompilerSetUtils.isMsysBased(cs)) {
-                env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
+                    String executable = pae.getExecutable();
+                    String baseName = CndPathUtilities.getBaseName(executable);
+                    if (baseName.startsWith("make")) { // NOI18N
+                        env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
+                    }
             }
         }
 
