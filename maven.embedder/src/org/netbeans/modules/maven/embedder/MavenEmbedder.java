@@ -547,7 +547,7 @@ public final class MavenEmbedder {
         try {
             session.setLocalRepositoryManager(f.newInstance(session, new LocalRepository(getLocalRepository().getBasedir())));
         } catch (NoLocalRepositoryManagerException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.WARNING, null, ex);
         }
         // Adapted from DefaultMaven.newRepositorySession, but does not look like that can be called directly:
         DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
