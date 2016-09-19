@@ -473,7 +473,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             ClassIndex index = cpinfo.getClassIndex();
             refs = index.getResources(fieldEncloserHandle, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (!refs.contains(source)) {
-                refs = new HashSet<FileObject>(refs);
+                refs = new LinkedHashSet<FileObject>(refs);
                 refs.add(source);
             }
         }
