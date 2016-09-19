@@ -1283,11 +1283,14 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
         private final FileObject indexer;
         private final NativeFileItem.Language language;
         private final NativeProjectProvider nativeProject;
+        private final String normalizedAbsPath;
 
         public NativeFileIndexer(NativeProjectProvider nativeProject, FileObject indexer, NativeFileItem.Language language) {
             this.nativeProject = nativeProject;
             this.indexer = indexer;
             this.language = language;
+            // #267980 - [newcodemodel] Start entry path should be absolute! 
+            this.normalizedAbsPath = CndFileUtils.normalizePath(indexer);
         }
 
         @Override
@@ -1297,7 +1300,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
 
         @Override
         public String getAbsolutePath() {
-            return indexer.getPath();
+            return normalizedAbsPath;
         }
 
         @Override
