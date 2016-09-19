@@ -57,6 +57,8 @@ Contributor(s):
                 <friend>org.netbeans.modules.jackpot.rules</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.source</friend>
+                <friend>org.netbeans.libs.jshell</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
                 <friend>org.netbeans.modules.javadoc</friend>
                 <package>com.sun.tools.javac</package>
                 <package>com.sun.tools.javac.api</package>

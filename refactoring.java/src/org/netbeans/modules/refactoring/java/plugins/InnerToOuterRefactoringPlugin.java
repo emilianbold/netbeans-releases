@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -250,7 +251,8 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        HashSet<FileObject> set = new HashSet<FileObject>();
+        HashSet<FileObject> set = new LinkedHashSet<FileObject>();
+        set.add(refactoring.getSourceType().getFileObject());
         ClassIndex idx = cpInfo.getClassIndex();
         set.addAll(idx.getResources(refactoring.getSourceType().getElementHandle(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
