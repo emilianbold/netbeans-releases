@@ -353,7 +353,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (indexResults.size() > 1) {
                 for (int i = 0; i < indexResults.size(); i++) {
                     iResult = indexResults.get(i);
-                    if (!alreadyThere.contains(iResult.getFile().getPath() + offset)) {
+                    if (iResult != null && iResult.getFile() != null && !alreadyThere.contains(iResult.getFile().getPath() + offset)) {
                         location.addAlternative(new AlternativeLocationImpl(iResult));
                         alreadyThere.add(iResult.getFile().getPath() + offset);
                     }
