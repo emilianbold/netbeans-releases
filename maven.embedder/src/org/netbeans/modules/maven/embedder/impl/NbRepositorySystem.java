@@ -43,17 +43,17 @@ package org.netbeans.modules.maven.embedder.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.impl.internal.DefaultRepositorySystem;
-import org.sonatype.aether.util.graph.CloningDependencyVisitor;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.CollectResult;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.collection.DependencyGraphTransformationContext;
-import org.sonatype.aether.collection.DependencyGraphTransformer;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.internal.impl.DefaultRepositorySystem;
+import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.CollectResult;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.collection.DependencyGraphTransformationContext;
+import org.eclipse.aether.collection.DependencyGraphTransformer;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 
 /**
  * another piece of experimental code meant to replace the dependency-tree codebase

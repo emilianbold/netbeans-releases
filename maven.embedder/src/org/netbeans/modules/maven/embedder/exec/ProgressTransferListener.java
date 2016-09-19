@@ -50,10 +50,10 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import static org.netbeans.modules.maven.embedder.exec.Bundle.*;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
-import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferListener;
-import org.sonatype.aether.transfer.TransferResource;
+import org.eclipse.aether.transfer.TransferCancelledException;
+import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferListener;
+import org.eclipse.aether.transfer.TransferResource;
 
 public class ProgressTransferListener implements TransferListener {
 

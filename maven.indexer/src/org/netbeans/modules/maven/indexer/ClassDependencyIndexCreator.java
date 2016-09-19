@@ -108,10 +108,10 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
     @Override public void populateArtifactInfo(ArtifactContext context) throws IOException {
         classDeps = null;
         ArtifactInfo ai = context.getArtifactInfo();
-        if (ai.classifier != null) {
+        if (ai.getClassifier() != null) {
             return;
         }
-        if ("pom".equals(ai.packaging) || ai.fextension.endsWith(".lastUpdated")) {
+        if ("pom".equals(ai.getPackaging()) || ai.getFileExtension().endsWith(".lastUpdated")) {
             return;
         }
         File jar = context.getArtifact();
@@ -119,7 +119,8 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
             LOG.log(Level.FINER, "no artifact for {0}", ai); // not a big deal, maybe just *.pom (or *.pom + *.nbm) here
             return;
         }
-        if (!ai.packaging.equals("jar") && !isArchiveFile(jar)) {
+        String packaging = ai.getPackaging();
+        if (packaging == null || (!packaging.equals("jar") && !isArchiveFile(jar))) {
             LOG.log(Level.FINE, "skipping artifact {0} with unrecognized packaging based on {1}", new Object[] {ai, jar});
             return;
         }
@@ -153,13 +154,13 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         if (classDeps == null || classDeps.isEmpty()) {
             return;
         }
-        if (ai.classNames == null) {
+        if (ai.getClassNames() == null) {
             // Might be *.hpi, *.war, etc. - so JarFileContentsIndexCreator ignores it (and our results would anyway be wrong due to WEB-INF/classes/ prefix)
             LOG.log(Level.FINE, "no class names in index for {0}; therefore cannot store class usages", ai);
             return;
         }
         StringBuilder b = new StringBuilder();
-        String[] classNamesSplit = ai.classNames.split("\n");
+        String[] classNamesSplit = ai.getClassNames().split("\n");
         for (String referrerTopLevel : classNamesSplit) {
             Set<String> referees = classDeps.remove(referrerTopLevel.substring(1));
             if (referees != null) {
@@ -184,7 +185,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
     static void search(String className, Indexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsage> results) throws IOException {
         String searchString = crc32base64(className.replace('.', '/'));
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
-        TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);
+        TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, null);
         for (IndexingContext context : contexts) {
             IndexSearcher searcher = context.acquireIndexSearcher();
             try {
@@ -200,7 +201,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
             if (!refClasses.isEmpty()) {
                 ArtifactInfo ai = IndexUtils.constructArtifactInfo(d, context);
                 if (ai != null) {
-                    ai.repository = context.getRepositoryId();
+                    ai.setRepository(context.getRepositoryId());
                     List<NBVersionInfo> version = NexusRepositoryIndexerImpl.convertToNBVersionInfo(Collections.singleton(ai));
                     if (!version.isEmpty()) {
                         results.add(new ClassUsage(version.get(0), refClasses));

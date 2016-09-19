@@ -76,13 +76,14 @@ public class StatusProviderTest extends NbTestCase {
         } finally {
             is.close();
         }
+        String warnings = StatusProvider.runMavenValidationImpl(pom).toString().replace(pom.getAbsolutePath(), "pom.xml");
         assertEquals("["
                 + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 22, column 12, "
                 + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-surefire-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 72, column 12, "
-                + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-war-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 64, column 12, "
+                + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-war-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 64, column 12]"
 //#223562                + "[WARNING] The <reporting> section is deprecated, please move the reports to the <configuration> section of the new Maven Site Plugin. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 102, column 13, "
-                + "[WARNING] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-surefire-report-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 127, column 12]",
-                StatusProvider.runMavenValidationImpl(pom).toString().replace(pom.getAbsolutePath(), "pom.xml"));
+                // not reported since upgrade to 3.3.9 + "[WARNING] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-surefire-report-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 127, column 12]"
+                , warnings);
     }
 
 }
