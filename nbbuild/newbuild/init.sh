@@ -132,9 +132,9 @@ if [ -z ${JDK7_BUILDS_PATH} ]; then
     export JDK7_BUILDS_PATH
 fi
 
-#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u101/promoted/all/
+#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u111/promoted/all/
 if [ -z ${JDK8_BUILDS_PATH} ]; then
-    JDK8_BUILDS_PATH=java/re/jdk/8u101/promoted/
+    JDK8_BUILDS_PATH=java/re/jdk/8u111/promoted/
     export JDK8_BUILDS_PATH
 fi
 
