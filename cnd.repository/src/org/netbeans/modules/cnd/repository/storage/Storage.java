@@ -188,6 +188,7 @@ import org.openide.util.lookup.Lookups;
         }
 
         updateUnitsTranslationMap(clientUnitDescriptor);
+        dumpStorage();
         return storageMask.layerToClient(clientShortUnitID);
     }
 

@@ -1291,6 +1291,13 @@ public class Utilities {
             return pending ? null : ret;
         }
 
+        @Override
+        public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            return false;
+        }
+        
+        
+
         /*
         @Override
         public Boolean reduce(Boolean r1, Boolean r2) {
