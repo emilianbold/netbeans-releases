@@ -245,6 +245,15 @@ public abstract class BaseActionProvider implements ActionProvider {
     abstract protected Set<String> getJavaModelActions();
 
     abstract protected boolean isCompileOnSaveEnabled();
+    
+    /**
+     * Returns CoS update status.
+     * @return true if CoS update is enabled
+     * @since 1.82
+     */
+    protected boolean isCompileOnSaveUpdate() {
+        return isCompileOnSaveEnabled();
+    }
 
     protected void setServerExecution(boolean serverExecution) {
         this.serverExecution = serverExecution;
@@ -432,6 +441,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         final String[] userPropertiesFile = new String[]{verifyUserPropertiesFile()};
 
         final boolean isCompileOnSaveEnabled = isCompileOnSaveEnabled();
+        final boolean isCompileOnSaveUpdate = isCompileOnSaveUpdate();
         final AtomicReference<Thread> caller = new AtomicReference<Thread>(Thread.currentThread());
         final AtomicBoolean called = new AtomicBoolean(false);
         // XXX prefer to call just if and when actually starting target, but that is hard to calculate here
@@ -604,7 +614,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
-                if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command2execute)) {
+                if (isCompileOnSaveUpdate && !NO_SYNC_COMMANDS.contains(command2execute)) {
                     p.put("nb.wait.for.caches", "true");
                 }
                 final Callback cb = getCallback();
@@ -661,7 +671,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         final Action action = new Action();
 
-        if (getJavaModelActions().contains(command) || (isCompileOnSaveEnabled && getScanSensitiveActions().contains(command))) {
+        if (getJavaModelActions().contains(command) || (isCompileOnSaveUpdate && getScanSensitiveActions().contains(command))) {
             //Always have to run with java model
             ScanDialog.runWhenScanFinished(action, commandName(command));
         }
@@ -1502,7 +1512,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             return true;
         }   
         if (   Arrays.asList(getActionsDisabledForQuickRun()).contains(command)
-            && isCompileOnSaveEnabled()
+            && isCompileOnSaveUpdate()
             && !allowAntBuild()) {
             return false;
         }
