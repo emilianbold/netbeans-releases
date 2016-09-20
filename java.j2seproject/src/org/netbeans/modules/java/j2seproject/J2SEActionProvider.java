@@ -245,6 +245,11 @@ public class J2SEActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean isCompileOnSaveEnabled() {
+        return isCompileOnSaveUpdate() && cosAction.getTarget() == null;
+    }
+    
+    @Override
+    protected boolean isCompileOnSaveUpdate() {
         return J2SEProjectUtil.isCompileOnSaveEnabled((J2SEProject)getProject());
     }
 
@@ -517,7 +522,7 @@ public class J2SEActionProvider extends BaseActionProvider {
             if (target == NONE) {
                 return null;
             }
-            return owner.isCompileOnSaveEnabled() ?
+            return owner.isCompileOnSaveUpdate()?
                     (String) target :
                     null;
         }
@@ -706,7 +711,10 @@ public class J2SEActionProvider extends BaseActionProvider {
             try {
                 final Project p = FileOwnerQuery.getOwner(root.toURI());
                 if (p != null) {
-                    p.getLookup().lookup(ActionProvider.class).getSupportedActions();   //Force initialization
+                    ActionProvider prov = p.getLookup().lookup(ActionProvider.class);  
+                    if (prov != null) {
+                        prov.getSupportedActions(); //Force initialization
+                    }
                     final CosAction action = CosAction.getInstance(p);
                     return action;
                 }
