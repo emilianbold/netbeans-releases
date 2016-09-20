@@ -67,11 +67,13 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
@@ -786,15 +788,23 @@ public final class PlatformUiSupport {
             if (platformNamesCache == null) {
                 final List<JavaPlatform> platforms = new ArrayList<>();
                 Collections.addAll(platforms, pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null)));
-                final JavaPlatform projectPlatform = project != null ?
-                        ProjectPlatform.forProject(
+                JavaPlatform projectPlatform = null;
+                final EditableProperties globalProps = PropertyUtils.getGlobalProperties();
+                final String active = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
+                if (active != null) {
+                    final String activeHomeKey = String.format("platforms.%s.home", active);    //NOI18N
+                    if (eval.getProperty(activeHomeKey) != null && !globalProps.keySet().contains(activeHomeKey)) {
+                        projectPlatform = project != null ?
+                            ProjectPlatform.forProject(
                                 project,
                                 eval,
                                 CommonProjectUtils.J2SE_PLATFORM_TYPE) :
-                        null;
-                if (projectPlatform != null) {
-                    platforms.add(projectPlatform);
-                }                
+                            null;
+                        if (projectPlatform != null) {
+                            platforms.add(projectPlatform);
+                        }
+                    }
+                }                                
                 Set<PlatformKey> orderedNames = new TreeSet<>();
                 boolean activeFound = false;
                 for (JavaPlatform platform : platforms) {
