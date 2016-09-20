@@ -48,7 +48,7 @@ cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
 
 if [ -z ${BUILD_DESC} ]; then
-    export BUILD_DESC=8.2rc
+    export BUILD_DESC=8.2
 fi
 
 source init.sh

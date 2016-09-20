@@ -65,7 +65,7 @@ build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("8.1", "http://netbeans.org/downloads/");
-	add_download_tab("8.2 RC");
+	add_download_tab("8.2");
 	add_download_tab(DEVELOPMENT_TITLE,DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
