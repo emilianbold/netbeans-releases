@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <project name="libs.clank" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
+    <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.9.zip"/>
 
     <target name="-overwrite-clank-zip" if="${copy.clank.jars}">
 
