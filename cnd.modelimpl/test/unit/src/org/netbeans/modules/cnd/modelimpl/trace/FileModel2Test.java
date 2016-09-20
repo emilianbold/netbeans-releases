@@ -130,6 +130,9 @@ public class FileModel2Test extends TraceModelTestBase {
     }
     
     public void test197997() throws Exception {
+        // in clank mode err file has twice reported warning starting from Clank 3.9:
+        // - during top level parse 
+        // - and when restore lazy body
         // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
         performTest("iz197997.cc");
     }
