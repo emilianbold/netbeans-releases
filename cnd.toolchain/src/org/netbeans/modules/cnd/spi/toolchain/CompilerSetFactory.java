@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 
@@ -196,11 +197,13 @@ public final class CompilerSetFactory {
         CompilerSetImpl cs = CompilerSetImpl.create(delegate.getCompilerFlavor(), env, directory);
         Tool tool = delegate.findTool(PredefinedToolKind.CCompiler);
         if (tool != null) {
-            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCompiler, cs.getCompilerFlavor()); //NOI18N
+            String toolName = CndPathUtilities.getBaseName(tool.getPath());
+            cs.addTool(env, tool.getName(), directory+"/"+toolName, PredefinedToolKind.CCompiler, cs.getCompilerFlavor()); //NOI18N
         }
         tool = delegate.findTool(PredefinedToolKind.CCCompiler);
         if (tool != null) {
-            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCCompiler, cs.getCompilerFlavor()); //NOI18N
+            String toolName = CndPathUtilities.getBaseName(tool.getPath());
+            cs.addTool(env, tool.getName(), directory+"/"+toolName, PredefinedToolKind.CCCompiler, cs.getCompilerFlavor()); //NOI18N
         }
         return cs;
     }    

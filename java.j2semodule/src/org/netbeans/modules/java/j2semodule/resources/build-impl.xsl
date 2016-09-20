@@ -1387,7 +1387,9 @@ is divided into following sections:
             </target>
             
             <target name="-clean-after-automatic-build" depends="init" if="netbeans.automatic.build">
-                <antcall target="clean" />
+                <antcall target="clean">                    
+                    <param name="no.dependencies" value="true"/>
+                </antcall>
             </target>
             
             <target name="-pre-pre-compile">
