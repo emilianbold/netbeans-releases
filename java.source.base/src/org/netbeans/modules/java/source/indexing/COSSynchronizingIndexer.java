@@ -88,6 +88,13 @@ public class COSSynchronizingIndexer extends CustomIndexer {
         Set<String> javaMimeTypes = gatherJavaMimeTypes();
         List<File> updated = new LinkedList<File>();
         final ClassPath srcPath = ClassPath.getClassPath(context.getRoot(), ClassPath.SOURCE);
+        if (srcPath == null) {
+            LOG.log(
+                    Level.INFO,
+                    "No source path for: {0}",
+                    FileUtil.getFileDisplayName(context.getRoot()));
+            return ;
+        }
         for (Indexable i : files) {
             if (javaMimeTypes.contains(i.getMimeType()))
                 continue;

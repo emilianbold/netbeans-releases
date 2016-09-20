@@ -71,6 +71,7 @@ import javax.lang.model.element.Element;
 import javax.tools.JavaFileObject;
 
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.TypeTag;
 
 /**
  *
@@ -165,8 +166,9 @@ public class PostFlowAnalysis extends TreeScanner {
         }
         Type type = types.erasure(tree.type);
         for (Symbol sym : s.getSymbolsByName(tree.name)) {
-            if (sym != tree.sym &&
-                types.isSameType(types.erasure(sym.type), type) && !sym.type.isErroneous() && !type.isErroneous()) {
+            if (sym != tree.sym && !sym.type.isErroneous() && !type.isErroneous() &&
+                !isUnknown(sym.type) && !isUnknown(type) &&
+                types.isSameType(types.erasure(sym.type), type)) {
                 log.error(tree.pos(), "name.clash.same.erasure", tree.sym, sym); //NOI18N
                 return;
             }
@@ -248,5 +250,19 @@ public class PostFlowAnalysis extends TreeScanner {
     private void checkStringConstant(DiagnosticPosition pos, Object constValue) {
         if (constValue instanceof String && ((String)constValue).length() >= Pool.MAX_STRING_LENGTH)
             log.error(pos, "limit.string"); //NOI18N
+    }
+    
+    private boolean isUnknown(Type t) {
+        return t != null && t.accept(new Types.DefaultTypeVisitor<Boolean, Void>() {
+            @Override
+            public Boolean visitType(Type t, Void s) {
+                return t.hasTag(TypeTag.UNKNOWN);
+            }
+
+            @Override
+            public Boolean visitMethodType(Type.MethodType t, Void s) {
+                return visit(t.getReturnType(), s);
+            }            
+        }, null);
     }
 }
