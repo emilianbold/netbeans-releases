@@ -246,6 +246,11 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     abstract protected boolean isCompileOnSaveEnabled();
     
+    /**
+     * Returns CoS update status.
+     * @return true if CoS update is enabled
+     * @since 1.82
+     */
     protected boolean isCompileOnSaveUpdate() {
         return isCompileOnSaveEnabled();
     }
