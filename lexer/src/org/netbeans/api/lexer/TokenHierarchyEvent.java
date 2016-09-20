@@ -156,7 +156,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
     }
     
     public String toString() {
-        return "THEvent IHC=" + System.identityHashCode(this) + "; " + info;
+        return "THEvent@" + Integer.toHexString(System.identityHashCode(this)) + "; " + info;
     }
 
 }
