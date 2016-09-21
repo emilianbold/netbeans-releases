@@ -234,9 +234,9 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     
     private HyperlinkType getHyperlinkType(InputEvent e) {
         int modifiers = e.getModifiers() | e.getModifiersEx();
-        if ((modifiers & altActionKeyMask) == altActionKeyMask) {
+        if ((modifiers & altActionKeyMask) == altActionKeyMask && ((modifiers & InputEvent.SHIFT_MASK) == 0)) { // Ctrl/Cmd + Shift + Click is Add-Caret
             return HyperlinkType.ALT_HYPERLINK;
-        } else if ((modifiers & actionKeyMask) == actionKeyMask) {
+        } else if ((modifiers & actionKeyMask) == actionKeyMask && ((modifiers & InputEvent.SHIFT_MASK) == 0)) { // Ctrl/Cmd + Shift + Click is Add-Caret)
             return HyperlinkType.GO_TO_DECLARATION;
         }
         return null;
