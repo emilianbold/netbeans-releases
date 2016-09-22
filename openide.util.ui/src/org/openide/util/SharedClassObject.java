@@ -774,7 +774,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         }
 
         /** Tries to find readResolve method in given class. Finds
-        * both public and non-public occurences of the method and
+        * both public and non-public occurrences of the method and
         * searches also in superclasses */
         private static Method findReadResolveMethod(Class clazz) {
             Method result = null;
