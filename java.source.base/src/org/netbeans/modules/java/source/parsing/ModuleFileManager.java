@@ -224,7 +224,12 @@ final class ModuleFileManager implements JavaFileManager {
             final Pair<String,List<URL>> modulePatches = parseModulePatches(tail);
             if (modulePatches != null) {
                 if (patches.putIfAbsent(modulePatches.first(), modulePatches.second()) != null) {
-                    //TODO: log error to Messager
+                    //Don't abort compilation by Abort
+                    //Log error into javac Logger doe not help - no source to attach to.
+                    LOG.log(
+                            Level.WARNING,
+                            "Duplicate " +JavacParser.OPTION_PATCH_MODULE+ " option, ignoring: {0}",    //NOI18N
+                            modulePatches.second());
                 }
                 return true;
             }            
