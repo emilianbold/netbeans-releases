@@ -719,7 +719,7 @@ public class Operator {
         dumpThreadsStatus(vm, Level.FINER);
     }
     
-    private static ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    public static ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         ThreadReference tref = null;
         if (e instanceof LocatableEvent) {
             tref = LocatableEventWrapper.thread((LocatableEvent) e);

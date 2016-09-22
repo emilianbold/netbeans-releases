@@ -114,9 +114,10 @@ public class PreviewManager {
         }
         NewDiffSource nds;
         try {
+            nds = new NewDiffSource(element);
             DiffController diffView = DiffController.create(
                     new OldDiffSource(element),
-                    nds = new NewDiffSource(element));
+                    nds);
             if (m==null) {
                 m = new HashMap<FileObject, Pair>();
                 map.put(current, m);
@@ -137,8 +138,8 @@ public class PreviewManager {
                 return;
             }
             Pair p = getPair(element);
-            UI.setComponentForRefactoringPreview(p.dc.getJComponent());
             p.source.setNewText(newText);
+            UI.setComponentForRefactoringPreview(p.dc.getJComponent());
             if(element.getPosition() != null) 
                 p.dc.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, element.getPosition().getBegin().getLine());
         } catch (IOException ioe) {
@@ -229,8 +230,12 @@ public class PreviewManager {
             return null;
         }
         
+        // @GuardedBy(this)
         private Document internal;
-        private Document getDocument() {
+        
+        // accessed asynchronously from DiffController through Lookup, must protected
+        // `internal' reference.
+        private synchronized Document getDocument() {
             if (internal==null) {
                 internal = CloneableEditorSupport.getEditorKit(getMIMEType()).createDefaultDocument();
             }

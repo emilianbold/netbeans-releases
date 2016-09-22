@@ -229,6 +229,9 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.greatergreatergreater:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 return APTTokenTypes.COMMENT;
+            case tok.TokenKind.caretcaret:
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+                return APTTokenTypes.COMMENT;
             // C99 6.4.1: Keywords.  These turn into kw_* tokens.
             // Flags allowed:
             //   KEYALL   - This is a keyword in all variants of C and C++, or it
@@ -462,6 +465,8 @@ public final class ClankToAPTUtils {
                 return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_va_arg;
             case tok.TokenKind.kw___extension__:
                 return APTTokenTypes.LITERAL___extension__;
+            case tok.TokenKind.kw___float128:
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___float128;
             case tok.TokenKind.kw___imag:
                 return APTTokenTypes.LITERAL___imag;
             case tok.TokenKind.kw___int128:
@@ -501,6 +506,7 @@ public final class ClankToAPTUtils {
             /*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_assignable:
             /*3.6 NEW*/ case tok.TokenKind.kw___is_constructible:
             /*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_constructible:
+            /*3.9 NEW*/ case tok.TokenKind.kw___is_assignable:
                 return APTTokenTypes.IDENT;
 
             // GNU and MS Type Traits
@@ -610,6 +616,18 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___read_write:
             case tok.TokenKind.kw___builtin_astype:
             case tok.TokenKind.kw_vec_step:
+/*3.9 NEW*/ case tok.TokenKind.kw_image1d_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image1d_array_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image1d_buffer_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_array_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_depth_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_array_depth_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_msaa_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_array_msaa_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_msaa_depth_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image2d_array_msaa_depth_t:
+/*3.9 NEW*/ case tok.TokenKind.kw_image3d_t:
 /*3.8 NEW*/ case tok.TokenKind.kw___builtin_omp_required_simd_align:
 /*3.8 NEW*/ case tok.TokenKind.kw_pipe:
             /* REMOVED in 3.6
@@ -666,6 +684,7 @@ public final class ClankToAPTUtils {
 
             // Clang Extensions.
             case tok.TokenKind.kw___builtin_convertvector:
+            case tok.TokenKind.kw___builtin_available:
 
             // Clang-specific keywords enabled only in testing.
             case tok.TokenKind.kw___unknown_anytype:

@@ -47,6 +47,7 @@ import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -73,8 +74,8 @@ public class LexerUtils {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                AtomicLockDocument nbdoc = (AtomicLockDocument) doc;
-                nbdoc.runAtomic(new Runnable() {
+                AtomicLockDocument nbdoc = LineDocumentUtils.as(doc, AtomicLockDocument.class);
+                Runnable rebuild = new Runnable() {
                     @Override
                     public void run() {
                         MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
@@ -82,7 +83,12 @@ public class LexerUtils {
                             mti.tokenHierarchyControl().rebuild();
                         }
                     }
-                });
+                };
+                if (nbdoc != null) {
+                    nbdoc.runAtomic(rebuild);
+                } else {
+                    rebuild.run();
+                }
             }
         });
     }

@@ -71,6 +71,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -106,6 +107,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -1439,6 +1441,19 @@ public final class EditorContextSupport {
                                           final D context,
                                           final SourcePathProvider sp) throws InvalidExpressionException {
         return preferredCCParser.parseExpression(expression, url, line, visitor, context, sp);
+    }
+    
+    public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+                                                 final TreePathScanner<Boolean,D> canInterpret,
+                                                 final TreePathScanner<R,D> interpreter,
+                                                 final D context, boolean staticContext,
+                                                 final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
+                                                 final SourcePathProvider sp) throws InvalidExpressionException {
+        return preferredCCParser.interpretOrCompileCode(code, url, line,
+                                                        canInterpret,
+                                                        interpreter,
+                                                        context, staticContext,
+                                                        compiledClassHandler, sp);
     }
 
 

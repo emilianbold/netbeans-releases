@@ -53,7 +53,7 @@ public class ValuePresenter {
     private ValuePresenter() {
     }
 
-    private static final Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
+    private static final Presenter[] presenters = new Presenter[]{new StdStringPresenter(), new StdVectorPresenter()};
 
     public static String getValue(String value) {
         return getValue(null, value);
@@ -81,6 +81,25 @@ public class ValuePresenter {
         boolean acceptsType(String type);
         boolean accepts(String type, String value);
         String present(String type, String value);
+    }
+    
+    private static class StdVectorPresenter implements Presenter {
+
+        @Override
+        public boolean acceptsType(String type) {
+            return type != null && type.startsWith("std::vector");//NOI18N
+        }
+
+        @Override
+        public boolean accepts(String type, String value) {
+            return acceptsType(type);
+        }
+
+        @Override
+        public String present(String type, String value) {
+            return value;
+        }
+        
     }
 
     private static class StdStringPresenter implements Presenter {

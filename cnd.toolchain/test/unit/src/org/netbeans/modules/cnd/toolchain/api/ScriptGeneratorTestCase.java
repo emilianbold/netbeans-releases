@@ -153,6 +153,7 @@ public class ScriptGeneratorTestCase extends NativeExecutionBaseTestCase {
             case WINDOWS:
                 p = PlatformTypes.PLATFORM_WINDOWS;
                 break;
+            case FREEBSD:
             case UNKNOWN:
             default:
                 p = PlatformTypes.PLATFORM_NONE;

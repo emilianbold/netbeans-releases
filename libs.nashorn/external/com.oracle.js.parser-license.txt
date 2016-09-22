@@ -1,5 +1,5 @@
 Name: com.oracle.js.parser.jar
-Version: 4baa8b862456
+Version: ba7a8bc42268
 Description: An ECMAScript 6 (ECMAScript 2015) compliant parser for JavaScript source code. Based on the parser of Project Nashorn in OpenJDK (http://openjdk.java.net/projects/nashorn/).
 License: GPL-2-CP
 Source: http://hg.openjdk.java.net/graal/graal-js-parser

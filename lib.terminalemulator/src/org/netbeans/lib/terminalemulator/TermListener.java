@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -54,7 +53,7 @@ package org.netbeans.lib.terminalemulator;
 import java.awt.Dimension;
 
 /**
- * Listener for Miscelaneous events.
+ * Listener for Miscellaneous events.
  */
 
 public interface TermListener {

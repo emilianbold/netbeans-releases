@@ -457,7 +457,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     public void resolveTypes(JsDocumentationHolder jsDocHolder) {
-        if (parent == null) {
+        if (parent == null 
+                || (parent != null && parent.getOffset() == getOffset() && ModelUtils.ARGUMENTS.equals(getName())) ) {
             return;
         }
         Collection<TypeUsage> resolved = new ArrayList();
@@ -639,6 +640,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE);
             if (prototype != null) {
                 moveOccurrenceOfProperties((JsObjectImpl) prototype, created);
+            }
+        }
+        
+        if (!original.getAssignments().isEmpty() && created.getAssignments().isEmpty()) {
+            // we are add type to help resolve other properties. 
+            for(TypeUsage type : original.getAssignments()) {
+                created.addAssignment(type, -1);
             }
         }
 

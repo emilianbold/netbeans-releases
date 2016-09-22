@@ -90,64 +90,67 @@ public class CamelCaseActions {
                 
                 if(caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
+                    // Document's lock must come before carets' lock
+                    doc.runAtomicAsUser(new Runnable() {
                         @Override
-                        public void moveCarets(final CaretMoveContext context) {
-                            for (final CaretInfo caretInfo : editorCaret.getSortedCarets()) {
-                        final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caretInfo.getDot(), !isForward());
-                        try {
-                            if (!t.beforeChange()) {
-                                final Boolean[] result = new Boolean[]{Boolean.FALSE};
-                                doc.runAtomicAsUser(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (doesTypingModification()) {
-                                            DocumentUtilities.setTypingModification(doc, true);
-                                        }
-                                        Object[] r = t.change();
+                        public void run() {
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(final CaretMoveContext context) {
+                                    for (final CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                                        // Do a transaction for each modification
+                                        // TBD beforeChange() and afterChange() are called under doc-lock but imho this semantics of interceptors should be revisited anyway
+                                        final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caretInfo.getDot(), !isForward());
                                         try {
-                                            int dotPos = caretInfo.getDot();
-                                            int wsPos;
-                                            if (r == null) {
-                                                if (isForward()) {
-                                                    int eolPos = Utilities.getRowEnd(doc, dotPos);
-                                                    wsPos = Utilities.getNextWord(target, dotPos);
-                                                    wsPos = (dotPos == eolPos) ? wsPos : Math.min(eolPos, wsPos);
-                                                } else {
-                                                    int bolPos = Utilities.getRowStart(doc, dotPos);
-                                                    wsPos = Utilities.getPreviousWord(target, dotPos);
-                                                    wsPos = (dotPos == bolPos) ? wsPos : Math.max(bolPos, wsPos);
+                                            if (!t.beforeChange()) {
+                                                boolean result = false;
+                                                if (doesTypingModification()) {
+                                                    DocumentUtilities.setTypingModification(doc, true);
                                                 }
-                                            } else {
-                                                wsPos = (Integer) r[0];
-                                            }
+                                                Object[] r = t.change();
+                                                try {
+                                                    int dotPos = caretInfo.getDot();
+                                                    int wsPos;
+                                                    if (r == null) {
+                                                        if (isForward()) {
+                                                            int eolPos = Utilities.getRowEnd(doc, dotPos);
+                                                            wsPos = Utilities.getNextWord(target, dotPos);
+                                                            wsPos = (dotPos == eolPos) ? wsPos : Math.min(eolPos, wsPos);
+                                                        } else {
+                                                            int bolPos = Utilities.getRowStart(doc, dotPos);
+                                                            wsPos = Utilities.getPreviousWord(target, dotPos);
+                                                            wsPos = (dotPos == bolPos) ? wsPos : Math.max(bolPos, wsPos);
+                                                        }
+                                                    } else {
+                                                        wsPos = (Integer) r[0];
+                                                    }
 
-                                            if (isForward()) {
-                                                moveToNewOffset(context, caretInfo, dotPos, wsPos - dotPos);
-                                            } else {
-                                                moveToNewOffset(context, caretInfo, wsPos, dotPos - wsPos);
+                                                    if (isForward()) {
+                                                        moveToNewOffset(context, caretInfo, dotPos, wsPos - dotPos);
+                                                    } else {
+                                                        moveToNewOffset(context, caretInfo, wsPos, dotPos - wsPos);
+                                                    }
+                                                    result = true;
+                                                } catch (BadLocationException e) {
+                                                    target.getToolkit().beep();
+                                                } finally {
+                                                    if (doesTypingModification()) {
+                                                        DocumentUtilities.setTypingModification(doc, false);
+                                                    }
+                                                }
+                                                if (result) {
+                                                    t.afterChange();
+                                                }
                                             }
-                                            result[0] = Boolean.TRUE;
-                                        } catch (BadLocationException e) {
-                                            target.getToolkit().beep();
                                         } finally {
-                                            if (doesTypingModification()) {
-                                                DocumentUtilities.setTypingModification(doc, false);
-                                            }
+                                            t.close();
                                         }
-                                    }
-                                });
-
-                                if (result[0].booleanValue()) {
-                                    t.afterChange();
                                 }
-                            }
-                        } finally {
-                            t.close();
-                        }
-                        }
+                                }
+                            });
                         }
                     });
+
                 } else {
                     final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caret.getDot(), !isForward());
                     try {
@@ -276,7 +279,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset + length);
-            context.setDot(caretInfo, pos);
+            context.setDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -297,7 +300,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset);
-            context.setDot(caretInfo, pos);
+            context.setDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -321,7 +324,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset + length);
-            context.moveDot(caretInfo, pos);
+            context.moveDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 
@@ -344,7 +347,7 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
             Position pos = context.getDocument().createPosition(offset);
-            context.moveDot(caretInfo, pos);
+            context.moveDot(caretInfo, pos, Position.Bias.Forward);
         }
     }
 

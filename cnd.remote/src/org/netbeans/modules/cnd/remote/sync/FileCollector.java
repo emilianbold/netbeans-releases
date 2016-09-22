@@ -409,17 +409,18 @@ import org.openide.util.Utilities;
         } catch (ConnectionManager.CancellationException ex) {
             return false;
         }
-        if (os == HostInfo.OSFamily.MACOSX) {
-            return true;
-        } else if (os == HostInfo.OSFamily.UNKNOWN) {
-            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
-            if (res.isOK()) {
-                if (res.getOutputString().equals("FreeBSD")) { // NOI18N
-                    return true;
-                }
-            }
+        switch (os) {
+            case MACOSX:
+            case FREEBSD:
+                return true;
+            case SUNOS:
+            case LINUX:
+            case WINDOWS:
+            case UNKNOWN:
+                return false;
+            default:
+                throw new AssertionError(os.name());
         }
-        return false;
     }
 
     public boolean initNewFilesDiscovery() {

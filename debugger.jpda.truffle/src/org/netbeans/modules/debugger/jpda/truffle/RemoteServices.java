@@ -127,7 +127,7 @@ public class RemoteServices {
     
     private static final Logger logger = Logger.getLogger(RemoteServices.class.getName());
     
-    private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.jar";
+    static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.jar";
     
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<>();
     private static final Map<JPDADebugger, ThreadReference> remoteServiceAccess = new WeakHashMap<>();

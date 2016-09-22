@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.preprocessorbridge.spi.CompileOnSaveAction;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -80,13 +81,20 @@ public class COSSynchronizingIndexer extends CustomIndexer {
         if (FileUtil.getArchiveFile(rootURL) != null) {
             return;
         }
-        if (!BuildArtifactMapperImpl.isUpdateResources(BuildArtifactMapperImpl.getTargetFolder(rootURL))) {
+        if (!BuildArtifactMapperImpl.isUpdateResources(rootURL)) {
             return ;
         }
 
         Set<String> javaMimeTypes = gatherJavaMimeTypes();
         List<File> updated = new LinkedList<File>();
         final ClassPath srcPath = ClassPath.getClassPath(context.getRoot(), ClassPath.SOURCE);
+        if (srcPath == null) {
+            LOG.log(
+                    Level.INFO,
+                    "No source path for: {0}",
+                    FileUtil.getFileDisplayName(context.getRoot()));
+            return ;
+        }
         for (Indexable i : files) {
             if (javaMimeTypes.contains(i.getMimeType()))
                 continue;
@@ -156,7 +164,11 @@ public class COSSynchronizingIndexer extends CustomIndexer {
 
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
-            if (BuildArtifactMapperImpl.getTargetFolder(context.getRootURI()) == null) {
+            final File target = CompileOnSaveAction.Context.getTarget(context.getRootURI());
+            if (target == null) {
+                return;
+            }            
+            if (!BuildArtifactMapperImpl.isUpdateClasses(context.getRootURI())) {
                 return ;
             }
 

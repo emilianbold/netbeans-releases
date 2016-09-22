@@ -183,6 +183,10 @@ public class NeonLexerTest extends NeonLexerTestBase {
         performTest("issue238224");
     }
 
+    public void testIssue246906() throws Exception {
+        performTest("issue246906");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = NeonLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".neon"));

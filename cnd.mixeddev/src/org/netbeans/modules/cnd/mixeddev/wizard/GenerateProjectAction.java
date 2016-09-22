@@ -126,7 +126,7 @@ public class GenerateProjectAction extends NodeAction {
 
     public void actionPerformedImpl(FileObject fo) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        panels.add(new LocationJNIWizardPanel());
+        panels.add(new LocationJNIWizardPanel(fo));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             Component c = panels.get(i).getComponent();

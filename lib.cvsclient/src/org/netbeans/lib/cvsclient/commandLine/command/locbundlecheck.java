@@ -25,11 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
-
- * The Original Software is the CVS Client Library.
- * The Initial Developer of the Original Software is Milos Kleint.
- * Portions created by Milos Kleint are Copyright (C) 2000.
- * All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -42,7 +37,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
 
- * Contributor(s): Milos Kleint.
  *****************************************************************************/
 package org.netbeans.lib.cvsclient.commandLine.command;
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -201,8 +202,14 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(binary)));
         if (project != null) {
             for (Artifact s : project.getCompileArtifacts()) {
-                if (s.getFile() == null) continue;
-                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(s.getFile())));
+                File file = s.getFile();
+                if (file == null) continue;
+                URL u = FileUtil.urlForArchiveOrDir(file);
+                if(u != null) {
+                    items.add(ClassPathSupport.createResource(u));
+                } else {
+                    LOG.log(Level.FINE, "Could not retrieve URL for artifact file {0}", new Object[] {file}); // NOI18N
+                }
             }
         }
         return ClassPathSupport.createClassPathImplementation(items);

@@ -103,6 +103,7 @@ import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ConstantPool;
 import org.netbeans.modules.classfile.ElementValue;
+import org.netbeans.modules.classfile.EnclosingMethod;
 import org.netbeans.modules.classfile.EnumElementValue;
 import org.netbeans.modules.classfile.Field;
 import org.netbeans.modules.classfile.InnerClass;
@@ -678,7 +679,7 @@ public class BinaryAnalyser {
                         getSimpleNameIndex(classFile)
                         ),
                 null);
-        addReferences (pair, usages);
+        addReferences (pair, usages);        
     }
 
     private void addReferences (
@@ -712,13 +713,25 @@ public class BinaryAnalyser {
 
     private static int getSimpleNameIndex(@NonNull final ClassFile cf) {
         final ClassName me = cf.getName();
-        int len = me.getSimpleName().length();
+        final String simpleName = me.getSimpleName();
+        int len = simpleName.length();
         for (InnerClass ic : cf.getInnerClasses()) {
             if (me.equals(ic.getName())) {
-                String simpleName = ic.getSimpleName();
-                len = simpleName == null ?
-                        me.getInternalName().length() - me.getInternalName().lastIndexOf('$') - 1:  //NOI18N
-                        simpleName.length();
+                final String innerName = ic.getSimpleName();
+                if (innerName != null && !innerName.isEmpty()) {
+                    len = innerName.length();
+                } else {
+                    final EnclosingMethod enclosingMethod = cf.getEnclosingMethod();
+                    if (enclosingMethod != null) {
+                        final String encSimpleName = enclosingMethod.getClassName().getSimpleName();
+                        len -= encSimpleName.length() + 1;
+                    } else {
+                        final int sepIndex = simpleName.lastIndexOf('.');   //NOI18N
+                        if (sepIndex > 0) {
+                            len -= sepIndex+1;
+                        }
+                    }
+                }
                 break;
             }
         }

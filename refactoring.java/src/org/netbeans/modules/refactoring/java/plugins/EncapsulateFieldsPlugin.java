@@ -186,7 +186,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Problem problem = null;
-        Set<FileObject> references = new HashSet<FileObject>();
+        Set<FileObject> references = new LinkedHashSet<FileObject>();
         List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
         fireProgressListenerStart(AbstractRefactoring.PREPARE, refactorings.size() + 1);
         for (EncapsulateFieldRefactoringPlugin ref : refactorings) {

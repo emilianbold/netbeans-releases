@@ -27,8 +27,8 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -50,6 +50,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.function.Function;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -61,6 +62,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 
 /**
@@ -147,6 +149,40 @@ public class EditorContextBridge {
         }
     }
 
+    public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+                                                 final TreePathScanner<Boolean,D> canInterpret,
+                                                 final TreePathScanner<R,D> interpreter,
+                                                 final D context, final boolean staticContext,
+                                                 final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
+                                                 final SourcePathProvider sp) throws InvalidExpressionException {
+        try {
+            return (R) getContext ().getClass().getMethod(
+                    "interpretOrCompileCode",
+                    new Class[] { String.class, String.class, Integer.TYPE,
+                                  TreePathScanner.class, TreePathScanner.class,
+                                  Object.class, Boolean.TYPE, Function.class,
+                                  SourcePathProvider.class }).
+                        invoke(getContext(), new Object[] { code, url, line,
+                                                            canInterpret,
+                                                            interpreter,
+                                                            context, staticContext,
+                                                            compiledClassHandler,
+                                                            sp });
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else if (tex instanceof InvalidExpressionException) {
+                throw ((InvalidExpressionException) tex);
+            } else {
+                Exceptions.printStackTrace(tex);
+                return null;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
 
     // Utility methods .........................................................
 

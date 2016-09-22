@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -167,7 +166,7 @@ class Sel implements ClipboardOwner {
 	    sel_origin.row += amount;
 	    if (sel_origin.row >= alastline) {
 		sel_origin.row = alastline-1;
-		sel_origin.col = term.buf.totalCols();
+		sel_origin.col = term.buf().totalCols();
 	    }
 	    if (sel_origin.row < afirstline || sel_extent.row > alastline) {
 		// it has completely vanished
@@ -184,7 +183,7 @@ class Sel implements ClipboardOwner {
 	    sel_extent.row += amount;
 	    if (sel_extent.row >= alastline) {
 		sel_extent.row = alastline-1;
-		sel_extent.col = term.buf.totalCols();
+		sel_extent.col = term.buf().totalCols();
 	    }
 	    if (sel_extent.row < afirstline || sel_origin.row > alastline) {
 		// it has completely vanished
@@ -233,7 +232,7 @@ class Sel implements ClipboardOwner {
 	// LATER coord.clip(term.buf.nlines, term.buf.totalCols(), term.firsta);
 
 	sel_origin = Coord.make(coord.row, 0);
-	sel_extent = Coord.make(coord.row, term.buf.totalCols());
+	sel_extent = Coord.make(coord.row, term.buf().totalCols());
 	sel_tracking = Sel.SEL_LINE;
 	old_sel_tracking = Sel.SEL_NONE;
     }
@@ -256,8 +255,8 @@ class Sel implements ClipboardOwner {
 	    sel_extent = p;
 
 	} else if (tracking == Sel.SEL_WORD) {
-	    BExtent Bnew_range = term.buf.find_word(term.word_delineator, p.toBCoord(term.firsta));
-	    Extent new_range = Bnew_range.toExtent(term.firsta);
+	    BExtent Bnew_range = term.buf().find_word(term.getWordDelineator(), p.toBCoord(term.firsta()));
+	    Extent new_range = Bnew_range.toExtent(term.firsta());
 	    if (p.compareTo(initial_word.begin) < 0) {
 		sel_origin = new Coord(new_range.begin);
 		sel_extent = initial_word.end;
@@ -272,9 +271,9 @@ class Sel implements ClipboardOwner {
 	} else if (tracking == Sel.SEL_LINE) {
 	    if (p.compareTo(sel_origin) > 0) {
 		sel_origin = Coord.make(sel_origin.row, 0);
-		sel_extent = Coord.make(p.row, term.buf.totalCols());
+		sel_extent = Coord.make(p.row, term.buf().totalCols());
 	    } else {
-		sel_origin = Coord.make(sel_origin.row, term.buf.totalCols());
+		sel_origin = Coord.make(sel_origin.row, term.buf().totalCols());
 		sel_extent = Coord.make(p.row, 0);
 	    }
 	}
@@ -427,20 +426,20 @@ class Sel implements ClipboardOwner {
         }
 
 	int lw;		// width of last character in selection
-	Line l = term.buf.lineAt(row);
-	lw = l.width(term.metrics, ecol);
+	Line l = term.buf().lineAt(row);
+	lw = l.width(term.metrics(), ecol);
 
 	Point pbegin = term.toPixel(begin);
 	Point pend = term.toPixel(end);
-	pend.y += term.metrics.height;
-	pend.x += term.metrics.width * lw;	// xterm actually doesn't do this
+	pend.y += term.metrics().height;
+	pend.x += term.metrics().width * lw;	// xterm actually doesn't do this
 
 	Dimension dim = new Dimension(pend.x - pbegin.x,
 				      pend.y - pbegin.y);
 	Rectangle rect = new Rectangle(pbegin, dim);
 
 
-	if (term.selection_xor)
+	if (term.isSelectionXOR())
 	    g.setXORMode(xor_color);
 	else
 	    g.setColor(color);

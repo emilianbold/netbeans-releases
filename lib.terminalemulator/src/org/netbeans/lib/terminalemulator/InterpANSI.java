@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -61,10 +60,9 @@ public class InterpANSI extends InterpProtoANSI {
 
 	protected InterpTypeANSI() {
 	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
-	    st_esc_lb.setAction('t', st_base, new ACT_GLYPH());
 	}
 
-	static final class ACT_PRINT implements Actor {
+	private static final class ACT_PRINT implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		// Ignored for now, except for 'dump time'
@@ -87,28 +85,9 @@ public class InterpANSI extends InterpProtoANSI {
 		return null;
 	    }
 	}
-        
-	static final class ACT_GLYPH implements Actor {
-	    @Override
-	    public String action(AbstractInterp ai, char c) {
-		if (ai.noNumber()) {
-		    return "ACT GLYPH: missing number";	// NOI18N
-		} else {
-		    int p1 = ai.numberAt(0);
-		    int p2 = ai.numberAt(1);
-		    int p3 = ai.numberAt(2);
-		    if (p1 == 22) {
-			ai.ops.op_glyph(p2, p3);
-		    } else {
-			return "ACT GLYPH: op othger than 22 not supported";	// NOI18N
-		    } 
-		} 
-		return null;
-	    }
-	}
     }
 
-    private InterpTypeANSI type;
+    private final InterpTypeANSI type;
 
     private static final InterpTypeANSI type_singleton = new InterpTypeANSI();
 

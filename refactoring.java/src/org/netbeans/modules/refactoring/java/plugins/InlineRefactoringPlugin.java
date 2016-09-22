@@ -370,7 +370,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             Element asElement = asElement(new TreePath(p, node));
             if (element.equals(asElement)) {
                 isRecursive = true;
-            } else {
+            } else if (asElement != null) {
                 if (asElement.getKind().equals(ElementKind.FIELD)
                         || asElement.getKind().equals(ElementKind.METHOD)
                         || asElement.getKind().equals(ElementKind.CLASS)) {
@@ -437,6 +437,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         public Tree visitIdentifier(IdentifierTree node, TreePath p) {
             Element asElement = asElement(new TreePath(p, node));
             if (!node.getName().contentEquals("this") &&
+                    asElement != null && 
                     (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
                     || asElement.getKind().equals(ElementKind.CLASS))) {
@@ -450,9 +451,9 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         @Override
         public Tree visitNewClass(NewClassTree node, TreePath p) {
             Element asElement = asElement(new TreePath(p, node));
-            if (asElement.getKind().equals(ElementKind.FIELD)
+            if (asElement != null && (asElement.getKind().equals(ElementKind.FIELD) 
                     || asElement.getKind().equals(ElementKind.METHOD)
-                    || asElement.getKind().equals(ElementKind.CLASS)) {
+                    || asElement.getKind().equals(ElementKind.CLASS))) {
                 Modifier mod = getAccessSpecifier(asElement.getModifiers());
 //                accessorRightProblem = hasAccessorRightProblem(mod);
                 qualIdentProblem = hasQualIdentProblem(element, asElement);
@@ -463,9 +464,9 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         @Override
         public Tree visitMemberSelect(MemberSelectTree node, TreePath p) {
             Element asElement = asElement(new TreePath(p, node));
-            if (asElement.getKind().equals(ElementKind.FIELD)
+            if (asElement != null && (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
-                    || asElement.getKind().equals(ElementKind.CLASS)) {
+                    || asElement.getKind().equals(ElementKind.CLASS))) {
                 Modifier mod = getAccessSpecifier(asElement.getModifiers());
 //                accessorRightProblem = hasAccessorRightProblem(mod);
                 qualIdentProblem = hasQualIdentProblem(element, asElement);

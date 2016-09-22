@@ -97,4 +97,8 @@ public class FoldingTest extends PHPTestBase {
         checkFolds("testfiles/parser/finally_02.php");
     }
 
+    public void testAnonymousClass01() throws Exception {
+        checkFolds("testfiles/parser/anonymousClass_01.php");
+    }
+
 }

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -66,6 +65,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 	protected final Actor act_done_collect3 = new ACT_DONE_COLLECT3();
 
 	protected InterpTypeDtTerm() {
+	    st_esc_lb.setAction('t', st_base, new ACT_GLYPH());
             st_esc_rb.setAction('l', st_esc_rb_L, act_collect);
             // LATER st_esc_rb.setAction('I', st_esc_rb_L, act_collect);
             st_esc_rb.setAction('L', st_esc_rb_L, act_collect);
@@ -76,7 +76,26 @@ class InterpDtTerm extends InterpProtoANSIX {
 	    st_wait.setAction('\\', st_base, act_done_collect3);
 	}
 
-	static final class ACT_DONE_COLLECT3 implements Actor {
+	private static final class ACT_GLYPH implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber()) {
+		    return "ACT GLYPH: missing number";	// NOI18N
+		} else {
+		    int p1 = ai.numberAt(0);
+		    int p2 = ai.numberAt(1);
+		    int p3 = ai.numberAt(2);
+		    if (p1 == 22) {
+			ai.ops.op_glyph(p2, p3);
+		    } else {
+			return "ACT GLYPH: op othger than 22 not supported";	// NOI18N
+		    } 
+		} 
+		return null;
+	    }
+	}
+
+	private static final class ACT_DONE_COLLECT3 implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
@@ -101,7 +120,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 
     }
 
-    private InterpTypeDtTerm type;
+    private final InterpTypeDtTerm type;
 
     private static final InterpTypeDtTerm type_singleton = new InterpTypeDtTerm();
 

@@ -33,7 +33,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Oracle
+ * Portions Copyrighted 2013 Oracle, Inc.
  */
 package org.netbeans.test.j2ee;
 

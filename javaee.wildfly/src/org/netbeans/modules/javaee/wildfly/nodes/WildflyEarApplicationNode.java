@@ -44,10 +44,10 @@
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
@@ -68,7 +68,7 @@ public class WildflyEarApplicationNode extends AbstractStateNode {
     public WildflyEarApplicationNode(String fileName, Lookup lookup) {
         super(new WildflyEarModulesChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EAR, lookup));
+        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ResourceType.EAR, lookup));
         getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
         getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
     }

@@ -400,6 +400,7 @@ public final class CndFileUtils {
     private static final boolean isWindows;
     private static final String  windowsDrive;
     private static final String  windowsPathSeparator = "\\"; // NOI18N
+    private static final String  UNC_PREFIX = "\\\\"; // NOI18N
     static {
         isWindows = Utilities.isWindows();
         if (isWindows) {
@@ -427,7 +428,10 @@ public final class CndFileUtils {
             absolutePath = absolutePath.replace('/', '\\');
             // append disk drive on windows for files like "/ws/full/path"
             if (absolutePath.startsWith("\\")) { //NOI18N
-                absolutePath = windowsDrive + absolutePath.substring(1);
+                // but leave UNC file paths as is: "\\USER-PC\Users\admin\Quote_1\iostream"
+                if (!absolutePath.startsWith(UNC_PREFIX)) {
+                  absolutePath = windowsDrive + absolutePath.substring(1);
+                }
             }
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);

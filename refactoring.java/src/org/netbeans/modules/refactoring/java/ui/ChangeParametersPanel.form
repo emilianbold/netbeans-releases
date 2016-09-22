@@ -51,13 +51,12 @@
                           <Component id="chkUpdateJavadoc" min="-2" max="-2" attributes="0"/>
                           <Component id="chkGenJavadoc" min="-2" max="-2" attributes="0"/>
                           <Component id="lblCodeGeneration" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="rbUpdateMethod" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="rbOverloadMethod" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="rbUpdateMethod" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="rbOverloadMethod" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>

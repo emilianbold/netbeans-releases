@@ -65,14 +65,18 @@ import org.openide.util.actions.NodeAction;
  * @author Theofanis Oikonomou
  */
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.TestMethodDebuggerAction", category = "CommonTestRunner")
-@ActionRegistration(displayName = "#LBL_Action_DebugTestMethod")
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup", position=1797)})
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_DebugTestMethod")
+@ActionReferences(value = {
+    @ActionReference(path = "Editors/text/x-java/Popup", position = 1797)})
 @NbBundle.Messages({"LBL_Action_DebugTestMethod=Debug Focused Test Method"})
 public class TestMethodDebuggerAction extends NodeAction {
+
     private RequestProcessor.Task debugMethodTask;
     private TestMethodDebuggerProvider debugMethodProvider;
-    
-    /** Creates a new instance of TestMethodDebuggerAction */
+
+    /**
+     * Creates a new instance of TestMethodDebuggerAction
+     */
     public TestMethodDebuggerAction() {
         putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }
@@ -86,7 +90,7 @@ public class TestMethodDebuggerAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     public boolean asynchronous() {
         return false;
@@ -96,31 +100,31 @@ public class TestMethodDebuggerAction extends NodeAction {
     protected void performAction(final Node[] activatedNodes) {
         final Collection<? extends TestMethodDebuggerProvider> providers = Lookup.getDefault().lookupAll(TestMethodDebuggerProvider.class);
         RequestProcessor RP = new RequestProcessor("TestMethodDebuggerAction", 1, true);   // NOI18N
-	debugMethodTask = RP.create(new Runnable() {
-	    @Override
-	    public void run() {
-		for (TestMethodDebuggerProvider provider : providers) {
-		    if (provider.canHandle(activatedNodes[0])) {
-			debugMethodProvider = provider;
-			break;
-		    }
-		}
-	    }
-	});
-	final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.Search_For_Provider(), debugMethodTask);
-	debugMethodTask.addTaskListener(new TaskListener() {
-	    @Override
-	    public void taskFinished(org.openide.util.Task task) {
-		ph.finish();
-		if(debugMethodProvider == null) {
-		    StatusDisplayer.getDefault().setStatusText(Bundle.No_Provider_Found());
-		} else {
-		    debugMethodProvider.debugTestMethod(activatedNodes[0]);
-		}
-	    }
-	});
-	ph.start();
-	debugMethodTask.schedule(0);
+        debugMethodTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                for (TestMethodDebuggerProvider provider : providers) {
+                    if (provider.canHandle(activatedNodes[0])) {
+                        debugMethodProvider = provider;
+                        break;
+                    }
+                }
+            }
+        });
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.Search_For_Provider(), debugMethodTask);
+        debugMethodTask.addTaskListener(new TaskListener() {
+            @Override
+            public void taskFinished(org.openide.util.Task task) {
+                ph.finish();
+                if (debugMethodProvider == null) {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.No_Provider_Found());
+                } else {
+                    debugMethodProvider.debugTestMethod(activatedNodes[0]);
+                }
+            }
+        });
+        ph.start();
+        debugMethodTask.schedule(0);
     }
 
     @Override
@@ -128,9 +132,9 @@ public class TestMethodDebuggerAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return false;
         }
-        if(debugMethodTask != null && !debugMethodTask.isFinished()) {
-	    return false;
-	}
+        if (debugMethodTask != null && !debugMethodTask.isFinished()) {
+            return false;
+        }
         Collection<? extends TestMethodDebuggerProvider> providers = Lookup.getDefault().lookupAll(TestMethodDebuggerProvider.class);
         for (TestMethodDebuggerProvider provider : providers) {
             if (provider.isTestClass(activatedNodes[0])) {
@@ -139,5 +143,5 @@ public class TestMethodDebuggerAction extends NodeAction {
         }
         return false;
     }
-    
+
 }

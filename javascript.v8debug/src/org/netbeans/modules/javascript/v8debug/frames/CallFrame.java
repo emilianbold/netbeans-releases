@@ -117,7 +117,7 @@ public final class CallFrame {
         String className = ((V8Object) thisValue).getClassName();
         NamesTranslator nt = getNamesTranslator();
         if (nt != null) {
-            className = nt.translateDeclarationNodeName(className);
+            className = nt.translate(className);
         }
         return className;
     }

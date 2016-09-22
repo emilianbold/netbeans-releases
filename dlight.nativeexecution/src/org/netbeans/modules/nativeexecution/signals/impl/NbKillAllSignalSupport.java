@@ -82,6 +82,8 @@ public final class NbKillAllSignalSupport extends HelperUtility implements Signa
                 case LINUX:
                 case SUNOS:
                     return true;
+                case FREEBSD:
+                    return false;
                 case WINDOWS:
                     if (scope == SIGNAL_SCOPE.SIGNAL_BY_ENV) {
                         return false;

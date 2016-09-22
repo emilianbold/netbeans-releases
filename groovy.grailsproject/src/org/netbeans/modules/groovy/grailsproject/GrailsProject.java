@@ -93,6 +93,7 @@ public final class GrailsProject implements Project {
     private final ClassPathProviderImpl cpProvider;
     private final GrailsCommandSupport commandSupport;
     private final BuildConfig buildConfig;
+    private final SourceCategoriesFactory sourceCategoriesFactory;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private Lookup lookup;
@@ -105,6 +106,11 @@ public final class GrailsProject implements Project {
         this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), this);
         this.commandSupport = new GrailsCommandSupport(this);
         this.buildConfig = new BuildConfig(this);
+
+        /* TODO: when projects have their own grails version we need to pass it
+                 to the source categories factory.
+         */
+        this.sourceCategoriesFactory = new SourceCategoriesFactory();
     }
 
     @Override
@@ -122,6 +128,10 @@ public final class GrailsProject implements Project {
 
     public BuildConfig getBuildConfig() {
         return buildConfig;
+    }
+    
+    public SourceCategoriesFactory getSourceCategoriesFactory() {
+        return sourceCategoriesFactory;
     }
 
     @Override

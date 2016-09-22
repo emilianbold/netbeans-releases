@@ -46,9 +46,10 @@ package org.netbeans.modules.javaee.wildfly.nodes.actions;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -66,15 +67,15 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
 
     private final Lookup lookup;
 
-    private final ModuleType type;
+    private final ResourceType type;
 
     private boolean isRunning;
 
     public UndeployModuleCookieImpl(String fileName, Lookup lookup) {
-        this(fileName, ModuleType.EJB, lookup);
+        this(fileName, ResourceType.EJB, lookup);
     }
 
-    public UndeployModuleCookieImpl(String fileName, ModuleType type, Lookup lookup) {
+    public UndeployModuleCookieImpl(String fileName, ResourceType type, Lookup lookup) {
         this.lookup = lookup;
         this.fileName = fileName;
         this.type = type;
@@ -84,7 +85,13 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
     @Override
     public Task undeploy() {
         final WildflyDeploymentManager dm = (WildflyDeploymentManager) lookup.lookup(WildflyDeploymentManager.class);
-        final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        
+        final String nameWoExt;
+        if(fileName.indexOf('.') > 0) {
+            nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        } else {
+            nameWoExt = fileName;
+        }
         final ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(UndeployModuleCookieImpl.class,
                 "LBL_UndeployProgress", nameWoExt));
 
@@ -92,7 +99,25 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
             public void run() {
                 isRunning = true;
                 try {
-                    dm.getClient().undeploy(fileName);
+                    switch(type) {
+                        case EJB:
+                        case EAR:
+                        case CAR:
+                        case RAR:
+                        case WAR:
+                            dm.getClient().undeploy(fileName);
+                            break;
+                        case QUEUE:
+                            dm.getClient().removeMessageDestination(new WildflyMessageDestination(fileName, MessageDestination.Type.QUEUE));
+                            break;
+                        case TOPIC:
+                            dm.getClient().removeMessageDestination(new WildflyMessageDestination(fileName, MessageDestination.Type.TOPIC));
+                            break;
+                        case DATASOURCE:
+                            dm.getClient().removeDatasource(fileName);
+                            break;
+                        
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(UndeployModuleCookieImpl.class.getName()).log(Level.INFO, null, ex);
                 }

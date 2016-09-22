@@ -121,7 +121,7 @@ public class IndexNode extends BaseNode {
         PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
-        addProperty(UNIQUE, UNIQUEDESC, Boolean.class, index.isUnique(), false);
+        addProperty(UNIQUE, UNIQUEDESC, Boolean.class, false, index.isUnique());
     }
 
     public String getCatalogName() {

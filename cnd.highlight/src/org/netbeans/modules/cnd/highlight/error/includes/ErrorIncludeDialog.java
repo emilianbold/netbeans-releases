@@ -821,7 +821,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         } catch (IOException ex) {
             // Skip exception
             //ex.printStackTrace();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             // Skip exception
             //ex.printStackTrace();
         } finally {

@@ -181,6 +181,7 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         String remoteDir = mkTempAndRefreshParent(true);
         org.netbeans.modules.nativeexecution.api.util.ProcessUtils.execute(execEnv, "umask", "0002");
         FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
+        assertNotNull("Failed to find file object for a directory that was just created " + remoteDir, remoteDirFO);
         remoteDirFO = remoteDirFO.createFolder("remoteGit");
         remoteDir = remoteDirFO.getPath();
         System.err.println("Created test folder "+remoteDir);

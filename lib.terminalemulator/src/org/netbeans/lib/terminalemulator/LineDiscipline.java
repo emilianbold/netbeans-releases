@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -76,7 +75,7 @@ public class LineDiscipline extends TermStream {
     private static final char bs_sequence[] = {(char)8, (char)32, (char)8};
 
     // input line main buffer
-    private StringBuffer line = new StringBuffer();
+    private final StringBuffer line = new StringBuffer();
 
     // auto-growing buffer for sending lines accumulated in 'line'.
     private int send_buf_sz = 2;
@@ -94,10 +93,12 @@ public class LineDiscipline extends TermStream {
     private int put_length = 0;
     private char put_buf[] = new char[put_capacity];
 
+    @Override
     public void flush() {
 	toDTE.flush();
     }
 
+    @Override
     public void putChar(char c) {
 	// Even though we dealing with one character, as the processing on it
 	// may get more complicated we will want to use the code factored in 
@@ -113,6 +114,7 @@ public class LineDiscipline extends TermStream {
 	toDTE.putChars(put_buf, 0, put_length);
     }
 
+    @Override
     public void putChars(char buf[], int offset, int count) {
 
 	// reset buffer
@@ -155,6 +157,8 @@ public class LineDiscipline extends TermStream {
 
 
 
+    @Override
+    @SuppressWarnings({"AssignmentToMethodParameter", "ValueOfIncrementOrDecrementUsed"})
     public void sendChar(char c) {
 	// keystroke -> world (DCE)
 
@@ -197,7 +201,7 @@ public class LineDiscipline extends TermStream {
 	    if (nchars == 0)
 		return;		// nothing left to BS over
 
-	    char erased_char = ' ';	// The char we're going to erase
+	    char erased_char;		// The char we're going to erase
 	    try {
 		erased_char = line.charAt(nchars-1);
 	    } catch (Exception x) {
@@ -230,8 +234,9 @@ public class LineDiscipline extends TermStream {
 	    // environments, so perhapws we SHOULD have a property to control whether
 	    // things get erased the unix way or some other way.
 
-	    while(--cwidth > 0 )
+	    while(--cwidth > 0 ) {
 		line.append(' ');
+	    }
 
 	    // erase character on screen
 	    toDTE.putChars(bs_sequence, 0, 3);
@@ -244,6 +249,7 @@ public class LineDiscipline extends TermStream {
 	}
     }
 
+    @Override
     public void sendChars(char c[], int offset, int count) {
 	for (int cx = 0; cx < count; cx++)
 	    sendChar(c[offset+cx]);

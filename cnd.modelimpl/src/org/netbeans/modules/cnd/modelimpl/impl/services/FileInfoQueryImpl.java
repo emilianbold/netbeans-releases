@@ -647,7 +647,31 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     @Override
     public boolean hasBrokenIncludes(CsmFile file) {
         if (file instanceof FileImpl) {
-            return ((FileImpl)file).hasBrokenIncludes();
+            FileImpl impl = (FileImpl) file;
+            boolean res = impl.hasBrokenIncludes();
+            if (res) {
+                if (isStandardHeadersIndexer(file)) {
+                    return false;
+                }
+            }
+            return res;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isStandardHeadersIndexer(CsmFile file) {
+        if (file instanceof FileImpl) {
+            FileImpl impl = (FileImpl) file;
+            NativeFileItem nativeFileItem = impl.getNativeFileItem();
+            if (nativeFileItem != null) {
+                NativeProject nativeProject = nativeFileItem.getNativeProject();
+                if (nativeProject != null) {
+                    if (nativeProject.getStandardHeadersIndexers().contains(nativeFileItem)) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }

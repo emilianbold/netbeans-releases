@@ -112,7 +112,24 @@ public final class CodeTemplateParameter {
      */
     public static final String EDITABLE_HINT_NAME = "editable"; // NOI18N
     
-    
+    /**
+     * The ordering attribute defines the sequence in which placeholders are
+     * completed. Use 0 for the first element, 1 for the second... Placeholders
+     * without ordering information will be placed after the last placeholder
+     * with ordering information.
+     *
+     * <p>
+     * Example of ordering of parameters :
+     * <pre>
+     * // paramC comes first, then paramB, then paramA
+     * ${paramA} ${paramB ordering=2} ${paramC ordering=1}
+     * </pre>
+     * </p>
+     * https://netbeans.org/bugzilla/show_bug.cgi?id=181703
+     * @since 1.43.0
+     */
+    public static final String ORDERING_HINT_NAME = "ordering"; // NOI18N
+
     private final CodeTemplateParameterImpl impl;
     
     CodeTemplateParameter(CodeTemplateParameterImpl impl) {

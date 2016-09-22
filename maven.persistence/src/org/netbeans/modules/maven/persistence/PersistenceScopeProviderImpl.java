@@ -35,9 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Daniel Mohni
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+/*
+ * Contributor(s): Daniel Mohni
  */
 package org.netbeans.modules.maven.persistence;
 

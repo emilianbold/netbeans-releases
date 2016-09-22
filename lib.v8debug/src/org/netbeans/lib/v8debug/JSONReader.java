@@ -81,6 +81,7 @@ import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Generator;
 import org.netbeans.lib.v8debug.vars.V8Number;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
@@ -701,10 +702,19 @@ public class JSONReader {
                                       name, inferredName, resolved,
                                       source, scriptRef, scriptId,
                                       position, line, column, scopes, properties, text);
+            case Generator:
+                String className = getString(obj, VALUE_CLASS_NAME);
+                constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
+                protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
+                prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
+                PropertyLong function = getReferenceProperty(obj, FRAME_FUNC);
+                PropertyLong receiver = getReferenceProperty(obj, FRAME_RECEIVER);
+                properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES), null);
+                return new V8Generator(handle, className, constructorFunctionHandle, protoObject, prototypeObject, function, receiver, properties, text);
             case Object:
             case Error:
             case Regexp:
-                String className = getString(obj, VALUE_CLASS_NAME);
+                className = getString(obj, VALUE_CLASS_NAME);
                 constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.mixeddev.ui;
 
 import javax.swing.Action;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
+import org.netbeans.modules.cnd.mixeddev.java.jni.actions.AttachToJavaWithNativeDebuggerAction;
 import org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNICallMethodCodeAction;
 import org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNIGetFieldCodeAction;
 import org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNISetFieldCodeAction;
@@ -79,7 +80,9 @@ public class MixedDevContextMetaAction extends AbstactDynamicMenuAction implemen
             new CopyJNISignatureAction(actionContext),
             new CopyJNICallMethodCodeAction(actionContext),
             new CopyJNIGetFieldCodeAction(actionContext),
-            new CopyJNISetFieldCodeAction(actionContext)
+            new CopyJNISetFieldCodeAction(actionContext),
+            new AttachToJavaWithNativeDebuggerAction(actionContext)
+            
 //            GenerateHeaderForJNIClassAction.INSTANCE,
 //            CopyJNISignatureAction.INSTANCE,
 //            CopyJNICallMethodCodeAction.INSTANCE,

@@ -102,7 +102,7 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
             }
         });
 
-        label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/refactoring/java/resources/warning_16.png"))); // NOI18N
+        label.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/refactoring/java/resources/warning_16.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(label, "<<Element>>"); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lbl_usagesof, org.openide.util.NbBundle.getMessage(WhereUsedPanelClass.class, "LBL_UsagesOfElement")); // NOI18N

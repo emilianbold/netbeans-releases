@@ -143,7 +143,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import static org.openide.text.Annotation.PROP_SHORT_DESCRIPTION;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -957,7 +956,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         profileBridge().noteAttached();
 
         // continue, see IZ 198495
-        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+        if (getNDI().isAutoStart() && DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
             go();
         } else {
             requestStack(null);
@@ -1849,7 +1848,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (Log.Variable.mi_threads) {
             System.out.println("registerThreadModel " + model); // NOI18N
         }
-        threadUpdater.setListener(model);
+        threadUpdater.addListener(model);
         if (model != null) {
             get_threads = true;
             if (state().isProcess && !state().isRunning) {
@@ -2363,7 +2362,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (Log.Variable.mi_frame) {
             System.out.println("registerStackModel " + model); // NOI18N
         }
-        stackUpdater.setListener(model);
+        stackUpdater.addListener(model);
         if (model != null) {
             get_frames = true;
 //            if (state().isProcess && !state().isRunning) {
@@ -2659,7 +2658,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * balloonEval stuff
      */
     @Override
-    public void balloonEvaluate(Line.Part lp, String text) {
+    public void balloonEvaluate(Line.Part lp, String text, boolean forceExtractExpression) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
         if (gdb == null || !gdb.connected()) {
@@ -2669,10 +2668,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             return;
         }
         String expr;
-        if (lp == null) {
-            expr = text;
-        } else {
+        if (forceExtractExpression) {
             expr = EvalAnnotation.extractExpr(lp, text);
+        } else {
+            expr = text;
         }
 
         if (expr == null || expr.isEmpty()) {
@@ -2746,7 +2745,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }*/
 
         ModelChangeDelegator mcd = new ModelChangeDelegator();
-        mcd.setListener(new ModelChangeListenerImpl());
+        mcd.addListener(new ModelChangeListenerImpl());
 
         final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
         createMIVar(watch, false);
@@ -2772,6 +2771,56 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
+    private static final class ModelChangeListenerTooltipImpl implements ModelListener {
+        private AtomicBoolean isInitilaized = new AtomicBoolean(false);
+        private JEditorPane editorPane;
+        private  Line.Part lp;
+        private ToolTipSupport tts;
+        
+        void registerToolTip(ToolTipSupport tts, JEditorPane editorPane, Line.Part lp) {
+            this.tts = tts;
+            this.editorPane = editorPane;
+            this.lp = lp;
+            isInitilaized.set(true);
+        }
+        
+        @Override
+        public void modelChanged(ModelEvent event) {
+            //ignore
+            if (!isInitilaized.get()) {
+                return;
+            }
+            if (event instanceof ModelEvent.NodeChanged) {
+                ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
+                if (nodeChanged.getChange() != ModelEvent.NodeChanged.DISPLAY_NAME_MASK) {
+                    return;//need to update display name only
+                }
+                final Variable variable = ((Variable) nodeChanged.getNode());
+                if (!tts.isEnabled() || !tts.isToolTipVisible()) {
+                    return;
+                }
+               if ( editorPane != null) {                   
+                    EditorUI eui = Utilities.getEditorUI(editorPane);
+                    if (eui == null) {
+                        //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                        return;
+                    }
+                    ToolTipUI.Expandable expandable = !(variable.isLeaf())
+                            ? new ToolTipUI.Expandable(variable.getAsText(), variable)
+                            : null;
+                    ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                            variable.getVariableName(),
+                            lp.getLine().getLineNumber(),
+                            "NativePinWatchValueProvider");   // NOI18N
+                    final String toolTip = variable.getVariableName()+ "=" + variable.getAsText();//NOI18N
+                    ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);                                
+                    ToolTipSupport tts = toolTipUI.show(editorPane);
+                    variable.getUpdater().removeListener(this);
+                    //variable.getUpdater().setListener(null);
+               }
+            }
+        }
+    }    
     private static final class ModelChangeListenerImpl implements ModelListener {
         @Override
         public void modelChanged(ModelEvent event) {
@@ -2825,13 +2874,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
                 } else if (value_string.startsWith("@0x")) { //NOI18N
                     // See bug 206736 - tooltip for reference-based variable shows address instead of value
-                    balloonEvaluate(lp, "*&" + expr); //NOI18N
+                    balloonEvaluate(lp, "*&" + expr, false); //NOI18N
                     finish();
                     return;
                 } else {
                     value_string = ValuePresenter.getValue(value_string);
                 }
-               
+               final String data_value_string = value_string;
                 Line line = lp.getLine();
                 DataObject dob = DataEditorSupport.findDataObject(line);
                 if (dob == null) {
@@ -2854,9 +2903,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }      
                 //Object var = null; 
                 ModelChangeDelegator mcd = new ModelChangeDelegator();
-                mcd.setListener(new ModelChangeListenerImpl());         
-                final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
-                createMIVar(watch, false, new Runnable() {
+                final ModelChangeListenerTooltipImpl mcLImpl = new ModelChangeListenerTooltipImpl();    
+                final ModelChangeDelegator watchUpdater = watchUpdater();
+                watchUpdater.addListener(mcLImpl);
+                final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, watchUpdater(), expr);
+                final Runnable onDoneRunnable = new Runnable() {
                     @Override
                     public void run() {
                         //need to execute following code only after the value is update in onDone in createMIVar
@@ -2864,17 +2915,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         final String toolTip = expr + "=" + watch.getAsText();//NOI18N
                         final String expression = expr;
                         //get var
+                        //((GdbDebuggerImpl) watch.getDebugger()).getMIChildren((GdbVariable) watch, ((GdbVariable) watch).getMIName(), 0);
                         SwingUtilities.invokeLater(new Runnable() {
 
                             @Override
                             public void run() {
-//                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(GdbDebuggerImpl.this, expr, finalVal);
-//                            expTooltip.showTooltip();
                                 EditorUI eui = Utilities.getEditorUI(ep);
                                 if (eui == null) {
                                     //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
                                     return;
                                 }
+
                                 ToolTipUI.Expandable expandable = !(watch.isLeaf())
                                         ? new ToolTipUI.Expandable(expression, objectVariable)
                                         : null;
@@ -2883,14 +2934,50 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                         lp.getLine().getLineNumber(),
                                         "NativePinWatchValueProvider");   // NOI18N
                                 ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
-                                ToolTipSupport tts = toolTipUI.show(ep);
-//                        if (tts != null) {
-//                            DebuggerStateChangeListener.attach(d, tts);
-//                        }
+                                final ToolTipSupport tts = toolTipUI.show(ep);
+                                if (tts != null) {
+                                    mcLImpl.registerToolTip(tts, ep, lp);
+                                }
+
                             }
                         });
                     }
-                }); 
+                };
+                //this runnable for the case when it is not WATCH
+                final Runnable onErrorRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        //need to execute following code only after the value is update in onDone in createMIVar
+                        final String toolTip = expr + "=" + data_value_string;//NOI18N
+                        final String expression = expr;
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                EditorUI eui = Utilities.getEditorUI(ep);
+                                if (eui == null) {
+                                    //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                                    return;
+                                }
+
+                                ToolTipUI.Expandable expandable = null;
+                                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                                        expression,
+                                        lp.getLine().getLineNumber(),
+                                        "NativePinWatchValueProvider");   // NOI18N
+                                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                                final ToolTipSupport tts = toolTipUI.show(ep);
+                                if (tts != null) {
+                                    mcLImpl.registerToolTip(tts, ep, lp);
+                                }
+
+                            }
+                        });
+                    }
+                };                
+                //the Runnable below will be executed for real watch only
+                //but what if we want to get expression evaluation
+                createMIVar(watch, false, onDoneRunnable, onErrorRunnable); 
                 
                 finish();
             }
@@ -3008,7 +3095,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (Log.Variable.mi_vars) {
             System.out.println("registerWatchModel " + model); // NOI18N
         }
-        watchUpdater().setListener(model);
+        watchUpdater().addListener(model);
         if (model != null) {
             get_watches = true;
             if (state().isProcess && !state().isRunning) {
@@ -3075,6 +3162,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void updateValue(final GdbVariable v, MIValue miValue, boolean pretty) {
+        boolean valueChanged = false;
         String value = null;
         if (miValue != null) {
             value = miValue.asConst().value();
@@ -3083,6 +3171,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!pretty) {
             value = ValuePresenter.getValue(value);
         }
+        valueChanged = !value.equals(v.getAsText());
         v.setAsText(value);
 
         // pretty printer for string type
@@ -3092,9 +3181,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
-            final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
-            if (nativeWatch != null) {
-                NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+            if (WatchVariable.class.isAssignableFrom(v.getClass())) {
+                final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
+                if (nativeWatch != null) {
+                    NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+                }
+            }
+            if (valueChanged) {
+                v.getUpdater().treeNodeChanged(v, ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
             }
         } else {
             localUpdater.treeNodeChanged(v); // just update this node
@@ -3471,7 +3565,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
     }
-
+    
     private class DeleteMIVarCommand extends MiCommandImpl {
 
         private final GdbVariable v;
@@ -3515,14 +3609,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     
     private void createMIVar(final GdbVariable v, boolean expandMacros) {
-        createMIVar(v, expandMacros, null);
+        createMIVar(v, expandMacros, null, null);
     }
 
-    private void createMIVar(final GdbVariable v, boolean expandMacros, final Runnable onDoneRunnable) {
+    private void createMIVar(final GdbVariable v, boolean expandMacros, final Runnable onDoneRunnable,
+            final Runnable onErrorRunnable) {
         String expr = v.getVariableName();
         if (expandMacros) {
             expr = MacroSupport.expandMacro(this, v.getVariableName());
-        }
+        }       
         String cmdString = peculiarity.createVarCommand(expr, currentThreadId, "0"); // NOI18N // TODO: correct frame number
         MICommand cmd =
             new MiCommandImpl(cmdString) {
@@ -3541,13 +3636,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             @Override
             protected void onError(MIRecord record) {
-                // If var's being created for watches cannot be parsed
+                // If var's eing created for watches cannot be parsed
                 // we get an error.
                 String errMsg = getErrMsg(record);
                 v.setAsText(errMsg);
                 v.setInScope(false);
                 finish();
+                if (onErrorRunnable != null) {
+                    onErrorRunnable.run();
+                }                
                 watchUpdater().treeChanged();     // causes a pull
+
             }
         };
         gdb.sendCommand(cmd);
@@ -3565,7 +3664,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (Log.Variable.mi_vars) {
             System.out.println("registerLocalModel " + model); // NOI18N
         }
-        localUpdater.setListener(model);
+        localUpdater.addListener(model);
         if (model != null) {
             get_locals = true;
             if ((state().isProcess || state().isCore) && !state().isRunning) {

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 
@@ -85,14 +84,9 @@ public class ActiveTerm extends StreamTerm {
 	getScreen().addMouseListener(new MouseAdapter() {
             @Override
 	    public void mouseClicked(MouseEvent e) {
-		if ( (e.getModifiers() & InputEvent.BUTTON1_MASK) !=
-		    InputEvent.BUTTON1_MASK) {
-		    // ignore if not left button
-		    return;
-		}
 		Point p = mapToBufRowCol(e.getPoint());
 		BCoord c = new BCoord(p.y, p.x);
-		Coord ac = new Coord(c, firsta);
+		Coord ac = new Coord(c, firsta());
 		ActiveRegion region = rm.findRegion(ac);
 		if (region != null) {
 		    if (region.isSelectable())
@@ -108,7 +102,7 @@ public class ActiveTerm extends StreamTerm {
 	    public void mouseMoved(MouseEvent e) {
 		Point p = mapToBufRowCol(e.getPoint());
 		BCoord c = new BCoord(p.y, p.x);
-		Coord ac = new Coord(c, firsta);
+		Coord ac = new Coord(c, firsta());
 
 		ActiveRegion region = rm.findRegion(ac);
                 if (region.isLink())

@@ -124,6 +124,10 @@ public class SwitchToAction extends ContextAction {
         SVNUrl rootUrl = null, fileUrl = null;
         try {            
             rootUrl = ContextAction.getSvnUrl(ctx);
+            if (rootUrl == null) {
+                SvnClientExceptionHandler.notifyNullUrl(ctx);
+                return; // otherwise NPE, see #267975
+            }
             fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             if (rootUrl == null) {

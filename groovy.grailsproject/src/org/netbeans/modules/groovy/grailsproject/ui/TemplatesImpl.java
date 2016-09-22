@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoryType;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.GrailsArtifacts;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -147,14 +147,14 @@ public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates 
     };
 
 
-    private final SourceCategory sourceCategory;
+    private final SourceCategoryType sourceCategory;
 
 
     public TemplatesImpl(GrailsProject project, SourceGroup sourceGroup) {
         FileObject projectDir = project.getProjectDirectory();
         FileObject rootFolder = sourceGroup.getRootFolder();
 
-        sourceCategory = GrailsArtifacts.getCategoryForFolder(projectDir, rootFolder);
+        sourceCategory = GrailsArtifacts.getCategoryTypeForFolder(projectDir, rootFolder, project.getSourceCategoriesFactory());
     }
 
     @Override

@@ -109,6 +109,7 @@ import org.netbeans.modules.javaee.wildfly.config.WildflyResourceAdapter;
 import org.netbeans.modules.javaee.wildfly.config.WildflySocket;
 
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.addModelNodeChild;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.addModelNodeChildString;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.closeClient;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createAddOperation;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.createClient;
@@ -686,6 +687,23 @@ public class WildflyClient {
         }
     }
 
+    public boolean removeDatasource(String name) throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, DATASOURCES_SUBSYSTEM);
+            values.put(DATASOURCE_TYPE, name);
+            // ModelNode
+            Object address = createPathAddressAsModelNode(cl, values);
+            Object operation = createRemoveOperation(cl, address);
+            // ModelNode
+            Object response = executeOnModelNode(cl, operation);
+            return (isSuccessfulOutcome(cl, response));
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     private Pair<String, String> getServerPaths(WildflyDeploymentFactory.WildFlyClassLoader cl) {
         try {
             // ModelNode
@@ -740,27 +758,27 @@ public class WildflyClient {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<MessageDestination> destinations = new ArrayList<>();
             // ModelNode
-            final Object readHornetQServers = createModelNode(cl);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
+            final Object readMessagingServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(DEPLOYMENT, deployment);
             values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, ADDRESS), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, RECURSIVE_DEPTH), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
-            Object response = executeOnModelNode(cl, readHornetQServers);
+            Object response = executeOnModelNode(cl, readMessagingServers);
             if (isSuccessfulOutcome(cl, response)) {
                 // List<ModelNode>
                 List names = modelNodeAsList(cl, readResult(cl, response));
-                for (Object hornetqServer : names) {
-                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
-                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, hornetqServerName, Type.QUEUE));
-                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, hornetqServerName, Type.TOPIC));
+                for (Object messagingServer : names) {
+                    String messagingServerName = modelNodeAsString(cl, messagingServer);
+                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, messagingServerName, Type.QUEUE));
+                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, messagingServerName, Type.TOPIC));
                 }
             }
             return destinations;
@@ -774,26 +792,26 @@ public class WildflyClient {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<MessageDestination> destinations = new ArrayList<MessageDestination>();
             // ModelNode
-            final Object readHornetQServers = createModelNode(cl);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
+            final Object readMessagingServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
             values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, ADDRESS), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, RECURSIVE_DEPTH), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
-            Object response = executeOnModelNode(cl, readHornetQServers);
+            Object response = executeOnModelNode(cl, readMessagingServers);
             if (isSuccessfulOutcome(cl, response)) {
                 // List<ModelNode>
                 List names = modelNodeAsList(cl, readResult(cl, response));
-                for (Object hornetqServer : names) {
-                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
-                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.QUEUE));
-                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.TOPIC));
+                for (Object messagingServer : names) {
+                    String messagingServerName = modelNodeAsString(cl, messagingServer);
+                    destinations.addAll(getJMSDestinationForServer(messagingServerName, Type.QUEUE));
+                    destinations.addAll(getJMSDestinationForServer(messagingServerName, Type.TOPIC));
                 }
             }
             return destinations;
@@ -908,21 +926,47 @@ public class WildflyClient {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, getMessagingSubsystem());
-            values.put("hornetq-server", "default");
+            values.put(getMessagingServerType(), "default");
             if (destination.getType() == Type.QUEUE) {
                 values.put("jms-queue", destination.getName());
             } else {
                 values.put("jms-topic", destination.getName());
             }
             Object address = createPathAddressAsModelNode(cl, values);
-            Object operation = setModelNodeChild(cl, getModelNodeChild(cl, createAddOperation(cl, address), "entries"), destination.getJndiNames());
-            Object response = executeOnOperation(cl, operation);
+            Object operation = createAddOperation(cl, address);
+            if(destination.getJndiNames().isEmpty()) {
+                destination.addEntry(destination.getName());
+            }
+            for(String jndiName : destination.getJndiNames()) {
+                addModelNodeChildString(cl, getModelNodeChild(cl, operation, "entries"), jndiName);
+            }
+            Object response = executeOnModelNode(cl, operation);
             return (isSuccessfulOutcome(cl, response));
-        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
             return false;
         }
     }
-    
+
+    public boolean removeMessageDestination(WildflyMessageDestination destination) throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), "default");
+            if (destination.getType() == Type.QUEUE) {
+                values.put("jms-queue", destination.getName());
+            } else {
+                values.put("jms-topic", destination.getName());
+            }
+            Object address = createPathAddressAsModelNode(cl, values);
+            Object operation = createRemoveOperation(cl, address);
+            Object response = executeOnModelNode(cl, operation);
+            return (isSuccessfulOutcome(cl, response));
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
+            return false;
+        }
+    }
+
     public Collection<WildflyJaxrsResourceNode> listJaxrsResources(Lookup lookup, String deployment) throws IOException {
         Collection<WildflyJaxrsResource> jaxrsResources = listJaxrsResources(deployment);
         List<WildflyJaxrsResourceNode> modules = new ArrayList<>(jaxrsResources.size());
@@ -1147,25 +1191,25 @@ public class WildflyClient {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<WildflyConnectionFactory> connectionFactories = new ArrayList<>();
             // ModelNode
-            final Object readHornetQServers = createModelNode(cl);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
+            final Object readMessagingServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
-            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, ADDRESS), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readMessagingServers, RECURSIVE_DEPTH), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
-            Object response = executeOnModelNode(cl, readHornetQServers);
+            Object response = executeOnModelNode(cl, readMessagingServers);
             if (isSuccessfulOutcome(cl, response)) {
                 // List<ModelNode>
                 List names = modelNodeAsList(cl, readResult(cl, response));
-                for (Object hornetqServer : names) {
-                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
-                    connectionFactories.addAll(getConnectionFactoriesForServer(hornetqServerName));
+                for (Object messagingServer : names) {
+                    String messagingServerName = modelNodeAsString(cl, messagingServer);
+                    connectionFactories.addAll(getConnectionFactoriesForServer(messagingServerName));
                 }
             }
             return connectionFactories;
@@ -1174,7 +1218,7 @@ public class WildflyClient {
         }
     }
 
-    private Collection<? extends WildflyConnectionFactory> getConnectionFactoriesForServer(String hornetqServerName) throws IOException {
+    private Collection<? extends WildflyConnectionFactory> getConnectionFactoriesForServer(String messagingServerName) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<WildflyConnectionFactory> listedConnectionFactories = new ArrayList<>();
@@ -1185,7 +1229,7 @@ public class WildflyClient {
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, getMessagingSubsystem());
-            values.put(getMessagingServerType(), hornetqServerName);
+            values.put(getMessagingServerType(), messagingServerName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readConnectionFactories, ADDRESS), path);

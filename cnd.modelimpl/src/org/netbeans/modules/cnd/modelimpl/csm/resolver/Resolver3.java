@@ -447,18 +447,21 @@ public final class Resolver3 implements Resolver {
     private CsmObject resolveInUsingDeclarations(CsmObject result, CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
             MutableObject<CsmObject> usedDecl = new MutableObject<>();
-            Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS, nameToken);//, nameToken);
-            if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
-                return usedDecl.value;
-            }
-            for (CsmProject library : project.getLibraries()) {
-                CsmNamespace libNs = library.findNamespace(containingNS.getQualifiedName());
-                if (libNs != null) {
-                    decls = CsmUsingResolver.getDefault().findUsedDeclarations(libNs, nameToken);
-                    if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
-                        return usedDecl.value;
+            while (containingNS != null) { 
+                Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS, nameToken);//, nameToken);
+                if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
+                    return usedDecl.value;
+                }
+                for (CsmProject library : project.getLibraries()) {
+                    CsmNamespace libNs = library.findNamespace(containingNS.getQualifiedName());
+                    if (libNs != null) {
+                        decls = CsmUsingResolver.getDefault().findUsedDeclarations(libNs, nameToken);
+                        if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
+                            return usedDecl.value;
+                        }
                     }
                 }
+                containingNS = containingNS.getParent();
             }
         }
         return result;

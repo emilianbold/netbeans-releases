@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -144,7 +143,7 @@ class MyFontMetrics {
                 entry.down();
             }
         }
-        private static AbstractMap<FontMetrics, WidthCache> map = new HashMap<FontMetrics, WidthCache>();
+        private static final AbstractMap<FontMetrics, WidthCache> map = new HashMap<>();
 
     }
 

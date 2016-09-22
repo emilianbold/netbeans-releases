@@ -86,20 +86,20 @@ class MultiDiffPanel extends javax.swing.JPanel {
         controlToolbar.setRollover(true);
 
         btnModeGroup.add(tgbHeadVsWorking);
-        tgbHeadVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png"))); // NOI18N
+        tgbHeadVsWorking.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/head_vs_working.png", false)); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/diff/Bundle"); // NOI18N
         tgbHeadVsWorking.setToolTipText(bundle.getString("MultiDiffPanel.tgbHeadVsWorking.toolTipText")); // NOI18N
         tgbHeadVsWorking.setFocusable(false);
         controlToolbar.add(tgbHeadVsWorking);
 
         btnModeGroup.add(tgbHeadVsIndex);
-        tgbHeadVsIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png"))); // NOI18N
+        tgbHeadVsIndex.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/head_vs_index.png", false)); // NOI18N
         tgbHeadVsIndex.setToolTipText(bundle.getString("MultiDiffPanel.tgbHeadVsIndex.toolTipText")); // NOI18N
         tgbHeadVsIndex.setFocusable(false);
         controlToolbar.add(tgbHeadVsIndex);
 
         btnModeGroup.add(tgbIndexVsWorking);
-        tgbIndexVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/index_vs_working.png"))); // NOI18N
+        tgbIndexVsWorking.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/index_vs_working.png", false)); // NOI18N
         tgbIndexVsWorking.setToolTipText(bundle.getString("MultiDiffPanel.tgbIndexVsWorking.toolTipText")); // NOI18N
         tgbIndexVsWorking.setFocusable(false);
         controlToolbar.add(tgbIndexVsWorking);
@@ -120,7 +120,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         controlToolbar.add(jPanel1);
 
         viewTypeGroup.add(listButton);
-        listButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/file_view.png"))); // NOI18N
+        listButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/file_view.png", false)); // NOI18N
         listButton.setToolTipText(bundle.getString("MultiDiffPanel.listButton.toolTipText")); // NOI18N
         listButton.setFocusable(false);
         listButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -128,7 +128,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         controlToolbar.add(listButton);
 
         viewTypeGroup.add(treeButton);
-        treeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/logical_view.png"))); // NOI18N
+        treeButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/logical_view.png", false)); // NOI18N
         treeButton.setSelected(true);
         treeButton.setToolTipText(bundle.getString("MultiDiffPanel.treeButton.toolTipText")); // NOI18N
         treeButton.setFocusable(false);
@@ -151,14 +151,14 @@ class MultiDiffPanel extends javax.swing.JPanel {
 
         controlToolbar.add(jPanel2);
 
-        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))); // NOI18N
+        nextButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-next.png", false)); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.nextButton.toolTipText")); // NOI18N
         nextButton.setFocusable(false);
         nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlToolbar.add(nextButton);
 
-        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))); // NOI18N
+        prevButton.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/diff-prev.png", false)); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.prevButton.toolTipText")); // NOI18N
         prevButton.setFocusable(false);
         prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -180,7 +180,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
 
         controlToolbar.add(jPanel4);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/refresh.png", false)); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("MultiDiffPanel.btnRefresh.toolTipText")); // NOI18N
         btnRefresh.setActionCommand("null"); // NOI18N
         btnRefresh.setFocusable(false);
@@ -191,13 +191,13 @@ class MultiDiffPanel extends javax.swing.JPanel {
         jPanel3.setOpaque(false);
         controlToolbar.add(jPanel3);
 
-        btnRevert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/get_clean.png"))); // NOI18N
+        btnRevert.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/get_clean.png", false)); // NOI18N
         btnRevert.setToolTipText(bundle.getString("MultiDiffPanel.btnRevert.toolTipText")); // NOI18N
         btnRevert.setFocusable(false);
         btnRevert.setPreferredSize(new java.awt.Dimension(22, 25));
         controlToolbar.add(btnRevert);
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/commit.png"))); // NOI18N
+        btnCommit.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/commit.png", false)); // NOI18N
         btnCommit.setToolTipText(bundle.getString("MultiDiffPanel.btnCommit.toolTipText")); // NOI18N
         btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));

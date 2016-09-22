@@ -323,6 +323,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             SVNUrl repository;
             try {
                 repository = ContextAction.getSvnUrl(context);
+                // repository can be null here, but the callees below seem to be able to process this
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(context, ex, false, false);
                 return;

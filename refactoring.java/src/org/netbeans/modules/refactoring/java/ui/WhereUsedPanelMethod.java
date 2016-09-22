@@ -103,7 +103,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         btn_usages_overriders = new javax.swing.JRadioButton();
         searchOverloaded = new javax.swing.JCheckBox();
 
-        label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/refactoring/java/resources/warning_16.png"))); // NOI18N
+        label.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/refactoring/java/resources/warning_16.png", false)); // NOI18N
         label.setText("<<Element>>"); // NOI18N
 
         searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());

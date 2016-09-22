@@ -602,13 +602,12 @@ public final class SourceRoots extends Roots {
 
         //@GuardedBy(SourceRoots.this)
         private final Set<File> files = new HashSet<File>();
-        private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
 
         //@GuardedBy("SourceRoots.this")
         public void add(File f) {
             if (!files.contains(f)) {
                 files.add(f);
-                FileUtil.addFileChangeListener(weakFilesListener, f);
+                FileUtil.addFileChangeListener(this, f);
             }
         }
 
@@ -616,7 +615,7 @@ public final class SourceRoots extends Roots {
         public void removeFileListeners() {
             for(File f : files) {
                 try {
-                    FileUtil.removeFileChangeListener(weakFilesListener, f);
+                    FileUtil.removeFileChangeListener(this, f);
                 } catch (IllegalArgumentException iae) {
                     // log
                     LOG.log(Level.FINE, null, iae);

@@ -109,6 +109,9 @@ public final class Utils {
                 assert false;
             }
         }
+        if (command == null) {
+            breakpoint.setInvalid();    // No command, can not be valid
+        }
         if (!breakpoint.isEnabled()) {
             command.setState(State.DISABLED);
         }

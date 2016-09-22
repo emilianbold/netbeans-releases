@@ -134,10 +134,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                     }
                 }
             }
-        } catch (IllegalArgumentException iae) {
-            Exceptions.printStackTrace(iae);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        } catch (IllegalArgumentException | IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -210,7 +208,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             true,
             true,
             false,
-            false);
+            false,
+            null);
         final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null, null);
         TreeLoader.preRegister(jt.getContext(), cpInfo, true);
         //Force JTImpl.prepareCompiler to get JTImpl into Context

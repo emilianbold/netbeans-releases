@@ -49,7 +49,7 @@ Contributor(s):
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.37.5</specification-version>
+                        <specification-version>1.37.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

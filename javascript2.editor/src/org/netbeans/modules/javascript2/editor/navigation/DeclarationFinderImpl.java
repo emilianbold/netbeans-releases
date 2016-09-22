@@ -342,6 +342,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
         if (!indexResults.isEmpty()) {
             IndexResult iResult = indexResults.get(0);
+            if (iResult.getFile() == null) {
+                return null;
+            }
             String value = iResult.getValue(Index.FIELD_OFFSET);
             int offset = Integer.parseInt(value);
             HashSet<String> alreadyThere = new HashSet<String>();
@@ -350,7 +353,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (indexResults.size() > 1) {
                 for (int i = 0; i < indexResults.size(); i++) {
                     iResult = indexResults.get(i);
-                    if (!alreadyThere.contains(iResult.getFile().getPath() + offset)) {
+                    if (iResult != null && iResult.getFile() != null && !alreadyThere.contains(iResult.getFile().getPath() + offset)) {
                         location.addAlternative(new AlternativeLocationImpl(iResult));
                         alreadyThere.add(iResult.getFile().getPath() + offset);
                     }

@@ -2,6 +2,25 @@ infocmp
 	-C	termcap Compatibility
 	-1	1 entry per line
 
+term interp inheritance
+-----------------------
+Term.setEmulation()/InterpKit doesn't know about the "Proto" variations.
+
+InterpDumb "dumb"
+	InterpProtoANSI
+		InterpANSI "ansi"
+		InterpProtoANSIX
+			InterpDtTerm "dtterm"
+			InterpXTerm "xterm"
+
+dtterm is usually lacking on stock Linux systems so to install it
+- wget http://catb.org/terminfo/termtypes.ti.gz
+- by hand extract dtterm.ti from termtypes.ti
+- tic -o . dtterm.ti
+- copy ./d/dtterm to /usr/share/terminfo/d
+
+"standard"s
+-----------
 ANSI:
 http://en.wikipedia.org/wiki/ANSI_escape_code
 http://www.ecma-international.org/publications/standards/Ecma-048.htm
@@ -13,6 +32,8 @@ DtTerm:
 http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V51_HTML/MAN/MAN5/0200____.HTM
 http://www.s-gms.ms.edus.si/cgi-bin/man-cgi?dtterm+5
 
+legend
+------
 S: appears in "standard"
 T: appears in termcap/infocmp -C (on either solaris _or_ linux)
 N: Not supported
@@ -178,8 +199,8 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%d;%dr	DECSTBM			cs		csr		?	?	-T	ST 	ST	protoansi	ACT_MARGIN
 
-\ESC[t		-			-				?	?	--	?-	?-	ansi	ACT_GLYPH (should be dtterm?)
-\ESC[t		-			-				?	?	--	S-	S-	N	(window manipulation dtterm)
+\ESC[t		-			-				?	?	--	?-	?-	dtterm	ACT_GLYPH
+\ESC[t		-			-				?	?	--	S-	S-	N	(window manipulation xterm/dtterm 1-21)
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------

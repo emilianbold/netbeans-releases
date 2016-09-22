@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -51,7 +51,7 @@ import org.netbeans.SetupHid;
 import org.osgi.framework.BundleContext;
 
 /**
- * Are system properties properly initialized when specifying 
+ * Are system properties properly initialized when specifying
  * osgi.framework.useSystemProperties?
  *
  * @author Jaroslav Tulach
@@ -73,7 +73,7 @@ public class NetbinoxUseSystemPropertiesTest extends SetupHid {
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
-        
+
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "space in path");
         jars.mkdirs();

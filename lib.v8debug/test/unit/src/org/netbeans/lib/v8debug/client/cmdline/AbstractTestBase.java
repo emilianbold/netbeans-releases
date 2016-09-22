@@ -133,6 +133,10 @@ abstract class AbstractTestBase {
         while ((line = bso.readLine()) != null) {
             int space = line.lastIndexOf(' ');
             if (space > 0) {
+                int col = line.lastIndexOf(':');
+                if (col > space) {
+                    space = col + 1;
+                }
                 try {
                     int port = Integer.parseInt(line.substring(space).trim());
                     reportPrgOutput(bso);

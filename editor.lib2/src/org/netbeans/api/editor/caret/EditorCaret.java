@@ -337,11 +337,20 @@ public final class EditorCaret implements Caret {
     private boolean atomicSectionAnyCaretChange;
     
     /**
-     * Lowest offset where modification was performed during atomic lock.
+     * Lowest offset where modification was performed or where view change occurred
+     * during atomic lock section.
      * <br>
      * Set to Integer.MAX_VALUE if no modification was done during atomic section yet.
      */
-    private transient int atomicSectionLowestModOffset;
+    private transient int atomicSectionStartChangeOffset;
+    /**
+     * Highest offset where modification was performed or where view change occurred
+     * during atomic lock section.
+     * <br>
+     * It may be Integer.MAX_VALUE to mark that all caret infos till end of doc
+     * must be recomputed.
+     */
+    private transient int atomicSectionEndChangeOffset;
     
     private Preferences prefs = null;
 
@@ -593,7 +602,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.setDot(context.getOriginalLastCaret(), pos);
+                        context.setDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
@@ -650,7 +659,7 @@ public final class EditorCaret implements Caret {
                 if (doc != null) {
                     try {
                         Position pos = doc.createPosition(offset);
-                        context.moveDot(context.getOriginalLastCaret(), pos);
+                        context.moveDot(context.getOriginalLastCaret(), pos, Position.Bias.Forward);
                     } catch (BadLocationException ex) {
                         // Ignore the setDot() request
                     }
@@ -1003,7 +1012,7 @@ public final class EditorCaret implements Caret {
             }
             listenerImpl.focusGained(null); // emulate focus gained
         }
-        invalidateCaretBounds(0);
+        invalidateCaretBounds(0, Integer.MAX_VALUE);
         dispatchUpdate(false);
         resetBlink();
     }
@@ -1154,8 +1163,13 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    public @Override void setMagicCaretPosition(Point p) {
-        getLastCaretItem().setMagicCaretPosition(p);
+    public @Override void setMagicCaretPosition(final Point p) {
+        runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, new CaretMoveHandler() {
+            @Override
+            public void moveCarets(CaretMoveContext context) {
+                context.setMagicCaretPosition(context.getOriginalLastCaret(), p);
+            }
+        }, MoveCaretsOrigin.DISABLE_FILTERS);
     }
 
     public @Override final Point getMagicCaretPosition() {
@@ -1571,19 +1585,27 @@ public final class EditorCaret implements Caret {
                             if (replaceItems != null) {
                                 caretItems = replaceItems;
                                 diffCount = replaceItems.size() - caretItems.size();
-                                for (CaretItem caretItem : caretItems) {
-                                    if (caretItem.getAndClearInfoObsolete()) {
-                                        caretItem.clearInfo();
-                                    }
-                                }
-                               sortedCaretItems = activeTransaction.getSortedCaretItems();
-                               assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
+                                sortedCaretItems = activeTransaction.getSortedCaretItems();
+                                assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
-                            if (activeTransaction.isAnyChange()) {
+                            boolean chg = false;
+                            if (activeTransaction.isDotOrStructuralChange()) {
                                 caretInfos = null;
                                 sortedCaretInfos = null;
                                 if (inAtomicSectionL) {
                                     atomicSectionAnyCaretChange = true;
+                                }
+                                chg = true;
+                            } else if (activeTransaction.isMagicPosChange()) {
+                                caretInfos = null;
+                                sortedCaretInfos = null;
+                                chg = true;
+                            }
+                            if (chg) {
+                                for (CaretItem caretItem : caretItems) {
+                                    if (caretItem.getAndClearInfoObsolete()) {
+                                        caretItem.clearInfo();
+                                    }
                                 }
                             }
                             scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
@@ -1621,7 +1643,7 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
-                        if (activeTransaction.isAnyChange()) {
+                        if (activeTransaction.isDotOrStructuralChange()) {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
@@ -1949,7 +1971,7 @@ public final class EditorCaret implements Caret {
                             oldCaretBounds = caretBounds;
                         }
                         if (caretBounds != null) {
-                            Rectangle scrollBounds = caretBounds; // Must possibly be cloned upon change
+                            Rectangle scrollBounds = new Rectangle(caretBounds); // Must possibly be cloned upon change
                             // Only scroll the view for the LAST caret to be visible
                             // For null old bounds (likely at begining of component displayment) ensure that a possible
                             // horizontal scrollbar would not hide the caret so enlarge the scroll bounds by hscrollbar height.
@@ -1976,6 +1998,14 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             if (editorRect == null || !editorRect.contains(scrollBounds)) {
+                                Rectangle visibleBounds = c.getVisibleRect();
+                                if (// #219580: if the preceding if-block computed new scrollBounds, it cannot be offset yet more
+                                        /* # 70915 !updateAfterFoldHierarchyChange && */ (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
+                                        || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)) {
+                                    // Scroll into the middle
+                                    scrollBounds.y -= (visibleBounds.height - caretBounds.height) / 2;
+                                    scrollBounds.height = visibleBounds.height;
+                                }
                                 // When typing on a longest line the size of the component may still not incorporate just performed insert
                                 // at this point so schedule the scrolling for later.
                                 Dimension size = c.getSize();
@@ -2052,7 +2082,7 @@ public final class EditorCaret implements Caret {
         }
     }
     
-    void invalidateCaretBounds(int startOffset) {
+    void invalidateCaretBounds(int startOffset, int endOffset) {
         List<CaretInfo> sortedCarets = getSortedCarets();
         int low = 0;
         int caretsSize = sortedCarets.size();
@@ -2061,10 +2091,10 @@ public final class EditorCaret implements Caret {
             while (low <= high) {
                 int mid = (low + high) >>> 1;
                 CaretInfo midCaretInfo = sortedCarets.get(mid);
-                int midDot = midCaretInfo.getDot();
-                if (midDot < startOffset) {
+                int midMinOffset = midCaretInfo.getSelectionStart();
+                if (midMinOffset < startOffset) {
                     low = mid + 1;
-                } else if (midDot > startOffset) {
+                } else if (midMinOffset > startOffset) {
                     high = mid - 1;
                 } else { // midDot == clipStartOffset
                     // There should not be multiple carets at the same offset so use the found one
@@ -2077,6 +2107,9 @@ public final class EditorCaret implements Caret {
         for (int i = low; i < caretsSize; i++) {
             CaretInfo caretInfo = sortedCarets.get(i);
             CaretItem caretItem = caretInfo.getCaretItem();
+            if (caretInfo.getSelectionStart() > endOffset) {
+                break;
+            }
             caretItem.markUpdateCaretBounds();
         }
     }
@@ -2353,7 +2386,7 @@ public final class EditorCaret implements Caret {
     private boolean isLeftMouseButtonExt(MouseEvent evt) {
         return (SwingUtilities.isLeftMouseButton(evt)
                 && !(evt.isPopupTrigger())
-                && (evt.getModifiers() & (InputEvent.META_MASK/* | InputEvent.ALT_MASK*/)) == 0);
+                && (org.openide.util.Utilities.isMac() || (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0));
     }
     
     private boolean isMiddleMouseButtonExt(MouseEvent evt) {
@@ -2407,6 +2440,16 @@ public final class EditorCaret implements Caret {
             }
         }
         return false;
+    }
+    
+    private void extendAtomicSectionChangeArea(int changeStartOffset, int changeEndOffset) {
+        if (atomicSectionStartChangeOffset == Integer.MAX_VALUE) {
+            atomicSectionStartChangeOffset = changeStartOffset;
+            atomicSectionEndChangeOffset = changeEndOffset;
+        } else {
+            atomicSectionStartChangeOffset = Math.min(atomicSectionStartChangeOffset, changeStartOffset);
+            atomicSectionEndChangeOffset = Math.max(atomicSectionEndChangeOffset, changeEndOffset);
+        }
     }
     
     private static String logMouseEvent(MouseEvent evt) {
@@ -2534,7 +2577,7 @@ public final class EditorCaret implements Caret {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
                     runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null, MoveCaretsOrigin.DISABLE_FILTERS);
                 }
-                modifiedUpdate(evt, offset, offset + length);
+                modifiedUpdate(evt, offset, offset + length, offset + length);
                 
             }
         }
@@ -2544,7 +2587,7 @@ public final class EditorCaret implements Caret {
             if (c != null) {
                 int offset = evt.getOffset();
                 runTransaction(CaretTransaction.RemoveType.DOCUMENT_REMOVE, offset, null, null);
-                modifiedUpdate(evt, offset, offset);
+                modifiedUpdate(evt, offset, offset, offset);
             }
         }
 
@@ -2555,7 +2598,7 @@ public final class EditorCaret implements Caret {
         void atomicLock(AtomicLockEvent evt) {
             synchronized (listenerList) {
                 inAtomicSection = true;
-                atomicSectionLowestModOffset = Integer.MAX_VALUE;
+                atomicSectionStartChangeOffset = Integer.MAX_VALUE;
                 atomicSectionImplicitSetDotOffset = Integer.MAX_VALUE;
                 atomicSectionAnyCaretChange = false;
             }
@@ -2575,8 +2618,8 @@ public final class EditorCaret implements Caret {
                         change = true;
                     }
                 }
-                if (atomicSectionLowestModOffset != Integer.MAX_VALUE) {
-                    invalidateCaretBounds(atomicSectionLowestModOffset);
+                if (atomicSectionStartChangeOffset != Integer.MAX_VALUE) {
+                    invalidateCaretBounds(atomicSectionStartChangeOffset, atomicSectionEndChangeOffset);
                     change = true;
                 }
                 if (change) {
@@ -2587,7 +2630,7 @@ public final class EditorCaret implements Caret {
             }
         }
 
-        private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+        private void modifiedUpdate(DocumentEvent evt, int offset, int endOffset, int setDotOffset) {
             // For typing modification ensure that the last caret will be visible after the typing modification.
             // Otherwise the caret would go off the screen when typing at the end of a long line.
             // It might make sense to make an implicit dot setting to end of the modification
@@ -2606,9 +2649,9 @@ public final class EditorCaret implements Caret {
             }
 
             if (inAtomicSection) {
-                atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, offset);
+                extendAtomicSectionChangeArea(offset, endOffset);
             } else { // Not in atomic section
-                invalidateCaretBounds(offset);
+                invalidateCaretBounds(offset, endOffset);
                 updateAndFireChange();
             }
         }
@@ -2676,18 +2719,24 @@ public final class EditorCaret implements Caret {
                                 c.requestFocus();
                             }
                             c.setDragEnabled(true);
-                            if (evt.isControlDown() && evt.isShiftDown()) {
-                                mouseState = MouseState.CHAR_SELECTION;
+                            // Check Add Caret: Cmd+Shift+Click on Mac or Ctrl+Shift+Click on other platforms
+                            if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) &&
+                                evt.isShiftDown())
+                            {
+                                // "Add multicaret" mode
+                                mouseState = MouseState.DEFAULT;
                                 try {
                                     Position pos = doc.createPosition(offset);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward) }, null);
+                                    //add/remove caret
+                                    runTransaction(CaretTransaction.RemoveType.TOGGLE_CARET, 0,
+                                            new CaretItem[]{new CaretItem(EditorCaret.this, pos, Position.Bias.Forward, pos, Position.Bias.Forward)}, null);
                                     evt.consume();
                                 } catch (BadLocationException ex) {
                                     // Do nothing
                                 }
                             } else if (evt.isShiftDown()) { // Select till offset
                                 moveDot(offset);
+                                setMagicCaretPosition(null);
                                 adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                                 mouseState = MouseState.CHAR_SELECTION;
                             } else // Regular press
@@ -2697,6 +2746,7 @@ public final class EditorCaret implements Caret {
                             } else { // Drag not possible
                                 mouseState = MouseState.CHAR_SELECTION;
                                 setDot(offset);
+                                setMagicCaretPosition(null);
                             }
                             break;
 
@@ -2712,18 +2762,8 @@ public final class EditorCaret implements Caret {
                                 }
                                 if (!foldExpanded) {
                                     if (evt.isControlDown() && evt.isShiftDown()) {
-                                        try {
-                                            int begOffs = Utilities.getWordStart(c, offset);
-                                            int endOffs = Utilities.getWordEnd(c, offset);
-                                            Position beginPos = doc.createPosition(begOffs);
-                                            Position endPos = doc.createPosition(endOffs);
-                                            runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                                     new CaretItem[] { new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward) }, null);
-                                            minSelectionStartOffset = begOffs;
-                                            minSelectionEndOffset = endOffs;
-                                        } catch (BadLocationException ex) {
-                                            // Do nothing
-                                        }
+                                        // "Add multicaret" mode only with single click
+                                        mouseState = MouseState.DEFAULT;
                                     } else {
                                         if (selectWordAction == null) {
                                             selectWordAction = EditorActionUtilities.getAction(
@@ -2747,18 +2787,8 @@ public final class EditorCaret implements Caret {
                             // Disable drag which would otherwise occur when mouse would be over text
                             c.setDragEnabled(false);
                             if (evt.isControlDown() && evt.isShiftDown()) {
-                                try {
-                                    int begOffs = Utilities.getRowStart(c, offset);
-                                    int endOffs = Utilities.getRowEnd(c, offset);
-                                    Position beginPos = doc.createPosition(begOffs);
-                                    Position endPos = doc.createPosition(endOffs);
-                                    runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
-                                            new CaretItem[]{new CaretItem(EditorCaret.this, endPos, Position.Bias.Forward, beginPos, Position.Bias.Forward)}, null);
-                                    minSelectionStartOffset = begOffs;
-                                    minSelectionEndOffset = endOffs;
-                                } catch (BadLocationException ex) {
-                                    // Do nothing
-                                }
+                                // "Add multicaret" mode only with single click
+                                mouseState = MouseState.DEFAULT;
                             } else {
                                 if (selectLineAction == null) {
                                     selectLineAction = EditorActionUtilities.getAction(
@@ -2873,6 +2903,7 @@ public final class EditorCaret implements Caret {
                                     try {
                                         doc.insertString(offset, pastingString, null);
                                         setDot(offset + pastingString.length());
+                                        setMagicCaretPosition(null);
                                     } catch (BadLocationException exc) {
                                     }
                                 }
@@ -3101,16 +3132,15 @@ public final class EditorCaret implements Caret {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            if (evt.isChangeY()) {
-                int changeStartOffset = evt.changeStartOffset();
-                // Doc should be read/write-locked here => do no sync for inAtomicSection
-                if (inAtomicSection) {
-                    atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, changeStartOffset);
-                } else {
-                    invalidateCaretBounds(changeStartOffset);
-                }
-                dispatchUpdate(true); // Schedule an update later
+            int changeStartOffset = evt.changeStartOffset();
+            int changeEndOffset = evt.isChangeY() ? Integer.MAX_VALUE : evt.changeEndOffset();
+            // Doc should be read/write-locked here (when firing view hierarchy change)
+            if (inAtomicSection) {
+                extendAtomicSectionChangeArea(changeStartOffset, changeEndOffset);
+            } else {
+                invalidateCaretBounds(changeStartOffset, changeEndOffset);
             }
+            dispatchUpdate(true); // Schedule an update later
         }
 
         @Override

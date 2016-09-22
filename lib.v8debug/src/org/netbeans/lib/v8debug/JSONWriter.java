@@ -80,6 +80,7 @@ import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Generator;
 import org.netbeans.lib.v8debug.vars.V8Number;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
@@ -610,10 +611,14 @@ public class JSONWriter {
         obj.put(COLUMN, getLongOrNull(bp.getColumn()));
         PropertyLong groupId = bp.getGroupId();
         obj.put(BREAK_GROUP_ID, getLongOrNull(groupId));
-        obj.put(BREAK_HIT_COUNT, bp.getHitCount());
+        if (bp.getHitCount() != 0) {
+            obj.put(BREAK_HIT_COUNT, bp.getHitCount());
+        }
         obj.put(BREAK_ACTIVE, bp.isActive());
         obj.put(BREAK_CONDITION, bp.getCondition());
-        obj.put(BREAK_IGNORE_COUNT, bp.getIgnoreCount());
+        if (bp.getIgnoreCount() != 0) {
+            obj.put(BREAK_IGNORE_COUNT, bp.getIgnoreCount());
+        }
         obj.put(BREAK_ACTUAL_LOCATIONS, store(bp.getActualLocations()));
         obj.put(TYPE, bp.getType().toString());
         storeIf(bp.getScriptId(), obj, SCRIPT_ID);
@@ -997,6 +1002,18 @@ public class JSONWriter {
                 }
                 if (vf.getProperties() != null || vf.getArray() != null && vf.getArray().getLength() > 0) {
                     obj.put(VALUE_PROPERTIES, storeProperties(vf.getProperties(), vf.getArray()));
+                }
+                break;
+            case Generator:
+                V8Generator gf = (V8Generator) value;
+                obj.put(VALUE_CLASS_NAME, gf.getClassName());
+                storeReferenceIf(gf.getConstructorFunctionHandle(), obj, VALUE_CONSTRUCTOR_FUNCTION);
+                storeReferenceIf(gf.getProtoObjectHandle(), obj, VALUE_PROTO_OBJECT);
+                storeReferenceIf(gf.getPrototypeObjectHandle(), obj, VALUE_PROTOTYPE_OBJECT);
+                storeReferenceIf(gf.getFunctionHandle(), obj, FRAME_FUNC);
+                storeReferenceIf(gf.getReceiverHandle(), obj, FRAME_RECEIVER);
+                if (gf.getProperties() != null) {
+                    obj.put(VALUE_PROPERTIES, storeProperties(gf.getProperties(), null));
                 }
                 break;
             case Object:

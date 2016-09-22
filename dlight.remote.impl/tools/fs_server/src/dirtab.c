@@ -275,7 +275,7 @@ const char* dirtab_get_basedir() {
 
 static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_code_fail_access) {
     struct stat stat_buf;
-    if (stat(path, &stat_buf) == -1) {
+    if (stat(path, &stat_buf) == -1) { // this is used for cache only, so forbidden list is not checked
         if (errno == ENOENT) {
             if (mkdir(path, 0700) != 0) {
                 report_error("error creating directory '%s': %s\n", path, strerror(errno));

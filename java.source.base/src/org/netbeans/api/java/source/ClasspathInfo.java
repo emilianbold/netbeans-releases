@@ -48,15 +48,16 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -121,6 +122,7 @@ public final class ClasspathInfo {
     private final ChangeSupport listenerList;
     private final FileManagerTransaction fmTx;
     private final ProcessorGenerated pgTx;
+    private final Function<JavaFileManager.Location, JavaFileManager> jfmProvider;
 
     //@GuardedBy("this")
     private ClassIndex usagesQuery;
@@ -134,7 +136,8 @@ public final class ClasspathInfo {
                           final boolean backgroundCompilation,
                           final boolean ignoreExcludes,
                           final boolean hasMemoryFileManager,
-                          final boolean useModifiedFiles) {
+                          final boolean useModifiedFiles,
+                          @NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
         assert archiveProvider != null;
         assert bootCp != null;
         assert compileCp != null;
@@ -185,6 +188,7 @@ public final class ClasspathInfo {
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
         assert pgTx != null : "No processor generated transaction.";   //NOI18N
+        this.jfmProvider = jfmProvider;
     }
 
     @Override
@@ -279,7 +283,7 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
+        return create (bootPath, classPath, sourcePath, null, false, false, false, true, null);
     }
 
     @NonNull
@@ -300,7 +304,7 @@ public final class ClasspathInfo {
             compilePath = ClassPath.EMPTY;
         }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, null);
     }
 
     @NonNull
@@ -312,9 +316,19 @@ public final class ClasspathInfo {
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
-            final boolean useModifiedFiles) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath,
-                filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+            final boolean useModifiedFiles,
+            @NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
+        return new ClasspathInfo(
+                CachingArchiveProvider.getDefault(),
+                bootPath,
+                classPath,
+                sourcePath,
+                filter,
+                backgroundCompilation,
+                ignoreExcludes,
+                hasMemoryFileManager,
+                useModifiedFiles,
+                jfmProvider);
     }
 
     // Public methods ----------------------------------------------------------
@@ -380,6 +394,23 @@ public final class ClasspathInfo {
     private synchronized JavaFileManager createFileManager() {
             final boolean hasSources = this.cachedSrcClassPath != ClassPath.EMPTY;
             final SiblingSource siblings = SiblingSupport.create();
+            final JavaFileManager outFm;
+            if (hasSources) {
+                JavaFileManager tmp;
+                if (jfmProvider != null && (tmp = jfmProvider.apply(StandardLocation.CLASS_OUTPUT)) != null) {
+                    outFm = tmp;
+                } else {
+                    outFm = new OutputFileManager(
+                            this.archiveProvider,
+                            this.outputClassPath,
+                            this.cachedSrcClassPath,
+                            this.cachedAptSrcClassPath,
+                            siblings.getProvider(),
+                            fmTx);
+                }
+            } else {
+                outFm = null;
+            }
             final JavaFileManager fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
@@ -392,14 +423,7 @@ public final class ClasspathInfo {
                             siblings.getProvider(),
                             fmTx
                     ) : null,
-                hasSources ?
-                    new OutputFileManager(
-                            this.archiveProvider,
-                            this.outputClassPath,
-                            this.cachedSrcClassPath,
-                            this.cachedAptSrcClassPath,
-                            siblings.getProvider(),
-                            fmTx) : null,
+                outFm,
                 new TreeLoaderOutputFileManager(this.archiveProvider, fmTx),
                 this.memoryFileManager,
                 this.pgTx,
@@ -475,15 +499,26 @@ public final class ClasspathInfo {
         }
 
         @Override
-        public ClasspathInfo create (final ClassPath bootPath,
+        public ClasspathInfo create (
+                final ClassPath bootPath,
                 final ClassPath classPath,
                 final ClassPath sourcePath,
                 final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation,
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
-                final boolean useModifiedFiles) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+                final boolean useModifiedFiles,
+                @NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
+            return ClasspathInfo.create(
+                    bootPath,
+                    classPath,
+                    sourcePath,
+                    filter,
+                    backgroundCompilation,
+                    ignoreExcludes,
+                    hasMemoryFileManager,
+                    useModifiedFiles,
+                    jfmProvider);
         }
 
         @Override
@@ -511,5 +546,15 @@ public final class ClasspathInfo {
             }
             return cpInfo.memoryFileManager.unregister(fqn);
         }
+    }
+
+    /** Interface for {@link Task}s that want to provide {@link ClasspathInfo}. The interface is to be implemented
+     * on a {@link Task}, which needs to provide its own classpath information. When the task is run, reinitializes the parser
+     * to use that classpath.
+     * 
+     * @since 2.20
+     */
+    public interface Provider {
+        public ClasspathInfo getClasspathInfo ();
     }
 }

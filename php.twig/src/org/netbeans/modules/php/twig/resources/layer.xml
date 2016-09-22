@@ -26,7 +26,6 @@ License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
-Contributor(s): Sebastian Hörl
 
   The Original Software is NetBeans. The Initial Developer of the Original
   Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
@@ -43,8 +42,22 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<!--
+Contributor(s): Sebastian Hörl
+ -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+
+    <folder name="OptionsExport">
+        <folder name="PHP">
+            <file name="Twig">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/twig/twig-options.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#LBL_TwigExportName"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="x-twig">

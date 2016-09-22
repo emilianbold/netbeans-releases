@@ -79,6 +79,7 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.SourceCategoriesFactory;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.GrailsArtifacts;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.GrailsTargetChooserPanel;
@@ -262,11 +263,12 @@ public class GrailsArtifactWizardIterator implements WizardDescriptor.ProgressIn
         this.wiz = wiz;
 
         FileObject template = Templates.getTemplate(wiz);
-
-        sourceCategory = GrailsArtifacts.getCategoryForTemplate(template);
-        assert sourceCategory != null;
-
+        
         project = Templates.getProject(wiz).getLookup().lookup(GrailsProject.class);
+        
+        SourceCategoriesFactory sourceCategoriesFactory = project.getSourceCategoriesFactory();
+        sourceCategory = sourceCategoriesFactory.getSourceCategory(GrailsArtifacts.getCategoryTypeForTemplate(template));
+        assert sourceCategory != null;
 
         index = 0;
         panels = createPanels(wiz);

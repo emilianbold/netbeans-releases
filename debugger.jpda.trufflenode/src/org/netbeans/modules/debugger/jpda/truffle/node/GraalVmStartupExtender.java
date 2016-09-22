@@ -58,7 +58,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
-@StartupExtenderImplementation.Registration(displayName = "Debug GraalVM Node.js", startMode = StartupExtender.StartMode.DEBUG)
+@NbBundle.Messages("DESC_DebugGraalNode=Debug GraalVM Node.js")
+@StartupExtenderImplementation.Registration(displayName = "#DESC_DebugGraalNode", startMode = StartupExtender.StartMode.DEBUG, position=500)
 public class GraalVmStartupExtender implements StartupExtenderImplementation {
 
     @NbBundle.Messages("CTL_DebugName=GraalVM node Debugger")
@@ -89,7 +90,11 @@ public class GraalVmStartupExtender implements StartupExtenderImplementation {
         final String debugName = Bundle.CTL_DebugName();
 
         InputOutput io = IOProvider.getDefault().getIO(debugName, false);
-        JPDAStart start = new JPDAStart(io, debugName);
+        FileObject jdk = bin.getParent();
+        if (jdk.getName().equals("jre")) {
+            jdk = jdk.getParent();
+        }
+        JPDAStart start = new JPDAStart(io, debugName, jdk);
         String res = null;
         try {
             res = start.execute(p);

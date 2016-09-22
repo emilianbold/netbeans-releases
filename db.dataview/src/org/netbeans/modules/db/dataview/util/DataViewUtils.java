@@ -51,6 +51,7 @@ import java.sql.Types;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBForeignKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.output.SQLConstant;
 import org.openide.util.NbBundle;
 
 /**
@@ -160,29 +161,8 @@ public class DataViewUtils {
     }
 
     // NULL, DEFAULT, CURRENT_TIMESTAMP etc.
-    // Must correspond to InsertRecordTableUI#createNewRow!
     public static boolean isSQLConstantString(Object value, DBColumn col) {
-        if (value == null) {
-            return true;
-        } else if (value instanceof String) {
-            if ("<NULL>".equals(value)) { //NOI18N
-                return true;
-            } else if ("<GENERATED>".equals(value)) { //NOI18N
-                return col == null || col.isGenerated();
-            } else if ("<DEFAULT>".equals(value)) { //NOI18N
-                return col == null || col.hasDefault();
-            } else if ("<CURRENT_TIMESTAMP>".equals(value)) { //NOI18N
-                return col == null || col.getJdbcType() == Types.TIMESTAMP;
-            } else if ("<CURRENT_DATE>".equals(value)) { //NOI18N
-                return col == null || col.getJdbcType() == Types.DATE;
-            } else if ("<CURRENT_TIME>".equals(value)) { //NOI18N
-                return col == null || col.getJdbcType() == Types.TIME;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        return (value == null || value instanceof SQLConstant);
     }
 
     public static boolean isNullString(String str) {

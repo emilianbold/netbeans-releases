@@ -1291,6 +1291,13 @@ public class Utilities {
             return pending ? null : ret;
         }
 
+        @Override
+        public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            return false;
+        }
+        
+        
+
         /*
         @Override
         public Boolean reduce(Boolean r1, Boolean r2) {
@@ -1617,7 +1624,10 @@ public class Utilities {
     }
     
     public static boolean isValidType(TypeMirror m) {
-        return m != null && (m.getKind() != TypeKind.OTHER && m.getKind() != TypeKind.ERROR);
+        return m != null && (
+                m.getKind() != TypeKind.PACKAGE &&
+                m.getKind() != TypeKind.OTHER && 
+                m.getKind() != TypeKind.ERROR);
     }
 
     /**

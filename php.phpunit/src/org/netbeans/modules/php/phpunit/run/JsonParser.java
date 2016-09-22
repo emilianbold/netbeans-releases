@@ -212,6 +212,14 @@ public final class JsonParser {
     }
 
     private void testFinish(JSONObject data) {
+        if (actualTest == null) {
+            // #267597 - test can have 2 results :/
+            JSONObject testStart = new JSONObject();
+            testStart.put("event", "testStart"); // NOI18N
+            testStart.put("suite", data.get("suite")); // NOI18N
+            testStart.put("test", data.get("test")); // NOI18N
+            testStart(testStart);
+        }
         assert actualTest != null : data + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {

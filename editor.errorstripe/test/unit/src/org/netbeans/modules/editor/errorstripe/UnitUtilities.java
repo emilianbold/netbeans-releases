@@ -26,10 +26,9 @@
  *
  * Contributor(s):
  *
- * The Original Software is the LaTeX module.
- * The Initial Developer of the Original Software is Jan Lahoda.
- * Portions created by Jan Lahoda_ are Copyright (C) 2002-2004.
- * All Rights Reserved.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 2000-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -42,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Jan Lahoda.
  */
 package org.netbeans.modules.editor.errorstripe;
 

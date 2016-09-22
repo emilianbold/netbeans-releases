@@ -87,7 +87,7 @@ public class TraceDwarf {
             Dwarf.LOG.log(Level.FINE, "Unsuported format of file {0}: {1}", new Object[]{objFileName, ex.getMessage()});  // NOI18N
         } catch (IOException ex) {
             Dwarf.LOG.log(Level.FINE, "Exception in file " + objFileName, ex);  // NOI18N
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Dwarf.LOG.log(Level.FINE, "Exception in file " + objFileName, ex);  // NOI18N
         } finally {
             if (dump != null) {

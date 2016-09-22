@@ -54,6 +54,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -73,7 +74,6 @@ public class CsmKeywordCompletionItem implements CompletionItem {
     private final int priority;
     private final String sortItemText;
     private final boolean supportInstantSubst;
-    private static final int PRIORITY = 5000;
     private final String appendItemText;
     private final String htmlItemText;
     private final boolean firstCompletion;
@@ -99,7 +99,7 @@ public class CsmKeywordCompletionItem implements CompletionItem {
             AttributeSet keywordsColor = MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class).getTokenFontColors("keyword"); //NOI18N
             coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, keywordsColor);
         }
-        return new CsmKeywordCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, firstCompletion);
+        return new CsmKeywordCompletionItem(substitutionOffset, NbCsmCompletionQuery.KEYWORDS_PRIORITY, sortItemText, appendItemText, coloredItemText, true, firstCompletion);
     }
 
     public String getItemText() {

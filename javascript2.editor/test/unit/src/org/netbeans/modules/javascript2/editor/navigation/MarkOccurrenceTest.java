@@ -2207,6 +2207,66 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/parser/decorators/decorators8.js", "function annot^ation(target) {", true);
     }
     
+    public void testIssue267974_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267974.js", "var onreadystatec^hange;", true);
+    }
+    
+    public void testIssue267974_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267974_01.js", "      metho^d", true);
+    }
+    
+    public void testIssue254189_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue254189.js", "this.methodB = metho^dB;", true);
+    }
+    
+    public void testIssue246239_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "var type = ct^l.options.selectedIndex,", true);
+    }
+    
+    public void testIssue246239_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue246239.js", "c^tl.value = type;", true);
+    }
+    
+    public void testIssue267694_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var bu^f = this.buf;", true);
+    }
+    
+    public void testIssue267694_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue267694.js", "var buf = this.bu^f;", true);
+    }
+    
+    public void testIssue252755_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var bu^f = this.buf,", true);
+    }
+    
+    public void testIssue252755_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_01.js", "var buf = this.b^uf,", true);
+    }
+    
+    public void testIssue252755_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252755_02.js", "var coo^rd;", true);
+    }
+    
+    public void testIssue223970_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223970.js", "wrapper.pers.ru^n(); // place cursor here to inside run", true);
+    }
+    
+    public void testIssue223970_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223970.js", "wrapper.pe^rs.run(); // place cursor here to inside run", true);
+    }
+    
+    public void testIssue231627_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue231627.js", "var Argum^ents = {};", true);
+    }
+    
+    public void testIssue258724_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue258724.js", "return this.nam^e;", true);
+    }
+    
+    public void testIssue258724_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue258724.js", "return this.ag^e;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

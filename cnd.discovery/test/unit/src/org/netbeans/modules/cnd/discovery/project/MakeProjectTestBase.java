@@ -437,6 +437,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         String dataPath = fileDataPath.getAbsolutePath();
         File localFilesStorage = new File(System.getProperty("user.home"), "cnd-test-files-storage");
         File fileFromStorage = new File(localFilesStorage, zipName);
+        File unzipedFileFromStorage = new File(localFilesStorage, tarName);
 
         File fileCreatedFolder = new File(fileDataPath, packageName);
         String createdFolder = fileCreatedFolder.getAbsolutePath();
@@ -448,16 +449,20 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         }
         if (fileCreatedFolder.list().length == 0){
             if (!new File(fileDataPath, tarName).exists()) {
-                if (fileFromStorage.exists()) {
-                    execute(tools, "cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
+                if (unzipedFileFromStorage.exists()) {
+                    execute(tools, "cp", dataPath, unzipedFileFromStorage.getAbsolutePath(), dataPath);
                 } else {
-                    if (urlName.startsWith("http")) {
-                        execute(tools, "wget", dataPath, "-qN", urlName);
+                    if (fileFromStorage.exists()) {
+                        execute(tools, "cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
                     } else {
-                        execute(tools, "cp", dataPath, urlName, dataPath);
+                        if (urlName.startsWith("http")) {
+                            execute(tools, "wget", dataPath, "-qN", urlName);
+                        } else {
+                            execute(tools, "cp", dataPath, urlName, dataPath);
+                        }
                     }
+                    execute(tools, "gzip", dataPath, "-d", zipName);
                 }
-                execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);
             execAdditionalScripts(createdFolder, additionalScripts, tools);

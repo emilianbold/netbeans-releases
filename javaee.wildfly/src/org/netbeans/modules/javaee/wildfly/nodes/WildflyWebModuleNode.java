@@ -44,12 +44,12 @@
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLActionCookie;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
@@ -73,7 +73,7 @@ public class WildflyWebModuleNode extends AbstractStateNode {
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.url = url;
         // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
-        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
+        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ResourceType.WAR, lookup));
         getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
         getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
         if (url != null) {

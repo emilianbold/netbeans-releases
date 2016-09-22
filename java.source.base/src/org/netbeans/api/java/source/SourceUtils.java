@@ -87,6 +87,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 
 import javax.swing.SwingUtilities;
+import javax.tools.Diagnostic;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -103,7 +104,6 @@ import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -111,6 +111,7 @@ import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.Hacks;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -1105,6 +1106,11 @@ public class SourceUtils {
         
         if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) tm;
+            TypeElement el = (TypeElement) dt.asElement();
+            if (((DeclaredType)el.asType()).getTypeArguments().size() != dt.getTypeArguments().size()) {
+                return info.getTypes().getDeclaredType(el);
+            }
+            
             List<TypeMirror> typeArguments = new LinkedList<>();
             
             for (TypeMirror t : dt.getTypeArguments()) {
@@ -1113,9 +1119,9 @@ public class SourceUtils {
             
             final TypeMirror enclosingType = dt.getEnclosingType();
             if (enclosingType.getKind() == TypeKind.DECLARED) {
-                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, el, typeArguments.toArray(new TypeMirror[0]));
             } else {
-                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+                return info.getTypes().getDeclaredType(el, typeArguments.toArray(new TypeMirror[0]));
             }
         }
 
@@ -1427,5 +1433,20 @@ public class SourceUtils {
             res.add(fo.toURL());
         }
         return res;
+    }
+    
+
+    /**
+     * Extracts diagnostic params from a diagnostic. Gets under hood of Javac
+     * Diagnostic objects and extracts parameters which are otherwise just used
+    * to produce a message. <b>Keep in mind that the positions and types of parameters
+     * may change in each nbjavac update!</b>
+     * @param d diagnostic
+     * @param index parameter index to extract
+     * @return parameter value, null if index is out of range
+     * @since 2.20
+     */
+    public static Object getDiagnosticParam(Diagnostic<?> d, int index) {
+        return Hacks.getDiagnosticParam(d, index);
     }
 }

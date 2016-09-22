@@ -48,15 +48,17 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
 public class LocationJNIWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     
     private WizardDescriptor wizardDescriptor;
     private boolean initialized = false;
+    private final FileObject fo;
 
-    public LocationJNIWizardPanel() {
-        
+    public LocationJNIWizardPanel(FileObject fo) {
+        this.fo = fo;
     }
 
     /**
@@ -72,7 +74,7 @@ public class LocationJNIWizardPanel implements WizardDescriptor.Panel<WizardDesc
     @Override
     public PanelProjectLocationVisual getComponent() {
         if (component == null) {
-            component = new PanelProjectLocationVisual(this, "CppJNILibrary", false); // NOI18N
+            component = new PanelProjectLocationVisual(this, fo, "CppJNILibrary", false); // NOI18N
         }
         return component;
     }

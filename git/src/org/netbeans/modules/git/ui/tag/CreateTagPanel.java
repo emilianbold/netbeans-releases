@@ -84,7 +84,7 @@ public class CreateTagPanel extends JPanel {
 
         tagNameField.setText(org.openide.util.NbBundle.getMessage(CreateTagPanel.class, "CreateTagPanel.tagNameField.text")); // NOI18N
 
-        lblInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
+        lblInfo.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/info.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblInfo, org.openide.util.NbBundle.getMessage(CreateTagPanel.class, "MSG_CreateTag.errorTagExists")); // NOI18N
 
         jLabel2.setLabelFor(tagMessageField);

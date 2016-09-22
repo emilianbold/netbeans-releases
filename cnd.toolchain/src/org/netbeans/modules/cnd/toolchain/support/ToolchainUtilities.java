@@ -41,17 +41,23 @@
  */
 package org.netbeans.modules.cnd.toolchain.support;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
@@ -59,6 +65,12 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainValidator;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.WeakSet;
 
 /**
@@ -182,4 +194,116 @@ public final class ToolchainUtilities {
         name = CndPathUtilities.getBaseName(name);
         return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
+    
+    
+    public static Pair<String,String> modifyPathEnvVariable(final ExecutionEnvironment execEnv, final Map<String, String> env, final CompilerSet cs, final String type) {
+        String macro;
+        if ("run".equals(type)) { //NOI18N
+            macro = cs.getModifyRunPath();
+        } else {
+            macro = cs.getModifyBuildPath();
+        }
+        MacroConverter converter = new MacroConverter(execEnv, env);
+        if (converter.isWindows) {
+            String commands = CompilerSetUtils.getCommandFolder(cs);
+            String baseMinGW = CompilerSetUtils.getMinGWBaseFolder(cs);
+            String path = "";
+            if (commands != null && !commands.isEmpty()) {
+                path = commands;
+            }
+            if (baseMinGW != null && !baseMinGW.isEmpty()) {
+                if (path.isEmpty()) {
+                    path = baseMinGW;
+                } else {
+                    path = path+";"+baseMinGW; //NOI18N
+                }
+            }
+            converter.updateUtilitiesPath(path);
+        }
+        converter.updateToolPath(cs.getDirectory());
+        String expandedPath = converter.expand(macro);
+        env.put(converter.pathName, expandedPath);
+        return Pair.of(converter.pathName, expandedPath);
+    }
+    
+    private static final class MacroConverter {
+
+        private final MacroExpanderFactory.MacroExpander expander;
+        private final Map<String, String> envVariables;
+        private String homeDir;
+        private String pathName = "PATH"; // NOI18N
+        private String pathSeparator = ";"; // NOI18N
+        private boolean isWindows = false;
+
+        public MacroConverter(ExecutionEnvironment env, Map<String, String> envVariables) {
+            this.envVariables = new HashMap<>(envVariables);
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    this.envVariables.putAll(hostInfo.getEnvironment());
+                    homeDir = hostInfo.getUserDir();
+                    pathName = getPathName(env, hostInfo);
+                    pathSeparator = getPathSeparator(hostInfo);
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    // should never == null occur if isHostInfoAvailable(env) => report
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            this.expander = MacroExpanderFactory.getExpander(env, false);
+        }
+        
+        private String getPathName(ExecutionEnvironment env, HostInfo hostInfo) {
+            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                isWindows = true;
+                for (String key : HostInfoProvider.getEnv(env).keySet()) {
+                    if (key.toLowerCase(Locale.getDefault()).equals("path")) { // NOI18N
+                        return key.substring(0, 4);
+                    }
+                }
+            }
+            return "PATH"; // NOI18N
+        }
+
+        private String getPathSeparator(HostInfo hostInfo) {
+            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                return ";"; // NOI18N
+            }
+            return ":"; // NOI18N
+        }
+
+        private void updateUtilitiesPath(String utilitiesPath) {
+            envVariables.put(CompilerSet.UTILITIES_PATH, utilitiesPath);
+        }
+
+        private void updateToolPath(String toolPath) {
+            envVariables.put(CompilerSet.TOOLS_PATH, toolPath);
+        }
+
+        public String expand(String in) {
+            try {
+                if (homeDir != null) {
+                    if (in.startsWith("~")) { //NOI18N
+                        in = homeDir+in.substring(1);
+                    }
+                    in = in.replace(":~", ":"+homeDir); //NOI18N
+                    in = in.replace(";~", ";"+homeDir); //NOI18N
+                }
+                if (pathName != null) {
+                    if (!"PATH".equals(pathName)) { //NOI18N
+                        in = in.replace("${PATH}", "${"+pathName+"}"); //NOI18N
+                    }
+                }
+                if (pathSeparator != null) {
+                    if (!";".equals(pathSeparator)) { //NOI18N
+                        in = in.replace(";", pathSeparator); //NOI18N
+                    }
+                }
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                //nothing to do
+            }
+            return in;
+        }
+    }
+
 }

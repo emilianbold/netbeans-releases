@@ -126,8 +126,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="bNext">
           <Properties>
-            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/netbeans/modules/git/resources/icons/diff-next.png"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="org.openide.util.ImageUtilities.loadImageIcon(&quot;/org/netbeans/modules/git/resources/icons/diff-next.png&quot;, false)" type="code"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
@@ -144,8 +144,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="bPrev">
           <Properties>
-            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/netbeans/modules/git/resources/icons/diff-prev.png"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="org.openide.util.ImageUtilities.loadImageIcon(&quot;/org/netbeans/modules/git/resources/icons/diff-prev.png&quot;, false)" type="code"/>
             </Property>
           </Properties>
           <AccessibilityProperties>

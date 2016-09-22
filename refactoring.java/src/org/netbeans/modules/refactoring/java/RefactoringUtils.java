@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
@@ -708,6 +709,9 @@ public class RefactoringUtils {
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
+        if (boot == null) {
+            boot = JavaPlatform.getDefault().getBootstrapLibraries();
+        }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot == null? nullPath : boot, compile == null? nullPath : compile, rcp);
         return cpInfo;
     }
@@ -860,6 +864,9 @@ public class RefactoringUtils {
     @Deprecated
     public static @NullUnknown
     TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
+        if (path == null) {
+            return null;
+        }
         Tree selectedTree = path.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
         while (true) {
@@ -957,7 +964,9 @@ public class RefactoringUtils {
             return null;
         }
         Element var = info.getTrees().getElement(tp);
-        lookup.scan(scopeBlok, var);
+        if (var != null) {
+            lookup.scan(scopeBlok, var);
+        }
 
         if (lookup.hasRefernces()) {
             return NbBundle.getMessage(RefactoringUtils.class, "MSG_LocVariableClash",newName);
@@ -1098,6 +1107,19 @@ public class RefactoringUtils {
             }
         }
         return false;
+    }
+    
+    /**
+     * Checks if the element is a method or constructor. Returns {@code false} for {@code null} input.
+     * @param e element to check
+     * @return true iff the element is a constructor or method.
+     */
+    public static boolean isExecutableElement(Element e) {
+        if (e == null) {
+            return false;
+        }
+        ElementKind ek = e.getKind();
+        return ek == ElementKind.CONSTRUCTOR || ek == ElementKind.METHOD;
     }
 
     private RefactoringUtils() {

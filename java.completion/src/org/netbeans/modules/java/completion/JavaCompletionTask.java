@@ -3336,7 +3336,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 case PARAMETER:
                     String name = e.getSimpleName().toString();
                     if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                        results.add(itemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                        if (!env.isExcludedKW(name)) {
+                            results.add(itemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                            env.addExcludedKW(name);
+                        }
                     } else {
                         TypeMirror tm = asMemberOf(e, actualType, types);
                         if (addCast && itemFactory instanceof TypeCastableItemFactory) {

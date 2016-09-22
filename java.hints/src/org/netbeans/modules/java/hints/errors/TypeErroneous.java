@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import org.netbeans.modules.java.hints.friendapi.OverrideErrorMessage;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleTypeVisitor8;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -93,7 +95,7 @@ final class TypeErroneous implements OverrideErrorMessage<Void> {
             "ERR_Unreachable_Type_3=Referenced method uses types which are not available: {0} and {1} other"
     })
     @Override
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
+    public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data<Void> data) {
         Tree t = treePath.getLeaf();
         if (t.getKind() != Tree.Kind.MEMBER_SELECT) {
             return null;

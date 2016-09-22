@@ -289,7 +289,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             // TODO: do we need this with CancelletionException? 
             // unfortunately CancellationException is RuntimeException, so I'm not sure
             return new ByteArrayInputStream(new byte[]{});
-        } catch (IOException | InterruptedException | ExecutionException ex) {
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw newFileNotFoundException(ex);
         }
     }
@@ -522,6 +522,8 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
                     DirEntry dirEntry = RemoteFileSystemTransport.uploadAndRename(
                             RemotePlainFile.this.getExecutionEnvironment(), RemotePlainFile.this.getCache(), pathToUpload, pathToRename);                    
                     updateStatAndSendEvents(dirEntry, false);
+                } catch (TimeoutException ex) {
+                    throw new IOException(ex);
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
                 } catch (ExecutionException ex) {

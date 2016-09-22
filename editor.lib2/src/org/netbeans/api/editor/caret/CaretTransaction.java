@@ -101,6 +101,8 @@ final class CaretTransaction {
 
     private boolean anyMarkChanged;
     
+    private boolean magicPosChanged;
+    
     private boolean scrollToLastCaret;
     
     private GapList<CaretItem> replaceItems;
@@ -147,7 +149,14 @@ final class CaretTransaction {
         return doc;
     }
     
-    boolean isAnyChange() {
+    /**
+     * Check for a change in caret structure or dot or mark change but
+     * it does not include magic caret position change which is checked by
+     * {@link #isMagicPosChange() }.
+     *
+     * @return true if change happened during transaction.
+     */
+    boolean isDotOrStructuralChange() {
         return addOrRemove || anyDotChanged || anyMarkChanged;
     }
     
@@ -159,23 +168,33 @@ final class CaretTransaction {
         return anyMarkChanged;
     }
     
-    boolean moveDot(@NonNull CaretItem caret, @NonNull Position dotPos) {
+    boolean isMagicPosChange() {
+        return magicPosChanged;
+    }
+    
+    boolean moveDot(@NonNull CaretItem caret, @NonNull Position dotPos, @NonNull Position.Bias dotBias) {
         Position markPos = caret.getMarkPosition();
+        Position.Bias markBias = caret.getMarkBias();
         if (markPos == null) {
-            markPos = dotPos;
+            markPos = caret.getDotPosition();
+            markBias = caret.getDotBias();
         }
-        return setDotAndMark(caret, dotPos, markPos);
+        return setDotAndMark(caret, dotPos, dotBias, markPos, markBias);
     }
 
-    boolean setDotAndMark(@NonNull CaretItem caretItem, @NonNull Position dotPos, @NonNull Position markPos) {
+    boolean setDotAndMark(@NonNull CaretItem caretItem, @NonNull Position dotPos, @NonNull Position.Bias dotBias,
+            @NonNull Position markPos, @NonNull Position.Bias markBias)
+    {
         assert (dotPos != null) : "dotPos must not be null";
         assert (markPos != null) : "markPos must not be null";
         int index = findCaretItemIndex(origCaretItems, caretItem);
         if (index != -1) {
             Position origDotPos = caretItem.getDotPosition();
             Position origMarkPos = caretItem.getMarkPosition();
-            boolean dotChanged = origDotPos == null || ComplexPositions.compare(dotPos, origDotPos) != 0;
-            boolean markChanged = origMarkPos == null || ComplexPositions.compare(markPos, origMarkPos) != 0;
+            boolean dotChanged = origDotPos == null || ComplexPositions.compare(dotPos, origDotPos) != 0 ||
+                    dotBias != caretItem.getDotBias();
+            boolean markChanged = origMarkPos == null || ComplexPositions.compare(markPos, origMarkPos) != 0 ||
+                    markBias != caretItem.getMarkBias();
             scrollToLastCaret = true; // Scroll even if setDot() to same offset
             if (dotChanged || markChanged) {
                 editorCaret.ensureValidInfo(caretItem);
@@ -207,6 +226,7 @@ final class CaretTransaction {
         int index = findCaretItemIndex(origCaretItems, caretItem);
         if (index != -1) {
             caretItem.setMagicCaretPosition(p);
+            magicPosChanged = true;
             caretItem.markInfoObsolete();
             updateAffectedIndexes(index, index + 1);
             return true;
@@ -220,8 +240,10 @@ final class CaretTransaction {
         Position insertEndPos = null;
         for (CaretItem caretItem : editorCaret.getSortedCaretItems()) {
             Position dotPos = caretItem.getDotPosition();
+            Position.Bias dotBias = caretItem.getDotBias();
             boolean modifyDot = (dotPos == null || dotPos.getOffset() == 0);
             Position markPos = caretItem.getMarkPosition();
+            Position.Bias markBias = caretItem.getMarkBias();
             boolean modifyMark = (markPos == null || markPos.getOffset() == 0);
             if (modifyDot || modifyMark) {
                 if (insertEndPos == null) {
@@ -234,11 +256,13 @@ final class CaretTransaction {
                 }
                 if (modifyDot) {
                     dotPos = insertEndPos;
+                    // current impl retains dotBias
                 }
                 if (modifyMark) {
                     markPos = insertEndPos;
+                    // current impl retains markBias
                 }
-                setDotAndMark(caretItem, dotPos, markPos);
+                setDotAndMark(caretItem, dotPos, dotBias, markPos, markBias);
             }
             // Do not break the loop when caret's pos is above zero offset
             // since the carets may be already moved during the transaction
@@ -291,6 +315,36 @@ final class CaretTransaction {
         int size = origCaretItems.size();
         switch (removeType) {
             case NO_REMOVE:
+                break;
+            case TOGGLE_CARET:
+                // Remove existing caret at current dot only when:
+                // * at least one caret to add and 
+                // * we do not remove the only remaining caret
+                if (null != addCaretItems && addCaretItems.length == 1 && origCaretItems.size() >= 2) {
+                    CaretItem caretToAdd = addCaretItems[0];
+                    int caretFoundAtIndex = -1;
+                    for (int i = 0; i < origCaretItems.size(); i++) {
+                        CaretItem origCaretItem = origCaretItems.get(i);
+                        if (origCaretItem.getDot() == caretToAdd.getDot()
+                                && origCaretItem.getMark() == caretToAdd.getMark()) {
+                            // so need to remove the current caret
+                            caretFoundAtIndex = i;
+                            break;
+                        } 
+                    }
+                    if (caretFoundAtIndex != -1) {
+                        // remove the caret
+                        modIndex = caretFoundAtIndex;
+                        modEndIndex = Math.min(caretFoundAtIndex + 1, size);
+                        addOrRemove = true;
+                        // clear the "add new carets" field
+                        addCaretItems = null;
+                    } else {
+                        // add the given caret based on addCaretItems
+                    }
+                } else {
+                    // add the given caret based on addCaretItems
+                }
                 break;
             case REMOVE_LAST_CARET:
                 if (size > 1) {
@@ -379,7 +433,7 @@ final class CaretTransaction {
                         if (lastInfo.startsBelow(itemInfo)) {
                             // Extend selection of itemInfo to start of lastInfo
                             updateAffectedOffsets(lastInfo.startOffset, itemInfo.startOffset);
-                            setDotAndMark(itemInfo.caretItem, lastInfo.startPos, itemInfo.endPos);
+                            setDotAndMark(itemInfo.caretItem, lastInfo.startPos, lastInfo.startBias, itemInfo.endPos, itemInfo.endBias);
                         }
                         // Remove lastInfo's caret item
                         lastInfo.caretItem.markRemovedInTransaction();
@@ -389,7 +443,7 @@ final class CaretTransaction {
                     } else { // Remove itemInfo and set selection of lastInfo to end of itemInfo
                         if (itemInfo.endsAbove(lastInfo)) {
                             updateAffectedOffsets(lastInfo.endOffset, itemInfo.endOffset);
-                            setDotAndMark(lastInfo.caretItem, lastInfo.startPos, itemInfo.endPos);
+                            setDotAndMark(lastInfo.caretItem, lastInfo.startPos, lastInfo.startBias, itemInfo.endPos, itemInfo.endBias);
                         }
                         // Remove itemInfo's caret item
                         itemInfo.caretItem.markRemovedInTransaction();
@@ -409,14 +463,14 @@ final class CaretTransaction {
                     if (itemInfo.selection) {
                         if (itemInfo.dotAtStart) {
                             // Likely lastInfo is below itemInfo so their dots "touch" at itemInfo start
-                            setDotAndMark(lastInfo.caretItem, itemInfo.endPos, lastInfo.startPos);
+                            setDotAndMark(lastInfo.caretItem, itemInfo.endPos, itemInfo.endBias, lastInfo.startPos, lastInfo.startBias);
                             // Remove itemInfo's caret item
                             itemInfo.caretItem.markRemovedInTransaction();
                             origSortedItems.copyElements(copyStartIndex, i, nonOverlappingItems);
                             copyStartIndex = i + 1;
                         } else {
                             // Likely lastInfo is above itemInfo it so their dots "touch" at itemInfo end
-                            setDotAndMark(itemInfo.caretItem, lastInfo.endPos, itemInfo.startPos);
+                            setDotAndMark(itemInfo.caretItem, lastInfo.endPos, lastInfo.endBias, itemInfo.startPos, itemInfo.startBias);
                             // Remove lastInfo's caret item
                             lastInfo.caretItem.markRemovedInTransaction();
                             origSortedItems.copyElements(copyStartIndex, i - 1, nonOverlappingItems);
@@ -601,7 +655,8 @@ final class CaretTransaction {
         RETAIN_LAST_CARET,
         REMOVE_ALL_CARETS,
         DOCUMENT_REMOVE,
-        DOCUMENT_INSERT_ZERO_OFFSET
+        DOCUMENT_INSERT_ZERO_OFFSET,
+        TOGGLE_CARET
     }
     
     /**
@@ -613,7 +668,11 @@ final class CaretTransaction {
         
         Position startPos;
         
+        Position.Bias startBias;
+        
         Position endPos;
+        
+        Position.Bias endBias;
         
         int dotOffset;
         
@@ -649,7 +708,9 @@ final class CaretTransaction {
                     int markShift = ComplexPositions.getSplitOffset(markPos);
                     if (markOffset < dotOffset || (markOffset == dotOffset && markShift < dotShift)) {
                         startPos = markPos;
+                        startBias = caret.getMarkBias();
                         endPos = dotPos;
+                        endBias = caret.getDotBias();
                         startOffset = markOffset;
                         startShift = markShift;
                         endOffset = dotOffset;
@@ -659,7 +720,9 @@ final class CaretTransaction {
                     } else {
                         if (markOffset == dotOffset && markShift == dotShift) { // No selection
                             startPos = markPos;
+                            startBias = caret.getMarkBias();
                             endPos = dotPos;
+                            endBias = caret.getDotBias();
                             startOffset = markOffset;
                             startShift = markShift;
                             endOffset = dotOffset;
@@ -668,7 +731,9 @@ final class CaretTransaction {
                             selection = false;
                         } else {
                             startPos = dotPos;
+                            startBias = caret.getDotBias();
                             endPos = markPos;
+                            endBias = caret.getMarkBias();
                             startOffset = dotOffset;
                             startShift = dotShift;
                             endOffset = markOffset;
@@ -680,6 +745,7 @@ final class CaretTransaction {
                     }
                 } else {
                     startPos = endPos = dotPos;
+                    startBias = endBias = caret.getDotBias();
                     startOffset = endOffset = dotOffset;
                     startShift = startShift = dotShift;
                     dotAtStart = false;

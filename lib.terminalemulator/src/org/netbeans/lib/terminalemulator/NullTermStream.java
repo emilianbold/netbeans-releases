@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -56,18 +55,23 @@ package org.netbeans.lib.terminalemulator;
  */
 
 public class NullTermStream extends TermStream {
+    @Override
     public void flush() {
 	toDTE.flush();
     }
+    @Override
     public void putChar(char c) {
 	toDTE.putChar(c);
     }
+    @Override
     public void putChars(char buf[], int offset, int count) {
 	toDTE.putChars(buf, offset, count);
     }
+    @Override
     public void sendChar(char c) {
 	toDCE.sendChar(c);
     }
+    @Override
     public void sendChars(char buf[], int offset, int count) {
 	toDCE.sendChars(buf, offset, count);
     }

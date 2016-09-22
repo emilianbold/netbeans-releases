@@ -2669,7 +2669,7 @@ public class CasualDiff {
                 localpointer = bounds[0];
             }
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), oldT, null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -3875,13 +3875,28 @@ public class CasualDiff {
                 localPointer);
     }
     
+    private DocCommentTree getDocComment(JCTree t, boolean old) {
+        if (t instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)t;
+            List<JCVariableDecl> vars = fgt.getVariables();
+            t = vars.get(0);
+        }
+        return old ?  oldTopLevel.docComments.getCommentTree(t) : tree2Doc.get(t);
+    }
+    
     // note: the oldTreeStartPos must be the real start, without preceding comments.
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer, boolean doNotDelete) {
+        if (parent instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)parent;
+            if (!fgt.getVariables().isEmpty() && fgt.getVariables().get(0) == oldT) {
+                return localPointer;
+            }
+        }
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
         List<Comment> oldPrecedingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.PRECEDING) : old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-        DocCommentTree newD = tree2Doc.get(newT);
+        DocCommentTree newD = getDocComment(newT, false);
         if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null) {
             if (oldPrecedingComments.isEmpty()) {
                 return localPointer;
@@ -3895,7 +3910,7 @@ public class CasualDiff {
             }
             
         }
-        DocCommentTree oldD = oldTopLevel.docComments.getCommentTree(oldT);
+        DocCommentTree oldD = getDocComment(oldT, true);
         return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, oldD, newD, false, true, false,
                 doNotDelete,
                 localPointer);
@@ -3909,7 +3924,8 @@ public class CasualDiff {
         
         List<Comment> oldTrailingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.TRAILING) : old.getComments(CommentSet.RelativePosition.TRAILING);
         List<Comment> newTrailingComments = cs.getComments(CommentSet.RelativePosition.TRAILING);
-        if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments)) {
+        boolean sameInline = sameComments(oldInlineComments, newInlineComments);
+        if (sameInline && sameComments(oldTrailingComments, newTrailingComments)) {
             // copy the comments
             if (oldInlineComments.isEmpty() && oldTrailingComments.isEmpty()) {
                 return localPointer;
@@ -3919,27 +3935,27 @@ public class CasualDiff {
         }
 
         //XXX: hack: the upper diff might already add '\n' to the result, need to skip it if diffing inline comments
-        if (!sameComments(oldInlineComments, newInlineComments)) {
-            while (printer.out.isWhitespaceLine())
+        if (!sameInline) {
+            while (printer.out.isWhitespaceLine()) {
                 printer.eatChars(1);
-        }
-        
-        localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, null, null, false, false, false, false, localPointer);
+            }
+            localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, null, null, false, false, false, false, localPointer);
+            boolean containedEmbeddedNewLine = false;
+            boolean containsEmbeddedNewLine = false;
 
-        boolean containedEmbeddedNewLine = false;
-        boolean containsEmbeddedNewLine = false;
+            for (Comment oldComment : oldInlineComments) {
+                if (oldComment.style() == Style.LINE) containedEmbeddedNewLine = true;
+            }
 
-        for (Comment oldComment : oldInlineComments) {
-            if (oldComment.style() == Style.LINE) containedEmbeddedNewLine = true;
-        }
-        
-        for (Comment nueComment : newInlineComments) {
-            if (nueComment.style() == Style.LINE) containsEmbeddedNewLine = true;
+            for (Comment nueComment : newInlineComments) {
+                if (nueComment.style() == Style.LINE) containsEmbeddedNewLine = true;
+            }
+
+            if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
+                printer.print("\n");
+            }
         }
 
-        if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
-            printer.print("\n");
-        }
         int lp = diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, null, null, true, false, false, false, localPointer);
         boolean commentsCreated = oldInlineComments.isEmpty() && oldTrailingComments.isEmpty();
         // if comments were added, it may be possible that the immediately following newline
@@ -3953,6 +3969,11 @@ public class CasualDiff {
                 while (printer.out.isWhitespaceLine()) {
                     printer.eatChars(1);
                 }
+            }
+            // we have created a comment; if the local pointer is at the beginning of a new line,
+            // we should reset the printer to the line start as well
+            if (lp > 0 && diffContext.origText.charAt(lp - 1) == '\n') {
+                printer.out.toLineStart();
             }
         }
         return lp;
@@ -4898,11 +4919,16 @@ public class CasualDiff {
      * diffTreeImpl will print the comments. At the end, the flag is reset to the original value
      */
     private boolean innerCommentsProcessed;
+    
+    private JCTree parent;
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         boolean saveInnerComments = this.innerCommentsProcessed;
+        JCTree saveParent = this.parent;
+        this.parent = parent;
         int ret = diffTreeImpl0(oldT, newT, parent, elementBounds);
         this.innerCommentsProcessed = saveInnerComments;
+        this.parent = saveParent;
         return ret;
     }
     

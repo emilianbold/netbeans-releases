@@ -183,6 +183,9 @@ public final class NamesTranslator {
                         SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
                         loc = smt.getSourceLocation(loc);
                         nodeName = loc.getName();
+                        if (nodeName == null) {
+                            nodeName = defaultName;
+                        }
                     } catch (BadLocationException blex) {
                         nodeName = defaultName;
                     }

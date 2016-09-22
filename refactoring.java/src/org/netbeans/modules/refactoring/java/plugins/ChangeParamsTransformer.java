@@ -79,6 +79,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -165,28 +166,36 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
+        if (newModifiers == null || newModifiers.contains(Modifier.PUBLIC)) {
+            return;
+        }
         ClassTree classTree = (ClassTree) JavaRefactoringUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
-        if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
-            Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
-            TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
-            TypeElement enclosingTypeElement2 = workingCopy.getElementUtilities().outermostTypeElement(p);
-            if(!workingCopy.getTypes().isSameType(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
-                if(newModifiers.contains(Modifier.PRIVATE)) {
-                    problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PRIVATE, enclosingTypeElement1)); //NOI18N
-                    problemClasses.add(classTree);
-                } else {
-                    PackageElement package1 = workingCopy.getElements().getPackageOf(el);
-                    PackageElement package2 = workingCopy.getElements().getPackageOf(p);
-                    if(!package1.getQualifiedName().equals(package2.getQualifiedName())) {
-                        if(newModifiers.contains(Modifier.PROTECTED)) {
-                            if(!workingCopy.getTypes().isSubtype(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
-                                problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PROTECTED, enclosingTypeElement1)); //NOI18N
-                                problemClasses.add(classTree);
-                            }
-                        } else {
-                            problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", "<default>", enclosingTypeElement1)); //NOI18N
+        if (problemClasses.contains(classTree)) {
+            // Only give one warning for every file
+            return;
+        }
+        Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
+        if (el == null || p == null) {
+            return;
+        }
+        TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
+        TypeElement enclosingTypeElement2 = workingCopy.getElementUtilities().outermostTypeElement(p);
+        if(!workingCopy.getTypes().isSameType(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+            if(newModifiers.contains(Modifier.PRIVATE)) {
+                problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PRIVATE, enclosingTypeElement1)); //NOI18N
+                problemClasses.add(classTree);
+            } else {
+                PackageElement package1 = workingCopy.getElements().getPackageOf(el);
+                PackageElement package2 = workingCopy.getElements().getPackageOf(p);
+                if(!package1.getQualifiedName().equals(package2.getQualifiedName())) {
+                    if(newModifiers.contains(Modifier.PROTECTED)) {
+                        if(!workingCopy.getTypes().isSubtype(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+                            problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PROTECTED, enclosingTypeElement1)); //NOI18N
                             problemClasses.add(classTree);
                         }
+                    } else {
+                        problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", "<default>", enclosingTypeElement1)); //NOI18N
+                        problemClasses.add(classTree);
                     }
                 }
             }
@@ -493,9 +502,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             ExecutableElement method = (ExecutableElement) p;
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (isMethodMatch(el, method)) {
-                if(newModifiers != null) {
-                    checkNewModifier(getCurrentPath(), method);
-                }
+                checkNewModifier(getCurrentPath(), method);
                 boolean passThrough = false;
                 TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
                 if(enclosingMethod != null) {
@@ -529,9 +536,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             ExecutableElement method = (ExecutableElement) p;
             TypeMirror tm = workingCopy.getTrees().getTypeMirror(path);
             if (tm != null && workingCopy.getTypes().isSameType(tm, method.getEnclosingElement().asType())) {
-                if(newModifiers != null) {
-                    checkNewModifier(path, method);
-                }
+                checkNewModifier(path, method);
                 List<VariableTree> params = getNewParameters(tree.getParameters(), path);
                 LambdaExpressionTree nju = make.LambdaExpression(params, tree.getBody());
                 rewrite(tree, nju);
@@ -772,12 +777,12 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private boolean isMethodMatch(Element method, Element p) {
-        if(method == null) {
+        if (!RefactoringUtils.isExecutableElement(method)) {
             return false;
         }
         if(compatible) {
-            return (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && method == p;
-        } else if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
+            return method == p;
+        } else if (allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
                 if (baseMethod==null) {

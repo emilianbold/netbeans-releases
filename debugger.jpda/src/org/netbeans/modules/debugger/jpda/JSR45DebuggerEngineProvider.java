@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.jpda;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -55,11 +56,13 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
  */
 public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
 
-    private String language;
+    private final String language;
+    private final RequestProcessor rp;
     private DebuggerEngine.Destructor desctuctor;
 
-    JSR45DebuggerEngineProvider (String language) {
+    JSR45DebuggerEngineProvider (String language, RequestProcessor rp) {
         this.language = language;
+        this.rp = rp;
     }
 
     public String[] getLanguages () {
@@ -71,7 +74,7 @@ public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
     }
 
     public Object[] getServices () {
-        return new Object[]{};
+        return new Object[] { rp };
     }
 
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

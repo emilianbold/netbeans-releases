@@ -50,6 +50,10 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 
 import org.openide.util.actions.SystemAction;
 
@@ -65,9 +69,13 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxObjectAction;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.openide.awt.Actions;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  * Registered i
@@ -80,11 +88,23 @@ import org.netbeans.spi.viewmodel.NodeModel;
 
 public final class WatchModel extends VariableModel
     implements NodeActionsProvider {
+    private static final String PROP_SHOW_PINNED_WATCHES = "showPinnedWatches"; // NOI18N
+    private static final Properties PROPERTIES = Properties.getDefault().getProperties("native.debugger").getProperties("watchesProps");    // NOI18N
 
+    static final ShowPinnedWatches showPinnedWatches = new ShowPinnedWatches();    
     private final EmptyWatch EMPTY_WATCH = new EmptyWatch();
 
     public WatchModel(ContextProvider ctx) {
 	super(ctx);
+        PROPERTIES.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PROP_SHOW_PINNED_WATCHES.equals(evt.getPropertyName())) {
+                    WatchModel.this.treeChanged();
+                    return;
+                }
+            }
+        });
     }
 
     public WatchModel() {
@@ -368,7 +388,47 @@ public final class WatchModel extends VariableModel
         );
     };
 
+    private static abstract class CheckBoxAction extends AbstractAction implements Presenter.Popup {
 
+        private JCheckBoxMenuItem popupItem;
+
+        CheckBoxAction(String name, String id) {
+            super(name);
+            putValue("WatchActionId", id);  // NOI18N
+        }
+
+        @Override
+        public final void actionPerformed(ActionEvent e) {
+            setSelected(!isSelected());
+        }
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            if (popupItem == null) {
+                popupItem = new JCheckBoxMenuItem();
+                popupItem.setSelected(isSelected());
+                Actions.connect(popupItem, this, true);
+            }
+            return popupItem;
+        }
+
+        protected abstract boolean isSelected();
+
+        protected abstract void setSelected(boolean selected);
+
+    }
+    public static final Action SHOW_PINNED_WATCHES_ACTION = new CheckBoxAction
+        (NbBundle.getBundle(WatchModel.class).getString("CTL_WatchAction_ShowPinned"),
+         "showPinned") {//NOI18N
+            @Override protected boolean isSelected() {
+                return showPinnedWatches.isShowPinnedWatches();
+            }
+
+            @Override protected void setSelected(boolean selected) {
+                showPinnedWatches.setShowPinnedWatches(selected);
+            }
+    };    
+    
     public static final Action NEW_WATCH_ACTION = new AbstractAction
         (Catalog.get("ACT_WATCH_NewWatch")) { //NOI18N
             @Override
@@ -396,6 +456,7 @@ public final class WatchModel extends VariableModel
 	if (o == TreeModel.ROOT) {
 	    return new Action[] {
 		NEW_WATCH_ACTION,
+                SHOW_PINNED_WATCHES_ACTION,
 		null,
 		new DeleteAllAction(),
 		null,
@@ -411,6 +472,7 @@ public final class WatchModel extends VariableModel
 	} else if (o instanceof Watch) {
 	    return new Action[] {
                 NEW_WATCH_ACTION,
+                SHOW_PINNED_WATCHES_ACTION,
 		null,
 		DELETE_ACTION,
 		new DeleteAllAction(),
@@ -428,7 +490,9 @@ public final class WatchModel extends VariableModel
 	    Variable v = (Variable) o;
 	    return v.getActions(true);
 
-	} else {
+	} else if (o instanceof EmptyWatch) {
+            return new Action[]{SHOW_PINNED_WATCHES_ACTION};
+        } else {
 	    throw new UnknownTypeException(o);
 	}
     }
@@ -544,4 +608,22 @@ public final class WatchModel extends VariableModel
 //                );
         }
     }
+    
+    static class ShowPinnedWatches {
+
+        boolean isShowPinnedWatches() {
+            return PROPERTIES.getBoolean(PROP_SHOW_PINNED_WATCHES, false);
+        }
+
+        boolean isShowPinnedWatchesEnabled() {
+            return true;//areAnyPinnedWatches;
+        }
+
+        void setShowPinnedWatches(boolean showPinnedWatches) {
+            PROPERTIES.setBoolean(PROP_SHOW_PINNED_WATCHES, showPinnedWatches);
+            //fire action
+            
+        }
+
+    }    
 }

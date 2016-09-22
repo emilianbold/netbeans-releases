@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -73,7 +73,7 @@ public class ExternalJARTest extends SetupHid {
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
-        
+
         data = new File(getDataDir(), "jars");
         File activate = new File(data, "activate");
         assertTrue("Directory exists", activate.isDirectory());

@@ -135,6 +135,7 @@ public class ConflictResolvedAction extends ContextAction {
             }
         };
         SVNUrl url =  ContextAction.getSvnUrl(new Context(file));
+        // url can be null here; but support.start has some null checks... so let's leave null checks up to support.start
         support.start(Subversion.getInstance().getRequestProcessor(url), url, NbBundle.getMessage(ConflictResolvedAction.class, "LBL_ResolvingConflicts")); //NOI18N
     }
 

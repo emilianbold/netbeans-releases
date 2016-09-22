@@ -72,16 +72,18 @@ public final class CodeceptionPreferencesValidator {
     }
 
     @NbBundle.Messages({
-        "CodeceptionPreferencesValidator.incorrect.codeception.yml.fileName=codeception.yml must be set."
+        "CodeceptionPreferencesValidator.incorrect.codeception.yml.fileName=codeception.yml or codeception.dist.yml must be set.",
+        "CodeceptionPreferencesValidator.valid.codeception.yml.fileNames=codeception.yml or codeception.dist.yml"
     })
     public CodeceptionPreferencesValidator validateCodeceptionYml(boolean codeceptionYmlEnabled, @NullAllowed String codeceptionYmlPath) {
         if (codeceptionYmlEnabled) {
-            validatePath(codeceptionYmlEnabled, codeceptionYmlPath, Codecept.CODECEPTION_CONFIG_FILE_NAME, "codeceptionYmlPath"); // NOI18N
+            validatePath(codeceptionYmlEnabled, codeceptionYmlPath, Bundle.CodeceptionPreferencesValidator_valid_codeception_yml_fileNames(), "codeceptionYmlPath"); // NOI18N
             if (codeceptionYmlPath != null) {
                 File file = new File(codeceptionYmlPath);
                 if (file.exists()) {
                     String fileName = FileUtil.toFileObject(file).getNameExt();
-                    if (!Codecept.CODECEPTION_CONFIG_FILE_NAME.equals(fileName)) { // NOI18N
+                    if (!Codecept.CODECEPTION_CONFIG_FILE_NAME.equals(fileName)
+                            && !Codecept.CODECEPTION_DIST_CONFIG_FILE_NAME.equals(fileName)) {
                         result.addWarning(new ValidationResult.Message("codeceptionYmlPath", // NOI18N
                                 Bundle.CodeceptionPreferencesValidator_incorrect_codeception_yml_fileName()));
                     }

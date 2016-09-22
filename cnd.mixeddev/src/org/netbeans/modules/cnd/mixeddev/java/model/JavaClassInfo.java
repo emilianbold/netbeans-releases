@@ -54,10 +54,19 @@ public final class JavaClassInfo implements JavaEntityInfo {
     private final CharSequence name;
     
     private final List<QualifiedNamePart> qualifiedName;
+    private final String stringRepresentation;
 
     public JavaClassInfo(CharSequence name, List<QualifiedNamePart> qualifiedName) {
         this.name = name;
         this.qualifiedName = Collections.unmodifiableList(qualifiedName);
+        StringBuilder res = new StringBuilder();
+        for (QualifiedNamePart qualifiedNamePart : qualifiedName) {
+            res.append(qualifiedNamePart.toString()).append('.');
+        }
+        if (qualifiedName.size() > 1) {
+            res.deleteCharAt(res.length()-1);
+        }
+        stringRepresentation = res.toString();
     }
 
     public CharSequence getName() {
@@ -66,5 +75,9 @@ public final class JavaClassInfo implements JavaEntityInfo {
 
     public List<QualifiedNamePart> getQualifiedName() {
         return qualifiedName;
+    }
+    
+    public String getQualified() {
+        return stringRepresentation;
     }
 }

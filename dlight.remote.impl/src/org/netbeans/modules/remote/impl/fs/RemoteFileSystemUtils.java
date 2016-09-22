@@ -425,15 +425,13 @@ public class RemoteFileSystemUtils {
                         return fo;
                     }
                 } catch (InterruptedException | CancellationException ex) {
-                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
-                }
-                //NOI18N
-                 catch (ExecutionException ex) {
+                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex);
+                } catch (ExecutionException | TimeoutException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                         throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
                                 "EXC_CantCopyFromTo", from, newPath, ex.getLocalizedMessage()), ex); //NOI18N
                     } else {
-                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
+                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex);
                     }
                 }
             }

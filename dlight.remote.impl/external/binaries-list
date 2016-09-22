@@ -1,8 +1,5 @@
-#changeset:   305800:d5940d7755ef
-#branch:      release81
-#tag:         tip
-#parent:      305793:7e52687a19b6
+#changeset:   300533:4cd06f905ed3
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Jan 28 13:29:03 2016 +0300
-#summary:     fixing #256151 - Freeze after remote disconnection
-0F89C62CA701D20BA9A9A526D4D017888C3B5A65 fs_server-1.0.zip
+#date:        Mon Sep 12 20:14:52 2016 +0300
+#summary:     better error processing, sources (fixing #267975 - NullPointerException at org.netbeans.modules.subversion.remote.RepositoryFile.<init>)
+18E39A0D10357B72EDB76F2070E27019317792F1 fs_server-1.0.zip

@@ -1236,6 +1236,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug258511.cpp", 7, 10, "bug258511.cpp", 2, 3);
     }
     
+    public void testBug267382() throws Exception {
+        // Bug 267382 - Out of class function definition is not recognized under certain conditions
+        performTest("bug267382.cpp", 7, 29, "bug267382.cpp", 17, 5);
+        performTest("bug267382.cpp", 17, 41, "bug267382.cpp", 7, 13);
+        performTest("bug267382.cpp", 15, 40, "bug267382.cpp", 6, 13);
+    }
+    
+    public void testBug267275() throws Exception {
+        // Bug 267275 - Не корректное сообщение об ошибке "Невозможно разрешить идентификатор"
+        performTest("bug267275.cpp", 9, 44, "bug267275.cpp", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

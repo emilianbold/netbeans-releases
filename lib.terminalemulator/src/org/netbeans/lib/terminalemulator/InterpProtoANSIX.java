@@ -101,7 +101,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    st_esc_lb_b.setAction('p', st_base, new ACT_DEC_STR());
         }
 
-	static final class ACT_SC implements Actor {
+	private static final class ACT_SC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_sc();
@@ -109,7 +109,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_PAM implements Actor {
+	private static final class ACT_PAM implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 ((InterpProtoANSIX)ai).DECPAM = true;
@@ -117,7 +117,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_PNM implements Actor {
+	private static final class ACT_PNM implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 ((InterpProtoANSIX)ai).DECPAM = false;
@@ -125,7 +125,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_RC implements Actor {
+	private static final class ACT_RC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_rc();
@@ -133,7 +133,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_IND implements Actor {
+	private static final class ACT_IND implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 // scroll
@@ -142,7 +142,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	};
 
-	static final class ACT_START_COLLECT implements Actor {
+	private static final class ACT_START_COLLECT implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
@@ -151,7 +151,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_COLLECT implements Actor {
+	private static final class ACT_COLLECT implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		// java bug 4318526 text += c;
@@ -161,7 +161,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_DONE_COLLECT_BEL implements Actor {
+	private static final class ACT_DONE_COLLECT_BEL implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
@@ -207,7 +207,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_DEC_PRIVATE implements Actor {
+	private static final class ACT_DEC_PRIVATE implements Actor {
 
             // xterm Sequences to turn mouse reporting on and off are to be
             // implemeted here.
@@ -291,7 +291,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 
     protected String text = null;
 
-    private InterpTypeProtoANSIX type;
+    private final InterpTypeProtoANSIX type;
 
     private static final InterpTypeProtoANSIX type_singleton = new InterpTypeProtoANSIX();
 

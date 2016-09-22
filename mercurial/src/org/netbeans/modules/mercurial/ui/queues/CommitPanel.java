@@ -43,7 +43,13 @@
 package org.netbeans.modules.mercurial.ui.queues;
 
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.TemplateSelector;
@@ -86,6 +92,8 @@ public class CommitPanel extends javax.swing.JPanel {
         initCommitMessage(commitMessage, skipTemplates);
         
         cmbAuthor.setModel(parameters.createRecentUsersModel());
+
+        initActions();
     }
     
     private void initCommitMessage (String commitMessage, boolean skipTemplates) {
@@ -155,8 +163,10 @@ public class CommitPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(messageTextArea);
 
         org.openide.awt.Mnemonics.setLocalizedText(templatesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.text")); // NOI18N
+        templatesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.TTtext")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(recentLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.text")); // NOI18N
+        recentLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.TTtext")); // NOI18N
 
         jLabel1.setLabelFor(txtPatchName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel1.text")); // NOI18N
@@ -232,6 +242,21 @@ public class CommitPanel extends javax.swing.JPanel {
 
     private String getMessage(String msgKey) {
         return NbBundle.getMessage(CommitPanel.class, msgKey);
+    }
+
+    private void initActions () {
+        InputMap inputMap = getInputMap( WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
+        ActionMap actionMap = getActionMap();
+        Object action = recentLabel.getClientProperty("openAction");
+        if (action instanceof Action) {
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK, false ), "messageHistory" ); //NOI18N
+            actionMap.put("messageHistory", (Action) action); //NOI18N
+        }
+        action = templatesLabel.getClientProperty("openAction");
+        if (action instanceof Action) {
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK, false ), "messageTemplate" ); //NOI18N
+            actionMap.put("messageTemplate", (Action) action); //NOI18N
+        }
     }
 
 }

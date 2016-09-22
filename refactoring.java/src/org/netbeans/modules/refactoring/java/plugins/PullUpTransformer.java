@@ -151,7 +151,7 @@ public class PullUpTransformer extends RefactoringVisitor {
             if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 for (Tree t : njuClass.getImplementsClause()) {
                     Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
-                    if (currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                    if (currentInterface != null && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         njuClass = make.removeClassImplementsClause(njuClass, t);
                         rewrite(tree, njuClass);
                     }
@@ -391,7 +391,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                 if (isThis.equals("super") || isThis.endsWith(".super")) { //NOI18N
                     TreePath currentPath = new TreePath(mpath, node);
                     Element el = trees.getElement(currentPath);
-                    if (el.getEnclosingElement().equals(targetType)) {
+                    if (el != null && el.getEnclosingElement().equals(targetType)) {
                         original2Translated.put(node, make.Identifier(node.getIdentifier()));
                         return Boolean.TRUE;
                     }

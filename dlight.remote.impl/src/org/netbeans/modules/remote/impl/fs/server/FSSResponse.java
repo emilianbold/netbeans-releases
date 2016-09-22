@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.fs.HangupEnvList;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
@@ -117,26 +118,36 @@ import org.openide.util.NotImplementedException;
         return requestId;
     }
 
-    public Package getNextPackage() throws InterruptedException, ExecutionException {
+    /**
+     * @return next package or null in the case timeout occurred
+     */
+    public Package getNextPackage() throws TimeoutException, InterruptedException, ExecutionException {
         if (RemoteFileSystemUtils.isUnitTestMode()) {
             long timeout = Integer.getInteger("remote.fs_server.timeout", 30000); //NOI18N
             if (HangupEnvList.isHung(env)) {
                 throw new IllegalStateException("Rejected: timeout on previous attempt get package from " + env); //NOI18N
-            }            
-            Package pkg = getNextPackage(timeout);
-            if (pkg == null) {
+            }
+            try {
+                return getNextPackage(timeout);
+            } catch (TimeoutException ex) {
                 HangupEnvList.setHung(env);
                 final String errText = "Timeout: can't get package at " + env + " for request #" + requestId + // NOI18N
                         ' ' + requestKind.getChar() + ' ' + requestPath + " in " + timeout + " ms"; // NOI18N
                 FSSDispatcher.getInstance(env).testDump(System.err); //NOI18N
                 throw new IllegalStateException(errText); //NOI18N
             }
-            return pkg;
         }
         return getNextPackage(0);
     }
-    
-    public Package getNextPackage(final long timeToWait) throws InterruptedException, ExecutionException {
+
+    /**
+     * @param timeToWait zero means not "forever", but "default timeout"
+     * @return next package or null in the case timeout occurred
+     */
+    public Package getNextPackage(long timeToWait) throws TimeoutException, InterruptedException, ExecutionException {
+        if (timeToWait == 0) {
+            timeToWait = FSSTransport.DEFAULT_TIMEOUT;
+        }
         long timeElapsed = 0;
         while (true) {
             synchronized (lock) {
@@ -149,7 +160,7 @@ import org.openide.util.NotImplementedException;
                     } else {
                         long timeout = timeToWait - timeElapsed;
                         if (timeout <= 0) {
-                            return null;
+                            throw createTimeoutException(timeToWait); //NOI18N
                         }
                         long curr = System.currentTimeMillis();
                         lock.wait(timeout);
@@ -161,7 +172,13 @@ import org.openide.util.NotImplementedException;
             }
         }
     }
-    
+
+    private TimeoutException createTimeoutException(long timeoutMillis) {
+        String message = String.format("Timeout %d ms getting responce for %s on %s:%s", //NOI18N
+                timeoutMillis, requestKind, env, requestPath); //NOI18N
+        return new TimeoutException(message);
+    }
+
     public Package tryGetNextPackage() throws ExecutionException {
         while (true) {
             synchronized (lock) {

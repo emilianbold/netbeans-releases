@@ -101,6 +101,11 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
                 args = new String[] { "-b", remotePath }; // NOI18N
                 first = true;
                 break;
+            case FREEBSD:
+                cmd = "/sbin/md5"; //NOI18N
+                args = new String[] { remotePath }; // NOI18N
+                first = false;
+                break;
             case SUNOS:
                 cmd = "/usr/bin/digest"; // NOI18N
                 args = new String[] {"-a", "md5", remotePath }; //NOI18N

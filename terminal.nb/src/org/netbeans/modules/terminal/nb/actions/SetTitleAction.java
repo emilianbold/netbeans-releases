@@ -85,6 +85,7 @@ public class SetTitleAction extends TerminalAction {
 		}
 	    }
 	}
+        terminal.requestFocusInWindow();
     }
 
     // --------------------------------------------- 

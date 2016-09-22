@@ -268,8 +268,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
     private void onBrowse(final JTextField destination) {
         final SVNUrl repositoryUrl;
-        try {            
+        try {
             repositoryUrl = url != null ? url : ContextAction.getSvnUrl(new Context(roots[0])); 
+            if (repositoryUrl == null) {
+                SvnClientExceptionHandler.notifyNullUrl(new Context(roots[0]));
+                return; // otherwise NPE, see #267975
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
             return;

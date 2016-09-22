@@ -49,6 +49,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "settings.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -136,6 +138,7 @@ bool visit_dir_entries(
         const char* path, 
         bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
         void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
+        const settings_str* settings,
         void *data);
 
 void default_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data);
@@ -170,6 +173,9 @@ file_type mode_to_file_type(int mode);
 bool can_read(const struct stat *stat);
 bool can_write(const struct stat *stat);
 bool can_exec(const struct stat *stat);
+
+int lstat_wrapper(const char *path, struct stat *stat_buf, const settings_str* settings);
+int stat_wrapper(const char *path, struct stat *stat_buf, const settings_str* settings);
 
 #ifdef	__cplusplus
 }

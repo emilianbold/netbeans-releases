@@ -115,6 +115,10 @@ public final class TermExecutor {
         public void cwdChanged(String cwd) {
             ;   // ignore - for now
         }
+
+	public void externalToolCalled(String command) {
+            ;   // ignore - for now
+	}
     }
 
     private static void error(String fmt, Object...args) {

@@ -1,7 +1,9 @@
-#changeset:   19034:9e7b983e54e5
+#changeset:   19740:c3f4a3537ba5
 #branch:      jclank
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Tue Jul 19 18:06:38 2016 +0300
-#summary:     Fixed #257048 - Guard block hint issue
-A22324F86EB1673E0D54D0FFF5C8047FAED4A2BA clank_0.3.6.zip
+#parent:      19738:2b3b59ce09a1
+#parent:      19739:82abd3484987
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Tue Sep 20 15:24:44 2016 +0300
+#summary:     merging jclank_39_upgrade into jclank
+F20EEEDF4FE6B93B180387576FB780EED9F79C66 clank_0.3.9.zip

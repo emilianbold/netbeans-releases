@@ -85,12 +85,12 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry stat(String path) 
-            throws ConnectException, InterruptedException, ExecutionException {
+            throws TimeoutException, ConnectException, InterruptedException, ExecutionException {
         try {
             return stat_or_lstat(path, false, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
-            return null;
+            throw ex;
         }
     }
 
@@ -102,12 +102,12 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry lstat(String path) 
-            throws ConnectException, InterruptedException, ExecutionException {
+            throws TimeoutException, ConnectException, InterruptedException, ExecutionException {
         try {
             return stat_or_lstat(path, true, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
-            return null;
+            throw ex;
         }
     }
 

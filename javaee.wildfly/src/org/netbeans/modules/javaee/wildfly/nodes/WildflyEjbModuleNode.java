@@ -47,10 +47,10 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.ResourceType;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.nodes.AbstractNode;
@@ -81,7 +81,7 @@ public class WildflyEjbModuleNode extends AbstractNode {
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
         }
         else {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
+            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ResourceType.EJB, lookup));
         }
     }
     

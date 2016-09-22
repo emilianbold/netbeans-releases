@@ -130,6 +130,9 @@ public class FileModel2Test extends TraceModelTestBase {
     }
     
     public void test197997() throws Exception {
+        // in clank mode err file has twice reported warning starting from Clank 3.9:
+        // - during top level parse 
+        // - and when restore lazy body
         // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
         performTest("iz197997.cc");
     }
@@ -589,5 +592,15 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testBug258327() throws Exception {
         // Bug 258327 - Unresolved _Atomic in C11 when used with parens
         performTest("bug258327.c");
+    }
+    
+    public void testBug255724() throws Exception {
+        // Bug 255724 - inaccuracy tests: regression in DDD
+        performTest("bug255724.c");
+    }
+    
+    public void testBug267668Enums() throws Exception {
+        // Bug 267668 - Accuracy regression in LLVM since Aug 19.
+        performTest("bug267668Enums.cpp");
     }
 }

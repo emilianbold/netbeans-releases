@@ -299,8 +299,12 @@ public final class TerminalSupportImpl {
                         npb.getEnvironment().put("LD_LIBRARY_PATH", "");// NOI18N
                         npb.getEnvironment().put("DYLD_LIBRARY_PATH", "");// NOI18N
 
-                        
-                        
+                        if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                            // /etc/profile changes directory to ${HOME} if this
+                            // variable is not set.
+                            npb.getEnvironment().put("CHERE_INVOKING", "1");// NOI18N
+                        }
+
                         final TerminalPinSupport support = TerminalPinSupport.getDefault();
                         String envId = ExecutionEnvironmentFactory.toUniqueID(env);
 

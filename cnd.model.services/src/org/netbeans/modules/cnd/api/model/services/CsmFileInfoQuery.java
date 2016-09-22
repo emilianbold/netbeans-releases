@@ -224,6 +224,14 @@ public abstract class CsmFileInfoQuery {
      * @return true if file buffer is document based
      */
     public abstract boolean isDocumentBasedFile(CsmFile file);
+    
+    /**
+     * Is file standard headers indexer?
+     * 
+     * @param file
+     * @return true if file is standard headers indexer
+     */
+    public abstract boolean isStandardHeadersIndexer(CsmFile file);
 
     /**
      * Calculates offset by line and column
@@ -380,6 +388,11 @@ public abstract class CsmFileInfoQuery {
 
         @Override
         public boolean isDocumentBasedFile(CsmFile file) {
+            return false;
+        }
+
+        @Override
+        public boolean isStandardHeadersIndexer(CsmFile file) {
             return false;
         }
 

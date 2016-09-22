@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Oracle
+ * Portions Copyrighted 2011 Oracle, Inc.
  */
 package org.netbeans.modules.netbinox;
 
@@ -69,7 +69,7 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     public NetigsoOSGiActivationVisibleTest(String name) {
         super(name);
     }
-    
+
     protected boolean autoload() {
         return false;
     }

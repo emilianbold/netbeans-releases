@@ -27,8 +27,8 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -305,7 +305,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     methodInvokePath = currentPath;
                 }
                 elm = evaluationContext.getTrees().getElement(methodInvokePath);
-                methodName = elm.getSimpleName().toString();
+                if (elm != null) {
+                    methodName = elm.getSimpleName().toString();
+                } else {
+                    methodName = expr.toString();
+                }
             } else {
                 elm = null;
                 methodName = expr.toString();
@@ -2573,6 +2577,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         ExpressionTree classIdentifier = arg0.getIdentifier();
         Mirror clazz = classIdentifier.accept(this, evaluationContext);
+        if (clazz instanceof ClassObjectReference) {
+            clazz = ((ClassObjectReference) clazz).reflectedType();
+        }
         if (!(clazz instanceof ClassType)) {
             Assert.error(classIdentifier, "unknownType", classIdentifier.toString());
         }
@@ -2690,6 +2697,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (enclosing != null && enclosing instanceof ObjectReference) {
                 ObjectReference enclosingObject = (ObjectReference) enclosing;
                 argVals.add(0, enclosingObject);
+                argTypes.add(0, enclosingObject.referenceType());
                 firstParamSignature = enclosingObject.referenceType().signature();
             } else if (thisObject != null) {
                 String className = classType.name();
@@ -2704,25 +2712,27 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.
                             argVals.add(0, thisObject);
+                            argTypes.add(0, outerClass);
                             firstParamSignature = outerClass.signature();
                         } else {
                             // 'this' is likely an instance of some inner class, use this$0 (this$1,...)
                             ObjectReference enclosingObject = findEnclosingObject(arg0, thisObject, outerClass, null, null);
                             if (enclosingObject != null) {
                                 argVals.add(0, enclosingObject);
+                                argTypes.add(0, outerClass);
                                 firstParamSignature = outerClass.signature();
                             }
                         }
                     }
                 }
-                
+                /*
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
                     if (!nested.isStatic() && nested.equals(classType)) {
                         argVals.add(0, thisObject);
                         argTypes.add(0, thisObject.type());
                     }
-                }
+                }*/
             }
         }
         try {
@@ -2800,6 +2810,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                      Collections.singletonList((Value) constantNameRef), evaluationContext, false);
         return enumValue;
     }
+    
+    private static boolean hasBinaryName(TypeElement te) {
+        try {
+            String className = ElementUtilities.getBinaryName(te);
+            return className != null;
+        } catch (IllegalArgumentException ex) {}
+        return false;
+    }
 
     @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
@@ -2812,7 +2830,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 memberSelectPath = currentPath;
             }
             elm = evaluationContext.getTrees().getElement(memberSelectPath);
-            if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+            if (elm instanceof TypeElement &&
+                ((TypeElement) elm).asType() instanceof ErrorType &&
+                !hasBinaryName((TypeElement) elm)) {
+                
                 currentPath = null; // Elements not resolved correctly
             }
         }
@@ -4420,14 +4441,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             // No preferred, just take the first one:
             return types.get(0);
         }
-        // DO NOT TRY TO LOAD CLASSES AT ALL! See http://www.netbeans.org/issues/show_bug.cgi?id=168949
-        return null;
-        /*
         // DO NOT TRY TO LOAD THE CLASS ON JDK 5 AND OLDER!
         // See http://www.netbeans.org/issues/show_bug.cgi?id=50315
-        if (!JPDAUtils.IS_JDK_16) {
-            return null;
-        }
         // The bug is in JVMTI code, therefore the target VM must be JDK 6 at least.
         String targetVersion = vm.version();
         if (targetVersion.startsWith("1.5") || // NOI18N
@@ -4450,9 +4465,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             args.add(className);
             args.add(vm.mirrorOf(true));
             args.add(executingClassloader);
-            ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, 0);
+            ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, ObjectReference.INVOKE_SINGLE_THREADED);
             //evaluationContext.disableCollectionOf(cor); - Not necessary, values returned from methods are not collected!
             return cor.reflectedType();
+        } catch (IncompatibleThreadStateException itsex) {
+            String message = Bundle.MSG_IncompatibleThreadStateMessage();
+            InvalidExpressionException ieex = new InvalidExpressionException(message, itsex);
+            throw new IllegalStateException(ieex);
         } catch (Exception ex) {
             return null;
         } finally {
@@ -4464,7 +4483,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
-         */
     }
 
     private static StringReference createStringMirrorWithDisabledCollection(String s, VirtualMachine vm, EvaluationContext evaluationContext) {

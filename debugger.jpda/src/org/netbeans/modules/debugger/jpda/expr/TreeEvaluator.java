@@ -27,8 +27,8 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassNotPreparedException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InternalException;
@@ -63,16 +64,22 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.HashMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JDIExceptionReporter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -83,12 +90,16 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.remote.RemoteClass;
+import org.netbeans.modules.debugger.jpda.remote.RemoteServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -183,10 +194,14 @@ public class TreeEvaluator {
         //Tree exprTree = EditorContextBridge.getExpressionTree(expression.getExpression(), url, line);
         //if (exprTree == null) return null;
         Mirror mirror = null;
+        Map<String, ObjectVariable> uploadedClasses = new HashMap<>();
         try {
-            mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
-                                                         new EvaluatorVisitor(expression), evaluationContext,
-                                                         evaluationContext.getDebugger().getEngineContext().getContext());
+            mirror = EditorContextBridge.interpretOrCompileCode(expression.getExpression(), url, line,
+                                                                new CanInterpretVisitor(),
+                                                                new EvaluatorVisitor(expression), evaluationContext,
+                                                                evaluationContext.getContextObject() == null,
+                                                                (namedClass) -> uploadClass(namedClass, uploadedClasses, evaluationContext),
+                                                                evaluationContext.getDebugger().getEngineContext().getContext());
             if (mirror instanceof EvaluatorVisitor.ArtificialMirror) {
                 mirror = ((EvaluatorVisitor.ArtificialMirror) mirror).getVMMirror();
             }
@@ -240,6 +255,9 @@ public class TreeEvaluator {
         } finally {
             // Garbage collection for the returned value "mirror" is left disabled. Context enable it as soon as the thread is resumed.
             evaluationContext.enableCollectionOfObjects((mirror instanceof Value) ? ((Value) mirror) : null);
+            for (ObjectVariable var : uploadedClasses.values()) {
+                evaluationContext.getDebugger().markObject(var, null);
+            }
         }
         //return (Value) rootNode.jjtAccept(this, null);
         //return null;
@@ -375,6 +393,64 @@ public class TreeEvaluator {
                     loggerMethod.fine("FINISHED: "+classType+"."+method+" ("+args+") in thread "+evaluationThread);
                 }
             }
+        }
+    }
+    
+    private boolean uploadClass(Pair<String, byte[]> namedClass,
+                                Map<String, ObjectVariable> classes,
+                                EvaluationContext evaluationContext) {
+        ObjectVariable clazz = uploadClass(namedClass);
+        if (clazz != null) {
+            String className = namedClass.first();
+            int simpleNameIndex = className.replace('$', '.').lastIndexOf('.');
+            if (simpleNameIndex > 0) {
+                className = className.substring(simpleNameIndex + 1);
+            }
+            classes.put(className, clazz);
+            evaluationContext.getDebugger().markObject(clazz, className);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private ObjectVariable uploadClass(Pair<String, byte[]> namedClass) {
+        if (!evaluationContext.canInvokeMethods()) {
+            return null;
+        }
+        evaluationContext.methodToBeInvoked();
+        try {
+            ClassObjectReference newClass = RemoteServices.uploadClass(
+                    evaluationContext.getThread().getThreadReference(),
+                    new RemoteClass(namedClass.first(), namedClass.second()));
+            if (newClass != null) {
+                evaluationContext.registerDisabledCollectionOf(newClass);
+                return (ObjectVariable) evaluationContext.getDebugger().getVariable(newClass);
+            } else {
+                return null;
+            }
+        } catch (InvalidTypeException | ClassNotLoadedException |
+                 IncompatibleThreadStateException |
+                 IOException | PropertyVetoException | InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper |
+                 UnsupportedOperationExceptionWrapper | ClassNotPreparedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (InvocationException iex) {
+            InvocationExceptionTranslated ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            JPDAThreadImpl trImpl = evaluationContext.getThread();
+            { // Init exception translation:
+                ex.setPreferredThread(trImpl);
+                trImpl.notifyMethodInvokeDone();
+                ex.getMessage();
+                ex.getLocalizedMessage();
+                ex.getStackTrace();
+            }
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            Exceptions.printStackTrace(ieex);
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
         }
     }
 }

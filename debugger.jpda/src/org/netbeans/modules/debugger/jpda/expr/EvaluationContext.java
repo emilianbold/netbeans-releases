@@ -295,6 +295,22 @@ public class EvaluationContext {
 
     public void disableCollectionOf(ObjectReference or) {
         synchronized (disabledCollectionObjects) {
+            if (registerDisabledCollectionOf(or)) {
+                try {
+                    or.disableCollection();
+                } catch (UnsupportedOperationException uoex) {
+                    // So we can not disable collection
+                    disabledCollectionObjects.remove(or);
+                }
+                //System.err.println("\nDISABLED COLLECTION of "+or);
+                //Thread.dumpStack();
+                //System.err.println("");
+            }
+        }
+    }
+    
+    boolean registerDisabledCollectionOf(ObjectReference or) {
+        synchronized (disabledCollectionObjects) {
             if (threadPropertyChangeListener == null) {
                 threadPropertyChangeListener = new PropertyChangeListener() {
                     @Override
@@ -320,17 +336,7 @@ public class EvaluationContext {
                 thread.addPropertyChangeListener(threadPropertyChangeListener);
                 thread.getDebugger().addPropertyChangeListener(threadPropertyChangeListener);
             }
-            if (disabledCollectionObjects.add(or)) {
-                try {
-                    or.disableCollection();
-                } catch (UnsupportedOperationException uoex) {
-                    // So we can not disable collection
-                    disabledCollectionObjects.remove(or);
-                }
-                //System.err.println("\nDISABLED COLLECTION of "+or);
-                //Thread.dumpStack();
-                //System.err.println("");
-            }
+            return disabledCollectionObjects.add(or);
         }
     }
 

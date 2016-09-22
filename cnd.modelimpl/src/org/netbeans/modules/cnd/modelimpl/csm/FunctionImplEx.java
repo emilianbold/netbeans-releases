@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +59,17 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -157,11 +163,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     /** @return either class or namespace */
     public CsmObject findOwner() {
+        return findOwner(false);
+    }
+    
+    public CsmObject findOwner(boolean isProjectParsed) {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);
+            CsmObject obj = null;
             try {
-                CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
+                obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
                 if (CsmKindUtilities.isClassifier(obj)) {
                     CsmClassifier cls = resolver.getOriginalClassifier((CsmClassifier)obj);
                     if (cls != null) {
@@ -175,6 +186,26 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 }
             } finally {
                 ResolverFactory.releaseResolver(resolver);
+            }
+            // 1) Check that resolver found nothing. It is unlikely that 
+            //    further resolving will return different object.
+            // 2) Check that length of qualified name is more than 1. 
+            //    Seems that it makes no sense to resolve qualified name
+            //    with one element any further.
+            if (isProjectParsed && obj == null && cnn.length > 1) {
+                StringBuilder sb = new StringBuilder(cnn[0]);
+                for (int i = 1; i < cnn.length; ++i) {
+                    sb.append(APTUtils.SCOPE).append(cnn[i]);
+                }
+                int startOffset = getStartOffset();
+                Collection<CsmObject> resolved = CsmExpressionResolver.resolveObjects(sb.toString(), getContainingFile(), startOffset, null);
+                if (resolved != null && !resolved.isEmpty()) {
+                    for (CsmObject candidate : resolved) {
+                        if (CsmKindUtilities.isClass(candidate) || CsmKindUtilities.isNamespace(candidate)) {
+                            return candidate;
+                        }
+                    }
+                }
             }
 	}
 	return null;
@@ -228,13 +259,13 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
         if( qualifiedName == null ) {
-            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
+            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName(false));
         }
         return qualifiedName;
     }
 
-    protected CharSequence findQualifiedName() {
-        CsmObject owner = findOwner();
+    protected CharSequence findQualifiedName(boolean isProjectParsed) {
+        CsmObject owner = findOwner(isProjectParsed);
         // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
             setFlags(FAKE_QUALIFIED_NAME, false);
@@ -291,7 +322,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if (fakeData != null) {
             final AST fixFakeRegistrationAst = fakeData.first();
             final MutableDeclarationsContainer container = fakeData.second();
-            CsmObject owner = findOwner();
+            CsmObject owner = findOwner(projectParsedMode);
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
                 boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
@@ -373,7 +404,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 }
             }
         } else {
-            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
+            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName(projectParsedMode));
             if (!newQname.equals(qualifiedName)) {
                 ProjectBase aProject = ((FileImpl)getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);

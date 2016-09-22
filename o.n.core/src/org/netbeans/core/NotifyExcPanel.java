@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.FocusManager;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -113,6 +114,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     /** preferred height of this component */
     private static final int SIZE_PREFERRED_HEIGHT=250;
     private static final int MAX_STORED_EXCEPTIONS = 500;
+    private static final boolean AUTO_FOCUS = Boolean.getBoolean("netbeans.winsys.auto_focus"); // NOI18N
 
     /** enumeration of NbExceptionManager.Exc to notify */
     static ArrayListPos exceptions;
@@ -424,7 +426,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             //another dialog, which will trigger another exception, endlessly.
             //Catch any exceptions and append them to the list instead.
             ensurePreferredSize();
-            dialog.setVisible(true);
+            if (!dialog.isVisible()) {
+                dialog.setVisible(true);
+            }
             //throw new RuntimeException ("I am not so exceptional"); //uncomment to test
         } catch (Exception e) {
             exceptions.add(NbErrorManager.createExc(
@@ -489,7 +493,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                         current.printStackTrace(new PrintWriter(wr, true));
                         output.setText(wr.toString());
                         output.getCaret().setDot(0);
-                        output.requestFocus ();
+                        if (!AUTO_FOCUS && FocusManager.getCurrentManager().getActiveWindow() == null) {
+                            // Do not steal focus if no Java window have it
+                            output.requestFocusInWindow();
+                        } else {
+                            output.requestFocus ();
+                        }
                 }
             });
         } else {

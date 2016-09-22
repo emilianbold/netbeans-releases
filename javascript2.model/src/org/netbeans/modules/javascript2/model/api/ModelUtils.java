@@ -150,11 +150,13 @@ public class ModelUtils {
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
-            result = tmpObject.getProperty(name.getName());
-            if (result == null) {
-                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
-                        (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
-                tmpObject.addProperty(name.getName(), result);
+            if (name != null) {
+                result = tmpObject.getProperty(name.getName());
+                if (result == null) {
+                    result = new JsObjectImpl(tmpObject, name, name.getOffsetRange(),
+                            (index < (fqName.size() - 1)) ? false : isLHS, tmpObject.getMimeType(), tmpObject.getSourceLabel());
+                    tmpObject.addProperty(name.getName(), result);
+                }
             }
             tmpObject = result;
         }
@@ -1340,24 +1342,19 @@ public class ModelUtils {
     }
 
     private static Collection<String> findPrototypeChain(String fqn, Index jsIndex, Set<String> alreadyCheck) {
-        Collection<String> result = new ArrayList<String>();
+        Collection<String> result = new HashSet<>();
         if (!alreadyCheck.contains(fqn)) {
             alreadyCheck.add(fqn);
-            Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(fqn, ModelUtils.PROTOTYPE);
-            for (IndexedElement property : properties) {
-                if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
-                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(property.getFQN(), Index.FIELD_ASSIGNMENTS);
-                    for (IndexResult indexResult : indexResults) {
-                        Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                        for (TypeUsage typeUsage : assignments) {
-                            result.add(typeUsage.getType());
-                        }
-                        for (TypeUsage typeUsage : assignments) {
-                            result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
-                        }
-                    }
+            Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqn + "." + ModelUtils.PROTOTYPE, Index.FIELD_ASSIGNMENTS); //NOI18N
+            for (IndexResult indexResult : indexResults) {
+                Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                for (TypeUsage typeUsage : assignments) {
+                    result.add(typeUsage.getType());
                 }
-            } 
+                for (TypeUsage typeUsage : assignments) {
+                    result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
+                }
+            }
         } 
         if (result.isEmpty()) {
             result.add("Object"); //NOI18N
@@ -1570,8 +1567,9 @@ public class ModelUtils {
     private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
-            "XMLHttpRequest", "JSON", "Date", "undefined", "Math",  //NOI18N
-            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
+            "XMLHttpRequest", "JSON", "Date", Type.UNDEFINED, "Math",  //NOI18N
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED,
+            Type.NAN, Type.INFINITY);
     
     public static boolean isKnownGLobalType(String type) {
         return knownGlobalObjects.contains(type);

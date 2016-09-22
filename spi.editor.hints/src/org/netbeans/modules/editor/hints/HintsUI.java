@@ -97,6 +97,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -1032,11 +1033,13 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                         @Override public void run() {
                             HighlightsSequence hit = hm.getBottomHighlights().getHighlights(caret, caret + 1);
 
-                            if (hit.moveNext() && hit.getAttributes() != null && hit.getAttributes().containsAttribute("unused-browseable", Boolean.TRUE)) {
-                                Object tp = hit.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
-
-                                if (tp instanceof HighlightAttributeValue) {
-                                    hav[0] = (HighlightAttributeValue) tp;
+                            if (hit.moveNext()) {
+                                AttributeSet attrs = hit.getAttributes();
+                                if (attrs != null && attrs.containsAttribute("unused-browseable", Boolean.TRUE)) {
+                                    Object tp = hit.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
+                                    if (tp instanceof HighlightAttributeValue) {
+                                        hav[0] = (HighlightAttributeValue) tp;
+                                    }
                                 }
                             }
                         }

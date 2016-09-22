@@ -93,7 +93,7 @@ public final class ExecutionSupport {
 
                 String[] args;
                 if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
-                    args = new String[] {"--non-interactive", name}; // NOI18N
+                    args = new String[] {name, "--non-interactive"}; // NOI18N
                 } else {
                     args = new String[] {name};
                 }

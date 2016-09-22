@@ -587,10 +587,11 @@ public class JPDATruffleAccessor extends Object {
             }
             slotsArr.add(fs);
         }
-        FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
-        String[] slotNames = new String[slots.length];
-        String[] slotTypes = new String[slots.length];
-        for (int i = 0; i < frameSlots.length; i++) {
+        int numSlots = slotsArr.size();
+        FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[numSlots]);
+        String[] slotNames = new String[numSlots];
+        String[] slotTypes = new String[numSlots];
+        for (int i = 0; i < numSlots; i++) {
             slotNames[i] = frameSlots[i].getIdentifier().toString();
             slotTypes[i] = frameSlots[i].getKind().toString();
         }

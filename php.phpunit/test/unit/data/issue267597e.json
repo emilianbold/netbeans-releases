@@ -1,0 +1,129 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 90
+}{
+    "event": "suiteStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "tests": 90
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testStahnoutVypisyOnline"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testStahnoutVypisyOnline",
+    "status": "pass",
+    "time": 0.61974191665649,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testAutomatickeParovani"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testAutomatickeParovani",
+    "status": "pass",
+    "time": 1.1431729793549,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testAutomatickeParovani",
+    "status": "error",
+    "time": 0,
+    "trace": [],
+    "message": "Skipped Test: This test depends on \"Test\\FlexiPeeHP\\BankaTest::testInsertToFlexiBee\" to pass.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testInsertToFlexiBee"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testInsertToFlexiBee",
+    "status": "error",
+    "time": 0.0061252117156982,
+    "trace": [
+        {
+            "file": "\/home\/vitex\/Projects\/Spoje.Net\/FlexiPeeHP\/testing\/src\/FlexiPeeHP\/FlexiBeeRWTest.php",
+            "line": 54,
+            "function": "markTestIncomplete",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Incomplete Test: This test has not been implemented yet.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testDeleteFromFlexiBee"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testDeleteFromFlexiBee",
+    "status": "error",
+    "time": 0.005141019821167,
+    "trace": [
+        {
+            "file": "\/home\/vitex\/Projects\/Spoje.Net\/FlexiPeeHP\/testing\/src\/FlexiPeeHP\/FlexiBeeRWTest.php",
+            "line": 66,
+            "function": "markTestIncomplete",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Incomplete Test: This test has not been implemented yet.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testCurlInit"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testCurlInit",
+    "status": "pass",
+    "time": 0.0057330131530762,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testSetEvidence"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testSetEvidence",
+    "status": "pass",
+    "time": 0.035358190536499,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testObject2array"
+}{
+    "event": "test",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testObject2array",
+    "status": "pass",
+    "time": 0.017201900482178,
+    "trace": [],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Test\\FlexiPeeHP\\BankaTest",
+    "test": "Test\\FlexiPeeHP\\BankaTest::testPerformRequest"
+}

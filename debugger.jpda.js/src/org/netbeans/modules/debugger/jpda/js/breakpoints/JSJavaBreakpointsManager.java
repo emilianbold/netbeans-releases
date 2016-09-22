@@ -56,6 +56,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -71,6 +72,8 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAStep;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -101,9 +104,11 @@ import org.openide.util.Exceptions;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
-    private static final String NASHORN_PACKAGE = "jdk.nashorn";                // NOI18N
     private static final String NASHORN_CONTEXT_CLASS = "jdk.nashorn.internal.runtime.Context"; // NOI18N
     private static final String NASHORN_CONTEXT_SOURCE_BIND_METHOD = "cacheClass";    // NOI18N
+    
+    private static final String NASHORN_SCRIPT_RUNTIME_CLASS = "jdk.nashorn.internal.runtime.ScriptRuntime";    // NOI18N
+    private static final String NASHORN_SCRIPT_RUNTIME_DEBUGGER_METHOD = "DEBUGGER";    // NOI18N
     
     private static final String NASHORN_FUNCTION_NODE_CLASS = "jdk.nashorn.internal.ir.FunctionNode";   // NOI18N
     private static final String NASHORN_FUNCTION_NODE_SET_CLASS = "setRootClass";   // NOI18N
@@ -115,6 +120,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     private ClassLoadUnloadBreakpoint scriptBP;
     private MethodBreakpoint sourceBindBP;
     private MethodBreakpoint functionClassBP;
+    private MethodBreakpoint debuggerBP;
     private final Object sourceBreakpointsInitLock = new Object();
     
     public JSJavaBreakpointsManager() {
@@ -123,7 +129,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     @Override
     public Breakpoint[] initBreakpoints() {
         initSourceBreakpoints();
-        return new Breakpoint[] { scriptBP, sourceBindBP, functionClassBP };
+        return new Breakpoint[] { scriptBP, sourceBindBP, functionClassBP, debuggerBP };
     }
     
     private void initSourceBreakpoints() {
@@ -142,6 +148,10 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 functionClassBP = MethodBreakpoint.create(NASHORN_FUNCTION_NODE_CLASS, NASHORN_FUNCTION_NODE_SET_CLASS);
                 functionClassBP.setHidden(true);
                 functionClassBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
+                
+                debuggerBP = MethodBreakpoint.create(NASHORN_SCRIPT_RUNTIME_CLASS, NASHORN_SCRIPT_RUNTIME_DEBUGGER_METHOD);
+                debuggerBP.setHidden(true);
+                debuggerBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
             }
         }
     }
@@ -216,6 +226,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         scriptBP.addJPDABreakpointListener(sh);
         sourceBindBP.addJPDABreakpointListener(sh);
         functionClassBP.addJPDABreakpointListener(sh);
+        debuggerBP.addJPDABreakpointListener(sh);
         synchronized (scriptHandlers) {
             scriptHandlers.put(debugger, sh);
         }
@@ -235,6 +246,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             scriptBP.removeJPDABreakpointListener(sh);
             sourceBindBP.removeJPDABreakpointListener(sh);
             functionClassBP.removeJPDABreakpointListener(sh);
+            debuggerBP.removeJPDABreakpointListener(sh);
             scriptBP.enable();
             sh.destroy();
         }
@@ -271,7 +283,8 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             if (debugger != event.getDebugger()) {
                 return ;
             }
-            if (scriptBP == event.getSource()) {
+            Object eventSource = event.getSource();
+            if (scriptBP == eventSource) {
                 // A new script class is loaded.
                 Variable scriptClass = event.getVariable();
                 if (!(scriptClass instanceof ClassVariable)) {
@@ -297,7 +310,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                         scriptAccessBreakpoints.put(scriptMethodBP, scriptType);
                     }
                 }
-            } else if (sourceBindBP == event.getSource()) {
+            } else if (sourceBindBP == eventSource) {
                 Variable sourceVar = null;
                 Variable scriptClass = null;
                 try {
@@ -339,7 +352,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                         scriptBP.disable();
                     }
                 }
-            } else if (functionClassBP == event.getSource()) {
+            } else if (functionClassBP == eventSource) {
                 Variable rootClass = null;
                 Variable sourceVar = null;
                 try {
@@ -376,9 +389,12 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                         source.addFunctionClass((ClassVariable) rootClass);
                     }
                 }
+            } else if (debuggerBP == eventSource) {
+                JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
+                step.addStep(event.getThread());
             } else {
                 // script class is fully set up, let's retrieve the source:
-                MethodBreakpoint scriptMethodBP = (MethodBreakpoint) event.getSource();
+                MethodBreakpoint scriptMethodBP = (MethodBreakpoint) eventSource;
                 DebuggerManager.getDebuggerManager().removeBreakpoint(scriptMethodBP);
                 JPDAClassType scriptType;
                 synchronized (scriptAccessBreakpoints) {
@@ -422,13 +438,17 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             }
 
             // We need to suspend the app to be able to invoke methods:
-            final MethodBreakpoint inNashorn = MethodBreakpoint.create(NASHORN_PACKAGE+".*", "*");
+            final MethodBreakpoint inNashorn = MethodBreakpoint.create(NASHORN_FUNCTION_NODE_CLASS, "*");
+            final AtomicBoolean retrieved = new AtomicBoolean(false);
             inNashorn.addJPDABreakpointListener(new JPDABreakpointListener() {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
-                    DebuggerManager.getDebuggerManager().removeBreakpoint(inNashorn);
                     try {
-                        doRetrieveExistingSources(classCache);
+                        if (!retrieved.getAndSet(true)) {
+                            inNashorn.disable();
+                            DebuggerManager.getDebuggerManager().removeBreakpoint(inNashorn);
+                            doRetrieveExistingSources(classCache);
+                        }
                     } finally {
                         event.resume();
                     }

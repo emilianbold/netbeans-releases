@@ -645,6 +645,7 @@ public final class Terminal extends JComponent {
         term.setClickToType(termOptions.getClickToType());
         term.setScrollOnInput(termOptions.getScrollOnInput());
         term.setScrollOnOutput(termOptions.getScrollOnOutput());
+        term.setAltSendsEscape(termOptions.getAltSendsEscape());
         if (initial) {
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
 	}
@@ -1065,6 +1066,9 @@ public final class Terminal extends JComponent {
 	// TMP Find is not operation so keep it disabled
 	// TODO IG fix
 	findAction.setEnabled(false);
+        
+        Container container = SwingUtilities.getAncestorOfClass(TerminalContainer.class, this);
+        boolean isTerminalContainer = (container != null && container instanceof TerminalContainer);
 	
 	JPopupMenu menu = Utilities.actionsToPopup(
 		new Action[]{
@@ -1073,7 +1077,7 @@ public final class Terminal extends JComponent {
 		    copyAction,
 		    pasteAction,
 		    null,
-		    findAction,
+		    isTerminalContainer ? findAction: null,
 		    null,
 		    wrapAction,
 		    largerFontAction,

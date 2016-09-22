@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 package org.netbeans.lib.terminalemulator;
@@ -67,7 +66,7 @@ public abstract class AbstractInterp implements Interp {
 	public String name() {
 	    return name;
 	} 
-	private String name;
+	private final String name;
 
 
 	class Action {
@@ -75,8 +74,8 @@ public abstract class AbstractInterp implements Interp {
 	    public Actor actor = act_error;
 	};
 
-	private Action action[] = new Action[128];
-	private Action action_regular = new Action();
+	private final Action action[] = new Action[128];
+	private final Action action_regular = new Action();
 
 	public State(String name) {
 	    this.name = name;
@@ -139,12 +138,12 @@ public abstract class AbstractInterp implements Interp {
      * Management of number parsing
      */
 
-    private static final int max_numbers = 5;
+    private static final int MAX_NUMBERS = 5;
     private int numberx = 0;
-    private String number[] = new String[max_numbers];
+    private final String number[] = new String[MAX_NUMBERS];
 
     protected void resetNumber() {
-	for (int x = 0; x < max_numbers; x++) {
+	for (int x = 0; x < MAX_NUMBERS; x++) {
 	    number[x] = "";
 	}
 	numberx = 0;
@@ -154,7 +153,7 @@ public abstract class AbstractInterp implements Interp {
     }
     protected boolean pushNumber() {
 	numberx++;
-	return (numberx < max_numbers);
+	return (numberx < MAX_NUMBERS);
     }
     protected boolean noNumber() {
 	return number[0].equals("");	// NOI18N
@@ -173,6 +172,4 @@ public abstract class AbstractInterp implements Interp {
     protected int nNumbers() {
 	return numberx;
     }
-
-
 } 

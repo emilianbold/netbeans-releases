@@ -105,11 +105,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static Action editAction = null;
     private Action returnTypeAction;
     
+    @NbBundle.Messages({
+        "LBL_ModifierNoChange=<do not change>",
+        "LBL_ModifierDefault=<default>"
+    })
     private static final String[] modifierNames = {
         "public", // NOI18N
         "protected", // NOI18N
-        "<default>", // NOI18N
-        "private" // NOI18N
+        Bundle.LBL_ModifierDefault(),
+        "private", // NOI18N
+        Bundle.LBL_ModifierNoChange(),
     };
     private ParameterInfo[] preConfiguration;
     private final ReturnTypeDocListener returnTypeDocListener;
@@ -138,6 +143,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final int MOD_PROTECTED_INDEX = 1;
     private static final int MOD_DEFAULT_INDEX = 2;
     private static final int MOD_PRIVATE_INDEX = 3;
+    private static final int MOD_NOCHANGE_INDEX = 4;
 
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
@@ -298,6 +304,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         case MOD_DEFAULT_INDEX: break; /* no modifier */
         case MOD_PROTECTED_INDEX: modifiers.add(Modifier.PROTECTED); break;
         case MOD_PUBLIC_INDEX: modifiers.add(Modifier.PUBLIC); break;
+        case MOD_NOCHANGE_INDEX: 
+            return null;
         }
         return modifiers;
     }
@@ -766,7 +774,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         List<Object[]> newModel = new LinkedList<>();
 
         TreePath path = refactoredObj.resolve(info);
-        ExecutableElement method = (ExecutableElement) info.getTrees().getElement(path);
+        if (path == null) {
+            return;
+        }
+        Element e = info.getTrees().getElement(path);
+        if (!RefactoringUtils.isExecutableElement(e)) {
+            parameterSpan = new int[] { 0, 0 }; // stub information
+            return;
+        }
+        ExecutableElement method = (ExecutableElement)e;
         MethodTree tree = info.getTrees().getTree(method);
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
 
@@ -864,25 +880,22 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private Set<Modifier> modifiers = new HashSet<Modifier>();
     private List<String> typeParameters = new LinkedList<String>();
+    private Modifier currentModifier = null;
+    
     private void setModifier(Set<Modifier> mods) {
         modifiers.clear();
         modifiers.addAll(mods);
         modifiers.remove(Modifier.PRIVATE);
         modifiers.remove(Modifier.PUBLIC);
         modifiers.remove(Modifier.PROTECTED);
-        // #170543: set only access modifiers
-        if (mods.contains(Modifier.PRIVATE)) {
-//            this.modifiers.add(Modifier.PRIVATE);
-            modifiersCombo.setSelectedIndex(MOD_PRIVATE_INDEX);
+        if (mods.contains(Modifier.PUBLIC)) {
+            currentModifier = Modifier.PUBLIC;
         } else if (mods.contains(Modifier.PROTECTED)) {
-//            this.modifiers.add(Modifier.PROTECTED);
-            modifiersCombo.setSelectedIndex(MOD_PROTECTED_INDEX);
-        } else if (mods.contains(Modifier.PUBLIC)) {
-//            this.modifiers.add(Modifier.PUBLIC);
-            modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-        } else {
-            modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+            currentModifier = Modifier.PROTECTED;
+        } else if (mods.contains(Modifier.PRIVATE)) {
+            currentModifier = Modifier.PRIVATE;
         }
+        modifiersCombo.setSelectedIndex(MOD_NOCHANGE_INDEX);
     }
 
     public String genDeclarationString() {
@@ -890,10 +903,18 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         
         // generate preview for modifiers
         // access modifiers
-        String mod = modifiersCombo.getSelectedIndex() != MOD_DEFAULT_INDEX /*default modifier?*/ ?
-            (String) modifiersCombo.getSelectedItem() + ' ' : ""; // NOI18N
-        buf.append(mod);
-        
+        String mod;
+        int idx = modifiersCombo.getSelectedIndex();
+        if (idx == MOD_NOCHANGE_INDEX) {
+            if (currentModifier != null) {
+                buf.append(currentModifier.toString()).append(' ');
+            }
+        } else {
+            buf.append(
+                idx != MOD_DEFAULT_INDEX /*default modifier?*/ ?
+                (String) modifiersCombo.getSelectedItem() + ' ' : ""
+            );
+        }
         // other than access modifiers - using data provided by the element
         for (Modifier modifier : modifiers) {
             buf.append(modifier.toString());

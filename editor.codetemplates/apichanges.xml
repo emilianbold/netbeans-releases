@@ -108,6 +108,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="orderingAttribute.added">
+             <api name="codetemplates"/>
+             <summary>Added <code>ordering</code> for code template parameters.</summary>
+             <version major="1" minor="43"/>
+             <date day="15" month="8" year="2016"/>
+             <author login="markiewb"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 The ordering attribute defines the sequence in which placeholders arecompleted. Use 0 for the first element, 1 for the second... Placeholders
+                 without ordering information will be placed after the last placeholder with ordering information.
+                 <br/>
+                 Example of ordering of parameters :
+                 <pre>
+                     // paramC comes first, then paramB, then paramA
+                     ${paramA} ${paramB ordering=2} ${paramC ordering=1}
+                 </pre>
+             </description>
+             <class package="org.netbeans.lib.editor.codetemplates.spi" name="CodeTemplateParameter"/>
+             <issue number="181703"/>
+        </change>
         <change id="ContextBasedFactory">
              <api name="codetemplates"/>
              <summary>Added <code>CodeTemplateFilter.ContextBasedFactory</code>.</summary>

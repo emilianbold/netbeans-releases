@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -111,7 +112,7 @@ public class RemoteVcsSupportUtil {
                 return entry.isLink();
             } catch (ConnectException ex) {
                 RemoteLogger.finest(ex);
-            } catch (InterruptedException | IOException ex) {
+            } catch (InterruptedException | IOException | TimeoutException ex) {
                 RemoteLogger.finest(ex);
             } catch (ExecutionException ex) {
                 if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -176,6 +177,8 @@ public class RemoteVcsSupportUtil {
             } else {
                 return null;
             }
+        } catch (TimeoutException ex) {
+            throw new IOException(ex);
         } catch (InterruptedException ex) {
             throw new InterruptedIOException();
         } catch (ExecutionException ex) {
@@ -195,7 +198,7 @@ public class RemoteVcsSupportUtil {
             return entry.canRead();
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex);
-        } catch (InterruptedException | IOException | ExecutionException ex) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException ex) {
             RemoteLogger.finest(ex);
         }    
         return false; // TODO: is this correct?
@@ -217,7 +220,7 @@ public class RemoteVcsSupportUtil {
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex);
             return 0; // TODO: is this correct?
-        } catch (InterruptedException | IOException | ExecutionException ex) {
+        } catch (InterruptedException | IOException | ExecutionException | TimeoutException ex) {
             RemoteLogger.finest(ex);
             return 0; // TODO: is this correct?
         }   
@@ -416,7 +419,7 @@ public class RemoteVcsSupportUtil {
             for (RemoteDirectory impl : refreshSet) {
                 try {
                     RemoteFileSystemTransport.refreshFast(impl, false);
-                } catch (InterruptedException | CancellationException ex) {
+                } catch (InterruptedException | CancellationException | TimeoutException ex) {
                     InterruptedIOException ie = new InterruptedIOException(ex.getMessage());
                     ie.initCause(ex);
                     throw ie;

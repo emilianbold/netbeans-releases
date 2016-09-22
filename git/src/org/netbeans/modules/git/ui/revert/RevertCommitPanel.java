@@ -88,7 +88,7 @@ public class RevertCommitPanel extends javax.swing.JPanel {
         txtCommitMessage.setWrapStyleWord(true);
         jScrollPane1.setViewportView(txtCommitMessage);
 
-        lblMessageWarning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
+        lblMessageWarning.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/info.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblMessageWarning, org.openide.util.NbBundle.getMessage(RevertCommitPanel.class, "RevertCommitPanel.lblMessageWarning.text")); // NOI18N
 
         lblCommitMessage.setLabelFor(txtCommitMessage);

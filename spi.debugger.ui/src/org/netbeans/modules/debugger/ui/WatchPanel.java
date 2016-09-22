@@ -104,14 +104,21 @@ public class WatchPanel {
         int column = getRecentColumn();
         String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
         boolean doBind = true;
-        if (!mimeType.startsWith("text/")) { // NOI18N
+        if (!mimeType.startsWith("text/") && !mimeType.startsWith("application/")) { // NOI18N
             // If the current file happens to be of unknown or not text MIME type, use the ordinary text one.
             mimeType = "text/plain"; // NOI18N
             doBind = false; // Do not do binding to an unknown file content.
         }
 
         //Add JEditorPane and context
-        JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
+        JComponent [] editorComponents;
+        try {
+            editorComponents = Utilities.createSingleLineEditor(mimeType);
+        } catch (IllegalArgumentException iaex) {
+            // bad MIME type
+            editorComponents = Utilities.createSingleLineEditor("text/plain");
+            doBind = false; // Do not do binding to an unknown file content.
+        }
         JScrollPane sp = (JScrollPane) editorComponents[0];
         editorPane = (JTextComponent) editorComponents[1];
         int h = sp.getPreferredSize().height;

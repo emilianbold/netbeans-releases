@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import static org.clang.basic.ClangGlobals.*;
+import static org.clang.basic.BasicClangGlobals.*;
 import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;

@@ -191,8 +191,8 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
      * Signatures of Serializable methods.
      */
     private static final Set<String> SERIALIZABLE_SIGNATURES = new HashSet<>(Arrays.asList(new String[] {
-        "writeObject(Ljava/io/ObjectInputStream;)",
-        "readObject(Ljava/io/ObjectInputStream;)",
+        "writeObject(Ljava/io/ObjectOutputStream;)V",
+        "readObject(Ljava/io/ObjectInputStream;)V",
         "readResolve()Ljava/lang/Object;",
         "writeReplace()Ljava/lang/Object;",
         "readObjectNoData()V",

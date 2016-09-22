@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -68,8 +67,8 @@ import javax.swing.text.StyleConstants;
 //   (there's still an issue of whose double buffering is quicker).
 class Screen extends JComponent implements Accessible {
 
-    private Term term;		// back pointer
-    private static final boolean debug = false;
+    private final Term term;		// back pointer
+    private static final boolean DEBUG = false;
 
     public Screen(Term term, int dx, int dy) {
         this.term = term;
@@ -80,7 +79,7 @@ class Screen extends JComponent implements Accessible {
 
         setGrabTab(true);
 
-        if (debug) {
+        if (DEBUG) {
             // Just turning our double buffering isn't enough, need to
             // turn it off everywhere.
             RepaintManager repaintManager = RepaintManager.currentManager(this);
@@ -152,10 +151,10 @@ class Screen extends JComponent implements Accessible {
     private void setGrabTab(boolean grabTab) {
 
         if (original_fwd_keys == null) {
-            original_fwd_keys = new java.util.HashSet<AWTKeyStroke>();
+            original_fwd_keys = new java.util.HashSet<>();
             original_fwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
                     InputEvent.CTRL_MASK));
-            original_bwd_keys = new java.util.HashSet<AWTKeyStroke>();
+            original_bwd_keys = new java.util.HashSet<>();
             original_bwd_keys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
                     InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
         }
@@ -177,12 +176,13 @@ class Screen extends JComponent implements Accessible {
     }
 
     @Override
+    @SuppressWarnings("AssignmentToMethodParameter")
     public void paint(Graphics g) {
 
         // No need to double buffer as our caller, the repaint manager,
         // already does so.
 
-        if (debug) {
+        if (DEBUG) {
             // HACK, normally, by the time we get the Graphics
             // the components getComponentGraphics() should've retrieved
             // a DebugGraphics for us, _but_ it only does that if we have
@@ -233,10 +233,10 @@ class Screen extends JComponent implements Accessible {
             if (c == null) {
                 return null;
             }
-            BCoord b = c.toBCoord(term.firsta);
+            BCoord b = c.toBCoord(term.firsta());
             int attr;
             try {
-                Line l = term.buf.lineAt(b.row);
+                Line l = term.buf().lineAt(b.row);
                 int[] attrs = l.attrArray();
                 attr = attrs[b.col];
             } catch (Exception x) {
@@ -259,11 +259,13 @@ class Screen extends JComponent implements Accessible {
             boolean reverse = ((attr & Attr.REVERSE) == Attr.REVERSE);
 
             Color color;
-            if ((color = term.foregroundColor(reverse, attr)) != Color.black) {
+            color = term.foregroundColor(reverse, attr);
+            if (color != Color.black) {
                 as.addAttribute(StyleConstants.Foreground, color);
             }
 
-            if ((color = term.backgroundColor(reverse, attr)) != null) {
+            color = term.backgroundColor(reverse, attr);
+            if (color != null) {
                 as.addAttribute(StyleConstants.Background, color);
             }
 
@@ -311,15 +313,15 @@ class Screen extends JComponent implements Accessible {
                 return null;
             }
 
-            Line l = term.buf.lineAt(b.row);
+            Line l = term.buf().lineAt(b.row);
 
             switch (part) {
                 case CHARACTER:
                     // return new String(l.charArray(), b.col, 1);
                     return String.valueOf(l.charAt(b.col));
                 case WORD:
-                    BExtent bword = term.buf.find_word(term.word_delineator, b);
-                    Extent word = bword.toExtent(term.firsta);
+                    BExtent bword = term.buf().find_word(term.getWordDelineator(), b);
+                    Extent word = bword.toExtent(term.firsta());
                     return term.textWithin(word.begin, word.end);
                 case SENTENCE:
                     // return new String(l.charArray());
@@ -334,8 +336,8 @@ class Screen extends JComponent implements Accessible {
             if (c == null) {
                 return null;
             }
-            BCoord b = c.toBCoord(term.firsta);
-            b = term.buf.advance(b);
+            BCoord b = c.toBCoord(term.firsta());
+            b = term.buf().advance(b);
             return getHelper(part, b);
         }
 
@@ -345,7 +347,7 @@ class Screen extends JComponent implements Accessible {
             if (c == null) {
                 return null;
             }
-            BCoord b = c.toBCoord(term.firsta);
+            BCoord b = c.toBCoord(term.firsta());
             return getHelper(part, b);
         }
 
@@ -355,8 +357,8 @@ class Screen extends JComponent implements Accessible {
             if (c == null) {
                 return null;
             }
-            BCoord b = c.toBCoord(term.firsta);
-            b = term.buf.backup(b);
+            BCoord b = c.toBCoord(term.firsta());
+            b = term.buf().backup(b);
             return getHelper(part, b);
         }
 
@@ -364,7 +366,7 @@ class Screen extends JComponent implements Accessible {
         public int getIndexAtPoint(Point p) {
             BCoord v = term.toViewCoord(p);
             BCoord b = term.toBufCoords(v);
-            return term.CoordToPosition(new Coord(b, term.firsta));
+            return term.CoordToPosition(new Coord(b, term.firsta()));
         }
     }
 
@@ -406,14 +408,11 @@ class Screen extends JComponent implements Accessible {
 
         int pos = term.CoordToPosition(term.getCursorCoord());
 
-        accessible_context.firePropertyChange(
-                AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
-                null, Integer.valueOf(pos));
+        accessible_context.firePropertyChange(AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
+                null, pos);
         // sending null, pos is how JTextComponent does it.
 
-        accessible_context.firePropertyChange(
-                AccessibleContext.ACCESSIBLE_CARET_PROPERTY,
-                Integer.valueOf(pos), Integer.valueOf(oldPos));
+        accessible_context.firePropertyChange(AccessibleContext.ACCESSIBLE_CARET_PROPERTY, pos, oldPos);
 
         oldPos = pos;
     }

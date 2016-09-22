@@ -291,7 +291,7 @@ public final class CompilerSetImpl extends CompilerSet {
         this.isDefault = false;
         if (env.isLocal() && Utilities.isWindows()) {
             this.modifyBuildPath = setBuildPath == null ? CompilerSetPreferences.DEFAULT_BUILD_PATH_WINDOWS : setBuildPath;
-            this.modifyRunPath = setRunPath == null ? CompilerSetPreferences.DEFAULT_RUN_PATH_WINDOWS : setBuildPath;
+            this.modifyRunPath = setRunPath == null ? CompilerSetPreferences.DEFAULT_RUN_PATH_WINDOWS : setRunPath;
         } else {
             this.modifyBuildPath = setBuildPath == null ? CompilerSetPreferences.DEFAULT_BUILD_PATH_UNIX : setBuildPath;
             this.modifyRunPath = setRunPath == null ? CompilerSetPreferences.DEFAULT_RUN_PATH_UNIX: setRunPath;

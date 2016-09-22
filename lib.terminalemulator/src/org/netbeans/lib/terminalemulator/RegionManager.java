@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 
 /*
@@ -68,6 +67,7 @@ public class RegionManager {
 
     /**
      * Returns the always-present "root" ActiveRegion.
+     * @return The always-present "root" ActiveRegion.
      */
     public ActiveRegion root() {
 	return root;

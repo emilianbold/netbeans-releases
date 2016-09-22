@@ -65,10 +65,15 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
@@ -101,7 +106,7 @@ public final class PlatformUiSupport {
      * @return {@link ComboBoxModel}.
      */
     public static ComboBoxModel createPlatformComboBoxModel(String activePlatform) {
-        return new PlatformComboBoxModel(activePlatform);
+        return createPlatformComboBoxModel(activePlatform, null);
     }
 
 
@@ -114,9 +119,30 @@ public final class PlatformUiSupport {
      * @return {@link ComboBoxModel}.
      */
     public static ComboBoxModel createPlatformComboBoxModel(String activePlatform, Collection<? extends PlatformFilter> filters) {
-        return new PlatformComboBoxModel(activePlatform, filters);
+        return new PlatformComboBoxModel(activePlatform, null, null, filters);
     }
 
+    /**
+     * Create a {@link ComboBoxModel} of Java platforms.
+     * The model listens on the {@link JavaPlatformManager} and update its
+     * state according to the changes.
+     * @param owner the owning project
+     * @param eval the project's {@link PropertyEvaluator}
+     * @param activePlatform the active project's platform, can be <code>null</code>.
+     * @param filters project specific filter to filter-out platforms that are not usable in given context
+     * @return {@link ComboBoxModel}.
+     * @since 1.80
+     */
+    @NonNull
+    public static ComboBoxModel createPlatformComboBoxModel(
+            @NonNull Project owner,
+            @NonNull PropertyEvaluator eval,
+            @NullAllowed final String activePlatform,
+            @NullAllowed final Collection<? extends PlatformFilter> filters) {
+        Parameters.notNull("owner", owner); //NOI18N
+        Parameters.notNull("eval", eval);   //NOI18N
+        return new PlatformComboBoxModel(activePlatform, owner, eval, filters);
+    }
 
     /**
      * Create a {@link ListCellRenderer} for rendering items of the {@link ComboBoxModel}
@@ -261,7 +287,7 @@ public final class PlatformUiSupport {
         if (platform == null) {
             return;
         }
-        if (updatePreferredPlatform) {
+        if (updatePreferredPlatform && !isProjectLocalPlatform(platform)) {
             PreferredProjectPlatform.setPreferredPlatform(platform);
         }
         SpecificationVersion jdk13 = new SpecificationVersion("1.3"); //NOI18N
@@ -550,14 +576,26 @@ public final class PlatformUiSupport {
             this.name = name;
             this.equalsDefaultPlatformName = equalsDefaultPlatformName;
         }
-
+        
         /**
          * Create a PlatformKey for a platform.
          * @param platform the {@link JavaPlatform}.
          */
         public PlatformKey(JavaPlatform platform) {
+            this(platform, null);
+        }
+        
+        /**
+         * Create a PlatformKey for a platform with given name.
+         * @param platform the {@link JavaPlatform}.
+         * @param name the name
+         */
+        public PlatformKey(
+                @NonNull final JavaPlatform platform,
+                @NullAllowed final String name) {
             assert platform != null;
             this.platform = platform;
+            this.name = name;
         }
 
         public int compareTo(Object o) {
@@ -676,39 +714,48 @@ public final class PlatformUiSupport {
         private static final long serialVersionUID = 1L;
 
         private final JavaPlatformManager pm;
+        private final Project project;
+        private final PropertyEvaluator eval;
         private PlatformKey[] platformNamesCache;
         private String initialPlatform;
         private PlatformKey selectedPlatform;
         private boolean inUpdate;
         private Collection<? extends PlatformFilter> filters;
 
-        public PlatformComboBoxModel(String initialPlatform) {
-            this(initialPlatform, null);
-        }
-
-        public PlatformComboBoxModel(String initialPlatform, Collection<? extends PlatformFilter> filters) {
+        public PlatformComboBoxModel(
+                @NullAllowed String initialPlatform,
+                @NullAllowed Project owner,
+                @NullAllowed PropertyEvaluator eval,
+                @NullAllowed Collection<? extends PlatformFilter> filters) {
+            assert owner == null ? eval == null : eval != null;
             this.pm = JavaPlatformManager.getDefault();
-            this.pm.addPropertyChangeListener(WeakListeners.propertyChange(this, this.pm));
             this.initialPlatform = initialPlatform;
             this.filters = filters;
+            this.project = owner;
+            this.eval = eval;
+            this.pm.addPropertyChangeListener(WeakListeners.propertyChange(this, this.pm));
         }
 
+        @Override
         public int getSize() {
             PlatformKey[] platformNames = getPlatformNames();
             return platformNames.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             PlatformKey[] platformNames = getPlatformNames();
             assert index >= 0 && index < platformNames.length;
             return platformNames[index];
         }
 
+        @Override
         public Object getSelectedItem() {
             getPlatformNames(); // force setting of selectedPlatform if it is not already done
             return selectedPlatform;
         }
 
+        @Override
         public void setSelectedItem(Object obj) {
             //Guard from null on Mac OS X
             if (obj != null) {
@@ -717,6 +764,7 @@ public final class PlatformUiSupport {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
                 synchronized (this) {
@@ -738,8 +786,26 @@ public final class PlatformUiSupport {
 
         private synchronized PlatformKey[] getPlatformNames() {
             if (platformNamesCache == null) {
-                JavaPlatform[] platforms = pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null));
-                Set<PlatformKey> orderedNames = new TreeSet<PlatformKey>();
+                final List<JavaPlatform> platforms = new ArrayList<>();
+                Collections.addAll(platforms, pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null)));
+                JavaPlatform projectPlatform = null;
+                final EditableProperties globalProps = PropertyUtils.getGlobalProperties();
+                final String active = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
+                if (active != null) {
+                    final String activeHomeKey = String.format("platforms.%s.home", active);    //NOI18N
+                    if (eval.getProperty(activeHomeKey) != null && !globalProps.keySet().contains(activeHomeKey)) {
+                        projectPlatform = project != null ?
+                            ProjectPlatform.forProject(
+                                project,
+                                eval,
+                                CommonProjectUtils.J2SE_PLATFORM_TYPE) :
+                            null;
+                        if (projectPlatform != null) {
+                            platforms.add(projectPlatform);
+                        }
+                    }
+                }                                
+                Set<PlatformKey> orderedNames = new TreeSet<>();
                 boolean activeFound = false;
                 for (JavaPlatform platform : platforms) {
                     boolean accepted = true;
@@ -752,7 +818,9 @@ public final class PlatformUiSupport {
                         }
                     }
                     if (accepted && platform.getInstallFolders().size() > 0) {
-                        PlatformKey pk = new PlatformKey(platform);
+                        final PlatformKey pk = platform == projectPlatform ?
+                                new PlatformKey(platform, NbBundle.getMessage(PlatformUiSupport.class, "TXT_ProjectPlatformName", platform.getDisplayName())) :
+                                new PlatformKey(platform);
                         orderedNames.add(pk);
                         if (!activeFound && initialPlatform != null) {
                             String antName = platform.getProperties().get("platform.ant.name"); //NOI18N
@@ -765,7 +833,7 @@ public final class PlatformUiSupport {
                             }
                         }
                     }
-                }
+                }                
                 if (!activeFound) {
                     if(orderedNames.isEmpty()) {
                         LOGGER.warning("PlatformComboBoxModel: All platforms filtered out. Adding default platform although it is not accepted by all PlatformFilters."); // NOI18N
@@ -1105,6 +1173,7 @@ public final class PlatformUiSupport {
         @Override
         public void setSelectedItem(@NullAllowed final Object anItem) {
             assert anItem == null || anItem instanceof Union2 : anItem;
+            init();
             selectedItem = (Union2<SourceLevelQuery.Profile,String>) anItem;
             fireContentsChanged(this, -1, -1);
         }
@@ -1112,6 +1181,7 @@ public final class PlatformUiSupport {
         @Override
         @CheckForNull
         public Object getSelectedItem() {
+            init();
             return selectedItem;
         }
 
@@ -1216,5 +1286,14 @@ public final class PlatformUiSupport {
             return null;
         }
         return platforms[0];
+    }
+    
+    private static boolean isProjectLocalPlatform(@NonNull final JavaPlatform jp) {
+        for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (p.equals(jp)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

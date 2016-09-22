@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -292,8 +293,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
                 if (nameNotChanged) {
-                    fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
-                    return fastCheckProblem;
+                    JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
+                    if (renameProps == null || !renameProps.isNoChangeOK()) {
+                        fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
+                        return fastCheckProblem;
+                    }
                 }
 
             }

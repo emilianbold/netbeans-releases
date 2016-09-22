@@ -100,6 +100,7 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
                 }
             }
         }
+        srcFiles.addAll(project.getStandardHeadersIndexers());
         return srcFiles;
     }
 

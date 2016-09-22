@@ -202,12 +202,12 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
                         reason = ex.getMessage();
                     }
 
-                    final boolean hasAnyTransferableFiles = TransferFilesChooser.forDownload(remoteFiles).hasAnyTransferableFiles();
                     final Set<TransferFile> rmt = Collections.synchronizedSet(remoteFiles);
                     final String rsn = reason;
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            boolean hasAnyTransferableFiles = TransferFilesChooser.forDownload(rmt).hasAnyTransferableFiles();
                             if (canceled) {
                                 return;
                             }

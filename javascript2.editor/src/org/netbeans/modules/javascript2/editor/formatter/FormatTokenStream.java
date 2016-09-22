@@ -42,14 +42,19 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
@@ -58,7 +63,11 @@ import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
  */
 public final class FormatTokenStream implements Iterable<FormatToken> {
 
+    private static final Logger LOGGER = Logger.getLogger(FormatTokenStream.class.getName());
+
     private final TreeMap<Integer, FormatToken> tokenPosition = new TreeMap<Integer, FormatToken>();
+
+    private final Map<FormatToken, Integer> originalIndents = new HashMap<>();
 
     private FormatToken firstToken;
 
@@ -68,7 +77,9 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         super();
     }
 
-    public static FormatTokenStream create(TokenSequence<? extends JsTokenId> ts, int start, int end) {
+    public static FormatTokenStream create(Context context, TokenSequence<? extends JsTokenId> ts,
+            int start, int end) {
+
         FormatTokenStream ret = new FormatTokenStream();
         int diff = ts.move(start);
         if (diff <= 0) {
@@ -217,10 +228,23 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
+                case JSX_TEXT:
+                    FormatToken jsxToken = FormatToken.forText(ts.offset(), token.text(), id);
+                    if (context != null) {
+                        try {
+                            int indent = context.lineIndent(context.lineStartOffset(ts.offset()));
+                            ret.setOriginalIndent(jsxToken, indent);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+                    }
+                    ret.addToken(jsxToken);
+                    break;
                 default:
                     ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     break;
             }
+
         }
         return ret;
     }
@@ -229,6 +253,17 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     public static FormatToken getNextNonVirtual(FormatToken token) {
         FormatToken current = token.next();
         while (current != null && current.isVirtual()) {
+            current = current.next();
+        }
+        return current;
+    }
+
+    @CheckForNull
+    public static FormatToken getNextNonWhite(FormatToken token, boolean allowEol) {
+        FormatToken current = token.next();
+        while (current != null && (current.isVirtual()
+                || current.getKind() == FormatToken.Kind.WHITESPACE
+                || (allowEol && current.getKind() == FormatToken.Kind.EOL))) {
             current = current.next();
         }
         return current;
@@ -339,6 +374,14 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         }
         previous.setNext(next);
         next.setPrevious(previous);
+    }
+
+    public void setOriginalIndent(FormatToken token, int indent) {
+        originalIndents.put(token, indent);
+    }
+
+    public Integer getOriginalIndent(FormatToken token) {
+        return originalIndents.get(token);
     }
 
     private class FormatTokenIterator implements Iterator<FormatToken> {

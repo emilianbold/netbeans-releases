@@ -40,7 +40,8 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ */
+ /*
  * Author: Tomas Holy
  */
 
@@ -70,8 +71,6 @@ class PlatformLauncher {
     static const char *OPT_CLASS_PATH;
     static const char *OPT_SPLASH;
     static const char *OPT_SPLASH_PATH;
-    static const int   OPT_JIGSAW_ARGS_LENGTH;
-    static const char *OPT_JIGSAW_ARGS[];
 
     static const char *UPDATER_MAIN_CLASS;
     static const char *IDE_MAIN_CLASS;

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
  */
 package org.netbeans.lib.terminalemulator;
 
@@ -142,9 +141,9 @@ public class StreamTerm extends Term {
     private static final class OutputMonitor extends Thread {
 
         private static final int BUFSZ = 1024;
-        private char[] buf = new char[BUFSZ];
-        private Term term;
-        private InputStreamReader reader;
+        private final char[] buf = new char[BUFSZ];
+        private final Term term;
+        private final InputStreamReader reader;
 
         OutputMonitor(InputStreamReader reader, Term term) {
             super("StreamTerm.OutputMonitor");	// NOI18N
@@ -458,9 +457,7 @@ public class StreamTerm extends Term {
 			    putChars(cbuf, off, len);
 			}
 		    });
-		} catch (InterruptedException ex) {
-		    Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InvocationTargetException ex) {
+		} catch (InterruptedException | InvocationTargetException ex) {
 		    Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	    }

@@ -72,7 +72,7 @@ public class BasicPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/rebase-default.png"))); // NOI18N
+        jLabel1.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/rebase-default.png", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.jLabel1.text")); // NOI18N
 
         jTextField1.setEditable(false);
@@ -81,12 +81,12 @@ public class BasicPanel extends javax.swing.JPanel {
         jTextField2.setEditable(false);
         jTextField2.setText(org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.jTextField2.text")); // NOI18N
 
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/base.png"))); // NOI18N
+        jLabel2.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/base.png", false)); // NOI18N
         jLabel2.setLabelFor(jTextField1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.lblBase.text")); // NOI18N
         jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.lblBase.toolTipText")); // NOI18N
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/destinations.png"))); // NOI18N
+        jLabel3.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/destinations.png", false)); // NOI18N
         jLabel3.setLabelFor(jTextField2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.lblDest.text")); // NOI18N
         jLabel3.setToolTipText(org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.lblDest.TTtext")); // NOI18N
@@ -99,12 +99,12 @@ public class BasicPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(BasicPanel.class, "BasicPanel.jLabel5.text")); // NOI18N
         jLabel5.setEnabled(false);
 
-        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/base.png"))); // NOI18N
+        jLabel7.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/base.png", false)); // NOI18N
         jLabel7.setLabelFor(jTextField1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(BasicPanel.class, "PreviewPanel.legend.lblBaseRevision.text")); // NOI18N
         jLabel7.setToolTipText(org.openide.util.NbBundle.getMessage(BasicPanel.class, "PreviewPanel.legend.lblBaseRevision.TTtext")); // NOI18N
 
-        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/destinations.png"))); // NOI18N
+        jLabel8.setIcon(org.openide.util.ImageUtilities.loadImageIcon("/org/netbeans/modules/git/resources/icons/destinations.png", false)); // NOI18N
         jLabel8.setLabelFor(jTextField2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(BasicPanel.class, "PreviewPanel.legend.lblDestRevision.text")); // NOI18N
         jLabel8.setToolTipText(org.openide.util.NbBundle.getMessage(BasicPanel.class, "PreviewPanel.legend.lblDestRevision.TTtext")); // NOI18N

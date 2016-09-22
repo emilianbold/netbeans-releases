@@ -76,6 +76,10 @@ public final class JavaPluginUtils {
     private static final Logger LOG = Logger.getLogger(JavaPluginUtils.class.getName());
 
     public static Problem isSourceElement(Element el, CompilationInfo info) {
+        if (el == null) {
+            // XXX: shouldn't we create a problem ? How ?
+            return null;
+        }
         Problem preCheckProblem;
         Element typeElement;
         if(el.getKind() != ElementKind.PACKAGE) {
@@ -532,6 +536,8 @@ public final class JavaPluginUtils {
             } else {
                 List<Tree> typeDeclarations = new LinkedList<Tree>(newCompilation.getTypeDecls());
                 Tree templateClazz = typeDeclarations.remove(0); // TODO: Check for class with correct name, template could start with another type.
+                // mark the template CU as removed; any untransfered comments will be (?) lost.
+                workingCopy.getTreeMaker().asRemoved(templateClazz);
                 if (workingCopy.getTreeUtilities().getComments(typeDecl, true).isEmpty()) {
                     genUtils.copyComments(templateClazz, typeDecl, true);
                 } else if (workingCopy.getTreeUtilities().getComments(typeDecl, false).isEmpty()) {

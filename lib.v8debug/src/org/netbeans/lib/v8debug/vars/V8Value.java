@@ -64,7 +64,8 @@ public class V8Value {
         Symbol,     // ES6
         Promise,    // ES6
         Map,        // ES6
-        Set;        // ES6
+        Set,        // ES6
+        Generator;  // ES6
 
         @Override
         public String toString() {

@@ -166,6 +166,7 @@ public class BlameAction extends ContextAction {
         SVNUrl repository;
         try {
             repository = ContextAction.getSvnUrl(ctx);
+            // NB: repository can be null here
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;

@@ -51,6 +51,7 @@ import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -132,7 +133,7 @@ final class CachedRemoteInputStream extends InputStream {
                     }
                     return ((FileInputStream) delegate).read();
                 }
-            } catch (ConnectException | InterruptedException | CancellationException ex) {
+            } catch (ConnectException | InterruptedException | CancellationException | TimeoutException ex) {
                 return -1;
             } catch (ExecutionException ex) {
                 RemoteLogger.finest(ex);

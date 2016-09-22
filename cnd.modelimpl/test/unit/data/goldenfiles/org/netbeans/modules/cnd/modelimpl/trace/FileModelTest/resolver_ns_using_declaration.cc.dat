@@ -37,7 +37,7 @@ NAMESPACE DEFINITOIN rnud_2 [12:1/131-34:2/524] SCOPE: resolver_ns_using_declara
                     MEMBERS:
                         FIELD PRIVATE static b [24:17/363-24:40/386]  TYPE: const int TEXT=const int  [24:17/363-24:33/379]  INIT: text='5'  SCOPE: CCC 
                         FUNCTION boo [25:25/411-25:35/421] MethodImpl SCOPE: CCC 
-                            DEFINITION: null
+                            DEFINITION: boo  [45:1/620-48:2/657]
                             SIGNATURE boo()
                             UNIQUE NAME F:rnud_2::C::CC::CCC::boo()
                             PARAMETERS:
@@ -62,8 +62,8 @@ NAMESPACE DEFINITOIN rnud_2 [37:1/527-41:2/591] SCOPE: resolver_ns_using_declara
 USING NAMESPACE. ::rnud_2  [43:1/593-43:25/617]; REF NS: rnud_2 SCOPE: null
 FUNCTION DEFINITION boo  [45:1/620-48:2/657] FunctionDefinitionImpl SCOPE: resolver_ns_using_declaration.cc
     SIGNATURE boo()
-    UNIQUE NAME f:CC::CCC::boo()
-    DECLARATION: null
+    UNIQUE NAME f:rnud_2::C::CC::CCC::boo()
+    DECLARATION: boo  [25:25/411-25:35/421]
     PARAMETERS:
     RETURNS int TEXT=int  [45:1/620-45:4/623]
     STATEMENT COMPOUND  [45:20/639-48:2/657] SCOPE: boo 
@@ -146,7 +146,7 @@ NAMESPACE rnud_2 (rnud_2)
                     MEMBERS:
                         FIELD PRIVATE static b [24:17/363-24:40/386]  TYPE: const int TEXT=const int  [24:17/363-24:33/379]  INIT: text='5'  SCOPE: CCC 
                         FUNCTION boo [25:25/411-25:35/421] MethodImpl SCOPE: CCC 
-                            DEFINITION: null
+                            DEFINITION: boo  [45:1/620-48:2/657]
                             SIGNATURE boo()
                             UNIQUE NAME F:rnud_2::C::CC::CCC::boo()
                             PARAMETERS:

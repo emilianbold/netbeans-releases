@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ui.PathEnvVariables;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
@@ -1420,7 +1421,7 @@ import org.openide.util.Utilities;
             if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
                 ToolchainUtilities.setModifyBuildPath(cs, panel.getModifyBuildPath());
                 ToolchainUtilities.setModifyRunPath(cs, panel.getModifyRunPath());
-                manager.setChanged(true);
+                manager.fireToolColectionPanelChanged();
             }
         }
     }//GEN-LAST:event_btPathEditActionPerformed

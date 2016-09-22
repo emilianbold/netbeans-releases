@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -287,6 +288,8 @@ public class ProjectsRootNode extends AbstractNode {
         static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
 
         private final java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
+        //@GuardedBy("projects2Pairs")
+        private final java.util.Map <Project,Reference<Pair>> projects2Pairs = Collections.synchronizedMap(new WeakHashMap<>());
         
         final int type;
         
@@ -318,6 +321,7 @@ public class ProjectsRootNode extends AbstractNode {
                 sources.removeChangeListener( this );                
             }
             sources2projects.clear();
+            projects2Pairs.clear();
             setKeys(Collections.<Pair>emptySet());
         }
 
@@ -469,6 +473,9 @@ public class ProjectsRootNode extends AbstractNode {
             // Fix for 50259, callers sometimes hold locks
             RP.post(new Runnable() {
                 public @Override void run() {
+                    Optional.ofNullable(projects2Pairs.get(project))
+                            .map((ref) -> ref.get())
+                            .ifPresent((p) -> p.update(project));
                     refresh(project);
                 }
             } );
@@ -485,8 +492,19 @@ public class ProjectsRootNode extends AbstractNode {
             Collections.sort(projects, OpenProjectList.projectByDisplayName());
             
             final List<Pair> dirs = new ArrayList<>(projects.size());
+            final java.util.Map<Project,Pair> snapshot = new HashMap<>();
             for (Project project : projects) {
-                dirs.add(new Pair(project, type));
+                final Pair p = new Pair(project, type);
+                dirs.add(p);
+                snapshot.put(project, p);
+            }
+            synchronized (projects2Pairs) {
+                projects2Pairs.clear();
+                snapshot.entrySet()
+                        .forEach((e) -> projects2Pairs.put(
+                                e.getKey(),
+                                new WeakReference<>(e.getValue())));
+                
             }
             return dirs;
         }

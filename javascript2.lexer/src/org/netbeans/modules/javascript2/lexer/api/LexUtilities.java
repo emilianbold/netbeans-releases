@@ -118,6 +118,9 @@ public final class LexUtilities {
     @CheckForNull
     public static <K> TokenSequence<? extends K> getTokenSequence(TokenHierarchy<?> th,
             int offset, Language<? extends K> language) {
+        if (th == null) {
+            return null;
+        }
         TokenSequence<? extends K> ts = th.tokenSequence(language);
 
         if (ts == null) {

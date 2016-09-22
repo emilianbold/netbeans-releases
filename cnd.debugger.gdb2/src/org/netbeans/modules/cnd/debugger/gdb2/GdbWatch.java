@@ -116,6 +116,7 @@ class GdbWatch extends GdbVariable implements WatchVariable {
 
 	return new Action[] {
             WatchModel.NEW_WATCH_ACTION,
+            WatchModel.SHOW_PINNED_WATCHES_ACTION,
 	    null,
 	    WatchModel.DELETE_ACTION,
 	    new WatchModel.DeleteAllAction(),

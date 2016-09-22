@@ -116,7 +116,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -339,6 +339,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.debugger.jpda.trufflenode</friend>
                 <friend>org.netbeans.modules.glassfish.common</friend>
                 <friend>org.netbeans.modules.javafx2.platform</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>

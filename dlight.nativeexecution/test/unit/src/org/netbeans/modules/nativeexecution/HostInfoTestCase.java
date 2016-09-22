@@ -208,6 +208,9 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         } else if (mspec.endsWith("-MacOSX")) {
             assertTrue(hi.getOS().getName().startsWith("MacOSX"));
             assertEquals(HostInfo.OSFamily.MACOSX, hi.getOSFamily());
+        } else if (mspec.endsWith("-FreeBSD")) {
+            assertTrue(hi.getOS().getName().startsWith("FreeBSD"));
+            assertEquals(HostInfo.OSFamily.FREEBSD, hi.getOSFamily());
         } else {
             fail("Could not guess OS from mspec " + mspec);
         }

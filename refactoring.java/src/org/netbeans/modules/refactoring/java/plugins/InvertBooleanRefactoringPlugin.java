@@ -254,7 +254,7 @@ public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //ext
                     String scriptTemplate;
                     Tree leaf = path.getLeaf();
                     TypeElement parent = (TypeElement) parameter.getTrees().getElement(path.getParentPath());
-
+                    // XXX: parent should be checked ?
                     arguments.put("newName", invertBooleanRefactoring.getNewName());
                     arguments.put("enclosing", parent.getQualifiedName().toString());
 

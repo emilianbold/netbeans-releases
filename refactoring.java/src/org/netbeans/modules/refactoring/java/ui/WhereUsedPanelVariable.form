@@ -61,8 +61,8 @@
     </Component>
     <Component class="javax.swing.JLabel" name="label">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/refactoring/java/resources/warning_16.png"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="org.openide.util.ImageUtilities.loadImageIcon(&quot;/org/netbeans/modules/refactoring/java/resources/warning_16.png&quot;, false)" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" value="&lt;&lt;Element&gt;&gt;" noResource="true"/>
       </Properties>

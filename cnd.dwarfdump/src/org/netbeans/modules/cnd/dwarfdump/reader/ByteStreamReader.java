@@ -365,7 +365,7 @@ public class ByteStreamReader implements DataInput {
     }
     
     public long read3264() throws IOException {
-        return (fileClass == ElfConstants.ELFCLASS32) ? readInt() : readLong();
+        return (fileClass == ElfConstants.ELFCLASS32) ? (0xFFFFFFFFL & readInt()) : readLong();
     }
     
 }

@@ -50,6 +50,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -169,16 +170,18 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 @Override
                 public void run() {
                     JEditorPane[] openedPanes = ces.getOpenedPanes();
-                    for (JEditorPane pane : openedPanes) {
-                        EditorUI eui = Utilities.getEditorUI(pane);
-                        if (eui == null) {
-                            continue;
-                        }
-                        synchronized (watchToAnnotation) {
-                            for (Watch watch : pws) {
-                                EditorPin epin = (EditorPin) watch.getPin();
-                                Line line = lines.getOriginal(epin.getLine());
-                                pin(watch, eui, line);
+                    if (openedPanes != null) {
+                        for (JEditorPane pane : openedPanes) {
+                            EditorUI eui = Utilities.getEditorUI(pane);
+                            if (eui == null) {
+                                continue;
+                            }
+                            synchronized (watchToAnnotation) {
+                                for (Watch watch : pws) {
+                                    EditorPin epin = (EditorPin) watch.getPin();
+                                    Line line = lines.getOriginal(epin.getLine());
+                                    pin(watch, eui, line);
+                                }
                             }
                         }
                     }
@@ -600,7 +603,12 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         }
 
         private void adjustSize() {
-            int editorSize = eui.getComponent().getSize().width;
+            JTextComponent component = eui.getComponent();
+            if (component == null) {
+                // uninstalled.
+                return ;
+            }
+            int editorSize = component.getSize().width;
             int maxSize = editorSize - getLocation().x;
             Dimension prefSize = getPreferredSize();
             if (prefSize.width > maxSize) {
@@ -622,6 +630,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     }
                 }
                 setBounds(loc.x, loc.y, size.width, size.height);
+                doRepaint();
             } else if (prefSize.width < maxSize) {
                 if (textComponent.isPreferredSizeSet()) {
                     textComponent.setPreferredSize(null);
@@ -630,6 +639,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     Dimension size = getPreferredSize();
                     Point loc = getLocation();
                     setBounds(loc.x, loc.y, size.width, size.height);
+                    doRepaint();
                 }
             } else {    // pref size is equal to the max, we need to check if it can be shrinked
                 if (textComponent.isPreferredSizeSet()) {
@@ -641,11 +651,22 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                         Dimension size = getPreferredSize();
                         Point loc = getLocation();
                         setBounds(loc.x, loc.y, size.width, size.height);
+                        doRepaint();
                     }
                 }
             }
         }
+        
+        private void doRepaint() {
+            revalidate();
+            repaint();
+        }
 
+        @Override
+        public void scrollRectToVisible(Rectangle aRect) {
+            // No op, this component should not change scrolling.
+        }
+        
         private void hideValueField() {
             valueField.setVisible(false);
             Dimension size = getPreferredSize();
@@ -838,8 +859,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     Dimension size = getPreferredSize();
                     Point loc = getLocation();
                     setBounds(loc.x, loc.y, size.width, size.height);
-                    revalidate();
-                    repaint();
+                    doRepaint();
                     e.consume();
                 }
             }

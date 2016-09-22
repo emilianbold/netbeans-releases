@@ -177,5 +177,11 @@ public abstract class Constants {
     /** True means automatic iconification/deiconification of all separate frames if main window is iconified/deiconified */ 
     public static final boolean AUTO_ICONIFY = Boolean.getBoolean("netbeans.winsys.auto_iconify"); // NOI18N
     
+    /** Determines whether windows should receive focus when being shown or when moved to the front.
+     *  By default, auto-focus is true, compatible with Java default.
+     *  When JDK-8163591 is fixed, the default may be revisited.
+     *  @see java.awt.Window#isAutoRequestFocus() */
+    public static final boolean AUTO_FOCUS = System.getProperty("netbeans.winsys.auto_focus") == null || Boolean.getBoolean("netbeans.winsys.auto_focus"); // NOI18N
+
     private Constants() {}
 }
