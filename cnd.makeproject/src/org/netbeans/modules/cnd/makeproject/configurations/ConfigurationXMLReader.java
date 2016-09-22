@@ -135,12 +135,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
                         configurationDescriptor.setState(State.BROKEN);
                         return;
                     }
-                    String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
-                            configurationDescriptor.getActiveConfiguration().getCustomizerId();
-                    Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class).forEach((f) -> {
-                        f.read(projectDirectory);
-                    });
-                    configurationDescriptor.setState(State.READY);
+                    try {
+                        _postRead(relativeOffset, interrupter, configurationDescriptor);
+                        configurationDescriptor.setState(State.READY);
+                    } catch (Throwable e) {
+                        configurationDescriptor.setState(State.BROKEN);
+                    }
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);
                 }
@@ -149,7 +149,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         configurationDescriptor.setInitTask(task);
     }
 
-    private ConfigurationDescriptor _read(String relativeOffset, Interrupter interrupter,
+    private ConfigurationDescriptor _read(final String relativeOffset, Interrupter interrupter,
             String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
 
         boolean success;
@@ -244,12 +244,14 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         });
 
+        return configurationDescriptor;
+    }
+
+    private void _postRead(final String relativeOffset, Interrupter interrupter, MakeConfigurationDescriptor configurationDescriptor) {
         boolean schemeWithExcludedItems = false;
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
             schemeWithExcludedItems = true;
         }
-        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems, interrupter);
-        //configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
@@ -283,10 +285,16 @@ public class ConfigurationXMLReader extends XMLDocReader {
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }
 
-        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_OPEN_CND, configurationDescriptor);
-        return configurationDescriptor;
+        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_OPEN_CND, configurationDescriptor);        
+        
+        String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
+                configurationDescriptor.getActiveConfiguration().getCustomizerId();
+        Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class).forEach((f) -> {
+            f.read(projectDirectory);
+        });        
+        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems, interrupter);
     }
-
+    
     private void displayErrorDialog() {
         //String errormsg = NbBundle.getMessage(ConfigurationXMLReader.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
