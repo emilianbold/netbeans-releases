@@ -42,25 +42,33 @@
 package org.netbeans.modules.java.api.common.classpath;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ModuleElement;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -74,12 +82,14 @@ import org.netbeans.modules.java.api.common.TestJavaPlatform;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
@@ -112,7 +122,7 @@ public class ModuleClassPathsTest extends NbTestCase {
         super.setUp();
         clearWorkDir();
         final FileObject workDir = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
-        MockLookup.setInstances(TestProject.createProjectType());
+        MockLookup.setInstances(TestProject.createProjectType(), new MockCompilerOptions());
         final FileObject prjDir = FileUtil.createFolder(workDir, "TestProject");    //NOI18N
         assertNotNull(prjDir);
         final FileObject srcDir = FileUtil.createFolder(prjDir, "src");    //NOI18N
@@ -229,6 +239,67 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertEquals(expectedURLs, resURLs);
     }
     
+    public void testPatchModule() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final FileObject compact1Patch1 = createPatchFolder("java.compact1.patch1");    //NOI18N
+        final FileObject compact1Patch2 = createPatchFolder("java.compact1.patch2");    //NOI18N
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--patch-module")    //NOI18N
+                .apply(String.format(
+                        "java.compact1=%s:%s",  //NOI18N
+                        FileUtil.toFile(compact1Patch1).getAbsolutePath(),
+                        FileUtil.toFile(compact1Patch2).getAbsolutePath()));        
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                systemModules,
+                src,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);     
+        final Collection<URL> expectedURLs = reads(
+                systemModules,
+                NamePredicate.create("java.compact1"),   //NOI18N
+                compact1Patch1,
+                compact1Patch2);  
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testPatchModuleWithDuplicates() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final FileObject compact1Patch1 = createPatchFolder("java.compact1.patch1");    //NOI18N
+        final FileObject compact1Patch2 = createPatchFolder("java.compact1.patch2");    //NOI18N
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--patch-module")    //NOI18N
+                .apply(String.format(
+                        "java.compact1=%s",//NOI18N
+                        FileUtil.toFile(compact1Patch1).getAbsolutePath()))
+                .apply("--patch-module")    //NOI18N
+                .apply(String.format("java.compact1=%s",  //NOI18N
+                        FileUtil.toFile(compact1Patch2).getAbsolutePath()));
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                systemModules,
+                src,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);     
+        final Collection<URL> expectedURLs = reads(
+                systemModules,
+                NamePredicate.create("java.compact1"),   //NOI18N
+                compact1Patch1);  
+        assertEquals(expectedURLs, resURLs);
+    }
+    
     private static void setSourceLevel(
             @NonNull final Project prj,
             @NonNull final String sourceLevel) throws IOException {
@@ -280,6 +351,11 @@ public class ModuleClassPathsTest extends NbTestCase {
         return res[0];
     }
     
+    private FileObject createPatchFolder(final String name) throws IOException {
+        return FileUtil.createFolder(FileUtil.normalizeFile(
+                new File(getWorkDir(),name)));
+    }
+    
     private Collection<URL> collectEntries(@NonNull final ClassPath cp) {
         final List<URL> res = new ArrayList<>();
         for (ClassPath.Entry e : cp.entries()) {
@@ -291,7 +367,8 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private Collection<URL> reads(
             @NonNull final ClassPath base,
-            @NonNull final Predicate<ModuleElement> predicate) throws IOException {
+            @NonNull final Predicate<ModuleElement> predicate,
+            @NonNull final FileObject... additionalRoots) throws IOException {
         final ClasspathInfo info = new ClasspathInfo.Builder(base)
                 .setModuleBootPath(base)
                 .build();
@@ -309,11 +386,16 @@ public class ModuleClassPathsTest extends NbTestCase {
                 }
             },
             true);
-        return base.entries().stream()
+        final List<URL> l = new ArrayList<>();
+        base.entries().stream()
                 .map((e) -> e.getURL())
                 .filter((url) -> moduleNames.contains(SourceUtils.getModuleName(url)))
-                .sorted(LEX_COMPARATOR)
-                .collect(Collectors.toList());
+                .forEach(l::add);
+        Arrays.stream(additionalRoots)
+                .map((fo) -> fo.toURL())
+                .forEach(l::add);
+        Collections.sort(l, LEX_COMPARATOR);
+        return l;
     }
     
     private static void collectDeps(
@@ -358,5 +440,66 @@ public class ModuleClassPathsTest extends NbTestCase {
         static Predicate<ModuleElement> create(@NonNull final String name) {
             return new NamePredicate(name);
         }
-    }    
+    } 
+    
+    private static final class MockCompilerOptions implements CompilerOptionsQueryImplementation {
+        private final Map<FileObject,List<String>> options = new HashMap<>();
+        
+        @NonNull
+        <T extends Function<String, T>> Function<String,T> forRoot(@NonNull final FileObject root) {
+            final List<String> args = options.computeIfAbsent(root, (k) -> new ArrayList<>());
+            args.clear();
+            return new Function<String,T> () {
+                @Override
+                public T apply(String t) {
+                    args.add(t);
+                    return (T) this;
+                }
+            };
+        }
+
+        @Override
+        @NonNull
+        public Result getOptions(FileObject file) {
+            for (Map.Entry<FileObject,List<String>> option : options.entrySet()) {
+                if (isArtifact(option.getKey(), file)) {
+                    return new R(option.getValue());
+                }
+            }
+            return null;
+        }
+        
+        @CheckForNull
+        static MockCompilerOptions getInstance() {
+            return Lookup.getDefault().lookup(MockCompilerOptions.class);
+        }
+        
+        private static boolean isArtifact(
+                @NonNull final FileObject root,
+                @NonNull final FileObject file) {
+            return root.equals(file) || FileUtil.isParentOf(root, file);
+        }
+        
+        private static final class R extends Result {
+            private final List<String> args;
+            
+            R(@NonNull final List<String> args) {
+                this.args = args;
+            }
+
+            @Override
+            @NonNull
+            public List<? extends String> getArguments() {
+                return Collections.unmodifiableList(args);
+            }
+
+            @Override
+            public void addChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener listener) {
+            }            
+        }        
+    }
 }

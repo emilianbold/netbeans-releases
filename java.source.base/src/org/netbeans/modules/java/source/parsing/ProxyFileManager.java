@@ -306,12 +306,11 @@ public final class ProxyFileManager implements JavaFileManager {
                 return true;
             }
             final Collection<String> defensiveCopy = copy(remains);
+            boolean res = false;
             for (JavaFileManager m : cfg.getFileManagers(ALL, current)) {
-                if (m.handleOption(current, defensiveCopy.iterator())) {
-                    return true;
-                }
+                res |= m.handleOption(current, defensiveCopy.iterator());
             }
-            return false;
+            return res;
         } finally {
             clearOwnerThread();
         }
@@ -701,6 +700,10 @@ public final class ProxyFileManager implements JavaFileManager {
                 //Todo: create factories with options when there are more than one option.
                 if (TreeLoaderOutputFileManager.OUTPUT_ROOT.equals(hint)) {
                     createTreeLoaderFileManager();
+                }
+                if (JavacParser.OPTION_PATCH_MODULE.equals(hint)) {
+                    createSystemModuleFileManager();
+                    createModuleFileManager();
                 }
                 final List<JavaFileManager> res = new ArrayList<>(emitted.length);
                 for (JavaFileManager jfm : emitted) {
