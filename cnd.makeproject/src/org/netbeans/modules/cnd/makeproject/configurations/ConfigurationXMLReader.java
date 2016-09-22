@@ -140,6 +140,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class).forEach((f) -> {
                         f.read(projectDirectory);
                     });
+                    configurationDescriptor.setState(State.READY);
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);
                 }
@@ -248,7 +249,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             schemeWithExcludedItems = true;
         }
         prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems, interrupter);
-        configurationDescriptor.setState(State.READY);
+        //configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
