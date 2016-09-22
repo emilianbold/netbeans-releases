@@ -44,9 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -1116,17 +1114,17 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilities.expandAllMacroses(val, "${TESTDIR}", () -> {return MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests";}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_OUTPUT_PATH_MACRO, () -> {return getOutputValue();});
-        val = CndPathUtilities.expandAllMacroses(val, "${OUTPUT_BASENAME}", () -> {return CndPathUtilities.getBaseName(getOutputValue());}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, "${PLATFORM}", () -> {return getVariant();}); // Backward compatibility // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.OBJECTDIR_MACRO, () -> {return ConfigurationMakefileWriter.getObjectDir(this);}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_PLATFORM_MACRO, () -> {return getVariant();}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_CONF_MACRO, () -> {return getName();}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DISTDIR_MACRO, () -> {return MakeConfiguration.DIST_FOLDER;}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_BUILDDIR_MACRO, () -> {return MakeConfiguration.BUILD_FOLDER;}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DLIB_EXT_MACRO, () -> {return getLibraryExtension();}); // NOI18N
-        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.PROJECTDIR_MACRO, () -> {return getBaseDir();});
+        val = CndPathUtilities.expandAllMacroses(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_OUTPUT_PATH_MACRO, getOutputValue());
+        val = CndPathUtilities.expandAllMacroses(val, "${OUTPUT_BASENAME}", CndPathUtilities.getBaseName(getOutputValue())); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.PROJECTDIR_MACRO, getBaseDir());
         return val;
     }
 
