@@ -203,7 +203,7 @@ public class CompileOnSaveActionQueryTest extends NbTestCase {
         }
 
         @Override
-        public void removeChangeListner(ChangeListener l) {            
+        public void removeChangeListener(ChangeListener l) {            
             listeners.removeChangeListener(l);
         }
         

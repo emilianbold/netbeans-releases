@@ -694,7 +694,7 @@ public class BuildArtifactMapperImpl {
         }
 
         @Override
-        public void removeChangeListner(@NonNull final ChangeListener listener) {
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
             cs.removeChangeListener(listener);
         }
 

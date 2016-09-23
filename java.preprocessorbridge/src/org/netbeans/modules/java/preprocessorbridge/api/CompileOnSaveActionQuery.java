@@ -186,7 +186,7 @@ public final class CompileOnSaveActionQuery {
         }
 
         @Override
-        public void removeChangeListner(@NonNull final ChangeListener l) {
+        public void removeChangeListener(@NonNull final ChangeListener l) {
             this.listeners.removeChangeListener(l);
         }
 
