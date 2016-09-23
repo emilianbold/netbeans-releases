@@ -486,7 +486,7 @@ public class J2SEActionProvider extends BaseActionProvider {
         }
 
         @Override
-        public void removeChangeListner(@NonNull final ChangeListener listener) {
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
             cs.removeChangeListener(listener);
         }               
 

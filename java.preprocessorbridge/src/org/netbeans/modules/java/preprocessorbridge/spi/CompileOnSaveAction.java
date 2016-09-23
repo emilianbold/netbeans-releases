@@ -98,7 +98,7 @@ public interface CompileOnSaveAction {
      * Removes {@link ChangeListener}.
      * @param l the listener to be removed
      */
-    void removeChangeListner(@NonNull ChangeListener l);
+    void removeChangeListener(@NonNull ChangeListener l);
 
     /**
      * Compile On Save operation.

@@ -30,6 +30,7 @@ cnd/modules/ext/org-clang-tools-services.jar                          BSD-LLVM
 cnd/modules/ext/org-clank-java.jar                                    BSD-LLVM
 cnd/modules/ext/org-llvm-adtsupport.jar                               BSD-LLVM
 cnd/modules/ext/org-llvm-bitcode.jar                                  BSD-LLVM
+cnd/modules/ext/org-llvm-ir.jar                                       BSD-LLVM
 cnd/modules/ext/org-llvm-option.jar                                   BSD-LLVM
 cnd/modules/ext/org-llvm-utils.jar                                    BSD-LLVM
 enterprise/docs/struts-1.3.10-javadoc.zip                             Apache-2.0

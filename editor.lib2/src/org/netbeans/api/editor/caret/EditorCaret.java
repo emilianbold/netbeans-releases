@@ -2386,7 +2386,7 @@ public final class EditorCaret implements Caret {
     private boolean isLeftMouseButtonExt(MouseEvent evt) {
         return (SwingUtilities.isLeftMouseButton(evt)
                 && !(evt.isPopupTrigger())
-                && (evt.getModifiers() & (InputEvent.META_MASK/* | InputEvent.ALT_MASK*/)) == 0);
+                && (org.openide.util.Utilities.isMac() || (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0));
     }
     
     private boolean isMiddleMouseButtonExt(MouseEvent evt) {
@@ -2719,7 +2719,10 @@ public final class EditorCaret implements Caret {
                                 c.requestFocus();
                             }
                             c.setDragEnabled(true);
-                            if (evt.isControlDown() && evt.isShiftDown()) {
+                            // Check Add Caret: Cmd+Shift+Click on Mac or Ctrl+Shift+Click on other platforms
+                            if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) &&
+                                evt.isShiftDown())
+                            {
                                 // "Add multicaret" mode
                                 mouseState = MouseState.DEFAULT;
                                 try {

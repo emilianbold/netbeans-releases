@@ -56,6 +56,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -103,7 +104,6 @@ import org.openide.util.Exceptions;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
-    private static final String NASHORN_PACKAGE = "jdk.nashorn";                // NOI18N
     private static final String NASHORN_CONTEXT_CLASS = "jdk.nashorn.internal.runtime.Context"; // NOI18N
     private static final String NASHORN_CONTEXT_SOURCE_BIND_METHOD = "cacheClass";    // NOI18N
     
@@ -438,13 +438,17 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             }
 
             // We need to suspend the app to be able to invoke methods:
-            final MethodBreakpoint inNashorn = MethodBreakpoint.create(NASHORN_PACKAGE+".*", "*");
+            final MethodBreakpoint inNashorn = MethodBreakpoint.create(NASHORN_FUNCTION_NODE_CLASS, "*");
+            final AtomicBoolean retrieved = new AtomicBoolean(false);
             inNashorn.addJPDABreakpointListener(new JPDABreakpointListener() {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
-                    DebuggerManager.getDebuggerManager().removeBreakpoint(inNashorn);
                     try {
-                        doRetrieveExistingSources(classCache);
+                        if (!retrieved.getAndSet(true)) {
+                            inNashorn.disable();
+                            DebuggerManager.getDebuggerManager().removeBreakpoint(inNashorn);
+                            doRetrieveExistingSources(classCache);
+                        }
                     } finally {
                         event.resume();
                     }
