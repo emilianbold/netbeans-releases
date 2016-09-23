@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
@@ -63,27 +63,15 @@ import org.openide.util.Exceptions;
 public class TruffleStackInfo {
     
     private static final String METHOD_GET_FRAMES_INFO = "getFramesInfo";       // NOI18N
-    //private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/frame/FrameInstance;)[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleFrame;";   // NOI18N
     private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/debug/DebugStackFrame;)[Ljava/lang/Object;";   // NOI18N
     
     private final JPDADebugger debugger;
-    //private final Variable suspendedInfo;
     private final ObjectVariable stackTrace;
     private TruffleStackFrame[] stackFrames;
 
     public TruffleStackInfo(JPDADebugger debugger, ObjectVariable stackTrace) {
         this.debugger = debugger;
-        /*stackFrames = new TruffleStackFrame[stackTrace.length];
-        for (int i = 0; i < stackTrace.length; i++) {
-            stackFrames[i] = new TruffleStackFrame(debugger, i, stackTrace, METHOD_GET_FRAMES_INFO, codeRef, vars, stackTrace)
-        }*/
         this.stackTrace = stackTrace;
-        /*
-        int n = stackTrace.length;
-        this.stackFrames = new TruffleStackFrame[n];
-        for (int i = 0; i < n; i++) {
-            this.stackFrames[i] = new TruffleStackFrame(this, (ObjectVariable) stackTrace[i]);
-        }*/
     }
 
     public TruffleStackFrame[] getStackFrames() {
@@ -99,17 +87,6 @@ public class TruffleStackInfo {
             Variable framesVar = debugAccessor.invokeMethod(METHOD_GET_FRAMES_INFO,
                                                             METHOD_GET_FRAMES_INFO_SIG,
                                                             new Variable[] { stackTrace });
-            /*
-            Field[] frames = ((ObjectVariable) framesVar).getFields(0, Integer.MAX_VALUE);
-            int n = frames.length;
-            TruffleStackFrame[] truffleFrames = new TruffleStackFrame[n];
-            for (int i = 0; i < n; i++) {
-            String callTargetName = ((ObjectVariable) frames[i]).getField("callTargetName").getValue();
-            String methodName = ((ObjectVariable) frames[i]).getField("methodName").getValue();
-            String sourceLocation = ((ObjectVariable) frames[i]).getField("sourceLocation").getValue();
-            truffleFrames[i] = new TruffleStackFrame(callTargetName, methodName, sourceLocation);
-            }
-             */
             Field[] framesInfos = ((ObjectVariable) framesVar).getFields(0, Integer.MAX_VALUE);
             String framesDesc = (String) framesInfos[0].createMirrorObject();
             Field[] codes = ((ObjectVariable) framesInfos[1]).getFields(0, Integer.MAX_VALUE);

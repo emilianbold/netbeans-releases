@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
@@ -76,9 +76,10 @@ import java.util.WeakHashMap;
  */
 public class JPDATruffleAccessor extends Object {
     
+    static final boolean TRACE = Boolean.getBoolean("truffle.nbdebug.trace");   // NOI18N
+    
     private static final String ACCESS_THREAD_NAME = "JPDA Truffle Access Loop";   // NOI18N
     private static volatile boolean accessLoopRunning = false;
-    //private static volatile AccessLoop accessLoopRunnable;
     private static volatile Thread accessLoopThread;
     private static final Map<Debugger, JPDATruffleDebugManager> debugManagers = new WeakHashMap<>();
     /** Explicitly set this field to true to step into script calls. */
@@ -111,7 +112,6 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             accessLoopThread = loop;
-            //accessLoopRunnable = accessLoop;
             accessLoopRunning = true;
             loop.start();
         }
@@ -125,7 +125,6 @@ public class JPDATruffleAccessor extends Object {
             }
         }
         accessLoopRunning = false;
-        //accessLoopRunnable = null;
         if (accessLoopThread != null) {
             accessLoopThread.interrupt();
             accessLoopThread = null;
@@ -133,52 +132,15 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static JPDATruffleDebugManager setUpDebugManagerFor(/*PolyglotEngine*/Object engineObj, boolean doStepInto) {
-        //System.err.println("setUpDebugManagerFor("+event+", "+doStepInto+")");
+        trace("setUpDebugManagerFor("+engineObj+", "+doStepInto+")");
         PolyglotEngine engine = (PolyglotEngine) engineObj;
         Debugger debugger = Debugger.find(engine);
         JPDATruffleDebugManager tdm = new JPDATruffleDebugManager(debugger, doStepInto);
         synchronized (debugManagers) {
             debugManagers.put(debugger, tdm);
         }
-        /*
-        if (doStepInto) {
-            execEvent.prepareStepInto();
-        }
-        */
-        /*
-        JPDATruffleDebugManager debugManager;
-        synchronized (debugManagers) {
-            debugManager = debugManagers.get(debugger);
-            if (debugManager == null) {
-                debugManager = JPDATruffleDebugManager.setUp(debugger);//, tvm, (ExecutionEvent) event);
-                debugManagers.put(debugger, debugManager);
-                return debugManager;
-            } else {
-                debugManager.setExecutionEvent((ExecutionEvent) event);
-                return null;    // Nothing new
-            }
-        }
-        */
         return tdm;
     }
-    
-    /*
-    static void executionHalted(Node astNode, MaterializedFrame frame,
-                                long srcId, String srcName, String srcPath, int line, String code,
-                                FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-                                FrameInstance[] stackTrace, String topFrame, Object thisObject) {
-        // Called when the execution is halted.
-        setCommand();
-    }
-    
-    static void executionStepInto(Node astNode, MaterializedFrame frame, String name,
-                                  long srcId, String srcName, String srcPath, int line, String code,
-                                  FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-                                  FrameInstance[] stackTrace, String topFrame, Object thisObject) {
-        // Called when the execution steps into a call.
-        setCommand();
-    }
-    */
     
     static int executionHalted(JPDATruffleDebugManager tdm,
                                SourcePosition position,
@@ -192,19 +154,7 @@ public class JPDATruffleAccessor extends Object {
         return stepCmd;
     }
     
-    //static /*SourcePosition*/Object getSourcePosition(/*SuspendedEvent*/Object suspendedEvent) {
-    //    SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
-    //    return JPDATruffleDebugManager.getPosition(evt.getNode());
-    //}
-    
-    //static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
-    //    SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
-    //    Node node = evt.getNode();
-    //    return new FrameInfo(evt.getFrame(), node, evt.getStack());
-    //}
-    
     static void setStep(JPDATruffleDebugManager debugManager, int stepCmd) {
-       //SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         SuspendedEvent evt = debugManager.getCurrentSuspendedEvent();
         switch (stepCmd) {
             case 0: evt.prepareContinue();
@@ -219,23 +169,6 @@ public class JPDATruffleAccessor extends Object {
                     throw new IllegalStateException("Unknown step command: "+stepCmd);
         }
     }
-    
-    /*
-    private static void setCommand() {
-        stepIntoPrepared = false;
-        switch (stepCmd) {
-            case 0: debugManager.getDebugger().prepareContinue();
-                    break;
-            case 1: debugManager.getDebugger().prepareStepInto(1);
-                    break;
-            case 2: debugManager.getDebugger().prepareStepOver(1);
-                    break;
-            case 3: debugManager.getDebugger().prepareStepOut();
-                    //System.err.println("Successful step out = "+success);
-                    break;
-        }
-        stepCmd = 0;
-    }*/
     
     /*
     static Object getSlotValue(Object event, Object frameObj, Object slotObj) {
@@ -383,9 +316,7 @@ public class JPDATruffleAccessor extends Object {
      * an array of code contents.
      */
     static Object[] getFramesInfo(DebugStackFrame[] frames) {
-        //Visualizer visualizer = debugManager.getVisualizer();
         int n = frames.length;
-        //TruffleFrame[] frameInfos = new TruffleFrame[n];
         StringBuilder frameInfos = new StringBuilder();
         String[] codes = new String[n];
         Object[] thiss = new Object[n];
@@ -452,17 +383,6 @@ public class JPDATruffleAccessor extends Object {
         // When accessLoopThread is interrupted, this breakpoint is hit
         // and methods can be executed via JPDA debugger.
     }
-    
-    /*
-    static boolean inStepInto(Node astNode, String name) {
-        if (isSteppingInto) {
-            executionStepInto(astNode, name);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    */
     
     static Breakpoint[] setLineBreakpoint(String uriStr, int line,
                                           int ignoreCount, String condition) throws URISyntaxException {
@@ -543,66 +463,12 @@ public class JPDATruffleAccessor extends Object {
         return sf.eval(expression).as(String.class);
     }
     
-    /*
-    static Object evaluate(/*SuspendedEvent*//*Object suspendedEvent, Object frameInstance, String expression) {
-        //System.err.println("evaluate("+expression+")");
-        SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
-        FrameInstance fi = (FrameInstance) frameInstance;
-        // fi can be null for top frame
-        Node node = null;
-        if (fi != null) {
-            node = fi.getCallNode();
+    static void trace(String message, Object... parameters) {
+        if (TRACE) {
+            System.out.println("NB Debugger: " + String.format(message, parameters));
         }
-        if (node == null) {
-            node = evt.getNode();
-        }
-        Object value;
-        try {
-            value = evt.eval(expression, fi);
-        } catch (IOException ioex) {
-            return new TruffleObject(ioex.getLocalizedMessage(), ioex, null, null);
-        }
-        //System.err.println("  value = "+value);
-        if (value == null) {
-            return null;
-        }
-        TruffleObject to = new TruffleObject(expression, value, evt, fi);
-        return to;
     }
-    */
-    
-    /*
-    static Object[] getFrameSlots(FrameInstance frameInstance) {
-        FrameInstance fi = (FrameInstance) frameInstance;
-        // returns { Frame frame, FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes }
-        Object[] slots = new Object[4];
-        MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
-        FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
-        List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
-        ArrayList<FrameSlot> slotsArr = new ArrayList<>();
-        for (FrameSlot fs : slotsList) {
-            FrameSlotKind kind = fs.getKind();
-            if (FrameSlotKind.Illegal.equals(kind)) {
-                continue;
-            }
-            slotsArr.add(fs);
-        }
-        int numSlots = slotsArr.size();
-        FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[numSlots]);
-        String[] slotNames = new String[numSlots];
-        String[] slotTypes = new String[numSlots];
-        for (int i = 0; i < numSlots; i++) {
-            slotNames[i] = frameSlots[i].getIdentifier().toString();
-            slotTypes[i] = frameSlots[i].getKind().toString();
-        }
-        slots[0] = fi;
-        slots[1] = frameSlots;
-        slots[2] = slotNames;
-        slots[3] = slotTypes;
-        return slots;
-    }
-    */
-    
+
     private static class AccessLoop implements Runnable {
         
         @Override
@@ -614,7 +480,7 @@ public class JPDATruffleAccessor extends Object {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
                 accessLoopSleeping = false;
-                //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
+                trace("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
                 
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
@@ -625,7 +491,7 @@ public class JPDATruffleAccessor extends Object {
                                 }
                             }
                             stepIntoPrepared = true;
-                            //System.err.println("Prepared step into and continue.");
+                            trace("Prepared step into and continue.");
                         }
                         isSteppingInto = true;
                     } else {
@@ -641,35 +507,13 @@ public class JPDATruffleAccessor extends Object {
                     steppingIntoTruffle = 0;
                     continue;
                 }
-                //System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
+                trace("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }
             }
         }
-        
-        /** Workaround for inability to prepare step into when continue is prepared. */
-        /*
-        private void forceStepInto() {
-            try {
-                Field debugContextField = DebugEngine.class.getDeclaredField("debugContext");
-                debugContextField.setAccessible(true);
-                Object debugContext = debugContextField.get(debugManager.getDebugger());
-                Class stepStrategyClass = Class.forName(DebugEngine.class.getName()+"$StepStrategy");
-                Method replaceStrategyMethod = debugContext.getClass().getDeclaredMethod("replaceStrategy", stepStrategyClass);
-                replaceStrategyMethod.setAccessible(true);
-                Class stepIntoClass = Class.forName(DebugEngine.class.getName()+"$StepInto");
-                Constructor[] declaredConstructors = stepIntoClass.getDeclaredConstructors();
-                //System.err.println("  declaredConstructors = "+Arrays.toString(declaredConstructors));
-                Constructor stepIntoConstructor = declaredConstructors[0];//stepIntoClass.getDeclaredConstructor(Integer.TYPE);
-                stepIntoConstructor.setAccessible(true);
-                Object stepInto = stepIntoConstructor.newInstance(debugManager.getDebugger(), 1);
-                replaceStrategyMethod.invoke(debugContext, stepInto);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }*/
 
     }
-    
+
 }

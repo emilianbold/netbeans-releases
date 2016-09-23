@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle;
 
 import com.sun.jdi.ClassType;
-import com.sun.jdi.request.EventRequest;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptEngineFactory;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -78,10 +70,6 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     private static final Logger LOG = Logger.getLogger(TruffleDebugManager.class.getName());
     
-    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
-    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
-    //private static final String SCRIPT_CREATION_BP_CLASS = "com.oracle.truffle.api.script.TruffleScriptEngineFactory";
-    //private static final String SCRIPT_CREATION_BP_METHOD = "engineCreated";
     private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine$Builder";
     private static final String SESSION_CREATION_BP_METHOD = "build";
     
@@ -101,10 +89,6 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         if (debugManagerLoadBP != null) {
             return ;
         }
-//        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
-//                                                    false,
-//                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        //debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
         debugManagerLoadBP = MethodBreakpoint.create(SESSION_CREATION_BP_CLASS, SESSION_CREATION_BP_METHOD);
         ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         debugManagerLoadBP.setHidden(true);
@@ -129,14 +113,6 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         LOG.log(Level.FINE, "TruffleDebugManager.sessionAdded({0}), adding BP listener to {1}", new Object[]{session, debugManagerLoadBP});
         DebugManagerHandler dmh = new DebugManagerHandler(debugger);
         debugManagerLoadBP.addJPDABreakpointListener(dmh);
-        /*debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                System.err.println(debugManagerLoadBP+" has changed: "+evt);
-                System.err.println("  prop name = "+evt.getPropertyName()+", new value = "+evt.getNewValue());
-                Thread.dumpStack();
-            }
-        });*/
         synchronized (dmHandlers) {
             dmHandlers.put(debugger, dmh);
         }

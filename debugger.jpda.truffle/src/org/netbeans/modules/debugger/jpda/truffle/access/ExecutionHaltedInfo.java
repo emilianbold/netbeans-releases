@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
-import com.sun.jdi.ArrayReference;
-import com.sun.jdi.BooleanValue;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;

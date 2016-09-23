@@ -62,7 +62,6 @@ class JPDATruffleDebugManager implements SuspendedCallback {
     
     private final Reference<Debugger> debugger;
     private final Reference<DebuggerSession> session;
-    //private volatile boolean prepareStepInto;
     private volatile SuspendedEvent currentSuspendedEvent;
 
     public JPDATruffleDebugManager(Debugger debugger, boolean doStepInto) {
@@ -73,13 +72,6 @@ class JPDATruffleDebugManager implements SuspendedCallback {
         }
         this.session = new WeakReference<>(debuggerSession);
     }
-    
-    /*static JPDATruffleDebugManager setUp(Debugger debugger) {
-        //System.err.println("JPDATruffleDebugManager.setUp()");
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger);
-        //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
-        return debugManager;
-    }*/
     
     Debugger getDebugger() {
         return debugger.get();
@@ -94,15 +86,6 @@ class JPDATruffleDebugManager implements SuspendedCallback {
     }
     
     static SourcePosition getPosition(SourceSection sourceSection) {
-        /*
-        SourceSection sourceSection = node.getSourceSection();
-        if (sourceSection == null) {
-            sourceSection = node.getEncapsulatingSourceSection();
-        }
-        if (sourceSection == null) {
-            System.err.println("Node without sourceSection! node = "+node+", of class: "+node.getClass());
-            throw new IllegalStateException("Node without sourceSection! node = "+node+", of class: "+node.getClass());
-        }*/
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
         //System.err.println("source of "+node+" = "+source);
@@ -120,9 +103,6 @@ class JPDATruffleDebugManager implements SuspendedCallback {
     }
 
     void dispose() {
-        /*
-        endExecution();
-         */
         DebuggerSession ds = session.get();
         if (ds != null) {
             ds.close();
@@ -130,31 +110,9 @@ class JPDATruffleDebugManager implements SuspendedCallback {
         }
     }
     
-    /*
-    void setExecutionEvent(ExecutionEvent execEvent) {
-        //this.execEvent = execEvent;
-        if (prepareStepInto) {
-            execEvent.prepareStepInto();
-            prepareStepInto = false;
-        }
-    }*/
-
     void prepareExecStepInto() {
         //System.err.println("prepareExecStepInto()...");
         session.get().suspendNextExecution();
-        //prepareStepInto = true;
-        // Do not call methods on ExecutionEvent asynchronously.
-        /* Rely on another ExecutionEvent comes when needed
-        try {
-            execEvent.prepareStepInto();
-        } catch (RuntimeException rex) {
-            // Unable to use the event any more. A new should come when needed.
-            // Report until there is some known contract:
-            System.err.println("Ignoring prepareStepInto():");
-            rex.printStackTrace();
-        }
-        */
-        //System.err.println("prepareExecStepInto() DONE.");
     }
 
     void prepareExecContinue() {
@@ -177,7 +135,7 @@ class JPDATruffleDebugManager implements SuspendedCallback {
 
     @Override
     public void onSuspend(SuspendedEvent event) {
-        System.err.println("JPDATruffleDebugManager.onSuspend("+event+")");
+        JPDATruffleAccessor.trace("JPDATruffleDebugManager.onSuspend({0})", event);
         Breakpoint[] breakpointsHit = new Breakpoint[event.getBreakpoints().size()];
         breakpointsHit = event.getBreakpoints().toArray(breakpointsHit);
         Throwable[] breakpointConditionExceptions = new Throwable[breakpointsHit.length];

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
@@ -45,6 +45,10 @@ package org.netbeans.modules.debugger.jpda.truffle.frames;
 import com.sun.jdi.StringReference;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
@@ -58,12 +62,11 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
  */
 public class TruffleStackFrame {
 
+    private static final Logger LOG = Logger.getLogger(TruffleStackFrame.class.getName());
+    
     private final JPDADebugger debugger;
-    //private final Variable suspendedInfo;
     private final int depth;
     private final ObjectVariable frameInstance;
-    //private final ObjectVariable stackTrace;
-    //private final String callTargetName;
     private final String methodName;
     private final String sourceLocation;
     
@@ -76,36 +79,26 @@ public class TruffleStackFrame {
     private TruffleVariable[] vars;
     private final ObjectVariable thisObject;
     
-    /*
-    TruffleStackFrame(int depth, String callTargetName, String methodName, String sourceLocation) {
-        this.depth = depth;
-        this.callTargetName = callTargetName;
-        this.methodName = methodName;
-        this.sourceLocation = sourceLocation;
-    }
-    */
-
     public TruffleStackFrame(JPDADebugger debugger, int depth,
-                             ObjectVariable frameInstance,// ObjectVariable stackTrace,
+                             ObjectVariable frameInstance,
                              String frameDefinition, StringReference codeRef,
                              TruffleVariable[] vars, ObjectVariable thisObject) {
-        /*
-        try {
-            System.err.println("new TruffleStackFrame("+depth+", "+frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName());
-        } catch (InvalidExpressionException iex) {
-            iex.printStackTrace();
-        }*/
+        if (LOG.isLoggable(Level.FINE)) {
+            try {
+                LOG.fine("new TruffleStackFrame("+depth+", "+
+                         frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName()+
+                         ", "+frameDefinition+", vars = "+Arrays.toString(vars)+
+                         ", "+thisObject+")");
+            } catch (InvalidExpressionException iex) {
+                LOG.log(Level.FINE, iex.getMessage(), iex);
+            }
+        }
         this.debugger = debugger;
-        //this. suspendedInfo = suspendedInfo;
         this.depth = depth;
         this.frameInstance = frameInstance;
-        //this.stackTrace = stackTrace;
         try {
             int i1 = 0;
             int i2 = frameDefinition.indexOf('\n');
-            //callTargetName = frameDefinition.substring(i1, i2);
-            //i1 = i2 + 1;
-            //i2 = frameDefinition.indexOf('\n', i1);
             methodName = frameDefinition.substring(i1, i2);
             i1 = i2 + 1;
             i2 = frameDefinition.indexOf('\n', i1);
@@ -144,10 +137,6 @@ public class TruffleStackFrame {
         return depth;
     }
     
-    //public String getCallTargetName() {
-    //    return callTargetName;
-    //}
-
     public String getMethodName() {
         return methodName;
     }
