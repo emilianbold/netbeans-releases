@@ -803,8 +803,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         return new int[] {start, end};
     }
     
-    private long getPrefferedPosition(CompilationInfo info, Diagnostic d) throws IOException {
-        if ("compiler.err.doesnt.exist".equals(d.getCode())) {
+    public static long getPrefferedPosition(CompilationInfo info, Diagnostic d) throws IOException {
+        if ("compiler.err.doesnt.exist".equals(d.getCode()) || "compiler.err.try.with.resources.expr.needs.var".equals(d.getCode())) {
             return d.getStartPosition();
         }
         if ("compiler.err.cant.resolve.location".equals(d.getCode()) || "compiler.err.cant.resolve.location.args".equals(d.getCode())) {

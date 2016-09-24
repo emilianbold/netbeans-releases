@@ -31,7 +31,6 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -46,17 +45,15 @@ import org.netbeans.spi.editor.hints.Fix;
  */
 public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     
-    private boolean parameter = true;
-    
     public AddParameterOrLocalFixTest(String testName) {
-        super(testName);
+        super(testName, CreateElement.class);
     }
 
     public void testAddBeforeVararg() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(String... a) {bbb = 0;}}",
                        91 - 25,
-                       "AddParameterOrLocalFix:bbb:int:true",
+                       "AddParameterOrLocalFix:bbb:int:PARAMETER",
                        "package test; public class Test {public void test(int bbb, String... a) {bbb = 0;}}");
     }
 
@@ -64,7 +61,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(String[] a) {bbb = 0;}}",
                        90 - 25,
-                       "AddParameterOrLocalFix:bbb:int:true",
+                       "AddParameterOrLocalFix:bbb:int:PARAMETER",
                        "package test; public class Test {public void test(String[] a, int bbb) {bbb = 0;}}");
     }
 
@@ -72,22 +69,18 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {bbb = 0;}}",
                        80 - 25,
-                       "AddParameterOrLocalFix:bbb:int:true",
+                       "AddParameterOrLocalFix:bbb:int:PARAMETER",
                        "package test; public class Test {public void test(int bbb) {bbb = 0;}}");
     }
 
     public void testAddLocalVariableWithComments() throws Exception {
-        parameter = false;
-
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {int a;\n //test\n |bbb = 0;\n int c; }}",
-                       "AddParameterOrLocalFix:bbb:int:false",
+                       "AddParameterOrLocalFix:bbb:int:LOCAL_VARIABLE",
                        "package test; public class Test {public void test() {int a; //test int bbb = 0; int c; }}");
     }
 
     public void testAddLocalVariableNotInPlace() throws Exception {
-        parameter = false;
-        
         Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.CREATE_LOCAL_VARIABLE);
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
@@ -96,7 +89,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public void test() {int a;\n |bbb = 0;\n int c; }}",
-                    "AddParameterOrLocalFix:bbb:int:false",
+                    "AddParameterOrLocalFix:bbb:int:LOCAL_VARIABLE",
                     "package test; public class Test {public void test() {int bbb; int a; bbb = 0; int c; }}");
         } finally {
             ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, orig);
@@ -104,8 +97,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testAddLocalVariableNotInPlaceInConstr() throws Exception {
-        parameter = false;
-
         Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.CREATE_LOCAL_VARIABLE);
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
@@ -114,7 +105,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public Test() {super();\n int a;\n |bbb = 0;\n int c; }}",
-                    "AddParameterOrLocalFix:bbb:int:false",
+                    "AddParameterOrLocalFix:bbb:int:LOCAL_VARIABLE",
                     "package test; public class Test {public Test() {super(); int bbb; int a; bbb = 0; int c; }}");
         } finally {
             ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, orig);
@@ -122,31 +113,27 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testInsideBlock() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {if (true) {int aaa = 0; |bbb = aaa; }}}",
-                       "AddParameterOrLocalFix:bbb:int:false",
+                       "AddParameterOrLocalFix:bbb:int:LOCAL_VARIABLE",
                        "package test; public class Test {public void test() {if (true) {int aaa = 0; int bbb = aaa; }}}");
     }
 
     public void testInsideBlockWithPreviousDeclaration() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {Object[] array = new Object[10];for (int i = 0; i < array.length; i++) {Object item = array[i + 1];item = array[i];}int j = 0;while (j < 10) {|item = array[j];j--;}}}",
-                       "AddParameterOrLocalFix:item:java.lang.Object:false",
+                       "AddParameterOrLocalFix:item:java.lang.Object:LOCAL_VARIABLE",
                        "package test; public class Test {public void test() {Object[] array = new Object[10];for (int i = 0; i < array.length; i++) {Object item = array[i + 1];item = array[i];}int j = 0;while (j < 10) {Object item = array[j]; j--;}}}");
     }
 
     public void testInsideParentBlock() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {{foo = \"bar\";}|foo = \"bar\";}}",
-                       "AddParameterOrLocalFix:foo:java.lang.String:false",
+                       "AddParameterOrLocalFix:foo:java.lang.String:LOCAL_VARIABLE",
                        "package test; public class Test {public void test() {String foo; {foo = \"bar\";}foo = \"bar\";}}");
     }
 
     public void testEnhancedForLoopEmptyList() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -154,7 +141,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         for (|ttt : java.util.Collections.emptyList()) {}\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ttt:java.lang.Object:false",
+                "AddParameterOrLocalFix:ttt:java.lang.Object:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "public class Test {\n" +
                 "     public void test() {\n" +
@@ -164,7 +151,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testEnhancedForLoopExtendedNumber() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -173,7 +159,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         for (|ttt : l) {}\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ttt:java.lang.Number:false",
+                "AddParameterOrLocalFix:ttt:java.lang.Number:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "public class Test {\n" +
                 "     public void test() {\n" +
@@ -184,7 +170,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testEnhancedForLoopStringArray() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -193,7 +178,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         for (|ttt : a) {}\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ttt:java.lang.String:false",
+                "AddParameterOrLocalFix:ttt:java.lang.String:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "public class Test {\n" +
                 "     public void test() {\n" +
@@ -204,7 +189,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testEnhancedForLoopPrimitiveArray() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -213,7 +197,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         for (|ttt : a) {}\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ttt:int:false",
+                "AddParameterOrLocalFix:ttt:int:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "public class Test {\n" +
                 "     public void test() {\n" +
@@ -224,7 +208,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testEnhancedForLoopNotImported() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -236,7 +219,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         return null;\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:date:java.util.Date:false",
+                "AddParameterOrLocalFix:date:java.util.Date:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "import java.util.Date;\n" +
                 "public class Test {\n" +
@@ -251,7 +234,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testEnhancedForLoopInsideItsBody() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "import java.util.Date;\n" +
@@ -265,7 +247,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         return null;\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:date:java.util.Date:false",
+                "AddParameterOrLocalFix:date:java.util.Date:LOCAL_VARIABLE",
                 ("package test;\n" +
                 "import java.util.Date;\n" +
                 "public class Test {\n" +
@@ -281,7 +263,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void testAssignmentToValid181120() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "import java.util.Date;\n" +
@@ -291,7 +272,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         s = test(i|i);\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ii:int:false",
+                "AddParameterOrLocalFix:ii:int:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "import java.util.Date;\n" +
                  "public class Test {\n" +
@@ -304,7 +285,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void test189687a() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -312,7 +292,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         i|i = 1;\n" +
                 "     }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:ii:int:false",
+                "AddParameterOrLocalFix:ii:int:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "public class Test {\n" +
                  "     {\n" +
@@ -326,7 +306,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
         final boolean oldUse55 = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
         try {
-            parameter = false;
             ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, false);
             performFixTest("test/Test.java",
                     "package test;\n" +
@@ -335,7 +314,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                     "         i|i = 1;\n" +
                     "     }\n" +
                     "}\n",
-                    "AddParameterOrLocalFix:ii:int:false",
+                    "AddParameterOrLocalFix:ii:int:LOCAL_VARIABLE",
                     ("package test;\n" +
                      "public class Test {\n" +
                      "     {\n" +
@@ -349,7 +328,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void test204584a() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "import java.util.*;\n" +
@@ -367,7 +345,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "        }\n" +
                 "    }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:aa:java.lang.String:false",
+                "AddParameterOrLocalFix:aa:java.lang.String:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "import java.util.*;\n" +
                  "public class Test {\n" +
@@ -387,7 +365,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void test204584b() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "import java.util.*;\n" +
@@ -401,7 +378,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "        }\n" +
                 "    }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:aa:int:false",
+                "AddParameterOrLocalFix:aa:int:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "import java.util.*;\n" +
                  "public class Test {\n" +
@@ -417,7 +394,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void test204584c() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "import java.util.*;\n" +
@@ -427,7 +403,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "            v|ar = \"\";\n" +
                 "    }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:var:java.lang.String:false",
+                "AddParameterOrLocalFix:var:java.lang.String:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "import java.util.*;\n" +
                  "public class Test {\n" +
@@ -440,7 +416,6 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
     
     public void test206536() throws Exception {
-        parameter = false;
         performFixTest("test/Test.java",
                 "package test;\n" +
                 "public class Test {\n" +
@@ -452,7 +427,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "        fo|o = bar.foo();\n" +
                 "    }\n" +
                 "}\n",
-                "AddParameterOrLocalFix:foo:test.Test.Foo<? extends java.lang.ThreadLocal<? extends java.lang.Number>>:false",
+                "AddParameterOrLocalFix:foo:test.Test.Foo<? extends java.lang.ThreadLocal<? extends java.lang.Number>>:LOCAL_VARIABLE",
                 ("package test;\n" +
                  "public class Test {\n" +
                  "    interface Foo<T> {\n" +
@@ -465,17 +440,53 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                  "}\n").replaceAll("[ \t\n]+", " "));
     }
 
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
-        List<Fix> fixes = CreateElement.analyze(info, pos);
+    public void testTWR1() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.io.*;\n" +
+                "public class Test {\n" +
+                "    private void t(File f) {\n" +
+                "        try (in = new FileInputStream(f)) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n",
+                -1,
+                "AddParameterOrLocalFix:in:java.io.FileInputStream:RESOURCE_VARIABLE",
+                ("package test;\n" +
+                 "import java.io.*;\n" +
+                 "public class Test {\n" +
+                 "    private void t(File f) {\n" +
+                 "        try (FileInputStream in = new FileInputStream(f)) {\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testTWR2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                "package test;\n" +
+                "import java.io.*;\n" +
+                "public class Test {\n" +
+                "    private void t(File f) {\n" +
+                "        try (in = new FileInputStream(f)) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n",
+                -1,
+                "AddParameterOrLocalFix:in:java.io.FileInputStream:RESOURCE_VARIABLE");
+    }
+
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, String diagnosticCode, int pos, TreePath path) throws Exception {
+        List<Fix> fixes = super.computeFixes(info, diagnosticCode, pos, path);
         List<Fix> result=  new LinkedList<Fix>();
-        
+
         for (Fix f : fixes) {
             if (f instanceof AddParameterOrLocalFix) {
-                if (((AddParameterOrLocalFix) f).isParameter() == parameter)
-                    result.add(f);
+                result.add(f);
             }
         }
-        
+
         return result;
     }
 
