@@ -573,7 +573,7 @@ public abstract class Module extends ModuleInfo {
     /** Locates resource in this module. May search only the main JAR
      * of the module (which is what it does in case of OSGi bundles). 
      * Should be as lightweight as possible - e.g. if it is OK to not
-     * initialize something in the module while perfoming this method,
+     * initialize something in the module while performing this method,
      * the something should not be initialized (e.g. OSGi bundles are
      * not resolved).
      * 
