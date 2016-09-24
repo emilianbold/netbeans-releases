@@ -401,6 +401,10 @@ public final class CreateElementUtilities {
         AssignmentTree at = (AssignmentTree) parent.getLeaf();
         TypeMirror     type = null;
         
+        types.add(ElementKind.PARAMETER);
+        types.add(ElementKind.LOCAL_VARIABLE);
+        types.add(ElementKind.FIELD);
+
         if (at.getVariable() == error) {
             type = info.getTrees().getTypeMirror(new TreePath(parent, at.getExpression()));
 
@@ -415,6 +419,11 @@ public final class CreateElementUtilities {
                     //see also testCreateFieldMethod1 and testCreateFieldMethod2 tests:
                     type = ((ExecutableType) type).getReturnType();
                 }
+            }
+
+            if (parent.getParentPath() != null && parent.getParentPath().getLeaf().getKind() == Kind.TRY) {
+                types.clear();
+                types.add(ElementKind.RESOURCE_VARIABLE);
             }
         }
         
@@ -432,10 +441,6 @@ public final class CreateElementUtilities {
             
             return null;
         }
-        
-        types.add(ElementKind.PARAMETER);
-        types.add(ElementKind.LOCAL_VARIABLE);
-        types.add(ElementKind.FIELD);
         
         return Collections.singletonList(type);
     }

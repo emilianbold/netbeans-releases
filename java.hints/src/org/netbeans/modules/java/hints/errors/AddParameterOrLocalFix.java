@@ -97,13 +97,13 @@ public class AddParameterOrLocalFix implements EnhancedFix {
     private FileObject file;
     private TypeMirrorHandle type;
     private String name;
-    private boolean parameter;
+    private ElementKind kind;
     
     private TreePathHandle[] tpHandle;
     
     public AddParameterOrLocalFix(CompilationInfo info,
                                   TypeMirror type, String name,
-                                  boolean parameter,
+                                  ElementKind kind,
                                   int /*!!!Position*/ unresolvedVariable) {
         this.file = info.getFileObject();
         if (type.getKind() == TypeKind.NULL || type.getKind() == TypeKind.NONE) {
@@ -118,7 +118,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
             this.type = TypeMirrorHandle.create(type);
         }
         this.name = name;
-        this.parameter = parameter;
+        this.kind = kind;
 
         TreePath treePath = info.getTreeUtilities().pathFor(unresolvedVariable + 1);
         tpHandle = new TreePathHandle[1];
@@ -126,9 +126,13 @@ public class AddParameterOrLocalFix implements EnhancedFix {
     }
 
     public String getText() {
-        return parameter ? 
-            NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Parameter", name) : // NOI18N
-            NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Local_Variable", name); // NOI18N
+        switch (kind) {
+            case LOCAL_VARIABLE: return NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Local_Variable", name); // NOI18N
+            case PARAMETER: return NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Parameter", name); // NOI18N
+            case RESOURCE_VARIABLE: return NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Resource", name); // NOI18N
+            default:
+                throw new IllegalStateException(kind.name());
+        }
     }
 
     public ChangeInfo implement() throws IOException {
@@ -154,39 +158,47 @@ public class AddParameterOrLocalFix implements EnhancedFix {
                 if (tp.getLeaf().getKind() != Kind.IDENTIFIER)
                     return;
 
-                if (parameter) {
-                    TreePath targetPath = findMethod(tp);
+                switch (kind) {
+                    case PARAMETER:
+                        TreePath targetPath = findMethod(tp);
 
-                    if (targetPath == null) {
-                        Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
-                        return;
-                    }
-
-                    MethodTree targetTree = (MethodTree) targetPath.getLeaf();
-
-                    Element el = working.getTrees().getElement(targetPath);
-                    if (el == null) {
-                        return;
-                    }
-                    int index = targetTree.getParameters().size();
-
-                    if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-                        ExecutableElement ee = (ExecutableElement) el;
-
-                        if (ee.isVarArgs()) {
-                            index = ee.getParameters().size() - 1;
+                        if (targetPath == null) {
+                            Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
+                            return;
                         }
-                    }
 
-                    MethodTree result = make.insertMethodParameter(targetTree, index, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
+                        MethodTree targetTree = (MethodTree) targetPath.getLeaf();
 
-                    working.rewrite(targetTree, result);
-                } else {
-                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace(ErrorFixesFakeHint.getPreferences(working.getFileObject(), FixKind.CREATE_LOCAL_VARIABLE)) || isEnhancedForLoopIdentifier(tp)) {
-                        resolveLocalVariable(working, tp, make, proposedType);
-                    } else {
-                        resolveLocalVariable55(working, tp, make, proposedType);
-                    }
+                        Element el = working.getTrees().getElement(targetPath);
+                        if (el == null) {
+                            return;
+                        }
+                        int index = targetTree.getParameters().size();
+
+                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+                            ExecutableElement ee = (ExecutableElement) el;
+
+                            if (ee.isVarArgs()) {
+                                index = ee.getParameters().size() - 1;
+                            }
+                        }
+
+                        MethodTree result = make.insertMethodParameter(targetTree, index, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
+
+                        working.rewrite(targetTree, result);
+                        break;
+                    case LOCAL_VARIABLE:
+                        if (ErrorFixesFakeHint.isCreateLocalVariableInPlace(ErrorFixesFakeHint.getPreferences(working.getFileObject(), FixKind.CREATE_LOCAL_VARIABLE)) || isEnhancedForLoopIdentifier(tp)) {
+                            resolveLocalVariable(working, tp, make, proposedType);
+                        } else {
+                            resolveLocalVariable55(working, tp, make, proposedType);
+                        }
+                        break;
+                    case RESOURCE_VARIABLE:
+                        resolveResourceVariable(working, tp, make, proposedType);
+                        break;
+                    default:
+                        throw new IllegalStateException(kind.name());
                 }
             }
         }).commit();
@@ -389,6 +401,25 @@ public class AddParameterOrLocalFix implements EnhancedFix {
         }
     }
     
+    private void resolveResourceVariable(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
+        final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
+
+        final Element el = wc.getTrees().getElement(tp);
+        if (el == null) {
+            return;
+        }
+
+        if (tp.getParentPath().getLeaf().getKind() != Kind.ASSIGNMENT) {
+            //?
+            return ;
+        }
+
+        AssignmentTree at = (AssignmentTree) tp.getParentPath().getLeaf();
+        VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), at.getExpression());
+
+        wc.rewrite(at, vt);
+    }
+
     private TreePath findStatement(TreePath tp) {
         TreePath statement = tp;
         
@@ -468,13 +499,9 @@ public class AddParameterOrLocalFix implements EnhancedFix {
     }
     
     String toDebugString(CompilationInfo info) {
-        return "AddParameterOrLocalFix:" + name + ":" + type.resolve(info).toString() + ":" + parameter; // NOI18N
+        return "AddParameterOrLocalFix:" + name + ":" + type.resolve(info).toString() + ":" + kind.name(); // NOI18N
     }
     
-    boolean isParameter() {
-        return parameter;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -487,7 +514,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
         if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
             return false;
         }
-        if (this.parameter != other.parameter) {
+        if (this.kind != other.kind) {
             return false;
         }
         
@@ -498,7 +525,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
     public int hashCode() {
         int hash = 7;
         hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + (this.parameter ? 1 : 0);
+        hash = 97 * hash + (this.kind != null ? this.kind.hashCode() : 0);
         return hash;
     }
     
@@ -506,13 +533,15 @@ public class AddParameterOrLocalFix implements EnhancedFix {
     public CharSequence getSortText() {
         //see usage at org.netbeans.modules.editor.hints.FixData.getSortText(org.netbeans.spi.editor.hints.Fix):java.lang.CharSequence
     
-        //creates ordering top to bottom: create local variable>create field>create parameter
+        //creates ordering top to bottom: create resource>local variable>create field>create parameter
         //see org.netbeans.modules.java.hints.errors.CreateFieldFix.getSortText():java.lang.CharSequence
-        if (parameter) {
-            return "Create 7000 " + getText();
-        } else {
-            return "Create 5000 " + getText();
-}
+        switch (kind) {
+            case PARAMETER: return "Create 7000 " + getText();
+            case LOCAL_VARIABLE: return "Create 5000 " + getText();
+            case RESOURCE_VARIABLE: return "Create 3000 " + getText();
+            default:
+                throw new IllegalStateException();
+        }
     }
     
 }
