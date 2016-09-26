@@ -43,6 +43,12 @@
 package org.netbeans.modules.java.source;
 
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.ClassFinder;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
@@ -58,6 +64,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,6 +75,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
@@ -80,6 +88,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
@@ -88,12 +97,20 @@ import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -262,7 +279,92 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
             }
         }
     }
-    
+
+    @Override
+    @CheckForNull
+    protected ModuleInfoHandle getModuleInfoHandle(@NonNull final Object javaSource) throws IOException {
+        if (!(javaSource instanceof JavaSource)) {
+            throw new IllegalArgumentException("The javaSource parameter must be an instance of JavaSource"); //NOI18N
+        }
+        final Collection<FileObject> fileObjects = ((JavaSource) javaSource).getFileObjects();
+        int size = fileObjects.size();
+        if (size > 1) {
+            throw new IllegalArgumentException("The javaSource parameter cannot represent multiple FileObjects"); //NOI18N
+        }        
+        final Source s = size > 0 ? Source.create(fileObjects.iterator().next()) : null;
+        try {
+            final CompilationController cc = JavaSourceAccessor.getINSTANCE().createCompilationController(s, ((JavaSource) javaSource).getClasspathInfo());
+            if (cc != null) {
+                return new ModuleInfoHandle() {
+                    @Override
+                    @CheckForNull
+                    public String parseModuleName() throws IOException {
+                        cc.toPhase(JavaSource.Phase.PARSED);
+                        final CompilationUnitTree cu = cc.getCompilationUnit();
+                        for (Tree decl : cu.getTypeDecls()) {
+                            if (decl.getKind() == Tree.Kind.MODULE) {
+                                return ((ModuleTree) decl).getName().toString();
+                            }
+                        }
+                        return null;
+                    }
+                    
+                    @Override
+                    @CheckForNull
+                    public ModuleElement parseModule() throws IOException {
+                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        final Trees trees = cc.getTrees();
+                        final TreePathScanner<ModuleElement, Void> scanner = new TreePathScanner<ModuleElement, Void>() {
+                            @Override
+                            public ModuleElement visitModule(ModuleTree node, Void p) {
+                                return (ModuleElement) trees.getElement(getCurrentPath());
+                            }
+                        };
+                        return scanner.scan(new TreePath(cc.getCompilationUnit()), null);
+                    }
+                    
+                    @Override
+                    @CheckForNull
+                    public ModuleElement resolveModule(String moduleName) throws IOException {
+                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        return cc.getElements().getModuleElement(moduleName);
+                    }
+
+                    @Override
+                    public TypeElement readClassFile() throws IOException {
+                        final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE()
+                                .getCompilationInfoImpl(cc).getJavacTask();
+                        final Symtab syms = Symtab.instance(jt.getContext());
+                        final Symbol.ClassSymbol sym;
+                        if (FileObjects.MODULE_INFO.equals(cc.getFileObject().getName())) {
+                            final String moduleName = SourceUtils.getModuleName(cc.getFileObject().getParent().toURL());
+                            if (moduleName != null) {
+                                final Symbol.ModuleSymbol msym = syms.enterModule((Name)cc.getElements().getName(moduleName));
+                                sym = msym.module_info;
+                                if (sym.classfile == null) {
+                                    sym.classfile = FileObjects.fileObjectFileObject(cc.getFileObject(), cc.getFileObject().getParent(), null, null);
+                                    sym.owner = msym;
+                                    msym.owner = syms.noSymbol;
+                                    sym.completer = ClassFinder.instance(jt.getContext()).getCompleter();
+                                    msym.classLocation = StandardLocation.CLASS_PATH;
+                                }
+                                msym.complete();
+                            } else {
+                                sym = null;
+                            }
+                        } else {
+                            throw new UnsupportedOperationException("Not supported yet.");  //NOI18N
+                        }
+                        return sym;
+                    }
+                };
+            }
+            return null;            
+        } catch (ParseException pe) {
+            throw new IOException(pe);
+        }
+    }
+
     private static final class Diags implements DiagnosticListener<JavaFileObject> {
         @Override
         public void report(Diagnostic<? extends JavaFileObject> diagnostic) {

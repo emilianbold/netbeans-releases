@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ModuleTree;
-import com.sun.source.tree.Tree;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -67,6 +64,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileAttributeEvent;
@@ -332,21 +330,10 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         @CheckForNull
         private static String getModuleName(@NonNull final FileObject moduleInfo) {
             try {
-                final String[] res = new String[1];
                 final JavaSource src = JavaSource.forFileObject(moduleInfo);
                 if (src != null) {
-                    src.runUserActionTask((cc) -> {
-                        cc.toPhase(JavaSource.Phase.PARSED);
-                        final CompilationUnitTree cu = cc.getCompilationUnit();
-                        for (Tree decl : cu.getTypeDecls()) {
-                            if (decl.getKind() == Tree.Kind.MODULE) {
-                                res[0] = ((ModuleTree)decl).getName().toString();
-                                break;
-                            }
-                        }
-                    }, true);
+                    return ModuleUtilities.get(src).parseModuleName();
                 }
-                return res[0];
             } catch (IOException ioe) {
                 LOG.log(
                         Level.WARNING,
@@ -355,8 +342,8 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                             FileUtil.getFileDisplayName(moduleInfo),
                             ioe.getMessage()
                         });
-                return null;
             }
+            return null;
         }
 
         private static enum TestMode {

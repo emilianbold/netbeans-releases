@@ -145,6 +145,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.debugger.jpda.ui</friend>
                 <friend>org.netbeans.modules.dew4nb</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.java.api.common</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
@@ -153,12 +154,12 @@ Contributor(s):
                 <friend>org.netbeans.modules.java.source.base</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.javafx.source</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.whitelist</friend>
-                <friend>org.netbeans.modules.jshell.support</friend>
                 <package>org.netbeans.modules.java.preprocessorbridge.api</package>
                 <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
             </friend-packages>

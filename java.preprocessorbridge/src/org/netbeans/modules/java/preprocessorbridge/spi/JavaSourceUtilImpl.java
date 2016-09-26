@@ -44,11 +44,11 @@ package org.netbeans.modules.java.preprocessorbridge.spi;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import java.util.Map;
+import javax.lang.model.element.ModuleElement;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
@@ -85,6 +85,24 @@ public abstract class JavaSourceUtilImpl {
         throw new UnsupportedOperationException("Not supported in the registered implementation: " + getClass().getName()); //NOI18N
     }
 
+    @CheckForNull
+    protected abstract ModuleInfoHandle getModuleInfoHandle(@NonNull Object javaSource) throws IOException;
+
+    public static abstract class ModuleInfoHandle {
+        
+        @CheckForNull
+        public abstract String parseModuleName() throws IOException;
+
+        @CheckForNull
+        public abstract ModuleElement parseModule() throws IOException;
+
+        @CheckForNull
+        public abstract ModuleElement resolveModule(@NonNull String moduleName) throws IOException;
+        
+        @CheckForNull
+        public abstract TypeElement readClassFile() throws IOException;
+    }
+
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
         @Override
@@ -112,6 +130,15 @@ public abstract class JavaSourceUtilImpl {
                 @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnostics) throws IOException {
             assert spi != null;
             return spi.generate(srcRoot, file, content, diagnostics);
+        }
+
+        @Override
+        @CheckForNull
+        public ModuleInfoHandle getModuleInfoHandle(
+                @NonNull final JavaSourceUtilImpl spi,
+                @NonNull final Object javaSource) throws IOException {
+            assert spi != null;
+            return spi.getModuleInfoHandle(javaSource);
         }
     }
 }

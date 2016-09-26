@@ -198,8 +198,7 @@ public abstract class JavaSourceAccessor {
     /**
      * Expert: Private API for indentation engine only!
      */
-    public abstract CompilationController createCompilationController (Source s) throws IOException, ParseException;
-    
+    public abstract CompilationController createCompilationController (Source s, ClasspathInfo cpInfo) throws IOException, ParseException;    
     
     public abstract long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException;
     

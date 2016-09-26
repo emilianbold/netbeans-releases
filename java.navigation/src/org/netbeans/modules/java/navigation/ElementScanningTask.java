@@ -83,14 +83,12 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
-import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
-import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
+import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -160,7 +158,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     Collections.<Element>emptyList();
             } else {
                 //Class file
-                final TypeElement e = JavaSourceUtil.readClassFile(info.getFileObject());
+                final TypeElement e = ModuleUtilities.get(JavaSource.forFileObject(info.getFileObject())).readClassFile();
                 final ModuleElement module = e == null ?
                     null :
                     (ModuleElement) e.getEnclosingElement();

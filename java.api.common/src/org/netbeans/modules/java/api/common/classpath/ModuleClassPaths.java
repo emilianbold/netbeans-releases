@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
-import com.sun.source.tree.ModuleTree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -89,7 +85,6 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.RootsEvent;
@@ -99,6 +94,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -655,39 +651,35 @@ final class ModuleClassPaths {
                     final boolean[] dependsOnUnnamed = new boolean[]{true};
                     if (src != null) {
                         try {
-                            final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
-                            resInOut.add(res);
-                            src.runUserActionTask((CompilationController cc) -> {
-                                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                    final Set<URL> requires = new HashSet<>();
-                                    final FileObject moduleInfo = cc.getFileObject();
-                                    if (moduleInfo != null || xmodule != null) {
-                                        final ModuleElement myModule;
-                                        if (moduleInfo != null) {
-                                            myModule = parseModule(cc);
-                                        } else {
-                                            final URL xmoduleLoc = modulesByName.get(xmodule);
-                                            myModule = resolveModule(cc, xmodule);
-                                            if (myModule != null) {
-                                                requires.add(xmoduleLoc);
-                                            }
-                                        }
+                            final ModuleUtilities mu = ModuleUtilities.get(src);
+                            if (mu != null) {
+                                final Set<URL> requires = new HashSet<>();
+                                if (found != null || xmodule != null) {
+                                    final ModuleElement myModule;
+                                    if (found != null) {
+                                        myModule = mu.parseModule();
+                                    } else {
+                                        final URL xmoduleLoc = modulesByName.get(xmodule);
+                                        myModule = mu.resolveModule(xmodule);
                                         if (myModule != null) {
-                                            dependsOnUnnamed[0] = dependsOnUnnamed(myModule, true);
-                                            requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
+                                            requires.add(xmoduleLoc);
                                         }
                                     }
-                                    if (dependsOnUnnamed[0]) {
-                                        for (String moduleName : modulesByName.keySet()) {
-                                            Optional.ofNullable(resolveModule(cc, moduleName))
-                                                    .filter(rootModulesPredicate)
-                                                    .map((m) -> collectRequiredModules(m, true, true, modulesByName))
-                                                    .ifPresent(requires::addAll);
-                                        }
+                                    if (myModule != null) {
+                                        dependsOnUnnamed[0] = dependsOnUnnamed(myModule, true);
+                                        requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
                                     }
-                                    resInOut.set(0, filterModules(resInOut.get(0), requires, filter));
-                                }, true);
-                                res = resInOut.get(0);
+                                }
+                                if (dependsOnUnnamed[0]) {
+                                    for (String moduleName : modulesByName.keySet()) {
+                                        Optional.ofNullable(mu.resolveModule(moduleName))
+                                                .filter(rootModulesPredicate)
+                                                .map((m) -> collectRequiredModules(m, true, true, modulesByName))
+                                                .ifPresent(requires::addAll);
+                                    }
+                                }
+                                res = filterModules(res, requires, filter);
+                            }
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
@@ -943,25 +935,6 @@ final class ModuleClassPaths {
             return module;
         }
                 
-        @CheckForNull
-        private static ModuleElement parseModule(@NonNull final CompilationController cc) {
-            final Trees trees = cc.getTrees();
-            final TreePathScanner<ModuleElement, Void> scanner = new TreePathScanner<ModuleElement, Void>() {
-                    @Override
-                    public ModuleElement visitModule(ModuleTree node, Void p) {
-                        return (ModuleElement) trees.getElement(getCurrentPath());
-                    }
-            };
-            return scanner.scan(new TreePath(cc.getCompilationUnit()), null);
-        }
-        
-        @CheckForNull
-        private static ModuleElement resolveModule(
-                @NonNull final CompilationController cc,
-                @NonNull final String moduleName) {
-            return cc.getElements().getModuleElement(moduleName);
-        }
-
         @NonNull
         private static Map<String,URL> getModulesByName(
                 @NonNull final ClassPath cp,

@@ -727,19 +727,19 @@ public final class JavaSource {
             return JavaSource.create(cpInfo, files);
         }
 
-        public CompilationController createCompilationController (final Source s) throws IOException, ParseException {
-            Parameters.notNull("s", s);
-            JavacParserFactory factory = JavacParserFactory.getDefault();
-            final Snapshot snapshot = s.createSnapshot();
+        @Override
+        public CompilationController createCompilationController (final Source s, final ClasspathInfo cpInfo) throws IOException, ParseException {
+            final JavacParserFactory factory = JavacParserFactory.getDefault();            
+            final Snapshot snapshot = s != null ? s.createSnapshot() : null;
             final JavacParser parser = factory.createPrivateParser(snapshot);
             if (parser == null)
                 return null;
-            final UserTask dummy = new UserTask() {
+            final ClasspathInfoTask dummy = new ClasspathInfoTask(cpInfo) {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                 }
             };
-            parser.parse(snapshot,dummy, null);
+            parser.parse(snapshot, dummy, null);
             return CompilationController.get(parser.getResult(dummy));
         }
 

@@ -133,21 +133,6 @@ public class JavaSourceUtil {
         return JavaSourceUtilImplAccessor.getInstance().generate(impl, srcRoot, file, content, diagnostics);
     }
 
-    /**
-     * Reads a class file.
-     * @param classFile to read
-     * @return the {@link TypeElement} of given class file
-     * @throws IOException in case of IO problem
-     * @since 1.40
-     */
-    @CheckForNull
-    public static TypeElement readClassFile(
-            @NonNull final FileObject classFile) throws IOException {
-        final JavaSourceUtilImpl impl = getSPI();
-        assert impl != null;
-        return JavaSourceUtilImplAccessor.getInstance().readClassFile(impl, classFile);
-    }
-
     private static JavaSourceUtilImpl getSPI () {
         Collection<? extends JavaSourceUtilImpl> instances = result.allInstances();
         int size = instances.size();

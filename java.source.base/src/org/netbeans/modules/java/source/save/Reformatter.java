@@ -147,7 +147,7 @@ public class Reformatter implements ReformatTask {
                 && currentEmbedding.containsOriginalOffset(region.getEndOffset())))) {
             try {
                 if (JavacParser.MIME_TYPE.equals(context.mimePath())) {
-                    controller = JavaSourceAccessor.getINSTANCE().createCompilationController(source);
+                    controller = JavaSourceAccessor.getINSTANCE().createCompilationController(source, null);
                 } else {
                     ParserManager.parse(Collections.singletonList(source), new UserTask() {
                         @Override
