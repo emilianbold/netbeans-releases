@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -450,9 +451,12 @@ final class ModuleClassPaths {
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
         private static final String JAVA_ = "java.";            //NOI18N
         private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
+        private static final String ARG_PATCH_MOD = "--patch-module";   //NOI18N
         private static final String ARG_XMODULE = "-Xmodule";      //NOI18N
         private static final Pattern MATCHER_XMODULE =
                 Pattern.compile(String.format("%s:(\\S+)", ARG_XMODULE));  //NOI18N
+        private static final Pattern MATCHER_PATCH =
+                Pattern.compile("(.+)=(.+)");  //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private static final Predicate<ModuleElement> NON_JAVA_PUBEXP = (e) -> 
                 !e.getQualifiedName().toString().startsWith(JAVA_) &&
@@ -522,7 +526,11 @@ final class ModuleClassPaths {
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
             final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
-            final Map<String,URL> modulesByName = getModulesByName(base, newActiveProjectSourceRoots);
+            final Map<String, List<URL>> modulesPatches = getPatches();
+            final Map<String,List<URL>> modulesByName = getModulesByName(
+                    base,
+                    modulesPatches,
+                    newActiveProjectSourceRoots);
             Collections.addAll(newActiveProjectSourceRoots, sources.getRootURLs());
             synchronized (this) {
                 if (activeProjectSourceRoots != null) {
@@ -550,6 +558,7 @@ final class ModuleClassPaths {
                     systemModules != null ? base : ClassPath.EMPTY,
                     sources)) {
                 res = modulesByName.values().stream()
+                        .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                         .collect(Collectors.toList());
                 final List<PathResourceImplementation> selfResResources;
@@ -610,7 +619,7 @@ final class ModuleClassPaths {
                         }
                     }
                     final List<PathResourceImplementation> bcprs = systemModules != null ?
-                                findJavaBase(getModulesByName(systemModules, null)) :
+                                findJavaBase(getModulesByName(systemModules, modulesPatches, null)) :
                                 selfResResources;   //java.base
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
@@ -659,10 +668,10 @@ final class ModuleClassPaths {
                                     if (found != null) {
                                         myModule = mu.parseModule();
                                     } else {
-                                        final URL xmoduleLoc = modulesByName.get(xmodule);
+                                        final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModule = mu.resolveModule(xmodule);
                                         if (myModule != null) {
-                                            requires.add(xmoduleLoc);
+                                            requires.addAll(xmoduleLocs);
                                         }
                                     }
                                     if (myModule != null) {
@@ -909,6 +918,7 @@ final class ModuleClassPaths {
                 boolean addmod = false;
                 for (String arg : res.getArguments()) {
                     if (addmod) {
+                        //<module>(,<module>)*
                         mods.addAll(Arrays.stream(arg.split(","))   //NOI18N
                                 .map((m) -> m.trim())
                                 .collect(Collectors.toList()));
@@ -934,12 +944,42 @@ final class ModuleClassPaths {
             }
             return module;
         }
+        
+        @NonNull
+        private Map<String,List<URL>> getPatches() {
+            final Map<String,List<URL>> patches = new HashMap<>();
+            final CompilerOptionsQuery.Result res = getCompilerOptions();
+            if (res != null) {
+                boolean patch = false;
+                for (String arg : res.getArguments()) {
+                    if (patch) {
+                        //<module>=<file>(:<file>)*
+                        final Matcher m = MATCHER_PATCH.matcher(arg);
+                        if (m.matches() && m.groupCount() == 2) {
+                            final String module = m.group(1);
+                            final String path = m.group(2);
+                            if (!module.isEmpty() && !path.isEmpty()) {
+                                patches.putIfAbsent(
+                                        module,
+                                        Arrays.stream(PropertyUtils.tokenizePath(path))
+                                                .map((p) -> FileUtil.normalizeFile(new File(p)))
+                                                .map(FileUtil::urlForArchiveOrDir)
+                                                .collect(Collectors.toList()));
+                            }
+                        }
+                    }
+                    patch = ARG_PATCH_MOD.equals(arg);
+                }
+            }
+            return patches;
+        }
                 
         @NonNull
-        private static Map<String,URL> getModulesByName(
+        private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
+                @NonNull final Map<String,List<URL>> patches,
                 @NullAllowed final Collection<URL> projectSourceRoots) {
-            final Map<String,URL> res = new HashMap<>();
+            final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
                     .forEach((url)-> {
@@ -953,17 +993,24 @@ final class ModuleClassPaths {
                         }
                         final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
-                            res.put(moduleName, url);
+                            final List<URL> roots = new ArrayList<>();
+                            Optional.ofNullable(patches.get(moduleName))
+                                    .ifPresent(roots::addAll);
+                            roots.add(url);
+                            res.put(moduleName, roots);
                         }
                     });
             return res;
         }
 
         @NonNull
-        private static List<PathResourceImplementation> findJavaBase(final Map<String,URL> modulesByName) {
+        private static List<PathResourceImplementation> findJavaBase(final Map<String,List<URL>> modulesByName) {
             return Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
-                .map(org.netbeans.spi.java.classpath.support.ClassPathSupport::createResource)
-                .map(Collections::singletonList)
+                .map((urls) -> {
+                    return urls.stream()
+                            .map(org.netbeans.spi.java.classpath.support.ClassPathSupport::createResource)
+                            .collect(Collectors.toList());                    
+                })
                 .orElseGet(Collections::emptyList);
         }
         
@@ -1001,13 +1048,13 @@ final class ModuleClassPaths {
                 @NonNull final ModuleElement module,
                 final boolean transitive,
                 final boolean includeTopLevel,
-                @NonNull final Map<String,URL> modulesByName) {
+                @NonNull final Map<String,List<URL>> modulesByName) {
             final Set<URL> res = new HashSet<>();
             final Set<ModuleElement> seen = new HashSet<>();
             if (includeTopLevel) {
-                final URL dependencyURL = modulesByName.get(module.getQualifiedName().toString());
-                if (dependencyURL != null) {
-                    res.add(dependencyURL);
+                final List<URL> moduleLocs = modulesByName.get(module.getQualifiedName().toString());
+                if (moduleLocs != null) {
+                    res.addAll(moduleLocs);
                 }
             }
             collectRequiredModulesImpl(module, transitive, !includeTopLevel, modulesByName, seen, res);
@@ -1018,7 +1065,7 @@ final class ModuleClassPaths {
                 @NullAllowed final ModuleElement module,
                 final boolean transitive,
                 final boolean topLevel,
-                @NonNull final Map<String,URL> modulesByName,
+                @NonNull final Map<String,List<URL>> modulesByName,
                 @NonNull final Collection<? super ModuleElement> seen,
                 @NonNull final Collection<? super URL> c) {
             if (module != null && seen.add(module) && !module.isUnnamed()) {
@@ -1032,9 +1079,9 @@ final class ModuleClassPaths {
                                 add = collectRequiredModulesImpl(dependency, transitive, false, modulesByName, seen, c);
                             }
                             if (add) {
-                                final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
-                                if (dependencyURL != null) {
-                                    c.add(dependencyURL);
+                                final List<URL> dependencyURLs = modulesByName.get(dependency.getQualifiedName().toString());
+                                if (dependencyURLs != null) {
+                                    c.addAll(dependencyURLs);
                                 }
                             }
                         }

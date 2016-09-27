@@ -81,13 +81,12 @@ public class CleanupCachePseudoOptionProcessor extends OptionProcessor {
         for(String cache:CACHES) {
             markToCleanup(cache);
         }
-        
     }
 
     private static void markToCleanup(String cacheName) {
-        File cache = Places.getCacheSubdirectory(cacheName); // NOI18N
+        File cache = Places.getCacheSubdirectory(cacheName);
         if (cache.exists()) {
-            File cleanupFile = new File(cache, MARKER_FILE); // NOI18N
+            File cleanupFile = new File(cache, MARKER_FILE);
             if (!cleanupFile.exists()) {
                 try {
                     cleanupFile.createNewFile();
@@ -98,11 +97,14 @@ public class CleanupCachePseudoOptionProcessor extends OptionProcessor {
     }
     
     private static void cleanupCache(String cacheName) {
-        File cache = Places.getCacheSubdirectory(cacheName); // NOI18N
-        if (cache.exists()) {
-            File cleanupFile = new File(cache, MARKER_FILE); // NOI18N
-            if (cleanupFile.exists()) {
-                deleteRecursively(cache);
+        File cacheDirectory = Places.getCacheDirectory();
+        if (cacheDirectory.exists()) {
+            File cache = new File(cacheDirectory, cacheName);
+            if (cache.exists()) {
+                File cleanupFile = new File(cache, MARKER_FILE); 
+                if (cleanupFile.exists()) {
+                    deleteRecursively(cache);
+                }
             }
         }
     }

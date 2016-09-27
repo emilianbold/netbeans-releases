@@ -41,18 +41,26 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.code.Symbol;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -63,7 +71,9 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.util.Iterators;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -72,11 +82,14 @@ import org.openide.util.Exceptions;
 final class ModuleFileManager implements JavaFileManager {
 
     private static final Logger LOG = Logger.getLogger(ModuleFileManager.class.getName());
+    private static final Pattern MATCHER_PATCH =
+                Pattern.compile("(.+)=(.+)");  //NOI18N
 
     private final CachingArchiveProvider cap;
     private final ClassPath modulePath;
     private final Function<URL,Collection<? extends URL>> peers;
     private final boolean cacheFile;
+    private final Map<String,List<URL>> patches;
 
 
     public ModuleFileManager(
@@ -91,6 +104,7 @@ final class ModuleFileManager implements JavaFileManager {
         this.modulePath = modulePath;
         this.peers = peers;
         this.cacheFile = cacheFile;
+        this.patches = new HashMap<>();
     }
 
     // FileManager implementation ----------------------------------------------
@@ -206,6 +220,20 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
+        if (JavacParser.OPTION_PATCH_MODULE.equals(head)) {
+            final Pair<String,List<URL>> modulePatches = parseModulePatches(tail);
+            if (modulePatches != null) {
+                if (patches.putIfAbsent(modulePatches.first(), modulePatches.second()) != null) {
+                    //Don't abort compilation by Abort
+                    //Log error into javac Logger doe not help - no source to attach to.
+                    LOG.log(
+                            Level.WARNING,
+                            "Duplicate " +JavacParser.OPTION_PATCH_MODULE+ " option, ignoring: {0}",    //NOI18N
+                            modulePatches.second());
+                }
+                return true;
+            }            
+        }
         return false;
     }
 
@@ -244,7 +272,14 @@ final class ModuleFileManager implements JavaFileManager {
             if (!seen.contains(root)) {
                 final String moduleName = SourceUtils.getModuleName(root);
                 if (moduleName != null) {
-                    final Collection<? extends URL> p = peers.apply(root);
+                    Collection<? extends URL> p = peers.apply(root);
+                    final List<? extends URL> x = patches.get(moduleName);
+                    if (x != null) {
+                        final List<URL> tmp = new ArrayList(x.size() + p.size());
+                        tmp.addAll(x);
+                        tmp.addAll(p);
+                        p = tmp;
+                    }
                     moduleRoots.add(Collections.singleton(
                             ModuleLocation.create(location, p, moduleName)));
                     seen.addAll(p);
@@ -305,5 +340,22 @@ final class ModuleFileManager implements JavaFileManager {
             throw new IllegalArgumentException (String.valueOf(l));
         }
         return (ModuleLocation) l;
-    }   
+    }
+    
+    @CheckForNull
+    private static Pair<String,List<URL>> parseModulePatches(@NonNull final Iterator<? extends String> tail) {
+        if (tail.hasNext()) {
+            //<module>=<file>(:<file>)*
+            final Matcher m = MATCHER_PATCH.matcher(tail.next());
+            if (m.matches() && m.groupCount() == 2) {
+                final String module = m.group(1);
+                final List<URL> patches = Arrays.stream(m.group(2).split(File.pathSeparator))
+                        .map((p) -> FileUtil.normalizeFile(new File(p)))
+                        .map(FileUtil::urlForArchiveOrDir)
+                        .collect(Collectors.toList());
+                return Pair.of(module, patches);
+            }
+        }        
+        return null;
+    }
 }

@@ -136,11 +136,11 @@ made subject to such option by the copyright holder.
     <bind actionName="prev-marked-occurrence" key="A-UP"/>
 
     <!-- Multi-caret: extra shortcuts for adding carets in up/down direction -->    
-    <bind actionName="add-caret-up" key="OD-UP"/>
-    <bind actionName="add-caret-up" key="OD-KP_UP"/>
-    <bind actionName="add-caret-down" key="OD-DOWN"/>
-    <bind actionName="add-caret-down" key="OD-KP_DOWN"/>
+    <bind actionName="add-caret-up" key="AD-UP"/>
+    <bind actionName="add-caret-up" key="AD-KP_UP"/>
+    <bind actionName="add-caret-down" key="AD-DOWN"/>
+    <bind actionName="add-caret-down" key="AD-KP_DOWN"/>
     <!-- Multi-caret: extra shortcut for Paste by lines -->    
-    <bind actionName="clipboard-lines" key="OD-V"/>
+    <bind actionName="clipboard-lines" key="AD-V"/>
 
 </bindings>

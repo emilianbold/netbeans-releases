@@ -165,6 +165,7 @@ import org.openide.util.WeakListeners;
  */
 //@NotThreadSafe
 public class JavacParser extends Parser {
+    public static final String OPTION_PATCH_MODULE = "--patch-module";          //NOI18N
     //Timer logger
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N
     //Debug logger
@@ -997,7 +998,8 @@ public class JavacParser extends Parser {
                     option.equals("--add-modules") ||   //NOI18N
                     option.equals("--limit-modules") || //NOI18N
                     option.equals("--add-exports") ||   //NOI18N
-                    option.equals("--add-reads"))) {    //NOI18N
+                    option.equals("--add-reads")  ||
+                    option.equals(OPTION_PATCH_MODULE))) {
                 res.add(option);
                 option = options.get(++i);
                 res.add(option);

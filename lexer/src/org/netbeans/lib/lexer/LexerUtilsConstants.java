@@ -516,8 +516,7 @@ public final class LexerUtilsConstants {
     }
     
     public static void appendIdentityHashCode(StringBuilder sb, Object o) {
-        sb.append("IHC=");
-        sb.append(System.identityHashCode(o));
+        sb.append('@').append(Integer.toHexString(System.identityHashCode(o)));
     }
     
     public static void appendLAState(StringBuilder sb, TokenList<?> tokenList, int index) {

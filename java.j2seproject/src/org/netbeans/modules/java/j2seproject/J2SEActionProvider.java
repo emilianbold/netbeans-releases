@@ -245,6 +245,11 @@ public class J2SEActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean isCompileOnSaveEnabled() {
+        return isCompileOnSaveUpdate() && cosAction.getTarget() == null;
+    }
+    
+    @Override
+    protected boolean isCompileOnSaveUpdate() {
         return J2SEProjectUtil.isCompileOnSaveEnabled((J2SEProject)getProject());
     }
 
@@ -481,7 +486,7 @@ public class J2SEActionProvider extends BaseActionProvider {
         }
 
         @Override
-        public void removeChangeListner(@NonNull final ChangeListener listener) {
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
             cs.removeChangeListener(listener);
         }               
 
@@ -517,7 +522,7 @@ public class J2SEActionProvider extends BaseActionProvider {
             if (target == NONE) {
                 return null;
             }
-            return owner.isCompileOnSaveEnabled() ?
+            return owner.isCompileOnSaveUpdate()?
                     (String) target :
                     null;
         }

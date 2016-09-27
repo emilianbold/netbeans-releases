@@ -60,6 +60,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -72,6 +73,7 @@ import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Iterators;
@@ -305,13 +307,13 @@ public final class ProxyFileManager implements JavaFileManager {
                 }
                 return true;
             }
-            final Collection<String> defensiveCopy = copy(remains);
+            final RepeatableIterator<String> it = RepeatableIterator.create(remains);
+            boolean res = false;
             for (JavaFileManager m : cfg.getFileManagers(ALL, current)) {
-                if (m.handleOption(current, defensiveCopy.iterator())) {
-                    return true;
-                }
+                res |= m.handleOption(current, it);
+                it.reset();
             }
-            return false;
+            return res;
         } finally {
             clearOwnerThread();
         }
@@ -571,15 +573,49 @@ public final class ProxyFileManager implements JavaFileManager {
         return result;
     }
 
-    private static<T> Collection<T> copy(final Iterator<? extends T> from) {
-        if (!from.hasNext()) {
-            return Collections.<T>emptyList();
-        } else {
-            final List<T> result = new LinkedList<>();
-            while (from.hasNext()) {
-                result.add(from.next());
+    /*test*/
+    //@NotThreadSafe
+    static final class RepeatableIterator<T> implements Iterator<T> {
+        private final Iterator<T> base;
+        private final List<T> seen = new ArrayList<>();
+        private Iterator<T> current;
+        
+        private RepeatableIterator(@NonNull final Iterator<T> base) {
+            Parameters.notNull("base", base);   //NOI18N
+            this.base = base;
+            reset();
+        }
+
+        @Override
+        public boolean hasNext() {
+            boolean res = current.hasNext();
+            if (!res && current != base) {
+                current = base;
+                res  = current.hasNext();
             }
-            return result;
+            return res;
+        }
+
+        @Override
+        @NullUnknown
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            final T res = current.next();
+            if (current == base) {
+                seen.add(res);
+            }
+            return res;
+        }
+        
+        void reset() {
+            current = seen.iterator();
+        }
+        
+        @NonNull
+        static <T> RepeatableIterator<T> create(@NonNull final Iterator<T> base) {
+            return new RepeatableIterator<>(base);
         }
     }
 
@@ -701,6 +737,10 @@ public final class ProxyFileManager implements JavaFileManager {
                 //Todo: create factories with options when there are more than one option.
                 if (TreeLoaderOutputFileManager.OUTPUT_ROOT.equals(hint)) {
                     createTreeLoaderFileManager();
+                }
+                if (JavacParser.OPTION_PATCH_MODULE.equals(hint)) {
+                    createSystemModuleFileManager();
+                    createModuleFileManager();
                 }
                 final List<JavaFileManager> res = new ArrayList<>(emitted.length);
                 for (JavaFileManager jfm : emitted) {

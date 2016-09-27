@@ -151,7 +151,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
                         if (!textFailureLogged) {
                             textFailureLogged = true;
                             LOG.log(Level.INFO, "Obtaining of token text failed.", ex); // NOI18N
-                            LOG.info("Errorneous token: IHC=" + System.identityHashCode(this) + ", rawOffset=" + rawOffset() + // NOI18N
+                            LOG.info("Error-token@" + Integer.toHexString(System.identityHashCode(this)) + ", rawOffset=" + rawOffset() + // NOI18N
                                     ", tokenLength=" + tokenLength + ", start=" + start + ", end=" + end); // NOI18N
                             LOG.info("Errorneous token hierarchy:\n" + rootTokenList.tokenHierarchyOperation().toString()); // NOI18N
                         }

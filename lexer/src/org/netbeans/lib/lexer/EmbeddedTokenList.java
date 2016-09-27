@@ -647,7 +647,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
         if (isRemoved()) {
             sb.append("REMOVED-");
         }
-        sb.append(dumpInfoType());
+        sb.append(dumpInfoType()).append('@').append(Integer.toHexString(System.identityHashCode(this)));
         if (embedding.joinSections())
             sb.append('j');
         sb.append('<').append(startOffset());
@@ -658,7 +658,6 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
             sb.append(" JI:");
             joinInfo.dumpInfo(sb, this);
         }
-        sb.append(", IHC=").append(System.identityHashCode(this));
         return sb;
     }
 

@@ -337,11 +337,20 @@ public final class EditorCaret implements Caret {
     private boolean atomicSectionAnyCaretChange;
     
     /**
-     * Lowest offset where modification was performed during atomic lock.
+     * Lowest offset where modification was performed or where view change occurred
+     * during atomic lock section.
      * <br>
      * Set to Integer.MAX_VALUE if no modification was done during atomic section yet.
      */
-    private transient int atomicSectionLowestModOffset;
+    private transient int atomicSectionStartChangeOffset;
+    /**
+     * Highest offset where modification was performed or where view change occurred
+     * during atomic lock section.
+     * <br>
+     * It may be Integer.MAX_VALUE to mark that all caret infos till end of doc
+     * must be recomputed.
+     */
+    private transient int atomicSectionEndChangeOffset;
     
     private Preferences prefs = null;
 
@@ -1003,7 +1012,7 @@ public final class EditorCaret implements Caret {
             }
             listenerImpl.focusGained(null); // emulate focus gained
         }
-        invalidateCaretBounds(0);
+        invalidateCaretBounds(0, Integer.MAX_VALUE);
         dispatchUpdate(false);
         resetBlink();
     }
@@ -2073,7 +2082,7 @@ public final class EditorCaret implements Caret {
         }
     }
     
-    void invalidateCaretBounds(int startOffset) {
+    void invalidateCaretBounds(int startOffset, int endOffset) {
         List<CaretInfo> sortedCarets = getSortedCarets();
         int low = 0;
         int caretsSize = sortedCarets.size();
@@ -2082,10 +2091,10 @@ public final class EditorCaret implements Caret {
             while (low <= high) {
                 int mid = (low + high) >>> 1;
                 CaretInfo midCaretInfo = sortedCarets.get(mid);
-                int midDot = midCaretInfo.getDot();
-                if (midDot < startOffset) {
+                int midMinOffset = midCaretInfo.getSelectionStart();
+                if (midMinOffset < startOffset) {
                     low = mid + 1;
-                } else if (midDot > startOffset) {
+                } else if (midMinOffset > startOffset) {
                     high = mid - 1;
                 } else { // midDot == clipStartOffset
                     // There should not be multiple carets at the same offset so use the found one
@@ -2098,6 +2107,9 @@ public final class EditorCaret implements Caret {
         for (int i = low; i < caretsSize; i++) {
             CaretInfo caretInfo = sortedCarets.get(i);
             CaretItem caretItem = caretInfo.getCaretItem();
+            if (caretInfo.getSelectionStart() > endOffset) {
+                break;
+            }
             caretItem.markUpdateCaretBounds();
         }
     }
@@ -2374,7 +2386,7 @@ public final class EditorCaret implements Caret {
     private boolean isLeftMouseButtonExt(MouseEvent evt) {
         return (SwingUtilities.isLeftMouseButton(evt)
                 && !(evt.isPopupTrigger())
-                && (evt.getModifiers() & (InputEvent.META_MASK/* | InputEvent.ALT_MASK*/)) == 0);
+                && (org.openide.util.Utilities.isMac() || (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0));
     }
     
     private boolean isMiddleMouseButtonExt(MouseEvent evt) {
@@ -2428,6 +2440,16 @@ public final class EditorCaret implements Caret {
             }
         }
         return false;
+    }
+    
+    private void extendAtomicSectionChangeArea(int changeStartOffset, int changeEndOffset) {
+        if (atomicSectionStartChangeOffset == Integer.MAX_VALUE) {
+            atomicSectionStartChangeOffset = changeStartOffset;
+            atomicSectionEndChangeOffset = changeEndOffset;
+        } else {
+            atomicSectionStartChangeOffset = Math.min(atomicSectionStartChangeOffset, changeStartOffset);
+            atomicSectionEndChangeOffset = Math.max(atomicSectionEndChangeOffset, changeEndOffset);
+        }
     }
     
     private static String logMouseEvent(MouseEvent evt) {
@@ -2555,7 +2577,7 @@ public final class EditorCaret implements Caret {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
                     runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null, MoveCaretsOrigin.DISABLE_FILTERS);
                 }
-                modifiedUpdate(evt, offset, offset + length);
+                modifiedUpdate(evt, offset, offset + length, offset + length);
                 
             }
         }
@@ -2565,7 +2587,7 @@ public final class EditorCaret implements Caret {
             if (c != null) {
                 int offset = evt.getOffset();
                 runTransaction(CaretTransaction.RemoveType.DOCUMENT_REMOVE, offset, null, null);
-                modifiedUpdate(evt, offset, offset);
+                modifiedUpdate(evt, offset, offset, offset);
             }
         }
 
@@ -2576,7 +2598,7 @@ public final class EditorCaret implements Caret {
         void atomicLock(AtomicLockEvent evt) {
             synchronized (listenerList) {
                 inAtomicSection = true;
-                atomicSectionLowestModOffset = Integer.MAX_VALUE;
+                atomicSectionStartChangeOffset = Integer.MAX_VALUE;
                 atomicSectionImplicitSetDotOffset = Integer.MAX_VALUE;
                 atomicSectionAnyCaretChange = false;
             }
@@ -2596,8 +2618,8 @@ public final class EditorCaret implements Caret {
                         change = true;
                     }
                 }
-                if (atomicSectionLowestModOffset != Integer.MAX_VALUE) {
-                    invalidateCaretBounds(atomicSectionLowestModOffset);
+                if (atomicSectionStartChangeOffset != Integer.MAX_VALUE) {
+                    invalidateCaretBounds(atomicSectionStartChangeOffset, atomicSectionEndChangeOffset);
                     change = true;
                 }
                 if (change) {
@@ -2608,7 +2630,7 @@ public final class EditorCaret implements Caret {
             }
         }
 
-        private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+        private void modifiedUpdate(DocumentEvent evt, int offset, int endOffset, int setDotOffset) {
             // For typing modification ensure that the last caret will be visible after the typing modification.
             // Otherwise the caret would go off the screen when typing at the end of a long line.
             // It might make sense to make an implicit dot setting to end of the modification
@@ -2627,9 +2649,9 @@ public final class EditorCaret implements Caret {
             }
 
             if (inAtomicSection) {
-                atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, offset);
+                extendAtomicSectionChangeArea(offset, endOffset);
             } else { // Not in atomic section
-                invalidateCaretBounds(offset);
+                invalidateCaretBounds(offset, endOffset);
                 updateAndFireChange();
             }
         }
@@ -2697,7 +2719,10 @@ public final class EditorCaret implements Caret {
                                 c.requestFocus();
                             }
                             c.setDragEnabled(true);
-                            if (evt.isControlDown() && evt.isShiftDown()) {
+                            // Check Add Caret: Cmd+Shift+Click on Mac or Ctrl+Shift+Click on other platforms
+                            if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) &&
+                                evt.isShiftDown())
+                            {
                                 // "Add multicaret" mode
                                 mouseState = MouseState.DEFAULT;
                                 try {
@@ -3107,16 +3132,15 @@ public final class EditorCaret implements Caret {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            if (evt.isChangeY()) {
-                int changeStartOffset = evt.changeStartOffset();
-                // Doc should be read/write-locked here => do no sync for inAtomicSection
-                if (inAtomicSection) {
-                    atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, changeStartOffset);
-                } else {
-                    invalidateCaretBounds(changeStartOffset);
-                }
-                dispatchUpdate(true); // Schedule an update later
+            int changeStartOffset = evt.changeStartOffset();
+            int changeEndOffset = evt.isChangeY() ? Integer.MAX_VALUE : evt.changeEndOffset();
+            // Doc should be read/write-locked here (when firing view hierarchy change)
+            if (inAtomicSection) {
+                extendAtomicSectionChangeArea(changeStartOffset, changeEndOffset);
+            } else {
+                invalidateCaretBounds(changeStartOffset, changeEndOffset);
             }
+            dispatchUpdate(true); // Schedule an update later
         }
 
         @Override

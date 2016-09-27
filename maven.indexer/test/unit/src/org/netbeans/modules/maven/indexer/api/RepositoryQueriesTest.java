@@ -99,6 +99,7 @@ public class RepositoryQueriesTest extends NbTestCase {
     
     public void testNullResult() throws URISyntaxException {
         MockServices.setServices(NullQueryProvider.class);
+        
         List<RepositoryInfo> repos = Arrays.asList(NullQueryProvider.REPO);
         assertEquals(0, RepositoryQueries.findArchetypesResult(repos).getTotalResultCount());
         assertEquals(0, RepositoryQueries.findBySHA1Result(new File(""), Arrays.asList(NullQueryProvider.REPO)).getTotalResultCount());
@@ -106,6 +107,8 @@ public class RepositoryQueriesTest extends NbTestCase {
         assertEquals(0, RepositoryQueries.findDependencyUsageResult("","","", repos).getTotalResultCount());
         assertEquals(0, RepositoryQueries.findResult(Collections.EMPTY_LIST, repos).getTotalResultCount());
         assertEquals(0, RepositoryQueries.findVersionsByClassResult("", repos).getTotalResultCount());
+        
+        RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(NullQueryProvider.REPO);
         assertEquals(0, RepositoryQueries.getLoadedContexts().size());
     }
 

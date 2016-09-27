@@ -56,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
@@ -75,7 +76,7 @@ public class IndentScriptEngineHack extends AbstractScriptEngine {
     private IndentScriptEngineHack() {}
     
     @Override
-    public Object eval(String text, ScriptContext context) throws ScriptException {
+    public Object eval(final String text, ScriptContext context) throws ScriptException {
         Document doc;
         String mime = (String)context.getAttribute("mimeType"); // NOI18N
         try {
@@ -85,23 +86,39 @@ public class IndentScriptEngineHack extends AbstractScriptEngine {
             doc = new PlainDocument();
             doc.putProperty("mimeType", mime); // NOI18N
         }
-        Reformat reformat = Reformat.get(doc);
+        final Reformat reformat = Reformat.get(doc);
         reformat.lock();
         try {
-            
-            if (text.length() > 0) {
-                try {
-                    doc.insertString(0, text, null);
-                    Position endPos = doc.createPosition(doc.getLength());
-                    reformat.reformat(0, endPos.getOffset());
-                    int len = endPos.getOffset();
-                    String reformattedText = doc.getText(0, len);
-                    getContext().getWriter().write(reformattedText);
-                } catch (BadLocationException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (IOException ex) {
-                    throw new ScriptException(ex);
+            final Document d = doc;
+            final ScriptException err[] = new ScriptException[1];
+            Runnable op = new Runnable() {
+                @Override
+                public void run() {
+                    if (text.length() > 0) {
+                        try {
+                            d.insertString(0, text, null);
+                            Position endPos = d.createPosition(d.getLength());
+                            reformat.reformat(0, endPos.getOffset());
+                            int len = endPos.getOffset();
+                            String reformattedText = d.getText(0, len);
+                            getContext().getWriter().write(reformattedText);
+                        } catch (BadLocationException e) {
+                            Exceptions.printStackTrace(e);
+                        } catch (IOException ex) {
+                            err[0] = new ScriptException(ex);
+                            return;
+                        }
+                    }
                 }
+            };
+            AtomicLockDocument ald = LineDocumentUtils.as(doc, AtomicLockDocument.class);
+            if (ald != null) {
+                ald.runAtomic(op);
+            } else {
+                op.run();
+            }
+            if (err[0] != null) {
+                throw err[0];
             }
         } finally {
             reformat.unlock();

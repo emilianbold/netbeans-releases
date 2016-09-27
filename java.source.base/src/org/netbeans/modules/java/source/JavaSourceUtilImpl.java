@@ -85,6 +85,7 @@ import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -212,10 +213,22 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
             ClassPath boot = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
             if (boot == null) {
                 boot = JavaPlatform.getDefault().getBootstrapLibraries();
+            }   
+            ClassPath moduleBoot = ClassPath.getClassPath(srcRoot, JavaClassPathConstants.MODULE_BOOT_PATH);
+            if (moduleBoot == null) {
+                moduleBoot = boot;
             }
             ClassPath compile = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
             if (compile == null) {
                 compile = ClassPath.EMPTY;
+            }
+            ClassPath moduleCompile = ClassPath.getClassPath(srcRoot, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            if (moduleCompile == null) {
+                moduleCompile = ClassPath.EMPTY;
+            }
+            ClassPath moduleClass = ClassPath.getClassPath(srcRoot, JavaClassPathConstants.MODULE_CLASS_PATH);
+            if (moduleClass == null) {
+                moduleClass = ClassPath.EMPTY;
             }
             final ClassPath srcFin = src;
             final Function<JavaFileManager.Location,JavaFileManager> jfmProvider =
@@ -226,12 +239,13 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                                         srcFin) :
                                 null;
                     };
+            
             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
                     boot,
-                    ClassPath.EMPTY,
+                    moduleBoot,
                     compile,
-                    ClassPath.EMPTY,
-                    ClassPath.EMPTY,
+                    moduleCompile,
+                    moduleClass,
                     src,
                     null,
                     true,

@@ -88,7 +88,7 @@ public class FILESEL implements ActiveEditorDrop {
         
         String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
-        String fileselBody = "<input type=\"file\"" + strName + " value=\"\"" + strWidth + strDisabled + " />"; // NOI18N
+        String fileselBody = "<input type=\"file\"" + strName + strWidth + strDisabled + " />"; // NOI18N
         
         return fileselBody;
     }
