@@ -102,6 +102,9 @@ public class SourceElementsQueryImpl implements SourceElementsQuery {
                     Parser.Result r = resultIterator.getParserResult();
                     ParserResult pr = (ParserResult) r;
                     Model model = Model.getModel(pr, false);
+                    if (model == null) {    // no model, no offset
+                        return ;
+                    }
                     JsObject declarationObject = model.getDeclarationObject(offset);
                     Identifier declarationName = declarationObject.getDeclarationName();
                     int doffset = declarationName.getOffsetRange().getStart();
