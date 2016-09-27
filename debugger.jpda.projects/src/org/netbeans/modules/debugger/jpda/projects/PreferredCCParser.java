@@ -346,8 +346,8 @@ class PreferredCCParser {
         } catch (MalformedURLException e) {
             return null;
         }
-        JavaSource js = JavaSource.forFileObject(file);
-        if (js == null) {
+        JavaSource js;
+        if (file == null || (js = JavaSource.forFileObject(file)) == null) {
             return new String [0];
         }
         final List<String> imports = new ArrayList<String>();
