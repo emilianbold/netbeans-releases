@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
         <condition property="has.modules" value="true" else="false">
             <and>
                 <istrue value="${modules.supported.internal}"/>
+                <isset property="modulepath"/>
                 <length string="${modulepath}" when="greater" length="0"/>
             </and>
         </condition>
@@ -107,7 +108,7 @@ made subject to such option by the copyright holder.
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
                 <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" />
                 <translate-classpath classpath="${module.root}" targetProperty="module.root-translated"/>
-                <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
+                <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath},${modulepath},${module.root}">
                     <modulepath>
                         <path path="${modulepath-translated}"/>
                     </modulepath>
