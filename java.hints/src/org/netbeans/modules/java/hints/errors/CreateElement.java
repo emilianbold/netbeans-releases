@@ -127,7 +127,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.apply.symbols", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args", CAST_KEY)); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.apply.symbols", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args", CAST_KEY, "compiler.err.try.with.resources.expr.needs.var")); // NOI18N
     }
     public static final String CAST_KEY = "compiler.err.prob.found.req";
 
@@ -501,7 +501,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || fixTypes.contains(ElementKind.PARAMETER))) {
+        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || fixTypes.contains(ElementKind.PARAMETER) || fixTypes.contains(ElementKind.RESOURCE_VARIABLE))) {
             ExecutableElement ee = null;
 
             if (firstMethod != null) {
@@ -510,9 +510,11 @@ public final class CreateElement implements ErrorRule<Void> {
 
             int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
             if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
-                result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, ElementKind.PARAMETER, identifierPos));
             if ((firstMethod != null || firstInitializer != null) && fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
-                result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, ElementKind.LOCAL_VARIABLE, identifierPos));
+            if (fixTypes.contains(ElementKind.RESOURCE_VARIABLE))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, ElementKind.RESOURCE_VARIABLE, identifierPos));
         }
 
         return result;

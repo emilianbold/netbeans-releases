@@ -196,6 +196,13 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
                 ? LAState.empty() // Will collect LAState
                 : null;
     }
+    
+    public void clearAllTokens() {
+        this.clear();
+        if (laState != null) {
+            laState = LAState.empty();
+        }
+    }
 
     /**
      * Add token without touching laState - suitable for JoinToken's handling.

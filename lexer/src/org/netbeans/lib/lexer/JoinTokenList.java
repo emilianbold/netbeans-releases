@@ -762,11 +762,7 @@ public final class JoinTokenList<T extends TokenId> implements MutableTokenList<
             // Clear all tokens so that it can be initialized by joined lexing.
             // This situation may arise when there would be mixed joining and non-joining ETLs
             // (see also TokenListList's constructor and scanTokenList()).
-            tokenList.clear();
-//                throw new IllegalStateException(
-//                        "Non-empty embedded token list in JoinTokenList initialization. " +
-//                        tokenList.dumpInfo(null) + "\n" + tokenListList
-//                );
+            tokenList.clearAllTokens();
         }
         assert (tokenList.joinInfo() == null) : "Non-null joinInfo in tokenList " +
                 tokenList.dumpInfo(new StringBuilder(256)) + "\n" + tokenListList;

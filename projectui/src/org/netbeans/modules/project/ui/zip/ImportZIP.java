@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +75,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.project.ui.zip.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
@@ -83,6 +85,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -119,7 +122,7 @@ public class ImportZIP extends JPanel {
                 RP.post(new Runnable() {
                     @Override public void run() {
                         try {
-                            unpackAndOpen(zip, root);
+                            unpackAndOpen(zip, FileUtil.normalizeFile(root));
                         } catch (IOException x) {
                             LOG.log(Level.INFO, null, x);
                             NotifyDescriptor nd = new NotifyDescriptor.Message(ERR_Unzip(x.getLocalizedMessage()), NotifyDescriptor.ERROR_MESSAGE);
@@ -143,7 +146,9 @@ public class ImportZIP extends JPanel {
         "WRN_no_project_added=No NetBeans projects added.",
         "LBL_replace=Replace",
         "TITLE_change_target_folder=Change target folder",
-        "LBL_change_import_folder=Change import folder"
+        "LBL_change_import_folder=Change import folder",
+        "# {0} - unpacked file", "# {1} - folder", "MSG_OutsideRoot=Do you want to write file {0}, which is outside of imported root {1}",
+        "MSG_OutsideRootTitle=File Outside of Import Folder"
     })
     private static void unpackAndOpen(File zip, File root) throws IOException {
         final AtomicBoolean canceled = new AtomicBoolean();
@@ -167,7 +172,19 @@ public class ImportZIP extends JPanel {
                     }
                     final String n = entry.getName();
                     
-                    File f = new File(root, n);
+                    File f = FileUtil.normalizeFile(new File(root, n));
+                    if (!isParentOf(root,f)) {
+                        final NotifyDescriptor.Confirmation msg = new DialogDescriptor.Confirmation(
+                                MSG_OutsideRoot(
+                                        f.getAbsolutePath(),
+                                        root.getAbsolutePath()),
+                                MSG_OutsideRootTitle(),
+                                NotifyDescriptor.YES_NO_OPTION,
+                                NotifyDescriptor.WARNING_MESSAGE);
+                        if (DialogDisplayer.getDefault().notify(msg) != NotifyDescriptor.YES_OPTION) {
+                            continue;
+                        }
+                    }
                     if(/*!override && */f.exists()) {
                         JButton replace = new JButton(LBL_replace());
                         JButton changeImportFolder = new JButton(LBL_change_import_folder());
@@ -314,6 +331,16 @@ public class ImportZIP extends JPanel {
     private ImportZIP() {
         initComponents();
         folderField.setText(ProjectChooser.getProjectsFolder().getAbsolutePath());
+    }
+    
+    private static boolean isParentOf(
+            final File dir,
+            final File file) {
+        File tempFile = file;
+        while (tempFile != null && !tempFile.equals(dir)) {
+            tempFile = tempFile.getParentFile();
+        }
+        return tempFile != null;
     }
 
     @SuppressWarnings("unchecked")

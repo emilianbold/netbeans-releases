@@ -248,7 +248,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         if (pos == (-1)) {
             Diagnostic<?> d = findPositionForErrors();
-            pos = (int) d.getPosition();
+            pos = (int) ErrorHintsProvider.getPrefferedPosition(info, d);
             diagnosticCode = d.getCode();
         } else {
             diagnosticCode = null;
@@ -296,7 +296,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         if (pos == (-1)) {
             Diagnostic<?> d = findPositionForErrors();
-            pos = (int) d.getPosition();
+            pos = (int) ErrorHintsProvider.getPrefferedPosition(info, d);
             diagnosticCode = d.getCode();
             path = info.getTreeUtilities().pathFor(pos + 1);
         } else {
@@ -349,7 +349,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
 
     protected final int positionForErrors() throws IllegalStateException {
         try {
-            return (int) findPositionForErrors().getPosition();
+            return (int) ErrorHintsProvider.getPrefferedPosition(info, findPositionForErrors());
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
