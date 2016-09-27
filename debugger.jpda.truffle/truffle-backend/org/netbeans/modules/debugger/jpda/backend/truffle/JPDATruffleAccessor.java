@@ -52,6 +52,7 @@ import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -451,7 +452,7 @@ public class JPDATruffleAccessor extends Object {
         if (condition != null) {
             lb.setCondition(condition);
         }
-        System.err.println("JPDATruffleAccessor.setLineBreakpoint("+uri+", "+line+"): lb = "+lb);
+        trace("JPDATruffleAccessor.setLineBreakpoint({0}, {1}, {2}): lb = {3}", debuggerSession, uri, line, lb);
         return debuggerSession.install(lb);
     }
     
@@ -465,7 +466,7 @@ public class JPDATruffleAccessor extends Object {
     
     static void trace(String message, Object... parameters) {
         if (TRACE) {
-            System.out.println("NB Debugger: " + String.format(message, parameters));
+            System.out.println("NB Debugger: " + MessageFormat.format(message, parameters));
         }
     }
 
