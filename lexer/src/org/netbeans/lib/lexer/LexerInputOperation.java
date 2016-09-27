@@ -74,6 +74,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
 
     // -J-Dorg.netbeans.lib.lexer.LexerInputOperation.level=FINE
     static final Logger LOG = Logger.getLogger(LexerInputOperation.class.getName());
+    // -J-Dorg.netbeans.spi.lexer.LexerInput.level=FINE
     static final Logger LexerInputLOG = Logger.getLogger(LexerInput.class.getName());
     
     protected final TokenList<T> tokenList;
@@ -331,7 +332,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
             for (int i = 0; i < length; i++) {
                 CharSequenceUtilities.debugChar(sb, readExistingAtIndex(i));
             }
-            sb.append("\"\n");
+            sb.append("\", st=").append(lexer.state()).append('\n');
             LexerInputLOG.fine(sb.toString());
         }
     }
@@ -399,11 +400,13 @@ public abstract class LexerInputOperation<T extends TokenId> {
     public void assignTokenLength(int tokenLength) {
         if (tokenLength > readLength()) {
             throw new IndexOutOfBoundsException("tokenLength=" + tokenLength // NOI18N
-                    + " > " + readLength() + ". Fix the lexer implementation to use proper token length value."); // NOI18N
+                    + " > " + readLength() + ". " + lexer.getClass() + // NOI18N
+                    " implementation must be fixed to create all tokens with a proper token length value."); // NOI18N
         }
         if (tokenLength <= 0) {
             throw new IndexOutOfBoundsException("tokenLength=" + tokenLength +
-                    " <= 0. Fix the lexer implementation to use proper token length value."); // NOI18N
+                    " <= 0. " + lexer.getClass() + // NOI18N
+                    " implementation must be fixed to create all tokens with a proper token length value."); // NOI18N
         }
         this.tokenLength = tokenLength;
     }
