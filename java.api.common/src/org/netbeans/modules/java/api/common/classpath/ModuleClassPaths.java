@@ -842,7 +842,6 @@ final class ModuleClassPaths {
         private void handleModuleChange(@NonNull final TypesEvent event) {
             if (event.getModule() != null) {
                 ClasspathInfo info;
-                final Collection<? extends File> toInvalidate;
                 synchronized (this) {
                     info = activeProjectSourceRoots;
                     if (info != null) {
@@ -851,10 +850,7 @@ final class ModuleClassPaths {
                         } else {
                             rootsChanging = true;
                         }
-                    }
-                    toInvalidate = info != null ?
-                            moduleInfos :
-                            Collections.emptyList();
+                    }                    
                 }
                 if (info != null) {
                     try {
@@ -868,16 +864,10 @@ final class ModuleClassPaths {
                                     event.getModule().getQualifiedName(),
                                     event.getRoot()
                                 });
-                            toInvalidate.stream().forEach((f) -> {
-                                final FileObject fo = FileUtil.toFileObject(f);
-                                if (fo != null) {
-                                    SourceUtils.invalidate(fo, false);
-                                }
-                            });
                             rootsChanging = false;
                             CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
-                            },
-                            true);
+                        },
+                        true);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }

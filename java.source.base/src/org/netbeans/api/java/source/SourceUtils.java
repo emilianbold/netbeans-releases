@@ -1323,23 +1323,6 @@ public class SourceUtils {
         return null;
     }
 
-    /**
-     * Invalidates parser for given java source.
-     * @param javaSource the source to invalidate
-     * @param rescheduleTasks true if the scheduled tasks should be reexecuted
-     * @since 2.16
-     */
-    public static void invalidate(
-            @NonNull final FileObject javaSource,
-            final boolean rescheduleTasks) {
-        Parameters.notNull("javaSource", javaSource);   //NOI18N
-        if (rescheduleTasks) {
-            Utilities.revalidate(javaSource);
-        } else {
-            Utilities.invalidate(javaSource);
-        }
-    }
-
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
 	return ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, kind);	
