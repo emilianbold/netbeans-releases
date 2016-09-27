@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -215,7 +216,9 @@ public class J2SEFileWizardIterator implements JavaFileWizardIteratorFactory {
     private static boolean hasModuleInfo(@NonNull final SourceRoots roots) {
         boolean res = false;
         for (FileObject root : roots.getRoots()) {
-            res |= Optional.ofNullable(J2SEProjectUtil.getModuleInfo(root)).isPresent();
+            FileObject mInfo = J2SEProjectUtil.getModuleInfo(root);
+            res |= Optional.ofNullable(mInfo).isPresent()
+                    && ClassPath.getClassPath(root, ClassPath.SOURCE).contains(mInfo);
         }
         return res;
     }

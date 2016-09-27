@@ -60,6 +60,7 @@ import java.util.concurrent.Future;
 import javax.swing.JButton;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -255,7 +256,9 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
             @NonNull final Collection<? super File> rootsCollector) {
         boolean res = false;
         for (FileObject root : roots.getRoots()) {
-            res |= Optional.ofNullable(J2SEProjectUtil.getModuleInfo(root)).isPresent();
+            FileObject mInfo = J2SEProjectUtil.getModuleInfo(root);
+            res |= Optional.ofNullable(mInfo).isPresent()
+                    && ClassPath.getClassPath(root, ClassPath.SOURCE).contains(mInfo);
             Optional.ofNullable(FileUtil.toFile(root)).ifPresent(rootsCollector::add);
         }
         return res;
