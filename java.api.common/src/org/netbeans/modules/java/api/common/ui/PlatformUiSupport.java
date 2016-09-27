@@ -790,21 +790,23 @@ public final class PlatformUiSupport {
                 Collections.addAll(platforms, pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null)));
                 JavaPlatform projectPlatform = null;
                 final EditableProperties globalProps = PropertyUtils.getGlobalProperties();
-                final String active = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
-                if (active != null) {
-                    final String activeHomeKey = String.format("platforms.%s.home", active);    //NOI18N
-                    if (eval.getProperty(activeHomeKey) != null && !globalProps.keySet().contains(activeHomeKey)) {
-                        projectPlatform = project != null ?
-                            ProjectPlatform.forProject(
-                                project,
-                                eval,
-                                CommonProjectUtils.J2SE_PLATFORM_TYPE) :
-                            null;
-                        if (projectPlatform != null) {
-                            platforms.add(projectPlatform);
+                if (project != null) {
+                    final String active = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
+                    if (active != null) {
+                        final String activeHomeKey = String.format("platforms.%s.home", active);    //NOI18N
+                        if (eval.getProperty(activeHomeKey) != null && !globalProps.keySet().contains(activeHomeKey)) {
+                            projectPlatform = project != null ?
+                                ProjectPlatform.forProject(
+                                    project,
+                                    eval,
+                                    CommonProjectUtils.J2SE_PLATFORM_TYPE) :
+                                null;
+                            if (projectPlatform != null) {
+                                platforms.add(projectPlatform);
+                            }
                         }
                     }
-                }                                
+                }
                 Set<PlatformKey> orderedNames = new TreeSet<>();
                 boolean activeFound = false;
                 for (JavaPlatform platform : platforms) {
