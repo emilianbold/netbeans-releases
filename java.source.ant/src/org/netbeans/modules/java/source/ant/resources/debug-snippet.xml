@@ -63,6 +63,7 @@ made subject to such option by the copyright holder.
         <condition property="debug-transport" value="${debug.transport}" else="${debug-transport-by-os}">
             <isset property="debug.transport"/>
         </condition>
+        <property name="modulepath" value=""/>
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" />
         <property name="run.jvmargs" value="" />
