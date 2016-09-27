@@ -590,12 +590,6 @@ final class ModuleClassPaths {
                         bootModules,
                         modulesByName
                     });
-                if (ProjectManager.mutex().isWriteAccess()) {
-                    ProjectManager.mutex().postReadRequest(()->{
-                        fire();
-                    });
-                    return selfResResources;
-                }
                 selfRes.set(new Object[]{
                     selfResResources,
                     needToFire});
