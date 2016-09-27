@@ -173,21 +173,23 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
     })
     @SuppressWarnings("fallthrough")
     @org.netbeans.api.annotations.common.SuppressWarnings(value = "SF_SWITCH_FALLTHROUGH")
-    private void updateAppearance (boolean animated) {
+    void updateAppearance (boolean animated) {
         Color inactiveC = UIManager.getColor("textInactiveText");
         if (inactiveC == null) {
             inactiveC = Color.LIGHT_GRAY;
         }
         Color activeC = UIManager.getColor("textText");
         if (activeC == null) {
-            activeC = Color.BLACK;
-        }
+                activeC = Color.BLACK;
+            }
         Color conflictC = getConflictColor(edgeConflictType);
         if (conflictC == null) {
             conflictC = activeC;
         }
 
-        Stroke stroke = origStroke;
+        Stroke s = getDependencyGraphScene().getStroke(edge);     
+        Stroke stroke = s != null ? s : origStroke;
+        
         Color c = activeC;
         switch (state) {
             case REGULAR:
@@ -203,7 +205,7 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
                 c = isConflict ? conflictC : activeC;
                 break;
         }
-
+        
         if (state != DISABLED) {
             StringBuilder sb = new StringBuilder("<html>");
             if (isConflict) {
@@ -245,7 +247,7 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
         setVisible(state != DISABLED && ((DependencyGraphScene)getScene()).isVisible(edge));
 
         setStroke(stroke);
-
+        
         DependencyGraphScene grScene = (DependencyGraphScene)getScene();
         if (animated) {
             grScene.getSceneAnimator().animateForegroundColor(this, c);

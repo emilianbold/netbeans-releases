@@ -126,20 +126,18 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     private String tooltipText;
     private final WidgetAction fixConflictAction;
     private final WidgetAction sceneHoverActionAction; 
-    private final DependencyGraphScene.ScopeProvider<I> scopeProvider;
     
     // for use from FruchtermanReingoldLayout
     public double locX, locY, dispX, dispY; 
     private boolean fixed; 
     
-    NodeWidget(@NonNull DependencyGraphScene scene, GraphNode<I> node, Icon icon, DependencyGraphScene.ScopeProvider<I> scopeProvider, final Action fixConflictAction, final WidgetAction sceneHoverActionAction) {        
+    NodeWidget(@NonNull DependencyGraphScene scene, GraphNode<I> node, final Action fixConflictAction, final WidgetAction sceneHoverActionAction) {        
         super(scene);
         Parameters.notNull("node", node);
         if(fixConflictAction != null) {
             Parameters.notNull("sceneHoverActionAction", sceneHoverActionAction);
         }
         this.node = node;
-        this.scopeProvider = scopeProvider;
         this.fixConflictAction = fixConflictAction != null ? ActionFactory.createSelectAction(new SelectProvider() {
             @Override public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
                 return false;
@@ -159,7 +157,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
         updateTooltip();
-        initContent(scene, node.getImpl(), icon);
+        initContent(scene, node.getImpl(), scene.getIcon(node));
 
         hoverTimer = new Timer(500, this);
         hoverTimer.setRepeats(false);
@@ -265,7 +263,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         return fixed;
     }
     
-    private void updatePaintContent() {
+    void updatePaintContent() {
         if (origForeground == null) {
             origForeground = getForeground();
         }
@@ -392,7 +390,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         if (node.isRoot()) {
             paintBottom(g, bounds, ROOT, Color.WHITE, bounds.height / 2);
         } else {
-            Color scopeC = scopeProvider != null ? scopeProvider.getColor(node.getImpl()) : null;
+            Color scopeC = scene.getColor(node);
             if(scopeC != null) {
                 paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE, bounds.width / 2, bounds.height / 2);
             }

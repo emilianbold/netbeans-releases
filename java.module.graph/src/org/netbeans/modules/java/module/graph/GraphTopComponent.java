@@ -5,10 +5,13 @@
  */
 package org.netbeans.modules.java.module.graph;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -17,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -62,6 +66,9 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private static final String ZOOM_IN_ICON = "org/netbeans/modules/java/module/graph/resources/zoomin.gif";   //NOI18N
     @StaticResource
     private static final String ZOOM_OUT_ICON = "org/netbeans/modules/java/module/graph/resources/zoomout.gif";
+    @StaticResource
+    private static final String PUBLIC_ICON = "org/netbeans/modules/java/module/graph/resources/public.gif";
+    
     private static final RequestProcessor RP = new RequestProcessor(GraphTopComponent.class);
 
     private final RequestProcessor.Task refreshTask = RP.create(this);
@@ -73,6 +80,8 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private EditorToolbar toolbar;
     private DependencyGraphScene<ModuleNode> scene;
 
+    private Collection<? extends DependencyEdge> edges;
+    
     private Timer timer = new Timer(500, new ActionListener() {
         @Override public void actionPerformed(ActionEvent arg0) {
             checkFindValue();
@@ -136,9 +145,11 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             toolbar.addSeparator(space);
             toolbar.add(lblPath);
             toolbar.add(maxPathSpinner);
-            toolbar.addSeparator(space);
+            toolbar.addSeparator();
             toolbar.add(jdkLabel);
             toolbar.add(jdkComboBox);
+            toolbar.addSeparator(space);
+            toolbar.add(transitiveCheckBox);
 //            toolbar.addSeparator(space);
 //            toolbar.add(lblScopes);
 //            toolbar.add(comScopes);
@@ -229,6 +240,7 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         maxPathSpinner = new javax.swing.JSpinner();
         jdkLabel = new javax.swing.JLabel();
         jdkComboBox = new javax.swing.JComboBox<>();
+        transitiveCheckBox = new javax.swing.JCheckBox();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -280,6 +292,7 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
 
         maxPathSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 5, 1));
         maxPathSpinner.setToolTipText(org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.maxPathSpinner.toolTipText")); // NOI18N
+        maxPathSpinner.setMaximumSize(new java.awt.Dimension(60, 32767));
         maxPathSpinner.setRequestFocusEnabled(false);
         maxPathSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -289,14 +302,26 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         jPanel1.add(maxPathSpinner);
 
         org.openide.awt.Mnemonics.setLocalizedText(jdkLabel, org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.jdkLabel.text")); // NOI18N
+        jdkLabel.setToolTipText(org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.jdkLabel.toolTipText")); // NOI18N
         jPanel1.add(jdkLabel);
 
+        jdkComboBox.setMaximumSize(new java.awt.Dimension(300, 32767));
         jdkComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jdkComboBoxItemStateChanged(evt);
             }
         });
         jPanel1.add(jdkComboBox);
+
+        org.openide.awt.Mnemonics.setLocalizedText(transitiveCheckBox, org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.transitiveCheckBox.text")); // NOI18N
+        transitiveCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(GraphTopComponent.class, "GraphTopComponent.transitiveCheckBox.toolTipText")); // NOI18N
+        transitiveCheckBox.setIcon(ImageUtilities.loadImageIcon(PUBLIC_ICON, true));
+        transitiveCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transitiveCheckBoxActionPerformed(evt);
+            }
+        });
+        jPanel1.add(transitiveCheckBox);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -333,6 +358,12 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         }
     }//GEN-LAST:event_jdkComboBoxItemStateChanged
 
+    private void transitiveCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transitiveCheckBoxActionPerformed
+        if (scene != null) {
+            scene.updateVisibility();
+        }     
+    }//GEN-LAST:event_transitiveCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JPanel jPanel1;
@@ -342,6 +373,7 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
     private javax.swing.JLabel lblFind;
     private javax.swing.JLabel lblPath;
     private javax.swing.JSpinner maxPathSpinner;
+    private javax.swing.JCheckBox transitiveCheckBox;
     private javax.swing.JTextField txtFind;
     private javax.swing.JButton zoomIn;
     private javax.swing.JButton zoomOut;
@@ -379,13 +411,18 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         pane.setViewportView(lbl);
     }
 
+    private static final BasicStroke TRANSITIVE_STROKE = new BasicStroke (1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_MITER, new float[] {5, 5}, 0);
+    
     private void displayScene(
             @NonNull final Collection<? extends ModuleNode> nodes,
-            @NonNull final Collection<? extends DependencyEdge> edges) {
+            @NonNull final Collection<? extends DependencyEdge> edges) 
+    {
         
-        DependencyGraphScene.VisibilityProvider<ModuleNode> visibilityProvider = new DependencyGraphScene.VisibilityProvider<ModuleNode>() {
+        this.edges = edges;
+        
+        DependencyGraphScene.PaintingProvider<ModuleNode> paintingProvider = new DependencyGraphScene.PaintingProvider<ModuleNode>() {
             @Override
-            public boolean isNodeVisible(ModuleNode node) {
+            public boolean isVisible(ModuleNode node) {
                 switch((JDKVisibility)jdkComboBox.getSelectedItem()) {
                     case ALL:
                         return true;
@@ -393,11 +430,11 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
                         if(!node.isJdk()) {
                             return true;
                         } else {
-                            Collection<GraphEdge<ModuleNode>> e = scene.findNodeEdges(scene.getGraphNodeRepresentant(node), true, true);                            
-                            return e.stream().anyMatch((GraphEdge<ModuleNode> t) -> !t.getSource().isJdk());
+                            Collection<GraphEdge<ModuleNode>> edges = scene.findNodeEdges(scene.getGraphNodeRepresentant(node), true, true);
+                            return edges.stream().anyMatch(e -> !e.getSource().isJdk() && !getEdge(e.getSource(), e.getTarget()).isTrasitive());                            
                         }
                     case NONE:
-                        return !node.isJdk();                        
+                        return !node.isJdk();
                     default:
                         assert false;
                         return true;
@@ -405,22 +442,50 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
             }
 
             @Override
-            public boolean isEdgeVisible(ModuleNode source, ModuleNode target) {
+            public boolean isVisible(ModuleNode source, ModuleNode target) {
+                DependencyEdge edge = getEdge(source, target);
+                assert edge != null;
+                if(edge.isTrasitive() && !transitiveCheckBox.isSelected()) {
+                    return false;
+                }
                 switch((JDKVisibility)jdkComboBox.getSelectedItem()) {
                     case ALL:
                         return true;
                     case DIRECT:
-                        return !source.isJdk();
                     case NONE:
-                        return !(source.isJdk() || target.isJdk());                        
+                        return isVisible(source) && isVisible(target);
                     default:
                         assert false;
                         return true;
                 }
             }
-        };
-                
-        scene = new DependencyGraphScene<>(null, null, GraphTopComponent.this::getSelectedDepth, null, null, visibilityProvider);
+            
+            @Override
+            public Stroke getStroke(ModuleNode source, ModuleNode target) {
+                if(!transitiveCheckBox.isSelected()) {
+                    return null;
+                }
+                DependencyEdge edge = getEdge(source, target);
+                assert edge != null;
+                Stroke s = null;
+                if(edge.isTrasitive()) { 
+                    s = TRANSITIVE_STROKE;
+                }
+                return s;
+            }            
+
+            @Override
+            public Icon getIcon(ModuleNode node) {
+                return null;
+            }
+
+            @Override
+            public Color getColor(ModuleNode node) {
+                return null;
+            }
+        };                          
+        
+        scene = new DependencyGraphScene<>(null, GraphTopComponent.this::getSelectedDepth, null, paintingProvider);
         nodes.stream().forEach((n)-> {
             scene.addGraphNodeImpl(n);
         });
@@ -447,6 +512,16 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         enableControls(true);
     }
 
+    private DependencyEdge getEdge(ModuleNode source, ModuleNode target) {
+        // XXX suboptimal, though still extremely cheap                
+        for (DependencyEdge edge : edges) {
+            if(edge.getSource().equals(source) && edge.getTarget().equals(target)) {
+                return edge;
+            }
+        }
+        return null;
+    }
+                
     private static class EditorToolbar extends org.openide.awt.Toolbar {
         public EditorToolbar() {
             Border b = UIManager.getBorder("Nb.Editor.Toolbar.border"); //NOI18N

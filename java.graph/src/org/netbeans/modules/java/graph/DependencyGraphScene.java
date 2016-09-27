@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -95,20 +96,52 @@ import org.openide.util.NbBundle.Messages;
  * @param <I> 
  */
 public class DependencyGraphScene<I extends GraphNodeImplementation> extends GraphScene<GraphNode<I>, GraphEdge<I>> {
-
-    public interface IconProvider<I extends GraphNodeImplementation> {
-        Icon getIcon(I impl);
-    }
     
-    public interface ScopeProvider<I extends GraphNodeImplementation> {        
-        Color getColor(I impl);
-    }
     
-    public interface VisibilityProvider<I extends GraphNodeImplementation> {        
-        boolean isNodeVisible(I node);
-        boolean isEdgeVisible(I source, I target);
+    public interface PaintingProvider<I extends GraphNodeImplementation> {        
+        /**
+         * Determines an icon for the given node.
+         * 
+         * @param node
+         * @return the icon or <code>null</code> if none should be used
+         */
+        Icon getIcon(I node);
+        
+        /**
+         * Determines if the given node should be visible.
+         * 
+         * @param node
+         * @return <code>true</code> if the node should be visible, otherwise <code>false</code>
+         */
+        boolean isVisible(I node);
+        
+        /**
+         * Determines if the given edge should be visible.
+         * 
+         * @param source
+         * @param target
+         * @return <code>true</code> if the edge should be visible, otherwise <code>false</code>
+         */
+        boolean isVisible(I source, I target);
+        
+        /**
+         * Determines a color for the given node.
+         * 
+         * @param node
+         * @return the color or <code>null</code> if default should be used
+         */
+        Color getColor(I node);
+        
+        /**
+         * Determines a stroke for the given edge.
+         * 
+         * @param source
+         * @param target
+         * @return the stroke or <code>null</code> if default should be used
+         */
+        Stroke getStroke(I source, I target);
     }
-    
+        
     public interface HighlightDepthProvider {
         int getDepth();
     }
@@ -132,11 +165,9 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     }
     
     private final VersionProvider versionProvider;
-    private final IconProvider iconProvider;
     private final ActionsProvider nodeActionProvider;
-    private final ScopeProvider scopeProvider;
     private final HighlightDepthProvider highlightProvider;
-    private final VisibilityProvider<I> visibilityProvider;
+    private final PaintingProvider<I> paintingProvider;
     
     private LayerWidget mainLayer;
     private final LayerWidget connectionLayer;
@@ -165,16 +196,14 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     private HighlightVisitor highlightV;
     
     public DependencyGraphScene(JScrollPane pane) {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null);
     }
     
-    public DependencyGraphScene(IconProvider<I> iconProvider, ActionsProvider<I> nodeActionProvider, HighlightDepthProvider highlightProvider, VersionProvider<I> versionProvider, ScopeProvider<I> scopeProvider, VisibilityProvider<I> visibilityProvider) {                
-        this.iconProvider = iconProvider;        
+    public DependencyGraphScene(ActionsProvider<I> nodeActionProvider, HighlightDepthProvider highlightProvider, VersionProvider<I> versionProvider, PaintingProvider<I> paintingProvider) {                
         this.nodeActionProvider = nodeActionProvider;
         this.highlightProvider = highlightProvider;
         this.versionProvider = versionProvider;
-        this.scopeProvider = scopeProvider;
-        this.visibilityProvider = visibilityProvider;
+        this.paintingProvider = paintingProvider;
         
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
@@ -215,12 +244,24 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     }
 
     boolean isVisible(GraphEdge<I> e) {
-        return visibilityProvider == null || visibilityProvider.isEdgeVisible(e.getSource(), e.getTarget());
+        return paintingProvider == null || paintingProvider.isVisible(e.getSource(), e.getTarget());
     }   
     
     boolean isVisible(GraphNode<I> n) {
-        return visibilityProvider == null || visibilityProvider.isNodeVisible(n.getImpl());
-    }   
+        return paintingProvider == null || paintingProvider.isVisible(n.getImpl());
+    }
+    
+    Stroke getStroke(GraphEdge<I> e) {
+        return paintingProvider != null ? paintingProvider.getStroke(e.getSource(), e.getTarget()) : null;
+    }
+    
+    Color getColor(GraphNode<I> n) {
+        return paintingProvider != null ? paintingProvider.getColor(n.getImpl()) : null;
+    }
+    
+    Icon getIcon(GraphNode<I> n) {
+        return paintingProvider != null ? paintingProvider.getIcon(n.getImpl()) : null;
+    }
     
     public void addGraphNodeImpl(I d) {
         super.addNode(new GraphNode<>(d));
@@ -381,9 +422,8 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             maxDepth = node.getPrimaryLevel();
         }
         
-        Action fixAction = nodeActionProvider != null ? nodeActionProvider.createFixVersionConflictAction(this, rootNode, node) : null;
-        Icon icon = iconProvider != null ? iconProvider.getIcon(node.getImpl()) : null;
-        NodeWidget root = new NodeWidget(this, node, icon, scopeProvider, fixAction, hoverAction);
+        Action fixAction = nodeActionProvider != null ? nodeActionProvider.createFixVersionConflictAction(this, rootNode, node) : null;        
+        NodeWidget root = new NodeWidget(this, node, fixAction, hoverAction);
         mainLayer.addChild(root);
         root.setOpaque(true);
         
@@ -417,12 +457,8 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     }    
     
     public void updateVisibility() {
-        getEdges().stream().forEach((edge) -> findWidget(edge).setVisible(visibilityProvider == null || visibilityProvider.isEdgeVisible(edge.getSource(), edge.getTarget())));
-        getNodes().stream().forEach((node) -> findWidget(node).setVisible(visibilityProvider == null || visibilityProvider.isNodeVisible(node.getImpl())));
-        validate();
-        repaint();
-        revalidate();
-        repaint();
+        getEdges().stream().forEach(edge -> ((EdgeWidget)findWidget(edge)).updateAppearance(true));
+        getNodes().stream().forEach(node -> ((NodeWidget)findWidget(node)).updatePaintContent());
     }
     
     public void calculatePrimaryPathsAndLevels() {

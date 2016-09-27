@@ -44,10 +44,12 @@ package org.netbeans.modules.maven.graph;
 
 import org.netbeans.modules.java.graph.DependencyGraphScene;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -599,13 +601,39 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                         }
                     };
                     
+                    DependencyGraphScene.PaintingProvider<MavenDependencyNode> pp = new DependencyGraphScene.PaintingProvider<MavenDependencyNode>() {
+                        @Override
+                        public Icon getIcon(MavenDependencyNode node) {
+                            return getIcon(node);
+                        }
+
+                        @Override
+                        public boolean isVisible(MavenDependencyNode node) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isVisible(MavenDependencyNode source, MavenDependencyNode target) {
+                            return true;
+                        }
+
+                        @Override
+                        public Color getColor(MavenDependencyNode node) {
+                            return node.getScopeColor();
+                        }
+
+                        @Override
+                        public Stroke getStroke(MavenDependencyNode source, MavenDependencyNode target) {
+                            return null;
+                        }
+                        
+                    };
+                    
                     final DependencyGraphScene<MavenDependencyNode> scene2 = new DependencyGraphScene<>(
-                            (MavenDependencyNode n) -> getIcon(n), 
                             new MavenActionsProvider(DependencyGraphTopComponent.this, nbProj, model), 
                             DependencyGraphTopComponent.this::getSelectedDepth, 
                             versionProvider, 
-                            MavenDependencyNode::getScopeColor, 
-                            null);
+                            pp);
                     
                     GraphConstructor constr = new GraphConstructor(scene2, prj);
                     constr.accept(root);
