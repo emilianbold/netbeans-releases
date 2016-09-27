@@ -790,7 +790,7 @@ public final class PlatformUiSupport {
                 Collections.addAll(platforms, pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null)));
                 JavaPlatform projectPlatform = null;
                 final EditableProperties globalProps = PropertyUtils.getGlobalProperties();
-                final String active = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
+                final String active = eval != null ? eval.getProperty(ProjectProperties.PLATFORM_ACTIVE) : null;
                 if (active != null) {
                     final String activeHomeKey = String.format("platforms.%s.home", active);    //NOI18N
                     if (eval.getProperty(activeHomeKey) != null && !globalProps.keySet().contains(activeHomeKey)) {
