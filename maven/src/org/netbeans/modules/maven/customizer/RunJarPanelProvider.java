@@ -56,9 +56,7 @@ import org.openide.util.NbBundle;
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType="org-netbeans-modules-maven", 
-        position=300,
-        category = ModelHandle2.PANEL_RUN,
-        categoryLabel = "#TIT_Run"
+        position=300
 )
 public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
