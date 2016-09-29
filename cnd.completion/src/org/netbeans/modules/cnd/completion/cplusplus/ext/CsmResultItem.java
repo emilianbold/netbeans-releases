@@ -470,6 +470,9 @@ public abstract class CsmResultItem implements CompletionItem {
         CsmInclude lastInclude = null;
         boolean isLastIncludeTypeMatch = false;
         for (CsmInclude inc : currentFile.getIncludes()) {
+            if (inc.getStartOffset() < 0) {
+                continue;
+            }
             if (inc.getEndOffset() <= substOffset) {
                 if (inc.isSystem() == isSystem) {
                     lastInclude = inc;
