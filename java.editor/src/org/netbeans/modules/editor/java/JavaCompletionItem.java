@@ -2480,7 +2480,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(';');
             } else if (isAbstract) {
                 sb.append(getIndent(c, true, true));                        
-                sb.append("{\n}"); //NOI18N
+                sb.append("{\n"); //NOI18N
+                sb.append(getIndent(c));
+                sb.append("}"); //NOI18N
             }
             return sb;
         }
@@ -2648,7 +2650,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (isAbstract) {
                 sb.append(getIndent(c, true, true));                        
-                sb.append("{\n}"); //NOI18N
+                sb.append("{\n"); //NOI18N
+                sb.append(getIndent(c));
+                sb.append("}"); //NOI18N
             }
             return sb;
         }

@@ -3319,7 +3319,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         ctorSeen[0] = true;
                         return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
                                 && isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types)
-                                && (env.isAccessible(scope, e, t, isSuperCall) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE)))
+                                && (env.isAccessible(scope, e, t, isSuperCall || insideNew) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE)))
                                 && isStatic;
                 }
                 return false;
