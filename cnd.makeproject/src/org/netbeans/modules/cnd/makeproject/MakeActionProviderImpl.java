@@ -828,7 +828,7 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
                 String unixWorkingDir = workingDir.replace('\\', '/');
                 FileObject[] children = root.getChildren();
                 for (FileObject ch : root.getChildren()) {
-                    String prefix = ch.getPath() + "/";
+                    String prefix = ch.getPath() + "/"; //NOI18N
                     if (unixWorkingDir.startsWith(prefix)) {
                         root = ch;
                         break;
