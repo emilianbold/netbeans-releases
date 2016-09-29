@@ -823,8 +823,20 @@ public final class MakeActionProviderImpl implements MakeActionProvider {
         try {
             FileSystem fs = FileSystemProvider.getFileSystem(conf.getFileSystemHost());
             FileObject root = fs.getRoot();
+            if (workingDir.startsWith("\\\\")) { //NOI18N
+                // fileUtil cannot create folder on network path. See IZ #268116
+                String unixWorkingDir = workingDir.replace('\\', '/');
+                FileObject[] children = root.getChildren();
+                for (FileObject ch : root.getChildren()) {
+                    String prefix = ch.getPath() + "/";
+                    if (unixWorkingDir.startsWith(prefix)) {
+                        root = ch;
+                        break;
+                    }
+                }
+            }
             String toRelativePath = CndPathUtilities.toRelativePath(root, workingDir);
-            FileUtil.createFolder(fs.getRoot(), toRelativePath);
+            FileUtil.createFolder(root, toRelativePath);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
