@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Templates">
         <folder name="J2SEModule">
+            <attr name="position" intvalue="999"/>
             <attr name="simple" boolvalue="false"/> <!-- do not show this in regular temlate wizard -->
         </folder>
     </folder>
@@ -159,10 +160,10 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="ProjectXMLCatalog">
-        <folder name="j2se-project">
+        <folder name="j2se-modular-project">
             <file name="1.xsd" url="../../resources/j2se-modular-project.xsd"/>
         </folder>
-        <folder name="j2se-project-private">
+        <folder name="j2se-modular-project-private">
             <file name="1.xsd" url="../../resources/j2se-modular-project-private.xsd"/>
         </folder>
     </folder>
