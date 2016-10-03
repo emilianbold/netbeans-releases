@@ -243,6 +243,7 @@ public class FileReferenceTest extends CslTestBase {
         assertEquals(one, resolved.source());
         assertEquals(two, resolved.target());
         assertEquals(FileReferenceType.RELATIVE, resolved.type());
+        assertNotNull(WebUtils.resolveToReference(one, "folder/second.txt#article"));
     }
     
     public void testResolveEmptyLink() {

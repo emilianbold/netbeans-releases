@@ -105,10 +105,15 @@ public class WebUtils {
 
         //possibly remove the query part of the link
         int qmIndex = importedFileName.indexOf("?"); //NOI18N
-        if(qmIndex >= 0) {
+        if (qmIndex >= 0) {
             importedFileName = importedFileName.substring(0, qmIndex);
         }
-
+        //possibly remove the fragment part of the link
+        int fragmentIndex  = importedFileName.indexOf("#");
+        if (fragmentIndex >= 0) {
+            importedFileName = importedFileName.substring(0, fragmentIndex);
+        }
+        
         try {
             URI u = new URI(importedFileName);
             File file = null;
