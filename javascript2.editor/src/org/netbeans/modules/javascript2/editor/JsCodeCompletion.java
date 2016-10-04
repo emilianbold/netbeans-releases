@@ -177,6 +177,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 default:
                     break;
             }
+            if (cancelSupport.isCancelled()) {
+                return CodeCompletionResult.NONE;
+            }
             if ((context == CompletionContext.EXPRESSION || context == CompletionContext.OBJECT_MEMBERS || context == CompletionContext.OBJECT_PROPERTY) && !request.prefix.isEmpty()) {
                 Collection<? extends IndexResult> indexResults = Index.get(fileObject).query(Index.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, Index.TERMS_BASIC_INFO);
                 for (IndexResult indexResult : indexResults) {
@@ -222,7 +225,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                         }
                     }
                     completeKeywords(request, resultList);
+                    if (cancelSupport.isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     addGlobalObjectsFromIndex(request, addedProperties);
+                    if (cancelSupport.isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
@@ -231,7 +240,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
+                    if (cancelSupport.isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     completeObjectProperty(request, added);
+                    if (cancelSupport.isCancelled()) {
+                        return CodeCompletionResult.NONE;
+                    }
                     completeInWith(request, added);
                     added.remove(ModelUtils.PROTOTYPE);
                     break;
