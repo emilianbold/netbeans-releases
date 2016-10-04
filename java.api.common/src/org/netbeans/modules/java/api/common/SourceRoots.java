@@ -154,18 +154,19 @@ public final class SourceRoots extends Roots {
                 JavaProjectConstants.SOURCES_TYPE_JAVA, isTest, newRootNameTemplate);
     }
 
-    public static SourceRoots createModule(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
-            String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
-        Parameters.notNull("helper", helper); // NOI18N
-        Parameters.notNull("evaluator", evaluator); // NOI18N
-        Parameters.notNull("refHelper", refHelper); // NOI18N
-        Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); // NOI18N
-        Parameters.notNull("elementName", elementName); // NOI18N
-        Parameters.notNull("newRootNameTemplate", newRootNameTemplate); // NOI18N
-
-        return new SourceRoots(helper, evaluator, refHelper, projectConfigurationNamespace, elementName,
-                JavaProjectConstants.SOURCES_TYPE_MODULES, isTest, newRootNameTemplate);
-    }
+//tzezula: commented for merge into default
+//    public static SourceRoots createModule(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
+//            String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
+//        Parameters.notNull("helper", helper); // NOI18N
+//        Parameters.notNull("evaluator", evaluator); // NOI18N
+//        Parameters.notNull("refHelper", refHelper); // NOI18N
+//        Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); // NOI18N
+//        Parameters.notNull("elementName", elementName); // NOI18N
+//        Parameters.notNull("newRootNameTemplate", newRootNameTemplate); // NOI18N
+//
+//        return new SourceRoots(helper, evaluator, refHelper, projectConfigurationNamespace, elementName,
+//                JavaProjectConstants.SOURCES_TYPE_MODULES, isTest, newRootNameTemplate);
+//    }
 
     private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
             String projectConfigurationNamespace, String elementName, String type, boolean isTest, String newRootNameTemplate) {
@@ -565,7 +566,9 @@ public final class SourceRoots extends Roots {
     }
     
     private boolean isModule() {
-        return JavaProjectConstants.SOURCES_TYPE_MODULES.equals(RootsAccessor.getInstance().getType(this));
+        return false;
+//tzezula: commented for merge into default
+//        return JavaProjectConstants.SOURCES_TYPE_MODULES.equals(RootsAccessor.getInstance().getType(this));
     }
 
     private void resetCache(boolean isXMLChange, String propName) {
