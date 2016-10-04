@@ -112,8 +112,8 @@ is the proper place.
         <change id="CompilerOptionsQueryMerger">
             <api name="java_project"/>
             <summary>Added a <code>LookupMerger</code> for <code>CompilerOptionsQueryImplementation</code>s</summary>
-            <version major="1" minor="67"/>
-            <date day="22" month="3" year="2016"/>
+            <version major="1" minor="68"/>
+            <date day="4" month="10" year="2016"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>

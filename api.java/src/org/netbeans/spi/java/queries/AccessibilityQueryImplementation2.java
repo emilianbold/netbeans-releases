@@ -63,7 +63,7 @@ import org.openide.filesystems.FileObject;
  * @see org.netbeans.api.queries.FileOwnerQuery
  * @see org.netbeans.api.project.Project#getLookup
  * @author Tomas Zezula
- * @since 1.62
+ * @since 1.64
  */
 public interface AccessibilityQueryImplementation2 {
 

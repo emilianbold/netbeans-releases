@@ -127,7 +127,7 @@ public class AccessibilityQuery {
      *        {@link org.netbeans.api.java.classpath.ClassPath#SOURCE} root)
      * @return the {@link Result} object encapsulating the accessibility of the Java package.
      * Results created for accessibility provided by the {@link AccessibilityQueryImplementation} do not support listening.
-     * @since 1.62
+     * @since 1.64
      */
     @NonNull
     public static Result isPubliclyAccessible2(@NonNull final FileObject pkg) {
@@ -146,7 +146,7 @@ public class AccessibilityQuery {
 
     /**
      * The Java package accessibility.
-     * @since 1.62
+     * @since 1.64
      */
     public static enum Accessibility {
         /**
@@ -192,7 +192,7 @@ public class AccessibilityQuery {
     /**
      * Result of finding accessibility of a Java package, encapsulating the answer as well as the
      * ability to listen to it.
-     * @since 1.62
+     * @since 1.64
      */
     public static final class Result {
         private final AccessibilityQueryImplementation2.Result delegate;

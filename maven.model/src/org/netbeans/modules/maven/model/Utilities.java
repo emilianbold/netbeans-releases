@@ -419,6 +419,12 @@ public class Utilities {
         }
     }
 
+    /**
+     * Opens pom at given offset.
+     * @param model the model to open
+     * @param offset position to open at
+     * @since 1.44
+     */
     public static  void openAtPosition(final POMModel model, final int offset) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

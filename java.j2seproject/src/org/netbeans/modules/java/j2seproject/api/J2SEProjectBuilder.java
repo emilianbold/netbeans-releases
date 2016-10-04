@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -72,7 +71,6 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -392,6 +390,7 @@ public class J2SEProjectBuilder {
      * Sets default module system properties if they are not set.
      * @param ep the {@link EditableProperties} to write the properties into.
      * @param boolean isModular true if the project is JDK 9 modular project
+     * @since 1.85
      */
     public static void createDefaultModuleProperties(
             @NonNull final EditableProperties ep,

@@ -67,7 +67,7 @@ public class ElementIcons {
      * Returns an icon for the given {@link ModuleElement.DirectiveKind}.
      * @param kind the {@link ModuleElement.DirectiveKind} to return an icon for.
      * @return the icon
-     * @since 1.43
+     * @since 1.45
      */
     public static Icon getModuleDirectiveIcon(@NonNull final ModuleElement.DirectiveKind kind) {
         Parameters.notNull("kind", kind);   //NOI18N

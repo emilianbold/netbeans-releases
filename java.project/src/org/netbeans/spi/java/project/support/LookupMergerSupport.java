@@ -130,7 +130,7 @@ public final class LookupMergerSupport {
      * It takes all {@link CompilerOptionsQueryImplementation} implementations
      * in the provided lookup and merges their results into a single one.
      * @return the {@link CompilerOptionsQueryImplementation} merger
-     * @since 1.67
+     * @since 1.68
      */
     @NonNull
     public static LookupMerger<CompilerOptionsQueryImplementation> createCompilerOptionsQueryMerger() {

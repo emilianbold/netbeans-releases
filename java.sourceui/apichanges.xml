@@ -108,7 +108,31 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="ElementOpenForTreePathHandle">
+            <api name="general"/>
+            <summary>Adding ElementOpen.open(FileObject toSearch, TreePathHandle toOpen)</summary>
+            <version major="1" minor="45"/>
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                 Adding ElementOpen.open(FileObject toSearch, TreePathHandle toOpen) method.
+            </description>
+        </change>
+        <change id="ModuleInfoDirectivesIcons">
+            <api name="general"/>
+            <summary>Added a method to return an icon for module info directive</summary>
+            <version major="1" minor="45"/>
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added the<code>getModuleDirectiveIcon</code> method into the <code>ElementIcons</code>
+                to return an icon for a module info directive.
+            </description>
+            <class package="org.netbeans.api.java.source.ui" name="ElementIcons"/>
+        </change>
         <change id="TypeElementFinder-find">
             <api name="general"/>
             <summary>Added overload method for TypeElementFinder.find which allows to specify the prefilled initial text</summary>

@@ -110,8 +110,8 @@ is the proper place.
         <change id="classfile-isModule">
             <api name="general"/>
             <summary>Added isModule method into ClassFile</summary>
-            <version major="1" minor="50"/>
-            <date day="31" month="8" year="2016"/>
+            <version major="1" minor="51"/>
+            <date day="4" month="10" year="2016"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
@@ -124,8 +124,8 @@ is the proper place.
         <change id="Module">
             <api name="general"/>
             <summary>Support for Java 9 Module attribute</summary>
-            <version major="1" minor="47"/>
-            <date day="16" month="6" year="2015"/>
+            <version major="1" minor="51"/>
+            <date day="4" month="10" year="2016"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
