@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -148,7 +149,8 @@ public class NextErrorAction extends AbstractAction implements PropertyChangeLis
             int lastUnusedEndOffset = -1;
 
             while (s.moveNext()) {
-                if (s.getAttributes().containsAttribute("unused-browseable", Boolean.TRUE)) {
+                AttributeSet attrs = s.getAttributes();
+                if (attrs != null && attrs.containsAttribute("unused-browseable", Boolean.TRUE)) {
                     
                     if (lastUnusedEndOffset != s.getStartOffset() && s.getStartOffset() >= offset) {
                         return s.getStartOffset();

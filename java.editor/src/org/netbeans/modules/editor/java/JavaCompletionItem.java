@@ -2415,6 +2415,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private boolean isAbstract;
+        private boolean isProtected;
         private boolean insertName;
         private String sortText;
         private String leftText;
@@ -2437,6 +2438,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             this.isAbstract = !insertName && elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
+            Scope s = info.getTreeUtilities().scopeFor(substitutionOffset);
+            this.isProtected = elem.getModifiers().contains(Modifier.PROTECTED) && !info.getTrees().isAccessible(s, elem, (DeclaredType)elem.getEnclosingElement().asType());
         }
 
         @Override
@@ -2541,9 +2544,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
-            } else if (isAbstract) {
+            } else if (isAbstract || isProtected) {
                 sb.append(getIndent(c, true, true));                        
-                sb.append("{\n}"); //NOI18N
+                sb.append("{\n"); //NOI18N
+                sb.append(getIndent(c));
+                sb.append("}"); //NOI18N
             }
             return sb;
         }
@@ -2711,7 +2716,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             if (isAbstract) {
                 sb.append(getIndent(c, true, true));                        
-                sb.append("{\n}"); //NOI18N
+                sb.append("{\n"); //NOI18N
+                sb.append(getIndent(c));
+                sb.append("}"); //NOI18N
             }
             return sb;
         }

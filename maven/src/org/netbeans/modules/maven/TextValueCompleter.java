@@ -355,6 +355,10 @@ public class TextValueCompleter implements DocumentListener {
             super(DEFAULT_DELAY, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if(!field.isShowing()) {
+                        // became closed in the meantime
+                        return;
+                    }
                     buildPopup();
                     showPopup();
                 }
