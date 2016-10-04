@@ -1217,6 +1217,13 @@ public class SourceUtils {
         return refs;
     }
     
+    /**
+     * Returns names of all modules within given scope.
+     * @param info the CompilationInfo used to resolve modules
+     * @param scope to search in {@see SearchScope}
+     * @return set of module names
+     * @since 2.23
+     */
     public static Set<String> getModuleNames(CompilationInfo info, final @NonNull Set<? extends ClassIndex.SearchScopeType> scope) {
         Set<String> ret = new HashSet<>();
         JavaFileManager jfm = info.impl.getJavacTask().getContext().get(JavaFileManager.class);
@@ -1249,7 +1256,7 @@ public class SourceUtils {
      * Returns the name of the module.
      * @param rootUrl the binary root
      * @return the module name or null when no or invalid module
-     * @since 2.9.0
+     * @since 2.23
      */
     @CheckForNull
     public static String getModuleName(@NonNull final URL rootUrl) {
@@ -1261,7 +1268,7 @@ public class SourceUtils {
      * @param rootUrl the binary root
      * @param canUseSources
      * @return the module name or null when no or invalid module
-     * @since 2.9.0
+     * @since 2.23
      */
     @CheckForNull
     public static String getModuleName(

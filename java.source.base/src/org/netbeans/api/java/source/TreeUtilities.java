@@ -161,13 +161,15 @@ public final class TreeUtilities {
     
     /**
      * Checks wheteher given compilation unit represents a package-info.
-     */
+     * @since 2.23
+    */
     public boolean isPackageInfo(CompilationUnitTree tree) {
         return TreeInfo.isPackageInfo((JCTree.JCCompilationUnit)tree);
     }
     
     /**
      * Checks wheteher given compilation unit represents a module-info.
+     * @since 2.23
      */
     public boolean isModuleInfo(CompilationUnitTree tree) {
         return TreeInfo.isModuleInfo((JCTree.JCCompilationUnit)tree);

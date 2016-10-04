@@ -337,7 +337,7 @@ public class CompletionTestBase extends NbTestCase {
         return fileName.endsWith(".jar") || fileName.endsWith(".zip");    //NOI18N
     }
     
-    private static class CIFactory implements JavaCompletionTask.ItemFactory<CI> {
+    private static class CIFactory implements JavaCompletionTask.ModuleItemFactory<CI> {
 
         private static final int SMART_TYPE = 1000;
         @Override

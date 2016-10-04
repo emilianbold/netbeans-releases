@@ -203,7 +203,7 @@ public class ClassPathSupport {
      * Creates a {@link ClassPath} switching among several {@link ClassPath} instances.
      * @param selector  the active {@link ClassPath} provider
      * @return a newly created {@link ClassPath} instance
-     * @since 1.53
+     * @since 1.54
      */
     @NonNull
     public static ClassPath createMultiplexClassPath(@NonNull final Selector selector) {
@@ -212,7 +212,7 @@ public class ClassPathSupport {
 
     /**
      * The active {@link ClassPath} provider for multiplexing {@link ClassPath}.
-     * @since 1.53
+     * @since 1.54
      */
     public static interface Selector {
         /**

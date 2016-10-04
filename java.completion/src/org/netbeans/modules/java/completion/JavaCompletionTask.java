@@ -87,8 +87,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
         T createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType);
 
-        T createModuleItem(String moduleName, int substitutionOffset);
-
         T createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement);
 
         T createTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, ReferencesCount referencesCount, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImportEnclosingType);
@@ -139,6 +137,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
     
     public static interface LambdaItemFactory<T> extends ItemFactory<T> {
         T createLambdaItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon);
+    }
+    
+    public static interface ModuleItemFactory<T> extends ItemFactory<T> {
+        T createModuleItem(String moduleName, int substitutionOffset);
     }
 
     public static enum Options {
@@ -3643,8 +3645,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
         srcOnly = false;
         String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : fqnPrefix;
         for (String name : SourceUtils.getModuleNames(env.getController(), srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class))) {
-            if (startsWith(env, name, prefix)) {
-                results.add(itemFactory.createModuleItem(name, anchorOffset));
+            if (startsWith(env, name, prefix) && itemFactory instanceof ModuleItemFactory) {
+                results.add(((ModuleItemFactory<T>)itemFactory).createModuleItem(name, anchorOffset));
             }
         }
     }

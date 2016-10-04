@@ -79,7 +79,7 @@ public final class TypesEvent extends EventObject {
     /**
      * Returns an {@link URL} of the affected root.
      * @return the affected root
-     * @since 2.17
+     * @since 2.23
      */
     @NonNull
     public URL getRoot() {
@@ -98,7 +98,7 @@ public final class TypesEvent extends EventObject {
     /**
      * Returns the affected module in case of module-info change.
      * @return a {@link ModuleElement} handles
-     * @since 2.17
+     * @since 2.23
      */
     @CheckForNull
     public ElementHandle<ModuleElement> getModule() {

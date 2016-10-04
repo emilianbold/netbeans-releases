@@ -565,7 +565,7 @@ public final class ClassIndex {
      * @return set of all matched modules
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
-     * @since 2.19
+     * @since 2.23
      */
     @NullUnknown
     public Set<ElementHandle<ModuleElement>> getDeclaredModules (

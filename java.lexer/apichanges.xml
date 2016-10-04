@@ -107,6 +107,18 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="Modules">
+             <api name="general"/>
+             <summary>Added tokens used in module-info.java files</summary>
+             <version major="1" minor="34"/>
+             <date day="4" month="10" year="2016"/>
+             <author login="dbalek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added JavaTokenId.EXPORTS, JavaTokenId.MODULE, JavaTokenId.PROVIDES, JavaTokenId.REQUIRES, JavaTokenId.TO, JavaTokenId.USES, JavaTokenId.WITH as keywords
+             </description>
+             <class package="org.netbeans.api.java.lexer" name="JavaTokenId"/>
+        </change>
         <change id="Underscore">
              <api name="general"/>
              <summary>Added Underscore token</summary>

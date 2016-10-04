@@ -87,6 +87,7 @@ public enum JavaTokenId implements TokenId {
     DOUBLE("double", "keyword"),
     ELSE("else", "keyword-directive"),
     ENUM("enum", "keyword"),
+    /**@since 1.34*/
     EXPORTS("exports", "keyword"),
     EXTENDS("extends", "keyword"),
     FINAL("final", "keyword"),
@@ -101,14 +102,17 @@ public enum JavaTokenId implements TokenId {
     INT("int", "keyword"),
     INTERFACE("interface", "keyword"),
     LONG("long", "keyword"),
+    /**@since 1.34*/
     MODULE("module", "keyword"),
     NATIVE("native", "keyword"),
     NEW("new", "keyword"),
     PACKAGE("package", "keyword"),
     PRIVATE("private", "keyword"),
     PROTECTED("protected", "keyword"),
+    /**@since 1.34*/
     PROVIDES("provides", "keyword"),
     PUBLIC("public", "keyword"),
+    /**@since 1.34*/
     REQUIRES("requires", "keyword"),
     RETURN("return", "keyword-directive"),
     SHORT("short", "keyword"),
@@ -120,15 +124,18 @@ public enum JavaTokenId implements TokenId {
     THIS("this", "keyword"),
     THROW("throw", "keyword-directive"),
     THROWS("throws", "keyword"),
+    /**@since 1.34*/
     TO("to", "keyword"),
     TRANSIENT("transient", "keyword"),
     TRY("try", "keyword-directive"),
     /**@since 1.30*/
     UNDERSCORE("_", "keyword"),
+    /**@since 1.34*/
     USES("uses", "keyword"),
     VOID("void", "keyword"),
     VOLATILE("volatile", "keyword"),
     WHILE("while", "keyword-directive"),
+    /**@since 1.34*/
     WITH("while", "keyword"),
 
     INT_LITERAL(null, "number"),

@@ -316,7 +316,7 @@ public final class ClasspathInfo {
 
     /**
      * Builder for {@link ClasspathInfo}.
-     * @since 2.14
+     * @since 2.23
      */
     public static final class Builder {
         private final ClassPath bootPath;

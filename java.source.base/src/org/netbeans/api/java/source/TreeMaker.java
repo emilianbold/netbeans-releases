@@ -584,7 +584,7 @@ public final class TreeMaker {
      * @param qualId qualified name of the exported package.
      * @param moduleNames names of the modules the package is exported to.
      * @see com.sun.source.tree.ExportsTree
-     * @since 2.6
+     * @since 2.23
      */
     public ExportsTree Exports(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
         return delegate.Exports(qualId, moduleNames);
@@ -843,7 +843,7 @@ public final class TreeMaker {
      * @param qualid module name
      * @param directives a list of module directives, or an empty list.
      * @see com.sun.source.tree.ModuleTree
-     * @since 2.6
+     * @since 2.23
      */
     public ModuleTree Module(ExpressionTree qualid, List<? extends DirectiveTree> directives) {
         return delegate.Module(qualid, directives);
@@ -967,7 +967,7 @@ public final class TreeMaker {
      * @param serviceName the name of the provided service
      * @param implName the qualified name of the implementation class
      * @see com.sun.source.tree.ProvidesTree
-     * @since 2.6
+     * @since 2.23
      */
     public ProvidesTree Provides(ExpressionTree serviceName, ExpressionTree implName) {
         return delegate.Provides(serviceName, implName);
@@ -979,7 +979,7 @@ public final class TreeMaker {
      * @param isPublic 
      * @param qualId the qualified name of the required module
      * @see com.sun.source.tree.RequiresTree
-     * @since 2.6
+     * @since 2.23
      */
     public RequiresTree Requires(boolean isPublic, ExpressionTree qualId) {
         return delegate.Requires(isPublic, qualId);
@@ -1162,7 +1162,7 @@ public final class TreeMaker {
      *
      * @param qualId qualified service name.
      * @see com.sun.source.tree.UsesTree
-     * @since 2.6
+     * @since 2.23
      */
     public UsesTree Uses(ExpressionTree qualId) {
         return delegate.Uses(qualId);
@@ -1397,7 +1397,7 @@ public final class TreeMaker {
      * @param modle  module tree with directives list
      * @param directive  directive to be added to the list
      * @return module tree with modified directives.
-     * @since 2.6
+     * @since 2.23
      */
     public ModuleTree addModuleDirective(ModuleTree modle, DirectiveTree directive) {
         return delegate.addModuleDirective(modle, directive);
@@ -1415,7 +1415,7 @@ public final class TreeMaker {
      *
      * @throws    IndexOutOfBoundsException if the index is out of range
      *		  (index &lt; 0 || index &gt; size()).
-     * @since 2.6
+     * @since 2.23
      */
     public ModuleTree insertModuleDirective(ModuleTree modle, int index, DirectiveTree directive) {
         return delegate.insertModuleDirective(modle, index, directive);
@@ -1429,7 +1429,7 @@ public final class TreeMaker {
      * @param modle   module tree with directives list
      * @param directive  directive to be removed from this list, if present.
      * @return  module tree with modified directives.
-     * @since 2.6
+     * @since 2.23
      */
     public ModuleTree removeModuleDirective(ModuleTree modle, DirectiveTree directive) {
         return delegate.removeModuleDirective(modle, directive);
@@ -1445,7 +1445,7 @@ public final class TreeMaker {
      * 
      * @throws IndexOutOfBoundsException if the index is out of range 
      *         (index &lt; 0 || index &gt;= size()).
-     * @since 2.6
+     * @since 2.23
      */
     public ModuleTree removeModuleDirective(ModuleTree modle, int index) {
         return delegate.removeModuleDirective(modle, index);

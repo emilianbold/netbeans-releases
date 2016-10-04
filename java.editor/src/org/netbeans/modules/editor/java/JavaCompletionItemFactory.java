@@ -70,7 +70,8 @@ import org.openide.filesystems.FileObject;
  * @author Dusan Balek
  */
 public final class JavaCompletionItemFactory implements JavaCompletionTask.TypeCastableItemFactory<JavaCompletionItem>,
-        JavaCompletionTask.LambdaItemFactory<JavaCompletionItem> {
+        JavaCompletionTask.LambdaItemFactory<JavaCompletionItem>,
+        JavaCompletionTask.ModuleItemFactory<JavaCompletionItem> {
 
     private final WhiteListQuery.WhiteList whiteList;
 

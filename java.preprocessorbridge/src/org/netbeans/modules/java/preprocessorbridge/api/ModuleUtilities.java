@@ -53,6 +53,7 @@ import org.openide.util.Lookup;
  * Contains utility methods to create private copy of javac, used to work with module-infos.
  * 
  * @author Dusan Balek
+ * @since 1.45
  */
 public final class ModuleUtilities {
 
@@ -65,10 +66,11 @@ public final class ModuleUtilities {
     }
 
     /**
+     * Returns the instance of this class.
      * 
      * @param javaSource JavaSource representing module-info.java file to be parsed,
      * class file to be read, or ClasspathInfo to be scanned
-     * @return 
+     * @return {@link ModuleUtilities} instance
      */
     public static ModuleUtilities get(@NonNull final Object javaSource) {
         return new ModuleUtilities(javaSource);
@@ -80,7 +82,6 @@ public final class ModuleUtilities {
      * @param javaSource JavaSource representing module-info.java file to be parsed
      * @return module name
      * @throws IOException if the module-info.java does not exist or cannot be parsed. 
-     * @since 1.44
      */
     @CheckForNull
     public String parseModuleName() throws IOException {
@@ -93,7 +94,6 @@ public final class ModuleUtilities {
      * @param javaSource JavaSource representing module-info.java file to be parsed
      * @return {@link ModuleElement} of the given module
      * @throws IOException if the module-info.java does not exist or cannot be parsed. 
-     * @since 1.44
      */
     @CheckForNull
     public ModuleElement parseModule() throws IOException {
@@ -106,7 +106,6 @@ public final class ModuleUtilities {
      * @param moduleName name of the module to be resolved
      * @return module name
      * @throws IOException in case of IO problem
-     * @since 1.44
      */
     @CheckForNull
     public ModuleElement resolveModule(String moduleName) throws IOException {
@@ -117,7 +116,6 @@ public final class ModuleUtilities {
      * Reads a class file represented by the JavaSource.
      * @return the {@link TypeElement} of given class file
      * @throws IOException in case of IO problem
-     * @since 1.44
      */
     @CheckForNull
     public TypeElement readClassFile() throws IOException {
