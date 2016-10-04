@@ -69,29 +69,29 @@ public class JavaClassPathConstants {
 
     /**
      * Module path for bootstrap modules.
-     * @since 1.59
+     * @since 1.64
      */
     public static final String MODULE_BOOT_PATH = "modules/boot";
     /**
      * Module path for user modules.
-     * @since 1.59
+     * @since 1.64
      */
     public static final String MODULE_COMPILE_PATH = "modules/compile";
     /**
      * Additional classpath for modular compilation.
-     * @since 1.59
+     * @since 1.64
      */
     public static final String MODULE_CLASS_PATH = "modules/classpath";
     
     /**
      * Runtime module path for user modules.
-     * @since 1.63
+     * @since 1.64
      */
     public static final String MODULE_EXECUTE_PATH="modules/execute";   //NOI18N
     
     /**
      * Runtime additional classpath for modular compilation.
-     * @since 1.63
+     * @since 1.64
      */
     public static final String MODULE_EXECUTE_CLASS_PATH = "modules/execute-classpath"; //NOI18N
 }

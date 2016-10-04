@@ -232,7 +232,7 @@ public final class ElementOpen {
      * @param toOpen   {@link TreePathHandle} of the {@link Tree} which should be opened.
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
-     * @since 1.44
+     * @since 1.45
      */
     public static boolean open(
             @NonNull final FileObject toSearch,

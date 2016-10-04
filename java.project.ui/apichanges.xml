@@ -107,11 +107,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavaRunner-module-path">
+            <api name="JavaProjectUI"/>
+            <summary>Added a constant for execute module path into <code>JavaRunner</code></summary>
+            <version major="1" minor="1.71"/>
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a constant <code>PROP_EXECUTE_MODULEPATH</code> for execute module path into <code>JavaRunner</code>.
+            </description>
+            <class name="JavaRunner" package="org.netbeans.api.java.project.runner"/>
+        </change>
         <change id="JavaFileWizardIteratorFactory">
             <api name="JavaProjectUI"/>
             <summary>Allows to extend the New Java File Wizard by project specific panels</summary>
-            <version major="1" minor="69"/>
-            <date day="14" month="4" year="2016"/>
+            <version major="1" minor="1.71"/>
+            <date day="4" month="10" year="2016"/>
             <author login="tzezula"/>
             <compatibility modification="yes" addition="yes"/>
             <description>

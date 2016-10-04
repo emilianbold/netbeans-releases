@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 /**
  * Permits providers to return explicit compiler options for Java source file.
  * @author Tomas Zezula
- * @since 1.61
+ * @since 1.64
  */
 public interface CompilerOptionsQueryImplementation {
 

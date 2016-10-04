@@ -389,7 +389,7 @@ public class ClassFile {
     
     /**
      * Returns true if this class defines a module.
-     * @since 1.50
+     * @since 1.51
      */
     public final boolean isModule() {
         return (classAccess & Access.MODULE) == Access.MODULE;
@@ -448,7 +448,7 @@ public class ClassFile {
     /**
      * Returns the content of the <code>Module</code> attribute.
      * @return the {@link Module} or null when there is no <code>Module</code> attribute.
-     * @since 1.47
+     * @since 1.51
      */
     public final Module getModule() {
         if (module == null) {

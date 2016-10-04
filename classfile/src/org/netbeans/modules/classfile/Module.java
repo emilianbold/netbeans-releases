@@ -49,7 +49,7 @@ import java.util.List;
 
 /**
  * The JDK 9 Module attribute.
- * @since 1.47
+ * @since 1.51
  * @author Tomas Zezula
  */
 public final class Module {
@@ -123,7 +123,7 @@ public final class Module {
      */
     public static final class RequiresEntry {
 
-        public static final int ACC_PUBLIC    =   0x20;
+        public static final int ACC_TRANSITIVE    =  0x20;
         public static final int ACC_SYNTHETIC = 0x1000;
         public static final int ACC_MANDATED  = 0x8000;
 
@@ -158,7 +158,7 @@ public final class Module {
             final StringBuilder sb = new StringBuilder()
                 .append("require: ")            //NOI18N
                 .append(name.getName());
-            if ((flags & ACC_PUBLIC) != 0) {
+            if ((flags & ACC_TRANSITIVE) != 0) {
                 sb.append(" public");           //NOI18N
             }
             if ((flags & ACC_SYNTHETIC) != 0) {

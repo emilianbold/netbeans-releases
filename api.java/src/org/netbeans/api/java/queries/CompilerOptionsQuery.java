@@ -57,7 +57,7 @@ import org.openide.util.WeakListeners;
  * Returns compiler options explicitely set for given Java source file.
  * @see org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation
  * @author Tomas Zezula
- * @since 1.61
+ * @since 1.64
  */
 public final class CompilerOptionsQuery {
 

@@ -127,13 +127,13 @@ public class Access {
     
     /**
      * Mandated method parameter.
-     * @since 1.50
+     * @since 1.51
      */
     public static final int MANDATED      = 0x8000; // method parameter
 
     /**
      * For classes, declared as an module.
-     * @since 1.50
+     * @since 1.51
      */
     public static final int MODULE        = 0x8000; // class
 
