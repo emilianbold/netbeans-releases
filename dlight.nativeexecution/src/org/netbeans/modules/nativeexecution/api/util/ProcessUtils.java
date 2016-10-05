@@ -67,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -589,10 +590,10 @@ public final class ProcessUtils {
             }
             result = new ExitStatus(process.waitFor(), output.get(), (error == null) ? null : error.get());
         } catch (InterruptedException ex) {
-            result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n"))); //NOI18N
+            result = new ExitStatus(-100, null, MiscUtils.getMessageAsList(ex));
         } catch (Throwable th) {
             org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
-            result = new ExitStatus(-200, null, Arrays.asList(th.getMessage().split("\n"))); //NOI18N
+            result = new ExitStatus(-200, null, MiscUtils.getMessageAsList(th));
         }
 
         return result;
@@ -655,10 +656,10 @@ public final class ProcessUtils {
             }
             result = new ExitStatus(process.waitFor(), output.get(), (error == null) ? null : error.get());
         } catch (InterruptedException ex) {
-            result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n")));
+            result = new ExitStatus(-100, null, MiscUtils.getMessageAsList(ex));
         } catch (Throwable th) {
             org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
-            result = new ExitStatus(-200, null, Arrays.asList(th.getMessage().split("\n")));
+            result = new ExitStatus(-200, null, MiscUtils.getMessageAsList(th));
         }
 
         return result;
