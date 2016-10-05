@@ -186,24 +186,6 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
                 String name = (String) as.getAttribute(StyleConstants.NameAttribute);
                 String translatedName = null;
                 SimpleAttributeSet previous = fontsColorsMap.get(name);
-
-                if (previous == null && !modulesFile && FAV_TOKEN.equals(type)) {
-                    // User files normally don't define extra colorings unless
-                    // for example loading a settings file from an older version
-                    // of Netbeans (or in a completely new profile!!). In this case
-                    // try simple heuristic for translating the name and if it does
-                    // not work leave the name alone.
-                    int idx = name.indexOf('-'); //NOI18N
-                    if (idx != -1) {
-                        translatedName = name.substring(idx + 1);
-                        previous = fontsColorsMap.get(translatedName);
-                        if (previous != null) {
-                            // heuristics worked, fix the name and load the coloring
-                            as.addAttribute(StyleConstants.NameAttribute, translatedName);
-                            name = translatedName;
-                        }
-                    }
-                }
                 
                 if (previous == null) {
                     // Find display name
