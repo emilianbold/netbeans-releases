@@ -429,12 +429,18 @@ final class Line {
         if (!haveAttributes(value))
             return;
         
-        if (on) {
-            for (int c = bcol; c <= ecol; c++)
-                attr[c] = Attr.setAttribute(attr[c], value);
-        } else {
-            for (int c = bcol; c <= ecol; c++)
-                attr[c] = Attr.unsetAttribute(attr[c], value);
-        }
+	try {
+	    if (on) {
+		for (int c = bcol; c <= ecol; c++)
+		    attr[c] = Attr.setAttribute(attr[c], value);
+	    } else {
+		for (int c = bcol; c <= ecol; c++)
+		    attr[c] = Attr.unsetAttribute(attr[c], value);
+	    }
+	} catch (ArrayIndexOutOfBoundsException x) {
+	    System.out.printf("bcol %d  ecol %d  capacity %d  length %d buf %d  attr %d",
+		    bcol, ecol, capacity, length, buf.length, attr.length);
+	    throw x;
+	}
     }
 }
