@@ -922,7 +922,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
-        if (functionNode.isClassConstructor() && !ModelUtils.CONSTRUCTOR.equals(functionNode.getName())) {
+        if (functionNode.isClassConstructor() && !(ModelUtils.CONSTRUCTOR.equals(functionNode.getName()) || functionNode.getName().startsWith(ModelUtils.CONSTRUCTOR))) {
             // don't process artificail constructors. 
             return false;
         }
