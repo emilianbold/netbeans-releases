@@ -73,12 +73,12 @@ var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the lan
 var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
 var SUN_SUPPORTED_SEP            = " -- Oracle Supported -- " ;
 
-var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans JDK9 Branch Download";
+var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
 
 
 
-var NETBEANS_DOWNLOAD_HEADER = "NetBeans JDK9 Branch, {0} Download";
+var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
 var DEVELOPMENT_TITLE        = "Development";
 var ARCHIVE_TITLE            = "Archive";
 var EMAIL_LABEL              = "Email&nbsp;address&nbsp;(optional):&nbsp;";
