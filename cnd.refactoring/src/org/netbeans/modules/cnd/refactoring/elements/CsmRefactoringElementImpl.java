@@ -37,6 +37,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -60,6 +62,12 @@ import org.openide.util.lookup.Lookups;
  */
 public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplementation 
         implements FiltersManager.Filterable {
+    
+    public enum RW {
+        Read,
+        Write,
+        ReadWrite
+    }
     private static final boolean LAZY = false;
     private final CsmReference elem;
     private final PositionBounds bounds;
@@ -72,9 +80,10 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
     private final boolean isInMacros;
     private final boolean isInDeadCode;
     private final boolean isInComments;
+    private final RW rw;
     
     public CsmRefactoringElementImpl(PositionBounds bounds, 
-            CsmReference elem, FileObject fo, String displayText) {
+            CsmReference elem, FileObject fo, String displayText, CsmObject referencedObject) {
         this.elem = elem;
         this.bounds = bounds;
         this.fo = fo;
@@ -90,6 +99,11 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         this.isInMacros = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE));
         this.isInDeadCode = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_DEAD_BLOCK));
         this.isInComments = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.COMMENT));
+        if (referencedObject != null && CsmKindUtilities.isVariable(referencedObject)) {
+            this.rw = new ReadWriteTokenProcessor(elem).process();
+        } else {
+            this.rw = RW.Read;
+        }
     }
 
     private boolean isScope(CsmReference ref) {
@@ -111,7 +125,7 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         }
         return false;
     }
-        
+
     @Override
     public String getText() {
         return elem.getText().toString();
@@ -153,16 +167,25 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         return "{" + "bounds=" + bounds + ", displayText=" + displayText + ", enclosing=" + enclosing + ", fo=" + fo + '}'; // NOI18N
     }
     
-    public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {
+    public static RefactoringElementImplementation create(CsmReference ref, boolean nameInBold, CsmObject referencedObject) {
         CsmFile csmFile = ref.getContainingFile();
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
         String displayText = LAZY ? null : CsmReferenceSupport.getContextLineHtml(ref, nameInBold).toString();
-        return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
+        return new CsmRefactoringElementImpl(bounds, ref, fo, displayText, referencedObject);
     }
 
     @Override
     public boolean filter(FiltersManager manager) {
+        if (rw == RW.Read && !manager.isSelected(CsmWhereUsedFilters.READ.getKey())) {
+            return false;
+        }
+        if (rw == RW.Write && !manager.isSelected(CsmWhereUsedFilters.WRITE.getKey())) {
+            return false;
+        }
+        if (rw == RW.ReadWrite && !manager.isSelected(CsmWhereUsedFilters.READ_WRITE.getKey())) {
+            return false;
+        }
         if (isDecl && !manager.isSelected(CsmWhereUsedFilters.DECLARATIONS.getKey())) {
             return false;
         }
