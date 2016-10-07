@@ -202,6 +202,9 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         }
         ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
             ClassPathSupport.createClassPath(archiveUrls),
+            ClassPathSupport.createClassPath(archiveUrls),
+            ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             null,
@@ -210,14 +213,10 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             false,
             false,
             null);
-        final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null, null);
+        final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null, null, null);
         TreeLoader.preRegister(jt.getContext(), cpInfo, true);
         //Force JTImpl.prepareCompiler to get JTImpl into Context
-        try {
-            jt.parse(new JavaFileObject[0]);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        jt.enter();
         TypeElement jc = (TypeElement) ((JavacElements)jt.getElements()).getTypeElementByBinaryName(fqn);
         if (jc != null) {
             List<ExecutableElement> methods = ElementFilter.methodsIn(jt.getElements().getAllMembers(jc));

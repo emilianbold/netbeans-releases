@@ -68,6 +68,7 @@ public class ClassFile {
     String sourceFileName;
     InnerClass[] innerClasses;
     BootstrapMethod[] bootstrapMethods;
+    Module module;
     private AttributeMap attributes;
     private Map<ClassName,Annotation> annotations;
     short majorVersion;
@@ -385,6 +386,14 @@ public class ClassFile {
     public final boolean isEnum() {
 	return (classAccess & Access.ENUM) == Access.ENUM;
     }
+    
+    /**
+     * Returns true if this class defines a module.
+     * @since 1.51
+     */
+    public final boolean isModule() {
+        return (classAccess & Access.MODULE) == Access.MODULE;
+    }
 
     /**
      * Returns a map of the raw attributes for this classfile.  
@@ -434,6 +443,29 @@ public class ClassFile {
 		bootstrapMethods = new BootstrapMethod[0];
 	}
         return Arrays.asList(bootstrapMethods);
+    }
+
+    /**
+     * Returns the content of the <code>Module</code> attribute.
+     * @return the {@link Module} or null when there is no <code>Module</code> attribute.
+     * @since 1.51
+     */
+    public final Module getModule() {
+        if (module == null) {
+            final DataInputStream in = attributes.getStream("Module");  //NOI18N
+            if (in != null) {
+                try {
+                    try {
+                        module = new Module (in, constantPool);
+                    } finally {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    throw new InvalidClassFileAttributeException("invalid InnerClasses attribute", e);
+                }
+            }
+        }
+        return module;
     }
 
     /**

@@ -56,8 +56,11 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementVisitor;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementScanner9;
 import javax.tools.JavaFileObject;
@@ -85,7 +88,8 @@ public final class FQN2Files implements DuplicateClassChecker {
         load();
     }
 
-    public void set(final Iterable<? extends TypeElement> topLevelElements, final URL file) {
+
+    public void set(final Iterable<? extends Element> topLevelElements, final URL file) {
         new ElementScanner9() {
             @Override
             public Object visitType(TypeElement e, Object p) {
@@ -98,7 +102,28 @@ public final class FQN2Files implements DuplicateClassChecker {
                 }
                 return super.visitType(e, p);
             }
-            
+            @Override
+            public Object visitModule(ModuleElement e, Object p) {
+                if (e instanceof Symbol.ModuleSymbol) {
+                    final String fqn = ((Symbol.ModuleSymbol)e).module_info.flatName().toString();
+                    String value = props.getProperty(fqn);
+                    if (value == null) {
+                        props.setProperty(fqn, file.toExternalForm());
+                    }
+                }
+                return null;
+            }
+            @Override
+            public Object visitPackage(PackageElement e, Object p) {
+                if (e instanceof Symbol.PackageSymbol) {
+                    final String fqn = ((Symbol.PackageSymbol)e).package_info.flatName().toString();
+                    String value = props.getProperty(fqn);
+                    if (value == null) {
+                        props.setProperty(fqn, file.toExternalForm());
+                    }
+                }
+                return null;
+            }            
         }.scan(topLevelElements, null);
     }
 

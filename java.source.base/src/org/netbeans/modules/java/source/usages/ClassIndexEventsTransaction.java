@@ -45,12 +45,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -64,6 +67,9 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     private final boolean source;
     private Set<URL> removedRoots;
+    private ElementHandle<ModuleElement> addedModule;
+    private ElementHandle<ModuleElement> removedModule;
+    private ElementHandle<ModuleElement> changedModule;
     private Collection<ElementHandle<TypeElement>> addedTypes;
     private Collection<ElementHandle<TypeElement>> removedTypes;
     private Collection<ElementHandle<TypeElement>> changedTypes;
@@ -75,12 +81,12 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     private ClassIndexEventsTransaction(final boolean src) {
         source = src;
-        removedRoots = new HashSet<URL>();
-        addedTypes = new HashSet<ElementHandle<TypeElement>>();
-        removedTypes = new HashSet<ElementHandle<TypeElement>>();
-        changedTypes = new HashSet<ElementHandle<TypeElement>>();
-        addedFiles = new ArrayDeque<File>();
-        removedFiles = new ArrayDeque<File>();
+        removedRoots = new HashSet<>();
+        addedTypes = new HashSet<>();
+        removedTypes = new HashSet<>();
+        changedTypes = new HashSet<>();
+        addedFiles = new ArrayDeque<>();
+        removedFiles = new ArrayDeque<>();
     }
 
 
@@ -92,7 +98,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void rootAdded(@NonNull final URL root) {
         checkClosedTx();
         assert root != null;
-        assert addedRoot == null;
+        assert addedRoot == null || addedRoot.equals(root);
         assert changesInRoot == null || changesInRoot.equals(root);
         addedRoot = root;
     }
@@ -116,12 +122,15 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
      */
     public void addedTypes(
         @NonNull final URL root,
+        @NullAllowed final ElementHandle<ModuleElement> module,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
         checkClosedTx();
         assert root != null;
         assert added != null;
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
+        assert addedModule == null || module == null;
+        addedModule = reduce(addedModule, module);
         addedTypes.addAll(added);
         changesInRoot = root;
     }
@@ -134,12 +143,15 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
      */
     public void removedTypes(
         @NonNull final URL root,
+        @NullAllowed final ElementHandle<ModuleElement> module,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
         checkClosedTx();
         assert root != null;
         assert removed != null;
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
+        assert removedModule == null || module == null;
+        removedModule = reduce(removedModule, module);
         removedTypes.addAll(removed);
         changesInRoot = root;
     }
@@ -152,12 +164,15 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
      */
     public void changedTypes(
         @NonNull final URL root,
+        @NullAllowed final ElementHandle<ModuleElement> module,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
         checkClosedTx();
         assert root != null;
         assert changed != null;
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
+        assert changedModule == null || module == null;
+        changedModule = reduce(changedModule, module);
         changedTypes.addAll(changed);
         changesInRoot = root;
     }
@@ -224,17 +239,24 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
                 }
             } finally {
                 final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+                ClassIndexImpl ci = addedRoot == null ? null : ciManager.getUsagesQuery(addedRoot, false);
+                final Set<URL> added = ci != null && ci.getState() == ClassIndexImpl.State.INITIALIZED ?
+                        Collections.singleton(addedRoot):
+                        Collections.emptySet();
                 ciManager.fire(
-                    addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
+                    added,
                     Collections.unmodifiableSet(removedRoots));
-                final ClassIndexImpl ci = changesInRoot == null ?
-                    null:
-                    ciManager.getUsagesQuery(changesInRoot, false);
-                if (ci != null) {
-                    ci.typesEvent(
-                        Collections.unmodifiableCollection(addedTypes),
-                        Collections.unmodifiableCollection(removedTypes),
-                        Collections.unmodifiableCollection(changedTypes));
+                if (changesInRoot != null) {
+                    if (ci == null) {
+                        ci = ciManager.getUsagesQuery(changesInRoot, false);
+                    }
+                    if (ci != null) {
+                        ci.typesEvent(
+                            changesInRoot,
+                            Pair.of(addedModule,Collections.unmodifiableCollection(addedTypes)),
+                            Pair.of(removedModule,Collections.unmodifiableCollection(removedTypes)),
+                            Pair.of(changedModule,Collections.unmodifiableCollection(changedTypes)));
+                    }
                 }
             }
         } finally {
@@ -268,6 +290,12 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     private void closeTx() {
         checkClosedTx();
         closed = true;
+    }
+    
+    private static <T> T reduce(T oldValue, T newValue) {
+        return newValue != null ?
+                newValue :
+                oldValue;
     }
 
     /**

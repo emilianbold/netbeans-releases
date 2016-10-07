@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.swing.text.Document;
@@ -133,7 +135,15 @@ public class Utilities {
             revalidate(source);
         }
     }
-    
+
+    public static void invalidate (@NonNull final FileObject fo) {
+        final Source source = SourceAccessor.getINSTANCE().get(fo);
+        if (source != null) {
+            final SourceAccessor sa = SourceAccessor.getINSTANCE();
+            sa.setFlags(source, EnumSet.of(SourceFlags.INVALID));
+        }
+    }
+
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
         Parameters.notNull ("task", task);
         Parameters.notNull ("source", source);

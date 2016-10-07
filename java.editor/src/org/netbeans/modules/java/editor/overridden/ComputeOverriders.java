@@ -483,6 +483,7 @@ public class ComputeOverriders {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Set<Element> seenElements = new HashSet<Element>();
                         Element resolvedOriginalType = originalType.resolve(controller);
 

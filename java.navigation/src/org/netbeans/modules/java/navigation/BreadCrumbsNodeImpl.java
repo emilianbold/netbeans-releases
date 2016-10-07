@@ -47,6 +47,7 @@ import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -54,14 +55,18 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
@@ -81,6 +86,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -186,6 +192,39 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                 case COMPILATION_UNIT:
                     TreePathHandle tph = TreePathHandle.create(path, info);
                     return new BreadCrumbsNodeImpl(parent, tph, (Image) null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
+                case MODULE:
+                    tph = TreePathHandle.create(path, info);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), ((ModuleTree)leaf).getName().toString(), info.getFileObject(), pos);
+                case REQUIRES:
+                    tph = TreePathHandle.create(path, info);
+                    StringBuilder sb = new StringBuilder("requires "); //NOI18N
+                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
+                    sb.append(escape(((RequiresTree) leaf).getModuleName().toString()));
+                    sb.append("</font>"); //NOI18N
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
+                case EXPORTS:
+                    tph = TreePathHandle.create(path, info);
+                    sb = new StringBuilder("exports "); //NOI18N
+                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
+                    sb.append(escape(((ExportsTree) leaf).getExportName().toString()));
+                    sb.append("</font>"); //NOI18N
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
+                case PROVIDES:
+                    tph = TreePathHandle.create(path, info);
+                    sb = new StringBuilder("provides "); //NOI18N
+                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
+                    sb.append(simpleName(((ProvidesTree) leaf).getImplementationName()));
+                    sb.append(" :: "); //NOI18N
+                    sb.append(simpleName(((ProvidesTree) leaf).getServiceName()));
+                    sb.append("</font>"); //NOI18N
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
+                case USES:
+                    tph = TreePathHandle.create(path, info);
+                    sb = new StringBuilder("uses "); //NOI18N
+                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
+                    sb.append(simpleName(((UsesTree) leaf).getServiceName()));
+                    sb.append("</font>"); //NOI18N
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
                 case CLASS:
                 case INTERFACE:
                 case ENUM:
@@ -208,7 +247,7 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                 case CASE:
                     tph = TreePathHandle.create(path, info);
                     ExpressionTree expr = ((CaseTree) leaf).getExpression();
-                    StringBuilder sb = new StringBuilder(expr == null ? "default:" : "case "); //NOI18N
+                    sb = new StringBuilder(expr == null ? "default:" : "case "); //NOI18N
                     if (expr != null) {
                         sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                         sb.append(escape(((CaseTree) leaf).getExpression().toString()));
@@ -395,16 +434,37 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
         Element el = info.getTrees().getElement(path);
         final ElementKind kind = el == null ? null : el.getKind();
         final Set<Modifier> modifiers = el == null ? null : el.getModifiers();
+        final ModuleElement.DirectiveKind directiveKind = directiveKind(path.getLeaf().getKind());
         return new Callable<Image>() {
             @Override
             public Image call() throws Exception {
-                if (kind == null) return DEFAULT_ICON;
-                assert modifiers != null;
-                Icon icon = ElementIcons.getElementIcon(kind, modifiers);
+                Icon icon = null;
+                if (kind == null) {
+                    if (directiveKind == null)
+                        return DEFAULT_ICON;
+                    icon = ElementIcons.getModuleDirectiveIcon(directiveKind);
+                } else {
+                    assert modifiers != null;
+                    icon = ElementIcons.getElementIcon(kind, modifiers);
+                }
                 if (icon == null) return DEFAULT_ICON;
                 return ImageUtilities.icon2Image(icon);
             }
         };
+    }
+    
+    private static ModuleElement.DirectiveKind directiveKind(Kind treeKind) {
+        switch (treeKind) {
+            case EXPORTS:
+                return ModuleElement.DirectiveKind.EXPORTS;
+            case PROVIDES:
+                return ModuleElement.DirectiveKind.PROVIDES;
+            case REQUIRES:
+                return ModuleElement.DirectiveKind.REQUIRES;
+            case USES:
+                return ModuleElement.DirectiveKind.USES;
+        }
+        return null;
     }
     
     private static String className(TreePath path) {

@@ -55,6 +55,8 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -95,8 +97,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private static final String LIBRARIES = "Libs"; //NOI18N
         private static final String TEST_LIBRARIES = "TestLibs"; //NOI18N
 
-        private SourceRoots testSources;
-        private J2SEProject project;
+        private final J2SEProject project;        
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         private PropertyEvaluator evaluator;
@@ -107,7 +108,6 @@ public final class LibrariesNodeFactory implements NodeFactory {
         LibrariesNodeList(@NonNull final J2SEProject proj) {
             Parameters.notNull("proj", proj);   //NOI18N
             project = proj;
-            testSources = project.getTestSourceRoots();
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
             resolver = project.getReferenceHelper();
@@ -117,7 +117,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
             result.add(LIBRARIES);
-            URL[] testRoots = testSources.getRootURLs();
+            URL[] testRoots = project.getTestSourceRoots().getRootURLs();
             boolean addTestSources = false;
             for (int i = 0; i < testRoots.length; i++) {
                 File f = Utilities.toFile(URI.create(testRoots[i].toExternalForm()));
@@ -143,43 +143,46 @@ public final class LibrariesNodeFactory implements NodeFactory {
         public Node node(String key) {
             if (key == LIBRARIES) {
                 //Libraries Node
-                return  
-                    new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_LibrariesNode"),
-                        project, evaluator, helper, resolver, ProjectProperties.RUN_CLASSPATH,
-                        new String[] {ProjectProperties.BUILD_CLASSES_DIR},
-                        "platform.active", // NOI18N
-                        new Action[] {
+                return new LibrariesNode.Builder(project,evaluator, helper, resolver, cs).
+                    setName(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_LibrariesNode")).
+                    addClassPathProperties(ProjectProperties.RUN_CLASSPATH).
+                    addClassPathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
+                    setBootPath(ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.BOOT)).
+                    setPlatformProperty("platform.active").  //NOI18N
+                    addLibrariesNodeActions(
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
-                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
-                        },
-                        null,
-                        cs,
-                        null
-                    );
+                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE)). // NOI18N
+                    addModulePathProperties(ProjectProperties.RUN_MODULEPATH).
+                    addModulePathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[0]).
+                    setSourceRoots(project.getSourceRoots()).
+                    build();
             } else if (key == TEST_LIBRARIES) {
-                return  
-                    new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
-                        project, evaluator, helper, resolver, ProjectProperties.RUN_TEST_CLASSPATH,
-                        new String[] {
+                return new LibrariesNode.Builder(project,evaluator, helper, resolver, cs).
+                    setName(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode")).
+                    addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH).
+                    addClassPathIgnoreRefs(
                             ProjectProperties.BUILD_TEST_CLASSES_DIR,
                             ProjectProperties.JAVAC_CLASSPATH,
-                            ProjectProperties.BUILD_CLASSES_DIR,
-                        },
-                        null,
-                        new Action[] {
+                            ProjectProperties.BUILD_CLASSES_DIR).
+                    addLibrariesNodeActions(
                             LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                             LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
-                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                        },
-                        null,
-                        cs,
-                        null
-                    );
+                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS)). // NOI18N
+                    addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH).
+                    addModulePathIgnoreRefs(
+                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                            ProjectProperties.JAVAC_MODULEPATH,
+                            ProjectProperties.BUILD_CLASSES_DIR).
+                    setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[1]).
+                    setSourceRoots(project.getTestSourceRoots()).
+                    build();
+                    
             }
             assert false: "No node for key: " + key;
             return null;
@@ -187,11 +190,11 @@ public final class LibrariesNodeFactory implements NodeFactory {
         }
 
         public void addNotify() {
-            testSources.addPropertyChangeListener(this);
+            project.getTestSourceRoots().addPropertyChangeListener(this);
         }
 
         public void removeNotify() {
-            testSources.removePropertyChangeListener(this);
+            project.getTestSourceRoots().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

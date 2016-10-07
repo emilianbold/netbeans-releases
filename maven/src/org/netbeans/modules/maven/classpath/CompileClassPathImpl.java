@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
@@ -61,29 +62,22 @@ import org.openide.util.Utilities;
 class CompileClassPathImpl extends AbstractProjectClassPathImpl implements FlaggedClassPathImplementation {
 
     private volatile boolean incomplete;
+    private final boolean addOutputDir;
 
     /** Creates a new instance of SrcClassPathImpl */
-    public CompileClassPathImpl(NbMavenProjectImpl proj) {
+    public CompileClassPathImpl(NbMavenProjectImpl proj, boolean addOutputDir) {        
         super(proj);
+        this.addOutputDir = addOutputDir;
     }
     
     @Override
     URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
-        boolean broken = false;
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                lst.add(Utilities.toURI(art.getFile()));
-                broken |= !art.getFile().exists();
-            } else {
-              //NOPMD   //null means dependencies were not resolved..
-                broken = true;
-            } 
+        List<URI> lst = new ArrayList<>();
+        boolean broken = getCompileArtifacts(getMavenProject().getOriginalMavenProject(), lst);
+        if(addOutputDir) {
+            lst.add(Utilities.toURI(getProject().getProjectWatcher().getOutputDirectory(false)));
         }
+        
         if (incomplete != broken) {
             incomplete = broken;
             firePropertyChange(PROP_FLAGS, null, null);
@@ -91,6 +85,24 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl implements Flagg
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;
+    }
+
+    static boolean getCompileArtifacts(MavenProject mavenProject, List<URI> lst) {
+        // according the current 2.1 sources this is almost the same as getCompileClasspath()
+        //except for the fact that multiproject references are not redirected to their respective
+        // output folders.. we lways retrieve stuff from local repo..
+        List<Artifact> arts = mavenProject.getCompileArtifacts();
+        boolean broken = false;
+        for (Artifact art : arts) {
+            if (art.getFile() != null) {
+                lst.add(Utilities.toURI(art.getFile()));
+                broken |= !art.getFile().exists();
+            } else {
+                //NOPMD   //null means dependencies were not resolved..
+                broken = true;
+            } 
+        }
+        return broken;
     }
 
     @Override

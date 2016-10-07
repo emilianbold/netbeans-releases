@@ -56,20 +56,23 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=AntLogger.class, position=50)
 public class ProjectAntLogger extends AntLogger {
 
+    private static final String JAVAC = "javac";    //NOI18N
+    private static final String LOADRESOURCE = "loadresource";  //NOI18N
+
     @Override
     public boolean interestedInSession(AntSession session) {
         // Even if the initiating project is not an Ant-based project, suppress these messages.
         // However disable our tricks when running at VERBOSE or higher.
         return session.getVerbosity() <= AntEvent.LOG_INFO;
     }
-    
+
     @Override
     public boolean interestedInScript(File script, AntSession session) {
         if (script.getName().equals("build-impl.xml")) { // NOI18N
             File parent = script.getParentFile();
             if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
                 File parent2 = parent.getParentFile();
-                if (parent2 != null && parent2.isFile()) {
+                if (parent2 != null && parent2.isDirectory()) {
                     return true;
                 }
             }
@@ -77,20 +80,27 @@ public class ProjectAntLogger extends AntLogger {
         // Was not a nbproject/build-impl.xml; ignore it.
         return false;
     }
-    
+
     @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
-    
+
     @Override
     public String[] interestedInTasks(AntSession session) {
-        return new String[] {"javac"};
+        return new String[] {JAVAC, LOADRESOURCE};
     }
-    
+
+    @Override
+    public int[] interestedInLogLevels(AntSession session) {
+        return new int[] {
+            AntEvent.LOG_WARN
+        };
+    }
+
     @Override
     public void taskFinished(AntEvent event) {
-        if ("javac".equals(event.getTaskName())) { // NOI18N
+        if (JAVAC.equals(event.getTaskName())) {
             Throwable t = event.getException();
             AntSession session = event.getSession();
             if (t != null && !session.isExceptionConsumed(t)) {
@@ -100,5 +110,22 @@ public class ProjectAntLogger extends AntLogger {
             }
         }
     }
+
+    @Override
+    public void messageLogged(AntEvent event) {
+        final AntSession session = event.getSession();
+        final String task = event.getTaskName();
+        final String line = event.getMessage();
+        assert line != null;
+        if (LOADRESOURCE.equals(task) &&
+                line.equals("module-info.java doesn't exist") &&    // NOI18N
+                event.getLogLevel() == AntEvent.LOG_WARN) {
+            //Reading of module-info which does not exist.
+            //The loadresource even with quiet true logs a warning, make it verbose.
+            event.consume();
+            session.deliverMessageLogged(event, line, AntEvent.LOG_VERBOSE);
+        }
+    }
+
 
 }

@@ -52,16 +52,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
@@ -69,10 +74,11 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -83,6 +89,9 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public final class TestUtilities {
+    
+    private static final String EXPLICIT_JDK9_HOME = null;
+    private static final String PROP_JDK9_HOME = "jdk9.home";   //NOI18N
     
     // do not instantiate
     private TestUtilities() {}
@@ -262,6 +271,84 @@ public final class TestUtilities {
                 }
             }
         }, true);
+    }
+    
+    /**
+     * Returns a home of the JDK 9.
+     * The JDK 9 home is resolved in the following order:
+     * <ol>
+     *  <li>Explicitely given by {@link TestUtilities#EXPLICIT_JDK9_HOME}</li>
+     *  <li>Given by system property TestUtilities#PROP_JDK9_HOME}</li>
+     *  <li>Tests run on JDK 9</li>
+     * </ol>     
+     * @return the JDK 9 home or null if not found
+     * @throws IOException in case of invalid (non existent) JDK 9 home
+     */
+    @CheckForNull
+    public static File getJava9Home() throws IOException {
+        File java9Home = null;
+        if (EXPLICIT_JDK9_HOME != null) {
+            java9Home = FileUtil.normalizeFile(new File(EXPLICIT_JDK9_HOME));
+            if (java9Home.isDirectory()) {
+                return java9Home;
+            } else {
+                throw new IOException(String.format(
+                        "The jdk 9 home: %s does not exist.",   //NOI18N
+                        java9Home.getAbsolutePath()));
+            }
+        }
+        String propVal;
+        if ((propVal = System.getProperty(PROP_JDK9_HOME)) != null) {
+            java9Home = FileUtil.normalizeFile(new File(propVal));
+            if (java9Home.isDirectory()) {
+                return java9Home;
+            } else {
+                throw new IOException(String.format(
+                        "The jdk 9 home: %s does not exist.",   //NOI18N
+                        java9Home.getAbsolutePath()));
+            }
+        }
+        propVal = System.getProperty("java.specification.version");   //NOI18N
+        if (new SpecificationVersion("9").compareTo(new SpecificationVersion(propVal)) <= 0) {  //NOI18N
+            propVal = System.getProperty("java.home");  //NOI18N
+            if (propVal != null) {
+                java9Home = FileUtil.normalizeFile(new File(propVal));
+                if (java9Home.isDirectory()) {
+                    return java9Home;
+                } else {
+                    throw new IOException(String.format(
+                            "The jdk 9 home: %s does not exist.",   //NOI18N
+                            java9Home.getAbsolutePath()));
+                }
+            }
+        }
+        return null;
+    }
+    
+    @CheckForNull
+    public static Path getJRTFS() throws IOException {
+        final File java9 = getJava9Home();
+        if (java9 == null) {
+            return null;
+        }
+        final File jrtFsProvider = new File(java9,"jrt-fs.jar"); //NOI18N
+        if (jrtFsProvider.exists() && jrtFsProvider.isFile() && jrtFsProvider.canRead()) {
+            final ClassLoader cl = new URLClassLoader(new URL[]{
+                BaseUtilities.toURI(jrtFsProvider).toURL()
+            });
+            final ServiceLoader<FileSystemProvider> sl = ServiceLoader.load(FileSystemProvider.class, cl);
+            FileSystemProvider jrtp = null;
+            for (FileSystemProvider fsp : sl) {
+                if ("jrt".equals(fsp.getScheme())) {    //NOI18N
+                    jrtp = fsp;
+                    break;
+                }
+            }
+            if (jrtp != null) {
+                return jrtp.getPath(URI.create("jrt:/"));   //NOI18N
+            }
+        }
+        return null;
     }
     
 }

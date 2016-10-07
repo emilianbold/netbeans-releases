@@ -74,6 +74,9 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-constructor-declaration" default="identifier">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="mod-module-declaration" default="identifier">
+            <font style="bold" />
+    </fontcolor>
     <fontcolor name="mod-class-declaration" default="identifier">
             <font style="bold" />
     </fontcolor>
@@ -92,6 +95,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-parameter" default="identifier"/>
     <fontcolor name="mod-method" default="method"/>
     <fontcolor name="mod-constructor" default="identifier"/>
+    <fontcolor name="mod-module" default="identifier"/>
     <fontcolor name="mod-class" default="identifier"/>
     <fontcolor name="mod-interface" default="identifier"/>
     <fontcolor name="mod-annotation-type" default="identifier"/>

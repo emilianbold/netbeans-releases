@@ -45,7 +45,6 @@ package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.*;
 import java.util.List;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
 
 /**
@@ -64,6 +63,13 @@ final class EstimatorFactory {
                                     DiffContext diffContext)
     {
         return new PositionEstimator.ThrowsEstimator(oldL, newL, diffContext);
+    }
+    
+    static PositionEstimator exportsTo(List<? extends ExpressionTree> oldL, 
+                                    List<? extends ExpressionTree> newL,
+                                    DiffContext diffContext)
+    {
+        return new PositionEstimator.ExportsToEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator implementz(List<? extends Tree> oldL, 

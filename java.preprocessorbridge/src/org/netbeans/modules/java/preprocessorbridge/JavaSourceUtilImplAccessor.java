@@ -43,9 +43,12 @@
 package org.netbeans.modules.java.preprocessorbridge;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import java.util.Map;
+import javax.lang.model.element.ModuleElement;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl;
@@ -78,6 +81,9 @@ public abstract class JavaSourceUtilImplAccessor {
     }
 
     public abstract long createTaggedCompilationController (JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException;
+
+    @CheckForNull
+    public abstract TypeElement readClassFile(@NonNull JavaSourceUtilImpl spi, @NonNull FileObject classFile) throws IOException;
     
     @NonNull
     public abstract Map<String,byte[]> generate(
@@ -86,4 +92,7 @@ public abstract class JavaSourceUtilImplAccessor {
             @NonNull final FileObject file,
             @NullAllowed CharSequence content,
             @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnostics) throws IOException;
+
+    @CheckForNull
+    public abstract JavaSourceUtilImpl.ModuleInfoHandle getModuleInfoHandle(@NonNull JavaSourceUtilImpl spi, @NonNull Object javaSource) throws IOException;
 }

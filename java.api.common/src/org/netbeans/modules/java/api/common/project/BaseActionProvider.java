@@ -90,6 +90,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -1854,6 +1855,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
             p.put(JavaRunner.PROP_CLASSNAME, mainClass);
             p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(ClassPath.EXECUTE));
+            p.put(JavaRunner.PROP_EXECUTE_MODULEPATH,callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_PATH));
             
             if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
                 p.put("stopclassname", mainClass);

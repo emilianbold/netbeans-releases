@@ -264,10 +264,11 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                        kind.isInterface() ||
                        kind == ElementKind.OTHER) {
                 if (BinaryAnalyser.OBJECT.equals(binaryName)) {
-                    getDeclaredTypes(
+                    getDeclaredElements(
                         "", //NOI18N
                         ClassIndex.NameKind.PREFIX,
                         scope,
+                        DocumentUtil.declaredTypesFieldSelector(false, false),
                         convertor,
                         result);
                 } else {
@@ -297,7 +298,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
 
 
     @Override
-    public <T> void getDeclaredTypes (
+    public <T> void getDeclaredElements (
             @NonNull final String simpleName,
             @NonNull final ClassIndex.NameKind kind,
             @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,

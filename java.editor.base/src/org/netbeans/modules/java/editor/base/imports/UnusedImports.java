@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -235,6 +236,9 @@ public class UnusedImports {
         public boolean isErroneous(@NullAllowed Element e) {
             if (e == null) {
                 return true;
+            }
+            if (e.getKind() == ElementKind.MODULE) {
+                return false;
             }
             final TypeMirror type = e.asType();
             if (type == null) {

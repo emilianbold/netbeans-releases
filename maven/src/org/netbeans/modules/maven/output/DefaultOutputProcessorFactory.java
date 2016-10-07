@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.output;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -59,9 +58,8 @@ public class DefaultOutputProcessorFactory implements ContextOutputProcessorFact
     @Override public Set<OutputProcessor> createProcessorsSet(Project project) {
         Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
         if (project != null) {
-            toReturn.add(new JavaOutputListenerProvider());
-            toReturn.add(new TestOutputListenerProvider());
             toReturn.add(new JavadocOutputProcessor());
+            toReturn.add(new TestOutputListenerProvider());
             toReturn.add(new SiteOutputProcessor(project));
             NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
             toReturn.add(new ExecPluginOutputListenerProvider(nbprj));
@@ -71,7 +69,10 @@ public class DefaultOutputProcessorFactory implements ContextOutputProcessorFact
     }
 
     @Override public Set<? extends OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
-        return Collections.singleton(new GlobalOutputProcessor(config));
+        Set<OutputProcessor> toReturn = new HashSet<>(); 
+        toReturn.add(new JavaOutputListenerProvider(config));
+        toReturn.add(new GlobalOutputProcessor(config));
+        return toReturn;
     }
     
 }

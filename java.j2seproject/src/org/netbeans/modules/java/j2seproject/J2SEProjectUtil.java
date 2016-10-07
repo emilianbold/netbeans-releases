@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -64,7 +65,7 @@ import org.openide.util.Parameters;
  * @author  Jiri Rechtacek
  */
 public class J2SEProjectUtil {
-
+    private static final String MODULE_INFO_JAVA = "module-info.java"; //NOI18N
     private static final String[] BREAKABLE_PROPERTIES = {
         ProjectProperties.JAVAC_CLASSPATH,
         ProjectProperties.RUN_CLASSPATH,
@@ -172,6 +173,21 @@ public class J2SEProjectUtil {
     }
 
     /**
+     * Creates reference to property.
+     * @param propertyName the name of property
+     * @param lastEntry if true, the path separator is not added
+     * @return the reference
+     */
+    public static String ref(
+            @NonNull final String propertyName,
+            final boolean lastEntry) {
+        return String.format(
+                "${%s}%s",  //NOI18N
+                propertyName,
+                lastEntry ? "" : ":");  //NOI18N
+    }
+
+    /**
      * Returns a list of property names which need to be tested for broken references.
      * @param project to return property names for
      * @return the list of breakable properties
@@ -186,5 +202,15 @@ public class J2SEProjectUtil {
         System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
         return result;
+    }
+
+    @NonNull
+    public static File getModuleInfo(@NonNull final File root) {
+        return new File(root, MODULE_INFO_JAVA);
+    }
+
+    @CheckForNull
+    public static FileObject getModuleInfo(@NonNull final FileObject root) {
+        return root.getFileObject(MODULE_INFO_JAVA);
     }
 }

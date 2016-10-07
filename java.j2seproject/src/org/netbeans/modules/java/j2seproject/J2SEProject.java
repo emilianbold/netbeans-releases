@@ -96,10 +96,12 @@ import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.java.j2seproject.ui.wizards.J2SEFileWizardIterator;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -386,7 +388,12 @@ public final class J2SEProject implements Project {
             BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
             BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
-            new J2SEProjectPlatformImpl(this)
+            new J2SEProjectPlatformImpl(this),
+            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
+            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
+            QuerySupport.createModuleInfoAccessibilityQuery(sourceRoots, testRoots),
+            LookupMergerSupport.createCompilerOptionsQueryMerger(),
+            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -859,7 +866,7 @@ public final class J2SEProject implements Project {
         return new Runnable() {
             @Override
             public void run() {
-                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 if (!ep.containsKey(ProjectProperties.INCLUDES)) {
                     ep.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
                 }
@@ -869,6 +876,9 @@ public final class J2SEProject implements Project {
                 if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
                     ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
                 }
+                J2SEProjectBuilder.createDefaultModuleProperties(
+                        ep,
+                        testRoots.getRoots().length > 0);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         };

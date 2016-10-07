@@ -317,7 +317,7 @@ public class ProjectClassPathModifier {
             throw new UnsupportedOperationException("Cannot add project as dependency. Missing ProjectClassPathModifierImplementation service in project type.");
         }
     }
-    
+
     /**
      * Removes artifacts (e.g. subprojects) from project's classpath if the
      * artifacts are included on it.

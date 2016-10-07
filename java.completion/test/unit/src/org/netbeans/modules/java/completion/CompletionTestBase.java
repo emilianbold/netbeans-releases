@@ -337,12 +337,17 @@ public class CompletionTestBase extends NbTestCase {
         return fileName.endsWith(".jar") || fileName.endsWith(".zip");    //NOI18N
     }
     
-    private static class CIFactory implements JavaCompletionTask.ItemFactory<CI> {
+    private static class CIFactory implements JavaCompletionTask.ModuleItemFactory<CI> {
 
         private static final int SMART_TYPE = 1000;
         @Override
         public CI createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType) {
             return new CI(kwd, smartType ? 670 - SMART_TYPE : 670, kwd);
+        }
+
+        @Override
+        public CI createModuleItem(String moduleName, int substitutionOffset) {
+            return new CI(moduleName, 950, moduleName); //NOI18N
         }
 
         @Override

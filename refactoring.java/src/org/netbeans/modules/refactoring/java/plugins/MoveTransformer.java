@@ -472,6 +472,18 @@ public class MoveTransformer extends RefactoringVisitor {
         return super.visitImport(node, p);
     }
 
+    @Override
+    public Tree visitExports(ExportsTree node, Element p) {
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            final Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getExportName()));
+            if (el != null && el.getKind() == ElementKind.PACKAGE && isThisPackageMoving((PackageElement)el)) {
+                Tree nju = make.Identifier(getTargetPackageName(el));
+                rewrite(node.getExportName(), nju);                 
+            }
+        }
+        return super.visitExports(node, p);
+    }
+    
     private boolean containsAnyOf(Element el, EnumSet<Modifier> neededMods) {
         for (Modifier mod : neededMods) {
             if(el.getModifiers().contains(mod)) {

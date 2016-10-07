@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -624,7 +625,10 @@ public class RefactoringUtils {
         Set<URL> dependentCompileRoots = new HashSet();
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = null;
+        ClassPath moduleBoot = null;
         ClassPath compile = null;
+        ClassPath moduleCompile = null;
+        ClassPath moduleClass = null;        
         for (FileObject fo : files) {
             ClassPath cp = null;
             FileObject ownerRoot = null;
@@ -670,7 +674,10 @@ public class RefactoringUtils {
             
             if(fo != null) {
                 ClassPath fboot = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                ClassPath fmoduleboot = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_BOOT_PATH);
                 ClassPath fcompile = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                ClassPath fmodulecompile = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                ClassPath fmoduleclass = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_CLASS_PATH);
                 //When file[0] is a class file, there is no compile cp but execute cp
                 //try to get it
                 if (fcompile == null) {
@@ -686,6 +693,15 @@ public class RefactoringUtils {
                 
                 if (fboot != null) {
                     boot = boot != null ? merge(boot, fboot) : fboot;
+                }
+                if (fmoduleboot != null) {
+                    moduleBoot = moduleBoot != null ? merge(moduleBoot, fmoduleboot) : fmoduleboot;
+                }
+                if (fmodulecompile != null) {
+                    moduleCompile = moduleCompile != null ? merge(moduleCompile, fmodulecompile) : fmodulecompile;
+                }
+                if (fmoduleclass != null) {
+                    moduleClass = moduleClass != null ? merge(moduleClass, fmoduleclass) : fmoduleclass;
                 }
             }
         }
@@ -712,8 +728,13 @@ public class RefactoringUtils {
         if (boot == null) {
             boot = JavaPlatform.getDefault().getBootstrapLibraries();
         }
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot == null? nullPath : boot, compile == null? nullPath : compile, rcp);
-        return cpInfo;
+        return new ClasspathInfo.Builder(boot == null ? nullPath : boot)
+                .setModuleBootPath(moduleBoot == null ? boot == null? nullPath : boot : moduleBoot)
+                .setClassPath(compile)
+                .setModuleCompilePath(moduleCompile)
+                .setModuleClassPath(moduleClass)
+                .setSourcePath(rcp).
+                build();
     }
 
 

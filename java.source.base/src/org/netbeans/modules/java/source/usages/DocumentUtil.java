@@ -44,16 +44,14 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.tools.javac.code.Symbol;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharTokenizer;
@@ -61,7 +59,6 @@ import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
-import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
@@ -116,6 +113,7 @@ public class DocumentUtil {
     private static final char EK_LOCAL_ENUM = 'e';                      //NOI18N
     private static final char EK_ANNOTATION = 'A';                      //NOI18N
     private static final char EK_LOCAL_ANNOTATION = 'a';                //NOI18N
+    private static final char EK_MODULE = 'M';                          //NOI18N
     private static final int SIZE = ClassIndexImpl.UsageType.values().length;
 
     private DocumentUtil () {
@@ -139,8 +137,18 @@ public class DocumentUtil {
         return new FileObjectConvertor (resourceType, roots);
     }
 
-    public static Convertor<Document,ElementHandle<TypeElement>> elementHandleConvertor () {
-        return new ElementHandleConvertor ();
+    @NonNull
+    public static Convertor<Document,ElementHandle<TypeElement>> typeElementConvertor() {
+        return new ElementHandleConvertor<> (
+                ElementKind.CLASS,
+                ElementKind.ENUM,
+                ElementKind.INTERFACE,
+                ElementKind.ANNOTATION_TYPE);
+    }
+    
+    @NonNull
+    public static Convertor<Document,ElementHandle<ModuleElement>> moduleElementConvertor() {
+        return new ElementHandleConvertor<>(ElementKind.MODULE);
     }
 
     public static Convertor<Document,String> binaryNameConvertor () {
@@ -379,6 +387,8 @@ public class DocumentUtil {
             case EK_ANNOTATION:
             case EK_LOCAL_ANNOTATION:
                 return ElementKind.ANNOTATION_TYPE;
+            case EK_MODULE:
+                return ElementKind.MODULE;
             default:
                 throw new IllegalArgumentException ();
         }
@@ -400,6 +410,8 @@ public class DocumentUtil {
                 return isLocal ? EK_LOCAL_ENUM : EK_ENUM;
             case ANNOTATION_TYPE:
                 return isLocal ? EK_LOCAL_ANNOTATION : EK_ANNOTATION;
+            case MODULE:
+                return EK_MODULE;
             default:
                 throw new IllegalArgumentException ();
         }
@@ -467,6 +479,7 @@ public class DocumentUtil {
         private final Convertor<String,String> nameFactory;
         private final Convertor<FileObject,Boolean> filter;
         private final FileObject[] roots;
+        private final ElementKind[] kindHolder = new ElementKind[1];
 
         private FileObjectConvertor (
                 @NonNull final ClassIndex.ResourceType type,
@@ -478,25 +491,27 @@ public class DocumentUtil {
 
         @Override
         public FileObject convert (final Document doc) {
-            final String binaryName = getBinaryName(doc, null);
-            return binaryName == null ? null : convert(binaryName);
+            final String binaryName = getBinaryName(doc, kindHolder);            
+            return binaryName == null ?
+                    null :
+                    kindHolder[0] == ElementKind.MODULE ?
+                        resolveFile(FileObjects.MODULE_INFO) :
+                        convertType(binaryName);
         }
 
-        private FileObject convert(String value) {
-            for (FileObject root : roots) {
-                FileObject result = resolveFile (root, value);
-                if (result != null) {
-                    return result;
-                }
+        private FileObject convertType(@NonNull final String value) {
+            FileObject result = resolveFile (value);
+            if (result != null) {
+                return result;
             }
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             for (FileObject root : roots ) {
                 try {
-                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL(), true);
+                    ClassIndexImpl impl = cim.getUsagesQuery(root.toURL(), true);
                     if (impl != null) {
                         String sourceName = impl.getSourceName(value);
                         if (sourceName != null) {
-                            FileObject result = root.getFileObject(sourceName);
+                            result = root.getFileObject(sourceName);
                             if (result != null) {
                                 return result;
                             }
@@ -511,31 +526,29 @@ public class DocumentUtil {
             return null;
         }
 
-        private FileObject resolveFile (
-                final FileObject root,
-                String classBinaryName) {
+        private FileObject resolveFile (String classBinaryName) {
             assert classBinaryName != null;
             classBinaryName = classBinaryName.replace('.', '/');    //NOI18N
             int index = classBinaryName.lastIndexOf('/');           //NOI18N
-            FileObject folder;
-            String name;
-            if (index<0) {
-                folder = root;
-                name = classBinaryName;
-            }
-            else {
-                assert index>0 : classBinaryName;
-                assert index<classBinaryName.length() - 1 : classBinaryName;
-                folder = root.getFileObject(classBinaryName.substring(0,index));
-                name = classBinaryName.substring(index+1);
-            }
-            if (folder == null) {
-                return null;
-            }
-            name = nameFactory.convert(name);
-            for (FileObject child : folder.getChildren()) {
-                if (name.equals(child.getName()) && filter.convert(child)) {
-                    return child;
+            for (FileObject root : roots) {
+                FileObject folder;
+                String name;
+                if (index<0) {
+                    folder = root;
+                    name = classBinaryName;
+                } else {
+                    assert index > 0 : classBinaryName;
+                    assert index < classBinaryName.length() - 1 : classBinaryName;
+                    folder = root.getFileObject(classBinaryName.substring(0,index));
+                    name = classBinaryName.substring(index+1);
+                }
+                if (folder != null) {                    
+                    name = nameFactory.convert(name);
+                    for (FileObject child : folder.getChildren()) {
+                        if (name.equals(child.getName()) && filter.convert(child)) {
+                            return child;
+                        }
+                    }
                 }
             }
             return null;
@@ -585,17 +598,26 @@ public class DocumentUtil {
         }
     }
 
-    private static class ElementHandleConvertor implements Convertor<Document,ElementHandle<TypeElement>> {
+    private static class ElementHandleConvertor<T extends Element> implements Convertor<Document,ElementHandle<T>> {
 
         private final ElementKind[] kindHolder = new ElementKind[1];
-
-        @Override
-        public ElementHandle<TypeElement> convert (final Document doc) {
-            final String binaryName = getBinaryName(doc, kindHolder);
-            return binaryName == null ? null : convert(kindHolder[0], binaryName);
+        private final Set<ElementKind> supportedElements;
+        
+        ElementHandleConvertor(
+                @NonNull final ElementKind supportedElement,
+                @NonNull final ElementKind... rest) {
+            this.supportedElements = EnumSet.of(supportedElement, rest);
         }
 
-        private ElementHandle<TypeElement> convert(ElementKind kind, String value) {
+        @Override
+        public ElementHandle<T> convert (final Document doc) {
+            final String binaryName = getBinaryName(doc, kindHolder);
+            return binaryName == null || !supportedElements.contains(kindHolder[0]) ?
+                    null :
+                    convert(kindHolder[0], binaryName);
+        }
+
+        private ElementHandle<T> convert(ElementKind kind, String value) {
             return ElementHandleAccessor.getInstance().create(kind, value);
         }
     }
@@ -706,12 +728,21 @@ public class DocumentUtil {
             assert binaryNameSourceNamePair != null;
             final String binaryName = binaryNameSourceNamePair.first();
             final String sourceName = binaryNameSourceNamePair.second();
-            final Query query = binaryNameQuery(binaryName);
-            if (sourceName != null) {
-                assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
-                final BooleanQuery bq = (BooleanQuery) query;
-                bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+            assert binaryName != null || sourceName != null;
+            Query query = null;
+            if (binaryName != null) {
+                query = binaryNameQuery(binaryName);
             }
+            if (sourceName != null) {
+                if (query == null) {
+                   query = new TermQuery(new Term (FIELD_SOURCE,sourceName));
+                } else {
+                    assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
+                    final BooleanQuery bq = (BooleanQuery) query;
+                    bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+                }
+            }
+            assert query != null;
             return query;
         }
     }

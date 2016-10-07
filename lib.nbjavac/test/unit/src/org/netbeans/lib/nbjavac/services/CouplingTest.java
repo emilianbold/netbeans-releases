@@ -116,6 +116,7 @@ public class CouplingTest extends TestCase {
 
     private List<String> compile(String code) throws Exception {
         final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
+        final String version = System.getProperty("java.vm.specification.version"); //NOI18N
         final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
         assert tool != null;
 
@@ -123,7 +124,7 @@ public class CouplingTest extends TestCase {
 
         std.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(workingDir));
 
-        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath, "-Xjcov", "-XDshouldStopPolicy=GENERATE"), null, Arrays.asList(new MyFileObject(code)));
+        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath, "-source", version, "-Xjcov", "-XDshouldStopPolicy=GENERATE"), null, Arrays.asList(new MyFileObject(code)));
         Iterable<? extends CompilationUnitTree> cuts = ct.parse();
 
         ct.analyze();
@@ -158,7 +159,8 @@ public class CouplingTest extends TestCase {
             std.setLocation(StandardLocation.CLASS_PATH, Collections.singleton(workingDir));
         }
 
-        JavacTaskImpl ct = Utilities.createJavac(std, Utilities.fileObjectFor(code));
+        JavacTaskImpl ct = Utilities.createJavac(std);
+        ct.enter();
         
         if (loadFromClasses) {
             for (String fqn : fqns) {
@@ -166,7 +168,7 @@ public class CouplingTest extends TestCase {
             }
         }
 
-        ct.parse();
+        ct.parse(Utilities.fileObjectFor(code));
         ct.analyze();
 
         Set<String> classInfo = new HashSet<String>();

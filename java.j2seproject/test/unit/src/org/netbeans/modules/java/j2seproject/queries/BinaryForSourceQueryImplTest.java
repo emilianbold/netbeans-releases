@@ -47,6 +47,7 @@ package org.netbeans.modules.java.j2seproject.queries;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Optional;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -55,10 +56,12 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
 
@@ -79,8 +82,9 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
     private FileObject tests;
     private FileObject buildClasses;
     private FileObject buildTestClasses;
+    private URL distJarURL;
     private ProjectManager pm;
-    private Project pp;
+    private J2SEProject pp;
     AntProjectHelper helper;
     
     protected void setUp() throws Exception {
@@ -103,12 +107,16 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
+        pp = Optional.ofNullable(pm.findProject(projdir))
+                .map((p) -> p.getLookup().lookup(J2SEProject.class))
+                .orElseThrow(()-> new AssertionError("No J2SEProject in " + FileUtil.getFileDisplayName(projdir)));
         sources = projdir.getFileObject("src");
         tests = FileUtil.createFolder(projdir, "test");
         FileObject fo = projdir.createFolder("build");
         buildClasses = fo.createFolder("classes");
         buildTestClasses = FileUtil.createFolder(fo, "test/classes");
+        distJarURL = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(
+                helper.resolveFile(pp.evaluator().getProperty(ProjectProperties.DIST_JAR))));
     }
     
     public void testBinaryForSourceQuery() throws Exception {
@@ -120,8 +128,9 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         result = BinaryForSourceQuery.findBinaryRoots(folder.toURL());
         assertEquals("Project non build folder does not have any source folder", 0, result.getRoots().length);
         result = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
-        assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
+        assertEquals("Project build folder must have source folder", 2, result.getRoots().length);
         assertEquals("Project build folder must have source folder",buildClasses.toURL(),result.getRoots()[0]);
+        assertEquals("Project jar artifact must have source folder", distJarURL, result.getRoots()[1]);
         BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertTrue (result == result2);
     }
@@ -135,7 +144,12 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertNotNull(r);
         URL[] roots = r.getRoots();
-        assertTrue(Arrays.equals(new URL[] {buildClasses.toURL()}, roots));
+        assertTrue(Arrays.equals(
+                new URL[] {
+                    buildClasses.toURL(),
+                    distJarURL
+                },
+                roots));
         r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
         assertNotNull(r);
         roots = r.getRoots();
@@ -160,7 +174,12 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
         assertNotNull(r);
         roots = r.getRoots();
-        assertTrue(Arrays.equals(new URL[] {buildClasses.toURL()}, roots));
+        assertTrue(Arrays.equals(
+                new URL[] {
+                    buildClasses.toURL(),
+                    distJarURL
+                },
+                roots));
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             @Override
             public Void run() throws Exception {
@@ -177,7 +196,12 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         r = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertNotNull(r);
         roots = r.getRoots();
-        assertTrue(Arrays.equals(new URL[]{buildClasses.toURL()}, roots));
+        assertTrue(Arrays.equals(
+                new URL[]{
+                    buildClasses.toURL(),
+                    distJarURL
+                },
+                roots));
         r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
         assertNotNull(r);
         roots = r.getRoots();

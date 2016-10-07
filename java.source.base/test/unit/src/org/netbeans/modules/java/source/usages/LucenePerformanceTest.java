@@ -130,7 +130,7 @@ public class LucenePerformanceTest extends NbTestCase {
         startTime = System.currentTimeMillis();
         index.query(
                 result2,
-                DocumentUtil.elementHandleConvertor(),
+                DocumentUtil.typeElementConvertor(),
                 DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 Queries.createQuery(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,"",Queries.QueryKind.PREFIX));
@@ -150,7 +150,7 @@ public class LucenePerformanceTest extends NbTestCase {
         startTime = System.currentTimeMillis(); 
         index.query(
                 result2,
-                DocumentUtil.elementHandleConvertor(),
+                DocumentUtil.typeElementConvertor(),
                 DocumentUtil.declaredTypesFieldSelector(false, false),
                 null,
                 Queries.createQuery(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,"Class7",Queries.QueryKind.PREFIX));

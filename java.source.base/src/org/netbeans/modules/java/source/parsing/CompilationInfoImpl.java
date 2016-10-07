@@ -150,11 +150,13 @@ public final class CompilationInfoImpl {
      * Creates a new CompilationInfoImpl for classpaths
      * @param cpInfo classpaths
      */
-    CompilationInfoImpl (final ClasspathInfo cpInfo) {
+    CompilationInfoImpl (
+            @NonNull final ClasspathInfo cpInfo,
+            @NullAllowed final FileObject root) {
         assert cpInfo != null;
         this.parser = null;
         this.file = null;
-        this.root = null;
+        this.root = root;
         this.jfo = null;
         this.snapshot = null;
         this.cpInfo = cpInfo;
@@ -375,7 +377,7 @@ public final class CompilationInfoImpl {
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
                 if (currentPhase == JavaSource.Phase.MODIFIED)
-                    getJavacTask().parse(); // Ensure proper javac initialization
+                    getJavacTask().analyze(); // Ensure proper javac initialization
             }
             return phase;
         } else {

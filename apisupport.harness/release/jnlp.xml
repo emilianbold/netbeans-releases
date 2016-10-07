@@ -236,7 +236,8 @@ made subject to such option by the copyright holder.
 ]]></echo>
         <mkdir dir="${dist.dir}"/>
         <war basedir="${jnlp.dest.dir}" destfile="${dist.dir}/${app.name}.war" webxml="${suite.build.dir}/tmp/web.xml">
-            <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${jnlp.servlet.jar}/.." prefix="WEB-INF/lib"/>
+            <zipfileset file="${jnlp.servlet.jar}" prefix="WEB-INF/lib"/>
         </war>
     </target>
 

@@ -144,6 +144,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
                 @Override
                 public void run(CompilationController info) throws Exception {
+                    info.toPhase(Phase.RESOLVED);
                     if(handle.getElementHandle().getKind() == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
                         if(element == null) {

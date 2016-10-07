@@ -41,17 +41,12 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,13 +56,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import javax.tools.JavaFileObject;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -75,17 +68,13 @@ import org.openide.util.BaseUtilities;
  */
 public final class PathArchiveTest extends NbTestCase {
 
-    private static final String EXPLICIT_JDK9_HOME = null; //"/Library/Java/JavaVirtualMachines/jdk1.9.0.jdk/Contents/Home/";
-
     public PathArchiveTest(String name) {
         super(name);
     }
 
     public void testArchiveCorrectness() throws IOException {
-        final FileSystemProvider provider = getJRTFS();
-        if (provider != null) {
-            final Path fsRoot = provider.getPath(URI.create("jrt:/"));  //NOI18N
-            assertNotNull(fsRoot);
+        final Path fsRoot = TestUtilities.getJRTFS();
+        if (fsRoot != null) {
             List<? extends Path> modules = getModules(fsRoot);
             for (Path module : modules) {
                 verifyModule(module);
@@ -99,7 +88,7 @@ public final class PathArchiveTest extends NbTestCase {
         final PathArchive pa = new PathArchive(module, null);
         final Map<String,Set<String>> pkgs = getPackages(module);
         for (Map.Entry<String,Set<String>> pkg : pkgs.entrySet()) {
-            final Iterable<? extends JavaFileObject> res = pa.getFiles(pkg.getKey(), null, null, null);
+            final Iterable<? extends JavaFileObject> res = pa.getFiles(pkg.getKey(), null, null, null, false);
             assertPkgEquals(pkg.getKey(), pkg.getValue(), res);
         }
     }
@@ -176,32 +165,11 @@ public final class PathArchiveTest extends NbTestCase {
     @NonNull
     private static List<? extends Path> getModules(Path fsRoot) throws IOException {
         final List<Path> modules = new ArrayList<>();
-        for (Path p : Files.newDirectoryStream(fsRoot)) {
+        for (Path p : Files.newDirectoryStream(fsRoot.resolve("modules"))) {    //NOI18N
             if (Files.isDirectory(p)) {
                 modules.add(p);
             }
         }
         return modules;
     }
-
-    @CheckForNull
-    private static FileSystemProvider getJRTFS() throws IOException {
-        final File javaHome = new File(EXPLICIT_JDK9_HOME != null ?
-            EXPLICIT_JDK9_HOME :
-            System.getProperty("java.home"));    //NOI18N
-        final File jrtFsProvider = new File(javaHome,"jrt-fs.jar"); //NOI18N
-        if (jrtFsProvider.exists() && jrtFsProvider.isFile() && jrtFsProvider.canRead()) {
-            final ClassLoader cl = new URLClassLoader(new URL[]{
-                BaseUtilities.toURI(jrtFsProvider).toURL()
-            });
-            final ServiceLoader<FileSystemProvider> sl = ServiceLoader.load(FileSystemProvider.class, cl);
-            for (FileSystemProvider fsp : sl) {
-                if ("jrt".equals(fsp.getScheme())) {    //NOI18N
-                    return fsp;
-                }
-            }
-        }
-        return null;
-    }
-
 }

@@ -81,11 +81,13 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.LongHashMap;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -114,6 +116,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String JRE_PROFILE = "jreProfile";        //NOI18N
+    private static final String COMPILER_OPTIONS = "compilerOptions";   //NOI18N
     private static final int PATH_FLAG_EXISTS = 1;
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
@@ -127,6 +130,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private final AtomicReference<ClassPath> processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
     private final SourceLevelQuery.Result sourceLevel;
+    private final CompilerOptionsQuery.Result compilerOptions;
     private final RequestProcessor.Task slidingRefresh;
     private final UsedRoots usedRoots;
     private volatile ClassLoaderRef classLoaderCache;
@@ -138,14 +142,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         processorPath = new AtomicReference<>(ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH));
         aptOptions = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
         sourceLevel = SourceLevelQuery.getSourceLevel2(root);
-        slidingRefresh = RP.create(new Runnable() {
-            @Override
-            public void run() {
-                IndexingManager.getDefault().refreshIndex(
+        compilerOptions = CompilerOptionsQuery.getOptions(root);
+        this.slidingRefresh = RP.create(() -> {
+            IndexingManager.getDefault().refreshIndex(
                     root.toURL(),
                     Collections.<URL>emptyList(),
                     false);
-            }
         });
         usedRoots = new UsedRoots(root.toURL());
     }
@@ -303,8 +305,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private void listen() {
         listenOnProcessorPath(processorPath.get(), this);
         aptOptions.addChangeListener(WeakListeners.change(this, aptOptions));
-        if (sourceLevel.supportsChanges())
+        if (sourceLevel.supportsChanges()) {
             sourceLevel.addChangeListener(WeakListeners.change(this, sourceLevel));
+        }
+        compilerOptions.addChangeListener(WeakListeners.change(this,compilerOptions));
     }
     
     private static void listenOnProcessorPath(
@@ -418,6 +422,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             }            
             if (JavaIndex.ensureAttributeValue(url, JRE_PROFILE, sourceLevel.getProfile().getName(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to jre profile change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            final String cmpOptsStr = JavacParser.validateCompilerOptions(compilerOptions.getArguments())
+                    .stream()
+                    .collect(Collectors.joining(" "));  //NOI18N
+            if (JavaIndex.ensureAttributeValue(url, COMPILER_OPTIONS, cmpOptsStr, checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to compiler options change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
                     return vote;

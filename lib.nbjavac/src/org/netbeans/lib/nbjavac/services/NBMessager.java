@@ -45,7 +45,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
-import com.sun.tools.javadoc.Messager;
+import com.sun.tools.javadoc.main.Messager;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;

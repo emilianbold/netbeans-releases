@@ -52,6 +52,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -65,7 +66,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -73,6 +78,7 @@ import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
@@ -102,8 +108,9 @@ final class MultiPassCompileWorker extends CompileWorker {
             final Context context,
             final JavaParsingContext javaContext,
             final Collection<? extends CompileTuple> files) {
-        final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
-        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
+        final LinkedList<CompileTuple> toProcess = new LinkedList<>();
+        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<>();
+        final ModuleName moduleName = new ModuleName(javaContext.getModuleName());
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
@@ -112,14 +119,15 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
         if (toProcess.isEmpty()) {
             return ParsingOutput.success(
+                    moduleName.name,
                     previous.file2FQNs,
                     previous.addedTypes,
+                    previous.addedModules,
                     previous.createdFiles,
                     previous.finishedFiles,
                     previous.modifiedTypes,
                     previous.aptGenerated);
         }
-        
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
         final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
@@ -128,7 +136,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         boolean aptEnabled = false;
         int state = 0;
         boolean isBigFile = false;
-        boolean[] flm = null;
+        boolean[] flm = null;        
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
             if (context.isCancelled()) {
                 return null;
@@ -179,7 +187,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                                         return context.isCancelled() || (checkForMemLow && isLowMemory(null));
                                     }
                                 },
-                                active.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                                active.aptGenerated ? null : APTUtils.get(context.getRoot()),
+                                CompilerOptionsQuery.getOptions(context.getRoot()));
                         Iterable<? extends Processor> processors = jt.getProcessors();
                         aptEnabled = processors != null && processors.iterator().hasNext();
                         if (JavaIndex.LOG.isLoggable(Level.FINER)) {
@@ -206,7 +215,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         freeMemory(true);
                         continue;
                     }
-                    Iterable<? extends TypeElement> types;
+                    Iterable<? extends Element> types;
                     types = jt.enterTrees(trees);
                     if (jfo2tuples.remove(active.jfo) != null) {
                         final Types ts = Types.instance(jt.getContext());
@@ -290,15 +299,21 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                     javaContext.getFQNs().set(types, active.indexable.getURL());
                     boolean[] main = new boolean[1];
-                    if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                        javaContext.analyze(trees, jt, active, previous.addedTypes, main);
+                    if (javaContext.getCheckSums().checkAndSet(
+                            active.indexable.getURL(),
+                            StreamSupport.stream(types.spliterator(), false)
+                                .filter((e) -> e.getKind().isClass() || e.getKind().isInterface())
+                                .map ((e) -> (TypeElement)e)
+                                .collect(Collectors.toList()),
+                            jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                        javaContext.analyze(trees, jt, active, previous.addedTypes, previous.addedModules, main);
                     } else {
-                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                        javaContext.analyze(trees, jt, active, aTypes, main);
+                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<>();
+                        javaContext.analyze(trees, jt, active, aTypes, previous.addedModules, main);
                         previous.addedTypes.addAll(aTypes);
                         previous.modifiedTypes.addAll(aTypes);
                     }
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().toURL(), active.indexable.getURL(), main[0]);
                     JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                     Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
                     if (!active.virtual) {
@@ -309,6 +324,13 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 // presumably should not happen
                             }
                         }
+                    }
+                    if (!moduleName.assigned) {
+                        ModuleElement module = Modules.instance(jt.getContext()).getDefaultModule();
+                        moduleName.name = module == null || module.isUnnamed() ?
+                                null :
+                                module.getQualifiedName().toString();
+                        moduleName.assigned = true;
                     }
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
@@ -365,7 +387,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName.name, previous.file2FQNs,
+                        previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                        previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & mark files as errornous
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -382,7 +406,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
-                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName.name, previous.file2FQNs,
+                        previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                        previous.modifiedTypes, previous.aptGenerated);
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
@@ -418,8 +444,12 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         return (state & MEMORY_LOW) == 0?
-            ParsingOutput.success(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated):
-            ParsingOutput.lowMemory(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+            ParsingOutput.success(moduleName.name, previous.file2FQNs,
+                    previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                    previous.modifiedTypes, previous.aptGenerated):
+            ParsingOutput.lowMemory(moduleName.name, previous.file2FQNs,
+                    previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                    previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(

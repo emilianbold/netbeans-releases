@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javafx2.platform.api;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,32 +132,36 @@ public class JavaFxRuntimeInclusion {
     public static JavaFxRuntimeInclusion forPlatform(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
         boolean isDefault = JavaPlatform.getDefault().equals(javaPlatform);
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         Support runtimeSupport = Support.MISSING;
         String runtimePath = null;
-        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
-            runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
-            runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + runtimePath);
-            if(runtimeSupport != Support.MISSING) {
-                break;
-            }
-        }
-        if(runtimeSupport != Support.MISSING && runtimePath != null) {
-            if(runtimeSupport == Support.PRESENT) {
-                paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + runtimePath);
-            }
-            for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
-                Support optionalSupport = Support.MISSING;
-                String optionalPath = null;
-                for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
-                    optionalPath = optionalLocation + optionalName;
-                    optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + optionalPath);
-                    if(optionalSupport == Support.PRESENT) {
-                        break;
-                    }
+        if (Utils.hasJavaFxModule(javaPlatform)) {
+            runtimeSupport = Support.INCLUDED;
+        } else {
+            for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
+                runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
+                runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + runtimePath);
+                if(runtimeSupport != Support.MISSING) {
+                    break;
                 }
-                if(optionalSupport == Support.PRESENT && optionalPath != null) {
-                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + optionalPath);
+            }
+            if(runtimeSupport != Support.MISSING && runtimePath != null) {
+                if(runtimeSupport == Support.PRESENT) {
+                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + runtimePath);
+                }
+                for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
+                    Support optionalSupport = Support.MISSING;
+                    String optionalPath = null;
+                    for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
+                        optionalPath = optionalLocation + optionalName;
+                        optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + optionalPath);
+                        if(optionalSupport == Support.PRESENT) {
+                            break;
+                        }
+                    }
+                    if(optionalSupport == Support.PRESENT && optionalPath != null) {
+                        paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + optionalPath);
+                    }
                 }
             }
         }

@@ -85,8 +85,13 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardLocation;
 import javax.tools.Diagnostic;
 
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -95,6 +100,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -104,11 +110,14 @@ import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.Hacks;
@@ -122,6 +131,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -138,12 +148,14 @@ import org.openide.util.BaseUtilities;
  *
  * @author Dusan Balek
  */
-public class SourceUtils {    
-     
+public class SourceUtils {
+
+    private static final String MODULE_NAME = "moduleName";   //NOI18N
+    private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
 
     private SourceUtils() {}
-    
+
     /**
      * @since 0.21
      */
@@ -471,13 +483,13 @@ public class SourceUtils {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("cpInfo", cpInfo);   //NOI18N
         
-        Element prev = element.getKind() == ElementKind.PACKAGE ? element : null;
-        while (element.getKind() != ElementKind.PACKAGE) {
+        Element prev = isPkgOrMdl(element.getKind()) ? element : null;
+        while (!isPkgOrMdl(element.getKind())) {
             prev = element;
             element = element.getEnclosingElement();
         }
         final ElementKind kind = prev.getKind();
-        if (!(kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE)) {
+        if (!(kind.isClass() || kind.isInterface() || isPkgOrMdl(kind))) {
             return null;
         }        
         final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
@@ -507,8 +519,10 @@ public class SourceUtils {
            String pkgName, className = null;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
-            }
-            else {
+            } else if (handle.getKind() == ElementKind.MODULE) {
+                pkgName = "";   //NOI18N
+                className = FileObjects.MODULE_INFO;
+            } else {
                 int index = signature[0].lastIndexOf('.');                          //NOI18N
                 if (index<0) {
                     pkgName = "";                                             //NOI18N
@@ -914,6 +928,7 @@ public class SourceUtils {
 
                     @Override
                     public void run(CompilationController control) throws Exception {
+                        control.toPhase(Phase.ELEMENTS_RESOLVED);
                         final JavacElements elms = (JavacElements)control.getElements();
                         TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
                         if (type == null) {
@@ -987,6 +1002,7 @@ public class SourceUtils {
                 js.runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController control) throws Exception {
+                        control.toPhase(Phase.ELEMENTS_RESOLVED);
                         final URL rootURL = root.toURL();
                         Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
                         List<ElementHandle<TypeElement>> classes = new LinkedList<>();
@@ -1199,6 +1215,119 @@ public class SourceUtils {
             path = path.getParentPath();
         }
         return refs;
+    }
+    
+    /**
+     * Returns names of all modules within given scope.
+     * @param info the CompilationInfo used to resolve modules
+     * @param scope to search in {@see SearchScope}
+     * @return set of module names
+     * @since 2.23
+     */
+    public static Set<String> getModuleNames(CompilationInfo info, final @NonNull Set<? extends ClassIndex.SearchScopeType> scope) {
+        Set<String> ret = new HashSet<>();
+        JavaFileManager jfm = info.impl.getJavacTask().getContext().get(JavaFileManager.class);
+        if (jfm != null) {
+            List<JavaFileManager.Location> toSearch = new ArrayList<>();
+            for (ClassIndex.SearchScopeType s : scope) {
+                if (s.isSources()) {
+                    toSearch.add(StandardLocation.MODULE_SOURCE_PATH);
+                }
+                if (s.isDependencies()) {
+                    toSearch.add(StandardLocation.MODULE_PATH);
+                    toSearch.add(StandardLocation.UPGRADE_MODULE_PATH);
+                    toSearch.add(StandardLocation.SYSTEM_MODULES);
+                }
+            }
+            try {
+                for (JavaFileManager.Location searchLocation : toSearch) {
+                    for (Set<JavaFileManager.Location> locations : jfm.listModuleLocations(searchLocation)) {
+                        for (JavaFileManager.Location location : locations) {
+                            ret.add(jfm.inferModuleName(location));
+                        }
+                    }
+                }
+            } catch (IOException ioe) {}
+        }
+        return ret;
+    }
+
+    /**
+     * Returns the name of the module.
+     * @param rootUrl the binary root
+     * @return the module name or null when no or invalid module
+     * @since 2.23
+     */
+    @CheckForNull
+    public static String getModuleName(@NonNull final URL rootUrl) {
+        return getModuleName(rootUrl, false);
+    }
+
+    /**
+     * Returns the name of the module.
+     * @param rootUrl the binary root
+     * @param canUseSources
+     * @return the module name or null when no or invalid module
+     * @since 2.23
+     */
+    @CheckForNull
+    public static String getModuleName(
+            @NonNull final URL rootUrl,
+            @NonNull final boolean canUseSources) {
+        if (FileObjects.PROTO_NBJRT.equals(rootUrl.getProtocol())) {
+            //Platform
+            final String path = rootUrl.getPath();
+            int endIndex = path.length() - 1;
+            int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
+            return path.substring(startIndex+1, endIndex);
+        }
+        final URL srcRootURL = JavaIndex.getSourceRootForClassFolder(rootUrl);
+        if (srcRootURL != null) {
+            //Cache folder
+            return getProjectModuleName(Collections.singletonList(srcRootURL), canUseSources);
+        }
+        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
+        if (sfbqRes.preferSources()) {
+            //Project binary
+            final String moduleName = getProjectModuleName(
+                    Arrays.stream(sfbqRes.getRoots()).map(FileObject::toURL).collect(Collectors.toList()),
+                    canUseSources);
+            if (moduleName != null) {
+                return moduleName;
+            }
+        }
+        //Binary
+        if (FileUtil.isArchiveArtifact(rootUrl)) {
+            //Archive
+            final FileObject root = URLMapper.findFileObject(rootUrl);
+            if (root != null) {
+                final FileObject moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS);
+                if (moduleInfo != null) {
+                    try {
+                        return readModuleName(moduleInfo);
+                    } catch (IOException ioe) {
+                        //Behave as javac: Pass to automatic module
+                    }
+                }
+                //Automatic module
+                final FileObject file = FileUtil.getArchiveFile(root);
+                if (file != null) {
+                    return autoName(file.getName());
+                }
+            }
+        } else {
+            //Regular module folder//Folder
+            final FileObject root = URLMapper.findFileObject(rootUrl);
+            FileObject moduleInfo;
+            if (root != null && (moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS)) != null) {
+                try {
+                    return readModuleName(moduleInfo);
+                } catch (IOException ioe) {
+                    //pass to null
+                }
+            }
+        }
+        return null;
     }
 
     // --------------- Helper methods of getFile () -----------------------------
@@ -1434,7 +1563,120 @@ public class SourceUtils {
         }
         return res;
     }
-    
+
+    @CheckForNull
+    private static String getProjectModuleName(
+            @NonNull final List<URL> srcRootURLs,
+            final boolean canUseSources) {
+        if (srcRootURLs.isEmpty()) {
+            return null;
+        }
+        if (srcRootURLs.stream().allMatch((srcRootURL)->JavaIndex.hasSourceCache(srcRootURL,false))) {
+            //scanned
+            String moduleName = null;
+            for (URL srcRootURL : srcRootURLs) {
+                try {
+                    moduleName = JavaIndex.getAttribute(srcRootURL, MODULE_NAME, null);
+                    if (moduleName != null) {
+                        break;
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+            if (moduleName != null) {
+                //Has module-info
+                return moduleName;
+            }
+            //No module -> automatic module
+            return autoName(srcRootURLs);
+        } else if (canUseSources) {
+            FileObject moduleInfo = null;
+            FileObject root = null;
+            for (URL srcRootUrl : srcRootURLs) {
+                final FileObject srcRoot = URLMapper.findFileObject(srcRootUrl);
+                if (srcRoot != null) {
+                    moduleInfo = srcRoot.getFileObject(FileObjects.MODULE_INFO, FileObjects.JAVA);
+                    if (moduleInfo != null) {
+                        root = srcRoot;
+                        break;
+                    }
+                }
+            }
+            if (moduleInfo != null) {
+                final JavacTaskImpl jt = JavacParser.createJavacTask(
+                        new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+                try {
+                    final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
+                            moduleInfo,
+                            root,
+                            null,
+                            FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
+                    final List<? extends Tree> typeDecls = cu.getTypeDecls();
+                    if (!typeDecls.isEmpty()) {
+                        final Tree typeDecl = typeDecls.get(0);
+                        if (typeDecl.getKind() == Tree.Kind.MODULE) {
+                            return ((ModuleTree)typeDecl).getName().toString();
+                        }
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            } else {
+                //No module -> automatic module
+                return autoName(srcRootURLs);
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static String autoName(@NonNull final List<? extends URL> srcRootURLs) {
+        for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRootURLs.get(0)).getRoots()) {
+            if (FileObjects.JAR.equals(binRoot.getProtocol())) {
+                return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static String autoName(@NonNull String moduleName) {
+        final java.util.regex.Matcher matcher = AUTO_NAME_PATTERN.matcher(moduleName);
+        if (matcher.find()) {
+            int start = matcher.start();
+            moduleName = moduleName.substring(0, start);
+        }
+        moduleName =  moduleName
+            .replaceAll("[^A-Za-z0-9]", ".")  // replace non-alphanumeric
+            .replaceAll("(\\.)(\\1)+", ".")   // collapse repeating dots
+            .replaceAll("^\\.", "")           // drop leading dots
+            .replaceAll("\\.$", "");          // drop trailing dots
+        return moduleName.isEmpty() ?
+            null :
+            moduleName;
+    }
+
+    @NonNull
+    private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
+        try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
+            final ClassFile clz = new ClassFile(in, false);
+            final String name = clz.getName().getExternalName(true);
+            return name.substring(0, name.length() - (FileObjects.MODULE_INFO.length()+1));
+        }
+    }
+
+    private static boolean isPkgOrMdl(@NonNull final ElementKind kind) {
+        return kind == ElementKind.PACKAGE || kind == ElementKind.MODULE;
+    }
 
     /**
      * Extracts diagnostic params from a diagnostic. Gets under hood of Javac

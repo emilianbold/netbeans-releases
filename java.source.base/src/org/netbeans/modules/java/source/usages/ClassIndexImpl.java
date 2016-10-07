@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -126,28 +128,13 @@ public abstract class ClassIndexImpl {
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Set<? super T> result) throws IOException, InterruptedException;
 
-    public abstract <T> void getDeclaredTypes (
+    public abstract <T> void getDeclaredElements (
             @NonNull String name,
             @NonNull ClassIndex.NameKind kind,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull FieldSelector selector,
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Collection<? super T> result) throws IOException, InterruptedException;
-
-    public final <T> void getDeclaredTypes (
-            @NonNull String name,
-            @NonNull ClassIndex.NameKind kind,
-            @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
-            @NonNull Convertor<? super Document, T> convertor,
-            @NonNull Collection<? super T> result) throws IOException, InterruptedException {
-        getDeclaredTypes(
-            name,
-            kind,
-            scope,
-            DocumentUtil.declaredTypesFieldSelector(false, false),
-            convertor,
-            result);
-    }
 
     public abstract <T> void getDeclaredElements (
             String ident,
@@ -198,16 +185,20 @@ public abstract class ClassIndexImpl {
     }
 
     void typesEvent (
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> added,
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> removed,
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
-        final ClassIndexImplEvent a = added == null || added.isEmpty() ? null : new ClassIndexImplEvent(this, added);
-        final ClassIndexImplEvent r = removed == null || removed.isEmpty() ? null : new ClassIndexImplEvent(this, removed);
-        final ClassIndexImplEvent ch = changed == null || changed.isEmpty() ? null : new ClassIndexImplEvent(this, changed);
+            @NonNull final URL root,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> added,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> removed,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> changed) {
+        final ClassIndexImplEvent a = added.first() == null && added.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, added.first(), added.second());
+        final ClassIndexImplEvent r = removed.first() == null && removed.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, removed.first(), removed.second());
+        final ClassIndexImplEvent ch = changed.first() == null && changed.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, changed.first(), changed.second());
         typesEvent(a, r, ch);
     }
 
-    private void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
+    private void typesEvent (
+            @NullAllowed final ClassIndexImplEvent added,
+            @NullAllowed final ClassIndexImplEvent removed,
+            @NullAllowed final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {
             _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);

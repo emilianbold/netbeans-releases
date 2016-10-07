@@ -44,6 +44,7 @@
 
 package org.netbeans.lib.java.lexer;
 
+import java.util.function.Supplier;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
@@ -76,18 +77,26 @@ public class JavaLexer implements Lexer<JavaTokenId> {
     private final TokenFactory<JavaTokenId> tokenFactory;
     
     private final int version;
+    
+    private Integer state = null;
 
     public JavaLexer(LexerRestartInfo<JavaTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
-        assert (info.state() == null); // never set to non-null value in state()
+        this.state = (Integer) info.state();
+        if (state == null) {
+            Supplier<String> fileName = (Supplier<String>)info.getAttributeValue("fileName"); //NOI18N
+            if (fileName != null && "module-info.java".equals(fileName.get())) { //NOI18N
+                state = 1; // parsing module info
+            }
+        }
         
-        Integer ver = (Integer)info.getAttributeValue("version");
-        this.version = (ver != null) ? ver.intValue() : 9; // TODO: Java 1.8 used by default
+        Integer ver = (Integer)info.getAttributeValue("version"); //NOI18N
+        this.version = (ver != null) ? ver.intValue() : 9; // TODO: Java 1.8 used by default        
     }
     
     public Object state() {
-        return null; // always in default state after token recognition
+        return state;
     }
     
     int previousLength = -1;
@@ -383,6 +392,9 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                 case ',':
                     return token(JavaTokenId.COMMA);
                 case ';':
+                    if (state != null && state >= 4) {
+                        state = 3; // inside module decl;
+                    }
                     return token(JavaTokenId.SEMICOLON);
                 case ':':
                     if (nextChar() == ':')
@@ -400,8 +412,12 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                 case ']':
                     return token(JavaTokenId.RBRACKET);
                 case '{':
+                    if (state != null && state == 2) {
+                        state = 3; // inside module decl
+                    }
                     return token(JavaTokenId.LBRACE);
                 case '}':
+                    state = null;
                     return token(JavaTokenId.RBRACE);
                 case '@':
                     return token(JavaTokenId.AT);
@@ -610,12 +626,28 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                         : finishIdentifier();
                             break;
                         case 'x':
-                            if ((c = nextChar()) == 't'
-                             && (c = nextChar()) == 'e'
-                             && (c = nextChar()) == 'n'
-                             && (c = nextChar()) == 'd'
-                             && (c = nextChar()) == 's')
-                                return keywordOrIdentifier(JavaTokenId.EXTENDS);
+                            switch (c = nextChar()) {
+                                case 'p':
+                                    if ((c = nextChar()) == 'o'
+                                     && (c = nextChar()) == 'r'
+                                     && (c = nextChar()) == 't'
+                                     && (c = nextChar()) == 's'
+                                     && state != null && state == 3) {
+                                        Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.EXPORTS);
+                                        if (kwOrId.id() == JavaTokenId.EXPORTS) {
+                                            state = 5; // after exports
+                                        }
+                                        return kwOrId;
+                                    }
+                                    break;
+                                case 't':
+                                    if ((c = nextChar()) == 'e'
+                                     && (c = nextChar()) == 'n'
+                                     && (c = nextChar()) == 'd'
+                                     && (c = nextChar()) == 's')
+                                        return keywordOrIdentifier(JavaTokenId.EXTENDS);
+                                    break;
+                            }
                             break;
                     }
                     return finishIdentifier(c);
@@ -723,6 +755,21 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                         return keywordOrIdentifier(JavaTokenId.LONG);
                     return finishIdentifier(c);
 
+                case 'm':
+                    if ((c = nextChar()) == 'o'
+                     && (c = nextChar()) == 'd'
+                     && (c = nextChar()) == 'u'
+                     && (c = nextChar()) == 'l'
+                     && (c = nextChar()) == 'e'
+                     && state != null && state == 1) {
+                        Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.MODULE);
+                        if (kwOrId.id() == JavaTokenId.MODULE) {
+                            state = 2; // after module
+                        }
+                        return kwOrId;
+                    }
+                    return finishIdentifier(c);
+
                 case 'n':
                     switch (c = nextChar()) {
                         case 'a':
@@ -764,13 +811,29 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                         return keywordOrIdentifier(JavaTokenId.PRIVATE);
                                     break;
                                 case 'o':
-                                    if ((c = nextChar()) == 't'
-                                     && (c = nextChar()) == 'e'
-                                     && (c = nextChar()) == 'c'
-                                     && (c = nextChar()) == 't'
-                                     && (c = nextChar()) == 'e'
-                                     && (c = nextChar()) == 'd')
-                                        return keywordOrIdentifier(JavaTokenId.PROTECTED);
+                                    switch (c = nextChar()) {
+                                        case 't':
+                                            if ((c = nextChar()) == 'e'
+                                             && (c = nextChar()) == 'c'
+                                             && (c = nextChar()) == 't'
+                                             && (c = nextChar()) == 'e'
+                                             && (c = nextChar()) == 'd')
+                                                return keywordOrIdentifier(JavaTokenId.PROTECTED);
+                                            break;
+                                        case 'v':
+                                            if ((c = nextChar()) == 'i'
+                                             && (c = nextChar()) == 'd'
+                                             && (c = nextChar()) == 'e'
+                                             && (c = nextChar()) == 's'
+                                             && state != null && state == 3) {
+                                                Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.PROVIDES);
+                                                if (kwOrId.id() == JavaTokenId.PROVIDES) {
+                                                    state = 8; // after provides
+                                                }
+                                                return kwOrId;
+                                            }
+                                            break;
+                                    }
                                     break;
                             }
                             break;
@@ -785,12 +848,30 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                     return finishIdentifier(c);
 
                 case 'r':
-                    if ((c = nextChar()) == 'e'
-                     && (c = nextChar()) == 't'
-                     && (c = nextChar()) == 'u'
-                     && (c = nextChar()) == 'r'
-                     && (c = nextChar()) == 'n')
-                        return keywordOrIdentifier(JavaTokenId.RETURN);
+                    if ((c = nextChar()) == 'e') {
+                        switch (c = nextChar()) {
+                            case 'q':
+                                if ((c = nextChar()) == 'u'
+                                 && (c = nextChar()) == 'i'
+                                 && (c = nextChar()) == 'r'
+                                 && (c = nextChar()) == 'e'
+                                 && (c = nextChar()) == 's'
+                                 && state != null && state == 3) {
+                                    Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.REQUIRES);
+                                    if (kwOrId.id() == JavaTokenId.REQUIRES) {
+                                        state = 4; // after requires
+                                    }
+                                    return kwOrId;
+                                }
+                                break;
+                            case 't':    
+                                if ((c = nextChar()) == 'u'
+                                 && (c = nextChar()) == 'r'
+                                 && (c = nextChar()) == 'n')
+                                    return keywordOrIdentifier(JavaTokenId.RETURN);
+                                break;
+                        }
+                    }
                     return finishIdentifier(c);
 
                 case 's':
@@ -868,6 +949,15 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                     break;
                             }
                             break;
+                        case 'o':
+                            if (state != null && state == 5) {
+                                Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.TO);
+                                if (kwOrId.id() == JavaTokenId.TO) {
+                                    state = 6; // after to
+                                }
+                                return kwOrId;
+                            }
+                            break;
                         case 'r':
                             switch (c = nextChar()) {
                                 case 'a':
@@ -887,6 +977,19 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                     return keywordOrIdentifier(JavaTokenId.TRY);
                             }
                             break;
+                    }
+                    return finishIdentifier(c);
+
+                case 'u':
+                    if ((c = nextChar()) == 's'
+                     && (c = nextChar()) == 'e'
+                     && (c = nextChar()) == 's'
+                     && state != null && state == 3) {
+                        Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.USES);
+                        if (kwOrId.id() == JavaTokenId.USES) {
+                            state = 7; // after uses
+                        }
+                        return kwOrId;
                     }
                     return finishIdentifier(c);
 
@@ -910,16 +1013,30 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                     return finishIdentifier(c);
 
                 case 'w':
-                    if ((c = nextChar()) == 'h'
-                     && (c = nextChar()) == 'i'
-                     && (c = nextChar()) == 'l'
-                     && (c = nextChar()) == 'e')
-                        return keywordOrIdentifier(JavaTokenId.WHILE);
+                    switch (c = nextChar()) {
+                        case 'h':
+                            if ((c = nextChar()) == 'i'
+                             && (c = nextChar()) == 'l'
+                             && (c = nextChar()) == 'e')
+                                return keywordOrIdentifier(JavaTokenId.WHILE);
+                            break;
+                        case 'i':
+                            if ((c = nextChar()) == 't'
+                             && (c = nextChar()) == 'h'
+                             && state != null && state == 8) {
+                                Token<JavaTokenId> kwOrId = keywordOrIdentifier(JavaTokenId.WITH);
+                                if (kwOrId.id() == JavaTokenId.WITH) {
+                                    state = 8; // after with
+                                }
+                                return kwOrId;
+                            }
+                            break;
+                    }
                     return finishIdentifier(c);
 
                 // Rest of lowercase letters starting identifiers
-                case 'h': case 'j': case 'k': case 'm': case 'o':
-                case 'q': case 'u': case 'x': case 'y': case 'z':
+                case 'h': case 'j': case 'k': case 'o':
+                case 'q': case 'x': case 'y': case 'z':
                 // Uppercase letters starting identifiers
                 case 'A': case 'B': case 'C': case 'D': case 'E':
                 case 'F': case 'G': case 'H': case 'I': case 'J':

@@ -198,6 +198,16 @@ public abstract class PositionEstimator {
             super(THROWS, oldL, newL, diffContext);
         }
     }
+    
+    static class ExportsToEstimator extends BaseEstimator {
+        
+        ExportsToEstimator(List<? extends ExpressionTree> oldL,
+                           List<? extends ExpressionTree> newL,
+                           DiffContext diffContext)
+        {
+            super(TO, oldL, newL, diffContext);
+        }        
+    }
 
     /**
      * Provides positions for imports section. Computes positions for exisiting

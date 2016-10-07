@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -63,7 +64,9 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.java.*;
@@ -163,6 +166,12 @@ public class JavaKit extends NbEditorKit {
                   }
               }
           );
+        InputAttributes attrs = new InputAttributes();
+        attrs.setValue(JavaTokenId.language(), "fileName", (Supplier<String>) () -> { //NOI18N
+            FileObject fo = NbEditorUtilities.getFileObject(doc);
+            return fo != null ? fo.getNameExt() : null;
+        }, true);
+        doc.putProperty(InputAttributes.class, attrs);
       }
     
     private static final String[] getSetIsPrefixes = new String[] {
