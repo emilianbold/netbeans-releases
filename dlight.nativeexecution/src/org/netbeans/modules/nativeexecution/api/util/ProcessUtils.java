@@ -669,13 +669,9 @@ public final class ProcessUtils {
 
         public final int exitCode;
 
-        /** @deprecated This field will be made private in the next daily build. */
-        @Deprecated
-        public final String error;
+        private final String error;
 
-        /** @deprecated This field will be made private in the next daily build. */
-        @Deprecated
-        public final String output;
+        private final String output;
 
         private final List<String> outputLines;
         private final List<String> errorLines;
