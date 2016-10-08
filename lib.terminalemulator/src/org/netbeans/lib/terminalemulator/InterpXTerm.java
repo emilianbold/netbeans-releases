@@ -177,7 +177,7 @@ class InterpXTerm extends InterpProtoANSIX {
 
     @Override
     public String name() {
-	return "xterm";	// NOI18N
+	return "xterm-16color";	// NOI18N
     }
 
     @Override

@@ -60,6 +60,7 @@ abstract class InterpKit {
     static Interp forName(String name, Ops ops) {
 	switch (name) {
 	    case "xterm":	// NOI18N
+	    case "xterm-16color":	// NOI18N
 		return new InterpXTerm(ops);
 	    case "dumb":	// NOI18N
 		return new InterpDumb(ops);

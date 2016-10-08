@@ -1,4 +1,110 @@
 242273 PARTFIX Please support 256 Colors in Terminal
+	xterm-16color
+
+	Term.setEmulation() will now accept "xterm-16color" in additin to
+	"xterm". Regardless of which one is set Term.getEmulation() will now
+	return "xterm-16color" as it is the superset.
+
+	To achieve this ...
+	- Moved palette base numbers (PAL_*) from Term to Attr.
+	  The fact that the stored values are off-by-one is dealt with 
+	  in Attr.foreggroundColor/backgroundColor() which simplifies
+	  Term.csetBG() and csetFG().
+	- Attr.BGCOLOr and FGCOLOR fields were widened from 5 to 9 bits
+	  in anticipation of 256 colors.
+	- Instead of relying on case-based value adjustments in
+	  Attr.setAttribute()/unsetAttribute() to convert rendition codes,
+	  what clients pass xterm, to attribute values use a 'map'.
+	  Attr.rendition_to_pindex() uses it to map a rendition # to a palette
+	  index and is used from Term.rendition_to_color().
+	- Adjust Attr.setAttribute()/unsetAttribute() to use the 'map'.
+
+	However ...
+	
+	Terminal in NetBeans will start with TERM=xterm regardless of the
+	value of Term.getEmulation(). The immediate reason for that is
+	code in NativeExecutionServicve.runTerm(). Archaeology will
+	"blame" this:
+		274671:effd016fde86 - ilia Jun 9, 2014
+		fixed Bug #244954 - support xterm-color in Terminal 
+
+		This fix passes on the value of $TERM from the shell
+		tha NB was started from on to NB Term.
+
+		It doesn't work very well. On my system if I start NB
+		from a shell $TERm is "inherited" to e.g. "xterm-256color",
+		but if I start NB from the panel launcher $TERM is "xterm".
+		Read on to see whay this happens.
+
+	In fact the hard-coding of $TERM and ignoring of Term.getEmulation()
+	predates that.
+	What is going on?
+
+	How $TERM is used
+	-----------------
+	At first blush you'd think that a "terminal emulator", e.g. xterm,
+	will set $TERM to something, e.g. "xterm", "xterm-16color,
+	"xterm-88color" or "xterm-256color", according to it's abilities.
+
+	Then, an application running under that terminal emulator will pass on 
+	the value of $TERM to libcurses which, in turn, will consult one
+	of two kinds of terminal information databases, "termcap" or
+	"terminfo" and use the value of $TERM to map libcurses semantic actions
+	to actual terminal sequences.
+
+	How this fails
+	--------------
+	Suppose you run a very new xterm which supports "TERM=xterm-256color"
+	on a very old OS the termcap/terminfo for which supports only 
+	"xterm". Then applications which feed "TERM=xterm-256color" to curses
+	will get an error message.
+
+	I expect that for this very reason 'xterm' does, no matter what,
+	set $TERM=xterm. So how do applications take advantage of newer 
+	xterm features?
+
+	How Linux solves this
+	---------------------
+	On my FC21 'xterm' sets $TERM to "xterm" (you need to verify this
+	by inspecting xterm src code or using strace, _not_ by echoing $TERM
+	in a shell) but a whole hierarchy of _shell_ initialization scripts,
+	arranges to set "TERM=xterm-256color". This works because the FC21
+	distro build knows that it has built xterm with 256color capability
+	so it feels justified in overriding $TERM in it's shell initialization
+	scripts.
+
+	How this doesn't work
+	---------------------
+	Supose you log in from a new system where $TERM is set to
+	"xterm-256color" to an old system the termcap/terminfo of which
+	knows nothing about "xterm-256color". Any curses app run on the
+	remote system will complain about not knowing about "xterm-256color".
+
+	What to do?
+	-----------
+	The fix 
+		274671:effd016fde86 - ilia Jun 9, 2014
+		fixed Bug #244954 - support xterm-color in Terminal 
+	allows NB users some leeway to set $TERM before starting netbeans
+	and for now I'm not going to perturb that. 
+
+	The best solution I can think of is to have NB carry the appropriate
+	terminfo file with it and install it locally or remotely and use
+	$TERMINFO or $TERMINFO_DIRS to get applications to access the
+	correct terminfo file for a given implementation of NB Term.
+
+		Some applications, notably 'vim', don't seem to use curses
+		but they _do_ honor $TERMINFO and $TERMINFO_DIRS.
+
+	For a more in depth exposition consult private communication 
+	subjected "On the correct settingof $TERM".
+
+nobugid PARTFIX Enhanced info for AIOOB Exception in setCharacterAttribute()
+	Hard to track bug.
+	Catch the AIOOB thrown in setCharacterAttribute() and print out some
+	detailed info to help track the cause.
+
+242273 PARTFIX Please support 256 Colors in Terminal
 	Factoring of Term.backgroundColor() and foregroundColor() in
 	preparation for moving the decoding of color attribute into Attr.
 

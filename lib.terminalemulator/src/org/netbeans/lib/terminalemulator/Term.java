@@ -296,52 +296,29 @@ public class Term extends JComponent implements Accessible {
 
     // 
     // The palette maps color indexes into actual Color's.
-    // Indexes into the palette are stored in cell Attr's.
-    //		Actually, that's a lie. Methods foregroundColor() and
-    // 		backgroudnColor() convert Attr values to the indexes into the
-    //		palette.
-    //		This is temporary.
+    // 
+    // Attr's FGCOLOR and BGCOLOR store either 0 to imply "default" or
+    // the palette index + 1. So use methods Attr.foregroundColor() and
+    // backgroudnColor() to convert Attr values to the indexes into the palette.
     //
-    // The domain is divided as follows:
+    // The domain of this map is divided as follows:
     //
     //					"ESC [ ... m" codes
     // index				fg	bg
     //--------------------------------------------------------------------------
-    // 0-7	ANSI colors		30-37	40-47
-    // 8-15	ANSI "bright" colors	90-97	100-107
-    // 16-231	RGB cube
-    // 232-255	Greyscale
+    // 0-7	ANSI colors		30-37	40-47		PAL_ANSI
+    // 8-15	DtTerm custom colors	50-57	58-65		PAL_BRIGHT
+    // 8-15	ANSI "bright" colors	90-97	100-107		PAL_BRIGHT
+    // 16-231	RGB cube					PAL_RGB
+    // 232-255	Greyscale					PAL_GREY
     //--------------------------------------------------------------------------
-    // 256	default foreground
-    // 257	default background
-    // 258	default bold
+    // 256	default foreground				PAL_FG
+    // 257	default background				PAL_BG
+    // 258	default bold					PAL_BOLD
+    // 259	palette size					PAL_SIZE
     //
 
-    private final Color palette[] = new Color[259];
-
-    //
-    // Bases of various color ranges
-    //
-    // First 8 colors
-    private final static int PAL_ANSI = 0;
-
-    // Second "bright" 8 colors
-    private final static int PAL_BRIGHT = 8;
-
-    // 6x6x6 RGB cube (number = 16 + 36 * r + 6 * g + b)
-    // where r, g and b are in the range 0-5
-    private final static int PAL_RGB = 16;
-
-    // 24 shades of grey from dark to light
-    private final static int PAL_GREY = 232;
-
-    // Default foreground color
-    private final static int PAL_FG = 256;
-    // Default background color
-    private final static int PAL_BG = 257;
-    // Default bold color
-    private final static int PAL_BOLD = 258;
-
+    private final Color palette[] = new Color[Attr.PAL_SIZE];
 
     /**
      * ScrollWrapper is a HACK that allows us to make pairs of scrollbars
@@ -797,7 +774,7 @@ public class Term extends JComponent implements Accessible {
         st.firsty = 0;
         st.cursor.row = 0;
         st.cursor.col = 0;
-        st.attr = 0;
+        setAttribute(0);
         st.saveCursor();	// This clobbers the saved cursor value
         st.restoreCursor();	// release reference to saved cursor object
 
@@ -1714,30 +1691,30 @@ public class Term extends JComponent implements Accessible {
 
     private void initializePalette() {
 
-        palette[PAL_ANSI+0] = new Color(0x000000);
-        palette[PAL_ANSI+1] = new Color(0xCD0000);
-        palette[PAL_ANSI+2] = new Color(0x00CD00);
-        palette[PAL_ANSI+3] = new Color(0xCDCD00);
-        palette[PAL_ANSI+4] = new Color(0x1E90FF);
-        palette[PAL_ANSI+5] = new Color(0xCD00CD);
-        palette[PAL_ANSI+6] = new Color(0x00CDCD);
-        palette[PAL_ANSI+7] = new Color(0xE5E5E5);
+        palette[Attr.PAL_ANSI+0] = new Color(0x000000);
+        palette[Attr.PAL_ANSI+1] = new Color(0xCD0000);
+        palette[Attr.PAL_ANSI+2] = new Color(0x00CD00);
+        palette[Attr.PAL_ANSI+3] = new Color(0xCDCD00);
+        palette[Attr.PAL_ANSI+4] = new Color(0x1E90FF);
+        palette[Attr.PAL_ANSI+5] = new Color(0xCD00CD);
+        palette[Attr.PAL_ANSI+6] = new Color(0x00CDCD);
+        palette[Attr.PAL_ANSI+7] = new Color(0xE5E5E5);
 
-        palette[PAL_BRIGHT+0] = new Color(0x0D0D0D);
-        palette[PAL_BRIGHT+1] = new Color(0xFF0000);
-        palette[PAL_BRIGHT+2] = new Color(0x00FF00);
-        palette[PAL_BRIGHT+3] = new Color(0xFFFF00);
-        palette[PAL_BRIGHT+4] = new Color(0x1FF0FF);
-        palette[PAL_BRIGHT+5] = new Color(0xFF00FF);
-        palette[PAL_BRIGHT+6] = new Color(0x00FFFF);
-        palette[PAL_BRIGHT+7] = new Color(0xFFFFFF);
+        palette[Attr.PAL_BRIGHT+0] = new Color(0x0D0D0D);
+        palette[Attr.PAL_BRIGHT+1] = new Color(0xFF0000);
+        palette[Attr.PAL_BRIGHT+2] = new Color(0x00FF00);
+        palette[Attr.PAL_BRIGHT+3] = new Color(0xFFFF00);
+        palette[Attr.PAL_BRIGHT+4] = new Color(0x1FF0FF);
+        palette[Attr.PAL_BRIGHT+5] = new Color(0xFF00FF);
+        palette[Attr.PAL_BRIGHT+6] = new Color(0x00FFFF);
+        palette[Attr.PAL_BRIGHT+7] = new Color(0xFFFFFF);
 
 	// Fill RGB cube
 	for (int r = 0; r <= 5; r++) {
 	    for (int g = 0; g <= 5; g++) {
 		for (int b = 0; b <= 5; b++) {
 		    int number = 36 * r + 6 * g + b;
-		    palette[PAL_RGB+number] = new Color(r*51, b*51, b*51);
+		    palette[Attr.PAL_RGB+number] = new Color(r*51, b*51, b*51);
 		}
 	    }
 	}
@@ -1745,12 +1722,12 @@ public class Term extends JComponent implements Accessible {
 	// Fill greyscale portion.
 	for (int g = 0; g < 24; g++) {
 	    int g2 = g+1;
-	    palette[PAL_GREY+g] = new Color(g2*10, g2*10, g2*10);
+	    palette[Attr.PAL_GREY+g] = new Color(g2*10, g2*10, g2*10);
 	}
 
-	palette[PAL_FG] = UIManager.getColor("TextArea.foreground");	// NOI18N
-	palette[PAL_BG] = UIManager.getColor("TextArea.background");	// NOI18N
-	palette[PAL_BOLD] = palette[PAL_FG];
+	palette[Attr.PAL_FG] = UIManager.getColor("TextArea.foreground");	// NOI18N
+	palette[Attr.PAL_BG] = UIManager.getColor("TextArea.background");	// NOI18N
+	palette[Attr.PAL_BOLD] = palette[Attr.PAL_FG];
 
 	// Ensure nothing is left unfilled.
 	for (int px = 0; px < palette.length; px++) {
@@ -2748,46 +2725,11 @@ public class Term extends JComponent implements Accessible {
     }
 
     private Color rendition_to_color(int rendition) {
-        switch (rendition) {
-	    // was: standard_color
-            case 40:
-		return palette[PAL_ANSI+0];
-            case 41:
-		return palette[PAL_ANSI+1];
-            case 42:
-		return palette[PAL_ANSI+2];
-            case 43:
-		return palette[PAL_ANSI+3];
-            case 44:
-		return palette[PAL_ANSI+4];
-            case 45:
-		return palette[PAL_ANSI+5];
-            case 46:
-		return palette[PAL_ANSI+6];
-            case 47:
-		return palette[PAL_ANSI+7];
-
-	    // was: custom_color
-            case 58:
-		return palette[PAL_BRIGHT+0];
-            case 59:
-		return palette[PAL_BRIGHT+1];
-            case 60:
-		return palette[PAL_BRIGHT+2];
-            case 61:
-		return palette[PAL_BRIGHT+3];
-            case 62:
-		return palette[PAL_BRIGHT+4];
-            case 63:
-		return palette[PAL_BRIGHT+5];
-            case 64:
-		return palette[PAL_BRIGHT+6];
-            case 65:
-		return palette[PAL_BRIGHT+7];
-
-            default:
-                return null;
-        }
+	final int px = Attr.rendition_to_pindex(rendition);
+	if (px == -1)
+	    return null;
+	else
+	    return palette[px];
     }
     private Color actual_foreground;
     private Color actual_background;
@@ -2840,8 +2782,15 @@ public class Term extends JComponent implements Accessible {
 
         if (active) {
             bg = active_color;
-        } else {
-            bg = backgroundColor(reverse, attr);
+	} else {
+	    if (Attr.BGCOLOR.isSet(attr) || Attr.REVERSE.isSet(attr)) {
+		bg = backgroundColor(reverse, attr);
+	    } else if (l.getBackgroundColor() != 0) {
+		bg = rendition_to_color(l.getBackgroundColor());
+	    } else {
+		// Allow existing BG, i.e. selection, to show through.
+		bg = null;
+	    }
         }
 
         if (bg != null) {
@@ -3209,8 +3158,8 @@ public class Term extends JComponent implements Accessible {
 
         n_paint++;
 
-	actual_foreground = palette[PAL_FG];
-	actual_background = palette[PAL_BG];
+	actual_foreground = palette[Attr.PAL_FG];
+	actual_background = palette[Attr.PAL_BG];
 
         // clear the screen
         g.setColor(actual_background);
@@ -4393,7 +4342,7 @@ public class Term extends JComponent implements Accessible {
             st.setG(3, 0);
 
             resetMargins();
-            st.attr = 0;
+	    setAttribute(0);
 
             interp.softReset();
 
@@ -5008,9 +4957,9 @@ public class Term extends JComponent implements Accessible {
         this.reverse_video = reverse_video;
 
 	// Swap PAL_FG and PAL_BG
-	Color tmp = palette[PAL_FG];
-	palette[PAL_FG] = palette[PAL_BG];
-	palette[PAL_BG] = tmp;
+	Color tmp = palette[Attr.PAL_FG];
+	palette[Attr.PAL_FG] = palette[Attr.PAL_BG];
+	palette[Attr.PAL_BG] = tmp;
 
         repaint(false);
     }
@@ -5084,9 +5033,9 @@ public class Term extends JComponent implements Accessible {
 	super.setBackground(c);
 	// See setReverseVideo()
         if (reverse_video) {
-	    palette[PAL_FG] = c;
+	    palette[Attr.PAL_FG] = c;
 	} else {
-	    palette[PAL_BG] = c;
+	    palette[Attr.PAL_BG] = c;
 	}
     }
 
@@ -5095,11 +5044,11 @@ public class Term extends JComponent implements Accessible {
 	super.setForeground(c);
 	// See setReverseVideo()
         if (reverse_video) {
-	    palette[PAL_BG] = c;
-	    palette[PAL_BOLD] = c;
+	    palette[Attr.PAL_BG] = c;
+	    palette[Attr.PAL_BOLD] = c;
 	} else {
-	    palette[PAL_FG] = c;
-	    palette[PAL_BOLD] = c;
+	    palette[Attr.PAL_FG] = c;
+	    palette[Attr.PAL_BOLD] = c;
 	}
     }
 
@@ -5302,7 +5251,7 @@ public class Term extends JComponent implements Accessible {
 	    throw new IllegalArgumentException();
 	if (number < 0 || number >= 8)
 	    throw new IllegalArgumentException();
-	palette[PAL_BRIGHT+number] = c;
+	palette[Attr.PAL_BRIGHT+number] = c;
     }
 
     /**
@@ -6165,29 +6114,13 @@ public class Term extends JComponent implements Accessible {
     }
 
     private Color csetBG(int attr) {
-	final int cx = Attr.backgroundColor(attr);
-	final int px;
-	if (cx != 0 && cx <= 8) {
-	    px = PAL_ANSI+cx - 1;
-	} else if (cx > 8) {
-	    px = PAL_ANSI+cx - 1;
-	} else {
-	    px = PAL_BG;
-	}
+	final int px = Attr.backgroundColor(attr);
 	final Color c = palette[px];
 	return c;
     }
 
     private Color csetFG(int attr) {
-	final int cx = Attr.foregroundColor(attr);
-	final int px;
-	if (cx != 0 && cx <= 8) {
-	    px = PAL_ANSI+cx - 1;
-	} else if (cx > 8) {
-	    px = PAL_ANSI+cx - 1;
-	} else {
-	    px = PAL_FG;
-	}
+	final int px = Attr.foregroundColor(attr);
         final Color c = palette[px];
 	return c;
     }
