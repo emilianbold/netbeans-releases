@@ -53,9 +53,23 @@ public class Test_attr extends Test {
 
     public Test_attr(Context context) {
         super("attr", context, 0, 1, false, Util.FillPattern.NONE);
+        info("\\ESC[%sm\tAttributes & Colors");
     }
 
+    @Override
     public void runBasic(String[] args) {
+
+	context.interp.printf("normal mode\n");
+	run();
+	context.pause();
+
+	context.interp.printf("using reverse mode\n");
+	context.sendQuiet("\\ESCc");            // full reset
+	context.send("\\ESC[?5h");
+	run();
+    }
+
+    private void run() {
         context.send("\\ESC[1m");
         context.send("BOLD ");
         context.send("\\ESC[22m");
@@ -117,6 +131,7 @@ public class Test_attr extends Test {
 
         context.send("\\CR\\LF");
 
+	// primary fg colors
         context.send("\\ESC[30m");
         context.send("BLACK ");
         context.send("\\ESC[31m");
@@ -133,9 +148,12 @@ public class Test_attr extends Test {
         context.send("CYAN ");
         context.send("\\ESC[37m");
         context.send("WHITE ");
+
         context.send("\\ESC[39m");
         context.send("DEFAULT ");
         context.send("\\CR\\LF");
+
+	// primary bg colors
         context.send("\\ESC[40m");
         context.send("BLACK ");
         context.send("\\ESC[41m");
@@ -155,6 +173,51 @@ public class Test_attr extends Test {
 
         context.send("\\ESC[49m");
         context.send("DEFAULT ");
+        context.send("\\CR\\LF");
+
+	// bright fg colors
+        context.send("\\ESC[90m");
+        context.send("black ");
+        context.send("\\ESC[91m");
+        context.send("red ");
+        context.send("\\ESC[92m");
+        context.send("green ");
+        context.send("\\ESC[93m");
+        context.send("yellow ");
+        context.send("\\ESC[94m");
+        context.send("blue ");
+        context.send("\\ESC[95m");
+        context.send("magenta ");
+        context.send("\\ESC[96m");
+        context.send("cyan ");
+        context.send("\\ESC[97m");
+        context.send("white ");
+
+        context.send("\\ESC[39m");
+        context.send("default ");
+        context.send("\\CR\\LF");
+
+	// bright bg colors
+        context.send("\\ESC[100m");
+        context.send("black ");
+        context.send("\\ESC[101m");
+        context.send("red ");
+        context.send("\\ESC[102m");
+        context.send("green ");
+        context.send("\\ESC[103m");
+        context.send("yellow ");
+        context.send("\\ESC[104m");
+        context.send("blue ");
+        context.send("\\ESC[105m");
+        context.send("magenta ");
+        context.send("\\ESC[106m");
+        context.send("cyan ");
+        context.send("\\ESC[107m");
+        context.send("white ");
+
+        context.send("\\ESC[49m");
+        context.send("default ");
+        context.send("\\CR\\LF");
     }
     
 }

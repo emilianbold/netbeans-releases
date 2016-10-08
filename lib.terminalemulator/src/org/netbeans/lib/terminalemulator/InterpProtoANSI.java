@@ -107,6 +107,7 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setAction('@', st_base, new ACT_IC());
 	    st_esc_lb.setAction('d', st_base, new ACT_VPA());
 	    st_esc_lb.setAction('h', st_base, new ACT_SM());
+	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
 	    st_esc_lb.setAction('l', st_base, new ACT_RM());
 	    st_esc_lb.setAction('m', st_base, new ACT_ATTR());
 	    st_esc_lb.setAction('n', st_base, new ACT_DSR());
@@ -430,6 +431,30 @@ class InterpProtoANSI extends InterpDumb {
 		    ai.ops.op_set_mode(1);
 		else
 		    ai.ops.op_set_mode(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	private static final class ACT_PRINT implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		// Ignored for now, except for 'dump time'
+		if (ai.noNumber()) {
+		    // Print screen
+		} else {
+		    switch (ai.numberAt(0)) {
+			case 1:	// Print Line
+			case 4:	// Stop Print Log
+			case 5:	// Start Print Log
+			    break;
+			case 10:
+			    ai.ops.op_time(true);
+			    break;
+			case 11:
+			    ai.ops.op_time(false);
+			    break;
+		    } 
+		}
 		return null;
 	    }
 	}

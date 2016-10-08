@@ -66,6 +66,7 @@ public class Main {
             super(context, "NBTerm", 0, 0);
         }
 
+	@Override
         protected Program makeProgram(Context context, Pty pty) {
             Program p = new Program();
             p.add(java);
@@ -81,6 +82,7 @@ public class Main {
             super(context,"xterm");
         }
 
+	@Override
         protected Program makeProgram(Context context, Pty pty) {
             Program p = new Program();
             p.add("/bin/xterm");
@@ -93,6 +95,11 @@ public class Main {
 
             p.add("-sb");
             p.add("-rightbar");
+
+	    p.add("-bg");
+	    p.add("white");
+	    p.add("-fg");
+	    p.add("black");
 
             p.add("-e");
             p.add(java);
@@ -109,6 +116,7 @@ public class Main {
             super(context,"gnome-terminal");
         }
 
+	@Override
         protected Program makeProgram(Context context, Pty pty) {
             Program p = new Program();
             p.add("/bin/gnome-terminal");
@@ -150,6 +158,7 @@ public class Main {
             super(context, "konsole");
         }
 
+	@Override
         protected Program makeProgram(Context context, Pty pty) {
             // Even this simplest version fails to start up a konsole
             Program p = new Program();

@@ -52,7 +52,8 @@ import termtester.Util;
 public class Test_bc extends Test {
 
     public Test_bc(Context context) {
-        super("attr", context, 0, 1, false, Util.FillPattern.NONE);
+        super("bc", context, 0, 1, false, Util.FillPattern.NONE);
+	info("\\ESC[%sD\tBack Cursor");
     }
 
     public void runBasic(String[] args) {

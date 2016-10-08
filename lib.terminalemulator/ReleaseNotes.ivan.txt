@@ -1,3 +1,245 @@
+242273 PARTFIX Please support 256 Colors in Terminal
+	xterm-16color
+
+	Term.setEmulation() will now accept "xterm-16color" in additin to
+	"xterm". Regardless of which one is set Term.getEmulation() will now
+	return "xterm-16color" as it is the superset.
+
+	To achieve this ...
+	- Moved palette base numbers (PAL_*) from Term to Attr.
+	  The fact that the stored values are off-by-one is dealt with 
+	  in Attr.foreggroundColor/backgroundColor() which simplifies
+	  Term.csetBG() and csetFG().
+	- Attr.BGCOLOr and FGCOLOR fields were widened from 5 to 9 bits
+	  in anticipation of 256 colors.
+	- Instead of relying on case-based value adjustments in
+	  Attr.setAttribute()/unsetAttribute() to convert rendition codes,
+	  what clients pass xterm, to attribute values use a 'map'.
+	  Attr.rendition_to_pindex() uses it to map a rendition # to a palette
+	  index and is used from Term.rendition_to_color().
+	- Adjust Attr.setAttribute()/unsetAttribute() to use the 'map'.
+
+	However ...
+	
+	Terminal in NetBeans will start with TERM=xterm regardless of the
+	value of Term.getEmulation(). The immediate reason for that is
+	code in NativeExecutionServicve.runTerm(). Archaeology will
+	"blame" this:
+		274671:effd016fde86 - ilia Jun 9, 2014
+		fixed Bug #244954 - support xterm-color in Terminal 
+
+		This fix passes on the value of $TERM from the shell
+		tha NB was started from on to NB Term.
+
+		It doesn't work very well. On my system if I start NB
+		from a shell $TERm is "inherited" to e.g. "xterm-256color",
+		but if I start NB from the panel launcher $TERM is "xterm".
+		Read on to see whay this happens.
+
+	In fact the hard-coding of $TERM and ignoring of Term.getEmulation()
+	predates that.
+	What is going on?
+
+	How $TERM is used
+	-----------------
+	At first blush you'd think that a "terminal emulator", e.g. xterm,
+	will set $TERM to something, e.g. "xterm", "xterm-16color,
+	"xterm-88color" or "xterm-256color", according to it's abilities.
+
+	Then, an application running under that terminal emulator will pass on 
+	the value of $TERM to libcurses which, in turn, will consult one
+	of two kinds of terminal information databases, "termcap" or
+	"terminfo" and use the value of $TERM to map libcurses semantic actions
+	to actual terminal sequences.
+
+	How this fails
+	--------------
+	Suppose you run a very new xterm which supports "TERM=xterm-256color"
+	on a very old OS the termcap/terminfo for which supports only 
+	"xterm". Then applications which feed "TERM=xterm-256color" to curses
+	will get an error message.
+
+	I expect that for this very reason 'xterm' does, no matter what,
+	set $TERM=xterm. So how do applications take advantage of newer 
+	xterm features?
+
+	How Linux solves this
+	---------------------
+	On my FC21 'xterm' sets $TERM to "xterm" (you need to verify this
+	by inspecting xterm src code or using strace, _not_ by echoing $TERM
+	in a shell) but a whole hierarchy of _shell_ initialization scripts,
+	arranges to set "TERM=xterm-256color". This works because the FC21
+	distro build knows that it has built xterm with 256color capability
+	so it feels justified in overriding $TERM in it's shell initialization
+	scripts.
+
+	How this doesn't work
+	---------------------
+	Supose you log in from a new system where $TERM is set to
+	"xterm-256color" to an old system the termcap/terminfo of which
+	knows nothing about "xterm-256color". Any curses app run on the
+	remote system will complain about not knowing about "xterm-256color".
+
+	What to do?
+	-----------
+	The fix 
+		274671:effd016fde86 - ilia Jun 9, 2014
+		fixed Bug #244954 - support xterm-color in Terminal 
+	allows NB users some leeway to set $TERM before starting netbeans
+	and for now I'm not going to perturb that. 
+
+	The best solution I can think of is to have NB carry the appropriate
+	terminfo file with it and install it locally or remotely and use
+	$TERMINFO or $TERMINFO_DIRS to get applications to access the
+	correct terminfo file for a given implementation of NB Term.
+
+		Some applications, notably 'vim', don't seem to use curses
+		but they _do_ honor $TERMINFO and $TERMINFO_DIRS.
+
+	For a more in depth exposition consult private communication 
+	subjected "On the correct settingof $TERM".
+
+nobugid PARTFIX Enhanced info for AIOOB Exception in setCharacterAttribute()
+	Hard to track bug.
+	Catch the AIOOB thrown in setCharacterAttribute() and print out some
+	detailed info to help track the cause.
+
+242273 PARTFIX Please support 256 Colors in Terminal
+	Factoring of Term.backgroundColor() and foregroundColor() in
+	preparation for moving the decoding of color attribute into Attr.
+
+242273 PARTFIX Please support 256 Colors in Terminal
+	Renaming of variables in backgroundColor() and foregroundColor()
+	in preparation for factoring.
+
+242273 PARTFIX Please support 256 Colors in Terminal
+	Switch to a single palette implementation.
+
+	Previously Term used two "palettes" to map color indices into actual
+	Color's. The two palettes were 'standard_color' and 'custom_color'.
+	The former was strictly private and the latter was configurable via 
+	Term.setCustomColor(). The actual mapping was performed
+	in Term.foregroundColor() and backgroundColor().
+
+	We now use a single 'palette' with domain bases specified by
+	PAL_* constants:
+
+	OLD			NEW			FG	BG
+	---------------------------------------------------------------------
+	standard_color[n]	palette[PAL_ANSI+n]	30-37	40-47
+	custom_color[n]					50-57	60-67	OLD
+				palette[PAL_BRIGHT+n]	90-97	100-107	NEW
+	default foreground	palette[PAL_FG]
+	default background	palette[PAL_BG]
+				palette[PAL_RGB]
+				palette[PAL_GREY]
+
+	In short, custom colors now map to "bright" colors.
+
+		These custom colors were part of a proposal to enhance 
+		DtTerm which never made it. Being non-standard mucking
+		with them will have little impact except for how IO 
+		operations used it (See below).
+
+	While the palette is populated, in initializePalette(), with RGB and
+	GREY Colors no Interp handles RGB/GREY sequences yet.
+
+	The encoding of colors in Attr cells is still the old way (which
+	is offset by 1 to allow encoding of "default" as 0) and the
+	adjustments are all done in Term.foregroundColor() and
+	backgroundColor(). This will be optimized later.
+
+	Therefore, setCustomColor() has been deprecated.
+
+	Overriding Component
+	--------------------
+	Now that we have a single palette, setting of FG and BG colors 
+	should keep it up-to-date. That is done by overriding Component's 
+	setForeground() and setBackground(). This has to be done 
+	with due mindfluness of 'reverse_video'.
+
+	Reverse video tricks
+	--------------------
+	When reverse video is requested we swap palette[PAL_FG] and
+	palette[PAL_BG]. This means that when we handle setForeground()
+	or setBackground() we need to be mindful of the value of
+	'reverse_video'.
+
+	Inherit from L&F
+	----------------
+	The default fg and bg colors are now initialized using
+		UIManager.getColor("TextArea.foreground");
+		UIManager.getColor("TextArea.background");
+
+	Term.setCustomColor() never worked
+	----------------------------------
+	... because I had these InterpProtoANSI.dispatchAttr() functions which
+	screened the actual attribute values and none of them accepted
+	attribute values in the range 50-57 or 60-67.
+		This must've worked at some point in the past. Then,
+		when I was working on proper xterm emulation, I introduced
+		dispatchAttr() and neglected the "custom" atribute values.
+
+	The only serious place which used Term.setCustomColor() was the
+	mechanisms in TerminalInputOutput which supported IO-style setting
+	of Colors. See, for example, TerminalInputOutput.customColor() which 
+	added 50 to the color code. This has now been switched to add 90.
+
+		To see it "not work" run the project
+			lib/terminalemulator/examples/TermExample
+		Then choose Terminals->TestTerminalWithRichNativeExecution
+		Press OK.
+		At the very begining You'll see 
+			GREETINGS		green
+			Choose			blue
+			Unchoose		red
+			Select chosen		blue # SHOULDA been Color.ORANGE
+
+	The use of setCustomColor() in this fashion is temporary. Eventually
+	TerminalInputOutput should be able to use direct RGB color
+	setting using sequences like "ESC[48;2;...m".
+
+	Bug in Term.backgroundColor()
+	-----------------------------
+	In the !reverse case we never handled the case of bcx = 0.
+
+	Incidental
+	----------
+	- Get XTermTestSubject to force fg/bg colors on the xterm overriding
+	  XTerm properties so that it matches other TextSubjects.
+	- Enhance Test_attr to test "bright" attributes as well as running
+	  in "reverse video" mode.
+
+242273 PARTFIX Please support 256 Colors in Terminal
+	Redid Attr class into an enum as I will be playing more with
+	these bitfields in order to accomodate more colors.
+	Original Attr class saved as AttrSave.
+
+	The enum approach is a teeny bit slower since field params aren't
+	hard-coded in the instruction stream as constants and one has to do 
+	instance field access but I did benchmarking as well as profiling and
+	Attr class didn't and doesn't contribute much to hotspots. I.e.
+	0% in the profile.
+
+	"test bc" was registered as "attr" by mistake so when I ran test 
+	"attr" I got test "bc". Fixed so "attr" runs "attr".
+
+242273 PARTFIX Please support 256 Colors in Terminal
+	Fix benchmarking/statistics gathering escape sequences.
+	They were implemented in InterpANSI (ACT_PRINT) but with the switch
+	to xterm a while ago they should've been moved to InterpProtoANSI.
+
+	Fix Term.indent(). Doing println("\t") for indentation makes
+	no sense. It should've been print().
+
+nobugid - Tinker with TermApp's runargs
+	Had added VM options to set AA fonts to help figure out complaints
+	from Tim. Looks like the VMOptions textarea doesn't like the
+	options separated per line and when I run it the VM complains.
+
+	But it worked once!
+
+================================================================================
 nobugid - Adjust spec version to 1.37.6
 	One of the things that triggered an apichanges was the introducton
 	of TermOptions.PROP_ALT_SENDS_ESCAPE. It turns out none of 
