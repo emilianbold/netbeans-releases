@@ -195,7 +195,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
                 return -1;  // ran out of slots for custom colors
 	    Task task = new Task.SetCustomColor(terminal, allocatedColors, color);
 	    task.post();
-            colorMap.put(color, (allocatedColors++)+50);
+	    // +50 was to get old custom colors
+	    // +90 now we temporarily use "bright" colors
+            colorMap.put(color, (allocatedColors++)+90);
         }
         int customColor = colorMap.get(color);
         return customColor;

@@ -59,31 +59,6 @@ public class InterpANSI extends InterpProtoANSI {
     protected static class InterpTypeANSI extends InterpTypeProtoANSI {
 
 	protected InterpTypeANSI() {
-	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
-	}
-
-	private static final class ACT_PRINT implements Actor {
-	    @Override
-	    public String action(AbstractInterp ai, char c) {
-		// Ignored for now, except for 'dump time'
-		if (ai.noNumber()) {
-		    // Print screen
-		} else {
-		    switch (ai.numberAt(0)) {
-			case 1:	// Print Line
-			case 4:	// Stop Print Log
-			case 5:	// Start Print Log
-			    break;
-			case 10:
-			    ai.ops.op_time(true);
-			    break;
-			case 11:
-			    ai.ops.op_time(false);
-			    break;
-		    } 
-		}
-		return null;
-	    }
 	}
     }
 

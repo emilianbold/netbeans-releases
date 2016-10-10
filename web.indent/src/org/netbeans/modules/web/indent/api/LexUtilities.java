@@ -278,7 +278,7 @@ public final class LexUtilities {
         Collections.sort(tss, new Comparator<TokenSequence<T1>>() {
             @Override
             public int compare(TokenSequence<T1> o1, TokenSequence<T1> o2) {
-                assert o1.offset() != o2.offset(); // should never have two equal TokenSequence
+                assert o1.offset() != o2.offset() : "should never have two equal TokenSequence " + o1.toString() + " " +  o2.language().toString(); //NOI18N
                 return o1.offset() - o2.offset();
             }
         });

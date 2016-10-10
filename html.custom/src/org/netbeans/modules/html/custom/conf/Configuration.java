@@ -214,14 +214,16 @@ public class Configuration {
     }
 
     private void reload() throws IOException {
-        if (getProjectsConfigurationFile() != null) {
+        FileObject projectsConfigurationFile = getProjectsConfigurationFile();
+        if (projectsConfigurationFile != null) {
             //if something goes wrong, the data will be empty until the problem is corrected
             tags.clear();
             attrs.clear();
 
-            final Document document = getDocument(getProjectsConfigurationFile());
+            final Document document = getDocument(projectsConfigurationFile);
             final AtomicReference<String> docContentRef = new AtomicReference<>();
             final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
+            assert document != null : "Problem with configuration file: " + projectsConfigurationFile.getPath(); //NOI18N
             document.render(new Runnable() {
 
                 @Override

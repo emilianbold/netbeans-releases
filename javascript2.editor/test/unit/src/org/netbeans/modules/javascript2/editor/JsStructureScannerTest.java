@@ -750,7 +750,7 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/ecmascript6/importExport/import01.js");
     }
      
-     public void testIssue262549() throws Exception {
+    public void testIssue262549() throws Exception {
         checkStructure("testfiles/structure/issue262549.js");
     }
      
@@ -768,5 +768,9 @@ public class JsStructureScannerTest extends JsTestBase {
     
     public void testIssue267974_01() throws Exception {
         checkStructure("testfiles/markoccurences/issue267974_01.js");
+    }
+    
+    public void testIssue268377() throws Exception {
+        checkStructure("testfiles/structure/issue268377.js");
     }
 }

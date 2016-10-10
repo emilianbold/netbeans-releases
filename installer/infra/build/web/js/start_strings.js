@@ -46,7 +46,7 @@ var NOFILE_MESSAGE    = "No file requested" ;
 var NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE       = "NetBeans IDE Download Started";
 var NETBEANS_DOWNLOAD_STARTED_PAGE_DESCRIPTION = "NetBeans IDE Download Started";
 
-var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans JDK9 Branch {0} Download Started";
+var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";
 var FIND_OUT_MORE_LABEL = "Find Out More";

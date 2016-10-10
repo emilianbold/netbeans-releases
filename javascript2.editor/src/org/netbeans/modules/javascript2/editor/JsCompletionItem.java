@@ -56,6 +56,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -796,6 +797,10 @@ public class JsCompletionItem implements CompletionProposal {
     public static class Factory {
         
         public static void create( Map<String, List<JsElement>> items, CompletionRequest request, List<CompletionProposal> result) {
+            CancelSupport cancelSupport = request.cancelSupport;
+            if (cancelSupport.isCancelled()) {
+                return;
+            }
             // This maps unresolved types to the display name of the resolved type. 
             // It should save time to not resolve one type more times
             HashMap<String, Set<String>> resolvedTypes = new HashMap<String, Set<String>>();
@@ -809,6 +814,9 @@ public class JsCompletionItem implements CompletionProposal {
                     jsIndex = Index.get(request.info.getSnapshot().getSource().getFileObject());
                 }
                 for (JsElement element : entry.getValue()) {
+                    if (cancelSupport.isCancelled()) {
+                        return;
+                    }
                     switch (element.getJSKind()) {
                         case CONSTRUCTOR:
                         case FUNCTION:

@@ -249,14 +249,14 @@ class Screen extends JComponent implements Accessible {
 
             MutableAttributeSet as = new SimpleAttributeSet();
 
-            if ((attr & Attr.UNDERSCORE) == Attr.UNDERSCORE) {
+            if (Attr.UNDERSCORE.isSet(attr)) {
                 as.addAttribute(StyleConstants.Underline, Boolean.TRUE);
             }
-            if ((attr & Attr.BRIGHT) == Attr.BRIGHT) {
+            if (Attr.BRIGHT.isSet(attr)) {
                 as.addAttribute(StyleConstants.Bold, Boolean.TRUE);
             }
 
-            boolean reverse = ((attr & Attr.REVERSE) == Attr.REVERSE);
+            boolean reverse = Attr.REVERSE.isSet(attr);
 
             Color color;
             color = term.foregroundColor(reverse, attr);
