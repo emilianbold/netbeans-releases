@@ -190,6 +190,7 @@ public final class ClassIndexManager {
             }
             Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
             ClassIndexImpl qi = pair.first();
+            boolean markAsAdded = pair.second();
             if (qi == null) {
                 qi = getUsagesQuery(root, true);
                 if (qi == null) {
@@ -199,8 +200,10 @@ public final class ClassIndexManager {
                             ClassIndexImpl.Type.EMPTY,
                             source ? ClassIndexImpl.Type.SOURCE : ClassIndexImpl.Type.BINARY);
                     this.instances.put(root,qi);
-                    markAddedRoot(cietx, root);
+                    markAsAdded = true;
                 }
+            } else {
+                markAsAdded |= qi.getState() != ClassIndexImpl.State.INITIALIZED;
             }
             if (source && qi.getType() == ClassIndexImpl.Type.BINARY){
                 //Wrongly set up freeform project, which is common for it, prefer source
@@ -212,8 +215,9 @@ public final class ClassIndexManager {
                         ClassIndexImpl.Type.SOURCE);
                 this.instances.put(root,qi);
                 this.transientInstances.remove(root);
-                markAddedRoot(cietx, root);
-            } else if (pair.second()) {
+                markAsAdded = true;
+            }
+            if (markAsAdded) {
                 markAddedRoot(cietx, root);
             }
             return qi;

@@ -43,7 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javadoc.JavadocMemberEnter;
+import com.sun.tools.javadoc.main.JavadocMemberEnter;
 
 /**
  *

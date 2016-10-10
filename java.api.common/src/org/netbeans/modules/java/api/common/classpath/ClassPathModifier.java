@@ -116,6 +116,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             ClassPath.EXECUTE,
             ClassPathSupport.ENDORSED,
             JavaClassPathConstants.PROCESSOR_PATH,
+            JavaClassPathConstants.MODULE_COMPILE_PATH,
         };
     }
 

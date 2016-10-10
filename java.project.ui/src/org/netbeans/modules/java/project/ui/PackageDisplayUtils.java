@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.AccessibilityQuery;
+import org.netbeans.api.java.queries.AccessibilityQuery.Accessibility;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -65,23 +66,6 @@ import org.openide.util.NbBundle;
 public final class PackageDisplayUtils {
 
     private PackageDisplayUtils() {}
-
-    public static enum Accessibility {
-        PRIVATE,
-        EXPORTED,
-        UNKNOWN;
-
-        @NonNull
-        public static Accessibility fromQuery(@NullAllowed final Boolean accessibilityQueryResult) {
-            if (accessibilityQueryResult == null) {
-                return UNKNOWN;
-            } else if (accessibilityQueryResult) {
-                return EXPORTED;
-            } else {
-                return PRIVATE;
-            }
-        }
-    }
 
     /** whether to turn on #42589 */
     private static final boolean TRUNCATE_PACKAGE_NAMES =
@@ -150,15 +134,9 @@ public final class PackageDisplayUtils {
     public static Image getIcon(
             @NonNull final FileObject pkg,
             final boolean empty) {
-        return getIcon(
-                pkg,
+        return getIcon(pkg,
                 empty,
-                new Callable<Accessibility>() {
-                    @Override
-                    public Accessibility call() throws Exception {
-                        return Accessibility.fromQuery(AccessibilityQuery.isPubliclyAccessible(pkg));
-                    }
-                });
+                () -> AccessibilityQuery.isPubliclyAccessible2(pkg).getAccessibility());
     }
 
     public static Image getIcon(

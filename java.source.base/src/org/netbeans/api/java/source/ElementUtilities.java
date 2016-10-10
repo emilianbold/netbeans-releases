@@ -70,7 +70,7 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javadoc.DocEnv;
+import com.sun.tools.javadoc.main.DocEnv;
 import java.util.ArrayDeque;
 
 import java.util.ArrayList;
@@ -86,12 +86,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -104,7 +104,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.SimpleElementVisitor8;
+import javax.lang.model.util.SimpleElementVisitor9;
 import javax.lang.model.util.Types;
 
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -598,7 +598,7 @@ public final class ElementUtilities {
         return new ElementNameVisitor().visit(el, fqn);
     }
 
-    private static class ElementNameVisitor extends SimpleElementVisitor8<StringBuilder,Boolean> {
+    private static class ElementNameVisitor extends SimpleElementVisitor9<StringBuilder,Boolean> {
         
         private ElementNameVisitor() {
             super(new StringBuilder());
@@ -636,6 +636,11 @@ public final class ElementUtilities {
         public StringBuilder visitType(TypeElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }        
+
+        @Override
+        public StringBuilder visitModule(ModuleElement e, Boolean p) {
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
+        }
     }
 
     /**

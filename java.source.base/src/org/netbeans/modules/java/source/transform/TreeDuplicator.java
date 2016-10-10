@@ -61,6 +61,7 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -77,12 +78,15 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
@@ -94,6 +98,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -601,6 +606,51 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
     @Override
     public Tree visitWildcard(WildcardTree tree, Void p) {
         WildcardTree n = make.Wildcard(tree.getKind(), tree.getBound());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitModule(ModuleTree tree, Void p) {
+        ModuleTree n = make.Module(tree.getName(), tree.getDirectives());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitExports(ExportsTree tree, Void p) {
+        ExportsTree n = make.Exports(tree.getExportName(), tree.getModuleNames());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitProvides(ProvidesTree tree, Void p) {
+        ProvidesTree n = make.Provides(tree.getServiceName(), tree.getImplementationName());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitRequires(RequiresTree tree, Void p) {
+        RequiresTree n = make.Requires(tree.isPublic(), tree.getModuleName());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitUses(UsesTree tree, Void p) {
+        UsesTree n = make.Uses(tree.getServiceName());
         model.setType(n, model.getType(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));

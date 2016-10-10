@@ -306,6 +306,14 @@ public final class CodeStyle {
     
     // Alignment and braces ----------------------------------------------------
     
+    /**
+     * @since 2.23 
+     */
+    public BracePlacement getModuleDeclBracePlacement() {
+        String placement = preferences.get(moduleDeclBracePlacement, getDefaultAsString(moduleDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getClassDeclBracePlacement() {
         String placement = preferences.get(classDeclBracePlacement, getDefaultAsString(classDeclBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -343,6 +351,13 @@ public final class CodeStyle {
     public BracesGenerationStyle redundantDoWhileBraces() {
         String redundant = preferences.get(redundantDoWhileBraces, getDefaultAsString(redundantDoWhileBraces));
         return BracesGenerationStyle.valueOf(redundant);
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public boolean alignMultilineExports() {
+        return preferences.getBoolean(alignMultilineExports, getDefaultAsBoolean(alignMultilineExports));
     }
 
     public boolean alignMultilineMethodParams() {
@@ -429,6 +444,30 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
     
+    /**
+     * @since 2.23 
+     */
+    public WrapStyle wrapProvidesWithKeyword() {
+        String wrap = preferences.get(wrapProvidesWithKeyword, getDefaultAsString(wrapProvidesWithKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public WrapStyle wrapExportsToKeyword() {
+        String wrap = preferences.get(wrapExportsToKeyword, getDefaultAsString(wrapExportsToKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public WrapStyle wrapExportsToList() {
+        String wrap = preferences.get(wrapExportsToList, getDefaultAsString(wrapExportsToList));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapExtendsImplementsKeyword() {
         String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
         return WrapStyle.valueOf(wrap);
@@ -615,6 +654,34 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesInCode, getDefaultAsInt(blankLinesInCode));
     }
 
+    /**
+     * @since 2.23 
+     */
+    public int getBlankLinesAfterModuleHeader() {
+        return preferences.getInt(blankLinesAfterModuleHeader, getDefaultAsInt(blankLinesAfterModuleHeader));
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public int getBlankLinesBeforeModuleClosingBrace() {
+        return preferences.getInt(blankLinesBeforeModuleClosingBrace, getDefaultAsInt(blankLinesBeforeModuleClosingBrace));
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public int getBlankLinesBeforeModuleDirectives() {
+        return preferences.getInt(blankLinesBeforeModuleDirectives, getDefaultAsInt(blankLinesBeforeModuleDirectives));
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public int getBlankLinesAfterModuleDirectives() {
+        return preferences.getInt(blankLinesAfterModuleDirectives, getDefaultAsInt(blankLinesAfterModuleDirectives));
+    }
+
     public int getBlankLinesBeforePackage() {
         return preferences.getInt(blankLinesBeforePackage, getDefaultAsInt(blankLinesBeforePackage));
     }
@@ -784,6 +851,13 @@ public final class CodeStyle {
      */
     public boolean spaceAroundMethodReferenceDoubleColon() {
         return preferences.getBoolean(spaceAroundMethodReferenceDoubleColon, getDefaultAsBoolean(spaceAroundMethodReferenceDoubleColon));
+    }
+
+    /**
+     * @since 2.23 
+     */
+    public boolean spaceBeforeModuleDeclLeftBrace() {
+        return preferences.getBoolean(spaceBeforeModuleDeclLeftBrace, getDefaultAsBoolean(spaceBeforeModuleDeclLeftBrace));
     }
 
     public boolean spaceBeforeClassDeclLeftBrace() {

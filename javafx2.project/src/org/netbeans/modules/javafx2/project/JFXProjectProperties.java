@@ -1630,7 +1630,7 @@ public final class JFXProjectProperties {
         }
         
         public void fillFromProject(final Project project, final String select, final JFXConfigs configs, final String activeConfig) {
-            final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
+            final Collection<? extends FileObject> roots = JFXProjectUtils.getClassPathMap(project).keySet();
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -1641,7 +1641,7 @@ public final class JFXProjectProperties {
                             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
                             return;
                         }
-                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Preloader"); //NOI18N
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(roots, "javafx.application.Preloader"); //NOI18N
                         if(appClassNames.isEmpty()) {
                             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
                         } else {

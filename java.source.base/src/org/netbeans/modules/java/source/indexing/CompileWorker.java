@@ -47,8 +47,10 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.util.*;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
@@ -64,7 +66,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 abstract class CompileWorker {
 
     abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Collection<? extends CompileTuple> files);
-    
+
     protected void computeFQNs(final Map<JavaFileObject, List<String>> file2FQNs, CompilationUnitTree cut, CompileTuple tuple) {
         String pack;
         if (cut.getPackageName() != null) {
@@ -109,57 +111,92 @@ abstract class CompileWorker {
         final LowMemoryWatcher lm = LowMemoryWatcher.getInstance();
         lm.free(freeCaches);
     }
+    
+    static class ModuleName {
+        String name;
+        boolean assigned;
+        
+        ModuleName(final String name) {
+            this.name = name;
+        }
+    }
 
     static class ParsingOutput {
         final boolean success;
         final boolean lowMemory;
+        final String moduleName;
         final Map<JavaFileObject, List<String>> file2FQNs;
         final Set<ElementHandle<TypeElement>> addedTypes;
+        final Set<ElementHandle<ModuleElement>> addedModules;
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Set<ElementHandle<TypeElement>> modifiedTypes;
         final Set<javax.tools.FileObject> aptGenerated;
 
-        private ParsingOutput(boolean success, boolean lowMemory, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<javax.tools.FileObject> aptGenerated) {
+        private ParsingOutput(
+                final boolean success,
+                final boolean lowMemory,
+                @NullAllowed final String moduleName,
+                Map<JavaFileObject, List<String>> file2FQNs,
+                Set<ElementHandle<TypeElement>> addedTypes,
+                Set<ElementHandle<ModuleElement>> addedModules,
+                Set<File> createdFiles,
+                Set<Indexable> finishedFiles,
+                Set<ElementHandle<TypeElement>> modifiedTypes,
+                Set<javax.tools.FileObject> aptGenerated) {
             assert (success && !lowMemory) || !success;
             this.success = success;
             this.lowMemory = lowMemory;
+            this.moduleName = moduleName;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;
+            this.addedModules = addedModules;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
             this.modifiedTypes = modifiedTypes;
             this.aptGenerated = aptGenerated;
         }
-        
+
         static ParsingOutput success (
+                @NullAllowed final String moduleName,
                 final Map<JavaFileObject, List<String>> file2FQNs,
                 final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<ElementHandle<ModuleElement>> addedModules,
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
                 final Set<javax.tools.FileObject> aptGenerated) {
-            return new ParsingOutput(true, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
+            return new ParsingOutput(true, false, moduleName, file2FQNs,
+                    addedTypes, addedModules, createdFiles, finishedFiles,
+                    modifiedTypes, aptGenerated);
         }
-        
+
         static ParsingOutput failure(
+                @NullAllowed final String moduleName,
                 final Map<JavaFileObject, List<String>> file2FQNs,
                 final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<ElementHandle<ModuleElement>> addedModules,
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
                 final Set<javax.tools.FileObject> aptGenerated) {
-            return new ParsingOutput(false, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
+            return new ParsingOutput(false, false, moduleName, file2FQNs,
+                    addedTypes, addedModules, createdFiles, finishedFiles,
+                    modifiedTypes, aptGenerated);
         }
-        
+
         static ParsingOutput lowMemory(
+                @NullAllowed final String moduleName,
                 final Map<JavaFileObject, List<String>> file2FQNs,
                 final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<ElementHandle<ModuleElement>> addedModules,
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
                 final Set<javax.tools.FileObject> aptGenerated) {
-            return new ParsingOutput(false, true, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);            
+            return new ParsingOutput(false, true, moduleName, file2FQNs,
+                    addedTypes, addedModules, createdFiles, finishedFiles,
+                    modifiedTypes, aptGenerated);
         }
-    }    
+    }
 }

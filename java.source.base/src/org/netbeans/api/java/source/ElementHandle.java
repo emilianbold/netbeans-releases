@@ -45,11 +45,13 @@
 package org.netbeans.api.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.ModuleFinder;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -57,6 +59,7 @@ import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -274,6 +277,16 @@ public final class ElementHandle<T extends Element> {
                 }
                 break;
             }
+            case MODULE:
+                assert signatures.length == 1;
+                final ModuleFinder cml = ModuleFinder.instance(jt.getContext());
+                final Element me = cml.findModule((Name)jt.getElements().getName(this.signatures[0]));
+                if (me != null) {
+                    return (T) me;
+                } else {
+                    log.log(Level.INFO, "Cannot resolve module: {0}", this.signatures[0]);  // NOI18N
+                }
+                break;
             default:
                 throw new IllegalStateException ();
         }
@@ -324,7 +337,10 @@ public final class ElementHandle<T extends Element> {
      * isn't created for the {@link TypeElement}.
      */
     public @NonNull String getBinaryName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) ||
+                this.kind.isInterface() ||
+                this.kind == ElementKind.MODULE ||
+                this.kind == ElementKind.OTHER) {
             return this.signatures[0];
         }
         else {
@@ -342,7 +358,10 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public @NonNull String getQualifiedName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) ||
+                this.kind.isInterface() ||
+                this.kind == ElementKind.MODULE ||
+                this.kind == ElementKind.OTHER) {
             return this.signatures[0].replace (Target.DEFAULT.syntheticNameChar(),'.');    //NOI18N
         }
         else {
@@ -485,6 +504,9 @@ public final class ElementHandle<T extends Element> {
                     throw new IllegalArgumentException(gek.toString());
                 }
                 break;
+            case MODULE:
+                signatures = new String[]{((ModuleElement)element).getQualifiedName().toString()};
+                break;
             default:
                 throw new IllegalArgumentException(kind.toString());
         }
@@ -564,6 +586,7 @@ public final class ElementHandle<T extends Element> {
                         throw new IllegalArgumentException ();
                     }
                     return new ElementHandle<PackageElement> (kind, descriptors);
+                case MODULE:
                 case CLASS:
                 case INTERFACE:
                 case ENUM:

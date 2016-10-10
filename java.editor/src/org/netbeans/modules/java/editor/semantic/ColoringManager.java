@@ -79,6 +79,7 @@ public final class ColoringManager {
         put("mark-occurrences", MARK_OCCURRENCES);
         put("mod-type-parameter-use", TYPE_PARAMETER_USE);
         put("mod-type-parameter-declaration", TYPE_PARAMETER_DECLARATION);
+        put("mod-module-declaration", MODULE, DECLARATION);
         put("mod-enum-declaration", ENUM, DECLARATION);
         put("mod-annotation-type-declaration", ANNOTATION_TYPE, DECLARATION);
         put("mod-interface-declaration", INTERFACE, DECLARATION);
@@ -88,6 +89,7 @@ public final class ColoringManager {
         put("mod-parameter-declaration", PARAMETER, DECLARATION);
         put("mod-local-variable-declaration", LOCAL_VARIABLE, DECLARATION);
         put("mod-field-declaration", FIELD, DECLARATION);
+        put("mod-module", MODULE);
         put("mod-enum", ENUM);
         put("mod-annotation-type", ANNOTATION_TYPE);
         put("mod-interface", INTERFACE);

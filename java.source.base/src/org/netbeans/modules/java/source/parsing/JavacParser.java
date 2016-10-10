@@ -69,7 +69,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
-import com.sun.tools.javadoc.JavadocClassFinder;
+import com.sun.tools.javadoc.main.JavadocClassFinder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,11 +84,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -105,6 +108,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -161,6 +165,7 @@ import org.openide.util.WeakListeners;
  */
 //@NotThreadSafe
 public class JavacParser extends Parser {
+    public static final String OPTION_PATCH_MODULE = "--patch-module";          //NOI18N
     //Timer logger
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N
     //Debug logger
@@ -327,6 +332,12 @@ public class JavacParser extends Parser {
                 cpInfo = _tmpInfo;
                 this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
                 cpInfo.addChangeListener (this.weakCpListener);
+                root = Optional.ofNullable(cpInfo.getClassPath(PathKind.SOURCE))
+                        .map((cp)-> {
+                            FileObject[] roots = cp.getRoots();
+                            return roots.length > 0 ? roots[0] : null;
+                        })
+                        .orElse(null);
             } else {
                 throw new IllegalArgumentException("No classpath provided by task: " + task);
             }
@@ -399,7 +410,7 @@ public class JavacParser extends Parser {
                 case 0:
                     if (shouldParse(task)) {
                         init(task);
-                        ciImpl = new CompilationInfoImpl(cpInfo);
+                        ciImpl = new CompilationInfoImpl(cpInfo, root);
                     }
                     break;
                 case 1:
@@ -706,17 +717,32 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
+        final CompilerOptionsQuery.Result compilerOptions = root != null ?
+                CompilerOptionsQuery.getOptions(root) :
+                file != null ?
+                    CompilerOptionsQuery.getOptions(file) :
+                    null;
+        final Set<ConfigFlags> flags = EnumSet.noneOf(ConfigFlags.class);
+        final Optional<JavacParser> mayBeParser = Optional.ofNullable(parser);
+        if (mayBeParser.filter((p)->p.sourceCount>1).isPresent()) {
+            flags.add(ConfigFlags.MULTI_SOURCE);
+        }
+        if (Optional.ofNullable(mayBeParser.map(p->(p.file))
+                .orElse(file))
+                .filter((f)->FileObjects.MODULE_INFO.equals(f.getName())).isPresent()) {
+            flags.add(ConfigFlags.MODULE_INFO);
+        }
         final JavacTaskImpl javacTask = createJavacTask(
                 cpInfo,
                 diagnosticListener,
                 sourceLevel != null ? sourceLevel.getSourceLevel() : null,
                 sourceLevel != null ? sourceLevel.getProfile() : null,
-                false,
-                parser != null && parser.sourceCount > 1,
+                flags,
                 oraculum,
                 dcc,
                 parser == null ? null : new DefaultCancelService(parser),
-                APTUtils.get(root));
+                APTUtils.get(root),
+                compilerOptions);
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo, detached);
         return javacTask;
@@ -730,8 +756,25 @@ public class JavacParser extends Parser {
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
-            @NullAllowed final APTUtils aptUtils) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, sourceProfile, true, true, cnih, dcc, cancelService, aptUtils);
+            @NullAllowed final APTUtils aptUtils,
+            @NullAllowed final CompilerOptionsQuery.Result compilerOptions) {
+        return createJavacTask(
+                cpInfo,
+                diagnosticListener,
+                sourceLevel,
+                sourceProfile,
+                EnumSet.of(ConfigFlags.BACKGROUND_COMPILATION, ConfigFlags.MULTI_SOURCE),
+                cnih,
+                dcc,
+                cancelService,
+                aptUtils,
+                compilerOptions);
+    }
+
+    private static enum ConfigFlags {
+        BACKGROUND_COMPILATION,
+        MULTI_SOURCE,
+        MODULE_INFO
     }
 
     private static JavacTaskImpl createJavacTask(
@@ -739,15 +782,20 @@ public class JavacParser extends Parser {
             @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             @NullAllowed final String sourceLevel,
             @NullAllowed SourceLevelQuery.Profile sourceProfile,
-            final boolean backgroundCompilation,
-            final boolean multiSource,
+            @NonNull final Set<? extends ConfigFlags> flags,
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
-            @NullAllowed final APTUtils aptUtils) {
+            @NullAllowed final APTUtils aptUtils,
+            @NullAllowed final CompilerOptionsQuery.Result compilerOptions) {
+        final boolean backgroundCompilation = flags.contains(ConfigFlags.BACKGROUND_COMPILATION);
+        final boolean multiSource = flags.contains(ConfigFlags.MULTI_SOURCE);
         final List<String> options = new ArrayList<>();
         String lintOptions = CompilerSettings.getCommandLine(cpInfo);
-        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(
+                sourceLevel,
+                cpInfo,
+                flags.contains(ConfigFlags.MODULE_INFO));
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -766,7 +814,7 @@ public class JavacParser extends Parser {
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
         options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
         options.add("-XDsuppressAbortOnBadClassFile");   // NOI18N, when a class file cannot be read, produce an error type instead of failing with an exception
-        options.add("-XDshouldStopPolicy=GENERATE");   // NOI18N, parsing should not stop in phase where an error is found
+        options.add("-XDshouldstop.at=GENERATE");   // NOI18N, parsing should not stop in phase where an error is found
         options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
@@ -809,6 +857,11 @@ public class JavacParser extends Parser {
             }
         } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
+        }
+        if (compilerOptions != null) {
+            for (String compilerOption : validateCompilerOptions(compilerOptions.getArguments())) {
+                options.add(compilerOption);
+            }
         }
 
         Context context = new Context();
@@ -855,7 +908,8 @@ public class JavacParser extends Parser {
     public static boolean DISABLE_SOURCE_LEVEL_DOWNGRADE = false;
     static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
             @NullAllowed String sourceLevel,
-            @NonNull final ClasspathInfo cpInfo) {
+            @NonNull final ClasspathInfo cpInfo,
+            final boolean isModuleInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
         ClassPath classPath = null;
         ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
@@ -870,7 +924,7 @@ public class JavacParser extends Parser {
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source == com.sun.tools.javac.code.Source.lookup(sourceLevel)) {
-                if (DISABLE_SOURCE_LEVEL_DOWNGRADE) {
+                if (DISABLE_SOURCE_LEVEL_DOWNGRADE || isModuleInfo) {
                     return source;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
@@ -931,6 +985,27 @@ public class JavacParser extends Parser {
         else {
             return sources[sources.length-1];
         }
+    }
+
+    @NonNull
+    public static List<? extends String> validateCompilerOptions(@NonNull final List<? extends String> options) {
+        final List<String> res = new ArrayList<>();
+        for (int i = 0; i < options.size(); i++) {
+            String option = options.get(i);
+            if (option.startsWith("-Xmodule:")) {     //NOI18N
+                res.add(option);
+            } else if (i+1 < options.size() && (
+                    option.equals("--add-modules") ||   //NOI18N
+                    option.equals("--limit-modules") || //NOI18N
+                    option.equals("--add-exports") ||   //NOI18N
+                    option.equals("--add-reads")  ||
+                    option.equals(OPTION_PATCH_MODULE))) {
+                res.add(option);
+                option = options.get(++i);
+                res.add(option);
+            }
+        }
+        return res;
     }
 
     private static boolean hasResource(

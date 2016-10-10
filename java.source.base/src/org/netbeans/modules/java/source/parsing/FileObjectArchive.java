@@ -47,14 +47,18 @@ package org.netbeans.modules.java.source.parsing;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Enumerations;
 
 /**
  *
@@ -69,14 +73,30 @@ public class FileObjectArchive implements Archive {
         this.root = root;
     }
 
-    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
-        FileObject folder = root.getFileObject(folderName);
+    @NonNull
+    @Override
+    public Iterable<JavaFileObject> getFiles(
+            @NonNull final String folderName,
+            @NullAllowed final ClassPath.Entry entry,
+            @NullAllowed final Set<JavaFileObject.Kind> kinds,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            final boolean recursive) throws IOException {
+        final FileObject folder = root.getFileObject(folderName);
         if (folder == null || !(entry == null || entry.includes(folder))) {
             return Collections.<JavaFileObject>emptySet();
         }
-        FileObject[] children = folder.getChildren();
-        List<JavaFileObject> result = new ArrayList<JavaFileObject>(children.length);
-        for (FileObject fo : children) {
+        final Enumeration<? extends FileObject> children;
+        final List<JavaFileObject> result;
+        if (recursive) {
+            children = folder.getChildren(recursive);
+            result = new ArrayList<>(/*unknown size*/);
+        } else {
+            final FileObject[] chlds = folder.getChildren();
+            children = Enumerations.array(chlds);
+            result = new ArrayList<>(chlds.length);
+        }
+        while (children.hasMoreElements()) {
+            final FileObject fo = children.nextElement();
             if (fo.isData() && (entry == null || entry.includes(fo))) {
                 final Kind kind = FileObjects.getKind(fo.getExt());
                 if (kinds == null || kinds.contains (kind)) {
@@ -93,10 +113,12 @@ public class FileObjectArchive implements Archive {
         return result;
     }
 
+    @Override
     public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
         throw new UnsupportedOperationException("Write not supported");   //NOI18N
     }
 
+    @Override
     public void clear() {
     }
 

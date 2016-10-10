@@ -52,6 +52,8 @@ import com.sun.source.doctree.DocRootTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.HiddenTree;
+import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.ParamTree;
@@ -386,7 +388,18 @@ public class TreeFactory {
            errors.append((JCTree)t);
         return make.at(NOPOS).Erroneous(errors.toList());
     }
-    
+
+    public ExportsTree Exports(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
+        ListBuffer<JCExpression> names = null;
+        if (moduleNames != null) {
+            names = new ListBuffer<>();
+            for (ExpressionTree name : moduleNames) {
+                names.add((JCExpression) name);
+            }
+        }
+        return make.at(NOPOS).Exports((JCExpression) qualId, names != null ? names.toList() : null);
+    }
+
     public ExpressionStatementTree ExpressionStatement(ExpressionTree expression) {
         return make.at(NOPOS).Exec((JCExpression)expression);
     }
@@ -555,6 +568,13 @@ public class TreeFactory {
         return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs != null ? targs.toList() : null);
     }
     
+    public ModuleTree Module(ExpressionTree qualid, List<? extends DirectiveTree> directives) {
+        ListBuffer<JCDirective> dircts = new ListBuffer<>();
+        for (DirectiveTree t : directives)
+            dircts.append((JCDirective)t);
+        return make.at(NOPOS).ModuleDef((JCExpression)qualid, dircts.toList());
+    }
+    
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
         return Modifiers(modifiersToFlags(flagset), annotations);
     }
@@ -684,7 +704,15 @@ public class TreeFactory {
         }
         return make.at(NOPOS).TypeIdent(typetag);
     }
-    
+
+    public ProvidesTree Provides(ExpressionTree serviceName, ExpressionTree implName) {
+        return make.at(NOPOS).Provides((JCExpression) serviceName, (JCExpression)implName);
+    }
+
+    public RequiresTree Requires(boolean isPublic, ExpressionTree qualId) {
+        return make.at(NOPOS).Requires(isPublic, (JCExpression)qualId);
+    }
+
     public ExpressionTree QualIdentImpl(Element element) {
         return make.at(NOPOS).QualIdent((Symbol) element);
     }
@@ -817,7 +845,11 @@ public class TreeFactory {
         }
         return make.at(NOPOS).Unary(op, (JCExpression)arg);
     }
-    
+
+    public UsesTree Uses(ExpressionTree qualId) {
+        return make.at(NOPOS).Uses((JCExpression) qualId);
+    }
+
     public VariableTree Variable(ModifiersTree modifiers,
                                  CharSequence name,
                                  Tree type,
@@ -929,6 +961,32 @@ public class TreeFactory {
         return copy;
     }
 
+    // ModuleTree
+    public ModuleTree addModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return modifyModuleDirective(modle, -1, directive, Operation.ADD);
+    }
+    
+    public ModuleTree insertModuleDirective(ModuleTree modle, int index, DirectiveTree directive) {
+        return modifyModuleDirective(modle, index, directive, Operation.ADD);
+    }
+    
+    public ModuleTree removeModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return modifyModuleDirective(modle, -1, directive, Operation.REMOVE);
+    }
+    
+    public ModuleTree removeModuleDirective(ModuleTree modle, int index) {
+        return modifyModuleDirective(modle, index, null, Operation.REMOVE);
+    }
+    
+    private ModuleTree modifyModuleDirective(ModuleTree modle, int index, DirectiveTree directive, Operation op) {
+        ModuleTree copy = Module(
+            modle.getName(),
+            c(modle.getDirectives(), index, directive, op)
+        );
+        return copy;
+    }
+    
+    
     // ClassTree
     public ClassTree addClassMember(ClassTree clazz, Tree member) {
         return modifyClassMember(clazz, -1, member, Operation.ADD);
@@ -1647,46 +1705,19 @@ public class TreeFactory {
     private DocTreeMaker docMake;
 
     public AttributeTree Attribute(CharSequence name, AttributeTree.ValueKind vkind, List<? extends DocTree> value) {
-        ListBuffer<DCTree> lb = null;
-        if(value != null) {
-            lb = new ListBuffer<DCTree>();
-            for (DocTree t : value) {
-                lb.append((DCTree) t);
-            }
-        }
-        return docMake.at(NOPOS).Attribute((Name) names.fromString(name.toString()), vkind, lb != null ? lb.toList() : null);
+        return docMake.at(NOPOS).newAttributeTree((Name) names.fromString(name.toString()), vkind, value);
     }
 
     public AuthorTree Author(List<? extends DocTree> name) {
-        ListBuffer<DCTree> lb = new ListBuffer<DCTree>();
-        for (DocTree t : name) {
-            lb.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Author(lb.toList());
+        return docMake.at(NOPOS).newAuthorTree(name);
     }
 
     public DeprecatedTree Deprecated(List<? extends DocTree> text) {
-        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
-        for (DocTree t : text) {
-            txt.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Deprecated(txt.toList());
+        return docMake.at(NOPOS).newDeprecatedTree(text);
     }
     
     public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
-        ListBuffer<DCTree> fs = new ListBuffer<DCTree>();
-        for (DocTree t : firstSentence) {
-            fs.append((DCTree) t);
-        }
-        ListBuffer<DCTree> bd = new ListBuffer<DCTree>();
-        for (DocTree t : body) {
-            bd.append((DCTree) t);
-        }
-        ListBuffer<DCTree> tg = new ListBuffer<DCTree>();
-        for (DocTree t : tags) {
-            tg.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).DocComment(fs.toList(), bd.toList(), tg.toList());
+        return docMake.at(NOPOS).newDocCommentTree(firstSentence, body, tags);
     }
     
     public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {
@@ -1697,173 +1728,122 @@ public class TreeFactory {
     }
 
     public ParamTree Param(boolean isTypeParameter, com.sun.source.doctree.IdentifierTree name, List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Param(isTypeParameter, (DCTree.DCIdentifier)name, desc.toList());
+        return docMake.at(NOPOS).newParamTree(isTypeParameter, name, description);
     }
     
     public LinkTree Link(ReferenceTree ref, List<? extends DocTree> label) {
-        ListBuffer<DCTree> lbl = new ListBuffer<DCTree>();
-        for (DocTree t : label) {
-            lbl.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Link((DCTree.DCReference)ref, lbl.toList());
+        return docMake.at(NOPOS).newLinkTree(ref, label);
     }
     
     public com.sun.source.doctree.LiteralTree Literal(com.sun.source.doctree.TextTree text) {
-        return docMake.at(NOPOS).Literal((DCText)text);
+        return docMake.at(NOPOS).newLiteralTree(text);
     }
     
     public com.sun.source.doctree.ReturnTree Return(List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Return(desc.toList());
+        return docMake.at(NOPOS).newReturnTree(description);
     }
     
     public SeeTree See(List<? extends DocTree> reference) {
-        ListBuffer<DCTree> ref = new ListBuffer<DCTree>();
-        for (DocTree t : reference) {
-            ref.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).See(ref.toList());
+        return docMake.at(NOPOS).newSeeTree(reference);
     }
     
     public SerialTree Serial(List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Serial(desc.toList());
+        return docMake.at(NOPOS).newSerialTree(description);
     }
     
     public SerialDataTree SerialData(List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).SerialData(desc.toList());
+        return docMake.at(NOPOS).newSerialDataTree(description);
     }
     
     public SerialFieldTree SerialField(com.sun.source.doctree.IdentifierTree name, ReferenceTree type, List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).SerialField((DCIdentifier)name, (DCReference)type, desc.toList());
+        return docMake.at(NOPOS).newSerialFieldTree(name, type, description);
     }
     
     public SinceTree Since(List<? extends DocTree> text) {
-        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
-        for (DocTree t : text) {
-            txt.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Since(txt.toList());
+        return docMake.at(NOPOS).newSinceTree(text);
     }
     
     public StartElementTree StartElement(CharSequence name, List<? extends DocTree> attrs, boolean selfClosing) {
-        ListBuffer<DCTree> atr = new ListBuffer<DCTree>();
-        for (DocTree t : attrs) {
-            atr.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).StartElement(names.fromString(name.toString()), atr.toList(), selfClosing);
+        return docMake.at(NOPOS).newStartElementTree(names.fromString(name.toString()), attrs, selfClosing);
     }
     
     public TextTree Text(String text) {
-        return docMake.at(NOPOS).Text(text);
+        return docMake.at(NOPOS).newTextTree(text);
     }
     
     public ThrowsTree Throws(ReferenceTree name, List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Throws((DCReference)name, desc.toList());
+        return docMake.at(NOPOS).newThrowsTree(name, description);
     }
     
     public UnknownBlockTagTree UnknownBlockTag(CharSequence name, List<? extends DocTree> content) {
-        ListBuffer<DCTree> cont = new ListBuffer<DCTree>();
-        for (DocTree t : content) {
-            cont.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).UnknownBlockTag(names.fromString(name.toString()), cont.toList());
+        return docMake.at(NOPOS).newUnknownBlockTagTree(names.fromString(name.toString()), content);
     }
 
     public UnknownInlineTagTree UnknownInlineTag(CharSequence name, List<? extends DocTree> content) {
-        ListBuffer<DCTree> cont = new ListBuffer<DCTree>();
-        for (DocTree t : content) {
-            cont.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).UnknownInlineTag(names.fromString(name.toString()), cont.toList());
+        return docMake.at(NOPOS).newUnknownInlineTagTree(names.fromString(name.toString()), content);
     }
     
     public ValueTree Value(ReferenceTree ref) {
-        return docMake.at(NOPOS).Value((DCReference)ref);
+        return docMake.at(NOPOS).newValueTree(ref);
     }
 
     public VersionTree Version(List<? extends DocTree> text) {
-        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
-        for (DocTree t : text) {
-            txt.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Version(txt.toList());
+        return docMake.at(NOPOS).newVersionTree(text);
     }
     
     public com.sun.source.doctree.LiteralTree Code(TextTree text) {
-        return docMake.at(NOPOS).Code((DCText)text);
+        return docMake.at(NOPOS).newCodeTree(text);
     }
 
     public com.sun.source.doctree.CommentTree Comment(String text) {
-        return docMake.at(NOPOS).Comment(text);
+        return docMake.at(NOPOS).newCommentTree(text);
     }
+
     public DocRootTree DocRoot() {
-        return docMake.at(NOPOS).DocRoot();
+        return docMake.at(NOPOS).newDocRootTree();
     }
 
     public EndElementTree EndElement(CharSequence name) {
-        return docMake.at(NOPOS).EndElement(names.fromString(name.toString()));
+        return docMake.at(NOPOS).newEndElementTree(names.fromString(name.toString()));
     }
 
     public EntityTree Entity(CharSequence name) {
-        return docMake.at(NOPOS).Entity(names.fromString(name.toString()));
+        return docMake.at(NOPOS).newEntityTree(names.fromString(name.toString()));
     }
     
     public ThrowsTree Exception(ReferenceTree name, List<? extends DocTree> description) {
-        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
-        for (DocTree t : description) {
-            desc.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).Exception((DCReference)name, desc.toList());
+        return docMake.at(NOPOS).newExceptionTree(name, description);
     }
 
     public com.sun.source.doctree.IdentifierTree DocIdentifier(CharSequence name) {
-        return docMake.at(NOPOS).Identifier((Name) names.fromString(name.toString()));
+        return docMake.at(NOPOS).newIdentifierTree((Name) names.fromString(name.toString()));
+    }
+
+    public HiddenTree Hidden(List<? extends DocTree> text) {
+        return docMake.at(NOPOS).newHiddenTree(text);
     }
 
     public InheritDocTree InheritDoc() {
-        return docMake.at(NOPOS).InheritDoc();
+        return docMake.at(NOPOS).newInheritDocTree();
+    }
+    
+    public IndexTree Index(DocTree term, List<? extends DocTree> description) {
+        return docMake.at(NOPOS).newIndexTree(term, description);
     }
 
     public LinkTree LinkPlain(ReferenceTree ref, List<? extends DocTree> label) {
-        ListBuffer<DCTree> lbl = new ListBuffer<DCTree>();
-        for (DocTree t : label) {
-            lbl.append((DCTree) t);
-        }
-        return docMake.at(NOPOS).LinkPlain((DCReference)ref, lbl.toList());
+        return docMake.at(NOPOS).newLinkPlainTree(ref, label);
     }
 
     public ReferenceTree Reference(ExpressionTree qualExpr, CharSequence member, List<? extends Tree> paramTypes) {
         com.sun.tools.javac.util.List<JCTree> paramTypesList = null;
         if (paramTypes != null) {
-            ListBuffer<JCTree> lbl = new ListBuffer<JCTree>();
+            ListBuffer<JCTree> lbl = new ListBuffer<>();
             for (Tree t : paramTypes) {
                 lbl.append((JCTree) t);
             }
             paramTypesList = lbl.toList();
         }
-        return docMake.at(NOPOS).Reference("", (JCExpression) qualExpr, member != null ? (Name) names.fromString(member.toString()) : null, paramTypesList);
+        return docMake.at(NOPOS).newReferenceTree("", (JCExpression) qualExpr, member != null ? (Name) names.fromString(member.toString()) : null, paramTypesList);
     }
 }

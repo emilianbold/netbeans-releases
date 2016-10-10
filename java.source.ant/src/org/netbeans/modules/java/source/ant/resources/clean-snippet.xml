@@ -46,5 +46,6 @@ made subject to such option by the copyright holder.
 <project name="{0} (clean)" default="clean" basedir=".">
     <target name="clean">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" clean="true" />
+        <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" clean="true" />
     </target>
 </project>

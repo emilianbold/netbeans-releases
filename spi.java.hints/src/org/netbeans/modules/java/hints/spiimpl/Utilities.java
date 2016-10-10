@@ -108,7 +108,7 @@ import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javadoc.Messager;
+import com.sun.tools.javadoc.main.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -767,7 +767,7 @@ public class Utilities {
             
             JCCompilationUnit cut = compiler.parse(jfo);
 
-            compiler.enterTrees(com.sun.tools.javac.util.List.of(cut));
+            compiler.enterTrees(compiler.initModules(com.sun.tools.javac.util.List.of(cut)));
 
             Todo todo = compiler.todo;
             ListBuffer<Env<AttrContext>> defer = new ListBuffer<Env<AttrContext>>();

@@ -44,6 +44,8 @@ package org.netbeans.modules.java.preprocessorbridge.api;
 
 import java.io.IOException;
 import java.util.Collection;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;

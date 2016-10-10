@@ -106,6 +106,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="J2SEProjectBuilder-DefaultModuleProperties">
+            <api name="jseprojects"/>
+            <summary>Added a method to create default module properties</summary>
+            <version major="1" minor="85"/>            
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a method into the <code>J2SEProjectBuilder</code> to create default module properties for J2SEProject.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SEProjectBuilder"/>
+        </change>
         <change id="J2SEBuildPropertiesProvider">
             <api name="jseprojects"/>
             <summary>Added SPI to allow J2SE Project extensions to supply additional build properties</summary>

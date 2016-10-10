@@ -188,7 +188,6 @@ public class ClassPathModifierLookupMerger implements LookupMerger<ProjectClassP
                 }
             });
         }
-
     }
     
 }

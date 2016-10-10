@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
@@ -63,6 +64,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -143,19 +145,20 @@ public final class SourceAnalyzerFactory {
          * @throws IOException in case of IO error
          */
         public void analyse (
-                final Iterable<? extends CompilationUnitTree> data,
-                final JavacTaskImpl jt,
-                final JavaCustomIndexer.CompileTuple tuple,
-                final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NonNull final Iterable<? extends CompilationUnitTree> data,
+                @NonNull final JavacTaskImpl jt,
+                @NonNull final JavaCustomIndexer.CompileTuple tuple,
+                @NullAllowed final /*out*/Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final /*out*/Set<? super ElementHandle<ModuleElement>> newModules,
                 final /*out*/boolean[] mainMethod) throws IOException {
             final JavaFileManager manager = jt.getContext().get(JavaFileManager.class);
             final Map<Pair<BinaryName, String>,UsagesData<String>> usages = new HashMap<>();
             for (CompilationUnitTree cu : data) {
                 try {
-                    UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, tuple);
+                    UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, newModules, tuple);
                     uv.scan(cu,usages);
                     mainMethod[0] |= uv.mainMethod;
-                    if (uv.rsList != null && uv.rsList.size()>0) {
+                    if (uv.rsList != null && !uv.rsList.isEmpty()) {
                         String ext;
                         if (tuple.virtual) {
                             ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
@@ -306,6 +309,7 @@ public final class SourceAnalyzerFactory {
         private final boolean signatureFiles;
         private final Set<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
+        private final Set<? super ElementHandle<ModuleElement>> newModules;
         private final Set<Symbol> imports;
         private final Set<Symbol> staticImports;
         private final Set<Symbol> unusedPkgImports;
@@ -324,11 +328,12 @@ public final class SourceAnalyzerFactory {
 
 
         public UsagesVisitor (
-                JavacTaskImpl jt,
-                CompilationUnitTree cu,
-                JavaFileManager manager,
-                javax.tools.JavaFileObject sibling,
-                Set<? super ElementHandle<TypeElement>> newTypes,
+                @NonNull final JavacTaskImpl jt,
+                @NonNull final CompilationUnitTree cu,
+                @NonNull final JavaFileManager manager,
+                @NonNull final javax.tools.JavaFileObject sibling,
+                @NullAllowed final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final Set<? super ElementHandle<ModuleElement>> newModules,
                 final JavaCustomIndexer.CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
             this(
                     jt,
@@ -338,6 +343,7 @@ public final class SourceAnalyzerFactory {
                     true,
                     tuple.virtual,
                     newTypes,
+                    newModules,
                     null);
         }
 
@@ -355,6 +361,7 @@ public final class SourceAnalyzerFactory {
                     false,
                     false,
                     null,
+                    null,
                     topLevels);
         }
 
@@ -366,6 +373,7 @@ public final class SourceAnalyzerFactory {
                 final boolean sigFiles,
                 final boolean virtual,
                 @NullAllowed final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final Set<? super ElementHandle<ModuleElement>> newModules,
                 @NullAllowed final Set<? super Pair<String,String>> topLevels) {
             assert sourceName != null;
             assert jt != null;
@@ -384,6 +392,7 @@ public final class SourceAnalyzerFactory {
             this.signatureFiles = sigFiles;
             this.virtual = virtual;
             this.newTypes = newTypes;
+            this.newModules = newModules;
             this.topLevels = topLevels;
             this.sourceName = sourceName;
             this.siblingUrl = siblingUrl;
@@ -392,7 +401,7 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
-        public Void scan(@NonNull final Tree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
+        public Void scan(@NullAllowed final Tree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
             if (node == null) {
                 return null;
             }
@@ -499,7 +508,7 @@ public final class SourceAnalyzerFactory {
                 if (sym != null) {
                     if (sym.kind == Kinds.Kind.ERR) {
                         final Symbol owner = sym.getEnclosingElement();
-                        if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                        if (owner != null && (owner.getKind().isClass() || owner.getKind().isInterface())) {
                             addUsage(owner, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     }
@@ -583,7 +592,7 @@ public final class SourceAnalyzerFactory {
             this.state = currState;
             return null;
         }
-
+                
         @Override
         @CheckForNull
         public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<BinaryName,String>, UsagesData<String>> p) {
@@ -711,7 +720,7 @@ public final class SourceAnalyzerFactory {
                     addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     // index only simple name, not FQN for classes
                     addIdent(name, simpleName, p, true);
-                    if (newTypes !=null) {
+                    if (newTypes != null) {
                         newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.getInstance().create(ElementKind.OTHER,className));
                     }
                 }
@@ -813,6 +822,52 @@ public final class SourceAnalyzerFactory {
                 addIdent(activeClass.peek(), node.getName(), p, true);
             }
             return super.visitVariable(node, p);
+        }
+        
+        @Override
+        @CheckForNull
+        public Void visitModule(
+                @NonNull final ModuleTree node,
+                @NonNull final Map<Pair<BinaryName, String>, UsagesData<String>> p) {
+            final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
+            final String[] pkgName = FileObjects.getPackageAndName(sourceName);
+            if (sym != null && pkgName[0].isEmpty()) {
+                final String qname = sym.getQualifiedName().toString();
+                final String resourceName = new StringBuilder(pkgName[1])
+                        .append('.')  //NOI18N
+                        .append(FileObjects.getExtension(siblingUrl.getPath()))
+                        .toString();
+                final Pair<BinaryName,String> name = Pair.of(
+                        BinaryName.create(qname, ElementKind.MODULE, false, 0),
+                        resourceName);
+                getData(name, p);
+                if (newModules != null ) {
+                    newModules.add ((ElementHandle<ModuleElement>)
+                            ElementHandleAccessor.getInstance().create(
+                                    ElementKind.MODULE,
+                                    qname));
+                }
+                activeClass.push(name);
+                try {
+                    addAndClearImports(name, p);
+                    node.accept(new TreeScanner<Void, Set<Symbol>>() {
+                                @Override
+                                public Void visitExports(ExportsTree node, Set<Symbol> p) {
+                                    final Symbol sym = ((JCTree.JCExports)node).directive.packge;
+                                    if (sym != null) {
+                                        p.add(sym);
+                                    }
+                                    return null;
+                                }                                
+                            },
+                            unusedPkgImports);
+                    super.visitModule(node, p);
+                    addAndClearUnusedPkgImports(name, p);
+                } finally {
+                    activeClass.pop();
+                }
+            }
+            return null;
         }
 
         private void addAndClearImports(
@@ -1054,7 +1109,7 @@ public final class SourceAnalyzerFactory {
                         break;
                 }
             }
-        }
+        }        
 
     }
     

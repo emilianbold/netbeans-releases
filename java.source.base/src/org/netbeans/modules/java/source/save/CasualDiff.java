@@ -101,9 +101,11 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCContinue;
+import com.sun.tools.javac.tree.JCTree.JCDirective;
 import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
+import com.sun.tools.javac.tree.JCTree.JCExports;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -119,11 +121,13 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCModuleDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCProvides;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSwitch;
@@ -135,6 +139,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCTypeUnion;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.JCTree.JCUses;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -675,6 +680,81 @@ public class CasualDiff {
         } else {
             return ChangeKind.INSERT;
         }
+    }
+
+    protected int diffModuleDef(JCModuleDecl oldT, JCModuleDecl newT, int[] bounds) {
+        int localPointer = bounds[0];
+
+        int[] qualBounds = getBounds(oldT.qualId);
+        copyTo(localPointer, qualBounds[0]);
+        localPointer = diffTree(oldT.qualId, newT.qualId, qualBounds);
+
+        int insertHint = oldT.directives.isEmpty() ? endPos(oldT) - 1 : oldT.directives.get(0).getStartPosition() - 1;
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        insertHint = moveBackToToken(tokenSequence, insertHint, JavaTokenId.LBRACE) + 1;
+
+        int old = printer.indent();
+        PositionEstimator est = EstimatorFactory.members(oldT.directives, newT.directives, diffContext);
+        localPointer = copyUpTo(localPointer, insertHint);
+        // diff inner comments
+        insertHint = diffInnerComments(oldT, newT, insertHint);
+        localPointer = diffList(oldT.directives, newT.directives, insertHint, est, Measure.REAL_MEMBER, printer);
+        printer.undent(old);
+        if (localPointer != -1 && localPointer < origText.length()) {
+            if (origText.charAt(localPointer) == '}') {
+                // another stupid hack
+                printer.toLeftMargin();
+            }
+            copyTo(localPointer, bounds[1]);
+        }
+        return bounds[1];
+    }
+    
+    protected int diffExports(JCExports oldT, JCExports newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // export name
+        int[] expNameBounds = getBounds(oldT.qualid);
+        copyTo(localPointer, expNameBounds[0]);
+        localPointer = diffTree(oldT.qualid, newT.qualid, expNameBounds);
+        // modules
+        int posHint;
+        if (oldT.moduleNames == null || oldT.moduleNames.isEmpty()) {
+            posHint = endPos(oldT) - 1;
+        } else {
+            posHint = oldT.moduleNames.iterator().next().getStartPosition();
+        }
+        if (newT.moduleNames != null && !newT.moduleNames.isEmpty()) //do not copy the "to" keyword:
+            copyTo(localPointer, localPointer = posHint);
+        PositionEstimator est = EstimatorFactory.exportsTo(oldT.moduleNames, newT.moduleNames, diffContext);
+        localPointer = diffList2(oldT.moduleNames, newT.moduleNames, posHint, est);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];        
+    }
+
+    protected int diffProvides(JCProvides oldT, JCProvides newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // service
+        int[] servBounds = getBounds(oldT.serviceName);
+        copyTo(localPointer, servBounds[0]);
+        localPointer = diffTree(oldT.serviceName, newT.serviceName, servBounds);
+        // implementation
+        int[] implBounds = getBounds(oldT.implName);
+        copyTo(localPointer, implBounds[0]);
+        localPointer = diffTree(oldT.implName, newT.implName, implBounds);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
+    }
+
+    protected int diffUses(JCUses oldT, JCUses newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // service
+        int[] servBounds = getBounds(oldT.qualid);
+        copyTo(localPointer, servBounds[0]);
+        localPointer = diffTree(oldT.qualid, newT.qualid, servBounds);
+        copyTo(localPointer, bounds[1]);
+
+        return bounds[1];
     }
 
     protected int diffPackage(JCPackageDecl oldT, JCPackageDecl newT, int start) {
@@ -4255,7 +4335,7 @@ public class CasualDiff {
         int localpointer = tokenSequence.offset() + 3; // copy the first characters of the javadoc comment /**;
 //        int localpointer = getOldPos((DCTree)oldT.getFirstSentence().head, doc);
         copyTo(elementBounds[0], localpointer);
-        if(oldT.firstSentence.isEmpty() && newT.firstSentence.nonEmpty()) {
+        if(oldT.firstSentence.isEmpty() && !newT.firstSentence.isEmpty()) {
             printer.newline();
             printer.toLeftMargin();
             printer.print(" * ");
@@ -4310,7 +4390,7 @@ public class CasualDiff {
     }
     
     private int diffReturn(DCDocComment doc, DCReturn oldT, DCReturn newT, int[] elementBounds) {
-        int localpointer = oldT.description.isEmpty()? elementBounds[1] : getOldPos(oldT.description.head, doc);
+        int localpointer = oldT.description.isEmpty()? elementBounds[1] : getOldPos(oldT.description.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.description, newT.description, localpointer, Measure.TAGS);
         if(localpointer < elementBounds[1]) {
@@ -4323,7 +4403,7 @@ public class CasualDiff {
         if(oldT.name.equals(newT.name)) {
             copyTo(elementBounds[0], elementBounds[1]);
         } else {
-            printer.print(newT.name);
+            printer.print((Name) newT.name);
         }
         return elementBounds[1];
     }
@@ -4343,7 +4423,7 @@ public class CasualDiff {
     
     private int diffSee(DCDocComment doc, DCSee oldT, DCSee newT, int[] elementBounds) {
         int localpointer;
-        localpointer = getOldPos(oldT.reference.head, doc);
+        localpointer = getOldPos(oldT.reference.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.reference, newT.reference, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -4362,7 +4442,7 @@ public class CasualDiff {
     }
     
     private int diffAuthor(DCDocComment doc, DCAuthor oldT, DCAuthor newT, int[] elementBounds) {
-        int localpointer = oldT.name.isEmpty()? elementBounds[1] : getOldPos(oldT.name.head, doc);
+        int localpointer = oldT.name.isEmpty()? elementBounds[1] : getOldPos(oldT.name.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.name, newT.name, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -4381,7 +4461,7 @@ public class CasualDiff {
     }
 
     private int diffDeprecated(DCDocComment doc, DCDeprecated oldT, DCDeprecated newT, int[] elementBounds) {
-        int localpointer = oldT.body.isEmpty()? elementBounds[1] : getOldPos(oldT.body.head, doc);
+        int localpointer = oldT.body.isEmpty()? elementBounds[1] : getOldPos(oldT.body.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.body, newT.body, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -4451,7 +4531,7 @@ public class CasualDiff {
     }
 
     private int diffSerial(DCDocComment doc, DCSerial oldT, DCSerial newT, int[] elementBounds) {
-        int localpointer = getOldPos(oldT.description.head, doc);
+        int localpointer = getOldPos(oldT.description.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.description, newT.description, localpointer, Measure.TAGS);
         if(localpointer < elementBounds[1]) {
@@ -4461,7 +4541,7 @@ public class CasualDiff {
     }
 
     private int diffSerialData(DCDocComment doc, DCSerialData oldT, DCSerialData newT, int[] elementBounds) {
-        int localpointer = getOldPos(oldT.description.head, doc);
+        int localpointer = getOldPos(oldT.description.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.description, newT.description, localpointer, Measure.TAGS);
         if(localpointer < elementBounds[1]) {
@@ -4484,7 +4564,7 @@ public class CasualDiff {
     }
 
     private int diffSince(DCDocComment doc, DCSince oldT, DCSince newT, int[] elementBounds) {
-        int localpointer = oldT.body.isEmpty()? elementBounds[1] : getOldPos(oldT.body.head, doc);
+        int localpointer = oldT.body.isEmpty()? elementBounds[1] : getOldPos(oldT.body.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.body, newT.body, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -4494,12 +4574,12 @@ public class CasualDiff {
     }
     
     private int diffStartElement(DCDocComment doc, DCStartElement oldT, DCStartElement newT, int[] elementBounds) {
-        int localpointer = oldT.attrs.isEmpty()? elementBounds[1] - 1 : getOldPos(oldT.attrs.head, doc);
+        int localpointer = oldT.attrs.isEmpty()? elementBounds[1] - 1 : getOldPos(oldT.attrs.get(0), doc);
         if(oldT.name.equals(newT.name)) {
             copyTo(elementBounds[0], localpointer);
         } else {
             printer.print("<");
-            printer.print(newT.name);
+            printer.print((Name) newT.name);
         }
         localpointer = diffList(doc, oldT.attrs, newT.attrs, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -4518,12 +4598,12 @@ public class CasualDiff {
     }
 
     private int diffUnknownBlockTag(DCDocComment doc, DCUnknownBlockTag oldT, DCUnknownBlockTag newT, int[] elementBounds) {
-        int localpointer = oldT.content.isEmpty()? elementBounds[1] : getOldPos(oldT.content.head, doc);
+        int localpointer = oldT.content.isEmpty()? elementBounds[1] : getOldPos(oldT.content.get(0), doc);
         if(oldT.name.equals(newT.name)) {
             copyTo(elementBounds[0], localpointer);
         } else {
             printer.print("@"); //NOI18N
-            printer.print(newT.name);
+            printer.print((Name) newT.name);
             printer.out.needSpace();
         }
         localpointer = diffList(doc, oldT.content, newT.content, localpointer, Measure.DOCTREE);
@@ -4534,12 +4614,12 @@ public class CasualDiff {
     }
 
     private int diffUnknownInlineTag(DCDocComment doc, DCUnknownInlineTag oldT, DCUnknownInlineTag newT, int[] elementBounds) {
-        int localpointer = oldT.content.isEmpty()? elementBounds[1] : getOldPos(oldT.content.head, doc);
+        int localpointer = oldT.content.isEmpty()? elementBounds[1] : getOldPos(oldT.content.get(0), doc);
         if(oldT.name.equals(newT.name)) {
             copyTo(elementBounds[0], localpointer);
         } else {
             printer.print("{@"); //NOI18N
-            printer.print(newT.name);
+            printer.print((Name) newT.name);
             printer.out.needSpace();
         }
         localpointer = diffList(doc, oldT.content, newT.content, localpointer, Measure.DOCTREE);
@@ -4562,7 +4642,7 @@ public class CasualDiff {
 
     private int diffVersion(DCDocComment doc, DCVersion oldT, DCVersion newT, int[] elementBounds) {
         int localpointer;
-        localpointer = oldT.body.head != null? getOldPos(oldT.body.head, doc) : elementBounds[1];
+        localpointer = oldT.body.isEmpty() ? elementBounds[1] : getOldPos(oldT.body.get(0), doc);
         copyTo(elementBounds[0], localpointer);
         localpointer = diffList(doc, oldT.body, newT.body, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
@@ -5006,6 +5086,18 @@ public class CasualDiff {
         switch (oldT.getTag()) {
           case TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT, elementBounds);
+              break;
+          case MODULEDEF:
+              retVal = diffModuleDef((JCModuleDecl)oldT, (JCModuleDecl)newT, elementBounds);
+              break;
+          case EXPORTS:
+              retVal = diffExports((JCExports)oldT, (JCExports)newT, elementBounds);
+              break;
+          case PROVIDES:
+              retVal = diffProvides((JCProvides)oldT, (JCProvides)newT, elementBounds);
+              break;
+          case USES:
+              retVal = diffUses((JCUses)oldT, (JCUses)newT, elementBounds);
               break;
           case PACKAGEDEF:
               retVal = diffPackage((JCPackageDecl)oldT, (JCPackageDecl)newT, getOldPos(oldT));

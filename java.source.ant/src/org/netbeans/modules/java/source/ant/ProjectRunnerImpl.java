@@ -55,12 +55,14 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -70,8 +72,12 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -84,7 +90,6 @@ import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
@@ -104,10 +109,20 @@ import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -124,7 +139,8 @@ import org.openide.util.lookup.InstanceContent;
 public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
-    private static final Runnable NOP = new Runnable() {@Override public void run(){}};
+    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
+    private static final Runnable NOP = () -> {};
     private static final RequestProcessor RP = new RequestProcessor(ProjectRunnerImpl.class);
     
     public boolean isSupported(String command, Map<String, ?> properties) {
@@ -150,6 +166,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         String className = getValue(properties, PROP_CLASSNAME, String.class);
         ClassPath boot = getValue(properties, "boot.classpath", ClassPath.class);
         ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
+        ClassPath execModule = getValue(properties, PROP_EXECUTE_MODULEPATH, ClassPath.class);
         String javaTool = getValue(properties, PROP_PLATFORM_JAVA, String.class);
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
@@ -183,7 +200,20 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         }
         if (exec == null) {
             Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_EXECUTE_CLASSPATH, toRun);
-            exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+            final String sl = SourceLevelQuery.getSourceLevel(toRun);
+            if (sl != null && JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
+                exec = ClassPath.getClassPath(toRun, JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH);
+                if (execModule == null) {
+                    execModule = ClassPath.getClassPath(toRun, JavaClassPathConstants.MODULE_EXECUTE_PATH);
+                }
+            } else {
+                exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+                execModule = ClassPath.EMPTY;
+            }
+        } else {
+            if (execModule == null) {
+                execModule = ClassPath.EMPTY;
+            }
         }
         JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
 
@@ -275,28 +305,13 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             setProperty(antProps, "java.failonerror", javaFailOnError.toString());  //NOI18N
         }
         {
-            FileObject source = toRun;
+            //Encoding            
             final Charset charset = getValue(properties, JavaRunner.PROP_RUNTIME_ENCODING, Charset.class);   //NOI18N
             String encoding = charset != null && Charset.isSupported(charset.name()) ? charset.name() : null;
             if (encoding == null) {
+                FileObject source = toRun;
                 if (source == null) {
-                    String binaryResource = className.replace('.', '/') + ".class";
-out:                for (FileObject root : exec.getRoots()) {
-                        if (root.getFileObject(binaryResource) != null) {
-                            try {
-                                String sourceResource = className.replace('.', '/') + ".java";
-                                for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots()) {
-                                    FileObject srcFile = srcRoot.getFileObject(sourceResource);
-                                    if (srcFile != null) {
-                                        source = srcFile;
-                                        break out;
-                                    }
-                                }
-                            } catch (FileStateInvalidException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
+                    source = findSource(className, exec, execModule);
                 }
                 if (source != null) {
                     Charset sourceEncoding = FileEncodingQuery.getEncoding(source);
@@ -308,9 +323,124 @@ out:                for (FileObject root : exec.getRoots()) {
             if (encoding == null) {
                 //Encoding still null => fallback to UTF-8
                 encoding = "UTF-8"; //NOI18N
-            }
-            
+            }            
             setProperty(antProps, "encoding", encoding);
+        }
+        {
+            //Modules
+            boolean modulesSupported = false;
+            final String classNameFin = className;
+            final ClassPath execFin = exec, execModuleFin = execModule;
+            final Pair<URL,FileObject[]> binSrcRoots = Optional.ofNullable(toRun)
+                    .map((src) -> {
+                        final ClassPath scp = ClassPath.getClassPath(src, ClassPath.SOURCE);
+                        return scp != null ?
+                                scp.findOwnerRoot(src) :
+                                null;
+                    })
+                    .map((srcRoot) -> {
+                        final URL[] brts = removeArchives(BinaryForSourceQuery.findBinaryRoots(srcRoot.toURL()).getRoots());
+                        switch (brts.length) {
+                            case 0:
+                                return null;
+                            case 1:
+                                return Pair.of(brts[0], new FileObject[]{srcRoot});
+                            default:
+                                final ClassPath bcp = ClassPathSupport.createClassPath(brts);
+                                final FileObject bcpOwner = findOwnerRoot(classNameFin, new String[]{FileObjects.CLASS}, bcp);
+                                return bcpOwner != null ?
+                                        Pair.of(bcpOwner.toURL(), new FileObject[]{srcRoot}) :
+                                        null;
+                        }
+                    })
+                    .orElseGet(() -> {
+                        final Map<URL,Pair<URL,FileObject[]>> dictionary = new HashMap<>();
+                        final ClassPath translatedExec = translate(execFin, dictionary);
+                        final ClassPath translatedExecModule = translate(execModuleFin, dictionary);
+                        final FileObject bcpOwner = findOwnerRoot(
+                                classNameFin,
+                                new String[] {
+                                    FileObjects.SIG,
+                                    FileObjects.CLASS
+                                },
+                                translatedExec,
+                                translatedExecModule);
+                        if (bcpOwner == null) {
+                            return null;
+                        }
+                        return dictionary.get(bcpOwner.toURL());
+                    });
+            if (binSrcRoots != null) {
+                FileObject slFo;
+                if (toRun != null) {
+                    slFo = toRun;
+                } else if (binSrcRoots.second().length > 0) {
+                    slFo = binSrcRoots.second()[0];
+                } else if ((slFo = URLMapper.findFileObject(binSrcRoots.first())) != null) {
+                } else if (project != null) {
+                    slFo = project.getProjectDirectory();
+                } else {
+                    slFo = null;
+                }
+                final String sl = slFo != null ?
+                        SourceLevelQuery.getSourceLevel(slFo) :
+                        null;
+                if (sl != null && JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
+                    modulesSupported = true;
+                    URL mainBinRoot = null;
+                    if (binSrcRoots.second().length > 0) {
+                        URL[] mainRootUrls = UnitTestForSourceQuery.findSources(binSrcRoots.second()[0]);
+                        if (mainRootUrls.length > 0) {
+                            URL[] mainBinRoots = removeArchives(BinaryForSourceQuery.findBinaryRoots(mainRootUrls[0]).getRoots());
+                            switch (mainBinRoots.length) {
+                                case 0:
+                                    break;
+                                case 1:
+                                     mainBinRoot = mainBinRoots[0];
+                                     break;
+                                default:
+                                     final ClassPath bcp = ClassPathSupport.createClassPath(mainBinRoots);
+                                     final FileObject bcpOwner = findOwnerRoot("module-info", new String[] {FileObjects.CLASS}, bcp);
+                                     if (bcpOwner != null) {
+                                         mainBinRoot = bcpOwner.toURL();
+                                     } else {
+                                         final FileObject[] brs = bcp.getRoots();
+                                         mainBinRoot = brs.length == 0 ?
+                                                 null :
+                                                 brs[0].toURL();
+                                     }
+                            }
+                        }
+                    }
+                    setProperty(antProps, "modules.supported.internal", "true");
+                    try {
+                        setProperty(antProps, "module.root",
+                                BaseUtilities.toFile(binSrcRoots.first().toURI()).getAbsolutePath());
+                    } catch (URISyntaxException e) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Non local target folder:{0}",  //NOI18N
+                                binSrcRoots.first());
+                    }
+                    final String moduleName = getModuleName(binSrcRoots.first(), binSrcRoots.second());
+                    final String mainModuleName = getModuleName(mainBinRoot);
+                    if (moduleName != null) {
+                        setProperty(antProps, "module.name", moduleName);
+                        setProperty(antProps, "named.module.internal", "true");
+                    } else {
+                        setProperty(antProps, "unnamed.module.internal", "true");
+                    }
+                    if (mainBinRoot != null) {
+                        if (mainModuleName != null) {
+                            setProperty(antProps, "related.module.name", mainModuleName);
+                        }
+                    }
+                }
+            }
+            if (modulesSupported || !execModule.entries().isEmpty()) {
+                //When execModule is set explicitelly pass it to script even when modules are not supported
+                setProperty(antProps, "modulepath", execModule.toString(ClassPath.PathConversionMode.FAIL));
+            }
         }
 
         for (Entry<String, ?> e : properties.entrySet()) {
@@ -322,6 +452,103 @@ out:                for (FileObject root : exec.getRoots()) {
         projectNameOut[0] = projectName;
         
         return antProps;
+    }
+    
+    @CheckForNull
+    private static FileObject findSource(
+        @NonNull final String className,
+        @NonNull final ClassPath... binCps) {
+        final FileObject[] srcRoots = Optional.ofNullable(findOwnerRoot(className, new String[] {FileObjects.CLASS}, binCps))
+                .map((root) -> SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots())
+                .orElse(new FileObject[0]);
+        final String sourceResource = className.replace('.', '/') + ".java";  //NOI18N
+        for (FileObject srcRoot : srcRoots) {
+            final FileObject srcFile = srcRoot.getFileObject(sourceResource);
+            if (srcFile != null) {
+                return srcFile;
+            }
+        }
+        return null;
+    }
+    
+    @NonNull
+    private static ClassPath translate(
+            @NonNull final ClassPath cp,
+            @NonNull final Map<URL,Pair<URL,FileObject[]>> dictionary) {
+        final List<URL> roots = new ArrayList<>(cp.entries().size());
+        for (ClassPath.Entry e : cp.entries()) {
+            final URL orig = e.getURL();
+            final SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(orig);
+            if (res.preferSources()) {
+                final FileObject[] srcs = res.getRoots();
+                for (FileObject src : srcs) {
+                    try {
+                        final URL cacheURL = BaseUtilities.toURI(
+                                JavaIndex.getClassFolder(src.toURL())).toURL();
+                        dictionary.put(cacheURL,Pair.of(orig,res.getRoots()));
+                        roots.add(cacheURL);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            } else {
+                dictionary.put(orig, Pair.of(orig,res.getRoots()));
+                roots.add(orig);
+            }
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    }
+    
+    @CheckForNull
+    private static FileObject findOwnerRoot(
+        @NonNull final String className,
+        @NonNull final String[] extensions,
+        @NonNull final ClassPath... binCps) {
+        final String binaryResource = FileObjects.convertPackage2Folder(className);
+        final ClassPath merged = ClassPathSupport.createProxyClassPath(binCps);
+        for (String ext : extensions) {
+            final FileObject res = merged.findResource(String.format(
+                    "%s.%s",    //NOI18N
+                    binaryResource,
+                    ext));
+            if (res != null) {
+                return merged.findOwnerRoot(res);
+            }
+        }
+        return null;
+    }
+    
+    @CheckForNull
+    private static String getModuleName(
+            @NullAllowed final URL binRoot) {
+        return binRoot == null ?
+                null :
+                getModuleName(
+                        binRoot,
+                        SourceForBinaryQuery.findSourceRoots(binRoot).getRoots());
+    }
+    
+    @CheckForNull
+    private static String getModuleName(
+            @NonNull final URL binRoot,
+            @NonNull final FileObject[] srcRoots) {
+        if (Arrays.stream(srcRoots).anyMatch((fo) -> fo.getFileObject("module-info.java") != null)) {
+            return SourceUtils.getModuleName(binRoot);
+        } else {
+            return null;
+        }
+    }
+    
+    private static URL[] removeArchives(@NonNull final URL... orig) {
+        final List<URL> res = new ArrayList<>(orig.length);
+        for (URL url : orig) {
+            if (!FileUtil.isArchiveArtifact(url)) {
+                res.add(url);
+            }
+        }
+        return res.isEmpty() ?
+                orig :
+                res.toArray(new URL[res.size()]);
     }
 
     private static ExecutorTask clean(Map<String, ?> properties) {

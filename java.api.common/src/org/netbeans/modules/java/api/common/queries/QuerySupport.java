@@ -52,9 +52,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.queries.AccessibilityQueryImplementation2;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -265,6 +268,35 @@ public final class QuerySupport {
     }
 
     /**
+     * Create a new query to find out explicit compiler options for Java source files.
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties
+     * @param additionalCompilerOptionsProperty the property holding the additional compiler options
+     * @return a {@link CompilerOptionsQueryImplementation} to find out explicit compiler options of Java source files.
+     * @since 1.81
+     */
+    @NonNull
+    public static CompilerOptionsQueryImplementation createCompilerOptionsQuery(
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String additionalCompilerOptionsProperty) {
+        return new CompilerOptionsQueryImpl(evaluator, additionalCompilerOptionsProperty);
+    }
+
+    /**
+     * Create a new query to set up explicit compiler options needed for unit test compilation.
+     * @param eval the {@link PropertyEvaluator}
+     * @param srcRoots the source roots
+     * @param testRoots the test roots
+     * @return a {@link CompilerOptionsQueryImplementation} to find out unit test compiler options
+     * @since 1.82
+     */
+    public static CompilerOptionsQueryImplementation createUnitTestsCompilerOptionsQuery(
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testRoots) {
+        return new UnitTestsCompilerOptionsQueryImpl(eval, srcRoots, testRoots);
+    }
+
+    /**
      * Create a new query to find Java package roots of unit tests for Java package root of sources and vice versa.
      * @param sourceRoots a list of source roots.
      * @param testRoots a list of test roots.
@@ -323,16 +355,16 @@ public final class QuerySupport {
      * @param test project test roots
      * @param helper AntProjectHelper
      * @param eval PropertyEvaluator
-     * @param sourceProp name of property pointing to a folder with built classes
-     * @param testProp name of property pointing to a folder with built test classes
+     * @param sourceProps name of properties pointing to binaries
+     * @param testProps name of properties pointing to test binaries
      * @return BinaryForSourceQueryImplementation
-     * @since org.netbeans.modules.java.api.common/1 1.5
+     * @since 1.79
      */
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(
             SourceRoots src, SourceRoots test, AntProjectHelper helper, 
-            PropertyEvaluator eval, String sourceProp, String testProp) {
+            PropertyEvaluator eval, String[] sourceProps, String[] testProps) {
         return new BinaryForSourceQueryImpl(src, test, helper, eval, 
-                new String[]{sourceProp}, new String[]{testProp});
+                sourceProps, testProps);
     }
     
     /**
@@ -352,7 +384,8 @@ public final class QuerySupport {
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(SourceRoots src, SourceRoots test, 
             AntProjectHelper helper, PropertyEvaluator eval) {
         return createBinaryForSourceQueryImplementation(src, test, helper, eval, 
-                "build.classes.dir", "build.test.classes.dir"); // NOI18N
+                new String[] {ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.DIST_JAR},
+                new String[] {ProjectProperties.BUILD_TEST_CLASSES_DIR});
     }
     
     /**Create a new query to provide annotation processing configuration data.
@@ -403,7 +436,21 @@ public final class QuerySupport {
         Parameters.notNull("roots", roots); //NOI18N
         return new SourcesImpl(project, helper, evaluator, roots);
     }
-    
+
+    /**
+     * Creates a {@link AccessibilityQueryImplementation2} based on the module-info.
+     * @param sources the project source roots
+     * @param tests the project test roots
+     * @return the {@link AccessibilityQueryImplementation2} instance
+     * @since 1.85
+     */
+    @NonNull
+    public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
+            @NonNull final SourceRoots sources,
+            @NonNull final SourceRoots tests) {
+        return new ModuleInfoAccessibilityQueryImpl(sources, tests);
+    }
+
     private static class AntHelper extends ProjectInfoImpl {
 
         private final AntProjectHelper projectHelper;

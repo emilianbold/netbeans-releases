@@ -45,14 +45,17 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -79,6 +82,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -88,7 +92,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.AbstractElementVisitor6;
+import javax.lang.model.util.AbstractElementVisitor9;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -311,6 +315,8 @@ public class GoToSupport {
         if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
             el = JavadocImports.findReferencedElement(controller, offset);
         } else {
+            path = adjustPathForModuleName(path);
+
             TreePath parent = path.getParentPath();
 
             if (parent != null) {
@@ -484,7 +490,7 @@ public class GoToSupport {
         } catch (Exception ex) {}
         
         
-        if (result == null) {
+        if (result == null || result.isEmpty()) {
             result = v.result.toString();
         }
         
@@ -703,6 +709,22 @@ public class GoToSupport {
 
         return -1;
     }
+    
+    private static TreePath adjustPathForModuleName(TreePath path) {
+        TreePath tp = path;
+        while (tp != null && (tp.getLeaf().getKind() == Kind.IDENTIFIER || tp.getLeaf().getKind() == Kind.MEMBER_SELECT)) {
+            Tree parent = tp.getParentPath().getLeaf();
+            if (parent.getKind() == Kind.MODULE && ((ModuleTree)parent).getName() == tp.getLeaf()) {
+                return tp.getParentPath();
+            }
+            if (parent.getKind() == Kind.REQUIRES && ((RequiresTree)parent).getModuleName() == tp.getLeaf()
+                    || parent.getKind() == Kind.EXPORTS && ((ExportsTree)parent).getModuleNames().contains(tp.getLeaf())) {
+                return tp;
+            }
+            tp = tp.getParentPath();
+        }
+        return path;
+    }
 
     private static TreePath getPath(final CompilationInfo info, Element el) {
         final Element toFind = info.getElementUtilities().isSynthetic(el) ? el.getEnclosingElement() : el;
@@ -783,7 +805,7 @@ public class GoToSupport {
         
     }
     
-    private static final class DisplayNameElementVisitor extends AbstractElementVisitor6<Void, Boolean> {
+    private static final class DisplayNameElementVisitor extends AbstractElementVisitor9<Void, Boolean> {
 
         private final CompilationInfo info;
 
@@ -804,15 +826,22 @@ public class GoToSupport {
                 result.append("</b>");
             }
         }
+
+        @Override
+        public Void visitModule(ModuleElement e, Boolean highlightName) {
+            result.append("module ");
+            boldStartCheck(highlightName);            
+            result.append(e.getQualifiedName());            
+            boldStopCheck(highlightName);            
+            return null;
+        }
         
         @Override
         public Void visitPackage(PackageElement e, Boolean highlightName) {
-            boldStartCheck(highlightName);
-            
-            result.append(e.getQualifiedName());
-            
-            boldStopCheck(highlightName);
-            
+            result.append("package ");                   
+            boldStartCheck(highlightName);            
+            result.append(e.getQualifiedName());            
+            boldStopCheck(highlightName);            
             return null;
         }
 

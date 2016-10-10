@@ -64,6 +64,7 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
@@ -79,12 +80,15 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
@@ -95,6 +99,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -443,6 +448,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitExports(ExportsTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitExports(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitExpressionStatement(ExpressionStatementTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -606,6 +623,19 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitModule(ModuleTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingElement(below);
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitModule(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitNewArray(NewArrayTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -640,6 +670,30 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingType(below);
             addCorrespondingComments(below);
             super.visitParenthesized(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitProvides(ProvidesTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitProvides(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitRequires(RequiresTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitRequires(tree, below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
@@ -868,6 +922,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingType(below);
             addCorrespondingComments(below);
             super.visitUnary(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitUses(UsesTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitUses(tree, below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;

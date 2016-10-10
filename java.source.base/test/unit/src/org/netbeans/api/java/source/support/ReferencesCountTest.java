@@ -133,11 +133,12 @@ public class ReferencesCountTest extends NbTestCase {
         final ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(srcRoot.toURL(), false);
         assertNotNull(ciImpl);
         final Set<ElementHandle<TypeElement>> res = new HashSet<ElementHandle<TypeElement>>();
-        ciImpl.getDeclaredTypes(
+        ciImpl.getDeclaredElements(
             "", //NOI18N
             ClassIndex.NameKind.PREFIX,
             EnumSet.of(ClassIndex.SearchScope.SOURCE),
-            DocumentUtil.elementHandleConvertor(),
+            DocumentUtil.declaredTypesFieldSelector(false, false),
+            DocumentUtil.typeElementConvertor(),
             res);
         assertEquals(2, res.size());
         final ReferencesCount rc = ReferencesCount.get(srcRoot.toURL());
@@ -167,11 +168,12 @@ public class ReferencesCountTest extends NbTestCase {
         final ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(srcRoot.toURL(), false);
         assertNotNull(ciImpl);
         final Set<ElementHandle<TypeElement>> res = new HashSet<ElementHandle<TypeElement>>();
-        ciImpl.getDeclaredTypes(
+        ciImpl.getDeclaredElements(
             "", //NOI18N
             ClassIndex.NameKind.PREFIX,
             EnumSet.of(ClassIndex.SearchScope.SOURCE),
-            DocumentUtil.elementHandleConvertor(),
+            DocumentUtil.declaredTypesFieldSelector(false, false),
+            DocumentUtil.typeElementConvertor(),
             res);
         assertEquals(2, res.size());
         final ReferencesCount rc = ReferencesCount.get(srcRoot.toURL());

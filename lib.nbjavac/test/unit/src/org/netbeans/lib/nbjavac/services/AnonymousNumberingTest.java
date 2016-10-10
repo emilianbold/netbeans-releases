@@ -44,6 +44,8 @@ package org.netbeans.lib.nbjavac.services;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.comp.Modules;
+import com.sun.tools.javac.util.Name;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -80,8 +82,9 @@ public class AnonymousNumberingTest extends TestCase {
         ct.analyze();
         
         Symtab symTab = Symtab.instance(ct.getContext());
-        TypeElement first = symTab.classes.get(ct.getElements().getName("test.Test$1"));
-        TypeElement second = symTab.classes.get(ct.getElements().getName("test.Test$2"));
+        Modules modules = Modules.instance(ct.getContext());
+        TypeElement first = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$1"));
+        TypeElement second = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$2"));
 
         assertEquals("java.lang.Iterable", ((TypeElement) ((DeclaredType) first.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
         assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) second.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
@@ -114,9 +117,10 @@ public class AnonymousNumberingTest extends TestCase {
         ct.analyze();
 
         Symtab symTab = Symtab.instance(ct.getContext());
-        TypeElement first = symTab.classes.get(ct.getElements().getName("test.Test$1"));
-        TypeElement second = symTab.classes.get(ct.getElements().getName("test.Test$2"));
-        TypeElement third = symTab.classes.get(ct.getElements().getName("test.Test$3"));
+        Modules modules = Modules.instance(ct.getContext());
+        TypeElement first = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$1"));
+        TypeElement second = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$2"));
+        TypeElement third = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$3"));
 
         assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) first.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
         assertEquals("java.lang.Iterable", ((TypeElement) ((DeclaredType) second.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
@@ -145,9 +149,10 @@ public class AnonymousNumberingTest extends TestCase {
         ct.analyze();
 
         Symtab symTab = Symtab.instance(ct.getContext());
-        TypeElement first = symTab.classes.get(ct.getElements().getName("test.Test$1"));
-        TypeElement second = symTab.classes.get(ct.getElements().getName("test.Test$2"));
-        TypeElement third = symTab.classes.get(ct.getElements().getName("test.Test$2$1"));
+        Modules modules = Modules.instance(ct.getContext());
+        TypeElement first = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$1"));
+        TypeElement second = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$2"));
+        TypeElement third = symTab.getClass(modules.getDefaultModule(), (Name)ct.getElements().getName("test.Test$2$1"));
 
         assertEquals("java.lang.Runnable", ((TypeElement) ((DeclaredType) first.getInterfaces().get(0)).asElement()).getQualifiedName().toString());
         assertEquals("java.lang.Iterable", ((TypeElement) ((DeclaredType) second.getInterfaces().get(0)).asElement()).getQualifiedName().toString());

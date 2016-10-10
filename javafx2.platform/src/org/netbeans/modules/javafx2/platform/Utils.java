@@ -77,7 +77,9 @@ public final class Utils {
     private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
     private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
     private static final SpecificationVersion JDK9 = new SpecificationVersion("9");   //NOI18N
-    private static final String MODUL_PROTOCOL = "nbjrt";   //NOI18N
+    private static final String MODULE_PROTOCOL = "nbjrt";   //NOI18N
+    private static final String MODULE_JFX_BASE = "javafx.base";    //NOI18N
+    private static final String URL_SEPARATOR = "/";    //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
@@ -151,6 +153,27 @@ public final class Utils {
     }
     
     /**
+     * Checks if JavaFx is present as a module in the platform.
+     * @param javaPlatform to check
+     * @return returns true if the JavaFx is available as a platform module
+     */
+    public static boolean hasJavaFxModule(@NonNull final JavaPlatform javaPlatform) {
+        if (JDK9.compareTo(javaPlatform.getSpecification().getVersion()) > 0) {
+            return false;
+        }
+        for (ClassPath.Entry e : javaPlatform.getBootstrapLibraries().entries()) {
+            final URL url = e.getURL();
+            if (!MODULE_PROTOCOL.equals(url.getProtocol())) {
+                continue;
+            }
+            if (MODULE_JFX_BASE.equals(getModuleName(url))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Determines whether architecture (32b vs 64b) of currently running VM
      * matches given JavaFX Runtime
      * 
@@ -203,12 +226,23 @@ public final class Utils {
     private static boolean isModular(@NonNull final JavaPlatform platform) {
         boolean modular = false;
         for (ClassPath.Entry e : platform.getBootstrapLibraries().entries()) {
-            if (MODUL_PROTOCOL.equals(e.getURL().getProtocol())) {
+            if (MODULE_PROTOCOL.equals(e.getURL().getProtocol())) {
                 modular = true;
                 break;
             }
         }
         return modular;
+    }
+    
+    @NonNull
+    private static String getModuleName(@NonNull final URL url) {
+        final String path = url.getPath();
+        final int end = path.endsWith(URL_SEPARATOR) ?
+                            path.length() - URL_SEPARATOR.length() :
+                            path.length();
+        int start = end == 0 ? -1 : path.lastIndexOf(URL_SEPARATOR, end - 1);
+        start = start < 0 ? 0 : start + URL_SEPARATOR.length();
+        return path.substring(start, end);
     }
 
 }

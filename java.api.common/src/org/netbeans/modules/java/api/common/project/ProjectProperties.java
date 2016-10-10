@@ -92,6 +92,44 @@ public final class ProjectProperties {
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; // NOI18N
 
+    /**
+     * The name of the property holding the compilation modulepath.
+     * @since 1.80
+     */
+    public static final String JAVAC_MODULEPATH = "javac.modulepath";    //NOI18N
+    /**
+     * The name of the property holding the processor modulepath.
+     * @since 1.80
+     */
+    public static final String JAVAC_PROCESSORMODULEPATH = "javac.processormodulepath";    //NOI18N
+    /**
+     * The name of the property holding the test compilation modulepath.
+     * @since 1.80
+     */
+    public static final String JAVAC_TEST_MODULEPATH = "javac.test.modulepath";    //NOI18N
+    /**
+     * The name of the property holding the execution modulepath.
+     * @since 1.80
+     */
+    public static final String RUN_MODULEPATH = "run.modulepath";    //NOI18N
+    /**
+     * The name of the property holding the test execution modulepath.
+     * @since 1.80
+     */
+    public static final String RUN_TEST_MODULEPATH = "run.test.modulepath";    //NOI18N
+
+    /**
+     * The name of the property holding the debug modulepath.
+     * @since 1.80
+     */
+    public static final String DEBUG_MODULEPATH = "debug.modulepath"; //NOI18N
+    /**
+     * The name of the property holding the test debug modulepath.
+     * @since 1.80
+     */
+    public static final String DEBUG_TEST_MODULEPATH = "debug.test.modulepath"; //NOI18N
+
+
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
         "${" + JAVAC_PROCESSORPATH + "}", // NOI18N
@@ -100,9 +138,13 @@ public final class ProjectProperties {
         "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
         "${" + BUILD_CLASSES_DIR + "}", // NOI18N
         "${" + ENDORSED_CLASSPATH + "}", // NOI18N
-        "${" + BUILD_TEST_CLASSES_DIR + "}" // NOI18N
-    };    
-   
+        "${" + BUILD_TEST_CLASSES_DIR + "}", // NOI18N
+        "${" + JAVAC_MODULEPATH + "}", // NOI18N
+        "${" + JAVAC_TEST_MODULEPATH + "}", // NOI18N
+        "${" + RUN_MODULEPATH + "}", // NOI18N
+        "${" + RUN_TEST_MODULEPATH + "}", // NOI18N
+    };
+
     // Prefixes and suffixes of classpath
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
 
@@ -203,6 +245,12 @@ public final class ProjectProperties {
      * @since 1.60
      */
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; //NOI18N
+    /**
+     * Name of the property holding the test specific javac extra args.
+     * Not set, just allows user to explicitely override the module options for the unit tests.
+     * @since 1.83
+     */
+    public static final String JAVAC_TEST_COMPILERARGS = "javac.test.compilerargs"; //NOI18N
     /**
      * Name of the property holding the javac source.
      * @since 1.60

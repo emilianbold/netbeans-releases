@@ -105,6 +105,68 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ModuleInfoAccessibilityQuery">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create a module-info based <code>AccessibilityQueryImplementation2</code> instance</summary>
+            <version major="1" minor="85"/>
+            <date day="19" month="5" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create a module-info based <code>AccessibilityQueryImplementation2</code> instance.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
+        <change id="UnitTestsCompilerOptionsQuery">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create unit tests <code>CompilerOptionsQueryImplementation</code> provider</summary>
+            <version major="1" minor="82"/>
+            <date day="24" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create an implementation of the
+                    <code>CompilerOptionsQueryImplementation</code> providing explicit compiler options for
+                    tests compilation based on the source level and module-infos in source and test roots.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
+        <change id="CompilerOptionsQueryImpl">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create<code>CompilerOptionsQueryImplementation</code> provider</summary>
+            <version major="1" minor="81"/>
+            <date day="16" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create an Ant property based implementation of
+                    the <code>CompilerOptionsQueryImplementation</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
+        <change id="ProjectProperties-modulepath">
+            <api name="java-api-common"/>
+            <summary>Added modulepath properties into the <code>ProjectProperties</code></summary>
+            <version major="1" minor="80"/>
+            <date day="15" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added constants holding the modulepath property names into the<code>ProjectProperties</code>.
+                    The following constants were added <code>JAVAC_MODULEPATH</code>, <code>JAVAC_TEST_MODULEPATH</code>,
+                    <code>RUN_MODULEPATH</code>,<code>RUN_TEST_MODULEPATH</code>,
+                    <code>DEBUG_MODULEPATH</code>,<code>DEBUG_TEST_MODULEPATH</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+        </change>
         <change id="platform-chooser-per-project-platform">
             <api name="java-api-common"/>
             <summary>Platform combobox handles per project platforms</summary>

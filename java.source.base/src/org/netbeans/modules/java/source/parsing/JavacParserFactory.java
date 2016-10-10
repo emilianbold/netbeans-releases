@@ -96,8 +96,7 @@ public class JavacParserFactory extends ParserFactory {
     }
 
     public JavacParser createPrivateParser (final Snapshot snapshot) {
-        assert snapshot != null;
-        return snapshot.getSource().getFileObject() != null ? new JavacParser(Collections.singletonList(snapshot), true) : null;
+        return new JavacParser(snapshot != null && snapshot.getSource().getFileObject() != null ? Collections.singletonList(snapshot) : Collections.emptyList(), true);
     }
     
     public static JavacParserFactory getDefault () {

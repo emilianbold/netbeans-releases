@@ -46,7 +46,7 @@ import java.awt.Image;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import static org.netbeans.modules.maven.graph.Bundle.*;
+import org.netbeans.modules.maven.graph.DependencyGraphTopComponent;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.netbeans.modules.maven.spi.IconResources;
@@ -74,7 +74,7 @@ public class GraphMD implements MultiViewDescription, Serializable {
     }
 
     @Override public String getDisplayName() {
-        return TAB_Graph();
+        return Bundle.TAB_Graph();
     }
 
     @Override public Image getIcon() {

@@ -63,10 +63,11 @@ public class ForkedJavaOverride extends Java {
     public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 3000); //NOI18N
 
     // should be consistent with java.project.JavaAntLogger.STACK_TRACE
+    // should be consistent with org.netbeans.modules.java.j2seembedded.project.RemoteJavaAntLogger
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
     private static final Pattern STACK_TRACE = Pattern.compile(
-            "((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
-            "[(](?:(" + JIDENT + "[.]java):([0-9]+)|Unknown Source)[)]"); // NOI18N
+            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "[(])(((?:"+JIDENT+"(?:\\."+JIDENT+")*/)?" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
 
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);

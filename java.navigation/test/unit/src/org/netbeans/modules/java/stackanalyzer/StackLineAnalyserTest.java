@@ -70,6 +70,13 @@ public class StackLineAnalyserTest extends NbTestCase {
         assertTrue(StackLineAnalyser.matches("at javaapplication8.Main$Inner.go(Main.java:40)"));
         assertTrue(StackLineAnalyser.matches("             [exec]     at org.openide.filesystems.FileUtil.normalizeFileOnMac(FileUtil.java:1714)"));
     }
+
+    @Test
+    public void testModuleStackTraceMatches() throws Exception {
+        assertTrue(StackLineAnalyser.matches("at library.Library.init(Utilities/Library.java:24)"));
+        assertTrue(StackLineAnalyser.matches("at library.Library.init(org.netbeans.api.Utilities/Library.java:24)"));
+    }
+
     @Test
     public void testAnalyse() throws Exception {
         StackLineAnalyser.Link l = StackLineAnalyser.analyse("at java.lang.String.lastIndexOf(String.java:1627)");

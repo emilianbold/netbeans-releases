@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -50,8 +51,11 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCModuleDecl;
+import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
 import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -64,10 +68,15 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
@@ -97,12 +106,13 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             final Context context,
             final JavaParsingContext javaContext,
             final Collection<? extends CompileTuple> files) {
-        final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
-        final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
-        final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
-        final Set<Indexable> finished = previous != null ? previous.finishedFiles : new HashSet<Indexable>();
-        final Set<ElementHandle<TypeElement>> modifiedTypes = previous != null ? previous.modifiedTypes : new HashSet<ElementHandle<TypeElement>>();
-        final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<javax.tools.FileObject>();
+        final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<>();
+        final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<>();
+        final Set<ElementHandle<ModuleElement>> addedModules = previous != null ? previous.addedModules : new HashSet<>();
+        final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<>();
+        final Set<Indexable> finished = previous != null ? previous.finishedFiles : new HashSet<>();
+        final Set<ElementHandle<TypeElement>> modifiedTypes = previous != null ? previous.modifiedTypes : new HashSet<>();
+        final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
@@ -144,7 +154,8 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                                             return context.isCancelled() || isLowMemory(null);
                                         }
                                     },
-                                    tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                                    tuple.aptGenerated ? null : APTUtils.get(context.getRoot()),
+                                    CompilerOptionsQuery.getOptions(context.getRoot()));
                             }
                             for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                                 if (units != null) {
@@ -193,82 +204,107 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 Exceptions.printStackTrace(ex);
             }
         }
+        ModuleName moduleName = new ModuleName(javaContext.getModuleName());
         if (nop) {
-            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (jt == null || units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
-            return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.failure(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (context.isCancelled()) {
             return null;
         }
         if (isLowMemory(null)) {
-            return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         Iterable<? extends Processor> processors = jt.getProcessors();
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
-            final Iterable<? extends TypeElement> types = jt.enter(trees);
+            final Iterable<? extends Element> types = jt.enter(trees);
             if (context.isCancelled()) {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            final Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
+            final Map<Element, CompileTuple> clazz2Tuple = new IdentityHashMap<Element, CompileTuple>();
             Enter enter = Enter.instance(jt.getContext());
-            for (TypeElement type : types) {
-                Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
-                if (typeEnv == null) {
-                    JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", type.getQualifiedName());
-                    continue;
+            for (Element type : types) {
+                if (type.getKind().isClass() || type.getKind().isInterface() || type.getKind() == ElementKind.MODULE) {
+                    Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
+                    if (typeEnv == null) {
+                        JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", ((TypeSymbol) type).getQualifiedName());
+                        continue;
+                    }
+                    clazz2Tuple.put(type, units.get(typeEnv.toplevel));
                 }
-                clazz2Tuple.put(type, units.get(typeEnv.toplevel));
             }
             jt.analyze(types);
             if (context.isCancelled()) {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
                 CompileTuple active = unit.getValue();
                 if (aptEnabled) {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
-                List<TypeElement> activeTypes = new ArrayList<TypeElement>();
-                for (Tree tree : unit.getKey().getTypeDecls()) {
-                    if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.Tag.CLASSDEF) {
-                        ClassSymbol sym = ((JCClassDecl)tree).sym;
+                List<Element> activeTypes = new ArrayList<>();
+                if (unit.getValue().jfo.isNameCompatible("package-info", JavaFileObject.Kind.SOURCE)) {
+                    final PackageTree pt = unit.getKey().getPackage();
+                    if (pt instanceof JCPackageDecl) {                        
+                        final Element sym = ((JCPackageDecl)pt).packge;
                         if (sym != null)
                             activeTypes.add(sym);
+                    }
+                } else {
+                    for (Tree tree : unit.getKey().getTypeDecls()) {
+                        if (tree instanceof JCTree) {
+                            final JCTree jct = (JCTree)tree;
+                            if (jct.getTag() == JCTree.Tag.CLASSDEF) {
+                                final Element sym = ((JCClassDecl)tree).sym;
+                                if (sym != null)
+                                    activeTypes.add(sym);
+                            } else if (jct.getTag() == JCTree.Tag.MODULEDEF) {
+                                final Element sym = ((JCModuleDecl)tree).sym;
+                                if (sym != null)
+                                    activeTypes.add(sym);
+                            }
+                        }
                     }
                 }
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
-                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, addedTypes, main);
+                if (javaContext.getCheckSums().checkAndSet(
+                        active.indexable.getURL(),
+                        activeTypes.stream()                                                
+                                .filter((e) -> e.getKind().isClass() || e.getKind().isInterface())
+                                .map ((e) -> (TypeElement)e)
+                                .collect(Collectors.toList()),
+                        jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, addedTypes, addedModules, main);
                 } else {
-                    final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, aTypes, main);
+                    final Set<ElementHandle<TypeElement>> aTypes = new HashSet<>();
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, aTypes, addedModules, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }
-                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().toURL(), active.indexable.getURL(), main[0]);
                 JavaCustomIndexer.setErrors(context, active, dc);
             }
             if (context.isCancelled()) {
                 return null;
             }
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             final JavacTaskImpl jtFin = jt;
             final Future<Void> done = FileManagerTransaction.runConcurrent(new FileSystem.AtomicAction() {
                 @Override
                 public void run() throws IOException {
-                    for (TypeElement type : types) {
+                    for (Element type : types) {
                         Iterable<? extends JavaFileObject> generatedFiles = jtFin.generate(Collections.singletonList(type));
                         CompileTuple unit = clazz2Tuple.get(type);
                         if (unit == null || !unit.virtual) {
@@ -281,13 +317,20 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             }
                         }
                     }
+                    if (!moduleName.assigned) {
+                        ModuleElement module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                        moduleName.name = module == null || module.isUnnamed() ?
+                            null :
+                            module.getQualifiedName().toString();
+                        moduleName.assigned = true;
+                    }
                 }
             });
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
                 finished.add(unit.getValue().indexable);
             }
             done.get();
-            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -322,7 +365,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (isLowMemory(null)) {
-                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
@@ -345,6 +388,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
             }
         }
-        return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+        return ParsingOutput.failure(moduleName.name, file2FQNs, addedTypes, addedModules, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

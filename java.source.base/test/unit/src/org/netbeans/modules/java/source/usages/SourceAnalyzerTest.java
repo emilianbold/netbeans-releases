@@ -134,10 +134,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 diag,
                 SourceLevelQuery.getSourceLevel(src),  //NOI18N
                 SourceLevelQuery.Profile.DEFAULT,
-                null,
-                null,
-                null,
-                null);
+                null, null, null, null, null);
             final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();
@@ -190,10 +187,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 diag,
                 SourceLevelQuery.getSourceLevel(src),  //NOI18N
                 SourceLevelQuery.Profile.DEFAULT,
-                null,
-                null,
-                null,
-                null);
+                null, null, null, null, null);
             final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();
@@ -242,10 +236,7 @@ public class SourceAnalyzerTest extends NbTestCase {
                 diag,
                 SourceLevelQuery.getSourceLevel(src),  //NOI18N
                 SourceLevelQuery.Profile.DEFAULT,
-                null,
-                null,
-                null,
-                null);
+                null, null, null, null, null);
             final JavaFileObject jfo = FileObjects.sourceFileObject(javaFile, src);
             final Iterable<? extends CompilationUnitTree> trees = jt.parse(jfo);
             jt.enter();

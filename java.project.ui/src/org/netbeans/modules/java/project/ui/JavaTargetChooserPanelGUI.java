@@ -60,7 +60,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -120,6 +122,10 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             documentNameTextField.getDocument().addDocumentListener( this );
         } else if (type == Type.PKG_INFO) {
             documentNameTextField.setEditable (false);
+        } else if (type == Type.MODULE_INFO) {
+            documentNameTextField.setEditable (false);
+            packageLabel.setVisible(false);
+            packageComboBox.setVisible(false);
         }
         else {
             packageComboBox.getEditor().addActionListener( this );
@@ -185,7 +191,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         ignoreRootCombo = true;
         rootComboBox.setSelectedItem( preselectedGroup );                       
         ignoreRootCombo = false;
-        Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
+        final Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder);
         if (type == Type.PACKAGE) {
             final String baseName = DEFAULT_NEW_PACKAGE_NAME;
             String activeName = baseName;
@@ -217,6 +223,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             if (template != null) {
             	if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
                     if (type == Type.PKG_INFO) {
+                        documentNameTextField.setText (template.getName ());
+                    }
+                    else if (type == Type.MODULE_INFO) {
                         documentNameTextField.setText (template.getName ());
                     }
                     else {
@@ -614,35 +623,37 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
      * May return null if it cannot find it; or a String instance if there is a well-defined
      * package but it is not listed among the packages shown in the list model.
      */
-    private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model) {
+    @CheckForNull
+    private Object getPreselectedPackage(
+            @NonNull final SourceGroup group,
+            @NullAllowed final FileObject folder) {
         if ( folder == null ) {
             return null;
         }
         FileObject root = group.getRootFolder();
-        
         String relPath = FileUtil.getRelativePath( root, folder );
-        
         if ( relPath == null ) {
             // Group Root folder is no a parent of the preselected folder
             // No package should be selected
-            return null; 
-        }        
-        else {
-            // Find the right item.            
-            String name = relPath.replace('/', '.');
-            /*
-            int max = model.getSize();
-            for (int i = 0; i < max; i++) {
-                Object item = model.getElementAt(i);
-                if (item.toString().equals(name)) {
-                    return item;
-                }
+            return null;
+        }
+        if (type == Type.MODULE_INFO) {
+            return "";
+        }
+        // Find the right item.
+        final String name = relPath.replace('/', '.');
+        /*
+        int max = model.getSize();
+        for (int i = 0; i < max; i++) {
+            Object item = model.getElementAt(i);
+            if (item.toString().equals(name)) {
+                return item;
             }
-             */
-            // Didn't find it.
-            // #49954: should nonetheless show something in the combo box.
-            return name;
-        }        
+        }
+         */
+        // Didn't find it.
+        // #49954: should nonetheless show something in the combo box.
+        return name;
     }
 
     private void setPackageIgnoreEvents(@NonNull final String text) {

@@ -19,13 +19,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -38,7 +38,7 @@
  */
 
 var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;servers";
-                                                   
+
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
 var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in community contributed languages";
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
@@ -106,4 +106,3 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
 var ZIP_PAGE   = "zip.html";
-

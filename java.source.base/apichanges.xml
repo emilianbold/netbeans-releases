@@ -49,6 +49,30 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="TreeMaker.module">
+        <api name="javasource_base"/>
+        <summary>Added methods to generate/modify the module-info.java files</summary>
+        <version major="1" minor="2.23"/>
+        <date day="4" month="10" year="2016"/>
+        <author login="dbalek"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Added methods to generate/modify the module-info.java files
+        </description>
+        <class name="TypesEvent" package="org.netbeans.api.java.source"/>
+    </change>    
+    <change id="TypesEvent.module">
+        <api name="javasource_base"/>
+        <summary>Added an information about changes in the module-info</summary>
+        <version major="1" minor="2.23"/>
+        <date day="4" month="10" year="2016"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Added an information about changes in the module-info.
+        </description>
+        <class name="TypesEvent" package="org.netbeans.api.java.source"/>
+    </change>    
     <change id="TypeUtilities.getDenotableType">
         <api name="javasource_base"/>
         <summary>Provide type suitable for declaration in source</summary>

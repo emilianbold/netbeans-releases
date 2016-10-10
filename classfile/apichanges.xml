@@ -107,6 +107,34 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="classfile-isModule">
+            <api name="general"/>
+            <summary>Added isModule method into ClassFile</summary>
+            <version major="1" minor="51"/>
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added isModule method into a ClassFile to test that a classfile
+                represents a module descriptor.
+            </description>
+            <class package="org.netbeans.modules.classfile" name="ClassFile"/>
+            <class package="org.netbeans.modules.classfile" name="Access"/>
+	</change>
+        <change id="Module">
+            <api name="general"/>
+            <summary>Support for Java 9 Module attribute</summary>
+            <version major="1" minor="51"/>
+            <date day="4" month="10" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Java 9 added a Module attribute for module-info.class describing
+                the module.
+            </description>
+            <class package="org.netbeans.modules.classfile" name="ClassFile"/>
+            <class package="org.netbeans.modules.classfile" name="Module"/>
+	</change>
 	<change id="Java7Support">
             <api name="general"/>
             <summary>Support for Java 7 classfile enhancements.</summary>

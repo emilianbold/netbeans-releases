@@ -70,9 +70,6 @@ abstract class ProxyArchive implements Archive {
     }
 
     @Override
-    public abstract Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException;
-
-    @Override
     public JavaFileObject getFile(String name) throws IOException {
         for (Archive delegate : delegates) {
             final JavaFileObject jfo = delegate.getFile(name);
@@ -123,11 +120,12 @@ abstract class ProxyArchive implements Archive {
         public Iterable<JavaFileObject> getFiles(
                 @NonNull final String folderName,
                 @NullAllowed final ClassPath.Entry entry,
-                @NonNull final Set<JavaFileObject.Kind> kinds,
-                @NullAllowed final JavaFileFilterImplementation filter) throws IOException {
+                @NullAllowed final Set<JavaFileObject.Kind> kinds,
+                @NullAllowed final JavaFileFilterImplementation filter,
+                final boolean recursive) throws IOException {
             final Collection<Iterable<JavaFileObject>> collector = new ArrayList<>();
             for (Archive delegate : getDelegates(this)) {
-                final Iterable<JavaFileObject> it = delegate.getFiles(folderName, entry, kinds, filter);
+                final Iterable<JavaFileObject> it = delegate.getFiles(folderName, entry, kinds, filter, recursive);
                 if (!isEmpty(it)) {
                     collector.add(it);
                 }
@@ -146,10 +144,11 @@ abstract class ProxyArchive implements Archive {
         public Iterable<JavaFileObject> getFiles(
                 @NonNull final String folderName,
                 @NullAllowed final ClassPath.Entry entry,
-                @NonNull final Set<JavaFileObject.Kind> kinds,
-                @NullAllowed final JavaFileFilterImplementation filter) throws IOException {
+                @NullAllowed final Set<JavaFileObject.Kind> kinds,
+                @NullAllowed final JavaFileFilterImplementation filter,
+                final boolean recursive) throws IOException {
             for (Archive delegate : getDelegates(this)) {
-                final Iterable<JavaFileObject> it = delegate.getFiles(folderName, entry, kinds, filter);
+                final Iterable<JavaFileObject> it = delegate.getFiles(folderName, entry, kinds, filter, recursive);
                 if (!isEmpty(it)) {
                     return it;
                 }

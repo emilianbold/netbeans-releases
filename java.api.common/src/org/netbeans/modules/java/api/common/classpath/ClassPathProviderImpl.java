@@ -43,11 +43,20 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -62,15 +71,18 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
+import org.openide.util.WeakListeners;
 
 /**
  * Defines the various class paths for a J2SE project.
@@ -95,10 +107,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] runClasspath;
     private final String[] runTestClasspath;
     private final String[] endorsedClasspath;
+    private final String[] modulePath;
+    private final String[] testModulePath;
+    private final String[] moduleExecutePath;
+    private final String[] testModuleExecutePath;
     private final Union2<String,String[]> platform;
+    private final String javacSource;
     private final Project project;
     /**
-     * ClassPaths cache
+     * ClassPaths cache.
      * Index -> CP mapping
      * 0  -  source path
      * 1  -  test source path
@@ -110,13 +127,27 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 7  -  boot class path
      * 8  -  endorsed class path
      * 9  -  processor path
-     * 10  -  test processor path
+     * 10  - test processor path
+     * 11  - module boot path
+     * 12  - module compile path
+     * 13  - test module compile path
+     * 14  - module class path
+     * 15  - test module class path
+     * 16  - module execute path
+     * 17  - test module execute path
+     * 18  - module execute path for dist.jar
+     * 19  - module execute class path
+     * 20  - test module execute class path
+     * 21  - module execute class path for dist.jar
+     * 22  - JDK8 class path                        - internal only
+     * 23  - JDK8 test class path                   - internal only
+     * 24  - JDK8 execute class path                - internal only
+     * 25  - JDK8 test execute class path           - internal only
+     * 26  - JDK8 execute class path for dist.jar   - internal only
      */
-    private final ClassPath[] cache = new ClassPath[11];
+    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[27];
+    private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
 
-    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
-
-    private PropertyChangeListener listener;
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
@@ -201,7 +232,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             runClasspath,
             runTestClasspath,
             endorsedClasspath,
+            Builder.DEFAULT_MODULE_PATH,
+            Builder.DEFAULT_TEST_MODULE_PATH,
+            Builder.DEFAULT_MODULE_EXECUTE_PATH,
+            Builder.DEFAULT_TEST_MODULE_EXECUTE_PATH,
             Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
+            Builder.DEFAULT_JAVAC_SOURCE,
             null);
     }
 
@@ -219,7 +255,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] runClasspath,
         @NonNull final String[] runTestClasspath,
         @NonNull final String[] endorsedClasspath,
+        @NonNull final String[] modulePath,
+        @NonNull final String[] testModulePath,
+        @NonNull final String[] moduleExecutePath,
+        @NonNull final String[] testModuleExecutePath,
         @NonNull final Union2<String,String[]> platform,
+        @NonNull final String javacSource,
         @NullAllowed final Project project) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
@@ -234,7 +275,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Parameters.notNull("runClasspath", runClasspath);   //NOI18N
         Parameters.notNull("runTestClasspath", runTestClasspath);   //NOI18N
         Parameters.notNull("endorsedClasspath", endorsedClasspath); //NOI18N
+        Parameters.notNull("modulePath", modulePath);   //NOI18N
+        Parameters.notNull("testModulePath", testModulePath);   //NOI18N
+        Parameters.notNull("moduleExecutePath", moduleExecutePath); //NOI18N
+        Parameters.notNull("testModuleExecutePath", testModuleExecutePath); //NOI18N
         Parameters.notNull("platform", platform); //NOI18N
+        Parameters.notNull("javacSource", javacSource); //NOI18N
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert this.projectDirectory != null;
@@ -250,7 +296,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.runClasspath = runClasspath;
         this.runTestClasspath = runTestClasspath;
         this.endorsedClasspath = endorsedClasspath;
+        this.modulePath = modulePath;
+        this.testModulePath = testModulePath;
+        this.moduleExecutePath = moduleExecutePath;
+        this.testModuleExecutePath = testModuleExecutePath;
         this.platform = platform;
+        this.javacSource = javacSource;
         this.project = project;
     }
 
@@ -269,6 +320,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private static final String[] DEFAULT_RUN_CLASS_PATH = new String[]{"run.classpath"};    //NOI18N
         private static final String[] DEFAULT_RUN_TEST_CLASS_PATH = new String[]{"run.test.classpath"};  //NOI18N
         private static final String[] DEFAULT_ENDORSED_CLASSPATH = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
+        private static final String[] DEFAULT_MODULE_PATH = new String[]{ProjectProperties.JAVAC_MODULEPATH};
+        private static final String[] DEFAULT_TEST_MODULE_PATH = new String[] {ProjectProperties.JAVAC_TEST_MODULEPATH};
+        private static final String[] DEFAULT_MODULE_EXECUTE_PATH = new String[]{ProjectProperties.RUN_MODULEPATH};
+        private static final String[] DEFAULT_TEST_MODULE_EXECUTE_PATH = new String[]{ProjectProperties.RUN_TEST_MODULEPATH};
+        private static final String DEFAULT_JAVAC_SOURCE = ProjectProperties.JAVAC_SOURCE;
 
         private final AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
@@ -285,7 +341,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] runClasspath = DEFAULT_RUN_CLASS_PATH;
         private String[] runTestClasspath = DEFAULT_RUN_TEST_CLASS_PATH;
         private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
+        private String[] modulePath = DEFAULT_MODULE_PATH;
+        private String[] testModulePath = DEFAULT_TEST_MODULE_PATH;
+        private String[] moduleExecutePath = DEFAULT_MODULE_EXECUTE_PATH;
+        private String[] testModuleExecutePath = DEFAULT_TEST_MODULE_EXECUTE_PATH;
         private String[] bootClasspathProperties;
+        private String javacSource = DEFAULT_JAVAC_SOURCE;
         private Project project;
 
         private Builder(
@@ -424,6 +485,58 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
 
         /**
+         * Sets module path properties.
+         * @param modulePathProperties  the names of properties containing the module path, by default {@link ProjectProperties#JAVAC_MODULEPATH}
+         * @return {@link Builder}
+         * @since 1.77
+         */
+        @NonNull
+        public Builder setModulepathProperties(@NonNull final String[] modulePathProperties) {
+            Parameters.notNull("modulePathProperties", modulePathProperties);
+            this.modulePath = Arrays.copyOf(modulePathProperties, modulePathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets test module path properties.
+         * @param modulePathProperties  the names of properties containing the test module path, by default {@link ProjectProperties#JAVAC_TEST_MODULEPATH}
+         * @return {@link Builder}
+         * @since 1.77
+         */
+        @NonNull
+        public Builder setTestModulepathProperties(@NonNull final String[] modulePathProperties) {
+            Parameters.notNull("modulePathProperties", modulePathProperties);
+            this.testModulePath = Arrays.copyOf(modulePathProperties, modulePathProperties.length);
+            return this;
+        }
+        
+        /**
+         * Sets runtime module path properties.
+         * @param modulePathProperties  the names of properties containing the runtime module path, by default {@link ProjectProperties#RUN_MODULEPATH}
+         * @return {@link Builder}
+         * @since 1.86
+         */
+        @NonNull
+        public Builder setRunModulepathProperties(@NonNull final String[] modulePathProperties) {
+            Parameters.notNull("modulePathProperties", modulePathProperties);
+            this.moduleExecutePath = Arrays.copyOf(modulePathProperties, modulePathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets test runtime module path properties.
+         * @param modulePathProperties  the names of properties containing the test runtime module path, by default {@link ProjectProperties#RUN_TEST_MODULEPATH}
+         * @return {@link Builder}
+         * @since 1.86
+         */
+        @NonNull
+        public Builder setRunTestModulepathProperties(@NonNull final String[] modulePathProperties) {
+            Parameters.notNull("modulePathProperties", modulePathProperties);
+            this.testModuleExecutePath = Arrays.copyOf(modulePathProperties, modulePathProperties.length);
+            return this;
+        }
+
+        /**
          * Sets boot classpath properties.
          * Some project types do not use {@link JavaPlatform#getBootstrapLibraries()} as boot classpath but
          * have a project property specifying the boot classpath. Setting the boot classpath properties
@@ -447,6 +560,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return this;
         }
 
+        /**
+         * Sets javac source level property.
+         * @param javacSource the name of the property containing the javac source level
+         * @return {@link Builder}
+         * @since 1.76
+         */
+        @NonNull
+        public Builder setJavacSourceProperty(@NonNull final String javacSource) {
+            Parameters.notNull("javacSource", javacSource); //NOI18N
+            this.javacSource = javacSource;
+            return this;
+        }
 
         /**
          * Creates a configured {@link ClassPathProviderImpl}.
@@ -472,7 +597,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 runClasspath,
                 runTestClasspath,
                 endorsedClasspath,
+                modulePath,
+                testModulePath,
+                moduleExecutePath,
+                testModuleExecutePath,
                 platform,
+                javacSource,
                 project);
         }
 
@@ -589,23 +719,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return this.getCompileTimeClasspath(type);
     }
     
-    private synchronized ClassPath getCompileTimeClasspath(int type) {        
+    private synchronized ClassPath getCompileTimeClasspath(int type) {
         if (type < 0 || type > 1) {
             // Not a source file.
             return null;
         }
         ClassPath cp = cache[2+type];
-        if ( cp == null) {            
-            if (type == 0) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, javacClasspath)); // NOI18N
-            }
-            else {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, javacTestClasspath)); // NOI18N
-            }
+        if (cp == null) {
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->getJava8ClassPath(type),
+                            ()->ClassPathFactory.createClassPath(
+                                ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleCompilePath(type),
+                                    type == 0 ? sourceRoots : testSourceRoots,
+                                    getModuleBootPath(),
+                                    getJava8ClassPath(type),
+                                    null))));
             cache[2+type] = cp;
         }
         return cp;
@@ -651,38 +781,30 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     private synchronized ClassPath getRunTimeClasspath(final int type) {
-        int cacheIndex;
+        int index;
         if (type == 0 || type == 2) {
-            cacheIndex = 4;
+            index = 4;
         } else if (type == 1 || type == 3) {
-            cacheIndex = 5;
+            index = 5;
         } else if (type == 4) {
-            cacheIndex = 6;
+            index = 6;
         } else {
             return null;
         }
         
-        ClassPath cp = cache[cacheIndex];
+        ClassPath cp = cache[index];
         if ( cp == null) {
-            if (type == 0 || type == 2) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, runClasspath)); // NOI18N
-            }
-            else if (type == 1 || type == 3) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, runTestClasspath)); // NOI18N
-            }
-            else if (type == 4) {
-                final String[] props = new String[runClasspath.length+1];
-                System.arraycopy(runClasspath, 0, props, 1, runClasspath.length);
-                props[0] = distJar;
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, props));
-            }
-            cache[cacheIndex] = cp;
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->getJava8RunTimeClassPath(type),
+                            ()->ClassPathFactory.createClassPath(
+                                ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleExecutePath(type),
+                                    index != 5 ? sourceRoots : testSourceRoots,
+                                    getModuleBootPath(),
+                                    getJava8RunTimeClassPath(type),
+                                    getFilter(type)))));
+            cache[index] = cp;
         }
         return cp;
     }
@@ -729,12 +851,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         ClassPath cp = cache[7];
         if ( cp == null ) {
             if (platform.hasFirst()) {
-                cp = ClassPathFactory.createClassPath(
-                    ClassPathSupportFactory.createBootClassPathImplementation(
-                        evaluator,
-                        project,
-                        getEndorsedClasspath(),
-                        platform.first()));
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                        createSourceLevelSelector(
+                                ()->ClassPathFactory.createClassPath(
+                                    ClassPathSupportFactory.createBootClassPathImplementation(
+                                        evaluator,
+                                        project,
+                                        getEndorsedClasspath(),
+                                        platform.first())),
+                                ()->ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                                    getModuleBootPath(),
+                                    sourceRoots,
+                                    null))));
             } else {
                 assert platform.hasSecond();
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
@@ -749,7 +877,223 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return cp;
     }
+
+    @NonNull
+    private synchronized ClassPath getModuleBootPath() {
+        ClassPath cp = cache[11];
+        if ( cp == null ) {
+            if (platform.hasFirst()) {
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                        createSourceLevelSelector(
+                                ()->ClassPathFactory.createClassPath(
+                                    ClassPathSupportFactory.createBootClassPathImplementation(
+                                        evaluator,
+                                        getEndorsedClasspath(),
+                                        platform.first())),
+                                ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPlatformModulePath(
+                                    evaluator,
+                                    platform.first()))));
+            } else {
+                cp = ClassPath.EMPTY;
+            }
+            cache[11] = cp;
+        }
+        return cp;
+    }
+
+    @CheckForNull
+    private ClassPath getModuleCompilePath(@NonNull final FileObject fo) {
+        final int type = getType(fo);
+        if (type < 0 || type > 1) {
+            return null;
+        }
+        return getModuleCompilePath(type);
+    }
+
+    @NonNull
+    private synchronized ClassPath getModuleCompilePath(final int type) {
+        assert type >=0 && type <=1;
+        ClassPath cp = cache[12+type];
+        if ( cp == null ) {
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
+                                projectDirectory,
+                                evaluator,
+                                type == 0 ? modulePath : testModulePath))));
+            cache[12+type] = cp;
+        }
+        return cp;
+    }
+
+    @CheckForNull
+    private ClassPath getModuleLegacyClassPath(@NonNull final FileObject fo) {
+        final int type = getType(fo);
+        if (type < 0 || type > 1) {
+            return null;
+        }
+        return getModuleLegacyClassPath(type);
+    }
+
+    @NonNull
+    private synchronized ClassPath getModuleLegacyClassPath(final int type) {
+        assert type >=0 && type <=1;
+        ClassPath cp = cache[14+type];
+        if (cp == null) {
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->getJava8ClassPath(type)));
+            cache[14+type] = cp;
+        }
+        return cp;
+    }
     
+    @CheckForNull
+    private ClassPath getModuleExecutePath(@NonNull final FileObject fo) {
+        final int type = getType(fo);
+        if (type < 0 || type > 4) {
+            return null;
+        }
+        return getModuleExecutePath(type);
+    }
+    
+    @NonNull
+    private synchronized ClassPath getModuleExecutePath(final int type) {
+        assert type >= 0 && type <= 4;
+        int index;
+        if (type == 0 || type == 2) {
+            index = 16;
+        } else if (type == 1 || type == 3) {
+            index = 17;
+        } else if (type == 4) {
+            index = 18;
+        } else {
+            return null;
+        }
+        ClassPath cp = cache[index];
+        if (cp == null) {
+            ClassPathImplementation modules;
+            switch (index) {
+                case 16:
+                    modules = ModuleClassPaths.createPropertyBasedModulePath(
+                        projectDirectory,
+                        evaluator,
+                        moduleExecutePath);
+                    break;
+                case 17:
+                    modules = ModuleClassPaths.createPropertyBasedModulePath(
+                        projectDirectory,
+                        evaluator,
+                        testModuleExecutePath);
+                    break;
+                case 18:
+                    String[] props = new String[moduleExecutePath.length+1];
+                    props[0] = distJar;
+                    System.arraycopy(moduleExecutePath, 0, props, 1, moduleExecutePath.length);
+                    modules = ModuleClassPaths.createPropertyBasedModulePath(
+                        projectDirectory,
+                        evaluator,
+                        new Filter(null, buildClassesDir),
+                        props);
+                    break;
+                default:
+                    throw new IllegalStateException(Integer.toString(index));
+            }
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->ClassPathFactory.createClassPath(modules)));
+            cache[index] = cp;
+        }
+        return cp;
+    }
+    
+    @CheckForNull
+    private ClassPath getModuleLegacyExecuteClassPath(@NonNull final FileObject fo) {
+        final int type = getType(fo);
+        if (type < 0 || type > 4) {
+            return null;
+        }
+        return getModuleLegacyExecuteClassPath(type);
+    }
+    
+    @NonNull
+    private synchronized ClassPath getModuleLegacyExecuteClassPath(final int type) {
+        assert type >= 0 && type <= 4;
+        int index;
+        if (type == 0 || type == 2) {
+            index = 19;
+        } else if (type == 1 || type == 3) {
+            index = 20;
+        } else if (type == 4) {
+            index = 21;
+        } else {
+            return null;
+        }
+        ClassPath cp = cache[index];
+        if (cp == null) {
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->getJava8RunTimeClassPath(type)));
+            cache[index] = cp;
+        }
+        return cp;
+    }
+
+    @NonNull
+    private synchronized ClassPath getJava8ClassPath(int type) {
+        assert type >= 0 && type <=1;
+        ClassPath cp = cache[22+type];
+        if (cp == null) {
+            cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, type == 0 ? javacClasspath : javacTestClasspath));
+            cache[22+type] = cp;
+        }
+        return cp;
+    }
+    
+    @NonNull
+    private synchronized ClassPath getJava8RunTimeClassPath(final int type) {
+        assert type >= 0 && type <= 4;
+        int index;
+        if (type == 0 || type == 2) {
+            index = 24;
+        } else if (type == 1 || type == 3) {
+            index = 25;
+        } else if (type == 4) {
+            index = 26;
+        } else {
+            return null;
+        }        
+        ClassPath cp = cache[index];
+        if (cp == null) {
+            if (type == 0 || type == 2) {
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, runClasspath)); // NOI18N
+            }
+            else if (type == 1 || type == 3) {
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, runTestClasspath)); // NOI18N
+            } else if (type == 4) {
+                final String[] props = new String[runClasspath.length+1];
+                System.arraycopy(runClasspath, 0, props, 1, runClasspath.length);
+                props[0] = distJar;
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, props));
+            }
+            cache[index] = cp;
+        }
+        return cp;
+    }
+
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -763,6 +1107,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return getBootClassPath();
         } else if (type.equals(ClassPathSupport.ENDORSED)) {
             return getEndorsedClasspath();
+        } else if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {
+            return getModuleBootPath();
+        } else if (type.equals(JavaClassPathConstants.MODULE_COMPILE_PATH)) {
+            return getModuleCompilePath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {
+            return getModuleLegacyClassPath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_PATH)) {
+            return getModuleExecutePath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH)) {
+            return getModuleLegacyExecuteClassPath(file);
         } else {
             return null;
         }
@@ -784,16 +1138,37 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     l[1] = getCompileTimeClasspath(1);
                     return l;
                 }
+                if (ClassPath.SOURCE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getSourcepath(0);
+                    l[1] = getSourcepath(1);
+                    return l;
+                }
+                if (ClassPath.EXECUTE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getRunTimeClasspath(0);
+                    l[1] = getRunTimeClasspath(1);
+                    return l;
+                }
                 if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
                     l[0] = getProcessorClasspath(0);
                     l[1] = getProcessorClasspath(1);
                     return l;
                 }
-                if (ClassPath.SOURCE.equals(type)) {
+                if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+                    return new ClassPath[] {getModuleBootPath()};
+                }
+                if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
-                    l[0] = getSourcepath(0);
-                    l[1] = getSourcepath(1);
+                    l[0] = getModuleCompilePath(0);
+                    l[1] = getModuleCompilePath(1);
+                    return l;
+                }
+                if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getModuleLegacyClassPath(0);
+                    l[1] = getModuleLegacyClassPath(1);
                     return l;
                 }
                 assert false;
@@ -821,6 +1196,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (ClassPath.EXECUTE.equals(type)) {
             return getRunTimeClasspath(0);
         }
+        if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+            return getModuleBootPath();
+        }
+        if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+            return getModuleCompilePath(0);
+        }
+        if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+            return getModuleLegacyClassPath(0);
+        }
+        if (JavaClassPathConstants.MODULE_EXECUTE_PATH.equals(type)) {
+            return getModuleExecutePath(0);
+        }
+        if (JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH.equals(type)) {
+            return getModuleLegacyExecuteClassPath(0);
+        }
         assert false : "Unknown classpath type: " + type;   //NOI18N
         return null;
     }
@@ -835,8 +1225,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 return runTestClasspath;
-            } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+            }
+            else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 return processorTestClasspath;
+            }
+            else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                return testModulePath;
             }
             else {
                 return null;
@@ -851,6 +1245,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 return processorClasspath;
+            }
+            else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                return modulePath;
             }
             else {
                 return null;
@@ -875,6 +1272,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                     return processorClasspath;
                 }
+                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                    return modulePath;
+                }
                 else {
                     return null;
                 }
@@ -889,6 +1289,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 else if (ClassPath.EXECUTE.equals(type)) {
                     return runTestClasspath;
                 }
+                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                    return processorTestClasspath;
+                }
+                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                    return testModulePath;
+                }
                 else {
                     return null;
                 }
@@ -897,4 +1303,158 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return null;
     }
     
+    @NonNull
+    private Function<URL,Boolean> getFilter(final int type) {
+        switch (type) {
+            case 0:
+            case 2:
+                return new Filter(buildClassesDir);
+            case 1:
+            case 3:
+                return new Filter(buildTestClassesDir);
+            case 4:
+                return new Filter(distJar);
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
+        }
+    }
+
+    @NonNull
+    private org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector createSourceLevelSelector(
+            @NonNull final Supplier<? extends ClassPath> preJdk9,
+            @NonNull final Supplier<? extends ClassPath> jdk9) {
+        final List<Supplier<? extends ClassPath>> cps =
+                new ArrayList<>(2);
+        cps.add(preJdk9);
+        cps.add(jdk9);
+        return new SourceLevelSelector(
+                evaluator,
+                javacSource,
+                cps);
+    }
+    
+    private class Filter implements Function<URL, Boolean>{        
+        private final String includeProp;
+        private final String excludeProp;
+        
+        Filter(@NullAllowed final String includeProp) {            
+            this(includeProp, null);
+        }
+        
+        Filter(
+                @NullAllowed final String includeProp,
+                @NullAllowed final String excludeProp) {
+            this.includeProp = includeProp;
+            this.excludeProp = excludeProp;            
+        }
+
+        @Override
+        public Boolean apply(@NonNull final URL url) {
+            final URL aurl = FileUtil.isArchiveArtifact(url) ?
+                    FileUtil.getArchiveFile(url) :
+                    url;
+            if (Optional.ofNullable(includeProp)
+                    .map((p) -> getDir(p))
+                    .map((fo) -> Objects.equals(fo.toURL(),aurl))
+                    .orElse(Boolean.FALSE)) {
+                return Boolean.TRUE;
+            }            
+            if(Optional.ofNullable(excludeProp)
+                    .map((p) -> getDir(p))
+                    .map((fo) -> Objects.equals(fo.toURL(),aurl))
+                    .orElse(Boolean.FALSE)) {
+                return Boolean.FALSE;
+            }
+            return null;
+        }
+    }
+
+    /*test*/ static final class SourceLevelSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector, PropertyChangeListener {
+
+        private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
+
+        private final PropertyEvaluator eval;
+        private final String sourceLevelPropName;
+        private final List<? extends Supplier<? extends ClassPath>> cpfs;
+        private final PropertyChangeSupport listeners;
+        private volatile ClassPath active;
+        private volatile ClassPath[] cps;
+
+
+        SourceLevelSelector(
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final String sourceLevelPropName,
+                @NonNull final List<? extends Supplier<? extends ClassPath>> cpFactories) {
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("sourceLevelPropName", sourceLevelPropName); //NOI18N
+            Parameters.notNull("cpFactories", cpFactories); //NOI18N
+            if (cpFactories.size() != 2) {
+                throw new IllegalArgumentException("Invalid classpaths: " + cpFactories);  //NOI18N
+            }
+            for (Supplier<?> f : cpFactories) {
+                if (f == null) {
+                    throw new NullPointerException("Classpaths contain null: " + cpFactories);  //NOI18N
+                }
+            }
+            this.eval = eval;
+            this.sourceLevelPropName = sourceLevelPropName;
+            this.cpfs = cpFactories;
+            this.listeners = new PropertyChangeSupport(this);
+            this.cps = new ClassPath[2];
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+        }
+
+        @Override
+        @NonNull
+        public ClassPath getActiveClassPath() {
+            ClassPath res = active;
+            if (res == null) {
+                int index = 0;
+                final String sl = eval.getProperty(this.sourceLevelPropName);
+                if (sl != null) {
+                    try {
+                        if (JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
+                            index = 1;
+                        }
+                    } catch (NumberFormatException e) {
+                        //pass
+                    }
+                }
+                res = cps[index];   //RB
+                if (res == null) {
+                    res = cpfs.get(index).get();
+                    if (res == null) {
+                        throw new IllegalStateException(String.format(
+                                "ClassPathFactory: %s returned null",   //NOI18N
+                                cpfs.get(index)));
+                    }
+                    cps[index] = res;
+                    cps = cps;  //WB
+                }
+                active = res;
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (propName == null || sourceLevelPropName.equals(propName)) {
+                this.active = null;
+                this.listeners.firePropertyChange(PROP_ACTIVE_CLASS_PATH, null, null);
+            }
+        }
+    }
 }

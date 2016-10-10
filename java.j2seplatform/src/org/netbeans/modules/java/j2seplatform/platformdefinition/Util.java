@@ -76,6 +76,8 @@ public class Util {
     public static final String PROTO_HTTPS = "https";            //NOI18N
     public static final String PROTO_FILE = "file";              //NOI18N
     private static final String JFXRT_PATH = "lib/jfxrt.jar";    //NOI18N
+    private static final String MODULES_FOLDER = "modules";      //NOI18N
+    private static final String MODULE_INFO = "module-info.class";  //NOI18N
     private static final SpecificationVersion OLD_JDK9 = new SpecificationVersion("1.9");   //NOI18N
     private static final SpecificationVersion NEW_JDK9 = new SpecificationVersion("9");     //NOI18N
 
@@ -123,20 +125,19 @@ public class Util {
                     Exceptions.printStackTrace(e);
                 }
                 break;
+            } else {
+                final FileObject modulesFolder = installFolder.getFileObject(MODULES_FOLDER);
+                if (modulesFolder != null) {
+                    Arrays.stream(modulesFolder.getChildren())
+                            .filter((fo) -> fo.isFolder() && fo.getFileObject(MODULE_INFO) != null)
+                            .map((fo) -> ClassPathSupport.createResource(fo.toURL()))
+                            .forEach(modules::add);
+                }
             }
         }
-        if (!modules.isEmpty()) {
-            //The jfxrt.jar is not modular but it's automatically added to ext
-            //class loader by java launcher
-            final PathResourceImplementation jfx = getJfxRt(installFolders);
-            if (jfx != null) {
-                modules.add(jfx);
-            }
-            addPath(getExtensions(J2SEPlatformImpl.SYSPROP_JAVA_EXT_PATH), modules);
-            return ClassPathSupport.createClassPath(modules);
-        } else {
-            return null;
-        }
+        return modules.isEmpty() ?
+                null :
+                ClassPathSupport.createClassPath(modules);
     }
 
     // XXX this method could probably be removed... use standard FileUtil stuff

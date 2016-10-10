@@ -123,12 +123,13 @@ public final class CheckSums {
     }
 
     static String computeCheckSum(MessageDigest md, Iterable<? extends TypeElement> topLevelElements, Elements elements) {
-        Queue<TypeElement> toHandle = new LinkedList<TypeElement>();
-        for (TypeElement te : topLevelElements)
+        Queue<TypeElement> toHandle = new LinkedList<>();
+        for (TypeElement te : topLevelElements) {
             toHandle.offer(te);
+        }
         List<String> sigs = new ArrayList<String>();
         while (!toHandle.isEmpty()) {
-            TypeElement te = toHandle.poll();
+            Element te = toHandle.poll();
             if (te == null) {
                 //workaround for 6443073
                 //see Symbol.java:601

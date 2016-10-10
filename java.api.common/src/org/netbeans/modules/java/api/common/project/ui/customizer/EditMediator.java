@@ -498,12 +498,12 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         if ( selectionModel.getMinSelectionIndex() != -1 ) {
             canRemove = true;
             int iMin = selectionModel.getMinSelectionIndex();
-            int iMax = selectionModel.getMinSelectionIndex();
+            int iMax = selectionModel.getMaxSelectionIndex();
             for ( int i = iMin; i <= iMax; i++ ) {
 
                 if ( selectionModel.isSelectedIndex( i ) ) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get( i );
-                    if ( item.getType() == ClassPathSupport.Item.TYPE_CLASSPATH ) {
+                    if ( item != null && item.getType() == ClassPathSupport.Item.TYPE_CLASSPATH ) {
                         canRemove = allowRemoveClassPath;
                         break;
                     }

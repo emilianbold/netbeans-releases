@@ -142,8 +142,9 @@ public class FileObjects {
     public static final String RAPT  = "rapt"; //NOI18N
     public static final String RES   = "res";  //NOI18N
     public static final char NBFS_SEPARATOR_CHAR = '/';  //NOI18N
-
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+    public static final String PROTO_NBJRT = "nbjrt"; //NOI18N
+    public static final String MODULE_INFO = "module-info";   //NOI18N
 
     private static final Charset SYSTEM_ENCODING = Charset.defaultCharset();
     private static final Charset UTF8_ENCODING = Charset.forName("UTF-8");  //NOI18N
@@ -1045,8 +1046,10 @@ public class FileObjects {
         @NonNull
         public String getName () {
             final StringBuilder sb = new StringBuilder(nameWithoutExt);
-            sb.append('.'); //NOI18N
-            sb.append(ext);
+            if (!ext.isEmpty()) {
+                sb.append('.'); //NOI18N
+                sb.append(ext);
+            }
             return sb.toString();
         }
 
@@ -1447,9 +1450,11 @@ public class FileObjects {
                     relPath.append(convertPackage2Folder(pkgName,sep)).
                             append(sep);
                 }
-                relPath.append(nameWithoutExt).
-                        append('.').
-                        append(ext);
+                relPath.append(nameWithoutExt);
+                if (!ext.isEmpty()) {
+                        relPath.append('.').    //NOI18N
+                            append(ext);
+                }
                 file = fileCache = root.resolve(relPath.toString());
             }
             return file;
@@ -1467,9 +1472,11 @@ public class FileObjects {
                 sb.append(convertPackage2Folder(pkgName)).
                         append(NBFS_SEPARATOR_CHAR);
             }
-            sb.append(nameWithoutExt).
-                    append('.').    //NOI18N
-                    append(ext);
+            sb.append(nameWithoutExt);
+            if (!ext.isEmpty()) {
+                sb.append('.').    //NOI18N
+                        append(ext);
+            }
             return URI.create(sb.toString());
         }
     }

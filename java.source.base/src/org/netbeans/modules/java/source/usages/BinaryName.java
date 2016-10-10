@@ -168,7 +168,7 @@ final class BinaryName {
             @NonNull final ElementKind kind,
             final boolean isLocal,
             final int simpleNameStart) {
-        final int pkgEnd = binaryName.lastIndexOf(PKG_SEPARATOR);
+        final int pkgEnd = binaryName.lastIndexOf(PKG_SEPARATOR, simpleNameStart);
         return new BinaryName(
                 binaryName+DocumentUtil.encodeKind(kind, isLocal),
                 pkgEnd,
