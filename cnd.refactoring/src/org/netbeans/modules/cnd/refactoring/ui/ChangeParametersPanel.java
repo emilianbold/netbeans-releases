@@ -663,7 +663,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buf.append('('); // NOI18N
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
-        Vector<List<Object>> data = model.getDataVector();
+        Vector<Vector> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
             buf.append(parameters[i].get(PARAM_TYPE));

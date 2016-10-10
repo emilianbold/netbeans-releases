@@ -629,7 +629,7 @@ public abstract class TreeView extends JScrollPane {
     private void expandOrCollapseAll(TreePath parent, boolean expand) {
         TreeNode node = (TreeNode) parent.getLastPathComponent();
         if (node.getChildCount() > 0) {
-            for (Enumeration<TreeNode> e = node.children(); e.hasMoreElements();) {
+            for (Enumeration<? extends TreeNode> e = node.children(); e.hasMoreElements();) {
                 TreeNode n = e.nextElement();
                 TreePath path = parent.pathByAddingChild(n);
                 expandOrCollapseAll(path, expand);

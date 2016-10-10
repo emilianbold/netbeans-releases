@@ -230,7 +230,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
 
     public void setConcealedProperties(@NonNull final Set<? extends String> concealedProperties) {
         Parameters.notNull("concealedProperties", concealedProperties); //NOI18N
-        antConcealedProperties = new HashSet<>(concealedProperties);
+        antConcealedProperties = new HashSet<String>(concealedProperties);
         propertiesPane.setText(propertiesToString(antProperties, antConcealedProperties));
     }
 

@@ -206,7 +206,7 @@ public final class PersistentTimerInEjbLite {
                             }
                         }
                     }
-                    List<ExpressionTree> newArguments = new ArrayList<>(arguments);
+                    List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>(arguments);
                     ExpressionTree persistenQualIdent = tm.QualIdent(EJBAPIAnnotations.PERSISTENT);
                     newArguments.add(tm.Assignment(persistenQualIdent, tm.Literal(false)));
                     AnnotationTree newAnnotation = tm.Annotation(tp.getLeaf(), newArguments);

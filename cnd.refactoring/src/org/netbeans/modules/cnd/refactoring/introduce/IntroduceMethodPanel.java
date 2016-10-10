@@ -676,7 +676,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
             ArrayList<Diff> diffs = new ArrayList<>();
             if (res.isC()) {
                 @SuppressWarnings("unchecked")
-                Vector<List<Object>> data = model.getDataVector();
+                Vector<Vector> data = model.getDataVector();
                 List<?>[] parameters = data.toArray(new List[0]);
                 for (int i = 0; i < parameters.length; i++) {
                     if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
@@ -739,7 +739,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         buf.append('('); // NOI18N
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
-        Vector<List<Object>> data = model.getDataVector();
+        Vector<Vector> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
             if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
@@ -794,7 +794,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         buf.append('('); // NOI18N
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
-        Vector<List<Object>> data = model.getDataVector();
+        Vector<Vector> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
             buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_TYPE));
@@ -823,7 +823,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         buf.append('('); // NOI18N
         // generate parameters to the preview string
         @SuppressWarnings("unchecked")
-        Vector<List<Object>> data = model.getDataVector();
+        Vector<Vector> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
             buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_TYPE));
