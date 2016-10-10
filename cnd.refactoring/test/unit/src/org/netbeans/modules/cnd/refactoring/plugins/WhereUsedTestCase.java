@@ -121,6 +121,6 @@ public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
     
     public void test228094() throws Exception {
         // IZ#228094 - Refactoring: only usages are changed, #define in header from the refactoring was called, remains unchanged
-        performWhereUsed("iz228094.cpp", 1, 10, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(), CsmWhereUsedFilters.MACROS.getKey()));
+        performWhereUsed("iz228094.cpp", 1, 10, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(), CsmWhereUsedFilters.MACROS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
 }
