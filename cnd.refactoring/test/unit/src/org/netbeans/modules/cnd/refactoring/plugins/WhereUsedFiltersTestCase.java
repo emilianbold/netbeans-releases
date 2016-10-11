@@ -99,5 +99,23 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         // Only declarations filter selected
         performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
+
+    public void testRFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey()));
+    }
+
+    public void testWFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.WRITE.getKey()));
+    }
+
+    public void testRWFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
+    }
 }
 
