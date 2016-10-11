@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.xml.tools.java.generator;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.Collections;
@@ -238,7 +240,7 @@ public final class GenerationUtils {
     }
 
     public ModifiersTree createModifiers(Modifier modifier) {
-        return getTreeMaker().Modifiers(EnumSet.of(modifier), Collections.emptyList());
+        return getTreeMaker().Modifiers(EnumSet.of(modifier), Collections.<AnnotationTree>emptyList());
     }
 
     
@@ -270,9 +272,9 @@ public final class GenerationUtils {
         } else {
             newConstructorTree = make.Constructor(
                     createModifiers(Modifier.PUBLIC),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
                     "{ }"); // NOI18N
         }
         ClassTree newClassTree = classTree;
@@ -318,9 +320,9 @@ public final class GenerationUtils {
         TreeMaker make = getTreeMaker();
         return make.Constructor(
                 modifiersTree,
-                Collections.emptyList(),
+                Collections.<TypeParameterTree>emptyList(),
                 parameters,
-                Collections.emptyList(),
+                Collections.<ExpressionTree>emptyList(),
                 body.toString());
     }
 
@@ -332,9 +334,9 @@ public final class GenerationUtils {
         TreeMaker make = getTreeMaker();
         return make.Constructor(
                 modifiersTree,
-                Collections.emptyList(),
+                Collections.<TypeParameterTree>emptyList(),
                 parameters,
-                Collections.emptyList(),
+                Collections.<ExpressionTree>emptyList(),
                 body);
     }
     /**
@@ -458,7 +460,7 @@ public final class GenerationUtils {
     }
 
     private ModifiersTree createEmptyModifiers() {
-        return getTreeMaker().Modifiers(Collections.emptySet(), Collections.emptyList());
+        return getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
     }
 
     public ExpressionTree createQualIdent(String typeName) {

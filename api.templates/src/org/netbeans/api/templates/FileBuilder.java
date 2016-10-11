@@ -168,7 +168,7 @@ public final class FileBuilder {
         if (descriptor.parameters != null) {
             descriptor.parameters.putAll(params);
         } else {
-            descriptor.parameters = params == null ? null : new HashMap<>(params);
+            descriptor.parameters = params == null ? null : new HashMap<String,Object>(params);
         }
         if (params != null) {
             Object v = params.get(CreateDescriptor.FREE_FILE_EXTENSION);

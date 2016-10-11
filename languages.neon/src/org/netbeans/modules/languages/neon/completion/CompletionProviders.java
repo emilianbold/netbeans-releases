@@ -63,7 +63,7 @@ public final class CompletionProviders {
     }
 
     public static List<CompletionProvider> getTypeProviders() {
-        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
+        return new ArrayList<CompletionProvider>(TYPE_PROVIDERS.allInstances());
     }
 
     public static void addTypeProviderListener(LookupListener listener) {
@@ -75,7 +75,7 @@ public final class CompletionProviders {
     }
 
     public static List<MethodCompletionProvider> getMethodProviders() {
-        return new ArrayList<>(METHOD_PROVIDERS.allInstances());
+        return new ArrayList<MethodCompletionProvider>(METHOD_PROVIDERS.allInstances());
     }
 
     public static void addMethodProviderListener(LookupListener listener) {

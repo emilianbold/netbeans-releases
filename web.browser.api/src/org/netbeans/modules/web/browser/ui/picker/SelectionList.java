@@ -65,7 +65,7 @@ final class SelectionList {
     }
 
     public void setItems( List<? extends ListItem> items ) {
-        final List<ListItem> listItems = Collections.unmodifiableList( items );
+        final List<? extends ListItem> listItems = Collections.unmodifiableList( items );
         setItems( new AbstractListModel<ListItem>() {
 
             @Override

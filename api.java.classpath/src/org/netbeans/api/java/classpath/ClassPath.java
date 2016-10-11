@@ -1371,7 +1371,7 @@ public final class ClassPath {
             synchronized (this) {
                 final Set<File> toRemove = new HashSet<>(roots);
                 toRemove.removeAll(newRoots);
-                final Set<File> toAdd = new HashSet<>(newRoots);
+                final Set<? extends File> toAdd = new HashSet<>(newRoots);
                 toAdd.removeAll(roots);
                 for (File root : toRemove) {
                     safeRemoveFileChangeListener(root);
