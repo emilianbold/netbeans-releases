@@ -148,7 +148,7 @@ public final class TargetExecutor implements Runnable {
 
     public void setConcealedProperties(@NonNull final Set<? extends String> concealedProperties) {
         Parameters.notNull("concealedProperties", concealedProperties); //NOI18N
-        this.concealedProperties = Collections.unmodifiableSet(new HashSet<>(concealedProperties));
+        this.concealedProperties = Collections.unmodifiableSet(new HashSet<String>(concealedProperties));
     }
 
     void setDisplayName(String n) {

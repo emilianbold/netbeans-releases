@@ -713,7 +713,7 @@ public class WebKitPageModel extends PageModel {
     @Override
     public List<org.openide.nodes.Node> getSelectedNodes() {
         synchronized (this) {
-            return Collections.unmodifiableList(selectedNodes);
+            return (List<org.openide.nodes.Node>) Collections.unmodifiableList(selectedNodes);
         }
     }
 

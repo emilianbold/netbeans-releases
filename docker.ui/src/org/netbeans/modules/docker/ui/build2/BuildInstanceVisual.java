@@ -144,7 +144,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         assert SwingUtilities.isEventDispatchThread();
         DockerInstanceWrapper wrapper = (DockerInstanceWrapper) model.getSelectedItem();
         model.removeAllElements();
-        List<DockerInstance> instances = new ArrayList<>(DockerSupport.getDefault().getInstances());
+        List<? extends DockerInstance> instances = new ArrayList<>(DockerSupport.getDefault().getInstances());
         Collections.sort(instances, UiUtils.getInstanceComparator());
         for (DockerInstance i : instances) {
             model.addElement(new DockerInstanceWrapper(i));
