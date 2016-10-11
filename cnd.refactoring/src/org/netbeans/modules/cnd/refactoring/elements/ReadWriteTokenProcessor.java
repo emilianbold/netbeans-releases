@@ -139,9 +139,16 @@ public class ReadWriteTokenProcessor {
                             case CARET:
                             case PERCENT:
                             case LTLT:
-                            case GTGT: // x+ or *x+
-                                rw = CsmRefactoringElementImpl.RW.Read;
-                                return;
+                            case GTGT: {
+                                CppTokenId prevImportantToken = getPreviousImportantToken(cppTokenSequence, offset);
+                                if (prevImportantToken == CppTokenId.PLUSPLUS || prevImportantToken == CppTokenId.MINUSMINUS) { //++x+
+                                    rw = CsmRefactoringElementImpl.RW.ReadWrite;
+                                    return;
+                                } else { // x+ or *x+
+                                    rw = CsmRefactoringElementImpl.RW.Read;
+                                    return;
+                                }
+                            }
                             case DOT:
                             case DOTMBR:
                             case ARROW:
@@ -222,9 +229,18 @@ public class ReadWriteTokenProcessor {
                                         case DOTMBR:
                                         case ARROW:
                                         case ARROWMBR:
-                                        case SCOPE: // .x;
-                                            rw = CsmRefactoringElementImpl.RW.Read;
-                                            return;
+                                        case SCOPE: { // .x;
+                                            CppTokenId firstImportantToken = getPreviousImportantToken(cppTokenSequence, offset, new CppTokenId[]{
+                                                CppTokenId.IDENTIFIER, CppTokenId.DOT, CppTokenId.DOTMBR, CppTokenId.ARROW, CppTokenId.ARROWMBR, CppTokenId.SCOPE
+                                            });
+                                            if (firstImportantToken == CppTokenId.PLUSPLUS || firstImportantToken == CppTokenId.MINUSMINUS) { //++y.x;
+                                                rw = CsmRefactoringElementImpl.RW.ReadWrite;
+                                                return;
+                                            } else { // *y.x; or y.x;
+                                                rw = CsmRefactoringElementImpl.RW.Read;
+                                                return;
+                                            }
+                                        }
                                         //needs further investigation
                                         default:
                                             rw = CsmRefactoringElementImpl.RW.Read;
@@ -287,6 +303,37 @@ public class ReadWriteTokenProcessor {
                     case DOXYGEN_LINE_COMMENT:
                         break;
                     default:
+                        return (CppTokenId) id;
+                }
+            }
+        }
+        return null;
+    }
+
+    private CppTokenId getPreviousImportantToken(TokenSequence<TokenId> cppTokenSequence, int offset, CppTokenId[] ignore) {
+        cppTokenSequence.move(offset);
+        prev:
+        while (cppTokenSequence.movePrevious()) {
+            Token<TokenId> token = cppTokenSequence.token();
+            TokenId id = token.id();
+            if (id instanceof CppTokenId) {
+                switch ((CppTokenId) id) {
+                    // skip unimportant
+                    case WHITESPACE:
+                    case ESCAPED_LINE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                        break;
+                    default:
+                        for(CppTokenId t : ignore) {
+                            if (t == id) {
+                                break;
+                            }
+                        }
                         return (CppTokenId) id;
                 }
             }
