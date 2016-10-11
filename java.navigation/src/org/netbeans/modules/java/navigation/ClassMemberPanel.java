@@ -50,6 +50,7 @@ import javax.lang.model.element.Element;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
@@ -57,6 +58,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -137,8 +139,12 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
         return getClassMemberPanelUI();
     }
 
-    public void selectElement(ElementHandle<Element> eh) {
-        getClassMemberPanelUI().selectElementNode(eh);
+    void selectElement(ElementHandle<Element> eh) {
+        getClassMemberPanelUI().selectNode(Pair.of(eh,null));
+    }
+
+    void selectTreePath(TreePathHandle tph) {
+        getClassMemberPanelUI().selectNode(Pair.of(null,tph));
     }
     
     synchronized ClassMemberPanelUI getClassMemberPanelUI() {

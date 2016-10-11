@@ -47,17 +47,24 @@ package org.netbeans.modules.java.navigation;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -97,7 +104,7 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  *
  * @author Petr Hrebejk
  */
-public class ElementNode extends AbstractNode {
+public class ElementNode extends AbstractNode implements Iterable<ElementNode> {
 
 
     private static final String ACTION_FOLDER = "Navigator/Actions/Members/text/x-java";  //NOI18N
@@ -245,21 +252,41 @@ public class ElementNode extends AbstractNode {
         }        
     }
     
-    public ElementNode getNodeForElement( ElementHandle<?> eh ) {
-        final ElementHandle<?> nodeHandle = getDescritption().getElementHandle();
-        if (nodeHandle != null && nodeHandle.signatureEquals(eh)) {
-            return this;
-        }
-        Children ch = getChildren();
-        if ( ch instanceof ElementChilren ) {
-           for( Node sub : ch.getNodes() ) {
-               ElementNode result = ((ElementNode)sub).getNodeForElement(eh);
-               if ( result != null ) {
-                   return result;
-               }
-           }
-        }
-        return null;
+    @NonNull
+    public Stream<ElementNode> stream() {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator(), 0),
+                false);
+    }
+
+    @Override
+    public Iterator<ElementNode> iterator() {
+        return new Iterator<ElementNode>() {
+            private final Deque<ElementNode> todo = new ArrayDeque<>();
+            {
+                todo.push(ElementNode.this);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !todo.isEmpty();
+            }
+
+            @Override
+            public ElementNode next() {
+                if (todo.isEmpty()) {
+                    throw new NoSuchElementException();
+                }
+                final ElementNode n = todo.pop();
+                final Node[] clds = n.getChildren().getNodes();
+                for (int i=clds.length-1; i>=0; i--) {
+                    if (clds[i] instanceof ElementNode) {
+                        todo.push((ElementNode)clds[i]);
+                    }
+                }
+                return n;
+            }
+        };
     }
 
     public void updateRecursively( Description newDescription ) {
