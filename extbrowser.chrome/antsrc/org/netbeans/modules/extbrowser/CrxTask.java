@@ -47,7 +47,7 @@ import java.nio.ByteOrder;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
 import org.apache.tools.ant.BuildException;
 
 /**
@@ -203,7 +203,7 @@ public class CrxTask {
         int start = pem.indexOf('\n');
         int end = pem.lastIndexOf('\n');
         String body = pem.substring(start+1,end);
-        return DatatypeConverter.parseBase64Binary(body);
+        return Base64.getMimeDecoder().decode(body);
     }
 
     /**

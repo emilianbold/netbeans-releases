@@ -283,7 +283,7 @@ final class CodeTemplatesModel {
             List<Vector<String>> data,
             List<String> supportedContexts
         ) {
-            super(new Vector<Object>(data), headers);
+            super(new Vector<Vector>(data), headers);
             this.mimeType = mimeType;
             this.codeTemplatesMap = codeTemplatesMap;
             this.contexts = new HashMap<>(codeTemplatesMap.size());

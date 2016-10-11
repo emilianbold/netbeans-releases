@@ -195,7 +195,7 @@ final public class AntTargetExecutor {
          */
         public void setConcealedProperties(@NonNull final Set<? extends String> properties) {
             Parameters.notNull("properties", properties);   //NOI18N
-            concealedProperties = Collections.unmodifiableSet(new HashSet<>(properties));
+            concealedProperties = Collections.unmodifiableSet(new HashSet<String>(properties));
         }
 
         /**
