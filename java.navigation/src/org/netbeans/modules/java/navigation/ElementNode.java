@@ -47,17 +47,24 @@ package org.netbeans.modules.java.navigation;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -97,7 +104,7 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  *
  * @author Petr Hrebejk
  */
-public class ElementNode extends AbstractNode {
+public class ElementNode extends AbstractNode implements Iterable<ElementNode> {
 
 
     private static final String ACTION_FOLDER = "Navigator/Actions/Members/text/x-java";  //NOI18N
@@ -245,21 +252,41 @@ public class ElementNode extends AbstractNode {
         }        
     }
     
-    public ElementNode getNodeForElement( ElementHandle<?> eh ) {
-        final ElementHandle<?> nodeHandle = getDescritption().getElementHandle();
-        if (nodeHandle != null && nodeHandle.signatureEquals(eh)) {
-            return this;
-        }
-        Children ch = getChildren();
-        if ( ch instanceof ElementChilren ) {
-           for( Node sub : ch.getNodes() ) {
-               ElementNode result = ((ElementNode)sub).getNodeForElement(eh);
-               if ( result != null ) {
-                   return result;
-               }
-           }
-        }
-        return null;
+    @NonNull
+    public Stream<ElementNode> stream() {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator(), 0),
+                false);
+    }
+
+    @Override
+    public Iterator<ElementNode> iterator() {
+        return new Iterator<ElementNode>() {
+            private final Deque<ElementNode> todo = new ArrayDeque<>();
+            {
+                todo.push(ElementNode.this);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !todo.isEmpty();
+            }
+
+            @Override
+            public ElementNode next() {
+                if (todo.isEmpty()) {
+                    throw new NoSuchElementException();
+                }
+                final ElementNode n = todo.pop();
+                final Node[] clds = n.getChildren().getNodes();
+                for (int i=clds.length-1; i>=0; i--) {
+                    if (clds[i] instanceof ElementNode) {
+                        todo.push((ElementNode)clds[i]);
+                    }
+                }
+                return n;
+            }
+        };
     }
 
     public void updateRecursively( Description newDescription ) {
@@ -403,6 +430,7 @@ public class ElementNode extends AbstractNode {
         final ClassMemberPanelUI ui;
         final String name;
         final ElementKind kind;
+        final int posInKind;
         final Supplier<Icon> icon;
         final Openable openable;
         final Set<Modifier> modifiers;
@@ -420,6 +448,7 @@ public class ElementNode extends AbstractNode {
             this.name = null;
             this.handle = null;
             this.kind = null;
+            this.posInKind = 0;
             this.isInherited = false;
             this.isTopLevel = false;
             this.icon = () -> null;
@@ -434,6 +463,7 @@ public class ElementNode extends AbstractNode {
                 @NonNull final String name,
                 @NullAllowed final Union2<ElementHandle<?>,TreePathHandle> handle,
                 @NonNull final ElementKind kind,
+                final int posInKind,
                 @NonNull final ClasspathInfo cpInfo,
                 @NonNull final Set<Modifier> modifiers,
                 final long pos,
@@ -450,19 +480,20 @@ public class ElementNode extends AbstractNode {
             this.name = name;
             this.handle = handle;
             this.kind = kind;
+            this.posInKind = posInKind;
             this.cpInfo = cpInfo;
             this.modifiers = modifiers;
             this.pos = pos;
             this.icon = icon;
             this.isInherited = inherited;
-            this.isTopLevel = topLevel
-                    ;
+            this.isTopLevel = topLevel;
             this.openable = openable;
         }
 
         private Description(@NonNull ClassMemberPanelUI ui,
                     @NonNull final String name,
                     @NonNull final ElementHandle<? extends Element> elementHandle,
+                    final int posInKind,
                     @NonNull final ClasspathInfo cpInfo,
                     @NonNull final Set<Modifier> modifiers,
                     final long pos,
@@ -475,6 +506,7 @@ public class ElementNode extends AbstractNode {
             this.name = name;
             this.handle = Union2.<ElementHandle<?>,TreePathHandle>createFirst(elementHandle);
             this.kind = elementHandle.getKind();
+            this.posInKind = posInKind;
             this.cpInfo = cpInfo;
             this.modifiers = modifiers;
             this.pos = pos;
@@ -568,7 +600,7 @@ public class ElementNode extends AbstractNode {
                 final long pos,
                 boolean inherited,
                 boolean topLevel) {
-            return new Description(ui, name, elementHandle, cpInfo, modifiers, pos, inherited, topLevel);
+            return new Description(ui, name, elementHandle, 0, cpInfo, modifiers, pos, inherited, topLevel);
         }
 
         @NonNull
@@ -578,19 +610,21 @@ public class ElementNode extends AbstractNode {
                 @NonNull final TreePathHandle treePathHandle,
                 @NonNull final ModuleElement.DirectiveKind kind,
                 @NonNull final ClasspathInfo cpInfo,
-                @NonNull final long pos) {
+                final long pos,
+                @NonNull final Openable openable) {
             return new Description(
                     ui,
                     name,
                     Union2.<ElementHandle<?>,TreePathHandle>createSecond(treePathHandle),
                     ElementKind.OTHER,
+                    directivePosInKind(kind),
                     cpInfo,
                     EnumSet.of(Modifier.PUBLIC),
                     pos,
                     false,
                     false,
                     ()->ElementIcons.getModuleDirectiveIcon(kind),
-                    ()->{OpenAction.openable(treePathHandle, ui.getFileObject(), name).open();});
+                    openable);
         }
 
         @NonNull
@@ -605,6 +639,7 @@ public class ElementNode extends AbstractNode {
                     name,
                     null,
                     ElementKind.OTHER,
+                    directivePosInKind(kind),
                     cpInfo,
                     EnumSet.of(Modifier.PUBLIC),
                     -1,
@@ -612,6 +647,21 @@ public class ElementNode extends AbstractNode {
                     false,
                     ()->ElementIcons.getModuleDirectiveIcon(kind),
                     openable);
+        }
+
+        private static int directivePosInKind(ModuleElement.DirectiveKind kind) {
+            switch (kind) {
+                case EXPORTS:
+                    return 0;
+                case REQUIRES:
+                    return 1;
+                case USES:
+                    return 2;
+                case PROVIDES:
+                    return 3;
+                default:
+                    return 100;
+            }
         }
 
         private static class DescriptionComparator implements Comparator<Description> {
@@ -638,15 +688,17 @@ public class ElementNode extends AbstractNode {
                     return d1.pos == d2.pos ? 0 : d1.pos < d2.pos ? -1 : 1;
                 }
             }
-            
+
             int alphaCompare( Description d1, Description d2 ) {
                 if ( k2i(d1.kind) != k2i(d2.kind) ) {
                     return k2i(d1.kind) - k2i(d2.kind);
-                } 
-
+                }
+                if (d1.posInKind != d2.posInKind) {
+                    return d1.posInKind - d2.posInKind;
+                }
                 return d1.name.compareTo(d2.name);
             }
-            
+
             int k2i( ElementKind kind ) {
                 switch( kind ) {
                     case CONSTRUCTOR:
@@ -658,7 +710,8 @@ public class ElementNode extends AbstractNode {
                     case CLASS:
                     case INTERFACE:
                     case ENUM:
-                    case ANNOTATION_TYPE:                        
+                    case ANNOTATION_TYPE:
+                    case MODULE:
                         return 4;
                     default:
                         return 100;

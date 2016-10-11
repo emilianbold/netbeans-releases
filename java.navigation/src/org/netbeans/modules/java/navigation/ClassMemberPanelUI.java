@@ -93,6 +93,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
@@ -340,15 +341,28 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
     }
     
-    public void selectElementNode( ElementHandle<Element> eh ) {
-        ElementNode root = getRootNode();
+    public void selectNode(final Pair<ElementHandle<Element>,TreePathHandle> pattern ) {
+        final ElementNode root = getRootNode();
         if ( root == null ) {
             return;
         }
-        ElementNode node = root.getNodeForElement(eh);
+        final ElementNode node = root.stream()
+                .filter((n)-> {
+                    final Description d = n.getDescritption();
+                    boolean match = true;
+                    if (pattern.first() != null) {
+                        match &= pattern.first().equals(d.getElementHandle());
+                    }
+                    if (pattern.second() != null) {
+                        match &= pattern.second().equals(d.getTreePathHandle());
+                    }
+                    return match;
+                })
+                .findFirst()
+                .orElse(null);
         ignoreJavaDoc.set(true);
         try {
-            manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+            manager.setSelectedNodes(new Node[]{ node == null ? root : node });
         } catch (PropertyVetoException propertyVetoException) {
             Exceptions.printStackTrace(propertyVetoException);
         } finally {
