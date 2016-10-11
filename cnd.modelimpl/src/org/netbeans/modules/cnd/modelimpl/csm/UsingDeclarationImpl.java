@@ -164,6 +164,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 // iz #140787 cout, endl unresolved in some Loki files
                 Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<>();
                 namespacesToSearch.add(namespace);
+                namespacesToSearch.addAll(namespace.getInlinedNamespaces());
                 CharSequence nspQName = namespace.getQualifiedName();
                 final Collection<CsmProject> libraries;
                 libraries = Resolver3.getSearchLibraries(prjBase);
