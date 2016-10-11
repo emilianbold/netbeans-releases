@@ -403,6 +403,7 @@ public class ElementNode extends AbstractNode {
         final ClassMemberPanelUI ui;
         final String name;
         final ElementKind kind;
+        final int posInKind;
         final Supplier<Icon> icon;
         final Openable openable;
         final Set<Modifier> modifiers;
@@ -420,6 +421,7 @@ public class ElementNode extends AbstractNode {
             this.name = null;
             this.handle = null;
             this.kind = null;
+            this.posInKind = 0;
             this.isInherited = false;
             this.isTopLevel = false;
             this.icon = () -> null;
@@ -434,6 +436,7 @@ public class ElementNode extends AbstractNode {
                 @NonNull final String name,
                 @NullAllowed final Union2<ElementHandle<?>,TreePathHandle> handle,
                 @NonNull final ElementKind kind,
+                final int posInKind,
                 @NonNull final ClasspathInfo cpInfo,
                 @NonNull final Set<Modifier> modifiers,
                 final long pos,
@@ -450,19 +453,20 @@ public class ElementNode extends AbstractNode {
             this.name = name;
             this.handle = handle;
             this.kind = kind;
+            this.posInKind = posInKind;
             this.cpInfo = cpInfo;
             this.modifiers = modifiers;
             this.pos = pos;
             this.icon = icon;
             this.isInherited = inherited;
-            this.isTopLevel = topLevel
-                    ;
+            this.isTopLevel = topLevel;
             this.openable = openable;
         }
 
         private Description(@NonNull ClassMemberPanelUI ui,
                     @NonNull final String name,
                     @NonNull final ElementHandle<? extends Element> elementHandle,
+                    final int posInKind,
                     @NonNull final ClasspathInfo cpInfo,
                     @NonNull final Set<Modifier> modifiers,
                     final long pos,
@@ -475,6 +479,7 @@ public class ElementNode extends AbstractNode {
             this.name = name;
             this.handle = Union2.<ElementHandle<?>,TreePathHandle>createFirst(elementHandle);
             this.kind = elementHandle.getKind();
+            this.posInKind = posInKind;
             this.cpInfo = cpInfo;
             this.modifiers = modifiers;
             this.pos = pos;
@@ -568,7 +573,7 @@ public class ElementNode extends AbstractNode {
                 final long pos,
                 boolean inherited,
                 boolean topLevel) {
-            return new Description(ui, name, elementHandle, cpInfo, modifiers, pos, inherited, topLevel);
+            return new Description(ui, name, elementHandle, 0, cpInfo, modifiers, pos, inherited, topLevel);
         }
 
         @NonNull
@@ -578,19 +583,21 @@ public class ElementNode extends AbstractNode {
                 @NonNull final TreePathHandle treePathHandle,
                 @NonNull final ModuleElement.DirectiveKind kind,
                 @NonNull final ClasspathInfo cpInfo,
-                @NonNull final long pos) {
+                final long pos,
+                @NonNull final Openable openable) {
             return new Description(
                     ui,
                     name,
                     Union2.<ElementHandle<?>,TreePathHandle>createSecond(treePathHandle),
                     ElementKind.OTHER,
+                    directivePosInKind(kind),
                     cpInfo,
                     EnumSet.of(Modifier.PUBLIC),
                     pos,
                     false,
                     false,
                     ()->ElementIcons.getModuleDirectiveIcon(kind),
-                    ()->{OpenAction.openable(treePathHandle, ui.getFileObject(), name).open();});
+                    openable);
         }
 
         @NonNull
@@ -605,6 +612,7 @@ public class ElementNode extends AbstractNode {
                     name,
                     null,
                     ElementKind.OTHER,
+                    directivePosInKind(kind),
                     cpInfo,
                     EnumSet.of(Modifier.PUBLIC),
                     -1,
@@ -612,6 +620,21 @@ public class ElementNode extends AbstractNode {
                     false,
                     ()->ElementIcons.getModuleDirectiveIcon(kind),
                     openable);
+        }
+
+        private static int directivePosInKind(ModuleElement.DirectiveKind kind) {
+            switch (kind) {
+                case EXPORTS:
+                    return 0;
+                case REQUIRES:
+                    return 1;
+                case USES:
+                    return 2;
+                case PROVIDES:
+                    return 3;
+                default:
+                    return 100;
+            }
         }
 
         private static class DescriptionComparator implements Comparator<Description> {
@@ -638,15 +661,17 @@ public class ElementNode extends AbstractNode {
                     return d1.pos == d2.pos ? 0 : d1.pos < d2.pos ? -1 : 1;
                 }
             }
-            
+
             int alphaCompare( Description d1, Description d2 ) {
                 if ( k2i(d1.kind) != k2i(d2.kind) ) {
                     return k2i(d1.kind) - k2i(d2.kind);
-                } 
-
+                }
+                if (d1.posInKind != d2.posInKind) {
+                    return d1.posInKind - d2.posInKind;
+                }
                 return d1.name.compareTo(d2.name);
             }
-            
+
             int k2i( ElementKind kind ) {
                 switch( kind ) {
                     case CONSTRUCTOR:
@@ -658,7 +683,8 @@ public class ElementNode extends AbstractNode {
                     case CLASS:
                     case INTERFACE:
                     case ENUM:
-                    case ANNOTATION_TYPE:                        
+                    case ANNOTATION_TYPE:
+                    case MODULE:
                         return 4;
                     default:
                         return 100;
