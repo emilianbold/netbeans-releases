@@ -55,7 +55,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -68,8 +67,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
@@ -94,6 +91,7 @@ import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -450,13 +448,6 @@ final class ModuleClassPaths {
         private static final String MOD_JAVA_SE = "java.se";        //NOI18N
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
         private static final String JAVA_ = "java.";            //NOI18N
-        private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
-        private static final String ARG_PATCH_MOD = "--patch-module";   //NOI18N
-        private static final String ARG_XMODULE = "-Xmodule";      //NOI18N
-        private static final Pattern MATCHER_XMODULE =
-                Pattern.compile(String.format("%s:(\\S+)", ARG_XMODULE));  //NOI18N
-        private static final Pattern MATCHER_PATCH =
-                Pattern.compile("(.+)=(.+)");  //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private static final Predicate<ModuleElement> NON_JAVA_PUBEXP = (e) -> 
                 !e.getQualifiedName().toString().startsWith(JAVA_) &&
@@ -896,68 +887,28 @@ final class ModuleClassPaths {
         }
         
         private Set<String> getAddMods() {
-            final Set<String> mods = new HashSet<>();
             final CompilerOptionsQuery.Result res = getCompilerOptions();
-            if (res != null) {
-                boolean addmod = false;
-                for (String arg : res.getArguments()) {
-                    if (addmod) {
-                        //<module>(,<module>)*
-                        mods.addAll(Arrays.stream(arg.split(","))   //NOI18N
-                                .map((m) -> m.trim())
-                                .collect(Collectors.toList()));
-                    }
-                    addmod = ARG_ADDMODS.equals(arg);
-                }
-            }
-            return mods;
+            return res == null ?
+                    new HashSet<>() :
+                    CommonModuleUtils.getAddModules(res);
         }
-        
+
         @CheckForNull
         private String getXModule() {
-            String module = null;
             final CompilerOptionsQuery.Result res = getCompilerOptions();
-            if (res != null) {
-                for (String arg : res.getArguments()) {                    
-                    final Matcher m = MATCHER_XMODULE.matcher(arg);
-                    if (m.matches()) {
-                        module = m.group(1);
-                        break;
-                    }
-                }
-            }
-            return module;
+            return res == null ?
+                    null :
+                    CommonModuleUtils.getXModule(res);
         }
-        
+
         @NonNull
         private Map<String,List<URL>> getPatches() {
-            final Map<String,List<URL>> patches = new HashMap<>();
             final CompilerOptionsQuery.Result res = getCompilerOptions();
-            if (res != null) {
-                boolean patch = false;
-                for (String arg : res.getArguments()) {
-                    if (patch) {
-                        //<module>=<file>(:<file>)*
-                        final Matcher m = MATCHER_PATCH.matcher(arg);
-                        if (m.matches() && m.groupCount() == 2) {
-                            final String module = m.group(1);
-                            final String path = m.group(2);
-                            if (!module.isEmpty() && !path.isEmpty()) {
-                                patches.putIfAbsent(
-                                        module,
-                                        Arrays.stream(PropertyUtils.tokenizePath(path))
-                                                .map((p) -> FileUtil.normalizeFile(new File(p)))
-                                                .map(FileUtil::urlForArchiveOrDir)
-                                                .collect(Collectors.toList()));
-                            }
-                        }
-                    }
-                    patch = ARG_PATCH_MOD.equals(arg);
-                }
-            }
-            return patches;
+            return res == null ?
+                    Collections.emptyMap() :
+                    CommonModuleUtils.getPatches(res);
         }
-                
+
         @NonNull
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
