@@ -58,9 +58,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -82,6 +79,7 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -98,19 +96,13 @@ import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
-import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
-import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -141,42 +133,6 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     ));
         }
         return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
-    }
-
-    @CheckForNull
-    @Override
-    protected TypeElement readClassFile(@NonNull final FileObject classFile) throws IOException {
-        final JavaSource js = JavaSource.forFileObject(classFile);
-        final List<TypeElement> out = new ArrayList<>(1);
-        js.runUserActionTask(
-                (cc) -> {
-                    final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE()
-                            .getCompilationInfoImpl(cc).getJavacTask();
-                    final Symtab syms = Symtab.instance(jt.getContext());
-                    final Symbol.ClassSymbol sym;
-                    if (FileObjects.MODULE_INFO.equals(classFile.getName())) {
-                        final String moduleName = SourceUtils.getModuleName(classFile.getParent().toURL());
-                        if (moduleName != null) {
-                            final Symbol.ModuleSymbol msym = syms.enterModule((Name)cc.getElements().getName(moduleName));
-                            sym = msym.module_info;
-                            if (sym.classfile == null) {
-                                sym.classfile = FileObjects.fileObjectFileObject(classFile, classFile.getParent(), null, null);
-                                sym.owner = msym;
-                                msym.owner = syms.noSymbol;
-                                sym.completer = ClassFinder.instance(jt.getContext()).getCompleter();
-                                msym.classLocation = StandardLocation.CLASS_PATH;
-                            }
-                            msym.complete();
-                        } else {
-                            sym = null;
-                        }
-                    } else {
-                        throw new UnsupportedOperationException("Not supported yet.");  //NOI18N
-                    }
-                    out.add(sym);
-                },
-                true);
-        return out.get(0);
     }
 
     @Override
@@ -348,6 +304,7 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     public TypeElement readClassFile() throws IOException {
                         final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE()
                                 .getCompilationInfoImpl(cc).getJavacTask();
+                        final ClassFinder finder = ClassFinder.instance(jt.getContext());
                         final Symtab syms = Symtab.instance(jt.getContext());
                         final Symbol.ClassSymbol sym;
                         if (FileObjects.MODULE_INFO.equals(cc.getFileObject().getName())) {
@@ -359,7 +316,7 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                                     sym.classfile = FileObjects.fileObjectFileObject(cc.getFileObject(), cc.getFileObject().getParent(), null, null);
                                     sym.owner = msym;
                                     msym.owner = syms.noSymbol;
-                                    sym.completer = ClassFinder.instance(jt.getContext()).getCompleter();
+                                    sym.completer = finder.getCompleter();
                                     msym.classLocation = StandardLocation.CLASS_PATH;
                                 }
                                 msym.complete();
