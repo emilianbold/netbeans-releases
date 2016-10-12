@@ -79,6 +79,15 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
     }
 
     @Override
+    public Collection<CsmFile> getAllFiles(CsmFile referencedFile) {
+        CsmProject project = referencedFile.getProject();
+        if (project instanceof ProjectBase) {
+            return getAllReferences((ProjectBase)project, referencedFile);
+        }
+        return Collections.<CsmFile>emptyList();
+    }
+
+    @Override
     public Collection<CsmReference> getIncludes(CsmFile referencedFile) {
         CsmProject project = referencedFile.getProject();
         if (project instanceof ProjectBase) {
@@ -102,4 +111,18 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
         }
         return res;
     }
+
+    private Collection<CsmFile> getAllReferences(ProjectBase project, CsmFile referencedFile){
+        Set<CsmFile> res = CsmCorePackageAccessor.get().getGraph(project).getInLinks(referencedFile);
+        for(ProjectBase dependent : project.getDependentProjects()){
+            res.addAll(CsmCorePackageAccessor.get().getGraph(dependent).getInLinks(referencedFile));
+            for(CsmProject lib : dependent.getLibraries()) {
+                if (lib instanceof ProjectBase) {
+                    res.addAll(CsmCorePackageAccessor.get().getGraph((ProjectBase) lib).getInLinks(referencedFile));
+                }
+            }
+        }
+        return res;
+    }
+    
 }
