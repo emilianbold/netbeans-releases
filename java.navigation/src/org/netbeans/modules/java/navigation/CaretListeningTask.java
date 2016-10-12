@@ -58,6 +58,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.lexer.Token;
@@ -66,6 +67,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.navigation.base.Utils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  * This task is called every time the caret position changes in a Java editor.
@@ -185,7 +187,8 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         }
     
         if ( element == null || inJavadoc ) {
-            element = outerElement(compilationInfo, tp);
+            final Pair<Element,TreePath> p = outerElement(compilationInfo, tp);
+            element = p != null ? p.first() : null;
         }
         
         // if is canceled or no element
@@ -197,8 +200,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         if (Utils.signatureEquals(lastEh, element) && !inJavadoc) {
             // System.out.println("  stoped because os same eh");
             return;
-        }
-        else {
+        } else {
             switch (element.getKind()) {
             case PACKAGE:
             case CLASS:
@@ -211,6 +213,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case STATIC_INIT:
             case FIELD:
             case ENUM_CONSTANT:
+            case MODULE:
                 lastEh = Utils.createElementHandle(element);
                 // Different element clear data
                 setJavadoc(null, null); // NOI18N
@@ -304,27 +307,35 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             lastEhForNavigator = null;
         }
         // Try to find the declaration we are in
-        final Element e = outerElement(ci, tp);
-        if ( e != null && e.getKind() != ElementKind.OTHER) {
-            final ElementHandle<Element> eh = ElementHandle.create(e);
-            if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
-                return;
-            }
-            lastEhForNavigator = eh;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    cmp.selectElement(eh);
+        final Pair<Element,TreePath> p = outerElement(ci, tp);
+        if (p != null) {
+            final Element e = p.first();
+            Runnable action = null;
+            if (e == null) {
+                //Directive
+                lastEhForNavigator = null;
+                action = () -> {
+                    cmp.selectTreePath(TreePathHandle.create(p.second(), ci));
+                };
+            } else if (e.getKind() != ElementKind.OTHER) {
+                final ElementHandle<Element> eh = ElementHandle.create(e);
+                if (lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
+                    return;
                 }
-            });
-        }        
+                lastEhForNavigator = eh;
+                action = () -> {
+                    cmp.selectElement(eh);
+                };
+            }
+            if (action != null) {
+                SwingUtilities.invokeLater(action);
+            }
+        }
     }
-       
-    private static Element outerElement( CompilationInfo ci, TreePath tp ) {
-        
-        Element e = null;
-        
+
+    private static Pair<Element,TreePath> outerElement( CompilationInfo ci, TreePath tp ) {
+        Pair<Element,TreePath> res = null;
         while (tp != null) {
-            
             switch( tp.getLeaf().getKind()) {
                 case METHOD:
                 case ANNOTATION_TYPE:
@@ -332,25 +343,39 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 case ENUM:
                 case INTERFACE:
                 case COMPILATION_UNIT:
-                    e = ci.getTrees().getElement(tp);                    
-                    break;
-                case VARIABLE:
-                    e = ci.getTrees().getElement(tp);
-                    if (e != null && !e.getKind().isField()) {
-                        e = null;
+                case MODULE:
+                {
+                    final Element e = ci.getTrees().getElement(tp);
+                    if (e != null) {
+                        res = Pair.of(e,tp);
                     }
-                    break;                
-            }                        
-            if ( e != null ) {
+                    break;
+                }
+                case REQUIRES:
+                case EXPORTS:
+                case PROVIDES:
+                case USES:
+                {
+                    res = Pair.of(null, tp);
+                    break;
+                }
+                case VARIABLE:
+                {
+                    final Element e = ci.getTrees().getElement(tp);
+                    if (e != null && e.getKind().isField()) {
+                        res = Pair.of(e,tp);
+                    }
+                    break;
+                }
+            }
+            if ( res != null ) {
                 break;
             }
             tp = tp.getParentPath();
         }
-    
-        return e;
+        return res;
     }
-    
-    
+
     private void skipTokens( TokenSequence ts, Set<JavaTokenId> typesToSkip ) {
                   
         while(ts.moveNext()) {
