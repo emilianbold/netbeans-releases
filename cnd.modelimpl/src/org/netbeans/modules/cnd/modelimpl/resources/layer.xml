@@ -312,6 +312,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="variant">
                     <attr name="standard" stringvalue="17"/>
+                    <attr name="define" stringvalue="variant;index;emplace;visit;holds_alternative;get_if;monostate;bad_variant_access;variant_sizevariant_size_v;variant_alternative;variant_alternative_t;variant_npos"/>
                 </file>
                 <file name="memory_resource">
                     <attr name="standard" stringvalue="17"/>
@@ -326,6 +327,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="filesystem">
                     <attr name="standard" stringvalue="17"/>
+                    <attr name="define" stringvalue="path;filesystem_error;directory_entry;directory_iterator;recursive_directory_iterator;file_status;space_info;file_type;perms;copy_options;directory_options;file_time_type;absolute;system_complete;canonical;weakly_canonical;relative;proximate;copy;copy_file;copy_symlink;create_directory;create_directories;create_hard_link;create_symlink;create_directory_symlink;current_path;exists;equivalent;file_size;hard_link_count;last_write_time;permissions;read_symlink;remove;remove_all;resize_file;space;status;symlink_status;temp_directory_path;is_block_file;is_character_file;is_directory;is_empty;is_fifo;is_other;is_regular_file;is_socket;is_symlink;status_known"/>
                 </file>
             </folder>
             <folder name="C">
