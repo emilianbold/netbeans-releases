@@ -604,7 +604,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                     DependencyGraphScene.PaintingProvider<MavenDependencyNode> pp = new DependencyGraphScene.PaintingProvider<MavenDependencyNode>() {
                         @Override
                         public Icon getIcon(MavenDependencyNode node) {
-                            return getIcon(node);
+                            return DependencyGraphTopComponent.this.getIcon(node);
                         }
 
                         @Override

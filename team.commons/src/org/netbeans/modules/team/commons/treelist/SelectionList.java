@@ -323,6 +323,7 @@ public final class SelectionList extends JList<ListNode> {
 
         @Override
         boolean showPopupAt( int rowIndex, Point location ) {
+            JList list = this.list;
             if (!(list instanceof SelectionList)) {
                 return false;
             }

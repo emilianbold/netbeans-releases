@@ -44,9 +44,11 @@
 package org.netbeans.modules.xml.tools.java.generator;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.*;
 import java.util.*;
@@ -257,9 +259,9 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
                             make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
                             METHOD_SCAN_DOCUMENT,
                             make.PrimitiveType(TypeKind.VOID),
-                            Collections.emptyList(),
-                            Collections.emptyList(),
-                            Collections.emptyList(),
+                            Collections.<TypeParameterTree>emptyList(),
+                            Collections.<VariableTree>emptyList(),
+                            Collections.<ExpressionTree>emptyList(),
                             sb.toString(),
                             null
                         );
@@ -306,9 +308,9 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
                                 mods,
                                 methodName,
                                 make.PrimitiveType(TypeKind.VOID),
-                                Collections.emptyList(),
+                                Collections.<TypeParameterTree>emptyList(),
                                 varTree,
-                                Collections.emptyList(),
+                                Collections.<ExpressionTree>emptyList(),
                                 sb.toString(),
                                 null );;
                             commentText = "Scan through org.w3c.dom.Element named " + tagName + ".";

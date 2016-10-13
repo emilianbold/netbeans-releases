@@ -105,7 +105,7 @@ public class DockerChildFactory extends NodeClosingFactory<StatefulDockerInstanc
 
     @Override
     protected boolean createKeys(List<StatefulDockerInstance> toPopulate) {
-        List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
+        List<? extends DockerInstance> fresh = new ArrayList<>(registry.getInstances());
         Collections.sort(fresh, UiUtils.getInstanceComparator());
         for (DockerInstance i : fresh) {
             toPopulate.add(new StatefulDockerInstance(i));

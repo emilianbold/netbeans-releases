@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.refactoring.introduce;
 
 import java.util.List;
+import java.util.Vector;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
@@ -106,7 +107,7 @@ public class IntroduceMethodUI implements RefactoringUI {
 
     private Problem setParameters(boolean checkOnly) {
         @SuppressWarnings("unchecked")
-        List<List<Object>> data = (List<List<Object>>) panel.getTableModel().getDataVector();
+        Vector<Vector> data = panel.getTableModel().getDataVector();
         IntroduceMethodRefactoring.ParameterInfo[] paramList = new IntroduceMethodRefactoring.ParameterInfo[data.size()];
         int counter = 0;
         Problem problem = null;

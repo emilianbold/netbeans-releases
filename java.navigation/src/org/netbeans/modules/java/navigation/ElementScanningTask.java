@@ -384,18 +384,20 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 final Description dirDesc;
                 if (ctx.isSource) {
                     final DirectiveTree dt = ctx.getDirectiveTree(dir);
+                    final TreePathHandle treePathHandle = TreePathHandle.create(TreePath.getPath(info.getCompilationUnit(), dt), info);
+                    final String name = getDirectiveName(dir, fqn);
                      dirDesc = Description.directive(
                         ui,
-                        getDirectiveInternalName(dir, fqn),
-                        TreePathHandle.create(TreePath.getPath(info.getCompilationUnit(), dt), info),
+                        name,
+                        treePathHandle,
                         dir.getKind(),
                         cpInfo,
-                        ctx.getStartPosition(dir));
+                        ctx.getStartPosition(dir),
+                        OpenAction.openable(treePathHandle, ui.getFileObject(), name));
                 } else {
-                    final ElementHandle<ModuleElement> moduleHandle = ElementHandle.create(module);
                     dirDesc = Description.directive(
                         ui,
-                        getDirectiveInternalName(dir, fqn),
+                        getDirectiveName(dir, fqn),
                         dir.getKind(),
                         cpInfo,
                         OpenAction.openable(module, dir, cpInfo));
@@ -437,28 +439,24 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
 
     @NonNull
-    private static String getDirectiveInternalName(
+    private static String getDirectiveName(
             @NonNull final ModuleElement.Directive directive,
             final boolean fqn) {
         final StringBuilder sb = new StringBuilder();
         switch (directive.getKind()) {
             case EXPORTS:
-                sb.append('0')
-                    .append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
+                sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
                 break;
             case REQUIRES:
-                sb.append('1')
-                    .append(((ModuleElement.RequiresDirective)directive).getDependency().getQualifiedName());
+                sb.append(((ModuleElement.RequiresDirective)directive).getDependency().getQualifiedName());
                 break;
             case USES:
                 final TypeElement service = ((ModuleElement.UsesDirective)directive).getService();
-                sb.append('2')
-                    .append(fqn ? service.getQualifiedName() : service.getSimpleName());
+                sb.append(fqn ? service.getQualifiedName() : service.getSimpleName());
                 break;
             case PROVIDES:
                 final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getImplementation();
-                sb.append('3')
-                    .append(fqn ? impl.getQualifiedName() : impl.getSimpleName());
+                sb.append(fqn ? impl.getQualifiedName() : impl.getSimpleName());
                 break;
             default:
                 throw new IllegalArgumentException(directive.toString());
