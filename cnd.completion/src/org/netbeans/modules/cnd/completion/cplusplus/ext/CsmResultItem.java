@@ -583,6 +583,20 @@ public abstract class CsmResultItem implements CompletionItem {
         return offset;
     }
 
+    /** 
+     * Decorates text with trailing "<>" 
+     * and sets selectionStartOffset/selectionEndOffset  
+     * to put caret inside these "<>"
+     */
+    protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
+        if (CsmKindUtilities.isTemplate(csmObj)) {                
+            selectionStartOffset = replaceText.length() - 1;
+            selectionEndOffset = replaceText.length() - 1;
+            return replaceText + "<>";
+        }
+        return replaceText;
+    }
+    
     protected String getReplaceText() {
         return getItemText();
     }
@@ -1496,11 +1510,11 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         protected String getReplaceText() {
-            String text = getName();
+            String text = cls.getName().toString();
             if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
-            return text;
+            return decorateReplaceTextIfTemplate(text, cls);
         }
 
         @Override
