@@ -53,8 +53,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.openide.util.RequestProcessor;
@@ -77,6 +80,9 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class LibraryProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(LibraryProvider.class.getName());
+
     /** Library providers for individual projects. */
     private static final Map<Project,LibraryProvider> providers =
             Collections.synchronizedMap(new WeakHashMap<Project,LibraryProvider>());
@@ -310,12 +316,19 @@ public class LibraryProvider {
          * Parses the output of npm search call.
          * 
          * @param searchResult output of the npm search call.
-         * @return libraries/packages returned by the search.
+         * @return libraries/packages returned by the search or {@code null}
+         *         in case of unexpected search result
          */
+        @CheckForNull
         private Library[] parseSearchResult(String searchResult) {
             String[] lines = searchResult.split("\n"); // NOI18N
             String header = lines[0];
             int descriptionIndex = header.indexOf("DESCRIPTION"); // NOI18N
+            if (descriptionIndex == -1) {
+                // #268060
+                LOGGER.log(Level.INFO, "Unexpected search result of npm search: {0}", searchResult);
+                return null;
+            }
             int authorIndex = header.indexOf("AUTHOR"); // NOI18N
             int dateIndex = header.indexOf("DATE"); // NOI18N
             int versionIndex = header.indexOf("VERSION"); // NOI18N
