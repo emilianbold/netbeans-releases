@@ -642,7 +642,7 @@ final class ModuleClassPaths {
                                 .filter((n) -> modulesByName.keySet().contains(n))
                                 .orElse(null);
                     }
-                    final boolean[] dependsOnUnnamed = new boolean[]{true};
+                    boolean dependsOnUnnamed = false;
                     if (src != null) {
                         try {
                             final ModuleUtilities mu = ModuleUtilities.get(src);
@@ -660,11 +660,12 @@ final class ModuleClassPaths {
                                         }
                                     }
                                     if (myModule != null) {
-                                        dependsOnUnnamed[0] = dependsOnUnnamed(myModule, true);
+                                        dependsOnUnnamed = dependsOnUnnamed(myModule, true);
                                         requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
                                     }
-                                }
-                                if (dependsOnUnnamed[0]) {
+                                } else {
+                                    //Unnamed module
+                                    dependsOnUnnamed = true;
                                     for (String moduleName : modulesByName.keySet()) {
                                         Optional.ofNullable(mu.resolveModule(moduleName))
                                                 .filter(rootModulesPredicate)
@@ -678,7 +679,7 @@ final class ModuleClassPaths {
                             Exceptions.printStackTrace(ioe);
                         }
                     }
-                    if (dependsOnUnnamed[0]) {
+                    if (dependsOnUnnamed) {
                         //Unnamed module - add legacy classpath to classpath.
                         if (legacyClassPath != null) {
                             final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
