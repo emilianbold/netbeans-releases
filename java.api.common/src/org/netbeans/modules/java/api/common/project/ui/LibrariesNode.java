@@ -67,12 +67,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -114,6 +116,7 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.JavaSource;
@@ -125,6 +128,7 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactItem;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -649,6 +653,8 @@ public final class LibrariesNode extends AbstractNode {
         // This should be removed when there will be API for it
         // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
         private RootsListener fsListener;
+        private final AtomicReference<CompilerOptionsQuery.Result> coResult;
+        private final AtomicReference<PropertyChangeListener> sourceRootsListener;
 
 
         LibrariesChildren (
@@ -682,6 +688,8 @@ public final class LibrariesNode extends AbstractNode {
             this.slResult = SourceLevelQuery.getSourceLevel2(
                     this.helper.getAntProjectHelper().getProjectDirectory());
             this.roots = roots;
+            this.coResult = new AtomicReference<>();
+            this.sourceRootsListener = new AtomicReference<>();
         }
 
         @Override
@@ -714,6 +722,7 @@ public final class LibrariesNode extends AbstractNode {
             if (modulePath.second() != null) {
                 modulePath.second().addPropertyChangeListener(WeakListeners.propertyChange(this, modulePath.second()));
             }
+            listenOnCompilerOptions();
             this.setKeys(getKeys ());
         }
 
@@ -837,6 +846,50 @@ public final class LibrariesNode extends AbstractNode {
                             rfmi,
                             null,
                             rootsList));
+                }
+                final CompilerOptionsQuery.Result cor = coResult.get();
+                if (cor != null) {
+                    final java.util.Map<String,List<URL>> patches = CommonModuleUtils.getPatches(cor);
+                    if (!patches.isEmpty()) {
+                        final java.util.Map<Key,List<Key>> patchesByKey = new IdentityHashMap<>();
+                        for (Key key : result) {
+                            try {
+                                final URI uri = key.toURI();
+                                if (uri != null) {
+                                    final String moduleName = SourceUtils.getModuleName(uri.toURL());
+                                    final List<URL> modulePatches = patches.get(moduleName);
+                                    if (modulePatches != null) {
+                                        patchesByKey.put(key, modulePatches.stream()
+                                            .map((url) -> {
+                                                final File f = FileUtil.archiveOrDirForURL(url);
+                                                if (f != null) {
+                                                    final Collection<SourceGroup> sgs = CPMapper.INSTANCE.apply(Pair.of(
+                                                            f,
+                                                            new ArrayList<>()));
+                                                    return sgs.isEmpty() ?
+                                                            null :
+                                                            Key.file(sgs.iterator().next(), "", "", null, null);    //NOI18N
+                                                }
+                                                return null;
+                                            })
+                                            .filter((k) -> k != null)
+                                            .collect(Collectors.toList()));
+                                    }
+                                }
+                            } catch (MalformedURLException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                        final List<Key> patchedResult = new ArrayList<>();
+                        for (Key k : result) {
+                            final List<Key> p = patchesByKey.get(k);
+                            if (p != null) {
+                                patchedResult.addAll(p);
+                            }
+                            patchedResult.add(k);
+                        }
+                        result = patchedResult;
+                    }
                 }
                 if (modulePath.second() != null) {
                     final Set<URI> filter = modulePath.second().entries().stream()
@@ -970,6 +1023,33 @@ public final class LibrariesNode extends AbstractNode {
                 }
             }
             return result;
+        }
+
+        private void listenOnCompilerOptions() {
+            if (coResult.get() == null && roots != null) {
+                final FileObject[] rootFos = roots.getRoots();
+                if (rootFos.length > 0) {
+                    sourceRootsListener.set(null);
+                    final CompilerOptionsQuery.Result cor = CompilerOptionsQuery.getOptions(rootFos[0]);
+                    if (coResult.compareAndSet(null, cor)) {
+                        cor.addChangeListener(WeakListeners.change(this, cor));
+                    }
+                } else {
+                    //Defer to point when source roots exist
+                    PropertyChangeListener l = sourceRootsListener.get();
+                    if (l == null) {
+                        l = (e) -> {
+                            if (SourceRoots.PROP_ROOTS.equals(e.getPropertyName())) {
+                                listenOnCompilerOptions();
+                                reset(false);
+                            }
+                        };
+                        if (sourceRootsListener.compareAndSet(null,l)) {
+                            roots.addPropertyChangeListener(WeakListeners.propertyChange(l, roots));
+                        }
+                    }
+                }
+            }
         }
 
         private static SourceGroup createFileSourceGroup (File file, Collection<? super URL> rootsList) {
