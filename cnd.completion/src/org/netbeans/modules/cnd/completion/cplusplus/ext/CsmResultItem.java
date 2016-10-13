@@ -592,7 +592,7 @@ public abstract class CsmResultItem implements CompletionItem {
         if (CsmKindUtilities.isTemplate(csmObj)) {                
             selectionStartOffset = replaceText.length() - 1;
             selectionEndOffset = replaceText.length() - 1;
-            return replaceText + "<>";
+            return replaceText + "<>"; // NOI18N
         }
         return replaceText;
     }
