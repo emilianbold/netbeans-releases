@@ -43,10 +43,12 @@ package org.netbeans.modules.java.api.common.classpath;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,14 +63,15 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 import javax.lang.model.element.ModuleElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -81,6 +84,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.TestJavaPlatform;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -96,7 +100,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
 /**
- *
+ * Tests for ModuleClassPaths.
+ * Todo: add -Xmodule test, add requires transitive test
  * @author Tomas Zezula
  */
 public class ModuleClassPathsTest extends NbTestCase {
@@ -112,6 +117,8 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private SourceRoots src;
     private ClassPath systemModules;
+    private FileObject automaticModuleRoot;
+    private FileObject jarFileRoot;
     
     public ModuleClassPathsTest(@NonNull final String name) {
         super(name);
@@ -137,6 +144,11 @@ public class ModuleClassPathsTest extends NbTestCase {
                 .map((jh) -> TestJavaPlatform.createModularPlatform(jh))
                 .map((jp) -> jp.getBootstrapLibraries())
                 .orElse(null);
+        final FileObject libs = FileUtil.createFolder(workDir, "libs"); //NOI18N
+        automaticModuleRoot = createJar(libs,"automatic.jar");  //NOI18N
+        assertNotNull(automaticModuleRoot);
+        jarFileRoot = createJar(libs,"legacy.jar"); //NOI18N
+        assertNotNull(jarFileRoot);
     }
     
    
@@ -187,6 +199,159 @@ public class ModuleClassPathsTest extends NbTestCase {
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.compact1"));  //NOI18N
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_UnnamedModule() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        final Collection<URL> expectedURLs = legacyCp.entries().stream()
+                .map((e) -> e.getURL())
+                .collect(Collectors.toList());
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_UnnamedModule_AddMods() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--add-modules")    //NOI18N
+                .apply(SourceUtils.getModuleName(automaticModuleRoot.toURL()));
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        //Modules from add-modules + cp
+        final Collection<URL> expectedURLs = new ArrayList<>();
+        expectedURLs.add(automaticModuleRoot.toURL());
+        legacyCp.entries().stream()
+                .map((e) -> e.getURL())
+                .forEach(expectedURLs::add);
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_NamedModule() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        createModuleInfo(src, "Modle", "java.compact1",SourceUtils.getModuleName(automaticModuleRoot.toURL())); //NOI18N
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        //Modules from declared dependencies
+        final Collection<URL> expectedURLs = new ArrayList<>();
+        expectedURLs.add(automaticModuleRoot.toURL());
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_NamedModule_AddMods() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--add-modules")    //NOI18N
+                .apply(SourceUtils.getModuleName(automaticModuleRoot.toURL()));
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        //Modules from declared dependencies - nothing
+        final Collection<URL> expectedURLs = new ArrayList<>();
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_NamedModule_AddRead() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--add-reads")    //NOI18N
+                .apply("Modle="+SourceUtils.getModuleName(automaticModuleRoot.toURL()));    //NOI18N
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        //Modules from declared dependencies + add-reads
+        final Collection<URL> expectedURLs = new ArrayList<>();
+        expectedURLs.add(automaticModuleRoot.toURL());
+        assertEquals(expectedURLs, resURLs);
+    }
+    
+    public void testModuleInfoBasedCp_UserModules_in_NamedModule_AddReadAllUnnamed() throws IOException {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(src);
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
+        final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
+        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final MockCompilerOptions opts = MockCompilerOptions.getInstance();
+        assertNotNull("No MockCompilerOptions in Lookup", opts);
+        opts.forRoot(src.getRoots()[0])
+                .apply("--add-reads")    //NOI18N
+                .apply("Modle=ALL-UNNAMED");    //NOI18N
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                src,
+                systemModules,
+                legacyCp,
+                null));
+        final Collection<URL> resURLs = collectEntries(cp);
+        //Modules from declared dependencies + add-reads
+        final Collection<URL> expectedURLs = legacyCp.entries().stream()
+                .map((e) -> e.getURL())
+                .collect(Collectors.toList());
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -423,7 +588,82 @@ public class ModuleClassPathsTest extends NbTestCase {
                 .map((mn) -> "java.base".equals(mn))
                 .orElse(Boolean.FALSE);
     }
-    
+
+    private static FileObject createJar(
+            @NonNull final FileObject folder,
+            @NonNull final String name,
+            @NonNull final FileObject... content) throws IOException {
+           final File f = FileUtil.toFile(folder);
+           if (f == null) {
+               throw new IOException("The " + FileUtil.getFileDisplayName(folder) +" is not local");
+           }
+           final File res = new File(f,name);
+           try(JarOutputStream out = new JarOutputStream(new FileOutputStream(res))) {
+               for (FileObject c : content) {
+                   pack(out, c, c);
+               }
+           }
+           return FileUtil.getArchiveRoot(FileUtil.toFileObject(res));
+    }
+
+    private static void pack(
+            JarOutputStream out,
+            FileObject f,
+            FileObject root) throws IOException {
+        if (f.isFolder()) {
+            for (FileObject c : f.getChildren()) {
+                pack(out, c, root);
+            }
+        } else {
+            String path = FileUtil.getRelativePath(root, f);
+            if (path.isEmpty()) {
+                path = f.getNameExt();
+            }
+            out.putNextEntry(new ZipEntry(path));
+            FileUtil.copy(f.getInputStream(), out);
+            out.closeEntry();
+        }
+    }
+
+    private static boolean compileModule(
+            @NonNull final File src,
+            @NonNull final File dest,
+            @NonNull final File output) throws IOException, InterruptedException {
+        final File f = TestUtilities.getJava9Home();
+        if (f == null) {
+            return false;
+        }
+        final FileObject jdkHome = FileUtil.toFileObject(f);
+        if (jdkHome == null) {
+            throw new IOException("Cannot find: " + f.getAbsolutePath());
+        }
+        final FileObject javac = Util.findTool("javac", Collections.singleton(jdkHome));
+        if (javac == null) {
+            throw new IOException("No javac in: " + f.getAbsolutePath());
+        }
+        final List<String> toCompile = Files.walk(src.toPath())
+                .filter((p) -> p.getFileName().toString().endsWith(".java"))
+                .map((p) -> p.toAbsolutePath().toString())
+                .collect(Collectors.toList());
+        if (toCompile.isEmpty()) {
+            return true;
+        }
+        final List<String> cmd = new ArrayList<>(toCompile.size() + 7);
+        cmd.add(FileUtil.toFile(javac).getAbsolutePath());
+        cmd.add("-s");  //NOI18N
+        cmd.add(src.getAbsolutePath());
+        cmd.add("-d");  //NOI18N
+        cmd.add(dest.getAbsolutePath());
+        cmd.add("-source"); //NOI18N
+        cmd.add("9");   //NOI18N
+        cmd.addAll(toCompile);
+        final ProcessBuilder pb = new ProcessBuilder(cmd)
+            .redirectErrorStream(true)
+            .redirectOutput(output);
+        final Process p = pb.start();
+        return p.waitFor() == 0;
+    }
+
     private static final class NamePredicate implements Predicate<ModuleElement> {
         private final String name;
                 
