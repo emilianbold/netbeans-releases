@@ -50,7 +50,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * Represents a lambda function declaration
  * e.g.<pre>
  * function & (parameters) use (lexical vars) { body }
- * function & (parameters): return_type use (lexical vars) { body }
+ * function & (parameters) use (lexical vars): return_type { body }
  * </pre>
  * @see http://wiki.php.net/rfc/closures
  */
@@ -150,8 +150,8 @@ public class LambdaFunctionDeclaration extends Expression {
         }
         return (isStatic() ? "static " : " ") // NOI18N
                 + "function" + (isReference() ? " & " : "") + "(" + sbParams.toString() + ")" // NOI18N
-                + (getReturnType() != null ? ": " + getReturnType() : "") // NOI18N
                 + (sbLex.length() > 0 ? " use (" + sbLex.toString() + ")" : "") // NOI18N
+                + (getReturnType() != null ? ": " + getReturnType() : "") // NOI18N
                 + getBody(); //NOI18N
     }
 

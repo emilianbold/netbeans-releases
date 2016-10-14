@@ -1357,9 +1357,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 return;
             }
             if (element instanceof FunctionElement) {
-                for (final PHPCompletionItem.FunctionElementItem functionItem
-                        : PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
-                    completionResult.add(functionItem);
+                FunctionElement functionElement = (FunctionElement) element;
+                if (!functionElement.isAnonymous()) {
+                    for (final PHPCompletionItem.FunctionElementItem functionItem
+                            : PHPCompletionItem.FunctionElementItem.getItems(functionElement, request)) {
+                        completionResult.add(functionItem);
+                    }
                 }
             } else if (element instanceof ClassElement) {
                 ClassElement classElement = (ClassElement) element;

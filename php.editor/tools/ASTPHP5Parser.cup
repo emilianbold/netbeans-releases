@@ -421,6 +421,7 @@ non terminal List for_expr;
 non terminal List non_empty_for_expr;
 non terminal Expression expr_without_variable;
 non terminal Expression expr_without_variable_and_class_instance;
+non terminal Expression callable_expr;
 non terminal VariableBase function_call;
 non terminal Expression exit_expr;
 non terminal List ctor_arguments;
@@ -558,6 +559,7 @@ precedence left T_TIMES,T_DIV,T_PRECENT;
 precedence right T_NOT;
 precedence nonassoc T_INSTANCEOF;
 precedence right T_TILDA,T_INC,T_DEC,T_INT_CAST,T_DOUBLE_CAST,T_STRING_CAST,T_ARRAY_CAST,T_OBJECT_CAST,T_BOOL_CAST,T_UNSET_CAST,T_AT;
+precedence right T_CLOSE_PARENTHESE;
 precedence right T_OPEN_RECT;
 precedence nonassoc T_NEW, T_CLONE;
 precedence left T_ELSEIF;
@@ -2809,8 +2811,8 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 
 | T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
-optional_return_type:returnType
 lexical_vars:varsList
+optional_return_type:returnType
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
@@ -2819,8 +2821,8 @@ T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 
 | T_STATIC:st T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
-optional_return_type:returnType
 lexical_vars:varsList
+optional_return_type:returnType
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
@@ -2948,6 +2950,12 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 		new FunctionName(reflectionNameleft, reflectionNameright, reflectionName), parameters);
 :}
 
+| callable_expr:start T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+{:
+	RESULT = new FunctionInvocation(startleft, eright,
+		new FunctionName(startleft, startright, start), parameters);
+:}
+
 | function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
     RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayDimension(oleft, endright, index));
@@ -2957,6 +2965,36 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 {:
 	RESULT = new FunctionInvocation(callleft, eright,
 		new FunctionName(callleft, callright, call), parameters);
+:}
+;
+
+callable_expr ::=
+parenthesis_expr:expr
+{:
+	RESULT = expr;
+:}
+
+| T_OPEN_PARENTHESE:start anonymous_class:cls T_CLOSE_PARENTHESE:end
+{:
+	AnonymousObjectVariable anonymous= new AnonymousObjectVariable(startleft, endright, cls);
+	RESULT = anonymous;
+:}
+
+| T_OPEN_PARENTHESE:start T_NEW:n class_name_reference:className ctor_arguments:ctor T_CLOSE_PARENTHESE:end
+{:
+	ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(nleft, ctorright, className, ctor);
+	AnonymousObjectVariable anonymous = new AnonymousObjectVariable(startleft, endright, classInstanceCreation);
+	RESULT = anonymous;
+:}
+
+| T_CONSTANT_ENCAPSED_STRING:scalar
+{:
+	RESULT = new Scalar(scalarleft, scalarright, scalar, Scalar.Type.STRING);
+:}
+
+| array_creation:array
+{:
+	RESULT = array;
 :}
 ;
 

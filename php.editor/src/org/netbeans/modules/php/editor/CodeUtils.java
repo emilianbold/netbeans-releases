@@ -176,6 +176,18 @@ public final class CodeUtils {
                 && name.charAt(0) == '#'; // NOI18N
     }
 
+    /**
+     * Checks whether the given name is synthetic name. It means that
+     * the name contains ":" (e.g. LambdaFunctionDeclaration:11).
+     * @param name name to be checked
+     * @return {@code true} if the given name is synthetic
+     */
+    public static boolean isSyntheticFunctionName(String name) {
+        assert name != null;
+        return !name.isEmpty()
+                && name.contains(":"); // NOI18N
+    }
+
     public static PhpVersion getPhpVersion(FileObject file) {
         assert file != null;
         return PhpLanguageProperties.forFileObject(file).getPhpVersion();
@@ -479,12 +491,18 @@ public final class CodeUtils {
         return methodDeclaration.getFunction().getFunctionName().getName();
     }
 
+    @CheckForNull
     public static String extractFunctionName(FunctionName functionName) {
         if (functionName.getName() instanceof Identifier) {
             Identifier id = (Identifier) functionName.getName();
             return id.getName();
         } else if (functionName.getName() instanceof NamespaceName) {
             return extractUnqualifiedName((NamespaceName) functionName.getName());
+        } else if (functionName.getName() instanceof Scalar) {
+            String scalarName = ((Scalar) functionName.getName()).getStringValue();
+            if (isQuoted(scalarName)) {
+                return scalarName.substring(1, scalarName.length() - 1);
+            }
         }
         if (functionName.getName() instanceof Variable) {
             Variable var = (Variable) functionName.getName();
@@ -492,6 +510,12 @@ public final class CodeUtils {
         }
 
         return null;
+    }
+
+    private static boolean isQuoted(String string) {
+        return string != null
+                && string.length() > 2
+                && ((string.startsWith("'") && string.endsWith("'")) || (string.startsWith("\"") && string.endsWith("\""))); // NOI18N
     }
 
     @CheckForNull

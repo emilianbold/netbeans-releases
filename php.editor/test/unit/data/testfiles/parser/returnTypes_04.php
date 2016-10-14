@@ -1,4 +1,4 @@
 <?php
 
-function($a): DateTime use($b) {
+function($a) use($b): DateTime {
 };

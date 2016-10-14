@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -57,8 +58,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -416,6 +419,12 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         } else if (node instanceof Variadic) {
             return toOffsetRange(((Variadic) node).getExpression());
+        } else if (node instanceof ParenthesisExpression) {
+            return toOffsetRange(((ParenthesisExpression) node).getExpression());
+        } else if (node instanceof LambdaFunctionDeclaration) {
+            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+        } else if (node instanceof ArrayCreation) {
+            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
         throw new IllegalStateException(node.getClass().toString());
     }
