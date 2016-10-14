@@ -83,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
@@ -91,6 +92,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
@@ -262,7 +264,8 @@ public class FormatVisitor extends DefaultVisitor {
         inArrayBalance++;
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
-                && !TokenUtilities.textEquals(ts.token().text(), "[")) {  // NOI18N
+                && !TokenUtilities.textEquals(ts.token().text(), "[")  // NOI18N
+                && !(path.size() > 1 && (path.get(1) instanceof FunctionName))) { // not ["ArrayCall", "test"]()
             while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && !TokenUtilities.textEquals(ts.token().text(), "[")) && lastIndex < ts.index()) { //NOI18N
                 addFormatToken(formatTokens);
             }
@@ -1124,6 +1127,12 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getLexicalVariables());
         Block body = node.getBody();
         if (body != null) {
+            // in case of (function(){echo "foo";})(), missing an indent
+            boolean addIndent = path.size() > 1 && (path.get(1) instanceof ParenthesisExpression);
+            if (addIndent) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+            }
+
             addAllUntilOffset(body.getStartOffset());
             if (inArrayBalance == 0) {
                 formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
@@ -1131,6 +1140,10 @@ public class FormatVisitor extends DefaultVisitor {
             scan(body);
             if (inArrayBalance == 0) {
                 formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+            }
+
+            if (addIndent) {
+                formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
             }
         }
     }
