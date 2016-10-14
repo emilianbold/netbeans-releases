@@ -263,6 +263,7 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(ArrayCreation node) {
         inArrayBalance++;
         int delta = options.indentArrayItems - options.continualIndentSize;
+        boolean isShortArray = false;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
                 && !TokenUtilities.textEquals(ts.token().text(), "[")  // NOI18N
                 && !(path.size() > 1 && (path.get(1) instanceof FunctionName))) { // not ["ArrayCall", "test"]()
@@ -289,13 +290,18 @@ public class FormatVisitor extends DefaultVisitor {
                 }
             }
             if (TokenUtilities.textEquals(ts.token().text(), "[")) { // NOI18N
-                // just move back so we are right before "[" (consistent with "array()", see else-if below)
-                ts.movePrevious();
+                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                isShortArray = true;
             } else if (lastIndex < ts.index()) {
                 addFormatToken(formatTokens); // add only "array" keyword
             }
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
+        if (isShortArray) {
+            // #268171 this has to be added after an indent token
+            // because indent token offset < WAADLP token offset
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN, ts.offset() + ts.token().length()));
+        }
         createGroupAlignment();
         List<ArrayElement> arrayElements = node.getElements();
         if (arrayElements != null && arrayElements.size() > 0) {
