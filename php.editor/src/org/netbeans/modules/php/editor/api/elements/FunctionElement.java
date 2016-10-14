@@ -50,4 +50,5 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  */
 public interface FunctionElement extends FullyQualifiedElement, BaseFunctionElement {
     PhpElementKind KIND = PhpElementKind.FUNCTION;
+    boolean isAnonymous();
 }

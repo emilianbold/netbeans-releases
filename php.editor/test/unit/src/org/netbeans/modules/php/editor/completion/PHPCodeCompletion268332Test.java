@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,58 +36,36 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.completion;
 
-package org.netbeans.modules.php.editor.api.elements;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.php.api.PhpVersion;
-import org.netbeans.modules.php.editor.api.AliasedName;
-import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
+public class PHPCodeCompletion268332Test extends PHPCodeCompletionTestBase {
 
-/**
- *
- * @author Radek Matous
- */
-public class AliasedFunction extends AliasedElement implements FunctionElement {
-    public AliasedFunction(final AliasedName aliasedName, final FunctionElement functionElement) {
-        super(aliasedName, functionElement);
-    }
-
-    protected final FunctionElement getRealFunction() {
-        return (FunctionElement) element;
-    }
-    @Override
-    public List<ParameterElement> getParameters() {
-        return getRealFunction().getParameters();
+    public PHPCodeCompletion268332Test(String testName) {
+        super(testName);
     }
 
     @Override
-    public Collection<TypeResolver> getReturnTypes() {
-        return getRealFunction().getReturnTypes();
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[]{
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests268332/"))
+            })
+        );
     }
 
-    @Override
-    public boolean isAnonymous() {
-        return getRealFunction().isAnonymous();
-    }
-
-    @Override
-    public String asString(PrintAs as) {
-        return asString(as, TypeNameResolverImpl.forNull());
-    }
-
-    @Override
-    public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
-        return getRealFunction().asString(as, typeNameResolver);
-    }
-
-    @Override
-    public String asString(PrintAs as, TypeNameResolver typeNameResolver, PhpVersion phpVersion) {
-        return getRealFunction().asString(as, typeNameResolver, phpVersion);
+    public void testAnonymousFunction() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests268332/issue268332.php", "^test();", false);
     }
 
 }
