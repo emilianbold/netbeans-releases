@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ExceptionStr;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
+import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -1510,7 +1511,12 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         protected String getReplaceText() {
-            String text = cls.getName().toString();
+            String text;
+            if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
+                text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+            } else {
+                text = cls.getName().toString();
+            }
             if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
