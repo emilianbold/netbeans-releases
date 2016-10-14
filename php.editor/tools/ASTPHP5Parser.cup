@@ -2811,8 +2811,8 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 
 | T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
-optional_return_type:returnType
 lexical_vars:varsList
+optional_return_type:returnType
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
@@ -2821,8 +2821,8 @@ T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 
 | T_STATIC:st T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
-optional_return_type:returnType
 lexical_vars:varsList
+optional_return_type:returnType
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
