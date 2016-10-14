@@ -470,6 +470,10 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/returnTypes_04.php");
     }
 
+    public void testReturnTypes05() throws Exception {
+        checkErrors("testfiles/parser/returnTypes_05.php");
+    }
+
     public void testYieldFrom01() throws Exception {
         checkErrors("testfiles/parser/yieldFrom_01.php");
     }

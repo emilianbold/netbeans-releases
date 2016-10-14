@@ -52,20 +52,6 @@ public class EncodedActionTable6 {
     protected EncodedActionTable6() {
         sb = new StringBuilder();
         sb.append("\ufff6"); 
-        sb.append("\071"); 
-        sb.append("\ufff6"); 
-        sb.append("\072"); 
-        sb.append("\ufff6"); 
-        sb.append("\073"); 
-        sb.append("\ufff6"); 
-        sb.append("\074"); 
-        sb.append("\ufff6"); 
-        sb.append("\075"); 
-        sb.append("\ufff6"); 
-        sb.append("\076"); 
-        sb.append("\ufff6"); 
-        sb.append("\077"); 
-        sb.append("\ufff6"); 
         sb.append("\100"); 
         sb.append("\ufff6"); 
         sb.append("\104"); 
@@ -4551,5 +4537,19 @@ public class EncodedActionTable6 {
         sb.append("\115"); 
         sb.append("\uffa4"); 
         sb.append("\116"); 
+        sb.append("\uffa4"); 
+        sb.append("\117"); 
+        sb.append("\uffa4"); 
+        sb.append("\120"); 
+        sb.append("\uffa4"); 
+        sb.append("\121"); 
+        sb.append("\uffa4"); 
+        sb.append("\126"); 
+        sb.append("\uffa4"); 
+        sb.append("\151"); 
+        sb.append("\u014d"); 
+        sb.append("\165"); 
+        sb.append("\uffa4"); 
+        sb.append("\166"); 
     }
 }

@@ -570,6 +570,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/returnTypes_04");
     }
 
+    public void testReturnTypes05() throws Exception {
+        performTest("parser/returnTypes_05");
+    }
+
     public void testYieldFrom01() throws Exception {
         performTest("parser/yieldFrom_01");
     }

@@ -51,20 +51,6 @@ public class EncodedActionTable2 {
     }
     protected EncodedActionTable2() {
         sb = new StringBuilder();
-        sb.append("\073"); 
-        sb.append("\107"); 
-        sb.append("\212"); 
-        sb.append("\110"); 
-        sb.append("\150"); 
-        sb.append("\111"); 
-        sb.append("\044"); 
-        sb.append("\112"); 
-        sb.append("\074"); 
-        sb.append("\113"); 
-        sb.append("\024"); 
-        sb.append("\114"); 
-        sb.append("\063"); 
-        sb.append("\115"); 
         sb.append("\031"); 
         sb.append("\116"); 
         sb.append("\100"); 
@@ -4551,5 +4537,19 @@ public class EncodedActionTable2 {
         sb.append("\156"); 
         sb.append("\uff00"); 
         sb.append("\157"); 
+        sb.append("\uff00"); 
+        sb.append("\160"); 
+        sb.append("\uff00"); 
+        sb.append("\161"); 
+        sb.append("\uff00"); 
+        sb.append("\162"); 
+        sb.append("\uff00"); 
+        sb.append("\163"); 
+        sb.append("\uff00"); 
+        sb.append("\164"); 
+        sb.append("\uff00"); 
+        sb.append("\165"); 
+        sb.append("\uff00"); 
+        sb.append("\166"); 
     }
 }
