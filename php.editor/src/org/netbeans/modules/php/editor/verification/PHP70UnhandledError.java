@@ -53,6 +53,8 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -60,12 +62,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
@@ -249,6 +254,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
                 return;
             }
             checkIssetFunction(node);
+            checkFunctionName(node);
             super.visit(node);
         }
 
@@ -293,6 +299,17 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
                         createError(parameter);
                     }
                 }
+            }
+        }
+
+        private void checkFunctionName(FunctionInvocation node) {
+            FunctionName functionName = node.getFunctionName();
+            Expression name = functionName.getName();
+            if (name instanceof Scalar // "strlen"("something");
+                    || name instanceof ArrayCreation // ["Foo", "bar"]();
+                    || name instanceof ParenthesisExpression // ($foo)();
+                    || name instanceof AnonymousObjectVariable) { // (new Object)();
+                createError(name);
             }
         }
 

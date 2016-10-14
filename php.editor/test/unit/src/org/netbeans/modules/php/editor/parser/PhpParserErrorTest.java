@@ -63,6 +63,10 @@ public class PhpParserErrorTest extends PHPTestBase {
         super.tearDown();
     }
 
+    public void testInclude() throws Exception {
+        checkErrors("testfiles/parser/include.php");
+    }
+
     public void testIssue189630() throws Exception {
         checkErrors("testfiles/parser/issue189630.php");
     }
@@ -587,6 +591,46 @@ public class PhpParserErrorTest extends PHPTestBase {
 
     public void testUniformVariableSyntax_23() throws Exception {
         checkErrors("testfiles/parser/uniformVariableSyntax_23.php");
+    }
+
+    public void testUniformVariableSyntax_24() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_24.php");
+    }
+
+    public void testUniformVariableSyntax_25() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_25.php");
+    }
+
+    public void testUniformVariableSyntax_26() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_26.php");
+    }
+
+    public void testUniformVariableSyntax_27() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_27.php");
+    }
+
+    public void testUniformVariableSyntax_28() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_28.php");
+    }
+
+    public void testUniformVariableSyntax_29() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_29.php");
+    }
+
+    public void testUniformVariableSyntax_30() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_30.php");
+    }
+
+    public void testUniformVariableSyntax_31() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_31.php");
+    }
+
+    public void testUniformVariableSyntax_32() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_32.php");
+    }
+
+    public void testUniformVariableSyntax_33() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_33.php");
     }
 
     public void testGroupUse_01() throws Exception {
