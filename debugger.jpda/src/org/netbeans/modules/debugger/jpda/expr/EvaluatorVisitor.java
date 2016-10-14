@@ -111,6 +111,7 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -127,11 +128,14 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -143,6 +147,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -3699,6 +3704,39 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
         Assert.error(node, "noNewClassWithBody");
         return super.visitMemberReference(node, p);
+    }
+
+
+    // Unsupported Jigsaw modules visitors:
+
+    @Override
+    public Mirror visitModule(ModuleTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitModule(node, p);
+    }
+
+    @Override
+    public Mirror visitExports(ExportsTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitExports(node, p);
+    }
+
+    @Override
+    public Mirror visitProvides(ProvidesTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitProvides(node, p);
+    }
+
+    @Override
+    public Mirror visitRequires(RequiresTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitRequires(node, p);
+    }
+
+    @Override
+    public Mirror visitUses(UsesTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitUses(node, p);
     }
 
     private Value setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
