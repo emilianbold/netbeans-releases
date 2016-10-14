@@ -590,8 +590,8 @@ public abstract class CsmResultItem implements CompletionItem {
      */
     protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
         if (CsmKindUtilities.isTemplate(csmObj)) {                
-            selectionStartOffset = replaceText.length() - 1;
-            selectionEndOffset = replaceText.length() - 1;
+            selectionStartOffset = replaceText.length() + 1;
+            selectionEndOffset = replaceText.length() + 1;
             return replaceText + "<>"; // NOI18N
         }
         return replaceText;
