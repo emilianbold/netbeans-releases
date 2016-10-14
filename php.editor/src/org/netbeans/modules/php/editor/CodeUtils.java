@@ -176,6 +176,18 @@ public final class CodeUtils {
                 && name.charAt(0) == '#'; // NOI18N
     }
 
+    /**
+     * Checks whether the given name is synthetic name. It means that
+     * the name contains ":" (e.g. LambdaFunctionDeclaration:11).
+     * @param name name to be checked
+     * @return {@code true} if the given name is synthetic
+     */
+    public static boolean isSyntheticFunctionName(String name) {
+        assert name != null;
+        return !name.isEmpty()
+                && name.contains(":"); // NOI18N
+    }
+
     public static PhpVersion getPhpVersion(FileObject file) {
         assert file != null;
         return PhpLanguageProperties.forFileObject(file).getPhpVersion();

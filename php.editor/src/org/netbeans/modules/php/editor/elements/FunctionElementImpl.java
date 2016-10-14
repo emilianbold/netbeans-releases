@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -193,6 +194,11 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
     @Override
     public Collection<TypeResolver> getReturnTypes() {
         return this.functionSupport.getReturnTypes();
+    }
+
+    @Override
+    public boolean isAnonymous() {
+        return CodeUtils.isSyntheticFunctionName(getName());
     }
 
     @Override
