@@ -41,54 +41,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.text.api;
 
-package org.netbeans.modules.web.core.xmlsyntax;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.editor.BaseTokenID;
+import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
-
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-
+import org.netbeans.editor.TokenID;
+import org.netbeans.modules.xml.text.syntax.*;
 
 /**
-* Token context for JSP pages with XML content.
-*
-* @author Petr Jiricka
-*/
-@Deprecated()
-public class JspXMLTokenContext extends TokenContext {
+ * XML token-context defines token-ids and token-categories
+ * used in XML language.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ * @contributor(s) XML Modifications Sandeep Singh Randhawa
+ * @integrator Petr Kuzel
+ * @deprecated This API uses an obsolete (Ext)Syntax API. Clients should use new Lexer API.
+ */
+@Deprecated
+public class XMLDefaultTokenContext extends TokenContext implements XMLTokenIDs {
 
-    // Jsp token numericIDs
-    public static final int ERROR_ID              =  1;
-
-    /** jsp-error token-id */
-    public static final BaseTokenID ERROR = new BaseTokenID("error", ERROR_ID);    // NOI18N
-
+    
     // Context instance declaration
-    public static final JspXMLTokenContext context = new JspXMLTokenContext();
+    public static final XMLDefaultTokenContext context = new XMLDefaultTokenContext();  //??? lazy init
 
     public static final TokenContextPath contextPath = context.getContextPath();
 
-    /** Path for java tokens in jsp */
-    public static final TokenContextPath xmlContextPath
-        = context.getContextPath(XMLDefaultTokenContext.contextPath);
 
-    private JspXMLTokenContext() {
-        super("jsp-", new TokenContext[] {    // NOI18N
-                XMLDefaultTokenContext.context
-            }
-        );
+    private XMLDefaultTokenContext() {
+        super("xml-");
 
         try {
-            addDeclaredTokenIDs();
+            //!!! uses introspection to init us
+            Field[] fields = XMLTokenIDs.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                int flags = Modifier.STATIC | Modifier.FINAL;
+                if ((fields[i].getModifiers() & flags) == flags
+                        && TokenID.class.isAssignableFrom(fields[i].getType())
+                   ) {
+                    addTokenID((TokenID)fields[i].get(null));
+                }
+            }            
         } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                e.printStackTrace();
+            }
         }
-
     }
 
 }
-

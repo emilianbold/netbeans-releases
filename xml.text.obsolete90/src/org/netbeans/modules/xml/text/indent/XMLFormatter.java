@@ -55,6 +55,7 @@ import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.structure.formatting.TagBasedFormatter;
+import org.netbeans.modules.xml.text.indent.XMLFormatSupport;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
 

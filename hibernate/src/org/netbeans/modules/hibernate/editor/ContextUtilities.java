@@ -44,13 +44,16 @@
 
 package org.netbeans.modules.hibernate.editor;
 
+import javax.swing.text.BadLocationException;
 import javax.xml.XMLConstants;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+
+import static org.netbeans.api.xml.lexer.XMLTokenId.*;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.api.dom.TagElement;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -61,9 +64,9 @@ public final class ContextUtilities {
     private ContextUtilities() {
     }
     
-    public static boolean isValueToken(TokenItem currentToken) {
+    public static boolean isValueToken(Token<XMLTokenId> currentToken) {
         if(currentToken != null) {
-            if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
+            if (currentToken.id() == VALUE) {
                 return true;
             }
         }
@@ -71,9 +74,9 @@ public final class ContextUtilities {
         return false;
     }
     
-    public static boolean isTagToken(TokenItem currentToken) {
+    public static boolean isTagToken(Token<XMLTokenId> currentToken) {
         if(currentToken != null) {
-            if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) {
+            if (currentToken.id() == TAG) {
                 return true;
             }
         }
@@ -81,9 +84,9 @@ public final class ContextUtilities {
         return false;
     }
     
-    public static boolean isAttributeToken(TokenItem currentToken) {
+    public static boolean isAttributeToken(Token<XMLTokenId> currentToken) {
         if(currentToken != null) {
-            if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+            if (currentToken.id() == ARGUMENT) {
                 return true;
             }
         }
@@ -91,88 +94,44 @@ public final class ContextUtilities {
         return false;
     }
     
-    public static TokenItem getAttributeToken(TokenItem currentToken) {
-        if(currentToken == null )
-            return null;
-        
-        if(isValueToken(currentToken)) {
-            TokenItem equalsToken = currentToken.getPrevious();
-            if(equalsToken == null)
-                return null;
-            
-            while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
-                equalsToken = equalsToken.getPrevious();
-            }
-            
-            if(equalsToken == null) {
-                return null;
-            }
-        
-            TokenItem argumentToken = equalsToken.getPrevious();
-            if(argumentToken == null)
-                return null;
-            
-            while(argumentToken != null && argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
-                argumentToken = argumentToken.getPrevious();
-            }
-        
-            return argumentToken;
-        }
-        
-        return null;
-    }
-  
-    public static Tag getCurrentTagElement(DocumentContext context) {
-        SyntaxElement element = context.getCurrentElement();
-        if(element instanceof StartTag) {
-            return (StartTag) element;
-        } else if(element instanceof EmptyTag) {
-            return (EmptyTag) element;
-        }
-        
-        return null;
-    }
-    
-    public static TokenItem getAttributeToken(DocumentContext context) {
+    public static Token<XMLTokenId> getAttributeToken(DocumentContext context) {
         if(context.getCurrentToken() == null )
             return null;
-        
-        if(isValueToken(context.getCurrentToken())) {
-            TokenItem equalsToken = context.getCurrentToken().getPrevious();
-            if(equalsToken == null)
-                return null;
-            
-            //getTokenId() should not return null by JavaDoc. But in reality, it does reutrn null sometimes
-            // see issue 67661
-            if(equalsToken.getTokenID() == null) {
-                return null;
-            }
-            while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
-                equalsToken = equalsToken.getPrevious();
-            }
-            
-            if(equalsToken == null) {
-                return null;
-            }
-        
-            TokenItem argumentToken = equalsToken.getPrevious();
-            if(argumentToken == null)
-                return null;
-            
-            while(argumentToken != null && argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
-                argumentToken = argumentToken.getPrevious();
-            }
-        
-            return argumentToken;
+        try {
+            return context.<Token<XMLTokenId>>runWithSequence((TokenSequence ts) -> {
+                if(!isValueToken(context.getCurrentToken())) {
+                    return null;
+                }
+                Token<XMLTokenId> equalsToken = null;
+                while (ts.movePrevious()) {
+                    Token<XMLTokenId> t = ts.token();
+                    if (t.id() == OPERATOR) {
+                        equalsToken = t;
+                        break;
+                    }
+                }
+                if(equalsToken == null) {
+                    return null;
+                }
+                Token<XMLTokenId> argumentToken = null;
+                while (ts.movePrevious()) {
+                    Token<XMLTokenId> t = ts.token();
+                    if (t.id() == ARGUMENT) {
+                        argumentToken = t;
+                        break;
+                    }
+                }
+                return argumentToken;
+            });
+        } catch (BadLocationException ex) {
         }
-        
         return null;
     }
     
     public static String getAttributeTokenImage(DocumentContext context) {
-        TokenItem tok = getAttributeToken(context);
+        Token<XMLTokenId> tok = getAttributeToken(context);
         if(tok != null) {
-            return tok.getImage();
+            return tok.text().toString();
         }
         
         return null;
@@ -221,11 +180,12 @@ public final class ContextUtilities {
         return nodeName.substring(0, colonIndex);
     }
     
-    public static StartTag getRoot(SyntaxElement se) {
-        StartTag root = null;
+    public static SyntaxElement getRoot(SyntaxElement se) {
+        SyntaxElement root = null;
         while( se != null) {
-            if(se instanceof StartTag) {
-                root = (StartTag)se;
+            if(se.getType() == Node.ELEMENT_NODE &&
+               ((TagElement)se).isStart()) {
+                root = se;
             }
             se = se.getPrevious();
         }

@@ -118,7 +118,7 @@ public abstract class Completor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -156,7 +156,7 @@ public abstract class Completor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -184,9 +184,9 @@ public abstract class Completor {
                 }
 
                 if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-                    doNormalJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
+                    doNormalJavaCompletion(js, results, typedChars, context.getCurrentTokenOffset() + 1);
                 } else { // Switch to smart class path completion
-                    doSmartJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
+                    doSmartJavaCompletion(js, results, typedChars, context.getCurrentTokenOffset() + 1);
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -325,7 +325,7 @@ public abstract class Completor {
                 Exceptions.printStackTrace(ex);
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
 
             return results;
         }
@@ -355,7 +355,7 @@ public abstract class Completor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
 
             return results;
         }
@@ -402,7 +402,7 @@ public abstract class Completor {
                     results.add(item);
                 }
             }
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
 
             return results;
         }
@@ -446,7 +446,7 @@ public abstract class Completor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -475,7 +475,7 @@ public abstract class Completor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
         

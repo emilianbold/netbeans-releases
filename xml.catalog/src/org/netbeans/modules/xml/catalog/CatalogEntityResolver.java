@@ -55,6 +55,7 @@ import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import org.netbeans.api.xml.services.*;
 import org.openide.util.Lookup;
 import javax.xml.transform.URIResolver;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * An entity resolver that can resolve all registrations
@@ -68,6 +69,7 @@ import javax.xml.transform.URIResolver;
  * @author  Petr Kuzel
  * @version 1.0
  */
+@ServiceProvider(service = UserCatalog.class)
 public class CatalogEntityResolver extends UserCatalog implements EntityResolver, URIResolver {
 
     /** Creates new CatalogEntityResolver */
