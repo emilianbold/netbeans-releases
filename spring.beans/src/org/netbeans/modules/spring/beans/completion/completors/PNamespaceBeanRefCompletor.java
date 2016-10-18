@@ -43,7 +43,8 @@ package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.CompletorUtils;
@@ -63,17 +64,17 @@ public class PNamespaceBeanRefCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        return context.getCurrentToken().getOffset() + 1;
+        return context.getCurrentTokenOffset() + 1;
     }
 
     @Override
     protected void compute(CompletionContext context) throws IOException {
-        TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
+        Token<XMLTokenId> attribToken = ContextUtilities.getAttributeToken(context.getDocumentContext());
         if (attribToken == null) {
             return;
         }
 
-        String attribName = attribToken.getImage();
+        String attribName = attribToken.text().toString();
         if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
             return;
         }

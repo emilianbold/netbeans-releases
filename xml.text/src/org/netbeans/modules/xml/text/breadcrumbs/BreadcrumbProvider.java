@@ -62,7 +62,7 @@ import org.netbeans.modules.editor.structure.api.DocumentElementEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElementListener;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
-import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import static org.netbeans.modules.xml.text.structure.XMLConstants.*;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -151,11 +151,11 @@ final class BreadcrumbProvider implements CaretListener {
         DocumentElement el = mdl.getLeafElementForOffset(pos);
         OUT: while (el != null) {
             switch (el.getType()) {
-                case XMLDocumentModelProvider.XML_TAG:
-                case XMLDocumentModelProvider.XML_EMPTY_TAG:
-                case XMLDocumentModelProvider.XML_PI:
-                case XMLDocumentModelProvider.XML_CDATA:
-                case XMLDocumentModelProvider.XML_DOCTYPE:
+                case XML_TAG:
+                case XML_EMPTY_TAG:
+                case XML_PI:
+                case XML_CDATA:
+                case XML_DOCTYPE:
                     break OUT;
                 default:
                     el = el.getParentElement();
@@ -220,14 +220,14 @@ final class BreadcrumbProvider implements CaretListener {
         @Override
         public String getHtmlDisplayName() {
             switch (docEl.getType()) {
-                case XMLDocumentModelProvider.XML_TAG:
-                case XMLDocumentModelProvider.XML_EMPTY_TAG:
+                case XML_TAG:
+                case XML_EMPTY_TAG:
                     return docEl.getName();
-                case XMLDocumentModelProvider.XML_PI:
+                case XML_PI:
                     return docEl.getName();
-                case XMLDocumentModelProvider.XML_CDATA:
+                case XML_CDATA:
                     return Bundle.LABEL_CDATA();
-                case XMLDocumentModelProvider.XML_DOCTYPE:
+                case XML_DOCTYPE:
                     return Bundle.LABEL_DOCTYPE();
                 default:
                     // unsupported nodes
@@ -243,17 +243,17 @@ final class BreadcrumbProvider implements CaretListener {
             String resource;
             
             switch (docEl.getType()) {
-                case XMLDocumentModelProvider.XML_TAG:
-                case XMLDocumentModelProvider.XML_EMPTY_TAG:
+                case XML_TAG:
+                case XML_EMPTY_TAG:
                     resource = TAG_16; 
                     break;
-                case XMLDocumentModelProvider.XML_PI:
+                case XML_PI:
                     resource = PI_16;
                     break;
-                case XMLDocumentModelProvider.XML_CDATA:
+                case XML_CDATA:
                     resource = CDATA_16;
                     break;
-                case XMLDocumentModelProvider.XML_DOCTYPE:
+                case XML_DOCTYPE:
                     resource = DOCTYPE_16;
                     break;
                 default:
@@ -293,11 +293,11 @@ final class BreadcrumbProvider implements CaretListener {
             List<BreadcrumbsElement> children = new ArrayList<>();
             for (DocumentElement ch : docEl.getChildren()) {
                 switch (ch.getType()) {
-                    case XMLDocumentModelProvider.XML_TAG:
-                    case XMLDocumentModelProvider.XML_EMPTY_TAG:
-                    case XMLDocumentModelProvider.XML_PI:
-                    case XMLDocumentModelProvider.XML_CDATA:
-                    case XMLDocumentModelProvider.XML_DOCTYPE:
+                    case XML_TAG:
+                    case XML_EMPTY_TAG:
+                    case XML_PI:
+                    case XML_CDATA:
+                    case XML_DOCTYPE:
                         children.add(createElement(ch, this));
                         break;
                     default:

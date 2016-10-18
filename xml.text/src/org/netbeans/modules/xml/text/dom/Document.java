@@ -45,12 +45,13 @@
 package org.netbeans.modules.xml.text.dom;
 
 import org.netbeans.modules.xml.spi.dom.*;
+import org.w3c.dom.DOMException;
 
 public class Document extends AbstractNode implements org.w3c.dom.Document {
 
-    SyntaxElement syntax;
+    BaseSyntaxElement syntax;
 
-    Document(SyntaxElement element) {
+    Document(BaseSyntaxElement element) {
         syntax = element;
     }
 
@@ -273,6 +274,5 @@ public class Document extends AbstractNode implements org.w3c.dom.Document {
         }
 
     }
-
 }
 

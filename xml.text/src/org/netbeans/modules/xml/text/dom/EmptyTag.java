@@ -45,6 +45,7 @@
 package org.netbeans.modules.xml.text.dom;
 
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.w3c.dom.*;
@@ -52,10 +53,10 @@ import org.netbeans.modules.xml.spi.dom.*;
 
 public class EmptyTag extends Tag {
 
-    EmptyTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
-        super( support, from, start, end);
+    public EmptyTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end, from.text().toString().substring(1));
     }
-
+    
     public boolean hasChildNodes() {
         return false;
     }
@@ -64,12 +65,27 @@ public class EmptyTag extends Tag {
         return NodeListImpl.EMPTY;
     }
     
-    protected Tag getEndTag() {
+    public Tag getEndTag() {
         return this;
     }
     
-    protected Tag getStartTag() {
+    public Tag getStartTag() {
         return this;
+    }
+
+    @Override
+    public boolean isStart() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnd() {
+        return false;
+    }
+
+    @Override
+    public boolean isSelfClosing() {
+        return true;
     }
     
     public String toString() {

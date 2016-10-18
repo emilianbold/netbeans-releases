@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.catalog.impl;
 import java.io.IOException;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provide class representing SystemCatalogReader class.
@@ -53,6 +54,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogProvider;
  * @author  Petr Kuzel
  * @version
  */
+@ServiceProvider(service = CatalogProvider.class)
 public class SystemCatalogProvider implements CatalogProvider {
 
     public Class provideClass() throws IOException, ClassNotFoundException {

@@ -65,7 +65,7 @@ public class BeanDependsOnCompletor extends BeansRefCompletor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        int index = context.getCurrentToken().getOffset() + 1;
+        int index = context.getCurrentTokenOffset() + 1;
         String prefix = context.getTypedPrefix();
         if (StringUtils.hasText(prefix)) {
             int sepOffset = Math.max(Math.max(prefix.lastIndexOf(','), prefix.lastIndexOf(';')), prefix.lastIndexOf(' ')); // NOI18N
@@ -97,7 +97,7 @@ public class BeanDependsOnCompletor extends BeansRefCompletor {
             return Collections.emptySet();
         }
         
-        int startIdx = context.getCurrentToken().getOffset() + 1;
+        int startIdx = context.getCurrentTokenOffset() + 1;
         int length = getAnchorOffset() - startIdx;
         
         if(length <= 0) {

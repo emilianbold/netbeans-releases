@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.text.indent;
 
 import org.netbeans.modules.xml.text.AbstractTestCase;
 import junit.framework.*;
+import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.editor.BaseDocument;
 
 /**
@@ -81,23 +82,23 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
      * with a document that represents expected outcome.
      */
     public void testFormat() throws Exception {
-        BaseDocument inputDoc = getDocument("indent/input.xml");
+        LineDocument inputDoc = getDocument("indent/input.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     public void testFormatSubsection() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_sub.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     // #139160
@@ -105,10 +106,10 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input2.xsd");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output2.xsd");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output2.xsd");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     public void testFormatPerformance() throws Exception {
@@ -134,20 +135,20 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_sub1.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 46, 74);
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 46, 74);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub1.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_sub1.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     public void testFormatSubsection2() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 63, 80);
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 63, 80);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub2.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_sub2.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     // #170343
@@ -155,10 +156,10 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_preserve.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_preserve.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_preserve.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     // #170343
@@ -166,10 +167,10 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_withpreserve.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_withpreserve.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_withpreserve.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     // #170343
@@ -178,10 +179,10 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         System.out.println("SECTION:" + inputDoc.getText(91, 87));
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 91, 91 + 87);
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 91, 91 + 87);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_preserve.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_preserve.xml");
+        assertTrue(compare(formattedDoc, outputDoc));
     }
 
 
@@ -189,30 +190,30 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_contentIndent.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_contentIndent.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_contentIndent.xml");
+        assertTrue(compare(formattedDoc, outputDoc));
     }
 
     public void testFormat_AttrsIndent() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_attrsIndent.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_attrsIndent.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_attrsIndent.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     public void testFormat_ProcessingIndent() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_processingXml.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_processingXml.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_processingXml.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
     
     
@@ -220,49 +221,49 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_nestedSame.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_nestedSame.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_nestedSame.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
     
     public void testFormatWithCdataContent217342() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_cdataContent.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_cdataContent.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_cdataContent.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 
     public void testFormatBreaksMixedContent216986() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_breaksMixedContent.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_breaksMixedContent.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_breaksMixedContent.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
     
     public void testFormatNewlinesInTags217995() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_newlineInTags.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_newlineInTags.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_newlineInTags.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
     
     public void testFormatTagAtLineStartAfterContent238985() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_tagAtStatOfLine.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_tagAtStatOfLine.xml");
-        assert (compare(formattedDoc, outputDoc));
+        LineDocument outputDoc = getDocument("indent/output_tagAtStatOfLine.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
     }
 }

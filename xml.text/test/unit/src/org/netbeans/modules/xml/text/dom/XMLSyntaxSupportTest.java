@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.text.AbstractTestCase;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
 
 /**
  *

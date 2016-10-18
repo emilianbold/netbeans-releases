@@ -107,6 +107,70 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="deprecated-syntax-api">
+            <summary>Syntax API deprecated</summary>
+            <version major="2" minor="60"/>
+            <date day="18" month="10" year="2016"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="yes" deprecation="yes" deletion="yes"/>
+            <description>
+                <p>
+                    The xml.text.syntax API uses the old and long deprecated lexer. The API is now moved to a new compatibility-only 
+                    <code>xml.text.deprecated90</code> module and a new API in <code>org.netbeans.modules.xml.text.api.dom</code> package is offered.               
+                </p>
+                <p>
+                    The following classes/packages have been moved to xml.text.obsolete90 module:
+                </p>
+                <ul>
+                    <li>
+                        <code>org.netbeans.modules.xml.text.syntax</code>
+                        <ul>
+                            <li>DTDSyntaxTokenMapper</li>
+                            <li>DTDTokenContext</li>
+                            <li>SyntaxElement</li>
+                            <li>UnicodeClasses</li>
+                            <li>XMLDefaultSyntax</li>
+                            <li>XMLSyntaxSupport</li>
+                            <li>XMLSyntaxTokenMapper</li>
+                            <li>XMLTokenIDs</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <code>org.netbeans.modules.xml.text.syntax.dom</code>
+                        <ul>
+                            <li>AttrImpl</li>
+                            <li>CDataSectionImpl</li>
+                            <li>CommentImpl</li>
+                            <li>DocumentTypeImpl</li>
+                            <li>EmptyTag</li>
+                            <li>EndTag</li>
+                            <li>EntityReferenceImpl</li>
+                            <li>ProcessingInstructionImpl</li>
+                            <li>StartTag</li>
+                            <li>SyntaxNode</li>
+                            <li>TextImpl</li>
+                            <li>Util</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <code>org.netbeans.modules.xml.text.indent</code>
+                        <ul>
+                            <li>XMLFormatter</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <code>org.netbeans.modules.xml.text.api</code>
+                        <ul>
+                            <li>XMLDefaultTokenContext</li>
+                        </ul>
+                    </li>
+                </ul>
+            </description>
+            <class name="XMLTextUtils" package="org.netbeans.modules.xml.text.api"/>
+            <package name="org.netbeans.modules.xml.text.syntax"/>
+            <package name="org.netbeans.modules.xml.text.api.dom"/>
+            <issue number="268342"/>
+        </change>
         <change id="old-editor-settings-deprecation">
             <summary>Removing old settings classes</summary>
             <version major="1" minor="16"/>

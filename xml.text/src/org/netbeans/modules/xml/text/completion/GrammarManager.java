@@ -62,9 +62,8 @@ import org.netbeans.modules.xml.api.model.ExtendedGrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -293,8 +292,8 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
                 
                 while (en.hasMoreElements()) {
                     Node next = (Node) en.nextElement();
-                    if (next instanceof SyntaxNode) {
-                        SyntaxNode node = (SyntaxNode) next;
+                    if (next instanceof SyntaxElement) {
+                        SyntaxElement node = (SyntaxElement) next;
                         int start = node.getElementOffset();
                         int end = start + node.getElementLength();
                         if (end > max) max = end;
@@ -359,10 +358,10 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
         SyntaxElement first = syntax.getElementChain(1);
         while (true) {
             if (first == null) break;
-            if (first instanceof SyntaxNode) {
-                SyntaxNode node = (SyntaxNode) first;
+            Node node = first.getNode();
+            if (node != null) {
                 ctx.add(node);
-                if (node.ELEMENT_NODE == node.getNodeType()) {
+                if (Node.ELEMENT_NODE == node.getNodeType()) {
                     break;
                 }
             }

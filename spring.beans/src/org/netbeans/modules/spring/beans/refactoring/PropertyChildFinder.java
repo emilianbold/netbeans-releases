@@ -47,10 +47,8 @@ import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -74,11 +72,11 @@ public class PropertyChildFinder {
         foundOffset = -1;
         value = null;
         SyntaxElement beanElement = syntaxSupport.getElementChain(start+1);
-        if(!(beanElement instanceof StartTag)) {
+        if (!syntaxSupport.isStartTag(beanElement)) {
             return false;
         }
         
-        Tag beanTag = (Tag) beanElement;
+        Node beanTag = beanElement.getNode();
         if(!BeansElements.BEAN.equals(beanTag.getNodeName())) {
             return false;
         }
@@ -89,8 +87,9 @@ public class PropertyChildFinder {
             if(BeansElements.PROPERTY.equals(n.getNodeName())) {
                 String name = SpringXMLConfigEditorUtils.getAttribute(n, BeansAttributes.NAME);
                 if(StringUtils.hasText(name) && propertyName.equals(name)) {
-                    Tag propertyTag  = (Tag) n;
-                    AttributeValueFinder delegate = new AttributeValueFinder(syntaxSupport, propertyTag.getElementOffset());
+                    AttributeValueFinder delegate = new AttributeValueFinder(
+                            syntaxSupport, 
+                            syntaxSupport.getNodeOffset(n));
                     boolean retVal = delegate.find(BeansAttributes.NAME);
                     foundOffset = delegate.getFoundOffset();
                     value = delegate.getValue();

@@ -42,11 +42,6 @@
 
 package org.netbeans.modules.xml.text.syntax;
 
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SyntaxSupport;
-
 /**
  *
  * @author samaresh
@@ -61,21 +56,8 @@ public class ENTKit extends UniKit {
      */
     public static final String MIME_TYPE = "text/xml-external-parsed-entity"; // NOI18N
     
-    /** Create new instance of syntax coloring parser */
-    @Override
-    public Syntax createSyntax(Document doc) {
-        return new XMLDefaultSyntax();
-    }
-
     @Override
     public String getContentType() {
         return MIME_TYPE;
     }
-
-    /** Create syntax support */
-    @Override
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return new XMLSyntaxSupport(doc);
-    }
-    
 }

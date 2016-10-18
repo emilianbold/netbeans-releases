@@ -103,7 +103,7 @@ public abstract class PUCompletor {
                     }
                 }
             }
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -131,7 +131,7 @@ public abstract class PUCompletor {
                     results.add(item);
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -151,7 +151,7 @@ public abstract class PUCompletor {
                     results.add(item);
                 }
             }
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }    
@@ -199,7 +199,7 @@ public abstract class PUCompletor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -221,7 +221,7 @@ public abstract class PUCompletor {
                     return Collections.emptyList();
                 }
                 FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
-                doJavaCompletion(fo, js, results, typedChars, context.getCurrentToken().getOffset());
+                doJavaCompletion(fo, js, results, typedChars, context.getCurrentTokenOffset());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -318,7 +318,7 @@ public abstract class PUCompletor {
                 Exceptions.printStackTrace(ex);
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
 
             return results;
         }
@@ -364,7 +364,7 @@ public abstract class PUCompletor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -425,7 +425,7 @@ public abstract class PUCompletor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
     }
@@ -455,7 +455,7 @@ public abstract class PUCompletor {
                 }
             }
 
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            setAnchorOffset(context.getCurrentTokenOffset() + 1);
             return results;
         }
 

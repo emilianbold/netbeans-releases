@@ -46,7 +46,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
 
 <editor-preferences>
-    <entry name="token-context-list" value="org.netbeans.modules.xml.text.ComplexValueSettingsFactory.getDTDTokenContext" javaType="methodvalue" />
     <entry name="indentEngine" value="org.netbeans.modules.xml.text.ComplexValueSettingsFactory.getDTDIndentEngine" javaType="methodvalue" />
     <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.xml.text.ComplexValueSettingsFactory.getDTDAbbrevResetAcceptor" javaType="methodvalue" />
 </editor-preferences>

@@ -280,6 +280,14 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.30</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -294,7 +302,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.42.1</specification-version>
+                        <specification-version>1.60</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -364,14 +372,6 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -385,6 +385,14 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

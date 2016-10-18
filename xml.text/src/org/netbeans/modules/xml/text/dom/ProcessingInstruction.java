@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.api.lexer.Token;
 
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -56,13 +57,13 @@ import org.w3c.dom.Node;
  *
  * @author  Petr Kuzel
  */
-public final class ProcessingInstruction extends SyntaxNode {
+public final class ProcessingInstruction extends SyntaxNode implements org.w3c.dom.ProcessingInstruction {
     
     private String target;
     private String content;
 
     /** Creates a new instance of ProcessingInstructionImpl */
-    ProcessingInstruction(XMLSyntaxSupport syntax, Token<XMLTokenId> first,
+    public ProcessingInstruction(XMLSyntaxSupport syntax, Token<XMLTokenId> first,
             int start, int end, String target, String content) {
         super(syntax, first, start, end);
         this.target = target;
@@ -90,5 +91,14 @@ public final class ProcessingInstruction extends SyntaxNode {
     public void setData(String data) throws DOMException {
         throw new ROException();
     }
-    
+
+    @Override
+    public String getTarget() {
+        return getNodeName();
+    }
+
+    @Override
+    public String getData() {
+        return getNodeValue();
+    }
 }
