@@ -54,7 +54,8 @@ import org.openide.util.lookup.ServiceProvider;
  * @author  Petr Kuzel
  * @version
  */
-@ServiceProvider(service = CatalogProvider.class)
+// APIsupport masks this service for some reason; retain layer registration.
+//@ServiceProvider(service = CatalogProvider.class)
 public class SystemCatalogProvider implements CatalogProvider {
 
     public Class provideClass() throws IOException, ClassNotFoundException {

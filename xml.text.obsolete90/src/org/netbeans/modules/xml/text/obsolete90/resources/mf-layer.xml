@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             <folder name="xml">
                 <folder name="Preferences">
                     <folder name="Defaults">
-                        <file name="org-netbeans-modules-xml-text-xmlPreferences.xml" url="XMLEditor-preferences.xml"/>
+                        <file name="org-netbeans-modules-xml-text-xmlPreferences-obsolete90.xml" url="XMLEditor-preferences.xml"/>
                     </folder>
                 </folder>
                 <folder name="DocumentModel">
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
             <folder name="xml-dtd">
                 <folder name="Preferences">
                     <folder name="Defaults">
-                        <file name="org-netbeans-modules-xml-text-dtdPreferences.xml" url="DTDEditor-preferences.xml"/>
+                        <file name="org-netbeans-modules-xml-text-dtdPreferences-obsolete90.xml" url="DTDEditor-preferences.xml"/>
                     </folder>
                 </folder>
             </folder>
