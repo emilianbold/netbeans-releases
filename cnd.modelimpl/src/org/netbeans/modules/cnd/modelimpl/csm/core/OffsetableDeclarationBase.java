@@ -93,7 +93,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     // Postifix in internal name of UID of the declaration if it was added via 
     // #include directive into the class or namespace
-    protected static final String INCLUDED_DECLARATION = "ID$";
+    protected static final String INCLUDED_DECLARATION = "ID$"; // NOI18N
     
     /**
      * Checks whether declaration was included with #include directive into other C++ declaration.
