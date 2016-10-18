@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.xml.text.api.dom;
 
-import com.sun.istack.internal.NotNull;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
@@ -204,7 +203,7 @@ public final class XMLSyntaxSupport {
     /**
      * @return underlying Document instance
      */
-    @NotNull
+    @NonNull
     public LineDocument getDocument() {
         return document;
     }
