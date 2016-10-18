@@ -248,3 +248,5 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-docker-api" value="${javadoc.web.root}/org-netbeans-modules-docker-api"/>
 <property name="javadoc.docs.org-netbeans-modules-csl-types" value="${javadoc.web.root}/org-netbeans-modules-csl-types"/>
 <property name="javadoc.docs.org-netbeans-modules-csl-api" value="${javadoc.web.root}/org-netbeans-modules-csl-api"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-lexer" value="${javadoc.web.root}/org-netbeans-modules-xml-lexer"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-text" value="${javadoc.web.root}/org-netbeans-modules-xml-text"/>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,117 +37,142 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
 package org.netbeans.api.xml.lexer;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.xml.lexer.XMLLexer;
+import org.netbeans.lib.xml.lexer.DTDLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token ids of XML language
+ * DTD token definitions. Important note related to entities. Entities (unparsed, character) may appear
+ * in various contexts, also in comments and strings. In that case, the {@link #CHARACTER} or {@link #REFERENCE} 
+ * token will be emitted for the contained entity/char, so the token stream will contain (for example) {@link #STRING},
+ * {@link #CHARACTER}, {@link #STRING}. In such a case, the CHARACTER token will be marked as {@link PartType#MIDDLE}.
+ * 
+ * @author sdedic
+ * @since 1.31
  */
-public enum XMLTokenId implements TokenId {
+public enum DTDTokenId implements TokenId {
+    /**
+     * Processing instruction target
+     */
+    TARGET("dtd-target"),
     
-    /** Plain text */
-    TEXT("xml-text"),
-    /** Erroneous Text */
-    WS("xml-ws"),
-    /** Plain Text*/
-    ERROR("xml-error"),
-    /** XML Tag */
-    TAG("xml-tag"),
-    /** Argument of a tag */
-    ARGUMENT("xml-attribute"),
-    /** Operators - '=' between arg and value */
-    OPERATOR("xml-operator"),
-    /** Value - value of an argument */
-    VALUE("xml-value"),
-    /** Block comment */
-    BLOCK_COMMENT("xml-comment"),
-    /** SGML declaration in XML document - e.g. &lt;!DOCTYPE&gt; */
-    DECLARATION("xml-doctype"),
-    /** Character reference, e.g. &amp;lt; = &lt; */
-    CHARACTER("xml-ref"),
-    /** End of line */
-    EOL("xml-EOL"),
-    /* PI start delimiter <sample><b>&lt;?</b>target content of pi ?></sample> */
-    PI_START("xml-pi-start"),
-    /* PI target <sample>&lt;?<b>target</b> content of pi ?></sample> */
-    PI_TARGET("xml-pi-target"),
-    /* PI conetnt <sample>&lt;?target <b>content of pi </b>?></sample> */
-    PI_CONTENT("pi-content"),
-    /* PI end delimiter <sample>&lt;?target <content of pi <b>?></b></sample> */
-    PI_END("pi-end"),
-    /** Cdata section including its delimiters. */
-    CDATA_SECTION("xml-cdata-section");
+    /**
+     * Opening or closing symbol of processing instruction or declaration
+     */
+    SYMBOL("dtd-symbol"),
+    
+    /**
+     * A string value
+     */
+    STRING("dtd-string"),
+    
+    /**
+     * Entity reference, parsed or unparsed
+     */
+    REFERENCE("dtd-ref"),
+    
+    /**
+     * Plaintext outside of declarations or processing instructions
+     */
+    PLAIN("dtd-plain"),
+    
+    /**
+     * DTD Keyword
+     */
+    KEYWORD("dtd-keyword"),
+    
+    /**
+     * Declaration keyword. Entity, attribute list, notation or element
+     */
+    DECLARATION("dtd-declaration"),
+    
+    /**
+     * Erroneous token
+     */
+    ERROR("dtd-error"),
+    
+    /**
+     * Whitespace in the declaration or processing instructions
+     */
+    WS("dtd-ws"),
+    
+    /**
+     * Name. Element, entity, attribute name. Identifier
+     */
+    NAME("dtd-name"),
+    
+    /**
+     * Operator in definitions.
+     */
+    OPERATOR("dtd-operator"),
+    
+    /**
+     * General content of processing instruction
+     */
+    PI_CONTENT("dtd-processing"),
+    
+    /**
+     * Character entity
+     */
+    CHARACTER("dtd-character"),
+    
+    /**
+     * Comment
+     */
+    COMMENT("dtd-comment");
 
     private final String primaryCategory;
-
-    XMLTokenId() {
-        this(null);
-    }
-
-    XMLTokenId(String primaryCategory) {
+    
+    private DTDTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
-
-    private static final Language<XMLTokenId> language = new LanguageHierarchy<XMLTokenId>() {
+    
+    
+    private static final Language<DTDTokenId> language = new LanguageHierarchy<DTDTokenId>() {
         @Override
-        protected Collection<XMLTokenId> createTokenIds() {
-            return EnumSet.allOf(XMLTokenId.class);
+        protected Collection<DTDTokenId> createTokenIds() {
+            return EnumSet.allOf(DTDTokenId.class);
         }
         
         @Override
-        protected Map<String,Collection<XMLTokenId>> createTokenCategories() {
-            Map<String,Collection<XMLTokenId>> cats = new HashMap<String,Collection<XMLTokenId>>();
-            
-            // Incomplete literals
-            //cats.put("incomplete", EnumSet.of());
-            // Additional literals being a lexical error
-            //cats.put("error", EnumSet.of());
-            
-            return cats;
-        }
-        
-        @Override
-        public Lexer<XMLTokenId> createLexer(LexerRestartInfo<XMLTokenId> info) {
-            return new XMLLexer(info);
+        public Lexer<DTDTokenId> createLexer(LexerRestartInfo<DTDTokenId> info) {
+            return new DTDLexer(info);
         }
         
         @Override
         public LanguageEmbedding<?> embedding(
-        Token<XMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<DTDTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
         
         @Override
         public String mimeType() {
-            return "text/xml";
+            return "application/xml-dtd"; // NOI18N
         }
     }.language();
     
-    @MimeRegistration(mimeType = "text/xml", service = Language.class)
-    public static Language<XMLTokenId> language() {
+    @MimeRegistration(mimeType = "application/xml-dtd", service = Language.class)
+    public static Language<DTDTokenId> language() {
         return language;
     }
-    
 }

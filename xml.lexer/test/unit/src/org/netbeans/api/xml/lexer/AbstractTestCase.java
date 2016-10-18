@@ -44,21 +44,25 @@ package org.netbeans.api.xml.lexer;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * The XMLTokenIdTest tests the parsing algorithm of XMLLexer.
  * Various tests include, sanity, regression, performance etc.
  * @author Samaresh (samaresh.panda@sun.com)
  */
-public class AbstractTestCase extends TestCase {
+public class AbstractTestCase extends NbTestCase {
     
     static final boolean DEBUG = true;
     
@@ -98,11 +102,15 @@ public class AbstractTestCase extends TestCase {
             ((AbstractDocument)document).readUnlock();
         }
     }
+    
+    protected Language getLanguage() {
+        return XMLTokenId.language();
+    }
         
     protected javax.swing.text.Document getDocument(String path) throws Exception {
         javax.swing.text.Document doc = getResourceAsDocument(path);
         //must set the language inside unit tests
-        doc.putProperty(Language.class, XMLTokenId.language());
+        doc.putProperty(Language.class, getLanguage());
         return doc;
     }
                  
@@ -123,12 +131,22 @@ public class AbstractTestCase extends TestCase {
         sd.insertString(0,sbuf.toString(),null);
         return sd;
     }
+    
+    protected <T extends Enum<T>> T[] readTokenIDs(Class<T> enumClass, String text) {
+        List<T> arr = new ArrayList<>();
+        for (String t : text.split(" *, *")) {
+            T val = Enum.valueOf(enumClass, t);
+            arr.add(val);
+        }
+        return (T[])arr.toArray();
+        
+    }
 
     /**
      * This test validates all tokens obtained by parsing test.xml against
      * an array of expected tokens.
      */
-    public void assertTokenSequence(javax.swing.text.Document document, XMLTokenId[] expectedIds) throws Exception {
+    public void assertTokenSequence(javax.swing.text.Document document, TokenId[] expectedIds) throws Exception {
         ((AbstractDocument)document).readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(document);
