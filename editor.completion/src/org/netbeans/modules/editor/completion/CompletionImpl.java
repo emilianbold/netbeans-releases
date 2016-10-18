@@ -638,7 +638,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             public void run() {
                 List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
                 TokenSequence<?> seq;
-                
+                if (seqs.size() == 1) {
+                    // get the mime path from the document/kit
+                    return;
+                }
                 if (seqs.isEmpty()) {
                     seq  = TokenHierarchy.get(doc).tokenSequence();
                 } else {
