@@ -229,6 +229,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             CsmFile clsFile = cls != null ? cls.getContainingFile() : null;
             if (cls != null && clsFile != null && !Objects.equals(clsFile, getContainingFile())) {
                 StringBuilder sb = new StringBuilder(UID_INTERNAL_DATA_PREFIX);
+                sb.append(INCLUDED_DECLARATION);
                 sb.append(cls.getName());
                 sb.append("_"); // NOI18N
                 if (clsFile instanceof FileImpl) {

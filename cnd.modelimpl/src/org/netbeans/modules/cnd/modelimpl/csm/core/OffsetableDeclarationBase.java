@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -88,6 +90,36 @@ import org.openide.util.CharSequences;
 public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiableBase<T> implements CsmOffsetableDeclaration {
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
+    
+    // Postifix in internal name of UID of the declaration if it was added via 
+    // #include directive into the class or namespace
+    protected static final String INCLUDED_DECLARATION = "ID$";
+    
+    /**
+     * Checks whether declaration was included with #include directive into other C++ declaration.
+     *  
+     * Example: all uids inside AAA structure will be "included"
+     * 
+     * struct AAA {
+     *  #include "body.inc"
+     * };
+     * 
+     * @param uid
+     * @return true if included, false otherwise
+     */
+    public static boolean isIncludedDeclaration(CsmUID<?> uid) {
+        CharSequence internalName = UIDUtilities.getName(uid, true);
+        int internalIndex = CharSequenceUtilities.indexOf(internalName, KeyUtilities.UID_INTERNAL_DATA_PREFIX);
+        if (internalIndex > 0) {
+            // INCLUDED_DECLARATION is right after UID_INTERNAL_DATA_PREFIX
+            return CharSequenceUtilities.indexOf(
+                    internalName, 
+                    INCLUDED_DECLARATION, 
+                    internalIndex
+            ) > 0; 
+        }
+        return false;
+    }
     
     protected OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
