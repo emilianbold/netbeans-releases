@@ -48,7 +48,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -76,9 +76,8 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         }
         if(doc == null)
             return 0;
-        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
-        if(support != null && CompletionUtil.noCompletion(component) || 
-                !CompletionUtil.canProvideCompletion(doc)) {
+        XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
+        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
             return 0;
         }
         

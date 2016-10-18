@@ -55,7 +55,7 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.spring.java.Public;
 import org.netbeans.modules.spring.java.Static;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
  * Provides hyperlinking functionality for Spring XML Configuration files
@@ -124,7 +124,9 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         if (!(document instanceof BaseDocument)) {
             return false;
         }
-        if (XMLSyntaxSupport.getSyntaxSupport(document) == null) {
+
+        BaseDocument doc = (BaseDocument) document;
+        if (!(doc.getSyntaxSupport() instanceof XMLSyntaxSupport)) {
             return false;
         }
 

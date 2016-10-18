@@ -46,7 +46,6 @@ package org.netbeans.modules.xml.catalog.impl;
 import java.io.IOException;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogProvider;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provide class representing XCatalog class.
@@ -54,7 +53,6 @@ import org.openide.util.lookup.ServiceProvider;
  * @author  Petr Kuzel
  * @version
  */
-@ServiceProvider(service = CatalogProvider.class)
 public class XCatalogProvider implements CatalogProvider {
 
     public Class provideClass() throws IOException, ClassNotFoundException {

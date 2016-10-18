@@ -50,7 +50,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -69,7 +68,7 @@ import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.spring.java.PropertyType;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -89,7 +88,7 @@ public class PropertyRefFinder {
     public PropertyRefFinder(DocumentAccess docAccess, CompilationController cc, RenamedProperty renamedProperty) {
         this.docAccess = docAccess;
         BaseDocument document = (BaseDocument) docAccess.getDocument();
-        syntaxSupport = XMLSyntaxSupport.getSyntaxSupport(document);
+        syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
         this.cc = cc;
         this.renamedProperty = renamedProperty;
     }
@@ -204,7 +203,7 @@ public class PropertyRefFinder {
         }
 
         // p-namespace
-        Document document = syntaxSupport.getDocument();
+        BaseDocument document = syntaxSupport.getDocument();
         String prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, beanOffset);
         if (prefix == null) {
             return;

@@ -250,6 +250,5 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-docker-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-docker-api"/>
 <link href="${javadoc.docs.org-netbeans-modules-csl-types}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-csl-types"/>
 <link href="${javadoc.docs.org-netbeans-modules-csl-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-csl-api"/>
-<link href="${javadoc.docs.org-netbeans-modules-xml-text}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-text"/>
 <link href="${javadoc.docs.org-netbeans-modules-xml-lexer}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-lexer"/>
 <link href="${javadoc.docs.org-netbeans-modules-xml-text}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-text"/>

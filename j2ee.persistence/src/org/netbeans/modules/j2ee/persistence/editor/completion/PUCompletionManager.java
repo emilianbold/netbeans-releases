@@ -48,15 +48,13 @@ import org.netbeans.modules.j2ee.persistence.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.j2ee.persistence.editor.*;
 import org.netbeans.modules.j2ee.persistence.unit.PersistenceCfgProperties;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
-import org.netbeans.modules.xml.text.api.dom.TagElement;
-import org.w3c.dom.Node;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.w3c.dom.Text;
 
 /**
  * This class figures out the completion items for various attributes
@@ -111,8 +109,8 @@ public final class PUCompletionManager {
         }
         
         String tagName = context.getTag().getNodeName();
-        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
-        String attribName = attrib != null ? attrib.text().toString(): null;
+        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
+        String attribName = attrib != null ? attrib.getImage() : null;
 
         PUCompletor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
@@ -130,17 +128,9 @@ public final class PUCompletionManager {
         DocumentContext docContext = context.getDocumentContext();
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
-        TagElement propTag;
+        Tag propTag;
 
-        String tagName;
-        
-        if (curElem.getType() == Node.ELEMENT_NODE && ((TagElement)curElem).isStart()) {
-            tagName = curElem.getNode().getNodeName();
-        } else if (prevElem.getType() == Node.ELEMENT_NODE && ((TagElement)prevElem).isStart()) {
-            tagName = prevElem.getNode().getNodeName();
-        } else {
-            tagName = null;
-        }
+        String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
         PUCompletor completor = locateCompletor(tagName, null);
         if (completor != null) {
             valueItems.addAll(completor.doCompletion(context));
@@ -152,17 +142,16 @@ public final class PUCompletionManager {
             // If current element is a start tag and its tag is <property>
             // or the current element is text and its prev is a start <property> tag,
             // then do the code completion
-            if (curElem.getType() == Node.ELEMENT_NODE && ((TagElement)curElem).isStart() && 
-                PersistenceCfgXmlConstants.PROPERTY_TAG.equalsIgnoreCase(curElem.getNode().getNodeName())) {
-                propTag = (TagElement)curElem;
-            } else if (curElem.getType() == Node.TEXT_NODE && (prevElem.getType() == Node.ELEMENT_NODE && ((TagElement)prevElem).isStart()) &&
-                    PersistenceCfgXmlConstants.PROPERTY_TAG.equalsIgnoreCase(prevElem.getNode().getNodeName())) {
-                propTag = (TagElement)prevElem;
+            if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
+                propTag = (StartTag) curElem;
+            } else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
+                    ((StartTag) prevElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
+                propTag = (StartTag) prevElem;
             } else {
                 return anchorOffset;
             }
 
-            String propName = JPAEditorUtil.getPersistencePropertyName(propTag.getNode());
+            String propName = JPAEditorUtil.getPersistencePropertyName(propTag);
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
@@ -182,17 +171,7 @@ public final class PUCompletionManager {
                     }
                 }
 
-                try {
-                    anchorOffset = context.getDocumentContext().
-                            runWithSequence((TokenSequence s) -> {
-                                if (!s.movePrevious()) {
-                                    return -1;
-                                }
-                                return s.offset();
-                            });
-                } catch (BadLocationException ex) {
-                    anchorOffset = -1;
-                }
+                anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
             }
         }
         return anchorOffset;

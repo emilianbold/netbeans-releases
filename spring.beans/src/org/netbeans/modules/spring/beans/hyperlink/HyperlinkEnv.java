@@ -47,14 +47,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -110,7 +110,7 @@ public final class HyperlinkEnv {
     }
 
     private void initialize() {
-        SyntaxElement currentTag = null;
+        Tag currentTag = null;
         DocumentContext documentContext = DocumentContext.create(baseDocument, offset);
         if (documentContext == null) {
             return;
@@ -118,43 +118,43 @@ public final class HyperlinkEnv {
         
         declaredNamespaces = documentContext.getDeclaredNamespacesMap();
 
-        Token<XMLTokenId> token = documentContext.getCurrentToken();
+        TokenItem token = documentContext.getCurrentToken();
         if (token == null) {
             return;
         }
         
-        tokenStartOffset = documentContext.getCurrentTokenOffset();
-        tokenEndOffset = tokenStartOffset + token.length();
-        tokenImage = token.text().toString();
+        tokenStartOffset = token.getOffset();
+        tokenEndOffset = tokenStartOffset + token.getImage().length();
+        tokenImage = token.getImage();
         
         if (ContextUtilities.isValueToken(token)
                 || ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
             SyntaxElement element = documentContext.getCurrentElement();
-            if (documentContext.isTag(element)) {
-                currentTag  = element;
+            if (element instanceof Tag) {
+                currentTag  = (Tag) element;
             } else {
                 return;
             }
-            Node beanTag = SpringXMLConfigEditorUtils.getBean(currentTag.getNode());
+            Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(currentTag);
             if (beanTag != null) {
-                beanTagOffset = documentContext.getNodeOffset(beanTag);
+                beanTagOffset = beanTag.getElementOffset();
                 beanAttribs = collectAttributes(beanTag);
             }
-            tagName = currentTag.getNode().getNodeName();
+            tagName = currentTag.getNodeName();
         }
         
         if (ContextUtilities.isValueToken(token)) {
             type = Type.ATTRIB_VALUE;
             attribName = ContextUtilities.getAttributeTokenImage(documentContext);
-            valueString = token.text().toString();
+            valueString = token.getImage();
             valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
         } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
             type = Type.ATTRIB;
-            attribName = token.text().toString();
+            attribName = token.getImage();
         }
     }
     
-    private Map<String, String> collectAttributes(Node currentTag) {
+    private Map<String, String> collectAttributes(Tag currentTag) {
         Map<String, String> attribsMap = new HashMap<String, String>();
         NamedNodeMap attribsNodeMap = currentTag.getAttributes();
         for(int i = 0; i < attribsNodeMap.getLength(); i++) {

@@ -55,10 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
+import org.netbeans.modules.xml.text.syntax.dom.EndTag;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -75,10 +79,9 @@ public class DocumentContext {
     private XMLSyntaxSupport syntaxSupport;
     private int caretOffset = -1;
     private SyntaxElement element;
-    private Token<XMLTokenId> token;
-    private int tokenOffset;
+    private TokenItem token;
     private boolean valid = false;
-    private SyntaxElement docRoot;
+    private StartTag docRoot;
     private String defaultNamespace;
     private HashMap<String, String> declaredNamespaces =
             new HashMap<String, String>();
@@ -90,10 +93,10 @@ public class DocumentContext {
     DocumentContext(Document document) {
         this.document = document;
         try {
-            this.syntaxSupport = XMLSyntaxSupport.getSyntaxSupport(document);
+            this.syntaxSupport = (XMLSyntaxSupport) ((BaseDocument)document).getSyntaxSupport();
         } catch (ClassCastException cce) {
             LOGGER.log(Level.FINE, cce.getMessage());
-            this.syntaxSupport = XMLSyntaxSupport.createSyntaxSupport(document);
+            this.syntaxSupport = new XMLSyntaxSupport(((BaseDocument)document));
         }
     }
 
@@ -107,9 +110,7 @@ public class DocumentContext {
         declaredNamespaces.clear();
         try {
             element = syntaxSupport.getElementChain(caretOffset);
-            int[] off = new int[2];
-            token = syntaxSupport.getNextToken(caretOffset, off);
-            tokenOffset = off[0];
+            token = syntaxSupport.getTokenChain(caretOffset, Math.min(document.getLength(), caretOffset+1));
             this.docRoot = ContextUtilities.getRoot(element);
             populateNamespaces();
         } catch (BadLocationException ex) {
@@ -122,21 +123,25 @@ public class DocumentContext {
         return this.valid;
     }
 
-    public Token<XMLTokenId> getCurrentToken() {
+    public int getCurrentTokenId() {
+        if (isValid()) {
+            return token.getTokenID().getNumericID();
+        } else {
+            return -1;
+        }
+    }
+
+    public TokenItem getCurrentToken() {
         if (isValid()) {
             return token;
         } else {
             return null;
         }
     }
-    
-    public int getCurrentTokenOffset() {
-        return tokenOffset;
-    }
 
     public String getCurrentTokenImage() {
         if (isValid()) {
-            return token.text().toString();
+            return token.getImage();
         } else {
             return null;
         }
@@ -146,6 +151,54 @@ public class DocumentContext {
         return this.element;
     }
     
+    public List<String> getPathFromRoot() {
+        if (isValid()) {
+            SyntaxElement elementRef = this.element;
+            Stack<SyntaxElement> stack = new Stack<SyntaxElement>();
+
+            while (elementRef != null) {
+                if ((elementRef instanceof EndTag) ||
+                        (elementRef instanceof EmptyTag && stack.isEmpty()) ||
+                        (elementRef instanceof StartTag && stack.isEmpty())) {
+                    stack.push(elementRef);
+                    elementRef = elementRef.getPrevious();
+                    continue;
+                }
+                if (elementRef instanceof StartTag) {
+                    StartTag start = (StartTag) elementRef;
+                    if (stack.peek() instanceof EndTag) {
+                        EndTag end = (EndTag) stack.peek();
+                        if (end.getTagName().equals(start.getTagName())) {
+                            stack.pop();
+                        }
+                    } else {
+                        SyntaxElement e = (SyntaxElement) stack.peek();
+                        String tagAtTop = (e instanceof StartTag) ? ((StartTag) e).getTagName() : ((EmptyTag) e).getTagName();
+                        stack.push(elementRef);
+                    }
+                }
+                elementRef = elementRef.getPrevious();
+            }
+
+            return createPath(stack);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<String> createPath(Stack<SyntaxElement> stack) {
+        ArrayList<String> pathList = new ArrayList<String>();
+        while (!stack.isEmpty()) {
+            SyntaxElement top = stack.pop();
+            String tagName = (top instanceof StartTag) ? ((StartTag) top).getTagName() : ((EmptyTag) top).getTagName();
+            if (tagName != null) {
+                pathList.add(tagName);
+            }
+        }
+
+        return Collections.unmodifiableList(pathList);
+    }
+
     public Document getDocument() {
         return this.document;
     }
@@ -172,7 +225,7 @@ public class DocumentContext {
         return declaredNamespaces.values();
     }
 
-    public SyntaxElement getDocRoot() {
+    public StartTag getDocRoot() {
         return docRoot;
     }
 
@@ -183,7 +236,7 @@ public class DocumentContext {
     private void populateNamespaces() {
         // Find the a start or empty tag just before the current syntax element.
         SyntaxElement element = this.element;
-        while (element != null && !syntaxSupport.isStartTag(element) && !syntaxSupport.isEmptyTag(element)) {
+        while (element != null && !(element instanceof StartTag) && !(element instanceof EmptyTag)) {
             element = element.getPrevious();
         }
         if (element == null) {
@@ -193,9 +246,9 @@ public class DocumentContext {
         // To find all namespace declarations active at the caret offset, we
         // need to look at xmlns attributes of the current element and its ancestors.
         Node node = (Node)element;
-        while (node != null && element != null) {
-            if (syntaxSupport.isStartTag(element) || syntaxSupport.isEmptyTag(element)) {
-                NamedNodeMap attributes = node.getAttributes();
+        while (node != null) {
+            if (node instanceof StartTag || node instanceof EmptyTag) {
+                NamedNodeMap attributes = ((Tag)node).getAttributes();
                 for (int index = 0; index < attributes.getLength(); index++) {
                     Attr attr = (Attr) attributes.item(index);
                     String attrName = attr.getName();
@@ -218,7 +271,6 @@ public class DocumentContext {
                 }
             }
             node = node.getParentNode();
-            element = syntaxSupport.getSyntaxElement(node);
         }
     }
     
@@ -250,9 +302,5 @@ public class DocumentContext {
         int hash = 5;
         hash = 61 * hash + (this.document != null ? this.document.hashCode() : 0);
         return hash;
-    }
-
-    public <T> T runWithSequence(XMLSyntaxSupport.SequenceCallable<T> callable) throws BadLocationException {
-        return syntaxSupport.runWithSequence(caretOffset, callable);
     }
 }

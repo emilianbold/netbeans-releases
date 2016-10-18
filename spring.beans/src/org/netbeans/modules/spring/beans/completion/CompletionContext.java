@@ -48,15 +48,20 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
+import org.netbeans.modules.xml.text.syntax.dom.EndTag;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -68,7 +73,7 @@ import org.w3c.dom.Node;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class CompletionContext {
-    private List<String> existingAttributes;
+    private ArrayList<String> existingAttributes;
 
     public static enum CompletionType {
         TAG,
@@ -92,14 +97,10 @@ public class CompletionContext {
         this.caretOffset = caretOffset;
         this.fileObject = NbEditorUtilities.getFileObject(doc);
         this.queryType = queryType;
-        try {
-            initContext((BaseDocument) doc);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        initContext((BaseDocument) doc);
     }
 
-    private void initContext(BaseDocument bDoc) throws BadLocationException {
+    private void initContext(BaseDocument bDoc) {
         boolean copyResult = copyDocument(bDoc, internalDoc);
         if(!copyResult) {
             return;
@@ -107,64 +108,57 @@ public class CompletionContext {
 
         Object sdp = bDoc.getProperty(Document.StreamDescriptionProperty);
         internalDoc.putProperty(Document.StreamDescriptionProperty, sdp);
-        this.support = (XMLSyntaxSupport)XMLSyntaxSupport.getSyntaxSupport(internalDoc);
+        this.support = (XMLSyntaxSupport) internalDoc.getSyntaxSupport();
         this.documentContext = DocumentContext.create(internalDoc, caretOffset);
 
         // get last inserted character from the actual document
-        this.lastTypedChar = support.lastTypedChar();
+        this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar();
 
         if(documentContext == null) {
             return;
         }
 
-        Token<XMLTokenId> token = documentContext.getCurrentToken();
+        TokenItem token = documentContext.getCurrentToken();
         if(token == null) {
             return;
         }
 
-        int tOffset = documentContext.getCurrentTokenOffset();
-        String tokenText = token.text().toString();
-        XMLTokenId id = token.id();
-        int tlen = token.length();
-        
         // see issue #191651
         // ExtSyntaxSupport returns token on base of caretoffset and caretoffset+1 which
         //  returns ERROR token at line ending (just "/" means error). In that cases
         //  is fake WS token created with position between previous and current error
         //  token for purposes of CC. Possibly will be extended about more characters.
-        if (token.id() == XMLTokenId.ERROR
-                && token.text().toString().equals("/")) {
-            tokenText = " ";
-            id = XMLTokenId.WS;
-            tlen = 1;
-            tOffset = caretOffset;
+        if (token.getTokenID().getNumericID() == XMLDefaultTokenContext.ERROR_ID
+                && token.getImage().equals("/")) {
+            token = new WsToken(caretOffset, token);
         }
-        boolean tokenBoundary = (tOffset == caretOffset)
-                || ((tOffset + tlen) == caretOffset);
 
+        boolean tokenBoundary = (token.getOffset() == caretOffset)
+                || ((token.getOffset() + token.getImage().length()) == caretOffset);
+
+        int id = token.getTokenID().getNumericID();
         SyntaxElement element = documentContext.getCurrentElement();
         switch (id) {
             //user enters < character
-            case TEXT:
-                String chars = tokenText.trim();
-                Token<XMLTokenId> previousTokenItem = support.getPreviousToken(tOffset);
+            case XMLDefaultTokenContext.TEXT_ID:
+                String chars = token.getImage().trim();
+                TokenItem previousTokenItem = token.getPrevious();
                 if (previousTokenItem == null) {
                     completionType = CompletionType.NONE;
                     break;
                 }
-                String text = previousTokenItem.text().toString().trim();
                 if (chars != null && chars.equals("") &&
-                        text.equals("/>")) { // NOI18N
+                        previousTokenItem.getImage().trim().equals("/>")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
                 if (chars != null && chars.equals("") &&
-                        text.trim().equals(">")) { // NOI18N
+                        previousTokenItem.getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.VALUE;
                     break;
                 }
                 if (chars != null && !chars.equals("<") &&
-                        text.trim().equals(">")) { // NOI18N
+                        previousTokenItem.getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
@@ -175,42 +169,44 @@ public class CompletionContext {
                 break;
 
             //start tag of an element
-            case TAG:
-                if (support.isEndTag(element)) {
+            case XMLDefaultTokenContext.TAG_ID:
+                if (element instanceof EndTag) {
                     completionType = CompletionType.NONE;
                     break;
                 }
-                if (support.isEmptyTag(element)) {
-                    if (tokenText.trim().equals("/>")) { // NOI18N
-                        Token<XMLTokenId> prevToken = support.getPreviousToken(tOffset);
-                        if(prevToken != null && prevToken.id() == XMLTokenId.WS
-                                && caretOffset == tOffset) {
+                if (element instanceof EmptyTag) {
+                    if (token != null &&
+                            token.getImage().trim().equals("/>")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
                             completionType = CompletionType.ATTRIBUTE;
                         } else {
                             completionType = CompletionType.NONE;
                         }
                         break;
                     }
+                    EmptyTag tag = (EmptyTag) element;
                     if (element.getElementOffset() + 1 == this.caretOffset) {
                         completionType = CompletionType.TAG;
                         break;
                     }
-                    String tagName = element.getNode().getNodeName();
                     if (caretOffset > element.getElementOffset() + 1 &&
-                            caretOffset <= element.getElementOffset() + 1 + tagName.length()) {
+                            caretOffset <= element.getElementOffset() + 1 + tag.getTagName().length()) {
                         completionType = CompletionType.TAG;
-                        typedChars = tagName;
+                        typedChars = tag.getTagName();
                         break;
                     }
                     completionType = CompletionType.ATTRIBUTE;
                     break;
                 }
 
-                if (support.isStartTag(element)) {
-                    if (tokenText.toString().trim().equals(">")) { // NOI18N
-                        Token<XMLTokenId> prevToken = support.getPreviousToken(tOffset);
-                        if(prevToken != null && prevToken.id() == XMLTokenId.WS
-                                && caretOffset == tOffset) {
+                if (element instanceof StartTag) {
+                    if (token != null &&
+                            token.getImage().trim().equals(">")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
                             completionType = CompletionType.ATTRIBUTE;
                         } else {
                             completionType = CompletionType.NONE;
@@ -218,7 +214,8 @@ public class CompletionContext {
                         break;
                     }
                     if (element.getElementOffset() + 1 != this.caretOffset) {
-                        typedChars = element.getNode().getNodeName();
+                        StartTag tag = (StartTag) element;
+                        typedChars = tag.getTagName();
                     }
                 }
                 if (lastTypedChar == '>') {
@@ -229,60 +226,43 @@ public class CompletionContext {
                 break;
 
             //user enters an attribute name
-            case ARGUMENT:
+            case XMLDefaultTokenContext.ARGUMENT_ID:
                 completionType = CompletionType.ATTRIBUTE;
-                typedChars = tokenText.substring(0, caretOffset - tOffset);
+                typedChars = token.getImage().substring(0, caretOffset - token.getOffset());;
                 break;
 
             //some random character
-            case CHARACTER:
+            case XMLDefaultTokenContext.CHARACTER_ID:
             //user enters = character, we should ignore all other operators
-            case OPERATOR:
+            case XMLDefaultTokenContext.OPERATOR_ID:
                 completionType = CompletionType.NONE;
                 break;
             //user enters either ' or "
-            case VALUE:
+            case XMLDefaultTokenContext.VALUE_ID:
                 if(!tokenBoundary) {
                     completionType = CompletionType.ATTRIBUTE_VALUE;
-                    typedChars = tokenText.subSequence(1, caretOffset - tOffset).toString();
+                    typedChars = token.getImage().substring(1, caretOffset - token.getOffset());
                 } else {
                     completionType = CompletionType.NONE;
                 }
                 break;
 
             //user enters white-space character
-            case WS:
+            case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
-                int[] offset = new int[1];
-                Token<XMLTokenId> prev = support.runWithSequence(tOffset,
-                    (TokenSequence ts) -> {
-                        Token<XMLTokenId> t  = null;
-                        boolean ok;
-                        while ((ok = ts.movePrevious())) {
-                            t = ts.token();
-                            if (t.id() != XMLTokenId.WS) {
-                                break;
-                            }
-                        }
-                        if (ok) {
-                            offset[0] = ts.offset();
-                            return t;
-                        } else {
-                            return null;
-                        }
-                    }
-                );
-                if (prev == null) {
-                    completionType = CompletionType.NONE;
-                    break;
+
+                TokenItem prev = token.getPrevious();
+                while (prev != null &&
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
+                    prev = prev.getPrevious();
                 }
-                int prevOffset = offset[0];
-                if(prev.id() == XMLTokenId.ARGUMENT
-                        && prevOffset + prev.length() == caretOffset) {
-                    typedChars = prev.text().toString();
+
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID
+                        && prev.getOffset() + prev.getImage().length() == caretOffset) {
+                    typedChars = prev.getImage();
                     completionType = CompletionType.ATTRIBUTE;
-                } else if (((prev.id() == XMLTokenId.VALUE) ||
-                        (prev.id() == XMLTokenId.TAG))
+                } else if (((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID))
                         && !tokenBoundary) {
                     completionType = CompletionType.ATTRIBUTE;
                 }
@@ -306,7 +286,6 @@ public class CompletionContext {
                     try {
                         String docText = src.getText(0, src.getLength());
                         dest.insertString(0, docText, null);
-//                        dest.putProperty(Language.class, src.getProperty(Language.class));
                     } catch(BadLocationException ble) {
                         Exceptions.printStackTrace(ble);
                         retVal[0] = false;
@@ -342,43 +321,29 @@ public class CompletionContext {
 
     public Node getTag() {
         SyntaxElement element = documentContext.getCurrentElement();
-        return element.getType() == Node.ELEMENT_NODE ? element.getNode() : null;
+        return (element instanceof Tag) ? (Node) element : null;
     }
 
-    public Token<XMLTokenId> getCurrentToken() {
+    public TokenItem getCurrentToken() {
         return documentContext.getCurrentToken();
-    }
-    
-    public int getCurrentTokenOffset() {
-        return documentContext.getCurrentTokenOffset();
-    }
-    
-    private List<String> getExistingAttributesLocked(TokenSequence ts) {
-        List<String> existingAttributes = new ArrayList<String>();
-        while (ts.movePrevious()) {
-            Token<XMLTokenId> item = ts.token();
-            XMLTokenId tokenId = item.id();
-            if (tokenId == XMLTokenId.TAG) {
-                break;
-            }
-            if (tokenId == XMLTokenId.ARGUMENT) {
-                existingAttributes.add(item.text().toString());
-            }
-        }
-        return existingAttributes;
     }
 
     public List<String> getExistingAttributes() {
         if (existingAttributes == null) {
-            try {
-                existingAttributes = (List<String>)support.runWithSequence(
-                        documentContext.getCurrentTokenOffset(),
-                        this::getExistingAttributesLocked
-                );
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+            existingAttributes = new ArrayList<String>();
+            TokenItem item = documentContext.getCurrentToken().getPrevious();
+            while (item != null) {
+                int tokenId = item.getTokenID().getNumericID();
+                if (tokenId == XMLDefaultTokenContext.TAG_ID) {
+                    break;
+                }
+                if (tokenId == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    existingAttributes.add(item.getImage());
+                }
+                item = item.getPrevious();
             }
         }
+
         return existingAttributes;
     }
 
@@ -396,5 +361,46 @@ public class CompletionContext {
 
     public Document getDocument() {
         return internalDoc;
+    }
+
+    private class WsToken implements TokenItem {
+
+        private final int caretOffset;
+        private final TokenItem currentToken;
+
+        public WsToken(int caretOffset, TokenItem currentToken) {
+            this.caretOffset = caretOffset;
+            this.currentToken = currentToken;
+        }
+
+        @Override
+        public TokenID getTokenID() {
+            return XMLDefaultTokenContext.WS;
+        }
+
+        @Override
+        public TokenContextPath getTokenContextPath() {
+            return currentToken.getTokenContextPath();
+        }
+
+        @Override
+        public int getOffset() {
+            return caretOffset;
+        }
+
+        @Override
+        public String getImage() {
+            return " ";
+        }
+
+        @Override
+        public TokenItem getNext() {
+            return currentToken;
+        }
+
+        @Override
+        public TokenItem getPrevious() {
+            return currentToken.getPrevious();
+        }
     }
 }

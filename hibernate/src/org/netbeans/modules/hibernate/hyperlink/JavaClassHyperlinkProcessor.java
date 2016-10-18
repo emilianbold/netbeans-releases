@@ -45,7 +45,6 @@ package org.netbeans.modules.hibernate.hyperlink;
 
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -59,9 +58,7 @@ public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
     @Override
     public void process(HyperlinkEnv env) {
         String className = env.getValueString();
-        Node n = env.getDocumentContext().getDocRoot().getNode().getAttributes().
-                getNamedItem(HibernateMappingXmlConstants.PACKAGE_ATTRIB);//NOI18N
-        String pack = n == null ? null : n.getNodeValue();
+        String pack = env.getDocumentContext().getDocRoot().getAttribute(HibernateMappingXmlConstants.PACKAGE_ATTRIB);//NOI18N
         if(pack!=null &&  pack.length()>0){
             if(!className.contains(".")){
                 className = pack + "." +className;

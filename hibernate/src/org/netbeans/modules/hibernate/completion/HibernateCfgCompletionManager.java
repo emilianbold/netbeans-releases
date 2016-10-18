@@ -49,17 +49,15 @@ import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
 import org.hibernate.cfg.Environment;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.cfg.HibernateCfgProperties;
 import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
-import org.netbeans.modules.xml.text.api.dom.TagElement;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * This class figures out the completion items for various attributes
@@ -181,8 +179,8 @@ public final class HibernateCfgCompletionManager {
             return anchorOffset;
         
         String tagName = context.getTag().getNodeName();
-        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
-        String attribName = attrib != null ? attrib.text().toString(): null;
+        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
+        String attribName = attrib != null ? attrib.getImage() : null;
 
         Completor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
@@ -200,23 +198,21 @@ public final class HibernateCfgCompletionManager {
         DocumentContext docContext = context.getDocumentContext();
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
-        TagElement propTag = null;
+        Tag propTag = null;
 
         // If current element is a start tag and its tag is <property>
         // or the current element is text and its prev is a start <property> tag,
         // then do the code completion
-        if (curElem.getType() == Node.ELEMENT_NODE &&
-            ((TagElement)curElem).isStart() && HibernateCfgXmlConstants.PROPERTY_TAG.equalsIgnoreCase(curElem.getNode().getNodeName())) {
-            propTag = (TagElement) curElem;
-        } else if (curElem.getType() == Node.TEXT_NODE && 
-                (prevElem.getType() == Node.ELEMENT_NODE && ((TagElement)prevElem).isStart() &&
-                HibernateCfgXmlConstants.PROPERTY_TAG.equalsIgnoreCase(prevElem.getNode().getNodeName()))) {
-            propTag = (TagElement) prevElem;
+        if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(HibernateCfgXmlConstants.PROPERTY_TAG)) {
+            propTag = (StartTag) curElem;
+        } else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
+                ((StartTag) prevElem).getTagName().equalsIgnoreCase(HibernateCfgXmlConstants.PROPERTY_TAG)) {
+            propTag = (StartTag) prevElem;
         } else {
             return anchorOffset;
         }
         
-        String propName = HibernateEditorUtil.getHbPropertyName(propTag.getNode());
+        String propName = HibernateEditorUtil.getHbPropertyName(propTag);
         int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
         
@@ -235,17 +231,8 @@ public final class HibernateCfgCompletionManager {
                     valueItems.add(item);
                 }
             }
-            try {
-                anchorOffset = context.getDocumentContext().
-                        runWithSequence((TokenSequence s) -> {
-                            if (!s.movePrevious()) {
-                                return -1;
-                            }
-                            return s.offset();
-                        });
-            } catch (BadLocationException ex) {
-                anchorOffset = -1;
-            }
+
+            anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
         }
         
         return anchorOffset;

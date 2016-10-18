@@ -41,81 +41,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.text.api;
 
-package org.netbeans.modules.xml.text.syntax.dom;
-
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import java.util.*;
-
-import org.w3c.dom.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import org.netbeans.editor.TokenContext;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
 import org.netbeans.modules.xml.text.syntax.*;
-import org.netbeans.modules.xml.spi.dom.*;
-import org.netbeans.editor.*;
 
-public class StartTag extends Tag {
+/**
+ * XML token-context defines token-ids and token-categories
+ * used in XML language.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ * @contributor(s) XML Modifications Sandeep Singh Randhawa
+ * @integrator Petr Kuzel
+ */
 
-    public StartTag(XMLSyntaxSupport support, TokenItem from, int to, String name, Collection attribs) {
-        super( support, from, to, name, attribs );
-    }
+public class XMLDefaultTokenContext extends TokenContext implements XMLTokenIDs {
 
-    public boolean hasChildNodes() {
-        SyntaxElement next = getNext();
-        if (next == null) return false;
-        // if not well-formed
-        if (next instanceof StartTag && ((StartTag)next).getEndTag() == null) return false;
-        if (next instanceof EndTag) return false;
-        return true;
-    }
     
-    public NodeList getChildNodes() {
-        
-        List list = new ArrayList();
-        Node next = hasChildNodes() ? findNext(this) : null;
-        
-        while (next != null) {
-            list.add(next);
-            next = next.getNextSibling();
-        }
-        
-        return new NodeListImpl(list);
-    }
-    
-    protected Tag getStartTag() {
-        return this;
-    }
-    
-    protected Tag getEndTag() {
-        
-        SyntaxNode next = findNext();
-        
-        while (next != null) {
-            if (next instanceof EndTag) {
-                // check well-formedness
-                EndTag endTag = (EndTag) next;
-                if (endTag.getTagName().equals(getTagName())) {
-                    return endTag;
-                } else {
-                    return null;
+    // Context instance declaration
+    public static final XMLDefaultTokenContext context = new XMLDefaultTokenContext();  //??? lazy init
+
+    public static final TokenContextPath contextPath = context.getContextPath();
+
+
+    private XMLDefaultTokenContext() {
+        super("xml-");
+
+        try {
+            //!!! uses introspection to init us
+            Field[] fields = XMLTokenIDs.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                int flags = Modifier.STATIC | Modifier.FINAL;
+                if ((fields[i].getModifiers() & flags) == flags
+                        && TokenID.class.isAssignableFrom(fields[i].getType())
+                   ) {
+                    addTokenID((TokenID)fields[i].get(null));
                 }
-            } else if (next instanceof StartTag) {
-                Tag startTag = (Tag) next;
-                next = startTag.getEndTag();
-                if (next == null) return null;
-                next = next.findNext();
-            } else {
-                next = next.findNext();
+            }            
+        } catch (Exception e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                e.printStackTrace();
             }
         }
-        
-        return null;
     }
-    
-    public String toString() {
-        StringBuffer ret = new StringBuffer( "StartTag(\"" + name + "\" " );
-        ret.append(getAttributes().toString());
-        return ret.toString() + " " + first() + ")";
-    }
-    
-}
 
+}

@@ -44,15 +44,14 @@
 package org.netbeans.modules.hibernate.hyperlink;
 
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import org.netbeans.modules.hibernate.editor.DocumentContext;
 import org.netbeans.modules.hibernate.editor.EditorContextFactory;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -65,7 +64,7 @@ public final class HyperlinkEnv {
     private String attribName;
     private String valueString;
     private int offset;
-    private Token<XMLTokenId> token;
+    private TokenItem token;
     private DocumentContext documentContext;
 
     public static enum Type {
@@ -100,13 +99,13 @@ public final class HyperlinkEnv {
                 currentTag = documentContext.getCurrentElement();
                 attribName = ContextUtilities.getAttributeTokenImage(documentContext);
                 token = documentContext.getCurrentToken();
-                valueString = token.text().toString();
+                valueString = token.getImage();
                 valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
             } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
                 type = Type.ATTRIB;
                 currentTag = documentContext.getCurrentElement();
                 token = documentContext.getCurrentToken();
-                attribName = token.text().toString();
+                attribName = token.getImage();
             }
         }
     }
@@ -115,12 +114,8 @@ public final class HyperlinkEnv {
         return attribName;
     }
 
-    public SyntaxElement getCurrentTag() {
-        if (currentTag.getType() == Node.ELEMENT_NODE) {
-            return currentTag;
-        } else {
-            return null;
-        }
+    public Tag getCurrentTag() {
+        return currentTag instanceof Tag ? (Tag) currentTag : null;
     }
 
     public Document getDocument() {
@@ -128,7 +123,7 @@ public final class HyperlinkEnv {
     }
 
     public String getTagName() {
-        return getCurrentTag() != null ? getCurrentTag().getNode().getNodeName(): null;
+        return getCurrentTag() != null ? getCurrentTag().getTagName() : null;
     }
 
     public String getValueString() {
@@ -139,12 +134,8 @@ public final class HyperlinkEnv {
         return type;
     }
 
-    public Token<XMLTokenId> getToken() {
+    public TokenItem getToken() {
         return token;
-    }
-    
-    public int getTokenOffset() {
-        return documentContext.getCurrentTokenOffset();
     }
 
     public int getOffset() {

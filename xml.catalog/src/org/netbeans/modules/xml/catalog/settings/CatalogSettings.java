@@ -49,6 +49,7 @@ import java.beans.*;
 import java.util.logging.Level;
 import org.netbeans.modules.xml.catalog.lib.IteratorIterator;
 
+import org.openide.*;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
@@ -56,7 +57,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 
 /** 
@@ -92,7 +92,6 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author  Petr Kuzel
  */
-@ServiceProvider(service = CatalogSettings.class)
 public final class CatalogSettings implements Externalizable {
 
     /** Serial Version UID */

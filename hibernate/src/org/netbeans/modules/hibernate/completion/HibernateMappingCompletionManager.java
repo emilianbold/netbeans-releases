@@ -47,9 +47,9 @@ import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.NbBundle;
 
 /**
@@ -240,8 +240,8 @@ public final class HibernateMappingCompletionManager {
             return anchorOffset;
         
         String tagName = context.getTag().getNodeName();
-        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
-        String attribName = attrib != null ? attrib.text().toString(): null;
+        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
+        String attribName = attrib != null ? attrib.getImage() : null;
 
         Completor completor = locateCompletor(tagName, attribName);
         if (completor != null) {

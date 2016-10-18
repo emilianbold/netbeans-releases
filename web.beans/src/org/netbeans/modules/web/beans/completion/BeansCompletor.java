@@ -108,7 +108,7 @@ public abstract class BeansCompletor {
                     return Collections.emptyList();
                 }
                 FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
-                doJavaCompletion(fo, js, results, typedChars, context.getCurrentTokenOffset());
+                doJavaCompletion(fo, js, results, typedChars, context.getCurrentToken().getOffset());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

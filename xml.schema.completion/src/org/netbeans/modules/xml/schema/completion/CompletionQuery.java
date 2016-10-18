@@ -57,18 +57,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -125,19 +120,16 @@ public class CompletionQuery extends AsyncCompletionQuery {
     protected void prepareQuery(JTextComponent component) {
         this.component = component;
     }
-
+    
     @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
-        if (support == null) {
-            resultSet.finish();
-            return;
-        }
+        XMLSyntaxSupport support = 
+            (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
 
         CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(
             component, (BaseDocument) doc);
         List<CompletionResultItem> completionItems = null;
-        if (!CompletionUtil.noCompletion(component) &&
+        if (! support.noCompletion(component) &&
            (CompletionUtil.canProvideCompletion((BaseDocument) doc))) {
             
             resultSet.setWaitText(NbBundle.getMessage(CompletionQuery.class, "MSG_PreparingXmlSchemas")); // NOI18N
@@ -358,10 +350,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
         List<CompletionResultItem> completionItems = null;
         
         //Step 1: create a context
-        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
-        if (support == null) {
-            return null;
-        }
+        XMLSyntaxSupport support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
         context = new CompletionContextImpl(primaryFile, support, caretOffset);
         
         //Step 2: Accumulate all models and initialize the context

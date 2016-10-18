@@ -79,8 +79,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
         suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));
-  // disabled since it accesses Net:
-  //      suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
+        suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
         suite.addTest(new BasicCompletionTest("testWildcard2"));

@@ -86,7 +86,7 @@ public class JavaClassCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        int idx = context.getCurrentTokenOffset() + 1;
+        int idx = context.getCurrentToken().getOffset() + 1;
         String typedChars = context.getTypedPrefix();
         if(typedChars.contains(".") || typedChars.equals("")) { 
             int dotIndex = typedChars.lastIndexOf(".");
@@ -106,9 +106,9 @@ public class JavaClassCompletor extends Completor {
         }
 
         if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-            doNormalJavaCompletion(js, typedChars, context.getCurrentTokenOffset() + 1);
+            doNormalJavaCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1);
         } else { // Switch to smart class path completion
-            doSmartJavaCompletion(js, typedChars, context.getCurrentTokenOffset() + 1, context.getQueryType());
+            doSmartJavaCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
         }
     }
     

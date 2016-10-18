@@ -84,7 +84,7 @@ public final class BeanIdCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        return context.getCurrentTokenOffset() + 1;
+        return context.getCurrentToken().getOffset() + 1;
     }
 
     @Override

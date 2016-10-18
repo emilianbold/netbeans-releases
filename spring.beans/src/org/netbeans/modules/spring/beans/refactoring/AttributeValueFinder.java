@@ -45,11 +45,12 @@
 package org.netbeans.modules.spring.beans.refactoring;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 /**
  *
@@ -57,51 +58,47 @@ import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
  */
 public class AttributeValueFinder {
 
-    private final XMLSyntaxSupport xmlSupport;
+    private final SyntaxSupport syntaxSupport;
     private final int start;
 
     private int foundOffset = -1;
     private String foundValue;
 
     public AttributeValueFinder(SyntaxSupport syntaxSupport, int start) {
+        this.syntaxSupport = syntaxSupport;
         this.start = start;
-        this.xmlSupport = XMLSyntaxSupport.getSyntaxSupport(syntaxSupport.getDocument());
-    }
-
-    public AttributeValueFinder(XMLSyntaxSupport syntaxSupport, int start) {
-        this.start = start;
-        this.xmlSupport = syntaxSupport;
     }
 
     public boolean find(String attrName) throws BadLocationException {
         foundOffset = -1;
         foundValue = null;
-        if (xmlSupport == null) {
+        BaseDocument doc = syntaxSupport.getDocument();
+        if (!(syntaxSupport instanceof ExtSyntaxSupport)) {
             return false;
         }
-        Token<XMLTokenId> item = xmlSupport.getNextToken(start);
-        if (item == null || item.id() != XMLTokenId.TAG) {
+
+        TokenItem item = ((ExtSyntaxSupport) syntaxSupport).getTokenChain(start, Math.min(start + 1, doc.getLength()));
+        if (item == null || item.getTokenID() != XMLDefaultTokenContext.TAG) {
             return false;
         }
-        return xmlSupport.runWithSequence(start, (TokenSequence s) -> {
-            String currentAttrName = null;
-            while (s.moveNext()) {
-                Token<XMLTokenId> t = s.token();
-                XMLTokenId id = t.id();
-                if (id == XMLTokenId.ARGUMENT) {
-                    currentAttrName = t.text().toString();
-                } else if (id == XMLTokenId.VALUE) {
-                    if (currentAttrName != null && currentAttrName.equals(attrName)) {
-                        foundOffset = s.offset();
-                        foundValue = t.text().toString();
-                        return true;
-                    }
-                } else if (id == XMLTokenId.TAG) {
-                    break;
+        item = item.getNext();
+        String currentAttrName = null;
+        while (item != null) {
+            TokenID id = item.getTokenID();
+            if (id == XMLDefaultTokenContext.ARGUMENT) {
+                currentAttrName = item.getImage();
+            } else if (id == XMLDefaultTokenContext.VALUE) {
+                if (currentAttrName != null && currentAttrName.equals(attrName)) {
+                    foundOffset = item.getOffset();
+                    foundValue = item.getImage();
+                    return true;
                 }
+            } else if (id == XMLDefaultTokenContext.TAG) {
+                break;
             }
-            return false;
-        });
+            item = item.getNext();
+        }
+        return false;
     }
 
     public int getFoundOffset() {

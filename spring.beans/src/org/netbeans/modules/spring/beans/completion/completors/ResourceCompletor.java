@@ -63,7 +63,7 @@ public class ResourceCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        int idx = context.getCurrentTokenOffset() + 1;
+        int idx = context.getCurrentToken().getOffset() + 1;
         String typedChars = context.getTypedPrefix();
         int lastSlashIndex = typedChars.lastIndexOf("/"); // NOI18N
         return idx + lastSlashIndex + 1;

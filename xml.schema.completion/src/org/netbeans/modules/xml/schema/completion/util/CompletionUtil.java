@@ -88,41 +88,6 @@ public class CompletionUtil {
     public static final Pattern PATTERN_TEXT_TAG_EOLs = Pattern.compile("</?[\\s]+.*");
     
     private static final Logger _logger = Logger.getLogger(CompletionUtil.class.getName());
-
-    public static boolean noCompletion(JTextComponent target) {
-        if (target == null || target.getCaret() == null) {
-            return false;
-        }
-        int offset = target.getCaret().getDot();
-        if (offset < 0) {
-            return false;
-        }
-        //no completion inside CDATA or comment section
-        BaseDocument document = (BaseDocument) target.getDocument();
-        ((AbstractDocument) document).readLock();
-        try {
-            TokenHierarchy th = TokenHierarchy.get(document);
-            TokenSequence ts = th.tokenSequence();
-            if (ts == null) {
-                return false;
-            }
-            ts.move(offset);
-            Token token = ts.token();
-            if (token == null) {
-                ts.moveNext();
-                token = ts.token();
-                if (token == null) {
-                    return false;
-                }
-            }
-            if (token.id() == XMLTokenId.CDATA_SECTION || token.id() == XMLTokenId.BLOCK_COMMENT || token.id() == XMLTokenId.PI_START || token.id() == XMLTokenId.PI_END || token.id() == XMLTokenId.PI_CONTENT || token.id() == XMLTokenId.PI_TARGET) {
-                return true;
-            }
-        } finally {
-            ((AbstractDocument) document).readUnlock();
-        }
-        return false;
-    }
     
     /**
      * No instantiation.

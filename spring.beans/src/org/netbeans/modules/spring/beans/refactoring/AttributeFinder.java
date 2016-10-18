@@ -42,10 +42,11 @@
 package org.netbeans.modules.spring.beans.refactoring;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
  *
@@ -64,27 +65,27 @@ public class AttributeFinder {
 
     public boolean find(String attrName) throws BadLocationException {
         foundOffset = -1;
-        Token<XMLTokenId> item = syntaxSupport.getNextToken(start);
-        if (item == null || item.id() != XMLTokenId.TAG) {
+        BaseDocument doc = syntaxSupport.getDocument();
+        TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, doc.getLength()));
+        if (item == null || item.getTokenID() != XMLDefaultTokenContext.TAG) {
             return false;
         }
-        return syntaxSupport.runWithSequence(start, (TokenSequence s) -> {
-            String currentAttrName = null;
-            while (s.moveNext()) {
-                Token<XMLTokenId> t = s.token();
-                XMLTokenId id = t.id();
-                if (id == XMLTokenId.ARGUMENT) {
-                    currentAttrName = t.text().toString();
-                    if (currentAttrName != null && currentAttrName.equals(attrName)) {
-                        foundOffset = s.offset();
-                        return true;
-                    }
-                } else if (id == XMLTokenId.TAG) {
-                    break;
+        item = item.getNext();
+        String currentAttrName = null;
+        while (item != null) {
+            TokenID id = item.getTokenID();
+            if (id == XMLDefaultTokenContext.ARGUMENT) {
+                currentAttrName = item.getImage();
+                if (currentAttrName != null && currentAttrName.equals(attrName)) {
+                    foundOffset = item.getOffset();
+                    return true;
                 }
-           } 
-           return false;
-        });
+            } else if (id == XMLDefaultTokenContext.TAG) {
+                break;
+            }
+            item = item.getNext();
+        }
+        return false;
     }
 
     public int getFoundOffset() {

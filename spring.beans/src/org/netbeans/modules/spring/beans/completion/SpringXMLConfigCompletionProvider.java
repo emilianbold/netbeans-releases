@@ -55,9 +55,9 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
 import org.netbeans.modules.spring.beans.index.SpringIndex;
-import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
-import org.netbeans.modules.xml.text.api.dom.TagElement;
-import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -66,8 +66,6 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 /**
  * 
@@ -226,7 +224,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
         void updateSchemaLocation(Document doc, final int offset, final String namespace, final String schemaLocation) {
                 BaseDocument baseDoc = (BaseDocument) doc;
-                final XMLSyntaxSupport syntaxSupport = XMLSyntaxSupport.getSyntaxSupport(doc);
+                final XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) baseDoc.getSyntaxSupport();
 
                 baseDoc.runAtomic(new Runnable() {
 
@@ -234,13 +232,11 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
                     public void run() {
                         try {
                             SyntaxElement element = syntaxSupport.getElementChain(offset);
-                            if (element.getType() == Node.ELEMENT_NODE &&
-                                ((TagElement)element).isStart()) {
-                                NamedNodeMap nnm = element.getNode().getAttributes();
-                                Attr attr = (Attr)nnm.getNamedItem("xsi:schemaLocation");    //NOI18N
+                            if (element instanceof StartTag) {
+                                Attr attr = ((StartTag) element).getAttributeNode("xsi:schemaLocation");    //NOI18N
                                 if (attr != null) {
                                     String val = attr.getValue();
-                                    if (!val.contains(namespace)) {
+                                    if (val.indexOf(namespace) == -1) {
                                         attr.setValue(val + "\n       " + namespace + " " + schemaLocation);    //NOI18N
                                     }
                                 }
