@@ -55,6 +55,26 @@
                 <FormalParameters>
                 </FormalParameters>
                 <Block start='31' end='64' isCurly='true'>
+                    <ReturnStatement start='37' end='62'>
+                        <YieldFromExpression start='44' end='61'>
+                            <ArrayCreation start='55' end='61' type='NEW'>
+                                <ArrayElement start='56' end='57'>
+                                    <Key>
+                                    </Key>
+                                    <Value>
+                                        <Scalar start='56' end='57' type='INT' value='1'/>
+                                    </Value>
+                                </ArrayElement>
+                                <ArrayElement start='59' end='60'>
+                                    <Key>
+                                    </Key>
+                                    <Value>
+                                        <Scalar start='59' end='60' type='INT' value='2'/>
+                                    </Value>
+                                </ArrayElement>
+                            </ArrayCreation>
+                        </YieldFromExpression>
+                    </ReturnStatement>
                 </Block>
             </FunctionDeclaration>
         </Statements>

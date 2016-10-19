@@ -17,6 +17,9 @@
                         <FormalParameters>
                         </FormalParameters>
                         <Block start='42' end='77' isCurly='true'>
+                            <ReturnStatement start='56' end='67'>
+                                <Scalar start='63' end='66' type='STRING' value='"a"'/>
+                            </ReturnStatement>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>
@@ -26,6 +29,9 @@
                         <FormalParameters>
                         </FormalParameters>
                         <Block start='120' end='155' isCurly='true'>
+                            <ReturnStatement start='134' end='145'>
+                                <Scalar start='141' end='144' type='STRING' value='"c"'/>
+                            </ReturnStatement>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>

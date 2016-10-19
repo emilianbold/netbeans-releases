@@ -1351,6 +1351,31 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='208' end='259' isCurly='true'>
+                                <ReturnStatement start='218' end='253'>
+                                    <ArrayCreation start='225' end='252' type='NEW'>
+                                        <ArrayElement start='226' end='233'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='226' end='233' type='STRING' value='"test1"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='235' end='242'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='235' end='242' type='STRING' value='"test2"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='244' end='251'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='244' end='251' type='STRING' value='"test3"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                    </ArrayCreation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -1360,6 +1385,31 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='305' end='356' isCurly='true'>
+                                <ReturnStatement start='315' end='350'>
+                                    <ArrayCreation start='322' end='349' type='NEW'>
+                                        <ArrayElement start='323' end='330'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='323' end='330' type='STRING' value='"test1"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='332' end='339'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='332' end='339' type='STRING' value='"test2"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='341' end='348'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='341' end='348' type='STRING' value='"test3"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                    </ArrayCreation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -1370,6 +1420,31 @@
                 <FormalParameters>
                 </FormalParameters>
                 <Block start='384' end='415' isCurly='true'>
+                    <ReturnStatement start='390' end='413'>
+                        <ArrayCreation start='397' end='412' type='NEW'>
+                            <ArrayElement start='398' end='401'>
+                                <Key>
+                                </Key>
+                                <Value>
+                                    <Scalar start='398' end='401' type='STRING' value='"a"'/>
+                                </Value>
+                            </ArrayElement>
+                            <ArrayElement start='403' end='406'>
+                                <Key>
+                                </Key>
+                                <Value>
+                                    <Scalar start='403' end='406' type='STRING' value='"b"'/>
+                                </Value>
+                            </ArrayElement>
+                            <ArrayElement start='408' end='411'>
+                                <Key>
+                                </Key>
+                                <Value>
+                                    <Scalar start='408' end='411' type='STRING' value='"c"'/>
+                                </Value>
+                            </ArrayElement>
+                        </ArrayCreation>
+                    </ReturnStatement>
                 </Block>
             </FunctionDeclaration>
             <FunctionDeclaration start='417' end='508' isReference='false'>
@@ -1377,6 +1452,37 @@
                 <FormalParameters>
                 </FormalParameters>
                 <Block start='442' end='508' isCurly='true'>
+                    <ReturnStatement start='448' end='506'>
+                        <LambdaFunctionDeclaration start='455' end='505' isReference='false'>
+                            <Block start='466' end='505' isCurly='true'>
+                                <ReturnStatement start='476' end='499'>
+                                    <ArrayCreation start='483' end='498' type='NEW'>
+                                        <ArrayElement start='484' end='487'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='484' end='487' type='STRING' value='"a"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='489' end='492'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='489' end='492' type='STRING' value='"b"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                        <ArrayElement start='494' end='497'>
+                                            <Key>
+                                            </Key>
+                                            <Value>
+                                                <Scalar start='494' end='497' type='STRING' value='"c"'/>
+                                            </Value>
+                                        </ArrayElement>
+                                    </ArrayCreation>
+                                </ReturnStatement>
+                            </Block>
+                        </LambdaFunctionDeclaration>
+                    </ReturnStatement>
                 </Block>
             </FunctionDeclaration>
             <ExpressionStatement start='510' end='520'>

@@ -693,6 +693,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(ReturnStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "ReturnStatement");
         printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
     @Override

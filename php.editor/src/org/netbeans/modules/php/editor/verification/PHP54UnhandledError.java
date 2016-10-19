@@ -182,6 +182,9 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
             if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
                 createError(node);
             }
+            if (node.getScalarType().equals(Scalar.Type.SYSTEM) && "__TRAIT__".equals(node.getStringValue())) { // NOI18N
+                createError(node);
+            }
         }
 
         @Override

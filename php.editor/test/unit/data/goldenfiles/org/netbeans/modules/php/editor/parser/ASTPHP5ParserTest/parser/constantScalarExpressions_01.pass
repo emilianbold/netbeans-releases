@@ -356,6 +356,11 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='227' end='253' isCurly='true'>
+                                <ReturnStatement start='237' end='247'>
+                                    <Variable start='244' end='246' isDollared='true'>
+                                        <Identifier start='245' end='246' name='a'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>

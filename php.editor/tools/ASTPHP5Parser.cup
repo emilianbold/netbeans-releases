@@ -306,7 +306,9 @@ terminal  T_OBJECT_OPERATOR;
 terminal  T_DOUBLE_ARROW;
 terminal  T_LIST;
 terminal  T_ARRAY;
+terminal  T_CALLABLE;
 terminal  T_CLASS_C;
+terminal  T_TRAIT_C;
 terminal  T_METHOD_C;
 terminal  T_FUNC_C;
 terminal  T_LINE;
@@ -1780,6 +1782,13 @@ fully_qualified_class_name:className
 	Identifier classId = new Identifier(arrayleft, arrayright, "array");
 	RESULT = classId;
 :}
+
+| T_CALLABLE:callable
+{:
+	Identifier classId = new Identifier(callableleft, callableright, "callable");
+	RESULT = classId;
+:}
+
 ;
 
 function_call_parameter_list ::=
@@ -3167,6 +3176,12 @@ T_LNUMBER:scalar
 | T_CLASS_C:scalar
 {:
 	Scalar s = new Scalar(scalarleft, scalarright, "__CLASS__", Scalar.Type.SYSTEM);
+	RESULT = s;
+:}
+
+| T_TRAIT_C:scalar
+{:
+	Scalar s = new Scalar(scalarleft, scalarright, "__TRAIT__", Scalar.Type.SYSTEM);
 	RESULT = s;
 :}
 
