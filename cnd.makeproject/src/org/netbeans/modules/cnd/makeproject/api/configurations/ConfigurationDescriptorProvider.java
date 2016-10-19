@@ -56,14 +56,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.IncludePath;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProjectImpl;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -561,61 +565,77 @@ public abstract class ConfigurationDescriptorProvider {
     }
 
     public interface SnapShot {
+        boolean isViewChanged();
     }
     
-    public static final class Delta implements SnapShot {
+    static final class Delta implements SnapShot {
 
         private final Map<String, Pair> oldState = new HashMap<>();
-        private final List<Item> included = new ArrayList<>();
-        private final List<Item> added = new ArrayList<>(); 
-        private final List<Item> excluded = new ArrayList<>(); 
-        private final List<Item> deleted = new ArrayList<>(); 
-        private final List<Item> changed = new ArrayList<>(); 
-        private final List<Item> replaced = new ArrayList<>(); 
+        private final List<NativeFileItem> included = new ArrayList<>();
+        private final List<NativeFileItem> added = new ArrayList<>(); 
+        private final List<NativeFileItem> excluded = new ArrayList<>(); 
+        private final List<NativeFileItem> deleted = new ArrayList<>(); 
+        private final List<NativeFileItem> changed = new ArrayList<>(); 
+        private final List<NativeFileItem> replaced = new ArrayList<>(); 
 
         private Delta(MakeConfigurationDescriptor oldDescriptor) {
             if (oldDescriptor != null) {
                 for(Item item : oldDescriptor.getProjectItems()) {
-                    oldState.put(item.getAbsolutePath(), new Pair(item, item.getCRC(), item.isExcluded()));
+                    oldState.put(item.getAbsolutePath(), new Pair(item, getCRC(item), item.isExcluded()));
+                }
+                NativeProjectProvider np = oldDescriptor.getProject().getLookup().lookup(NativeProjectProvider.class);
+                for(NativeFileItem item : np.getStandardHeadersIndexers()) {
+                    if (item instanceof NativeProjectProvider.NativeFileIndexer) {
+                        NativeProjectProvider.NativeFileIndexer indexer = (NativeProjectProvider.NativeFileIndexer)item;
+                        oldState.put(item.getAbsolutePath(), new Pair(indexer, getCRC(indexer), indexer.isExcluded()));
+                    }
                 }
             }
         }
         
         private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
-            Set<Item> oldSet = new HashSet<>();
+            Set<NativeFileItem> oldSet = new HashSet<>();
             oldState.entrySet().forEach((entry) -> {
                 oldSet.add(entry.getValue().item);
             });
             Item[] newItems = newDescriptor.getProjectItems();
             for (Item item : newItems) {
-                Delta.Pair pair = oldState.get(item.getAbsolutePath());
-                if (pair == null) {
-                    added.add(item);
-                } else {
-                    oldSet.remove(pair.item);
-                    if (item.isExcluded() && pair.excluded) {
-                        // no changes
-                        replaced.add(item);
-                    } else if (item.isExcluded() && !pair.excluded) {
-                        excluded.add(item);
-                    } else if (!item.isExcluded() && pair.excluded) {
-                        included.add(item);
-                    } else {
-                        // compare item properties
-                        if (item.getCRC() != pair.crc) {
-                            changed.add(item);
-                        } else {
-                            if (pair.item != item) {
-                                replaced.add(item);
-                            }
-                        }
-                    }
-                }
+                checkItem(item, oldSet);
+            }
+            NativeProjectProvider np = newDescriptor.getProject().getLookup().lookup(NativeProjectProvider.class);
+            for(NativeFileItem indexer : np.getStandardHeadersIndexers()) {
+                checkItem(indexer, oldSet);
             }
             oldSet.forEach((item) -> {
                 deleted.add(item);
             });
             oldState.clear();
+        }
+
+        private void checkItem(NativeFileItem item, Set<NativeFileItem> oldSet) {
+            Delta.Pair pair = oldState.get(item.getAbsolutePath());
+            if (pair == null) {
+                added.add(item);
+            } else {
+                oldSet.remove(pair.item);
+                if (item.isExcluded() && pair.excluded) {
+                    // no changes
+                    replaced.add(item);
+                } else if (item.isExcluded() && !pair.excluded) {
+                    excluded.add(item);
+                } else if (!item.isExcluded() && pair.excluded) {
+                    included.add(item);
+                } else {
+                    // compare item properties
+                    if (getCRC(item) != pair.crc) {
+                        changed.add(item);
+                    } else {
+                        if (pair.item != item) {
+                            replaced.add(item);
+                        }
+                    }
+                }
+            }
         }
         
         public void printStatistic(Logger logger) {
@@ -629,53 +649,97 @@ public abstract class ConfigurationDescriptorProvider {
             return included.isEmpty() && added.isEmpty() && excluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
         }
 
+        @Override
+        public boolean isViewChanged() {
+            if (getAdded().isEmpty() &&
+                getDeleted().isEmpty() &&
+                getExcluded().isEmpty() &&
+                getIncluded().isEmpty() &&
+                getReplaced().isEmpty()) {
+                // only changed properties => no changes in project tree
+                return false;
+            }
+            return true;
+        }
+
         /**
          * marked as included items
          */
-        public List<Item> getIncluded() {
+        public List<NativeFileItem> getIncluded() {
             return Collections.unmodifiableList(included);
         }
 
         /**
          * added in project items
          */
-        public List<Item> getAdded() {
+        public List<NativeFileItem> getAdded() {
             return Collections.unmodifiableList(added);
         }
 
         /**
          * marked as excluded items
          */
-        public List<Item> getExcluded() {
+        public List<NativeFileItem> getExcluded() {
             return Collections.unmodifiableList(excluded);
         }
 
         /**
          * deleted from project items
          */
-        public List<Item> getDeleted() {
+        public List<NativeFileItem> getDeleted() {
             return Collections.unmodifiableList(deleted);
         }
 
         /**
          * items with changed properties
          */
-        public List<Item> getChanged() {
+        public List<NativeFileItem> getChanged() {
             return Collections.unmodifiableList(changed);
         }
 
         /**
          * Items which properties were not changed (from code model point of view) but instances were replaced
          */
-        public List<Item> getReplaced() {
+        public List<NativeFileItem> getReplaced() {
             return Collections.unmodifiableList(replaced);
+        }
+
+        private static int getCRC(NativeFileItem item) {
+            int res = 0;
+            for(IncludePath aPath : item.getUserIncludePaths()) {
+                res += 37 * aPath.getFSPath().hashCode();
+            }
+            for(FSPath aPath : item.getIncludeFiles()) {
+                res += 37 * aPath.hashCode();
+            }
+            for(String macro: item.getUserMacroDefinitions()) {
+                res += 37 * macro.hashCode();
+            }
+            for(IncludePath aPath : item.getSystemIncludePaths()) {
+                res += 37 * aPath.getFSPath().hashCode();
+            }
+            for(FSPath aPath : item.getSystemIncludeHeaders()) {
+                res += 37 * aPath.getPath().hashCode();
+            }
+            for(String macro: item.getSystemMacroDefinitions()) {
+                res += 37 * macro.hashCode();
+            }
+            res += 37 * item.getLanguage().hashCode();
+            res += 37 * item.getLanguageFlavor().hashCode();
+            if (item instanceof Item) {
+                Item i = (Item)item;
+                for(String macro: i.getUndefinedMacros()) {
+                    res += 37 * macro.hashCode();
+                }
+            }
+            return res;
         }
         
         private static final class Pair {
             final int crc;
             final boolean excluded;
-            final Item item;
-            private Pair(Item item, int crc, boolean excluded) {
+            final NativeFileItem item;
+            private Pair(NativeFileItem item, int crc, boolean excluded) {
                 this.crc = crc;
                 this.excluded = excluded;
                 this.item = item;
