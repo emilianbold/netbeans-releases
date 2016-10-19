@@ -259,11 +259,16 @@ import org.openide.util.RequestProcessor;
 
     private void cbFindCompilersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFindCompilersActionPerformed
         data.setSearchTools(cbFindCompilers.isSelected());
-        HostValidator v = this.hostValidator;
+        final HostValidator v = this.hostValidator;
         if (v != null) { // validation already started
             cbFindCompilers.setEnabled(false);
             if (!cbFindCompilers.isSelected()) {
-                v.cancelToolSearch();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        v.cancelToolSearch();
+                    }
+                });                
             }
         }
     }//GEN-LAST:event_cbFindCompilersActionPerformed
