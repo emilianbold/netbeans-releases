@@ -95,6 +95,9 @@ public final class Utils {
             case ASTPHP5Symbols.T_BREAK:
                 name = "T_BREAK"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_CALLABLE:
+                name = "T_CALLABLE"; //NOI18N
+                break;
             case ASTPHP5Symbols.T_CASE:
                 name = "T_CASE"; //NOI18N
                 break;
@@ -502,6 +505,9 @@ public final class Utils {
                 break;
             case ASTPHP5Symbols.T_TRAIT:
                 name = "T_TRAIT"; //NOI18N
+                break;
+            case ASTPHP5Symbols.T_TRAIT_C:
+                name = "T_TRAIT_C"; //NOI18N
                 break;
             case ASTPHP5Symbols.T_INSTEADOF:
                 name = "T_INSTEADOF"; //NOI18N

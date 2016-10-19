@@ -14225,6 +14225,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='4059' end='4077' isCurly='true'>
+                                <ReturnStatement start='4061' end='4075'>
+                                    <Scalar start='4068' end='4074' type='STRING' value='&apos;text&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14503,6 +14506,18 @@
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='4669' end='4691'>
+                                    <FieldAccess start='4676' end='4690'>
+                                        <Variable start='4676' end='4681' isDollared='true'>
+                                            <Identifier start='4677' end='4681' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='4683' end='4690' isDollared='false'>
+                                                <Identifier start='4683' end='4690' name='_regexp'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14523,6 +14538,36 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='4897' end='4959' isCurly='true'>
+                                <ReturnStatement start='4907' end='4953'>
+                                    <FunctionInvocation start='4914' end='4952'>
+                                        <FucntionName start='4914' end='4924'>
+                                            <NamespaceName start='4914' end='4924' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='4914' end='4924' name='preg_match'/>
+                                            </NamespaceName>
+                                        </FucntionName>
+                                        <Parameters>
+                                            <MethodInvocation start='4925' end='4942'>
+                                                <Variable start='4925' end='4930' isDollared='true'>
+                                                    <Identifier start='4926' end='4930' name='this'/>
+                                                </Variable>
+                                                <Method>
+                                                    <FunctionInvocation start='4932' end='4942'>
+                                                        <FucntionName start='4932' end='4940'>
+                                                            <Variable start='4932' end='4940' isDollared='false'>
+                                                                <Identifier start='4932' end='4940' name='asRegexp'/>
+                                                            </Variable>
+                                                        </FucntionName>
+                                                        <Parameters>
+                                                        </Parameters>
+                                                    </FunctionInvocation>
+                                                </Method>
+                                            </MethodInvocation>
+                                            <Variable start='4944' end='4951' isDollared='true'>
+                                                <Identifier start='4945' end='4951' name='string'/>
+                                            </Variable>
+                                        </Parameters>
+                                    </FunctionInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14715,6 +14760,18 @@
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='5671' end='5701'>
+                                    <FieldAccess start='5678' end='5700'>
+                                        <Variable start='5678' end='5683' isDollared='true'>
+                                            <Identifier start='5679' end='5683' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='5685' end='5700' isDollared='false'>
+                                                <Identifier start='5685' end='5700' name='_hilight_regexp'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14752,6 +14809,34 @@
                                         </Variable>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='6992' end='7032'>
+                                    <MethodInvocation start='6999' end='7031'>
+                                        <Variable start='6999' end='7004' isDollared='true'>
+                                            <Identifier start='7000' end='7004' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='7006' end='7031'>
+                                                <FucntionName start='7006' end='7017'>
+                                                    <Variable start='7006' end='7017' isDollared='false'>
+                                                        <Identifier start='7006' end='7017' name='_sql_clause'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='7018' end='7030'>
+                                                        <Variable start='7018' end='7023' isDollared='true'>
+                                                            <Identifier start='7019' end='7023' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='7025' end='7030' isDollared='false'>
+                                                                <Identifier start='7025' end='7030' name='_tree'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14786,9 +14871,87 @@
                                     <Block start='7144' end='7682' isCurly='true'>
                                         <SwitchCase start='7154' end='7252' default='false'>
                                             <Scalar start='7159' end='7165' type='STRING' value='&apos;WORD&apos;'/>
+                                            <ReturnStatement start='7204' end='7252'>
+                                                <MethodInvocation start='7211' end='7251'>
+                                                    <FieldAccess start='7211' end='7232'>
+                                                        <Variable start='7211' end='7216' isDollared='true'>
+                                                            <Identifier start='7212' end='7216' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='7218' end='7232' isDollared='false'>
+                                                                <Identifier start='7218' end='7232' name='_sql_clause_cb'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Method>
+                                                        <FunctionInvocation start='7234' end='7251'>
+                                                            <FucntionName start='7234' end='7238'>
+                                                                <Variable start='7234' end='7238' isDollared='false'>
+                                                                    <Identifier start='7234' end='7238' name='call'/>
+                                                                </Variable>
+                                                            </FucntionName>
+                                                            <Parameters>
+                                                                <FieldAccess start='7239' end='7250'>
+                                                                    <Variable start='7239' end='7244' isDollared='true'>
+                                                                        <Identifier start='7240' end='7244' name='node'/>
+                                                                    </Variable>
+                                                                    <Field>
+                                                                        <Variable start='7246' end='7250' isDollared='false'>
+                                                                            <Identifier start='7246' end='7250' name='word'/>
+                                                                        </Variable>
+                                                                    </Field>
+                                                                </FieldAccess>
+                                                            </Parameters>
+                                                        </FunctionInvocation>
+                                                    </Method>
+                                                </MethodInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='7261' end='7345' default='false'>
                                             <Scalar start='7266' end='7271' type='STRING' value='&apos;NOT&apos;'/>
+                                            <ReturnStatement start='7285' end='7345'>
+                                                <InfixExpression start='7292' end='7344' operator='CONCAT'>
+                                                    <InfixExpression start='7292' end='7338' operator='CONCAT'>
+                                                        <Scalar start='7292' end='7299' type='STRING' value='"NOT ("'/>
+                                                        <MethodInvocation start='7302' end='7338'>
+                                                            <Variable start='7302' end='7307' isDollared='true'>
+                                                                <Identifier start='7303' end='7307' name='this'/>
+                                                            </Variable>
+                                                            <Method>
+                                                                <FunctionInvocation start='7309' end='7338'>
+                                                                    <FucntionName start='7309' end='7320'>
+                                                                        <Variable start='7309' end='7320' isDollared='false'>
+                                                                            <Identifier start='7309' end='7320' name='_sql_clause'/>
+                                                                        </Variable>
+                                                                    </FucntionName>
+                                                                    <Parameters>
+                                                                        <FieldAccess start='7321' end='7337'>
+                                                                            <Variable start='7321' end='7326' isDollared='true'>
+                                                                                <Identifier start='7322' end='7326' name='node'/>
+                                                                            </Variable>
+                                                                            <Field>
+                                                                                <ArrayAccess start='7328' end='7337' type='VARIABLE_ARRAY' isDollared='false'>
+                                                                                    <ArrayDimension start='7334' end='7337'>
+                                                                                        <Index>
+                                                                                            <Scalar start='7335' end='7336' type='INT' value='0'/>
+                                                                                        </Index>
+                                                                                    </ArrayDimension>
+                                                                                    <Name>
+                                                                                        <Variable start='7328' end='7334' isDollared='false'>
+                                                                                            <Identifier start='7328' end='7334' name='leaves'/>
+                                                                                        </Variable>
+                                                                                    </Name>
+                                                                                </ArrayAccess>
+                                                                            </Field>
+                                                                        </FieldAccess>
+                                                                    </Parameters>
+                                                                </FunctionInvocation>
+                                                            </Method>
+                                                        </MethodInvocation>
+                                                    </InfixExpression>
+                                                    <Scalar start='7341' end='7344' type='STRING' value='")"'/>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='7354' end='7365' default='false'>
                                             <Scalar start='7359' end='7364' type='STRING' value='&apos;AND&apos;'/>
@@ -14867,6 +15030,36 @@
                                                     </Variable>
                                                 </Value>
                                             </ForEachStatement>
+                                            <ReturnStatement start='7548' end='7588'>
+                                                <FunctionInvocation start='7555' end='7587'>
+                                                    <FucntionName start='7555' end='7559'>
+                                                        <NamespaceName start='7555' end='7559' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='7555' end='7559' name='join'/>
+                                                        </NamespaceName>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <Quote start='7560' end='7573' type='QUOTE'>
+                                                            <Expressions>
+                                                                <Scalar start='7561' end='7562' type='STRING' value=' '/>
+                                                                <FieldAccess start='7562' end='7571'>
+                                                                    <Variable start='7562' end='7567' isDollared='true'>
+                                                                        <Identifier start='7563' end='7567' name='node'/>
+                                                                    </Variable>
+                                                                    <Field>
+                                                                        <Variable start='7569' end='7571' isDollared='false'>
+                                                                            <Identifier start='7569' end='7571' name='op'/>
+                                                                        </Variable>
+                                                                    </Field>
+                                                                </FieldAccess>
+                                                                <Scalar start='7571' end='7572' type='STRING' value=' '/>
+                                                            </Expressions>
+                                                        </Quote>
+                                                        <Variable start='7575' end='7586' isDollared='true'>
+                                                            <Identifier start='7576' end='7586' name='subclauses'/>
+                                                        </Variable>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='7597' end='7672' default='true'>
                                             <ExpressionStatement start='7618' end='7646'>
@@ -14893,6 +15086,9 @@
                                                     </Parameters>
                                                 </FunctionInvocation>
                                             </ExpressionStatement>
+                                            <ReturnStatement start='7659' end='7672'>
+                                                <Scalar start='7666' end='7671' type='STRING' value='&apos;1=1&apos;'/>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                     </Block>
                                 </SwitchStatement>
@@ -14935,6 +15131,34 @@
                                         </Variable>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='7923' end='7967'>
+                                    <MethodInvocation start='7930' end='7966'>
+                                        <Variable start='7930' end='7935' isDollared='true'>
+                                            <Identifier start='7931' end='7935' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='7937' end='7966'>
+                                                <FucntionName start='7937' end='7952'>
+                                                    <Variable start='7937' end='7952' isDollared='false'>
+                                                        <Identifier start='7937' end='7952' name='_sql_clause_obj'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='7953' end='7965'>
+                                                        <Variable start='7953' end='7958' isDollared='true'>
+                                                            <Identifier start='7954' end='7958' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='7960' end='7965' isDollared='false'>
+                                                                <Identifier start='7960' end='7965' name='_tree'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -14969,6 +15193,56 @@
                                     <Block start='8040' end='8565' isCurly='true'>
                                         <SwitchCase start='8050' end='8143' default='false'>
                                             <Scalar start='8055' end='8060' type='STRING' value='&apos;NOT&apos;'/>
+                                            <ReturnStatement start='8074' end='8143'>
+                                                <InfixExpression start='8081' end='8142' operator='CONCAT'>
+                                                    <InfixExpression start='8081' end='8136' operator='CONCAT'>
+                                                        <Scalar start='8081' end='8088' type='STRING' value='"NOT ("'/>
+                                                        <MethodInvocation start='8091' end='8136'>
+                                                            <FieldAccess start='8091' end='8112'>
+                                                                <Variable start='8091' end='8096' isDollared='true'>
+                                                                    <Identifier start='8092' end='8096' name='this'/>
+                                                                </Variable>
+                                                                <Field>
+                                                                    <Variable start='8098' end='8112' isDollared='false'>
+                                                                        <Identifier start='8098' end='8112' name='_sql_clause_cb'/>
+                                                                    </Variable>
+                                                                </Field>
+                                                            </FieldAccess>
+                                                            <Method>
+                                                                <FunctionInvocation start='8114' end='8136'>
+                                                                    <FucntionName start='8114' end='8118'>
+                                                                        <Variable start='8114' end='8118' isDollared='false'>
+                                                                            <Identifier start='8114' end='8118' name='call'/>
+                                                                        </Variable>
+                                                                    </FucntionName>
+                                                                    <Parameters>
+                                                                        <FieldAccess start='8119' end='8135'>
+                                                                            <Variable start='8119' end='8124' isDollared='true'>
+                                                                                <Identifier start='8120' end='8124' name='node'/>
+                                                                            </Variable>
+                                                                            <Field>
+                                                                                <ArrayAccess start='8126' end='8135' type='VARIABLE_ARRAY' isDollared='false'>
+                                                                                    <ArrayDimension start='8132' end='8135'>
+                                                                                        <Index>
+                                                                                            <Scalar start='8133' end='8134' type='INT' value='0'/>
+                                                                                        </Index>
+                                                                                    </ArrayDimension>
+                                                                                    <Name>
+                                                                                        <Variable start='8126' end='8132' isDollared='false'>
+                                                                                            <Identifier start='8126' end='8132' name='leaves'/>
+                                                                                        </Variable>
+                                                                                    </Name>
+                                                                                </ArrayAccess>
+                                                                            </Field>
+                                                                        </FieldAccess>
+                                                                    </Parameters>
+                                                                </FunctionInvocation>
+                                                            </Method>
+                                                        </MethodInvocation>
+                                                    </InfixExpression>
+                                                    <Scalar start='8139' end='8142' type='STRING' value='")"'/>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='8152' end='8163' default='false'>
                                             <Scalar start='8157' end='8162' type='STRING' value='&apos;AND&apos;'/>
@@ -15047,14 +15321,78 @@
                                                     </Variable>
                                                 </Value>
                                             </ForEachStatement>
+                                            <ReturnStatement start='8350' end='8390'>
+                                                <FunctionInvocation start='8357' end='8389'>
+                                                    <FucntionName start='8357' end='8361'>
+                                                        <NamespaceName start='8357' end='8361' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='8357' end='8361' name='join'/>
+                                                        </NamespaceName>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <Quote start='8362' end='8375' type='QUOTE'>
+                                                            <Expressions>
+                                                                <Scalar start='8363' end='8364' type='STRING' value=' '/>
+                                                                <FieldAccess start='8364' end='8373'>
+                                                                    <Variable start='8364' end='8369' isDollared='true'>
+                                                                        <Identifier start='8365' end='8369' name='node'/>
+                                                                    </Variable>
+                                                                    <Field>
+                                                                        <Variable start='8371' end='8373' isDollared='false'>
+                                                                            <Identifier start='8371' end='8373' name='op'/>
+                                                                        </Variable>
+                                                                    </Field>
+                                                                </FieldAccess>
+                                                                <Scalar start='8373' end='8374' type='STRING' value=' '/>
+                                                            </Expressions>
+                                                        </Quote>
+                                                        <Variable start='8377' end='8388' isDollared='true'>
+                                                            <Identifier start='8378' end='8388' name='subclauses'/>
+                                                        </Variable>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='8399' end='8437' default='false'>
                                             <Scalar start='8404' end='8410' type='STRING' value='&apos;VOID&apos;'/>
+                                            <ReturnStatement start='8424' end='8437'>
+                                                <Scalar start='8431' end='8436' type='STRING' value='&apos;0=1&apos;'/>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='8446' end='8483' default='false'>
                                             <Scalar start='8451' end='8456' type='STRING' value='&apos;ALL&apos;'/>
+                                            <ReturnStatement start='8470' end='8483'>
+                                                <Scalar start='8477' end='8482' type='STRING' value='&apos;1=1&apos;'/>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='8492' end='8555' default='true'>
+                                            <ReturnStatement start='8513' end='8555'>
+                                                <MethodInvocation start='8520' end='8554'>
+                                                    <FieldAccess start='8520' end='8541'>
+                                                        <Variable start='8520' end='8525' isDollared='true'>
+                                                            <Identifier start='8521' end='8525' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='8527' end='8541' isDollared='false'>
+                                                                <Identifier start='8527' end='8541' name='_sql_clause_cb'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Method>
+                                                        <FunctionInvocation start='8543' end='8554'>
+                                                            <FucntionName start='8543' end='8547'>
+                                                                <Variable start='8543' end='8547' isDollared='false'>
+                                                                    <Identifier start='8543' end='8547' name='call'/>
+                                                                </Variable>
+                                                            </FucntionName>
+                                                            <Parameters>
+                                                                <Variable start='8548' end='8553' isDollared='true'>
+                                                                    <Identifier start='8549' end='8553' name='node'/>
+                                                                </Variable>
+                                                            </Parameters>
+                                                        </FunctionInvocation>
+                                                    </Method>
+                                                </MethodInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                     </Block>
                                 </SwitchStatement>
@@ -15097,6 +15435,34 @@
                                         </Variable>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='8786' end='8838'>
+                                    <MethodInvocation start='8793' end='8837'>
+                                        <Variable start='8793' end='8798' isDollared='true'>
+                                            <Identifier start='8794' end='8798' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='8800' end='8837'>
+                                                <FucntionName start='8800' end='8823'>
+                                                    <Variable start='8800' end='8823' isDollared='false'>
+                                                        <Identifier start='8800' end='8823' name='_Tsearch2Sql_clause_obj'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='8824' end='8836'>
+                                                        <Variable start='8824' end='8829' isDollared='true'>
+                                                            <Identifier start='8825' end='8829' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='8831' end='8836' isDollared='false'>
+                                                                <Identifier start='8831' end='8836' name='_tree'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15131,6 +15497,30 @@
                                     <Block start='8952' end='9613' isCurly='true'>
                                         <SwitchCase start='8962' end='9016' default='false'>
                                             <Scalar start='8967' end='8972' type='STRING' value='&apos;NOT&apos;'/>
+                                            <ReturnStatement start='8986' end='9016'>
+                                                <InfixExpression start='8993' end='9015' operator='CONCAT'>
+                                                    <Scalar start='8993' end='8996' type='STRING' value='"!"'/>
+                                                    <FieldAccess start='8999' end='9015'>
+                                                        <Variable start='8999' end='9004' isDollared='true'>
+                                                            <Identifier start='9000' end='9004' name='node'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <ArrayAccess start='9006' end='9015' type='VARIABLE_ARRAY' isDollared='false'>
+                                                                <ArrayDimension start='9012' end='9015'>
+                                                                    <Index>
+                                                                        <Scalar start='9013' end='9014' type='INT' value='0'/>
+                                                                    </Index>
+                                                                </ArrayDimension>
+                                                                <Name>
+                                                                    <Variable start='9006' end='9012' isDollared='false'>
+                                                                        <Identifier start='9006' end='9012' name='leaves'/>
+                                                                    </Variable>
+                                                                </Name>
+                                                            </ArrayAccess>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='9025' end='9230' default='false'>
                                             <Scalar start='9030' end='9035' type='STRING' value='&apos;AND&apos;'/>
@@ -15200,6 +15590,21 @@
                                                     </Variable>
                                                 </Value>
                                             </ForEachStatement>
+                                            <ReturnStatement start='9200' end='9230'>
+                                                <FunctionInvocation start='9207' end='9229'>
+                                                    <FucntionName start='9207' end='9211'>
+                                                        <NamespaceName start='9207' end='9211' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='9207' end='9211' name='join'/>
+                                                        </NamespaceName>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <Scalar start='9212' end='9215' type='STRING' value='"&amp;"'/>
+                                                        <Variable start='9217' end='9228' isDollared='true'>
+                                                            <Identifier start='9218' end='9228' name='subclauses'/>
+                                                        </Variable>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='9239' end='9443' default='false'>
                                             <Scalar start='9244' end='9248' type='STRING' value='&apos;OR&apos;'/>
@@ -15269,14 +15674,63 @@
                                                     </Variable>
                                                 </Value>
                                             </ForEachStatement>
+                                            <ReturnStatement start='9413' end='9443'>
+                                                <FunctionInvocation start='9420' end='9442'>
+                                                    <FucntionName start='9420' end='9424'>
+                                                        <NamespaceName start='9420' end='9424' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='9420' end='9424' name='join'/>
+                                                        </NamespaceName>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <Scalar start='9425' end='9428' type='STRING' value='"|"'/>
+                                                        <Variable start='9430' end='9441' isDollared='true'>
+                                                            <Identifier start='9431' end='9441' name='subclauses'/>
+                                                        </Variable>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='9452' end='9487' default='false'>
                                             <Scalar start='9457' end='9463' type='STRING' value='&apos;VOID&apos;'/>
+                                            <ReturnStatement start='9477' end='9487'>
+                                                <Scalar start='9484' end='9486' type='STRING' value='&apos;&apos;'/>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='9496' end='9531' default='false'>
                                             <Scalar start='9501' end='9506' type='STRING' value='&apos;ALL&apos;'/>
+                                            <ReturnStatement start='9520' end='9531'>
+                                                <Scalar start='9527' end='9530' type='STRING' value='&apos;1&apos;'/>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='9540' end='9603' default='true'>
+                                            <ReturnStatement start='9561' end='9603'>
+                                                <MethodInvocation start='9568' end='9602'>
+                                                    <FieldAccess start='9568' end='9589'>
+                                                        <Variable start='9568' end='9573' isDollared='true'>
+                                                            <Identifier start='9569' end='9573' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='9575' end='9589' isDollared='false'>
+                                                                <Identifier start='9575' end='9589' name='_sql_clause_cb'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Method>
+                                                        <FunctionInvocation start='9591' end='9602'>
+                                                            <FucntionName start='9591' end='9595'>
+                                                                <Variable start='9591' end='9595' isDollared='false'>
+                                                                    <Identifier start='9591' end='9595' name='call'/>
+                                                                </Variable>
+                                                            </FucntionName>
+                                                            <Parameters>
+                                                                <Variable start='9596' end='9601' isDollared='true'>
+                                                                    <Identifier start='9597' end='9601' name='node'/>
+                                                                </Variable>
+                                                            </Parameters>
+                                                        </FunctionInvocation>
+                                                    </Method>
+                                                </MethodInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                     </Block>
                                 </SwitchStatement>
@@ -15289,6 +15743,40 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='9640' end='9690' isCurly='true'>
+                                <ReturnStatement start='9642' end='9688'>
+                                    <InfixExpression start='9649' end='9687' operator='CONCAT'>
+                                        <InfixExpression start='9649' end='9683' operator='CONCAT'>
+                                            <Scalar start='9649' end='9652' type='STRING' value='&apos;%&apos;'/>
+                                            <MethodInvocation start='9653' end='9683'>
+                                                <Variable start='9653' end='9658' isDollared='true'>
+                                                    <Identifier start='9654' end='9658' name='this'/>
+                                                </Variable>
+                                                <Method>
+                                                    <FunctionInvocation start='9660' end='9683'>
+                                                        <FucntionName start='9660' end='9670'>
+                                                            <Variable start='9660' end='9670' isDollared='false'>
+                                                                <Identifier start='9660' end='9670' name='_sql_quote'/>
+                                                            </Variable>
+                                                        </FucntionName>
+                                                        <Parameters>
+                                                            <FieldAccess start='9671' end='9682'>
+                                                                <Variable start='9671' end='9676' isDollared='true'>
+                                                                    <Identifier start='9672' end='9676' name='this'/>
+                                                                </Variable>
+                                                                <Field>
+                                                                    <Variable start='9678' end='9682' isDollared='false'>
+                                                                        <Identifier start='9678' end='9682' name='word'/>
+                                                                    </Variable>
+                                                                </Field>
+                                                            </FieldAccess>
+                                                        </Parameters>
+                                                    </FunctionInvocation>
+                                                </Method>
+                                            </MethodInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='9684' end='9687' type='STRING' value='&apos;%&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15298,6 +15786,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='9873' end='9928' isCurly='true'>
+                                <ReturnStatement start='9883' end='9922'>
+                                    <MethodInvocation start='9890' end='9921'>
+                                        <Variable start='9890' end='9895' isDollared='true'>
+                                            <Identifier start='9891' end='9895' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='9897' end='9921'>
+                                                <FucntionName start='9897' end='9907'>
+                                                    <Variable start='9897' end='9907' isDollared='false'>
+                                                        <Identifier start='9897' end='9907' name='_as_string'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='9908' end='9920'>
+                                                        <Variable start='9908' end='9913' isDollared='true'>
+                                                            <Identifier start='9909' end='9913' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='9915' end='9920' isDollared='false'>
+                                                                <Identifier start='9915' end='9920' name='_tree'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15344,12 +15860,50 @@
                                     <Block start='10004' end='10447' isCurly='true'>
                                         <SwitchCase start='10014' end='10076' default='false'>
                                             <Scalar start='10019' end='10025' type='STRING' value='&apos;WORD&apos;'/>
+                                            <ReturnStatement start='10039' end='10076'>
+                                                <InfixExpression start='10046' end='10075' operator='CONCAT'>
+                                                    <Variable start='10046' end='10053' isDollared='true'>
+                                                        <Identifier start='10047' end='10053' name='indent'/>
+                                                    </Variable>
+                                                    <Quote start='10056' end='10075' type='QUOTE'>
+                                                        <Expressions>
+                                                            <Scalar start='10057' end='10063' type='STRING' value='WORD: '/>
+                                                            <FieldAccess start='10063' end='10074'>
+                                                                <Variable start='10063' end='10068' isDollared='true'>
+                                                                    <Identifier start='10064' end='10068' name='node'/>
+                                                                </Variable>
+                                                                <Field>
+                                                                    <Variable start='10070' end='10074' isDollared='false'>
+                                                                        <Identifier start='10070' end='10074' name='word'/>
+                                                                    </Variable>
+                                                                </Field>
+                                                            </FieldAccess>
+                                                        </Expressions>
+                                                    </Quote>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='10085' end='10134' default='false'>
                                             <Scalar start='10090' end='10096' type='STRING' value='&apos;VOID&apos;'/>
+                                            <ReturnStatement start='10110' end='10134'>
+                                                <InfixExpression start='10117' end='10133' operator='CONCAT'>
+                                                    <Variable start='10117' end='10124' isDollared='true'>
+                                                        <Identifier start='10118' end='10124' name='indent'/>
+                                                    </Variable>
+                                                    <Scalar start='10127' end='10133' type='STRING' value='"VOID"'/>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='10143' end='10190' default='false'>
                                             <Scalar start='10148' end='10153' type='STRING' value='&apos;ALL&apos;'/>
+                                            <ReturnStatement start='10167' end='10190'>
+                                                <InfixExpression start='10174' end='10189' operator='CONCAT'>
+                                                    <Variable start='10174' end='10181' isDollared='true'>
+                                                        <Identifier start='10175' end='10181' name='indent'/>
+                                                    </Variable>
+                                                    <Scalar start='10184' end='10189' type='STRING' value='"ALL"'/>
+                                                </InfixExpression>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                         <SwitchCase start='10199' end='10437' default='true'>
                                             <ExpressionStatement start='10220' end='10262'>
@@ -15453,6 +16007,21 @@
                                                     </Variable>
                                                 </Value>
                                             </ForEachStatement>
+                                            <ReturnStatement start='10411' end='10437'>
+                                                <FunctionInvocation start='10418' end='10436'>
+                                                    <FucntionName start='10418' end='10422'>
+                                                        <NamespaceName start='10418' end='10422' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='10418' end='10422' name='join'/>
+                                                        </NamespaceName>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <Scalar start='10423' end='10427' type='STRING' value='"\n"'/>
+                                                        <Variable start='10429' end='10435' isDollared='true'>
+                                                            <Identifier start='10430' end='10435' name='lines'/>
+                                                        </Variable>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </ReturnStatement>
                                         </SwitchCase>
                                     </Block>
                                 </SwitchStatement>
@@ -15488,6 +16057,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='10710' end='10734' isCurly='true'>
+                                <ReturnStatement start='10712' end='10732'>
+                                    <Scalar start='10719' end='10731' type='STRING' value='&apos;/^(?!a)a/x&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15508,6 +16080,9 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='10763' end='10780' isCurly='true'>
+                                <ReturnStatement start='10765' end='10778'>
+                                    <Scalar start='10772' end='10777' type='STRING' value='false'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15517,6 +16092,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='10815' end='10829' isCurly='true'>
+                                <ReturnStatement start='10817' end='10827'>
+                                    <Scalar start='10824' end='10826' type='STRING' value='""'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15537,6 +16115,9 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='10878' end='10899' isCurly='true'>
+                                <ReturnStatement start='10880' end='10897'>
+                                    <Scalar start='10887' end='10896' type='STRING' value='"(1 = 0)"'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15546,6 +16127,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='10924' end='10957' isCurly='true'>
+                                <ReturnStatement start='10926' end='10955'>
+                                    <Scalar start='10933' end='10954' type='STRING' value='"NullTextSearchQuery"'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -15959,6 +16543,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='13988' end='14009' isCurly='true'>
+                                <ReturnStatement start='13990' end='14007'>
+                                    <Scalar start='13997' end='14006' type='STRING' value='&apos;numeric&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -16111,6 +16698,9 @@
                                                             </Parameters>
                                                         </FunctionInvocation>
                                                     </ExpressionStatement>
+                                                    <ReturnStatement start='14711' end='14721'>
+                                                        <Scalar start='14718' end='14720' type='STRING' value='&apos;&apos;'/>
+                                                    </ReturnStatement>
                                                 </Block>
                                             </Then>
                                             <Else>
@@ -16657,6 +17247,9 @@
                                                                 </Parameters>
                                                             </FunctionInvocation>
                                                         </ExpressionStatement>
+                                                        <ReturnStatement start='16566' end='16576'>
+                                                            <Scalar start='16573' end='16575' type='STRING' value='&apos;&apos;'/>
+                                                        </ReturnStatement>
                                                     </Block>
                                                 </Then>
                                                 <Else>
@@ -16665,6 +17258,11 @@
                                         </Block>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='16588' end='16602'>
+                                    <Variable start='16595' end='16601' isDollared='true'>
+                                        <Identifier start='16596' end='16601' name='query'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -16674,6 +17272,27 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='16788' end='16871' isCurly='true'>
+                                <ReturnStatement start='16832' end='16865'>
+                                    <UnaryOperation start='16839' end='16864' operator='NOT'>
+                                        <FunctionInvocation start='16840' end='16864'>
+                                            <FucntionName start='16840' end='16845'>
+                                                <Identifier start='16840' end='16845' name='empty'/>
+                                            </FucntionName>
+                                            <Parameters>
+                                                <FieldAccess start='16846' end='16863'>
+                                                    <Variable start='16846' end='16851' isDollared='true'>
+                                                        <Identifier start='16847' end='16851' name='this'/>
+                                                    </Variable>
+                                                    <Field>
+                                                        <Variable start='16853' end='16863' isDollared='false'>
+                                                            <Identifier start='16853' end='16863' name='_workquery'/>
+                                                        </Variable>
+                                                    </Field>
+                                                </FieldAccess>
+                                            </Parameters>
+                                        </FunctionInvocation>
+                                    </UnaryOperation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -16706,8 +17325,40 @@
                                         </FunctionInvocation>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='17126' end='17154'>
+                                            <FieldAccess start='17133' end='17153'>
+                                                <Variable start='17133' end='17138' isDollared='true'>
+                                                    <Identifier start='17134' end='17138' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <Variable start='17140' end='17153' isDollared='false'>
+                                                        <Identifier start='17140' end='17153' name='_placeholders'/>
+                                                    </Variable>
+                                                </Field>
+                                            </FieldAccess>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
+                                        <ReturnStatement start='17161' end='17196'>
+                                            <ArrayCreation start='17168' end='17195' type='OLD'>
+                                                <ArrayElement start='17174' end='17194'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <FieldAccess start='17174' end='17194'>
+                                                            <Variable start='17174' end='17179' isDollared='true'>
+                                                                <Identifier start='17175' end='17179' name='this'/>
+                                                            </Variable>
+                                                            <Field>
+                                                                <Variable start='17181' end='17194' isDollared='false'>
+                                                                    <Identifier start='17181' end='17194' name='_placeholders'/>
+                                                                </Variable>
+                                                            </Field>
+                                                        </FieldAccess>
+                                                    </Value>
+                                                </ArrayElement>
+                                            </ArrayCreation>
+                                        </ReturnStatement>
                                     </Else>
                                 </IfStatement>
                             </Block>
@@ -16861,6 +17512,18 @@
                                         </FunctionInvocation>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='18011' end='18036'>
+                                    <FieldAccess start='18018' end='18035'>
+                                        <Variable start='18018' end='18023' isDollared='true'>
+                                            <Identifier start='18019' end='18023' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='18025' end='18035' isDollared='false'>
+                                                <Identifier start='18025' end='18035' name='_workquery'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -16870,6 +17533,18 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='18162' end='18196' isCurly='true'>
+                                <ReturnStatement start='18169' end='18190'>
+                                    <FieldAccess start='18176' end='18189'>
+                                        <Variable start='18176' end='18181' isDollared='true'>
+                                            <Identifier start='18177' end='18181' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='18183' end='18189' isDollared='false'>
+                                                <Identifier start='18183' end='18189' name='_bound'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -16913,6 +17588,9 @@
                                         </FunctionInvocation>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='18741' end='18754'>
+                                            <Scalar start='18748' end='18753' type='STRING' value='false'/>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -16970,6 +17648,16 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='18835' end='18859'>
+                                            <InfixExpression start='18842' end='18858' operator='IS_EQUAL'>
+                                                <Variable start='18842' end='18852' isDollared='true'>
+                                                    <Identifier start='18843' end='18852' name='variables'/>
+                                                </Variable>
+                                                <Variable start='18856' end='18858' isDollared='true'>
+                                                    <Identifier start='18857' end='18858' name='p'/>
+                                                </Variable>
+                                            </InfixExpression>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -17020,6 +17708,9 @@
                                                     </UnaryOperation>
                                                 </Condition>
                                                 <Then>
+                                                    <ReturnStatement start='19022' end='19035'>
+                                                        <Scalar start='19029' end='19034' type='STRING' value='false'/>
+                                                    </ReturnStatement>
                                                 </Then>
                                                 <Else>
                                                 </Else>
@@ -17065,6 +17756,9 @@
                                                                 </UnaryOperation>
                                                             </Condition>
                                                             <Then>
+                                                                <ReturnStatement start='19102' end='19115'>
+                                                                    <Scalar start='19109' end='19114' type='STRING' value='false'/>
+                                                                </ReturnStatement>
                                                             </Then>
                                                             <Else>
                                                             </Else>
@@ -17080,6 +17774,9 @@
                                         </Block>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='19127' end='19139'>
+                                    <Scalar start='19134' end='19138' type='STRING' value='true'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17437,6 +18134,9 @@
                                         </UnaryOperation>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='20205' end='20218'>
+                                            <Scalar start='20212' end='20217' type='STRING' value='false'/>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -17506,11 +18206,34 @@
                                     </Condition>
                                     <Then>
                                         <Block start='20583' end='20616' isCurly='true'>
+                                            <ReturnStatement start='20590' end='20613'>
+                                                <MethodInvocation start='20597' end='20612'>
+                                                    <Variable start='20597' end='20602' isDollared='true'>
+                                                        <Identifier start='20598' end='20602' name='this'/>
+                                                    </Variable>
+                                                    <Method>
+                                                        <FunctionInvocation start='20604' end='20612'>
+                                                            <FucntionName start='20604' end='20610'>
+                                                                <Variable start='20604' end='20610' isDollared='false'>
+                                                                    <Identifier start='20604' end='20610' name='_bound'/>
+                                                                </Variable>
+                                                            </FucntionName>
+                                                            <Parameters>
+                                                            </Parameters>
+                                                        </FunctionInvocation>
+                                                    </Method>
+                                                </MethodInvocation>
+                                            </ReturnStatement>
                                         </Block>
                                     </Then>
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='20625' end='20640'>
+                                    <Variable start='20632' end='20639' isDollared='true'>
+                                        <Identifier start='20633' end='20639' name='result'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17541,6 +18264,11 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='21101' end='21130' isCurly='true'>
+                                <ReturnStatement start='21111' end='21124'>
+                                    <Variable start='21118' end='21123' isDollared='true'>
+                                        <Identifier start='21119' end='21123' name='this'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17550,6 +18278,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='21212' end='21238' isCurly='true'>
+                                <ReturnStatement start='21222' end='21232'>
+                                    <Scalar start='21229' end='21231' type='STRING' value='&apos;&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17571,6 +18302,10 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='21462' end='21493' isCurly='true'>
+                                <ReturnStatement start='21472' end='21487'>
+                                    <ArrayCreation start='21479' end='21486' type='OLD'>
+                                    </ArrayCreation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17580,6 +18315,18 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='21517' end='21540' isCurly='true'>
+                                <ReturnStatement start='21519' end='21538'>
+                                    <FieldAccess start='21526' end='21537'>
+                                        <Variable start='21526' end='21531' isDollared='true'>
+                                            <Identifier start='21527' end='21531' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='21533' end='21537' isDollared='false'>
+                                                <Identifier start='21533' end='21537' name='word'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17650,6 +18397,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='21758' end='21826' isCurly='true'>
+                                <ReturnStatement start='21768' end='21820'>
+                                    <InfixExpression start='21775' end='21819' operator='CONCAT'>
+                                        <InfixExpression start='21775' end='21813' operator='CONCAT'>
+                                            <Scalar start='21775' end='21782' type='STRING' value='&apos;(?=.*&apos;'/>
+                                            <FunctionInvocation start='21785' end='21813'>
+                                                <FucntionName start='21785' end='21795'>
+                                                    <NamespaceName start='21785' end='21795' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='21785' end='21795' name='preg_quote'/>
+                                                    </NamespaceName>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='21796' end='21807'>
+                                                        <Variable start='21796' end='21801' isDollared='true'>
+                                                            <Identifier start='21797' end='21801' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='21803' end='21807' isDollared='false'>
+                                                                <Identifier start='21803' end='21807' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Scalar start='21809' end='21812' type='STRING' value='&apos;/&apos;'/>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='21816' end='21819' type='STRING' value='&apos;)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17671,6 +18446,39 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='21875' end='21938' isCurly='true'>
+                                <ReturnStatement start='21885' end='21932'>
+                                    <ConditionalExpression start='21892' end='21931'>
+                                        <Condition>
+                                            <Variable start='21892' end='21900' isDollared='true'>
+                                                <Identifier start='21893' end='21900' name='negated'/>
+                                            </Variable>
+                                        </Condition>
+                                        <Then>
+                                            <ArrayCreation start='21903' end='21910' type='OLD'>
+                                            </ArrayCreation>
+                                        </Then>
+                                        <Else>
+                                            <ArrayCreation start='21913' end='21931' type='OLD'>
+                                                <ArrayElement start='21919' end='21930'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <FieldAccess start='21919' end='21930'>
+                                                            <Variable start='21919' end='21924' isDollared='true'>
+                                                                <Identifier start='21920' end='21924' name='this'/>
+                                                            </Variable>
+                                                            <Field>
+                                                                <Variable start='21926' end='21930' isDollared='false'>
+                                                                    <Identifier start='21926' end='21930' name='word'/>
+                                                                </Variable>
+                                                            </Field>
+                                                        </FieldAccess>
+                                                    </Value>
+                                                </ArrayElement>
+                                            </ArrayCreation>
+                                        </Else>
+                                    </ConditionalExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17708,6 +18516,50 @@
                                         </FunctionInvocation>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='22042' end='22098'>
+                                    <MethodInvocation start='22049' end='22097'>
+                                        <FieldAccess start='22049' end='22084'>
+                                            <FieldAccess start='22049' end='22074'>
+                                                <ArrayAccess start='22049' end='22068' type='VARIABLE_ARRAY' isDollared='false'>
+                                                    <ArrayDimension start='22057' end='22068'>
+                                                        <Index>
+                                                            <Scalar start='22058' end='22067' type='STRING' value='&apos;request&apos;'/>
+                                                        </Index>
+                                                    </ArrayDimension>
+                                                    <Name>
+                                                        <Variable start='22049' end='22057' isDollared='true'>
+                                                            <Identifier start='22050' end='22057' name='GLOBALS'/>
+                                                        </Variable>
+                                                    </Name>
+                                                </ArrayAccess>
+                                                <Field>
+                                                    <Variable start='22070' end='22074' isDollared='false'>
+                                                        <Identifier start='22070' end='22074' name='_dbi'/>
+                                                    </Variable>
+                                                </Field>
+                                            </FieldAccess>
+                                            <Field>
+                                                <Variable start='22076' end='22084' isDollared='false'>
+                                                    <Identifier start='22076' end='22084' name='_backend'/>
+                                                </Variable>
+                                            </Field>
+                                        </FieldAccess>
+                                        <Method>
+                                            <FunctionInvocation start='22086' end='22097'>
+                                                <FucntionName start='22086' end='22090'>
+                                                    <Variable start='22086' end='22090' isDollared='false'>
+                                                        <Identifier start='22086' end='22090' name='qstr'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <Variable start='22091' end='22096' isDollared='true'>
+                                                        <Identifier start='22092' end='22096' name='word'/>
+                                                    </Variable>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17717,6 +18569,40 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22127' end='22177' isCurly='true'>
+                                <ReturnStatement start='22129' end='22175'>
+                                    <InfixExpression start='22136' end='22174' operator='CONCAT'>
+                                        <InfixExpression start='22136' end='22170' operator='CONCAT'>
+                                            <Scalar start='22136' end='22139' type='STRING' value='&apos;%&apos;'/>
+                                            <MethodInvocation start='22140' end='22170'>
+                                                <Variable start='22140' end='22145' isDollared='true'>
+                                                    <Identifier start='22141' end='22145' name='this'/>
+                                                </Variable>
+                                                <Method>
+                                                    <FunctionInvocation start='22147' end='22170'>
+                                                        <FucntionName start='22147' end='22157'>
+                                                            <Variable start='22147' end='22157' isDollared='false'>
+                                                                <Identifier start='22147' end='22157' name='_sql_quote'/>
+                                                            </Variable>
+                                                        </FucntionName>
+                                                        <Parameters>
+                                                            <FieldAccess start='22158' end='22169'>
+                                                                <Variable start='22158' end='22163' isDollared='true'>
+                                                                    <Identifier start='22159' end='22163' name='this'/>
+                                                                </Variable>
+                                                                <Field>
+                                                                    <Variable start='22165' end='22169' isDollared='false'>
+                                                                        <Identifier start='22165' end='22169' name='word'/>
+                                                                    </Variable>
+                                                                </Field>
+                                                            </FieldAccess>
+                                                        </Parameters>
+                                                    </FunctionInvocation>
+                                                </Method>
+                                            </MethodInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='22171' end='22174' type='STRING' value='&apos;%&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17750,6 +18636,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22286' end='22306' isCurly='true'>
+                                <ReturnStatement start='22288' end='22304'>
+                                    <Scalar start='22295' end='22303' type='STRING' value='&apos;(?=.*)&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17759,6 +18648,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22329' end='22344' isCurly='true'>
+                                <ReturnStatement start='22331' end='22342'>
+                                    <Scalar start='22338' end='22341' type='STRING' value='&apos;%&apos;'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17792,6 +18684,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22473' end='22531' isCurly='true'>
+                                <ReturnStatement start='22475' end='22529'>
+                                    <InfixExpression start='22482' end='22528' operator='CONCAT'>
+                                        <InfixExpression start='22482' end='22522' operator='CONCAT'>
+                                            <Scalar start='22482' end='22491' type='STRING' value='&apos;(?=.*\b&apos;'/>
+                                            <FunctionInvocation start='22494' end='22522'>
+                                                <FucntionName start='22494' end='22504'>
+                                                    <NamespaceName start='22494' end='22504' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='22494' end='22504' name='preg_quote'/>
+                                                    </NamespaceName>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='22505' end='22516'>
+                                                        <Variable start='22505' end='22510' isDollared='true'>
+                                                            <Identifier start='22506' end='22510' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='22512' end='22516' isDollared='false'>
+                                                                <Identifier start='22512' end='22516' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Scalar start='22518' end='22521' type='STRING' value='&apos;/&apos;'/>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='22525' end='22528' type='STRING' value='&apos;)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17801,6 +18721,37 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22554' end='22600' isCurly='true'>
+                                <ReturnStatement start='22556' end='22598'>
+                                    <InfixExpression start='22563' end='22597' operator='CONCAT'>
+                                        <MethodInvocation start='22563' end='22593'>
+                                            <Variable start='22563' end='22568' isDollared='true'>
+                                                <Identifier start='22564' end='22568' name='this'/>
+                                            </Variable>
+                                            <Method>
+                                                <FunctionInvocation start='22570' end='22593'>
+                                                    <FucntionName start='22570' end='22580'>
+                                                        <Variable start='22570' end='22580' isDollared='false'>
+                                                            <Identifier start='22570' end='22580' name='_sql_quote'/>
+                                                        </Variable>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <FieldAccess start='22581' end='22592'>
+                                                            <Variable start='22581' end='22586' isDollared='true'>
+                                                                <Identifier start='22582' end='22586' name='this'/>
+                                                            </Variable>
+                                                            <Field>
+                                                                <Variable start='22588' end='22592' isDollared='false'>
+                                                                    <Identifier start='22588' end='22592' name='word'/>
+                                                                </Variable>
+                                                            </Field>
+                                                        </FieldAccess>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </Method>
+                                        </MethodInvocation>
+                                        <Scalar start='22594' end='22597' type='STRING' value='&apos;%&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17834,6 +18785,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22726' end='22784' isCurly='true'>
+                                <ReturnStatement start='22728' end='22782'>
+                                    <InfixExpression start='22735' end='22781' operator='CONCAT'>
+                                        <InfixExpression start='22735' end='22773' operator='CONCAT'>
+                                            <Scalar start='22735' end='22742' type='STRING' value='&apos;(?=.*&apos;'/>
+                                            <FunctionInvocation start='22745' end='22773'>
+                                                <FucntionName start='22745' end='22755'>
+                                                    <NamespaceName start='22745' end='22755' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='22745' end='22755' name='preg_quote'/>
+                                                    </NamespaceName>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='22756' end='22767'>
+                                                        <Variable start='22756' end='22761' isDollared='true'>
+                                                            <Identifier start='22757' end='22761' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='22763' end='22767' isDollared='false'>
+                                                                <Identifier start='22763' end='22767' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Scalar start='22769' end='22772' type='STRING' value='&apos;/&apos;'/>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='22776' end='22781' type='STRING' value='&apos;\b)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17843,6 +18822,37 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22807' end='22853' isCurly='true'>
+                                <ReturnStatement start='22809' end='22851'>
+                                    <InfixExpression start='22816' end='22850' operator='CONCAT'>
+                                        <Scalar start='22816' end='22819' type='STRING' value='&apos;%&apos;'/>
+                                        <MethodInvocation start='22820' end='22850'>
+                                            <Variable start='22820' end='22825' isDollared='true'>
+                                                <Identifier start='22821' end='22825' name='this'/>
+                                            </Variable>
+                                            <Method>
+                                                <FunctionInvocation start='22827' end='22850'>
+                                                    <FucntionName start='22827' end='22837'>
+                                                        <Variable start='22827' end='22837' isDollared='false'>
+                                                            <Identifier start='22827' end='22837' name='_sql_quote'/>
+                                                        </Variable>
+                                                    </FucntionName>
+                                                    <Parameters>
+                                                        <FieldAccess start='22838' end='22849'>
+                                                            <Variable start='22838' end='22843' isDollared='true'>
+                                                                <Identifier start='22839' end='22843' name='this'/>
+                                                            </Variable>
+                                                            <Field>
+                                                                <Variable start='22845' end='22849' isDollared='false'>
+                                                                    <Identifier start='22845' end='22849' name='word'/>
+                                                                </Variable>
+                                                            </Field>
+                                                        </FieldAccess>
+                                                    </Parameters>
+                                                </FunctionInvocation>
+                                            </Method>
+                                        </MethodInvocation>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17876,6 +18886,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='22971' end='23029' isCurly='true'>
+                                <ReturnStatement start='22973' end='23027'>
+                                    <InfixExpression start='22980' end='23026' operator='CONCAT'>
+                                        <InfixExpression start='22980' end='23018' operator='CONCAT'>
+                                            <Scalar start='22980' end='22987' type='STRING' value='&apos;(?=\b&apos;'/>
+                                            <FunctionInvocation start='22990' end='23018'>
+                                                <FucntionName start='22990' end='23000'>
+                                                    <NamespaceName start='22990' end='23000' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='22990' end='23000' name='preg_quote'/>
+                                                    </NamespaceName>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='23001' end='23012'>
+                                                        <Variable start='23001' end='23006' isDollared='true'>
+                                                            <Identifier start='23002' end='23006' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='23008' end='23012' isDollared='false'>
+                                                                <Identifier start='23008' end='23012' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                    <Scalar start='23014' end='23017' type='STRING' value='&apos;/&apos;'/>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='23021' end='23026' type='STRING' value='&apos;\b)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17885,6 +18923,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23052' end='23095' isCurly='true'>
+                                <ReturnStatement start='23054' end='23093'>
+                                    <MethodInvocation start='23061' end='23092'>
+                                        <Variable start='23061' end='23066' isDollared='true'>
+                                            <Identifier start='23062' end='23066' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='23068' end='23092'>
+                                                <FucntionName start='23068' end='23079'>
+                                                    <Variable start='23068' end='23079' isDollared='false'>
+                                                        <Identifier start='23068' end='23079' name='_sql_squote'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='23080' end='23091'>
+                                                        <Variable start='23080' end='23085' isDollared='true'>
+                                                            <Identifier start='23081' end='23085' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='23087' end='23091' isDollared='false'>
+                                                                <Identifier start='23087' end='23091' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17918,6 +18984,24 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23267' end='23310' isCurly='true'>
+                                <ReturnStatement start='23269' end='23308'>
+                                    <InfixExpression start='23276' end='23307' operator='CONCAT'>
+                                        <InfixExpression start='23276' end='23299' operator='CONCAT'>
+                                            <Scalar start='23276' end='23285' type='STRING' value='&apos;(?=.*\b&apos;'/>
+                                            <FieldAccess start='23288' end='23299'>
+                                                <Variable start='23288' end='23293' isDollared='true'>
+                                                    <Identifier start='23289' end='23293' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <Variable start='23295' end='23299' isDollared='false'>
+                                                        <Identifier start='23295' end='23299' name='word'/>
+                                                    </Variable>
+                                                </Field>
+                                            </FieldAccess>
+                                        </InfixExpression>
+                                        <Scalar start='23302' end='23307' type='STRING' value='&apos;\b)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17927,6 +19011,34 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23333' end='23375' isCurly='true'>
+                                <ReturnStatement start='23335' end='23373'>
+                                    <MethodInvocation start='23342' end='23372'>
+                                        <Variable start='23342' end='23347' isDollared='true'>
+                                            <Identifier start='23343' end='23347' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='23349' end='23372'>
+                                                <FucntionName start='23349' end='23359'>
+                                                    <Variable start='23349' end='23359' isDollared='false'>
+                                                        <Identifier start='23349' end='23359' name='_sql_quote'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='23360' end='23371'>
+                                                        <Variable start='23360' end='23365' isDollared='true'>
+                                                            <Identifier start='23361' end='23365' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='23367' end='23371' isDollared='false'>
+                                                                <Identifier start='23367' end='23371' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17960,6 +19072,33 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23504' end='23561' isCurly='true'>
+                                <ReturnStatement start='23506' end='23559'>
+                                    <InfixExpression start='23513' end='23558' operator='CONCAT'>
+                                        <InfixExpression start='23513' end='23550' operator='CONCAT'>
+                                            <Scalar start='23513' end='23522' type='STRING' value='&apos;(?=.*\b&apos;'/>
+                                            <FunctionInvocation start='23525' end='23550'>
+                                                <FucntionName start='23525' end='23537'>
+                                                    <NamespaceName start='23525' end='23537' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='23525' end='23537' name='glob_to_pcre'/>
+                                                    </NamespaceName>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <FieldAccess start='23538' end='23549'>
+                                                        <Variable start='23538' end='23543' isDollared='true'>
+                                                            <Identifier start='23539' end='23543' name='this'/>
+                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='23545' end='23549' isDollared='false'>
+                                                                <Identifier start='23545' end='23549' name='word'/>
+                                                            </Variable>
+                                                        </Field>
+                                                    </FieldAccess>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='23553' end='23558' type='STRING' value='&apos;\b)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -17993,6 +19132,18 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23726' end='23749' isCurly='true'>
+                                <ReturnStatement start='23728' end='23747'>
+                                    <FieldAccess start='23735' end='23746'>
+                                        <Variable start='23735' end='23740' isDollared='true'>
+                                            <Identifier start='23736' end='23740' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='23742' end='23746' isDollared='false'>
+                                                <Identifier start='23742' end='23746' name='word'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18026,6 +19177,59 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23890' end='23963' isCurly='true'>
+                                <ReturnStatement start='23892' end='23961'>
+                                    <FunctionInvocation start='23899' end='23960'>
+                                        <FucntionName start='23899' end='23910'>
+                                            <NamespaceName start='23899' end='23910' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='23899' end='23910' name='str_replace'/>
+                                            </NamespaceName>
+                                        </FucntionName>
+                                        <Parameters>
+                                            <ArrayCreation start='23911' end='23929' type='OLD'>
+                                                <ArrayElement start='23917' end='23922'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <Scalar start='23917' end='23922' type='STRING' value='"/%/"'/>
+                                                    </Value>
+                                                </ArrayElement>
+                                                <ArrayElement start='23923' end='23928'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <Scalar start='23923' end='23928' type='STRING' value='"/_/"'/>
+                                                    </Value>
+                                                </ArrayElement>
+                                            </ArrayCreation>
+                                            <ArrayCreation start='23931' end='23946' type='OLD'>
+                                                <ArrayElement start='23937' end='23941'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <Scalar start='23937' end='23941' type='STRING' value='".*"'/>
+                                                    </Value>
+                                                </ArrayElement>
+                                                <ArrayElement start='23942' end='23945'>
+                                                    <Key>
+                                                    </Key>
+                                                    <Value>
+                                                        <Scalar start='23942' end='23945' type='STRING' value='"."'/>
+                                                    </Value>
+                                                </ArrayElement>
+                                            </ArrayCreation>
+                                            <FieldAccess start='23948' end='23959'>
+                                                <Variable start='23948' end='23953' isDollared='true'>
+                                                    <Identifier start='23949' end='23953' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <Variable start='23955' end='23959' isDollared='false'>
+                                                        <Identifier start='23955' end='23959' name='word'/>
+                                                    </Variable>
+                                                </Field>
+                                            </FieldAccess>
+                                        </Parameters>
+                                    </FunctionInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18035,6 +19239,18 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='23986' end='24009' isCurly='true'>
+                                <ReturnStatement start='23988' end='24007'>
+                                    <FieldAccess start='23995' end='24006'>
+                                        <Variable start='23995' end='24000' isDollared='true'>
+                                            <Identifier start='23996' end='24000' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='24002' end='24006' isDollared='false'>
+                                                <Identifier start='24002' end='24006' name='word'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18181,10 +19397,36 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='24362' end='24386'>
+                                            <FieldAccess start='24369' end='24385'>
+                                                <Variable start='24369' end='24374' isDollared='true'>
+                                                    <Identifier start='24370' end='24374' name='leaf'/>
+                                                </Variable>
+                                                <Field>
+                                                    <ArrayAccess start='24376' end='24385' type='VARIABLE_ARRAY' isDollared='false'>
+                                                        <ArrayDimension start='24382' end='24385'>
+                                                            <Index>
+                                                                <Scalar start='24383' end='24384' type='INT' value='0'/>
+                                                            </Index>
+                                                        </ArrayDimension>
+                                                        <Name>
+                                                            <Variable start='24376' end='24382' isDollared='false'>
+                                                                <Identifier start='24376' end='24382' name='leaves'/>
+                                                            </Variable>
+                                                        </Name>
+                                                    </ArrayAccess>
+                                                </Field>
+                                            </FieldAccess>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='24421' end='24434'>
+                                    <Variable start='24428' end='24433' isDollared='true'>
+                                        <Identifier start='24429' end='24433' name='this'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18222,6 +19464,30 @@
                                         </Reference>
                                     </Assignment>
                                 </ExpressionStatement>
+                                <ReturnStatement start='24513' end='24550'>
+                                    <InfixExpression start='24520' end='24549' operator='CONCAT'>
+                                        <InfixExpression start='24520' end='24543' operator='CONCAT'>
+                                            <Scalar start='24520' end='24525' type='STRING' value='&apos;(?!&apos;'/>
+                                            <MethodInvocation start='24528' end='24543'>
+                                                <Variable start='24528' end='24533' isDollared='true'>
+                                                    <Identifier start='24529' end='24533' name='leaf'/>
+                                                </Variable>
+                                                <Method>
+                                                    <FunctionInvocation start='24535' end='24543'>
+                                                        <FucntionName start='24535' end='24541'>
+                                                            <Variable start='24535' end='24541' isDollared='false'>
+                                                                <Identifier start='24535' end='24541' name='regexp'/>
+                                                            </Variable>
+                                                        </FucntionName>
+                                                        <Parameters>
+                                                        </Parameters>
+                                                    </FunctionInvocation>
+                                                </Method>
+                                            </MethodInvocation>
+                                        </InfixExpression>
+                                        <Scalar start='24546' end='24549' type='STRING' value='&apos;)&apos;'/>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18243,6 +19509,45 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='24606' end='24674' isCurly='true'>
+                                <ReturnStatement start='24616' end='24668'>
+                                    <MethodInvocation start='24623' end='24667'>
+                                        <FieldAccess start='24623' end='24639'>
+                                            <Variable start='24623' end='24628' isDollared='true'>
+                                                <Identifier start='24624' end='24628' name='this'/>
+                                            </Variable>
+                                            <Field>
+                                                <ArrayAccess start='24630' end='24639' type='VARIABLE_ARRAY' isDollared='false'>
+                                                    <ArrayDimension start='24636' end='24639'>
+                                                        <Index>
+                                                            <Scalar start='24637' end='24638' type='INT' value='0'/>
+                                                        </Index>
+                                                    </ArrayDimension>
+                                                    <Name>
+                                                        <Variable start='24630' end='24636' isDollared='false'>
+                                                            <Identifier start='24630' end='24636' name='leaves'/>
+                                                        </Variable>
+                                                    </Name>
+                                                </ArrayAccess>
+                                            </Field>
+                                        </FieldAccess>
+                                        <Method>
+                                            <FunctionInvocation start='24641' end='24667'>
+                                                <FucntionName start='24641' end='24656'>
+                                                    <Variable start='24641' end='24656' isDollared='false'>
+                                                        <Identifier start='24641' end='24656' name='highlight_words'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <UnaryOperation start='24657' end='24666' operator='NOT'>
+                                                        <Variable start='24658' end='24666' isDollared='true'>
+                                                            <Identifier start='24659' end='24666' name='negated'/>
+                                                        </Variable>
+                                                    </UnaryOperation>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18537,10 +19842,36 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='25463' end='25487'>
+                                            <FieldAccess start='25470' end='25486'>
+                                                <Variable start='25470' end='25475' isDollared='true'>
+                                                    <Identifier start='25471' end='25475' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <ArrayAccess start='25477' end='25486' type='VARIABLE_ARRAY' isDollared='false'>
+                                                        <ArrayDimension start='25483' end='25486'>
+                                                            <Index>
+                                                                <Scalar start='25484' end='25485' type='INT' value='0'/>
+                                                            </Index>
+                                                        </ArrayDimension>
+                                                        <Name>
+                                                            <Variable start='25477' end='25483' isDollared='false'>
+                                                                <Identifier start='25477' end='25483' name='leaves'/>
+                                                            </Variable>
+                                                        </Name>
+                                                    </ArrayAccess>
+                                                </Field>
+                                            </FieldAccess>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='25512' end='25525'>
+                                    <Variable start='25519' end='25524' isDollared='true'>
+                                        <Identifier start='25520' end='25524' name='this'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18629,6 +19960,11 @@
                                         </Variable>
                                     </Value>
                                 </ForEachStatement>
+                                <ReturnStatement start='25754' end='25768'>
+                                    <Variable start='25761' end='25767' isDollared='true'>
+                                        <Identifier start='25762' end='25767' name='words'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -18940,10 +20276,36 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='26802' end='26826'>
+                                            <FieldAccess start='26809' end='26825'>
+                                                <Variable start='26809' end='26814' isDollared='true'>
+                                                    <Identifier start='26810' end='26814' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <ArrayAccess start='26816' end='26825' type='VARIABLE_ARRAY' isDollared='false'>
+                                                        <ArrayDimension start='26822' end='26825'>
+                                                            <Index>
+                                                                <Scalar start='26823' end='26824' type='INT' value='0'/>
+                                                            </Index>
+                                                        </ArrayDimension>
+                                                        <Name>
+                                                            <Variable start='26816' end='26822' isDollared='false'>
+                                                                <Identifier start='26816' end='26822' name='leaves'/>
+                                                            </Variable>
+                                                        </Name>
+                                                    </ArrayAccess>
+                                                </Field>
+                                            </FieldAccess>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='26852' end='26865'>
+                                    <Variable start='26859' end='26864' isDollared='true'>
+                                        <Identifier start='26860' end='26864' name='this'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -19007,6 +20369,11 @@
                                         </Variable>
                                     </Value>
                                 </ForEachStatement>
+                                <ReturnStatement start='27215' end='27230'>
+                                    <Variable start='27222' end='27229' isDollared='true'>
+                                        <Identifier start='27223' end='27229' name='regexp'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -19220,6 +20587,27 @@
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='27942' end='27972'>
+                                    <MethodInvocation start='27949' end='27971'>
+                                        <Variable start='27949' end='27954' isDollared='true'>
+                                            <Identifier start='27950' end='27954' name='this'/>
+                                        </Variable>
+                                        <Method>
+                                            <FunctionInvocation start='27956' end='27971'>
+                                                <FucntionName start='27956' end='27961'>
+                                                    <Variable start='27956' end='27961' isDollared='false'>
+                                                        <Identifier start='27956' end='27961' name='_join'/>
+                                                    </Variable>
+                                                </FucntionName>
+                                                <Parameters>
+                                                    <Variable start='27962' end='27970' isDollared='true'>
+                                                        <Identifier start='27963' end='27970' name='regexps'/>
+                                                    </Variable>
+                                                </Parameters>
+                                            </FunctionInvocation>
+                                        </Method>
+                                    </MethodInvocation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -19285,8 +20673,43 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='28094' end='28135'>
+                                            <InfixExpression start='28101' end='28134' operator='CONCAT'>
+                                                <InfixExpression start='28101' end='28128' operator='CONCAT'>
+                                                    <Scalar start='28101' end='28106' type='STRING' value='&apos;(?:&apos;'/>
+                                                    <FunctionInvocation start='28109' end='28128'>
+                                                        <FucntionName start='28109' end='28113'>
+                                                            <NamespaceName start='28109' end='28113' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='28109' end='28113' name='join'/>
+                                                            </NamespaceName>
+                                                        </FucntionName>
+                                                        <Parameters>
+                                                            <Scalar start='28114' end='28117' type='STRING' value='&apos;|&apos;'/>
+                                                            <Variable start='28119' end='28127' isDollared='true'>
+                                                                <Identifier start='28120' end='28127' name='regexps'/>
+                                                            </Variable>
+                                                        </Parameters>
+                                                    </FunctionInvocation>
+                                                </InfixExpression>
+                                                <Scalar start='28131' end='28134' type='STRING' value='&apos;)&apos;'/>
+                                            </InfixExpression>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
+                                        <ReturnStatement start='28161' end='28180'>
+                                            <ArrayAccess start='28168' end='28179' type='VARIABLE_ARRAY' isDollared='false'>
+                                                <ArrayDimension start='28176' end='28179'>
+                                                    <Index>
+                                                        <Scalar start='28177' end='28178' type='INT' value='0'/>
+                                                    </Index>
+                                                </ArrayDimension>
+                                                <Name>
+                                                    <Variable start='28168' end='28176' isDollared='true'>
+                                                        <Identifier start='28169' end='28176' name='regexps'/>
+                                                    </Variable>
+                                                </Name>
+                                            </ArrayAccess>
+                                        </ReturnStatement>
                                     </Else>
                                 </IfStatement>
                             </Block>
@@ -19670,6 +21093,11 @@
                                         </Parameters>
                                     </FunctionInvocation>
                                 </ExpressionStatement>
+                                <ReturnStatement start='30007' end='30020'>
+                                    <Variable start='30014' end='30019' isDollared='true'>
+                                        <Identifier start='30015' end='30019' name='tree'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -19833,8 +21261,22 @@
                                                     </Variable>
                                                 </Condition>
                                                 <Then>
+                                                    <ReturnStatement start='30589' end='30621'>
+                                                        <ClassInstanceCreation start='30596' end='30620' anonymous='false'>
+                                                            <ClassName start='30600' end='30620'>
+                                                                <NamespaceName start='30600' end='30620' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='30600' end='30620' name='TextSearchQuery_node'/>
+                                                                </NamespaceName>
+                                                            </ClassName>
+                                                            <Parameters>
+                                                            </Parameters>
+                                                        </ClassInstanceCreation>
+                                                    </ReturnStatement>
                                                 </Then>
                                                 <Else>
+                                                    <ReturnStatement start='30655' end='30668'>
+                                                        <Scalar start='30662' end='30667' type='STRING' value='false'/>
+                                                    </ReturnStatement>
                                                 </Else>
                                             </IfStatement>
                                         </Block>
@@ -19842,6 +21284,20 @@
                                     <Else>
                                     </Else>
                                 </IfStatement>
+                                <ReturnStatement start='30687' end='30730'>
+                                    <ClassInstanceCreation start='30694' end='30729' anonymous='false'>
+                                        <ClassName start='30698' end='30722'>
+                                            <NamespaceName start='30698' end='30722' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='30698' end='30722' name='TextSearchQuery_node_and'/>
+                                            </NamespaceName>
+                                        </ClassName>
+                                        <Parameters>
+                                            <Variable start='30723' end='30728' isDollared='true'>
+                                                <Identifier start='30724' end='30728' name='list'/>
+                                            </Variable>
+                                        </Parameters>
+                                    </ClassInstanceCreation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -19880,6 +21336,9 @@
                                         </UnaryOperation>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='30821' end='30834'>
+                                            <Scalar start='30828' end='30833' type='STRING' value='false'/>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -20153,6 +21612,11 @@
                                         </Method>
                                     </MethodInvocation>
                                 </ExpressionStatement>
+                                <ReturnStatement start='31405' end='31418'>
+                                    <Variable start='31412' end='31417' isDollared='true'>
+                                        <Identifier start='31413' end='31417' name='expr'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -20190,6 +21654,11 @@
                                         </Assignment>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='31520' end='31533'>
+                                            <Variable start='31527' end='31532' isDollared='true'>
+                                                <Identifier start='31528' end='31532' name='word'/>
+                                            </Variable>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -20310,6 +21779,11 @@
                                                     </InfixExpression>
                                                 </Condition>
                                                 <Then>
+                                                    <ReturnStatement start='31728' end='31741'>
+                                                        <Variable start='31735' end='31740' isDollared='true'>
+                                                            <Identifier start='31736' end='31740' name='list'/>
+                                                        </Variable>
+                                                    </ReturnStatement>
                                                 </Then>
                                                 <Else>
                                                 </Else>
@@ -20375,6 +21849,20 @@
                                                             </ParenthesisExpression>
                                                         </Condition>
                                                         <Then>
+                                                            <ReturnStatement start='31867' end='31910'>
+                                                                <ClassInstanceCreation start='31874' end='31909' anonymous='false'>
+                                                                    <ClassName start='31878' end='31902'>
+                                                                        <NamespaceName start='31878' end='31902' isCurrent='false' isGlobal='false'>
+                                                                            <Identifier start='31878' end='31902' name='TextSearchQuery_node_not'/>
+                                                                        </NamespaceName>
+                                                                    </ClassName>
+                                                                    <Parameters>
+                                                                        <Variable start='31903' end='31908' isDollared='true'>
+                                                                            <Identifier start='31904' end='31908' name='atom'/>
+                                                                        </Variable>
+                                                                    </Parameters>
+                                                                </ClassInstanceCreation>
+                                                            </ReturnStatement>
                                                         </Then>
                                                         <Else>
                                                         </Else>
@@ -20414,6 +21902,9 @@
                                         </Method>
                                     </MethodInvocation>
                                 </ExpressionStatement>
+                                <ReturnStatement start='31968' end='31981'>
+                                    <Scalar start='31975' end='31980' type='STRING' value='false'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -20594,6 +22085,20 @@
                                                                 </InfixExpression>
                                                             </Assignment>
                                                         </ExpressionStatement>
+                                                        <ReturnStatement start='32390' end='32419'>
+                                                            <ClassInstanceCreation start='32397' end='32418' anonymous='false'>
+                                                                <ClassName start='32401' end='32411'>
+                                                                    <Variable start='32401' end='32411' isDollared='true'>
+                                                                        <Identifier start='32402' end='32411' name='classname'/>
+                                                                    </Variable>
+                                                                </ClassName>
+                                                                <Parameters>
+                                                                    <Variable start='32412' end='32417' isDollared='true'>
+                                                                        <Identifier start='32413' end='32417' name='word'/>
+                                                                    </Variable>
+                                                                </Parameters>
+                                                            </ClassInstanceCreation>
+                                                        </ReturnStatement>
                                                     </Block>
                                                 </Then>
                                                 <Else>
@@ -20607,6 +22112,9 @@
                                         </Variable>
                                     </Value>
                                 </ForEachStatement>
+                                <ReturnStatement start='32452' end='32465'>
+                                    <Scalar start='32459' end='32464' type='STRING' value='false'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -20727,6 +22235,18 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='32722' end='32756' isCurly='true'>
+                                <ReturnStatement start='32732' end='32750'>
+                                    <FieldAccess start='32739' end='32749'>
+                                        <Variable start='32739' end='32744' isDollared='true'>
+                                            <Identifier start='32740' end='32744' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='32746' end='32749' isDollared='false'>
+                                                <Identifier start='32746' end='32749' name='pos'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -20773,6 +22293,39 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='32837' end='32895' isCurly='true'>
+                                <ReturnStatement start='32847' end='32889'>
+                                    <InfixExpression start='32854' end='32888' operator='IS_EQUAL'>
+                                        <FieldAccess start='32854' end='32864'>
+                                            <Variable start='32854' end='32859' isDollared='true'>
+                                                <Identifier start='32855' end='32859' name='this'/>
+                                            </Variable>
+                                            <Field>
+                                                <Variable start='32861' end='32864' isDollared='false'>
+                                                    <Identifier start='32861' end='32864' name='pos'/>
+                                                </Variable>
+                                            </Field>
+                                        </FieldAccess>
+                                        <FunctionInvocation start='32868' end='32888'>
+                                            <FucntionName start='32868' end='32873'>
+                                                <NamespaceName start='32868' end='32873' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='32868' end='32873' name='count'/>
+                                                </NamespaceName>
+                                            </FucntionName>
+                                            <Parameters>
+                                                <FieldAccess start='32874' end='32887'>
+                                                    <Variable start='32874' end='32879' isDollared='true'>
+                                                        <Identifier start='32875' end='32879' name='this'/>
+                                                    </Variable>
+                                                    <Field>
+                                                        <Variable start='32881' end='32887' isDollared='false'>
+                                                            <Identifier start='32881' end='32887' name='tokens'/>
+                                                        </Variable>
+                                                    </Field>
+                                                </FieldAccess>
+                                            </Parameters>
+                                        </FunctionInvocation>
+                                    </InfixExpression>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -21956,6 +23509,11 @@
                                         </ExpressionStatement>
                                     </Block>
                                 </WhileStatement>
+                                <ReturnStatement start='36945' end='36960'>
+                                    <Variable start='36952' end='36959' isDollared='true'>
+                                        <Identifier start='36953' end='36959' name='tokens'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -22011,6 +23569,9 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='37060' end='37073'>
+                                            <Scalar start='37067' end='37072' type='STRING' value='false'/>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -22072,6 +23633,9 @@
                                         </InfixExpression>
                                     </Condition>
                                     <Then>
+                                        <ReturnStatement start='37187' end='37200'>
+                                            <Scalar start='37194' end='37199' type='STRING' value='false'/>
+                                        </ReturnStatement>
                                     </Then>
                                     <Else>
                                     </Else>
@@ -22090,6 +23654,11 @@
                                         </FieldAccess>
                                     </PostfixExpression>
                                 </ExpressionStatement>
+                                <ReturnStatement start='37240' end='37252'>
+                                    <Variable start='37247' end='37251' isDollared='true'>
+                                        <Identifier start='37248' end='37251' name='val'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
