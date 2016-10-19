@@ -814,7 +814,8 @@ final class CompletionContextFinder {
                         contextForSeparator = CompletionContext.DEFAULT_PARAMETER_VALUE;
                     } else if (isParamSeparator(cToken)
                             || isReturnTypeSeparator(cToken)
-                            || isArray(token)) {
+                            || isArray(token)
+                            || isCallable(token)) {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.TYPE_NAME;
                     } else if (isAcceptedPrefix(cToken)) {
@@ -897,6 +898,10 @@ final class CompletionContextFinder {
 
     private static boolean isArray(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_ARRAY);
+    }
+
+    private static boolean isCallable(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_CALLABLE);
     }
 
     private static boolean isAcceptedPrefix(Token<PHPTokenId> token) {

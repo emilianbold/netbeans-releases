@@ -657,4 +657,18 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/issue258959.php");
     }
 
+    public void testIssue268496_01() throws Exception {
+        checkErrors("testfiles/parser/issue268496_01.php");
+    }
+
+    public void testIssue268496_02() throws Exception {
+        // syntax error : callable
+        checkErrors("testfiles/parser/issue268496_02.php");
+    }
+
+    public void testIssue268496_03() throws Exception {
+        // syntax error : __TRAIT__
+        checkErrors("testfiles/parser/issue268496_03.php");
+    }
+
 }
