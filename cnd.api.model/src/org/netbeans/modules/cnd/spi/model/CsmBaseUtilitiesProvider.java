@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.spi.model;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -73,6 +74,10 @@ public abstract class CsmBaseUtilitiesProvider {
     
     public abstract boolean isUnresolved(Object obj);
     
+    public abstract boolean isDummyForwardClass(CsmDeclaration decl);
+
+    public abstract CharSequence getDummyForwardSimpleQualifiedName(CsmDeclaration decl);
+
     /**
      * Implementation of the compound provider
      */
@@ -152,6 +157,25 @@ public abstract class CsmBaseUtilitiesProvider {
                 return provider.isUnresolved(obj);
             }
             return false;
+        }
+
+        @Override
+        public boolean isDummyForwardClass(CsmDeclaration decl) {
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.isDummyForwardClass(decl);
+            }
+            return false;
+        }
+
+        @Override
+        public CharSequence getDummyForwardSimpleQualifiedName(CsmDeclaration decl) {
+            CharSequence qname = null;
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                qname = provider.getDummyForwardSimpleQualifiedName(decl);
+            }
+            return (qname == null) ? decl.getName() : qname;
         }
     }
 }

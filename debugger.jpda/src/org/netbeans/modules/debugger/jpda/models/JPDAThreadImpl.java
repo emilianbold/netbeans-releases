@@ -1363,7 +1363,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 int tsc = ThreadReferenceWrapper.suspendCount(threadReference);
                 if (suspendCount != tsc) {
                     // Should not occur
-                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc+", thread's state: "+getThreadStateLog(threadReference)));
+                    logger.log(Level.INFO, getThreadStateLog(), new IllegalStateException(
+                            "Different suspend counts! JPDA Thread = "+suspendCount+
+                            ", thread "+threadReference+" = "+tsc+
+                            ", thread's state: "+getThreadStateLog(threadReference)));
                     suspendCount = tsc;
                 }
                 // The thread needs to be only single-suspended, otherwise it can not invoke methods.

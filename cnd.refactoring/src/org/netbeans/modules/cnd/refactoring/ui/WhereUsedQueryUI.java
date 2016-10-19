@@ -104,14 +104,19 @@ public class WhereUsedQueryUI implements RefactoringUI {
             assert panel != null;
             query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
             
+            
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, panel.getScopeProject());
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             query.getContext().add(ar);
 
+            query.putValue(WhereUsedQueryConstants.READ_WRITE, false);
             CsmObject refObj = panel.getReferencedObject();
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
+                if (CsmKindUtilities.isVariable(refObj)) {
+                    query.putValue(WhereUsedQueryConstants.READ_WRITE, true);
+                }
                 query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }
             if (panel.isVirtualMethod()) {

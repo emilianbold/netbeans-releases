@@ -44,6 +44,9 @@ package org.netbeans.modules.nativeexecution.support;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -94,5 +97,14 @@ public class MiscUtils {
         // Or should it be just  return e.id == ChannelSftp.SSH_FX_FAILURE ?
         // well, let's be conservative
         return e.id != ChannelSftp.SSH_FX_NO_SUCH_FILE && e.id != ChannelSftp.SSH_FX_PERMISSION_DENIED;
+    }
+
+    public static List<String> getMessageAsList(Throwable ex) {
+        String msg = ex.getMessage();
+        if (msg == null) {
+            return Collections.emptyList();
+        } else {
+            return Arrays.asList(msg.split("\n")); //NOI18N
+        }
     }
 }
