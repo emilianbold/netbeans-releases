@@ -279,7 +279,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         } else {
             String script = String.format("ls ./\"%s\" || touch ./\"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
-            if (res.isOK() && res.getErrorString().length() == 0) {
+            if (res.isOK() && res.getErrorLines().isEmpty()) {
                 creationFalure(name, directory, orig);
                 throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_AlreadyExists", getDisplayName(path))); // NOI18N

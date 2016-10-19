@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -87,6 +89,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 
 /**
  *
@@ -828,6 +831,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (DEBUG || STAT_COMPLETION) {
             fullSize += trace(out.fileLocalFunctions, "File Local Functions"); //NOI18N
         }
+        removeForwards(out.classesEnumsTypedefs);
         // remove local macros from project included macros
         remove(out.fileProjectMacros, out.fileLocalMacros);
         if (DEBUG || STAT_COMPLETION) {
@@ -901,6 +905,32 @@ public class CompletionResolverImpl implements CompletionResolver {
             trace(null, "There are " + fullSize + " resovled elements"); //NOI18N
         }
         return out;
+    }
+
+    private static void removeForwards(Collection<CsmClassifier> classesEnumsTypedefs) {
+        if (classesEnumsTypedefs != null) {
+            Set<CharSequence> nonForwards = new TreeSet<>();
+            boolean hasForwards = false;
+            for (CsmClassifier cls : classesEnumsTypedefs) {
+                if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
+                    hasForwards = true;
+                } else {
+                    CharSequence qname = cls.getQualifiedName();
+                    nonForwards.add(qname);
+                }
+            }
+            if (hasForwards) {
+                for(Iterator<CsmClassifier> it = classesEnumsTypedefs.iterator(); it.hasNext(); ) {
+                    CsmClassifier cls = it.next();
+                    if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
+                        CharSequence qname = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls);
+                        if (qname != null && nonForwards.contains(qname)) {
+                            it.remove();
+                        }
+                    }   
+                }
+            }
+        }
     }
 
     private static <T> Collection<T> remove(Collection<T> dest, Collection<T> removeItems) {

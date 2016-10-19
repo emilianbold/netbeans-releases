@@ -721,8 +721,8 @@ import org.openide.util.RequestProcessor;
                         System.out.printf("\tunzip: %s%n", s); // NOI18N
                     }
                 }
-                if (!status.getErrorString().isEmpty()) {
-                    for(String s : status.getErrorString().split("\n")) { // NOI18N
+                if (!status.getErrorLines().isEmpty()) {
+                    for(String s : status.getErrorLines()) { // NOI18N
                         err.printf("unzip: %s%n", s); //NOI18N
                     }
                 }

@@ -175,13 +175,13 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             goldenModel = w.toString();
             System.err.println("Inited golden content");
             if (EVALUATE_CLANG) {
-                goldenAST = execute.output;
+                goldenAST = execute.getOutputString();
             }
         } else {
             String diff = annotation.file() + "[" + annotation.line() + ":" + annotation.column() + "," + annotation.length() + "]" + annotation.insert();
             if (EVALUATE_CLANG) {
                 if (!isNew) {
-                    assertModel(target, "Recovery clang " + source + " " + diff, goldenAST, execute.output);
+                    assertModel(target, "Recovery clang " + source + " " + diff, goldenAST, execute.getOutputString());
                 }
             } else {
                 assertModel(target, "Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());

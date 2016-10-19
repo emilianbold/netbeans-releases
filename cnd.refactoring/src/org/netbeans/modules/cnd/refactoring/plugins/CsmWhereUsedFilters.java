@@ -50,6 +50,9 @@ public enum CsmWhereUsedFilters {
     COMMENTS("filter-comments"), // NOI18N
     DEAD_CODE("filter-deadcode"), // NOI18N
     MACROS("filter-macros"), // NOI18N
+    READ("filter-read"), // NOI18N
+    WRITE("filter-write"), // NOI18N
+    READ_WRITE("filter-readwrite"), // NOI18N
     DECLARATIONS("filter-declarations"), // NOI18N
     SCOPE("filter-scope"); // NOI18N
     

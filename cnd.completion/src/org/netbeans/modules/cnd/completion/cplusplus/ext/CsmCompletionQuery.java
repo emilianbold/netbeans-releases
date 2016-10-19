@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -856,6 +858,10 @@ abstract public class CsmCompletionQuery {
                 }
             }
             CompletionSupport sup = CompletionSupport.get(doc);
+            if (sup == null) {
+                Logger.getLogger(CsmCompletion.class.getSimpleName()).log(Level.INFO, "Null CompletionSupport for  {0}", doc); //NOI18N
+                return null;
+            }
             CsmOffsetableDeclaration context = sup.getDefinition(contextScope);
             if (context == null) {
                 context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
