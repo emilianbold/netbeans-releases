@@ -343,15 +343,17 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (nativeFileIetm == null) {
                 continue;
             }
-            PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
-            if (tool == PredefinedToolKind.CustomTool
-                    // check of mime type is better to support headers without extensions
-                    && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
-                continue; // IZ 87407
+            if (nativeFileIetm instanceof Item) {
+                PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
+                if (tool == PredefinedToolKind.CustomTool
+                        // check of mime type is better to support headers without extensions
+                        && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
+                    continue; // IZ 87407
+                }
             }
             actualList.add(nativeFileIetm);
             if (TRACE) {
-                System.out.println("    " + ((Item) nativeFileIetm).getPath()); // NOI18N
+                System.out.println("    " + nativeFileIetm.getAbsolutePath()); // NOI18N
             }
         }
         // Fire NativeProject change event
@@ -1278,7 +1280,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
     
-    private static class NativeFileIndexer implements NativeFileItem {
+    public static class NativeFileIndexer implements NativeFileItem {
 
         private final FileObject indexer;
         private final NativeFileItem.Language language;
