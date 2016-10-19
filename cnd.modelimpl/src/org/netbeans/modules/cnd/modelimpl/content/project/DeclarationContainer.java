@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -239,7 +240,7 @@ public abstract class DeclarationContainer extends ProjectComponent {
                     final CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
                     for(CsmUID<CsmOffsetableDeclaration> u : uids) {
                         if (UIDUtilities.getFileID(u) == fileID) {
-                            if (CharSequenceUtilities.indexOf(UIDUtilities.getName(u, true), KeyUtilities.UID_INTERNAL_DATA_PREFIX) > 0) {
+                            if (OffsetableDeclarationBase.isIncludedDeclaration(u)) {
                                 list.add(u);
                             }
                         }
@@ -249,7 +250,7 @@ public abstract class DeclarationContainer extends ProjectComponent {
                     @SuppressWarnings("unchecked") // checked
                     final CsmUID<CsmOffsetableDeclaration> uid = (CsmUID<CsmOffsetableDeclaration>) o;
                     if (UIDUtilities.getFileID(uid) == fileID) {
-                        if (CharSequenceUtilities.indexOf(UIDUtilities.getName(uid, true), KeyUtilities.UID_INTERNAL_DATA_PREFIX) > 0) {
+                        if (OffsetableDeclarationBase.isIncludedDeclaration(uid)) {
                             list.add(uid);
                         }
                     }

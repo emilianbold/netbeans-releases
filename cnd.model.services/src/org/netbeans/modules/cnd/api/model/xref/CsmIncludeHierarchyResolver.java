@@ -91,9 +91,17 @@ public abstract class CsmIncludeHierarchyResolver {
     /**
      * Search for usage of referenced file in include directives.
      * Return collection of files that direct include referenced file.
+     * Search in file project and dependant projects
      */
     public abstract Collection<CsmFile> getFiles(CsmFile referencedFile);
     
+    /**
+     * Search for usage of referenced file in include directives.
+     * Return collection of files that direct include referenced file.
+     * Search in file project, dependant projects and dependant projects libraries
+     */
+    public abstract Collection<CsmFile> getAllFiles(CsmFile referencedFile);
+
     /**
      * Search for usage of referenced file in include directives.
      * Return collection of include directives that direct include referenced file.
@@ -109,6 +117,11 @@ public abstract class CsmIncludeHierarchyResolver {
 
         @Override
         public Collection<CsmFile> getFiles(CsmFile referencedFile) {
+            return Collections.<CsmFile>emptyList();
+        }
+
+        @Override
+        public Collection<CsmFile> getAllFiles(CsmFile referencedFile) {
             return Collections.<CsmFile>emptyList();
         }
 

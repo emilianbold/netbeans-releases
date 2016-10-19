@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * A dummy class that is added to model in the case
@@ -134,11 +135,20 @@ public final class ForwardClass extends ClassImpl {
         return Collections.emptyList();
     }
 
+    public CharSequence getSimpleQualifiedName() {
+        CharSequence name = getQualifiedName();        
+        int pos = CharSequences.indexOf(name, "<"); //NOI18N // FIXME
+        if (pos > 0) {
+            name = name.subSequence(0, pos);
+        }
+        return name;
+    }
+
     @Override
     public String toString() {
         return "DUMMY_FORWARD " + super.toString(); // NOI18N
     }
-    
+
     public static class ForwardClassBuilder extends SimpleDeclarationBuilder {
 
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;

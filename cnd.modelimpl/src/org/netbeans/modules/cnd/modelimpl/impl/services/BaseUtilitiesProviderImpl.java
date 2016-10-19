@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
@@ -191,5 +193,15 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
         
     public static BaseUtilitiesProviderImpl getImpl() {
         return IMPL;
+    }
+
+    @Override
+    public boolean isDummyForwardClass(CsmDeclaration decl) {
+        return decl instanceof ForwardClass;
+    }
+
+    @Override
+    public CharSequence getDummyForwardSimpleQualifiedName(CsmDeclaration decl) {
+        return (decl instanceof ForwardClass) ? ((ForwardClass) decl).getSimpleQualifiedName(): decl.getName();
     }
 }

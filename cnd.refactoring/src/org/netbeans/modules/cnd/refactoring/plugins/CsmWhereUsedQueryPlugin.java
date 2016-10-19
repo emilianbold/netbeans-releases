@@ -306,6 +306,10 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
+    private boolean isReadWriteAccess() {
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.READ_WRITE);
+    }
+
     private boolean isSearchInComments() {
         return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
     }
@@ -344,7 +348,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                                         accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
                                     }
                                     if (accept) {
-                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true, curObj));
                                     }
                                 }
                             } finally {
@@ -464,6 +468,17 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         filtersDescription.addFilter(CsmWhereUsedFilters.DEAD_CODE.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_DeadCode"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_dead.png", false)); //NOI18N
+
+        filtersDescription.addFilter(CsmWhereUsedFilters.READ.getKey(), 
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Read"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_read.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.WRITE.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Write"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_write.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.READ_WRITE.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_ReadWrite"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_readwrite.png", false)); //NOI18N
+
         filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), false,
                 ImageUtilities.loadImageIcon(CsmImageName.DECLARATION_FILTER, false));
@@ -481,6 +496,11 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
         }
         filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
+        if (isReadWriteAccess()) {
+            filtersDescription.enable(CsmWhereUsedFilters.READ.getKey());
+            filtersDescription.enable(CsmWhereUsedFilters.WRITE.getKey());
+            filtersDescription.enable(CsmWhereUsedFilters.READ_WRITE.getKey());
+        }
         if (!isFindDirectSubclassesOnly() && !isFindSubclasses()) {
             filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
             filtersDescription.enable(CsmWhereUsedFilters.SCOPE.getKey());
@@ -531,7 +551,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                                 accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
                             }
                             if (accept) {
-                                fileElems.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                fileElems.add(CsmRefactoringElementImpl.create(csmReference, true, objs.length > 0 ? objs[0] : null));
                             }
                         }
                     } finally {
@@ -569,13 +589,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             overrides.add(csmMethod);
             for (CsmMethod method : overrides) {
                 CsmReference declRef = CsmReferenceSupport.createObjectReference(method);
-                elements.add(CsmRefactoringElementImpl.create(declRef, false));
+                elements.add(CsmRefactoringElementImpl.create(declRef, false, method));
                 // find defintion of method if needed
                 if (!CsmKindUtilities.isFunctionDefinition(method)) {
                     CsmFunctionDefinition def = method.getDefinition();
                     if (def != null) {
                         CsmReference defRef = CsmReferenceSupport.createObjectReference(def);
-                        elements.add(CsmRefactoringElementImpl.create(defRef, false));
+                        elements.add(CsmRefactoringElementImpl.create(defRef, false, method));
                     }
                 }
             }
@@ -606,14 +626,14 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                 for (CsmReference csmReference : refs) {
                     for (CsmProject prj : prjs) {
                         if (csmReference.getContainingFile().getProject().equals(prj)) {
-                            elements.add(CsmRefactoringElementImpl.create(csmReference, false));
+                            elements.add(CsmRefactoringElementImpl.create(csmReference, false, csmFile));
                             break;
                         }
                     }
                 }
             } else {
                 for (CsmReference csmReference : refs) {
-                    elements.add(CsmRefactoringElementImpl.create(csmReference, false));
+                    elements.add(CsmRefactoringElementImpl.create(csmReference, false, csmFile));
                 }
             }
         }
@@ -630,7 +650,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                 CsmClass referencedClass = (CsmClass) obj;
                 Collection<CsmReference> refs = CsmTypeHierarchyResolver.getDefault().getSubTypes(referencedClass, directSubtypesOnly);
                 for (CsmReference csmReference : refs) {
-                    elements.add(CsmRefactoringElementImpl.create(csmReference, false));
+                    elements.add(CsmRefactoringElementImpl.create(csmReference, false, startClass));
                 }
             }
         }

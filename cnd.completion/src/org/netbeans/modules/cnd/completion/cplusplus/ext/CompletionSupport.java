@@ -142,10 +142,12 @@ public final class CompletionSupport implements DocumentListener {
         doc.addDocumentListener(this);
     }
 
+    /** NB: can return NULL, for example, if a text/plain file is #included */
     public static CompletionSupport get(JTextComponent component) {
         return get(component.getDocument());
     }
 
+    /** NB: can return NULL, for example, if a text/plain file is #included */
     public static CompletionSupport get(final Document doc) {
         CompletionSupport support = (CompletionSupport) doc.getProperty(CompletionSupport.class);
         if (support == null) {

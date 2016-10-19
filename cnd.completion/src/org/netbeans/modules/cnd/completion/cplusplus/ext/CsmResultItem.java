@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ExceptionStr;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
+import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -470,6 +471,9 @@ public abstract class CsmResultItem implements CompletionItem {
         CsmInclude lastInclude = null;
         boolean isLastIncludeTypeMatch = false;
         for (CsmInclude inc : currentFile.getIncludes()) {
+            if (inc.getStartOffset() < 0) {
+                continue;
+            }
             if (inc.getEndOffset() <= substOffset) {
                 if (inc.isSystem() == isSystem) {
                     lastInclude = inc;
@@ -580,6 +584,20 @@ public abstract class CsmResultItem implements CompletionItem {
         return offset;
     }
 
+    /** 
+     * Decorates text with trailing "<>" 
+     * and sets selectionStartOffset/selectionEndOffset  
+     * to put caret inside these "<>"
+     */
+    protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
+        if (CsmKindUtilities.isTemplate(csmObj)) {                
+            selectionStartOffset = replaceText.length() + 1;
+            selectionEndOffset = replaceText.length() + 1;
+            return replaceText + "<>"; // NOI18N
+        }
+        return replaceText;
+    }
+    
     protected String getReplaceText() {
         return getItemText();
     }
@@ -1493,11 +1511,16 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         protected String getReplaceText() {
-            String text = getName();
+            String text;
+            if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
+                text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+            } else {
+                text = cls.getName().toString();
+            }
             if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
-            return text;
+            return decorateReplaceTextIfTemplate(text, cls);
         }
 
         @Override

@@ -60,44 +60,62 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
     
     public void testDeclarationsFilterSelected() throws Exception {
-        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testDeclarationsFilterDeselected() throws Exception {
         // Only comments filter enabled
-        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
+        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testDeadcodeFilterSelected() throws Exception {
-        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DEAD_CODE.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DEAD_CODE.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testDeadcodeFilterDeselected() throws Exception {
         // Only comments filter enabled
-        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testMacrosFilterSelected() throws Exception {
-        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.MACROS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.MACROS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testMacrosFilterDeselected() throws Exception {
         // Only declarations filter selected
-        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testCommentsFilterSelected() throws Exception {
         Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
         // Only declarations filter selected
-        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(), CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(), CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
     
     public void testCommentsFilterDeselected() throws Exception {
         Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
         // Only declarations filter selected
-        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
+    }
+
+    public void testRFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey()));
+    }
+
+    public void testWFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.WRITE.getKey()));
+    }
+
+    public void testRWFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
 }
 
