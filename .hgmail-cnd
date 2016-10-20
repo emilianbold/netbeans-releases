@@ -1,3 +1,3 @@
 [usersubs]
 commits@cnd.netbeans.org=cnd*/*,asm/*,git.remote/*,libs.git.remote/*,lib.terminalemulator/*,terminal/*,remotefs*/*,subversion.remote/*,mercurial.remote/*,libs.clank/*,cnd.model.jclank.bridge/*
-dlight-commits@cnd.netbeans.org=dlight*/*,odcs.cnd/*
+dlight-commits@cnd.netbeans.org=dlight*/*,odcs*
