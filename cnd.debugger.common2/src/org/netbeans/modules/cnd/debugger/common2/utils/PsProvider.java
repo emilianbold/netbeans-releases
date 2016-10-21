@@ -49,7 +49,12 @@ import java.util.regex.Pattern;
 import java.util.logging.*;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.openide.ErrorManager;
 
@@ -57,17 +62,19 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfo;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfoDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 
 /**
@@ -84,14 +91,71 @@ public abstract class PsProvider {
 
     private static boolean DISABLE_PARGS = Boolean.getBoolean("attach.pargs.disable"); //NOI18N
 
+
     private static final Logger logger =
 	Logger.getLogger(PsProvider.class.getName());
-
+    
+    
+    private static String whitespace_chars = "" /* dummy empty string for homogeneity */
+            + "\\u0009" // CHARACTER TABULATION
+            + "\\u000A" // LINE FEED (LF)
+            + "\\u000B" // LINE TABULATION
+            + "\\u000C" // FORM FEED (FF)
+            + "\\u000D" // CARRIAGE RETURN (CR)
+            + "\\u0020" // SPACE
+            + "\\u0085" // NEXT LINE (NEL) 
+            + "\\u00A0" // NO-BREAK SPACE
+            + "\\u1680" // OGHAM SPACE MARK
+            + "\\u180E" // MONGOLIAN VOWEL SEPARATOR
+            + "\\u2000" // EN QUAD 
+            + "\\u2001" // EM QUAD 
+            + "\\u2002" // EN SPACE
+            + "\\u2003" // EM SPACE
+            + "\\u2004" // THREE-PER-EM SPACE
+            + "\\u2005" // FOUR-PER-EM SPACE
+            + "\\u2006" // SIX-PER-EM SPACE
+            + "\\u2007" // FIGURE SPACE
+            + "\\u2008" // PUNCTUATION SPACE
+            + "\\u2009" // THIN SPACE
+            + "\\u200A" // HAIR SPACE
+            + "\\u2028" // LINE SEPARATOR
+            + "\\u2029" // PARAGRAPH SEPARATOR
+            + "\\u202F" // NARROW NO-BREAK SPACE
+            + "\\u205F" // MEDIUM MATHEMATICAL SPACE
+            + "\\u3000" // IDEOGRAPHIC SPACE
+            ;
+    /* A \s that actually works for Java’s native character set: Unicode */
+    private static String whitespace_charclass = "[" + whitespace_chars + "]";
+    /* A \S that actually works for  Java’s native character set: Unicode */
+    private static String not_whitespace_charclass = "[^" + whitespace_chars + "]";
+    
+    
+    private static String escapeString(String line) {
+          return line.replaceAll("[\\<\\(\\[\\{\\\\\\^\\-\\=\\$\\!\\|\\]\\}\\)‌​\\?\\*\\+\\.\\>]", "\\\\$0");//NOI18N
+     }    
+    
     public final class PsData {
 
-	private Vector<Vector<String>> processes = new Vector<Vector<String>>();
+	//private Vector<Vector<String>> processes = new Vector<Vector<String>>();
+        //TODO: use process list, UI can be changed
+       // ProcessList processList;
+        private final List<ProcessInfo> processes = new ArrayList<>();
+        
+        private  final List<ProcessInfoDescriptor> descriptors ;
 
-	private Vector<String> header = null;
+	private Vector<String> header  = new Vector<>();
+
+        public PsData() {
+            this.descriptors = PsProvider.this.descriptors;
+            header = new Vector<>();
+            for (ProcessInfoDescriptor descriptor : descriptors) {
+                if (descriptor.isUserVisible) {
+                    header.add(descriptor.header);
+                }
+            }            
+        }
+        
+        
 
 	/**
 	 * Translated header names in the table
@@ -99,15 +163,11 @@ public abstract class PsProvider {
 	public Vector<String> header() {
 	    return header;
 	}
-        
-        void setHeader(Vector<String> header) {
-            this.header = header;
-        }
-
+                
         public int commandColumnIdx() {
-            return commandColumnIndex();
+            return commandColumnIndex();        
         }
-
+        
         public int pidColumnIdx() {
             return pidColumnIndex();
         }
@@ -121,141 +181,183 @@ public abstract class PsProvider {
 	 */
 	public Vector<Vector<String>> processes(Pattern re) {
             Vector<Vector<String>> res = new Vector<Vector<String>>();
+            List<ProcessInfo> result = new ArrayList<>();
             // Do filtering
-            outer: for (Vector<String> proc : processes) {
-                for (String field : proc) {
-                    if (re.matcher(field).find()) {
-                        res.add(proc);
-                        continue outer;
+            for (ProcessInfo proc : processes) {
+                if (re.matcher(proc.getPID().toString()).find()) {
+                    result.add(proc);
+                    continue;
+                }
+                
+                for (ProcessInfoDescriptor d : descriptors) {
+                    Object data = proc.get(d.id, d.type);
+                    if (data != null && re.matcher(data.toString()).find()) {
+                        result.add(proc);
+                        continue;
                     }
                 }
+            }
+            for (ProcessInfo proc : result) {
+               Vector<String> row = new Vector<>(); 
+                for (ProcessInfoDescriptor d : descriptors) {
+                    if (!d.isUserVisible) {
+                        //skip
+                        continue;
+                    }
+                    Object data = proc.get(d.id, d.type);
+                    row.add(data == null ? "" : data + "");//NOI18N
+                }   
+                res.add(row);
             }
             return res;
 	}
-
+        
         void addProcess(String line) {
-            int offset = 0;
-            
-            Vector<String> columns = new Vector<String>(headerStr().length-3);
-            for (int cx = 0; cx < headerStr().length; cx++) {
-                String s = null;
-                if (cx == 7) {
-                    s = line.substring(offset + fields[cx][0]);
-                } else {
-                    // extra check for UID, see IZ 199423
-                    if (headerStr()[cx].contains("UID")) { //NOI18N
-                        assert offset == 0;
-                        int end = fields[cx][1];
-                        while (line.charAt(end+1) != ' ') {
-                            end++;
-                        }
-                        s = line.substring(fields[cx][0], end+1);
-                        offset = end - fields[cx][1];
-                    } else {
-                        s = line.substring(offset + fields[cx][0], offset + fields[cx][1]+1);
-                    }
-                }
+            addProcess(line, true);
+        }
+        
+  
+        void addProcess(String line, boolean allProcesses) {
 
-                if (cx !=3 && cx != 5 && cx != 6) { // No "C", "TIME" and "TTY" columns
-                    columns.add(s.trim());
+            Collection<Pair<ProcessInfoDescriptor, String>> filters = allProcesses ? 
+                Collections.<Pair<ProcessInfoDescriptor, String>>emptyList(): filterOutAll();
+            List<Object> info = new ArrayList<>();
+            String spacePattern = whitespace_charclass + "+";//NOI18N          
+            final String output = line.substring(firstPosition()).trim();
+            String[] vals =  output.split(spacePattern); // NOI18N 
+            String escapedString = escapeString(line);
+            String[] escapedValues =  escapedString.substring(firstPosition()).trim().split(spacePattern);
+            final int length = descriptors.size();
+            for (int cx = 0; cx < length; cx++) {
+                final ProcessInfoDescriptor descriptor = descriptors.get(cx);
+                String s = vals[cx];
+                if (cx == length - 1 && vals.length > length) {
+                    StringBuilder begining = new StringBuilder("(");//NOI18N
+
+                    begining.append(spacePattern);
+                    for (int j = 0; j < length - 1; j++) {
+                        begining.append(escapedValues[j]).append(spacePattern);
+                    }
+                    begining.append(")((.*))");//NOI18N
+                    if (Log.Ps.debug) {
+                        System.out.println("pattern = _" + begining.toString() + "_");//NOI18N
+                    }
+                    Pattern p = Pattern.compile(begining.toString());
+                    //need to start with space to match pattern " +" from the begining
+                    Matcher matcher = p.matcher(" " + output);//NOI18N
+                    if (matcher.matches()) {
+                        s = matcher.group(2);
+                    } else {
+                        if (Log.Ps.debug) {
+                            System.out.println("something went wrong, will concatanate tail");//NOI18N
+                        }
+                        //concat to the end with space
+                        for (int i = cx + 1; i < vals.length; i++) {
+                            s += " " + vals[i];//NOI18N
+                        }  
+                    }
+      
+                }                 
+
+                if (Log.Ps.debug) {
+                    System.out.println("----------");
+                    System.out.println("column=" + descriptor.header);
+                    System.out.println("cx=" + cx);
+                    System.out.println("s=_" + s + "_");
+                }
+                info.add(s.trim());
+            }
+            final ProcessInfo processInfo = ProcessInfo.create(descriptors, info); 
+            boolean isIncluded = true;
+            //check filter
+            for (Pair<ProcessInfoDescriptor, String> filter : filters) {
+                if (!processInfo.equals(filter.first().id, filter.second())) {
+                    isIncluded = false;
+                    break;
                 }
             }
-            processes.add(columns);
+            if (isIncluded) {
+                processes.add(processInfo);
+            }
         }
 
         private void updateCommand(String pid, String command) {
-            for (Vector<String> proc : processes) {
-                if (pid.equals(proc.get(pidColumnIdx()))) {
-                    proc.set(commandColumnIdx(), command);
+            for (ProcessInfo proc : processes) {
+                if (pid.equals(proc.getPID() + "")) {
+                    proc.updateInfo(ProcessInfoDescriptor.COMMAND_COLUMN_ID, command);
                 }
             }
         }
+
     }
 
-    // can't be static, for format of ps output is different from host to host
-    private Vector<String> parsedHeader = null;
+//    // can't be static, for format of ps output is different from host to host
+//    private Vector<String> parsedHeader = null;
 
     protected static final String zero = "0";	// NOI18N
     private String uid = null;
 
-    private int fields[][] = new int[8][2];
+
+    
+    //package visibility for test purpose
+    /*package*/  static <T> ProcessInfoDescriptor descriptor(Class<T> c, boolean isUserVisible,
+            String id, String command, String header) {
+        return new ProcessInfoDescriptor(isUserVisible, id, command, c,
+                header, 
+                isUserVisible ? Catalog.get("PS_HDR_" + header) : header);//NOI18N
+                //loc("PsProvider." + id + ".desc")); // NOI18N
+    }    
+       
 
     /**
      * Specialization of PsProvider for Solaris
      */
     static class SolarisPsProvider extends PsProvider {
-
-	private final static String header_str_solaris[] = {
-	    "UID", // NOI18N
-	    "PID", // NOI18N
-	    "PPID", // NOI18N
-	    "C",		// skipped // NOI18N
-	    "STIME", // NOI18N
-	    "TTY    ",		// skipped // NOI18N
-	    " TIME",            // skipped // NOI18N
-	    "CMD", // NOI18N
-	};
+ 
+        private final String solarisPsFormat;
+        
+        public SolarisPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
+            super(host, descriptors);
+            StringBuilder psCommandBuilder = new StringBuilder();
+            for (int i = 0; i < descriptors.size(); i++) {
+                if (i == 0) {
+                    psCommandBuilder.append(" -o ");
+                }
+                psCommandBuilder.append(descriptors.get(i).command);
+                if (i < descriptors.size() - 1) {
+                    psCommandBuilder.append(",");
+                } else {
+                    psCommandBuilder.append(" ");
+                }
+            };            
+            solarisPsFormat = psCommandBuilder.toString();            
+        }
 
 	public SolarisPsProvider(Host host) {
-	    super(host);
+	    this(host, 
+                    Arrays.<ProcessInfoDescriptor>asList(
+                        descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
+                        descriptor(String.class, true, ZONE_COLUMN_ID, "zone", "ZONE"), // NOI18N
+                        descriptor(String.class, true,  ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "comm", "COMMAND") // NOI18N
+                    )
+            );
+            
 	}
-
+              
+        private static final String ZONE_COLUMN_ID = "zone";
+        
         @Override
-	public int commandColumnIndex() {
-	    return 4;
-	}
-
-        @Override
-        public int pidColumnIndex() {
-	    return 1;
-	}
-
-        @Override
-	public String[] headerStr() {
-	    return header_str_solaris;
-	}
-
-	/* 
-	 * for executor, not used now, 
-	 * in the future if we want to get uid from remote host
-	 * this is will be used.
-	 */
-//	protected String[] uidCommand1() {
-//	    String [] args = new String[2];
-//	    args[0] = "/usr/xpg4/bin/id";
-//	    args[1] = "-u";
-//	    return args;
-//	}
+        protected boolean showAllProcesses() {
+            return false;
+        }
 
         @Override
 	protected String uidCommand() {
 	    return "/usr/xpg4/bin/id -u";	// NOI18N
 	}
-	
-	/* OLD
-	protected String[] psCommand1(String uid) {
-
-	    if (Log.Ps.null_uid) 
-		uid = null;
-
-	    if ( (uid == null) || (uid.equals(zero)) ) {
-		// uid=0 => root; use ps -ef
-		// OLD return "LANG=C /bin/ps -www -o pid,tty,time,cmd";
-		String [] args = new String[2];
-		args[0] = "/usr/bin/ps";
-		args[1] = "-ef" ;
-		return args;
-		// return "LANG=C /usr/bin/ps -ef";	// NOI18N
-	    } else {
-		String [] args = new String[3];
-		args[0] = "/usr/bin/ps";
-		args[1] = "-fu";
-		args[2] = uid;
-		return args;
-		// return "LANG=C /usr/bin/ps -fu " + uid;	// NOI18N
-	    }
-	}
-	*/
 	
         @Override
 	protected String psCommand(String uid) {
@@ -268,11 +370,50 @@ public abstract class PsProvider {
 
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return "/usr/bin/ps -ef";	// NOI18N
+		return "/usr/bin/ps -e " + solarisPsFormat;	// NOI18N
 	    } else {
-		return "/usr/bin/ps -fu " + uid;	// NOI18N
+                 //+ " -z `zonename`";	// NOI18N
+		return "/usr/bin/ps " + solarisPsFormat + " -u " + uid ;//NOI18N
 	    }
 	}
+        
+        private String zone = null;
+        
+        private String getZonename() {
+            if (zone == null) {
+                try {
+                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
+                    npb.setCommandLine("zonename");//NOI18N
+                    ProcessUtils.ExitStatus status = ProcessUtils.execute(npb);
+                    String res = status.getOutputString();
+                    int exitCode = status.exitCode;
+                    if (exitCode != 0) {
+                        String msg = "zonename command failed with " + exitCode; // NOI18N
+                        logger.log(Level.WARNING, msg);
+                        return exEnv.getUser();
+                    }
+                    if (!res.isEmpty()) {
+                        zone = res;
+                    } else {
+                        zone = "global";//NOI18N
+                    }
+                } catch (Exception e) {
+                    ErrorManager.getDefault().annotate(e, "Failed to parse OutputStream of uid command"); // NOI18N
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+            return zone;
+        }   
+
+        @Override
+        protected Collection<Pair<ProcessInfoDescriptor, String>> filterOutAll() {
+            String zonename = getZonename();
+            return Collections.singleton(Pair.of(
+                    descriptor(String.class, true, ZONE_COLUMN_ID, "zone", "ZONE"),//NOI18N
+                    zonename));
+        }
+        
+        
 
         @Override
         public PsData getData(boolean allProcesses) {
@@ -286,8 +427,8 @@ public abstract class PsProvider {
                 String[] pargs_args = new String[res.processes.size()+1];
                 pargs_args[0] = "-Fl"; // NOI18N
                 int idx = 1;
-                for (Vector<String> proc : res.processes) {
-                    pargs_args[idx++] = proc.get(pidColumnIndex());
+                for (ProcessInfo proc : res.processes) {
+                    pargs_args[idx++] = proc.getPID() + "";
                 }
                 pargsBuilder.setArguments(pargs_args);
 
@@ -331,75 +472,41 @@ public abstract class PsProvider {
      */
     static class LinuxPsProvider extends PsProvider {
 
-	private final static String header_str_linux[] = {
-	    "UID     ", // NOI18N
-	    "PID", // NOI18N
-	    "PPID", // NOI18N
-	    "C",		// skipped // NOI18N
-	    "STIME", // NOI18N
-	    "TTY   ",		// skipped // NOI18N
-	    "    TIME",         // skipped // NOI18N
-	    "CMD", // NOI18N
-	};
+        private final String linuxPsFormat;
+        public LinuxPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
+            super(host, descriptors);
+            StringBuilder psCommandBuilder = new StringBuilder();
+            for (int i = 0; i < descriptors.size(); i++) {
+                if (i == 0) {
+                    psCommandBuilder.append(" -o ");
+                }
+                psCommandBuilder.append(descriptors.get(i).command);
+                if (i < descriptors.size() - 1) {
+                    psCommandBuilder.append(",");
+                } else {
+                    psCommandBuilder.append(" ");
+                }
+            };            
+            linuxPsFormat = psCommandBuilder.toString();                   
+        }
 
 	public LinuxPsProvider(Host host) {
-	    super(host);
+            this(host,
+                    Arrays.<ProcessInfoDescriptor>asList(
+                            descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
+                            descriptor(Integer.class, true, ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
+                            descriptor(Integer.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
+                            descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                            descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "cmd", "COMMAND") // NOI18N
+                    )
+            );     
 	}
-
-        @Override
-	public int commandColumnIndex() {
-	    return 4;
-	}
-
-        @Override
-        public int pidColumnIndex() {
-	    return 1;
-	}
-
-        @Override
-	public String[] headerStr() {
-	    return header_str_linux;
-	}
-
-	/* 
-	 * for executor, not used,
-	 * in the future if we want to get uid from remote host
-	 * this is will be used.
-	 */
-//	protected String [] uidCommand1() {
-//	    String [] args = new String[2];
-//	    args[0] = "/usr/bin/id";
-//	    args[1] = "-u";
-//	    return args;
-//	}
 
         @Override
 	protected String uidCommand() {
 	    return "/usr/bin/id -u";	// NOI18N
 	}
 
-	/* OLD
-	protected String[] psCommand1(String uid) {
-
-	    if (Log.Ps.null_uid) 
-		uid = null;
-
-	    if ( (uid == null) || (uid.equals(zero)) ) {
-		// uid=0 => root; use ps -ef
-		// OLD return "LANG=C /bin/ps -www -o pid,tty,time,cmd";
-		String [] args = new String[2];
-		args[0] = "/bin/ps";
-		args[1] = "-ef";
-		return args;
-	    } else {
-		String [] args = new String[3];
-		args[0] = "/bin/ps";
-		args[1] = "-fu";
-		args[2] = uid;
-		return args;
-	    }
-	}
-	*/
 
         @Override
 	protected String psCommand(String uid) {
@@ -413,40 +520,72 @@ public abstract class PsProvider {
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
 		// OLD return "LANG=C /bin/ps -www -o pid,tty,time,cmd";
-		return "/bin/ps -ef";	// NOI18N
+		return "/bin/ps -e " + linuxPsFormat;	// NOI18N
 	    } else {
-		return "/bin/ps -fu " + uid + " --width 1024";		// NOI18N
+		return "/bin/ps " + linuxPsFormat + " -u " + uid + " --width 1024";		// NOI18N
 	    }
 	}
+
+        @Override
+        protected boolean showAllProcesses() {
+            return true;
+        }
+
     }
     
     static class MacOSPsProvider extends LinuxPsProvider {
-        private final static String header_str_mac[] = {
-	    "  UID", // NOI18N
-	    "   PID", // NOI18N
-	    "  PPID", // NOI18N
-	    "   C",		// skipped // NOI18N
-	    "STIME", // NOI18N
-	    "TTY     ",		// skipped // NOI18N
-	    "    TIME",         // skipped // NOI18N
-	    "CMD", // NOI18N
-	};
+        private final String macOsPsFormat;
+//        private final static String header_str_mac[] = {
+//	    "  UID", // NOI18N
+//	    "   PID", // NOI18N
+//	    "  PPID", // NOI18N
+//	    "   C",		// skipped // NOI18N
+//	    "STIME", // NOI18N
+//	    "TTY     ",		// skipped // NOI18N
+//	    "    TIME",         // skipped // NOI18N
+//	    "CMD", // NOI18N
+//	};
 
-        @Override
-        public String[] headerStr() {
-            return header_str_mac;
+//        @Override
+//        public String[] headerStr() {
+//            return header_str_mac;
+//        }
+        
+        public MacOSPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
+            super(host, descriptors);
+            StringBuilder psCommandBuilder = new StringBuilder();
+            for (int i = 0; i < descriptors.size(); i++) {
+                if (i == 0) {
+                    psCommandBuilder.append(" -o ");
+                }
+                psCommandBuilder.append(descriptors.get(i).command);
+                if (i < descriptors.size() - 1) {
+                    psCommandBuilder.append(",");
+                } else {
+                    psCommandBuilder.append(" ");
+                }
+            };            
+            macOsPsFormat = psCommandBuilder.toString();                
         }
         
         public MacOSPsProvider(Host host) {
-            super(host);
+            this(host, Arrays.<ProcessInfoDescriptor>asList(
+                            descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
+                            descriptor(Integer.class, true, ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
+                            descriptor(Integer.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
+                            descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                            descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "command", "COMMAND") // NOI18N
+                    )
+            );
+               
         }
 
         @Override
         protected String psCommand(String uid) {
             if ( (uid == null) || (uid.equals(zero)) ) {
-		return "/bin/ps -ef";	// NOI18N
+		return "/bin/ps -e " + macOsPsFormat;	// NOI18N
 	    } else {
-		return "/bin/ps -fu " + uid;		// NOI18N
+		return "/bin/ps " + macOsPsFormat + " -u " + uid;		// NOI18N
 	    }
         }
     }
@@ -457,41 +596,44 @@ public abstract class PsProvider {
     static class WindowsPsProvider extends PsProvider {
         private FileMapper fileMapper = FileMapper.getDefault();
 
-	private final static String header_str_windows[] = {
-	    "PID", // NOI18N
-	    "PPID", // NOI18N
-            "PGID", // NOI18N
-            "WINPID", // NOI18N
-	    "TTY",		// skipped // NOI18N
-            "UID", // NOI18N
-            "STIME", // NOI18N
-	    "COMMAND", // NOI18N
-	};
+//	private final static String header_str_windows[] = {
+//	    "PID", // NOI18N
+//	    "PPID", // NOI18N
+//            "PGID", // NOI18N
+//            "WINPID", // NOI18N
+//	    "TTY",		// skipped // NOI18N
+//            "UID", // NOI18N
+//            "STIME", // NOI18N
+//	    "COMMAND", // NOI18N
+//	};
 
 	public WindowsPsProvider(Host host) {
-	    super(host);
+	    super(host,
+                    Arrays.<ProcessInfoDescriptor>asList(
+                        descriptor(String.class, true,  ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
+                        descriptor(String.class, true, "pgid", "ppid", "PGID"), // NOI18N
+                        descriptor(String.class, true, "winpid", "winpid", "WINPID"), // NOI18N
+                        descriptor(String.class, false, "tty", "tty", "TTY"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "uid", "UID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "cmd", "COMMAND") // NOI18N
+                    )
+
+            );
 	}
 
         @Override
-	public int commandColumnIndex() {
-	    return 4;
-	}
-        
+        protected boolean showAllProcesses() {
+            return true;
+        }
+              
         // see IZ 193741 - skip status column
         @Override
         protected int firstPosition() {
             return 1;
         }
 
-        @Override
-        public int pidColumnIndex() {
-	    return 0;
-	}
-
-        @Override
-	public String[] headerStr() {
-	    return header_str_windows;
-	}
 
         @Override
 	protected String uidCommand() {
@@ -572,20 +714,45 @@ public abstract class PsProvider {
         }
         return psProvider;
     }
-
+    
+    protected Collection<Pair<ProcessInfoDescriptor, String>> filterOutAll() {
+        return Collections.emptyList();
+    }
+    
+    protected abstract boolean showAllProcesses();
     /**
      * Return index of the CMD column.
+     * @return 
      */
-    protected abstract int commandColumnIndex();
+    protected  int commandColumnIndex() {
+        int idx = 0;
+        for (ProcessInfoDescriptor descriptor : descriptors) {
+            if (ProcessInfoDescriptor.COMMAND_COLUMN_ID.equals(descriptor.id)) {
+                return idx;
+            }
+            if (descriptor.isUserVisible) {
+                idx++;
+            }
+        }
+        return -1;       
+    }
+    
+    protected  int pidColumnIndex() {
+        int idx = 0;
+        for (ProcessInfoDescriptor descriptor : descriptors) {
+            if (ProcessInfoDescriptor.PID_COLUMN_ID.equals(descriptor.id)) {
+                return idx;
+            }
+            if (descriptor.isUserVisible) {
+                idx++;
+            }
+        }
+        return -1;       
+    }    
 
-    protected abstract int pidColumnIndex();
 
-    protected abstract String[] headerStr();
-
-//    protected abstract String[] uidCommand1(); // for executor, not used
     protected abstract String psCommand(String root);
 
-    // OLD protected abstract String[] psCommand1(String root); // for executor
     protected abstract String uidCommand(); // for Runtime.exe
     
     protected int firstPosition() {
@@ -598,11 +765,13 @@ public abstract class PsProvider {
     }
     
     protected final ExecutionEnvironment exEnv;
+    protected final List<ProcessInfoDescriptor> descriptors;
 
-    private PsProvider(Host host) {
+    private PsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
         exEnv = host.executionEnvironment();
+        this.descriptors = descriptors;
     }
-
+        
     // "host" for getUid is usually "localhost"
     private String getUid() {
         if (uid == null) {
@@ -630,32 +799,6 @@ public abstract class PsProvider {
         return uid;
     }
 
-    /**
-     * Debugging method for printing column boundries as discovered by
-     * parseHeader().
-     */
-
-    private void printFields(String str) {
-	System.out.printf("------------------------------------------------\n"); // NOI18N
-	System.out.printf("%s\n", str); // NOI18N
-
-	for (int sx = 0; sx < str.length(); sx++) {
-	    boolean found = false;
-	    for (int cx = 0; cx < headerStr().length; cx++) {
-		if (fields[cx][0] == sx) {
-		    System.out.printf("%d", cx); // NOI18N
-		    found = true;
-		} else if (fields[cx][1] == sx) {
-		    System.out.printf("%d", cx); // NOI18N
-		    found = true;
-		}
-	    }
-	    if (!found)
-		System.out.printf(" "); // NOI18N
-	}
-	System.out.printf("\n"); // NOI18N
-	System.out.printf("------------------------------------------------\n"); // NOI18N
-    }
 
     /**
      * Return a Vector of headers based on the first line emitted by 'ps' and
@@ -703,59 +846,57 @@ public abstract class PsProvider {
      * to wing it for now and postpone making this column discovery even more
      * involved.
      */
-    Vector<String> parseHeader(String str) {
-
-	/* OLD 
-	// parsedHeader is static so we only do this once
-	if (parsedHeader != null)
-	    return parsedHeader;
-	*/
-
-
-	if (Log.Ps.debug) 
-	    System.out.printf("parseHeader: '%s'\n", str); // NOI18N
-
-	parsedHeader = new Vector<String>(headerStr().length-3);
-	for (int cx = 0; cx < headerStr().length; cx++) {
-	    String s = null;
-	    int i;
-
-	    i = str.indexOf(headerStr()[cx]); 
-
-	    // fields[cx][0] the begining of this column
-	    // fields[cx][1] the end of this column
-
-	    if (i >= 0) { // found
-		if (cx == 0) // first column
-		    fields[cx][0] = firstPosition();
-		fields[cx][1] = i + headerStr()[cx].length() - 1;
-	    }
-
-	    if (cx == 7) {
-		// last one
-		s = str.substring(fields[cx][0]);
-	    } else {
-		s = str.substring(fields[cx][0], fields[cx][1]+1);
-		fields[cx+1][0] = i + headerStr()[cx].length();
-	    }
-	if (Log.Ps.debug) 
-	    System.out.println("fields : " + fields[cx][0] + " " + fields[cx][1]); // NOI18N
-
-	    if (cx !=3 && cx != 5 && cx != 6) // No "C", "TIME" and "TTY" columns
-		parsedHeader.add(s.trim());
-	}
-
-	if (Log.Ps.debug)
-	    printFields(str);
-
-	// translate header
-	for (int hx = 0; hx < parsedHeader.size(); hx++) {
-	    String h = parsedHeader.get(hx);
-	    parsedHeader.set(hx, Catalog.get("PS_HDR_" + h)); // NOI18N
-	}
-
-	return parsedHeader;
-    }
+//    void parseHeader(String str) {
+//
+//	/* OLD 
+//	// parsedHeader is static so we only do this once
+//	if (parsedHeader != null)
+//	    return parsedHeader;
+//	*/
+//
+//        //!!!!all this is done to get fields[][] filled in
+//
+//	if (Log.Ps.debug) 
+//	    System.out.printf("parseHeader: '%s'\n", str); // NOI18N
+//
+//	//parsedHeader = new Vector<String>(headerStr().length-columnIndexesToExclude().length);
+//        int lastSearchIndex = 0;
+//	for (int cx = 0; cx < descriptors.size(); cx++) {
+//            ProcessInfoDescriptor desciptor = descriptors.get(cx);
+//	    String s = null;
+//	    int i;
+//
+//	    i = str.indexOf(desciptor.header, lastSearchIndex); 
+//
+//	    // fields[cx][0] the begining of this column
+//	    // fields[cx][1] the end of this column
+//
+//	    if (i >= 0) { // found
+//		if (cx == 0) {// first column
+//		    fields[cx][0] = firstPosition();
+//                }
+//		fields[cx][1] = i + desciptor.header.length() - 1;
+//	    }
+//
+//	    if (cx == descriptors.size() -1) {
+//		// last one
+//		s = str.substring(fields[cx][0]);
+//	    } else {
+//		s = str.substring(fields[cx][0], fields[cx][1]+1);
+//		fields[cx+1][0] = i + desciptor.header.length();
+//	    }
+//            if (Log.Ps.debug)  {
+//                System.out.println("fields : " + fields[cx][0] + " " + fields[cx][1]); // NOI18N
+//            }
+//            lastSearchIndex = fields[cx][1];
+//
+//	}
+//
+//	if (Log.Ps.debug) {
+//	    printFields(str);
+//        }
+//
+//    }
 
     /**
      * Execute a ps command and return the data.
@@ -763,12 +904,13 @@ public abstract class PsProvider {
      * Executes a ps command, captures the output, remembers the first line
      * as the 'parsedHeader', stuffs the rest of the lines into 'PsData.lines'.
      * PsData will columnize lines later.
+     * @param allProcesses
+     * @return 
      */
 
     public PsData getData(boolean allProcesses) {
 	PsData psData = new PsData();
         String luid = allProcesses ? null : getUid();
-	
 	try {
             //FIXME
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
@@ -776,20 +918,16 @@ public abstract class PsProvider {
             npb.getEnvironment().put("LANG", "C"); //NOI18N
             ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
 	    int lineNo = 0;
-	    for (String line : res.getOutputLines()) {
-		if (Log.Ps.debug) 
-		    System.out.printf("PsOutput: '%s'\n", line); // NOI18N
+            Iterator<String> iterator = res.getOutputLines().iterator();
 
-		if (line.indexOf("UID", 0) != -1) { // NOI18N
-		    // first line
-		    psData.setHeader(parseHeader(line));
-		    lineNo++;
-		} else {
-		    if (lineNo++ > 0) {
-			psData.addProcess(line);
-                    }
-		}
-	    }
+            // Skip the header ...
+            iterator.next();
+
+            while (iterator.hasNext()) {
+                String line = iterator.next();
+                psData.addProcess(line, allProcesses);
+
+            }
 
             int exitCode = res.exitCode;
 	    if (exitCode != 0) {

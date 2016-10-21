@@ -301,7 +301,7 @@ public final class AttachPanel extends TopComponent {
         tableLabel = new javax.swing.JLabel();
         allProcessesCheckBox = new javax.swing.JCheckBox(Catalog.get("All_Processes_Lab")); // NOI18N
 	allProcessesCheckBox.setEnabled(true);
-	allProcessesCheckBox.setSelected(false);
+	allProcessesCheckBox.setSelected(prefs.getBoolean("showAllUserProcesses", true));//NOI18N
 	allProcessesCheckBox.setFocusable(false);
 	allProcessesCheckBox.setToolTipText(Catalog.get("All_Processes")); // NOI18N
 	allProcessesCheckBox.setMnemonic(Catalog.getMnemonic("MNEM_All_Processes")); // NOI18N
@@ -312,6 +312,7 @@ public final class AttachPanel extends TopComponent {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 refreshProcesses(null, true);
+                prefs.putBoolean("showAllUserProcesses", allProcessesCheckBox.isSelected());//NOI18N
             }
         });
 
@@ -440,7 +441,7 @@ public final class AttachPanel extends TopComponent {
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
         gridBagConstraints.weightx = 1.0;
 	//attach dialog should show ALL processes for selection optionally
-        //headingPanel.add(allProcessesCheckBox, gridBagConstraints);
+        headingPanel.add(allProcessesCheckBox, gridBagConstraints);
 
         // Hack to make the panel appear wider:
         // Add an empty label with 800 pixels insert.
@@ -476,6 +477,7 @@ public final class AttachPanel extends TopComponent {
         procTable.setShowVerticalLines(false);
         procTable.setShowHorizontalLines(true);
         procTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        procTable.setAutoCreateRowSorter(true);
 
         // No white clipping lines on selected table rows: reduce separator
         // to 0. That means text may touch but HIE prefers this.
@@ -709,6 +711,7 @@ public final class AttachPanel extends TopComponent {
         }
          */
 
+        final boolean getAllProcesses = !allProcessesCheckBox.isSelected();
         if (request) {
             // accept and commit to the new filter
             filterModel.add(regexp);
@@ -724,8 +727,8 @@ public final class AttachPanel extends TopComponent {
 
             final Pattern fre = re;
             final String hostname = hostName;
-            //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
-            final boolean getAllProcesses = false;
+            
+            //final boolean getAllProcesses = false;
 
             tableInfo("MSG_Gathering_Data", false); //NOI18N
 
@@ -801,7 +804,7 @@ public final class AttachPanel extends TopComponent {
     private PsProvider.PsData getPsData() {
 	return psData;
     }
-
+    
     private void filterProcesses(final Pattern re) {
         //final PsProvider.PsData psData = psProvider.getData(selectedHost, getAll);
         final PsProvider.PsData psData = getPsData();
@@ -1093,7 +1096,7 @@ public final class AttachPanel extends TopComponent {
                 return false;
             }
             executableProjectPanel.setSelectedProjectByPath(getHostName(), selectedProject);
-            loadedPID = processes.get(0).get(psData.pidColumnIdx());
+            loadedPID = processes.get(0).get(psData.pidColumnIdx()) + "";//NOI18N
             executableProjectPanel.setExecutablePath(getHostName(), props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
             engine = new EngineDescriptor(et);
             return true;
