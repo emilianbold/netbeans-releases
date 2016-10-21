@@ -220,9 +220,8 @@ is divided into following sections:
                     </not>
                 </condition>
                 <property name="javac.modulepath" value=""/>
-                <condition property="run.modulepath" value="${{javac.modulepath}}:${{build.classes.dir}}" else="${{javac.modulepath}}">
-                    <isset property="named.module.internal"/>
-                </condition>
+                <property name="run.modulepath" value="${{javac.modulepath}}"/>
+                <property name="module.build.classes.dir" value="${{build.classes.dir}}"/>
                 <property name="debug.modulepath" value="${{run.modulepath}}"/>
                 <property name="javac.upgrademodulepath" value=""/>
                 <property name="run.upgrademodulepath" value="${{javac.upgrademodulepath}}"/>
@@ -1726,7 +1725,8 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <modulepath>
-                                <path path="@{{modulepath}}"/>
+                                <pathelement path="@{{modulepath}}"/>
+                                <pathelement location="${{module.build.classes.dir}}"/>
                             </modulepath>
                             <upgrademodulepath>
                                 <path path="@{{upgrademodulepath}}"/>

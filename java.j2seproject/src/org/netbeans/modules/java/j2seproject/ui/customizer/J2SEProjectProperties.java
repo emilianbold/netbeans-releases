@@ -63,14 +63,17 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultButtonModel;
@@ -82,6 +85,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -113,6 +118,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.java.api.common.project.ProjectProperties.*;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * @author Petr Hrebejk
@@ -125,6 +132,7 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
+    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProjectProperties.class.getName());
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
@@ -256,6 +264,7 @@ public class J2SEProjectProperties {
 
     private String includes, excludes;
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
+    private final List<ClassPathSupport.Item> runModulePathExtension;
     
     J2SEProject getProject() {
         return project;
@@ -274,7 +283,7 @@ public class J2SEProjectProperties {
         projectGroup = new StoreGroup();
         
         additionalProperties = new HashMap<String,String>();
-        
+        runModulePathExtension = new ArrayList<>();
         init(); // Load known properties        
     }
     
@@ -315,7 +324,7 @@ public class J2SEProjectProperties {
         JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorModulePath));
         JAVAC_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_MODULEPATH)));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
-        RUN_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_MODULEPATH)));
+        RUN_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(createExtendedPathItems(projectProperties, ProjectProperties.RUN_MODULEPATH, null, isNamedModule() ? ProjectProperties.BUILD_CLASSES_DIR : null, runModulePathExtension));
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_CLASSPATH)));
         RUN_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_MODULEPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
@@ -550,7 +559,9 @@ public class J2SEProjectProperties {
         String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         String[] javac_test_mp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_MODULEPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
-        String[] run_mp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_MODULEPATH_MODEL ) );
+        List<ClassPathSupport.Item> l = new ArrayList<>(ClassPathUiSupport.getList( RUN_MODULEPATH_MODEL ));
+        l.removeAll(runModulePathExtension);
+        String[] run_mp = cs.encodeToStrings(l);
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         String[] run_test_mp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_MODULEPATH_MODEL ) );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
@@ -1045,6 +1056,55 @@ public class J2SEProjectProperties {
     void removeOptionListener(@NonNull final ActionListener al) {
         Parameters.notNull("al", al);   //NOI18N
         optionListeners.remove(al);
+    }
+
+    private boolean isNamedModule() {
+        final String sl = SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel();
+        if (sl == null || JDK9.compareTo(new SpecificationVersion(sl)) > 0) {
+            return false;
+        }
+        return J2SEProjectUtil.hasModuleInfo(project.getSourceRoots());
+    }
+
+    @NonNull
+    private Iterator<ClassPathSupport.Item> createExtendedPathItems(
+            @NonNull final EditableProperties projectProperties,
+            @NonNull final String propertyName,
+            @NullAllowed final String prependPropertyName,
+            @NullAllowed final String appendPropertyName,
+            @NonNull final Collection<? super ClassPathSupport.Item> patch) {
+        final Iterator<ClassPathSupport.Item> base = cs.itemsIterator(projectProperties.get(propertyName));
+        if (prependPropertyName == null && appendPropertyName == null) {
+            return base;
+        }
+        final List<ClassPathSupport.Item> extended = new ArrayList<>();
+        final Set<File> artefacts = Arrays.stream(PropertyUtils.tokenizePath(evaluator.getProperty(propertyName)))
+                .map((p) -> updateHelper.getAntProjectHelper().resolveFile(p))
+                .collect(Collectors.toSet());
+        if (prependPropertyName != null) {
+            final boolean newItem = Optional.ofNullable(evaluator.getProperty(prependPropertyName))
+                .map((p) -> updateHelper.getAntProjectHelper().resolveFile(p))
+                .filter((f) -> !artefacts.contains(f))
+                .isPresent();
+            if (newItem) {
+                final ClassPathSupport.Item i = ClassPathSupport.Item.create(String.format("${%s}", prependPropertyName));     //NOI18N
+                patch.add(i);
+                extended.add(i);
+            }
+        }
+        base.forEachRemaining(extended::add);
+        if (appendPropertyName != null) {
+            final boolean newItem = Optional.ofNullable(evaluator.getProperty(appendPropertyName))
+                .map((p) -> updateHelper.getAntProjectHelper().resolveFile(p))
+                .filter((f) -> !artefacts.contains(f))
+                .isPresent();
+            if (newItem) {
+                final ClassPathSupport.Item i = ClassPathSupport.Item.create(String.format("${%s}", appendPropertyName));   //NOI18N
+                patch.add(i);
+                extended.add(i);
+            }
+        }
+        return Collections.unmodifiableList(extended).iterator();
     }
 
 }

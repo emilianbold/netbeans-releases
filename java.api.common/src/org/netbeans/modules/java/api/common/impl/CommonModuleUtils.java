@@ -55,6 +55,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 
 /**
@@ -63,6 +64,7 @@ import org.openide.util.Parameters;
  * @since 1.91
  */
 public final class CommonModuleUtils {
+    public static final SpecificationVersion JDK9 = new SpecificationVersion("9");  //NOI18N
     private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
     private static final String ARG_PATCH_MOD = "--patch-module";   //NOI18N
     private static final String ARG_XMODULE = "-Xmodule";      //NOI18N
