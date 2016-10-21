@@ -71,21 +71,22 @@ abstract class ProjectCommand extends Command {
 
     @Override
     final void runInternal(Lookup context) {
-        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        NodeProcesses.RunInfo currentNodeInfo = nodeJsSupport.getNodeProcesses().getProjectRun();
+        NodeProcesses nodeProcesses = NodeProcesses.forProject(project);
+        NodeProcesses.RunInfo currentNodeInfo = nodeProcesses.getProjectRun();
         if (!currentNodeInfo.isRunning()) {
             // run it
-            nodeJsSupport.getNodeProcesses().setProjectRun(runNode());
+            nodeProcesses.setProjectRun(runNode());
             return;
         }
         // node is running
         assert currentNodeInfo.isRunning();
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         // check type + restart option
         if (currentNodeInfo.isDebug() != debug
                 || nodeJsSupport.getPreferences().isRunRestart()) {
             // force restart
             currentNodeInfo.stop();
-            nodeJsSupport.getNodeProcesses().setProjectRun(runNode());
+            nodeProcesses.setProjectRun(runNode());
         }
     }
 
