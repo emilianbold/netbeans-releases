@@ -69,12 +69,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -96,7 +92,7 @@ import org.openide.util.Exceptions;
  *
  * @author martin
  */
-class DebugManagerHandler implements JPDABreakpointListener {
+class DebugManagerHandler {
     
     private static final Logger LOG = Logger.getLogger(DebugManagerHandler.class.getName());
     
@@ -135,68 +131,52 @@ class DebugManagerHandler implements JPDABreakpointListener {
         return stepInto != null && stepInto;
     }
     
-    // PolyglotEngine$Builder.build() method exit
-    @Override
-    public void breakpointReached(JPDABreakpointEvent event) {
-        LOG.log(Level.FINE, "Engine created breakpoint hit: {0}", event);
+    void newPolyglotEngineInstance(ObjectReference engine, JPDAThreadImpl thread) {
+        LOG.log(Level.FINE, "Engine created breakpoint hit: engine = {0} in thread = {1}", new Object[] { engine, thread.getThreadReference()});
+        if (inited.compareAndSet(false, true)) {
+            initDebuggerRemoteService(thread);
+        }
+        if (accessorClass == null) {
+            // No accessor
+            return ;
+        }
+        InvocationExceptionTranslated iextr = null;
         try {
-            if (debugger.equals(event.getDebugger())) {
-                if (inited.compareAndSet(false, true)) {
-                    initDebuggerRemoteService(event.getThread());
-                }
-                if (accessorClass == null) {
-                    // No accessor
-                    return ;
-                }
-                JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
-                Variable engine = event.getVariable();
-                InvocationExceptionTranslated iextr = null;
-                try {
-                    // Create an instance of JPDATruffleDebugManager in the backend
-                    // and submit breakpoints:
-                    thread.notifyMethodInvoking();
-                    Value engineValue = ((JDIVariable) engine).getJDIValue();
-                    LOG.log(Level.FINE, "breakpointReached({0}): engineValue = {1}", new Object[]{event, engineValue});
-                    if (!(engineValue instanceof ObjectReference)) {
-                        LOG.log(Level.WARNING, "breakpointReached({0}): BAD engineValue = {1}", new Object[]{event, engineValue});
-                        return ;
-                    }
-                    VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
-                    if (vm == null) {
-                        return ;
-                    }
-                    BooleanValue doStepInto = vm.mirrorOf(isStepInto());
-                    Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
-                            accessorClass,
-                            ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
-                            ACCESSOR_SET_UP_DEBUG_MANAGER_FOR_SGN);
-                    ThreadReference tr = thread.getThreadReference();
-                    List<Value> dmArgs = Arrays.asList(engineValue, doStepInto);
-                    LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
-                    Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (ret instanceof ObjectReference) {   // Can be null when an existing debug manager is reused.
-                        //debugManager = (ObjectReference) ret;
-                        breakpointsHandler.submitBreakpoints(accessorClass, (ObjectReference) ret, thread);
-                    }
-                } catch (VMDisconnectedExceptionWrapper vmd) {
-                } catch (InvocationException iex) {
-                    iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
-                    Exceptions.printStackTrace(iex);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    thread.notifyMethodInvokeDone();
-                }
-                if (iextr != null) {
-                    iextr.preload(thread);
-                    Exceptions.printStackTrace(iextr);
-                }
+            // Create an instance of JPDATruffleDebugManager in the backend
+            // and submit breakpoints:
+            thread.notifyMethodInvoking();
+            VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+            if (vm == null) {
+                return ;
             }
+            BooleanValue doStepInto = vm.mirrorOf(isStepInto());
+            Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
+                    accessorClass,
+                    ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
+                    ACCESSOR_SET_UP_DEBUG_MANAGER_FOR_SGN);
+            ThreadReference tr = thread.getThreadReference();
+            List<Value> dmArgs = Arrays.asList(engine, doStepInto);
+            LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
+            Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
+            if (ret instanceof ObjectReference) {   // Can be null when an existing debug manager is reused.
+                //debugManager = (ObjectReference) ret;
+                breakpointsHandler.submitBreakpoints(accessorClass, (ObjectReference) ret, thread);
+            }
+        } catch (VMDisconnectedExceptionWrapper vmd) {
+        } catch (InvocationException iex) {
+            iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
+            Exceptions.printStackTrace(iex);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
-            event.resume();
+            thread.notifyMethodInvokeDone();
+        }
+        if (iextr != null) {
+            iextr.preload(thread);
+            Exceptions.printStackTrace(iextr);
         }
     }
-    
+
     private void initDebuggerRemoteService(JPDAThread thread) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "initDebuggerRemoteService({0})", thread);
