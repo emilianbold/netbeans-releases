@@ -78,7 +78,9 @@ public final class LibraryUtils {
             return false;
         }
         String[] localFiles = library.getLocalFiles();
-        assert localFiles != null : library;
+        if (localFiles == null) {
+            return true;
+        }
         FileObject projectDirectory = project.getProjectDirectory();
         for (String localFile : localFiles) {
             FileObject file = projectDirectory.getFileObject(localFile);
