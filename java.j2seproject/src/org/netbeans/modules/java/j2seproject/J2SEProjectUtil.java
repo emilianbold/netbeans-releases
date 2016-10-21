@@ -52,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -202,6 +203,22 @@ public class J2SEProjectUtil {
         System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
         return result;
+    }
+
+    public static boolean hasModuleInfo(@NonNull final SourceRoots roots) {
+        ClassPath scp = null;
+        for (FileObject root : roots.getRoots()) {
+            FileObject mInfo = J2SEProjectUtil.getModuleInfo(root);
+            if (mInfo != null) {
+                if (scp == null) {
+                    scp = ClassPath.getClassPath(root, ClassPath.SOURCE);
+                }
+                if (scp.contains(mInfo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @NonNull

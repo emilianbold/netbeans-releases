@@ -400,8 +400,7 @@ public class J2SEProjectBuilder {
         }
         if (ep.getProperty(ProjectProperties.RUN_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
-                ref(ProjectProperties.JAVAC_MODULEPATH, false),
-                ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+                ref(ProjectProperties.JAVAC_MODULEPATH, true)
             });
         }
         if (ep.getProperty(ProjectProperties.DEBUG_MODULEPATH) == null) {
