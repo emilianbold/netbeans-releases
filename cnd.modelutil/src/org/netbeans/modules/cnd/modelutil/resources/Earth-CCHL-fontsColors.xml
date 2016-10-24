@@ -58,6 +58,12 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-highlighting-macros-user" foreColor="008080" default="default">
         <font style="plain"/>
     </fontcolor>
+    <fontcolor name="cc-highlighting-enum" default="identifier"/>
+    <fontcolor name="cc-highlighting-enum-usage" default="identifier"/>
+    <fontcolor name="cc-highlighting-enumerator" default="identifier"/>
+    <fontcolor name="cc-highlighting-enumerator-usage" default="identifier"/>
+    <fontcolor name="cc-highlighting-class" default="identifier"/>
+    <fontcolor name="cc-highlighting-class-usage" default="identifier"/>
     <fontcolor name="cc-highlighting-class-fields" default="field">
     </fontcolor>
     <fontcolor name="cc-highlighting-typedefs" foreColor="9933CC" default="default">
