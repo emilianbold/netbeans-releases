@@ -97,37 +97,37 @@ public abstract class PsProvider {
     
     
     private static String whitespace_chars = "" /* dummy empty string for homogeneity */
-            + "\\u0009" // CHARACTER TABULATION
-            + "\\u000A" // LINE FEED (LF)
-            + "\\u000B" // LINE TABULATION
-            + "\\u000C" // FORM FEED (FF)
-            + "\\u000D" // CARRIAGE RETURN (CR)
-            + "\\u0020" // SPACE
-            + "\\u0085" // NEXT LINE (NEL) 
-            + "\\u00A0" // NO-BREAK SPACE
-            + "\\u1680" // OGHAM SPACE MARK
-            + "\\u180E" // MONGOLIAN VOWEL SEPARATOR
-            + "\\u2000" // EN QUAD 
-            + "\\u2001" // EM QUAD 
-            + "\\u2002" // EN SPACE
-            + "\\u2003" // EM SPACE
-            + "\\u2004" // THREE-PER-EM SPACE
-            + "\\u2005" // FOUR-PER-EM SPACE
-            + "\\u2006" // SIX-PER-EM SPACE
-            + "\\u2007" // FIGURE SPACE
-            + "\\u2008" // PUNCTUATION SPACE
-            + "\\u2009" // THIN SPACE
-            + "\\u200A" // HAIR SPACE
-            + "\\u2028" // LINE SEPARATOR
-            + "\\u2029" // PARAGRAPH SEPARATOR
-            + "\\u202F" // NARROW NO-BREAK SPACE
-            + "\\u205F" // MEDIUM MATHEMATICAL SPACE
-            + "\\u3000" // IDEOGRAPHIC SPACE
+            + "\\u0009" // CHARACTER TABULATION //NOI18N
+            + "\\u000A" // LINE FEED (LF) //NOI18N
+            + "\\u000B" // LINE TABULATION //NOI18N
+            + "\\u000C" // FORM FEED (FF) //NOI18N
+            + "\\u000D" // CARRIAGE RETURN (CR) //NOI18N
+            + "\\u0020" // SPACE //NOI18N
+            + "\\u0085" // NEXT LINE (NEL)  //NOI18N
+            + "\\u00A0" // NO-BREAK SPACE //NOI18N
+            + "\\u1680" // OGHAM SPACE MARK //NOI18N
+            + "\\u180E" // MONGOLIAN VOWEL SEPARATOR //NOI18N
+            + "\\u2000" // EN QUAD  //NOI18N
+            + "\\u2001" // EM QUAD  //NOI18N
+            + "\\u2002" // EN SPACE //NOI18N
+            + "\\u2003" // EM SPACE //NOI18N
+            + "\\u2004" // THREE-PER-EM SPACE //NOI18N
+            + "\\u2005" // FOUR-PER-EM SPACE //NOI18N
+            + "\\u2006" // SIX-PER-EM SPACE //NOI18N
+            + "\\u2007" // FIGURE SPACE //NOI18N
+            + "\\u2008" // PUNCTUATION SPACE //NOI18N
+            + "\\u2009" // THIN SPACE //NOI18N
+            + "\\u200A" // HAIR SPACE //NOI18N
+            + "\\u2028" // LINE SEPARATOR //NOI18N
+            + "\\u2029" // PARAGRAPH SEPARATOR //NOI18N
+            + "\\u202F" // NARROW NO-BREAK SPACE //NOI18N
+            + "\\u205F" // MEDIUM MATHEMATICAL SPACE //NOI18N
+            + "\\u3000" // IDEOGRAPHIC SPACE //NOI18N
             ;
     /* A \s that actually works for Java’s native character set: Unicode */
-    private static String whitespace_charclass = "[" + whitespace_chars + "]";
+    private static String whitespace_charclass = "[" + whitespace_chars + "]"; //NOI18N
     /* A \S that actually works for  Java’s native character set: Unicode */
-    private static String not_whitespace_charclass = "[^" + whitespace_chars + "]";
+    private static String not_whitespace_charclass = "[^" + whitespace_chars + "]"; //NOI18N
     
     
     private static String escapeString(String line) {
@@ -260,10 +260,10 @@ public abstract class PsProvider {
                 }                 
 
                 if (Log.Ps.debug) {
-                    System.out.println("----------");
-                    System.out.println("column=" + descriptor.header);
-                    System.out.println("cx=" + cx);
-                    System.out.println("s=_" + s + "_");
+                    System.out.println("----------"); //NOI18N
+                    System.out.println("column=" + descriptor.header); //NOI18N
+                    System.out.println("cx=" + cx); //NOI18N
+                    System.out.println("s=_" + s + "_"); //NOI18N
                 }
                 info.add(s.trim());
             }
@@ -321,13 +321,13 @@ public abstract class PsProvider {
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
-                    psCommandBuilder.append(" -o ");
+                    psCommandBuilder.append(" -o "); //NOI18N
                 }
                 psCommandBuilder.append(descriptors.get(i).command);
                 if (i < descriptors.size() - 1) {
-                    psCommandBuilder.append(",");
+                    psCommandBuilder.append(","); //NOI18N
                 } else {
-                    psCommandBuilder.append(" ");
+                    psCommandBuilder.append(" "); //NOI18N
                 }
             };            
             solarisPsFormat = psCommandBuilder.toString();            
@@ -347,7 +347,7 @@ public abstract class PsProvider {
             
 	}
               
-        private static final String ZONE_COLUMN_ID = "zone";
+        private static final String ZONE_COLUMN_ID = "zone"; //NOI18N
         
         @Override
         protected boolean showAllProcesses() {
@@ -478,13 +478,13 @@ public abstract class PsProvider {
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
-                    psCommandBuilder.append(" -o ");
+                    psCommandBuilder.append(" -o "); //NOI18N
                 }
                 psCommandBuilder.append(descriptors.get(i).command);
                 if (i < descriptors.size() - 1) {
-                    psCommandBuilder.append(",");
+                    psCommandBuilder.append(","); //NOI18N
                 } else {
-                    psCommandBuilder.append(" ");
+                    psCommandBuilder.append(" "); //NOI18N
                 }
             };            
             linuxPsFormat = psCommandBuilder.toString();                   
@@ -556,13 +556,13 @@ public abstract class PsProvider {
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
-                    psCommandBuilder.append(" -o ");
+                    psCommandBuilder.append(" -o "); //NOI18N
                 }
                 psCommandBuilder.append(descriptors.get(i).command);
                 if (i < descriptors.size() - 1) {
-                    psCommandBuilder.append(",");
+                    psCommandBuilder.append(","); //NOI18N
                 } else {
-                    psCommandBuilder.append(" ");
+                    psCommandBuilder.append(" "); //NOI18N
                 }
             };            
             macOsPsFormat = psCommandBuilder.toString();                

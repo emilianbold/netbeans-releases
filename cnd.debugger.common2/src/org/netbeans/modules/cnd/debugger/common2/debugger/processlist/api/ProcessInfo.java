@@ -97,7 +97,7 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
                 idx++;
             }
         }catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("incorrect data passed to create process info. pid  or ppid are not parsed as integer");
+            throw new IllegalArgumentException("incorrect data passed to create process info. pid  or ppid are not parsed as integer"); //NOI18N
         }
         return new ProcessInfo(descriptors, pid, ppid, info);
     }

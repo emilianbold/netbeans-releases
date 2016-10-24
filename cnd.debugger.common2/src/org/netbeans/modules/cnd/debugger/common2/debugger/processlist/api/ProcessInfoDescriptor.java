@@ -54,11 +54,11 @@ public final class ProcessInfoDescriptor {
 
     //ids are the same for all platforms
     //ID is used to understand all other staff
-    public static final String UID_COLUMN_ID = "uid";
-    public static final String PID_COLUMN_ID = "pid";
-    public static final String PPID_COLUMN_ID = "ppid";
-    public static final String COMMAND_COLUMN_ID = "command";
-    public static final String STIME_COLUMN_ID = "stime";
+    public static final String UID_COLUMN_ID = "uid"; //NOI18N
+    public static final String PID_COLUMN_ID = "pid"; //NOI18N
+    public static final String PPID_COLUMN_ID = "ppid"; //NOI18N
+    public static final String COMMAND_COLUMN_ID = "command"; //NOI18N
+    public static final String STIME_COLUMN_ID = "stime"; //NOI18N
 
     public final String id;
     public final String command;
