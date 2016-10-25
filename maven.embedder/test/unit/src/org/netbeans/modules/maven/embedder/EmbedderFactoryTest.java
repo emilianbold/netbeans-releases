@@ -161,7 +161,7 @@ public class EmbedderFactoryTest extends NbTestCase {
             "</project>");
         final File binary = TestFileUtils.writeZipFile(new File(getWorkDir(), "b.jar"), "g/r:stuff");
         MockLookup.setInstances(new ArtifactFixer() {
-            @Override public File resolve(org.sonatype.aether.artifact.Artifact artifact) {
+            @Override public File resolve(org.eclipse.aether.artifact.Artifact artifact) {
                 String id = artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getExtension() + ':' + artifact.getVersion();
                 if (id.equals("g:p:pom:0")) {
                     return parent;
