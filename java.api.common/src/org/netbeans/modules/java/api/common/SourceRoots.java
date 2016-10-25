@@ -335,10 +335,11 @@ public final class SourceRoots extends Roots {
                                     if (idx > 0) {
                                         for (File f : file.listFiles()) {
                                             if (f.isDirectory()) {
-                                                files.add(new File(f, srcPath.substring(idx + 3)));
+                                                files.add(new File(f, srcPath));
                                             }
                                         }
                                     }
+                                    listener.add(file, true);
                                 } else {
                                     files.add(file);
                                 }
@@ -355,7 +356,7 @@ public final class SourceRoots extends Roots {
                                                 + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
                                                 + " file? " + f.isFile();
                                         result.add(url);
-                                        listener.add(f);
+                                        listener.add(f, false);
                                     } catch (MalformedURLException e) {
                                         Exceptions.printStackTrace(e);
                                     }
@@ -651,13 +652,21 @@ public final class SourceRoots extends Roots {
     private class ProjectMetadataListener implements PropertyChangeListener, AntProjectListener, FileChangeListener {
 
         //@GuardedBy(SourceRoots.this)
-        private final Set<File> files = new HashSet<File>();
-
+        private final Set<File> files = new HashSet<>();
+        private final Set<File> moduleRoots = new HashSet<>();
+        
         //@GuardedBy("SourceRoots.this")
-        public void add(File f) {
-            if (!files.contains(f)) {
-                files.add(f);
-                FileUtil.addFileChangeListener(this, f);
+        public void add(File f, boolean moduleRoot) {
+            if (moduleRoot) {
+                if (!moduleRoots.contains(f)) {
+                    moduleRoots.add(f);
+                    FileUtil.addFileChangeListener(this, f);
+                }
+            } else {
+                if (!files.contains(f)) {
+                    files.add(f);
+                    FileUtil.addFileChangeListener(this, f);
+                }
             }
         }
 
@@ -672,6 +681,15 @@ public final class SourceRoots extends Roots {
                 }
             }
             files.clear();
+            for(File f : moduleRoots) {
+                try {
+                    FileUtil.removeFileChangeListener(this, f);
+                } catch (IllegalArgumentException iae) {
+                    // log
+                    LOG.log(Level.FINE, null, iae);
+                }
+            }
+            moduleRoots.clear();
         }
 
         @Override
@@ -698,7 +716,7 @@ public final class SourceRoots extends Roots {
                 File parentFile = FileUtil.toFile(parent);
                 assert parentFile != null : "Expecting ordinary folder: " + parent; //NOI18N
                 synchronized (SourceRoots.this) {
-                    if (files.contains(parentFile)) {
+                    if (files.contains(parentFile) && !moduleRoots.contains(parentFile)) {
                         // the change happened on a child and we can ignore it
                         return;
                     }

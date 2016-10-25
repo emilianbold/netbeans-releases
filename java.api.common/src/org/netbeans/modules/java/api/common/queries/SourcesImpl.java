@@ -47,14 +47,18 @@ package org.netbeans.modules.java.api.common.queries;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.java.api.common.Roots;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Sources;
@@ -73,6 +77,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -80,6 +85,9 @@ import org.openide.util.WeakListeners;
  * Implementation of {@link Sources} interface.
  */
 final class SourcesImpl implements Sources, SourceGroupModifierImplementation, PropertyChangeListener, ChangeListener  {
+
+    @StaticResource
+    private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -227,23 +235,57 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         String[] displayNames = roots.getRootDisplayNames();
         for (int i = 0; i < propNames.length; i++) {
             final String prop = propNames[i];
-            final String loc = "${" + prop + "}"; // NOI18N
-            final SourcesHelper.SourceRootConfig cfg = sourcesHelper.sourceRoot(loc);
-            cfg.displayName(displayNames[i]);
-            if (RootsAccessor.getInstance().supportIncludes(roots)) {
-                final String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
-                final String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-                cfg.includes(includes);
-                cfg.excludes(excludes);
+            final String locProp = "${" + prop + "}"; // NOI18N
+
+            List<String> locations;
+            List<String> names;
+            Icon icon = null;
+            String loc = evaluator.evaluate(locProp);
+            int idx = loc.indexOf("/*/"); //NOI18N
+            if (idx >= 0) {
+                icon = ImageUtilities.loadImageIcon(MODULE_ICON, false);
+                locations = new ArrayList<>();
+                names = new ArrayList<>();
+                final String basePath = loc.substring(0, idx + 1);
+                final String srcPath = loc.substring(idx + 2);
+                final File file = helper.resolveFile(basePath);
+                if (file.isDirectory()) {
+                    for (File f : file.listFiles()) {
+                        if (f.isDirectory()) {
+                            locations.add(basePath + f.getName() + srcPath);
+                            names.add(f.getName());
+                        }
+                    }
+                }
+            } else {
+                locations = Collections.singletonList(locProp);
+                names = Collections.singletonList(displayNames[i]);
             }
+            assert locations.size() == names.size();
+
             final String hint = RootsAccessor.getInstance().getHint(roots);
-            if (hint != null) {
-                cfg.hint(hint);
-            }
-            cfg.add();  // principal root
             final String type = RootsAccessor.getInstance().getType(roots);
-            if (type != null) {
-                cfg.type(type).add();    // typed root
+            final String includes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.INCLUDES + "}" : null; // NOI18N
+            final String excludes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.EXCLUDES + "}" : null; // NOI18N
+            for (Iterator<String> locationIt = locations.iterator(), nameIt = names.iterator(); locationIt.hasNext() && nameIt.hasNext();) {
+                final SourcesHelper.SourceRootConfig cfg = sourcesHelper.sourceRoot(locationIt.next());
+                cfg.displayName(nameIt.next());
+                if (includes != null) {
+                    cfg.includes(includes);
+                }
+                if (excludes != null) {
+                    cfg.excludes(excludes);
+                }
+                if (hint != null) {
+                    cfg.hint(hint);
+                }
+                if (icon != null) {
+                    cfg.icon(icon).openedIcon(icon);
+                }
+                cfg.add();  // principal root
+                if (type != null) {
+                    cfg.type(type).add();    // typed root
+                }
             }
         }
     }

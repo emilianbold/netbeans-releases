@@ -145,6 +145,7 @@ import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
+import org.openide.util.Utilities;
 /**
  * Represents one plain J2SE modular project.
  * @author Jesse Glick, et al.
@@ -334,10 +335,10 @@ public final class J2SEModularProject implements Project {
                         build()),
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(), getModuleRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), getModuleRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
 //            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
-            new RecommendedTemplatesImpl(),
+            new RecommendedTemplatesImpl(getProjectDirectory()),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
@@ -493,22 +494,65 @@ public final class J2SEModularProject implements Project {
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         // List of primarily supported templates
-        private static final String[] TEMPLATES = new String[] {
+        private static final String[] PROJECT_TEMPLATES = new String[] {
+            "java-modules",         // NOI18N
             "simple-files"          // NOI18N
         };
 
-        private static final String[] PRIVILEGED_NAMES = new String[] {
+        private static final String[] MODULE_TEMPLATES = new String[] {
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
+            "gui-java-application", // NOI18N
+            "java-beans",           // NOI18N
+            "persistence",          // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "web-service-clients",  // NOI18N
+            "REST-clients",         // NOI18N
+            "wsdl",                 // NOI18N
+            // "servlet-types",     // NOI18N
+            // "web-types",         // NOI18N
+            "junit",                // NOI18N
+            // "MIDP",              // NOI18N
+            "simple-files"          // NOI18N
+        };
+
+        private static final String[] PRIVILEGED_PROJECT_NAMES = new String[] {
             "Templates/J2SEModule/module-info.java" // NOI18N
         };
 
+        private static final String[] PRIVILEGED_MODULE_NAMES = new String[] {
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Classes/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+            "Templates/GUIForms/JPanel.java", // NOI18N
+            "Templates/GUIForms/JFrame.java", // NOI18N
+            "Templates/Persistence/Entity.java", // NOI18N
+            "Templates/Persistence/RelatedCMP", // NOI18N
+            "Templates/WebServices/WebServiceClient"   // NOI18N
+        };
+        
+        private final FileObject projectDir;
+
+        private RecommendedTemplatesImpl(FileObject projectDir) {
+            this.projectDir = projectDir;
+        }
+
         @Override
-        public String[] getRecommendedTypes() {            
-            return TEMPLATES;
+        public String[] getRecommendedTypes() {
+            return isProject() ? PROJECT_TEMPLATES : MODULE_TEMPLATES;
         }
 
         @Override
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
+            return isProject() ? PRIVILEGED_PROJECT_NAMES : PRIVILEGED_MODULE_NAMES;
+        }
+        
+        private boolean isProject() {
+            return projectDir == Utilities.actionsGlobalContext().lookup(FileObject.class);
         }
     }
 

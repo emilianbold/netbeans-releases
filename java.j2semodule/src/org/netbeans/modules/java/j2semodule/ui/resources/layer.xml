@@ -49,11 +49,16 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="J2SEModule">
             <attr name="position" intvalue="999"/>
-            <attr name="simple" boolvalue="false"/> <!-- do not show this in regular temlate wizard -->
+            <attr name="simple" boolvalue="false"/> <!-- do not show this in regular template wizard -->
         </folder>
     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2semodule">
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
 <!--            <folder name="Lookup"/>-->
             <folder name="Actions">
                 <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">

@@ -74,7 +74,7 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
     private transient WizardDescriptor.Panel panel;
     private transient WizardDescriptor wiz;
 
-    @TemplateRegistration(folder = "J2SEModule", position = 1, content = "../resources/module-info.java.template", scriptEngine = "freemarker", displayName = "#moduleWizard", iconBase = JavaTemplates.JAVA_ICON, description = "../resources/module.html")
+    @TemplateRegistration(folder = "J2SEModule", position = 1, content = "../resources/module-info.java.template", scriptEngine = "freemarker", displayName = "#moduleWizard", iconBase = JavaTemplates.JAVA_ICON, description = "../resources/module.html", category = {"java-modules"})
     @NbBundle.Messages("moduleWizard=Module")
     public static NewModuleWizardIterator moduleWizard() {
         return new NewModuleWizardIterator();
