@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                 <fileset dir="${maven.embedder.dir}/maven/boot">
                     <include name="*.jar"/>
                 </fileset>
-                <pathelement location="./external/aether-api-1.0.2.v20150114.jar"/>
+                <pathelement location="./external/aether-api-1.13.1.jar"/>
             </classpath>
             <classpath refid="cp"/>
         </javac>

@@ -65,6 +65,7 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.resolution.UnresolvableModelException;
+import org.apache.maven.plugin.PluginManagerException;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -321,6 +322,9 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                             Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
                             // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
                             problemReporter.addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
+                        } else if (mp.getException() instanceof PluginManagerException) {
+                            PluginManagerException ex = (PluginManagerException) mp.getException();                            
+                            problemReporter.addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(ex.getPluginGroupId(), ex.getPluginArtifactId(), ex.getPluginVersion(), "jar"));
                         }
                     }
                 }

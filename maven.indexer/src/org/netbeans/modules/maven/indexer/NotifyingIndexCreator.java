@@ -67,7 +67,7 @@ final class NotifyingIndexCreator extends AbstractIndexCreator {
     }
 
     @Override public void updateDocument(ArtifactInfo artifactInfo, Document document) {
-        listener.unpackingProgress(artifactInfo.groupId + ':' + artifactInfo.artifactId);
+        listener.unpackingProgress(artifactInfo.getGroupId() + ':' + artifactInfo.getArtifactId());
     }
     
     @Override public Collection<IndexerField> getIndexerFields() {

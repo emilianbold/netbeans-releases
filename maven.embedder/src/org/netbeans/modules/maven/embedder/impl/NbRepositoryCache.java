@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.maven.embedder.impl;
 
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.util.DefaultRepositoryCache;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.DefaultRepositoryCache;
+import org.eclipse.aether.RepositoryCache;
 
 /**
  *
  * @author mkleint
  */
-public class NbRepositoryCache extends DefaultRepositoryCache {
+public class NbRepositoryCache implements RepositoryCache {
     
     private static final Object LOCK = new Object();
     
@@ -61,9 +62,14 @@ public class NbRepositoryCache extends DefaultRepositoryCache {
     //TODO mkleint: the constants have wrong values, the caching is not taking effect,
     //interestingly both the Dependency and Artifact instances are bigger in live IDE when correct value is used..
     
-    private static final String ARTIFACT_POOL = "org.sonatype.aether.impl.internal.DataPool$Artifact";
-    private static final String DEPENDENCY_POOL = "org.sonatype.aether.impl.internal.DataPool$Dependency";    
+    private static final String ARTIFACT_POOL = "org.eclipse.org.eclipse.aether.DataPool$Artifact";
+    private static final String DEPENDENCY_POOL = "org.eclipse.org.eclipse.aether.DataPool$Dependency";    
 
+    private final DefaultRepositoryCache superDelegate;
+    public NbRepositoryCache() {
+        superDelegate = new DefaultRepositoryCache();
+    }
+    
     @Override
     public Object get(RepositorySystemSession session, Object key) {
         if (ARTIFACT_POOL.equals(key)) {
@@ -76,7 +82,7 @@ public class NbRepositoryCache extends DefaultRepositoryCache {
                 return dependencies;
             }
         }
-        return super.get(session, key);
+        return superDelegate.get(session, key);
     }
 
     @Override
@@ -95,7 +101,7 @@ public class NbRepositoryCache extends DefaultRepositoryCache {
             }
             return;
         }
-        super.put(session, key, data);
+        superDelegate.put(session, key, data);
     }
     
 }
