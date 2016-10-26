@@ -51,15 +51,15 @@ made subject to such option by the copyright holder.
     <condition property="indexer.file.notfound">
         <not>
             <!-- make sure notice-patched is added to indexer-core only once -->
-            <available file="external/indexer-core-5.1.1-patched.jar"/>
+            <available file="external/indexer-core-6.0-SNAPSHOT-patched.jar"/>
         </not>
     </condition>    
     
     <target name="maven-indexer-notice" depends="projectized-common.-release.files" if="indexer.file.notfound">
-        <jar destfile="external/indexer-core-5.1.1-patched.jar" update="true">            
+        <jar destfile="external/indexer-core-6.0-SNAPSHOT-patched.jar" update="true">            
             <mappedresources>
                 <fileset file="external/NOTICE-patched-indexer-core-5.1.1"/>
-                <globmapper from="NOTICE-patched-indexer-core-5.1.1" to="META-INF/NOTICE-patched"/>
+                <globmapper from="NOTICE-patched-indexer-core-6.0-SNAPSHOT" to="META-INF/NOTICE-patched"/>
             </mappedresources>
         </jar>
     </target>    

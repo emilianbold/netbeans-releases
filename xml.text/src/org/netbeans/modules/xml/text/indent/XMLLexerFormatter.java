@@ -45,12 +45,12 @@ package org.netbeans.modules.xml.text.indent;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -104,7 +104,7 @@ public class XMLLexerFormatter {
         });
     }
 
-    public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
+    public LineDocument doReformat(LineDocument doc, int startOffset, int endOffset) {
         spacesPerTab = IndentUtils.indentLevelSize(doc);
         try {
             List<TokenIndent> tags = getTags(doc, startOffset, endOffset);
@@ -125,7 +125,7 @@ public class XMLLexerFormatter {
         return doc;
     }
 
-    private void changePrettyText(BaseDocument doc, TokenIndent tag) throws BadLocationException {
+    private void changePrettyText(LineDocument doc, TokenIndent tag) throws BadLocationException {
         //i expected the call IndentUtils.createIndentString() to return
         //the correct string for the indent level, but it doesn't.
         //so this is just a workaround.
@@ -137,11 +137,11 @@ public class XMLLexerFormatter {
         noNewline = tag.isNoNewline();
         String newIndentText = IndentUtils.createIndentString(doc, spaces);
         //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
-        int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
+        int previousEndOffset = LineDocumentUtils.getPreviousNonWhitespace(doc, so) + 1;
         CharSequence temp = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc, previousEndOffset, so - previousEndOffset);
         if(noNewline || so == 0 || CharSequences.indexOf(temp, "\n") != -1){ // NOI18N
-            int i = Utilities.getRowFirstNonWhite(doc, so);
-            int rowStart = Utilities.getRowStart(doc, so);
+            int i = LineDocumentUtils.getLineFirstNonWhitespace(doc, so);
+            int rowStart = LineDocumentUtils.getLineStart(doc, so);
             
             String currentIndent = doc.getText(rowStart, i - rowStart);
             if (!currentIndent.equals(newIndentText)) {
@@ -202,7 +202,7 @@ public class XMLLexerFormatter {
     /**
      * The processed document
      */
-    private BaseDocument basedoc;
+    private LineDocument basedoc;
 
     private void outsideAttributes() {
         firstAttributeIndent = -1;
@@ -258,9 +258,9 @@ public class XMLLexerFormatter {
         } else {
             try {
                 // align with the actual tag:
-                indentLevel = Utilities.getVisualColumn(basedoc, 
-                        Utilities.getFirstNonWhiteFwd(basedoc, 
-                            Utilities.getRowStart(basedoc, tokenSequence.offset())));
+                indentLevel = Utilities.getVisualColumn((BaseDocument)basedoc, 
+                        LineDocumentUtils.getNextNonWhitespace(basedoc, 
+                        LineDocumentUtils.getLineStart(basedoc, tokenSequence.offset())));
                 if (!increase) {
                     indentLevel = Math.max(- spacesPerTab, indentLevel - spacesPerTab);
                 }
@@ -322,7 +322,7 @@ public class XMLLexerFormatter {
             if (!indent) {
                 if (!selfClosed && onlyTags) {
                     indent = true;
-                    int start = Utilities.getRowStart(basedoc, tokenSequence.offset());
+                    int start = LineDocumentUtils.getLineStart(basedoc, tokenSequence.offset());
                     // do not indent closing tags, if the start & end tag will end up on the same line:
                     if (myIndent != null) {
                         int openStart = myIndent.getStartOffset();
@@ -370,7 +370,7 @@ public class XMLLexerFormatter {
             } else {
                 // align one space after the tagname:
                 TokenIndent tagIndent = stack.peek();
-                int current = Utilities.getVisualColumn(basedoc, tokenSequence.offset());
+                int current = Utilities.getVisualColumn((BaseDocument)basedoc, tokenSequence.offset());
                 if (tagIndent == null) {
                     // fallback
                     firstAttributeIndent = current;
@@ -438,7 +438,7 @@ public class XMLLexerFormatter {
         if (lastNewline == -1 || preserveWhitespace || !intersectsWithRange) {
             // even if outside selection range, we do not update indent; text will not affect following tags
             // we have to set the 'newLine' flag, if the last text line only contains whitespaces. 
-            int nonWhitePos = Utilities.getFirstNonWhiteFwd(basedoc, currentOffset + Math.max(0, lastNewline), currentOffset + image.length());
+            int nonWhitePos = LineDocumentUtils.getNextNonWhitespace(basedoc, currentOffset + Math.max(0, lastNewline), currentOffset + image.length());
             contentPresent |= nonWhitePos > -1;
             wasNewline &= nonWhitePos == -1;
             onlyTags &= nonWhitePos == -1;
@@ -451,7 +451,7 @@ public class XMLLexerFormatter {
         while (lno < lineCount) {
             currentOffset += lno == 0 ? 0 : lineSizes[lno - 1] + 1; // add 1 for newline
             int lineEnd = currentOffset + lineSizes[lno];
-            nonWhiteStart = Utilities.getFirstNonWhiteFwd(basedoc, currentOffset, lineEnd);
+            nonWhiteStart = LineDocumentUtils.getNextNonWhitespace(basedoc, currentOffset, lineEnd);
             // implies a check for nonWhitestart > -1
             if (nonWhiteStart >= startOffset && nonWhiteStart <= endOffset) {
                 // emit a tag at this position
@@ -520,7 +520,7 @@ public class XMLLexerFormatter {
      * XML and the use of the xml:space attribute.  Together they are used to
      * calculate how much each token should be indented by.
      */
-    private List<TokenIndent> getTags(BaseDocument basedoc, int startOffset, int endOffset)
+    private List<TokenIndent> getTags(LineDocument basedoc, int startOffset, int endOffset)
             throws BadLocationException, IOException {
         
         
@@ -530,183 +530,201 @@ public class XMLLexerFormatter {
 
         // this is that 1st PI or tag will increment the level to 0
         indentLevel = -spacesPerTab;
-        basedoc.readLock();
-        try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
-            tokenSequence = tokenHierarchy.tokenSequence();
-            token = tokenSequence.token();
-            // Add the text token, if any, before xml declaration to document node
-            if (token != null && token.id() == XMLTokenId.TEXT) {
-                if (tokenSequence.moveNext()) {
-                    token = tokenSequence.token();
-                }
+        List[] result = new List[1];
+        Exception[] ble = new Exception[1];
+        basedoc.render(() -> {
+            try {
+                result[0] = getTagsLocked(startOffset, endOffset);
+            } catch (BadLocationException | IOException ex) {
+                ble[0] = ex;
             }
-            currentTokensSize = 0;
-            
-
-            // will be set to indent of 1st attribute of a tag. Will be reset to -1 by start tag
-            firstAttributeIndent = -1;
-            wasNewline = false;
-            
-            while (tokenSequence.moveNext()) {
-                int indentLineStart = 1;
+        });
+        if (ble[0] != null) {
+            if (ble[0] instanceof BadLocationException) {
+                throw (BadLocationException)ble[0];
+            }
+            if (ble[0] instanceof IOException) {
+                throw (IOException)ble[0];
+            } else {
+                throw new IOException(ble[0]);
+            }
+        }
+        return result[0];
+    }
+    
+    private List<TokenIndent> getTagsLocked(int startOffset, int endOffset) throws BadLocationException, IOException {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
+        tokenSequence = tokenHierarchy.tokenSequence();
+        token = tokenSequence.token();
+        // Add the text token, if any, before xml declaration to document node
+        if (token != null && token.id() == XMLTokenId.TEXT) {
+            if (tokenSequence.moveNext()) {
                 token = tokenSequence.token();
-                XMLTokenId tokenId = token.id();
-                CharSequence image = token.text();
-                if (tokenSequence.offset() > endOffset) {
+            }
+        }
+        currentTokensSize = 0;
+
+
+        // will be set to indent of 1st attribute of a tag. Will be reset to -1 by start tag
+        firstAttributeIndent = -1;
+        wasNewline = false;
+
+        while (tokenSequence.moveNext()) {
+            int indentLineStart = 1;
+            token = tokenSequence.token();
+            XMLTokenId tokenId = token.id();
+            CharSequence image = token.text();
+            if (tokenSequence.offset() > endOffset) {
+                break;
+            }
+            tokenInSelectionRange = tokenSequence.offset() >= startOffset || tokenSequence.offset() + token.length() > endOffset;
+            switch (tokenId) {
+                case TAG: { // Tag is encountered and the required level of indenting determined.
+                            // The tokens are only assessed if they are in the selection
+                            // range, which is the whole document if no text is selected.
+                    int len = image.length();
+                    firstAttributeIndent = -1;
+                    if (image.charAt(len - 1) == '>') {// '/>' // NOI18N
+                        if (len == 2) {
+                            endTag(image, true);
+                        } else {
+                            // end tag name marker
+                            tagClose(image);
+                        }
+                    } else {
+                        if (startsWith(image, "</")) { // NOI18N
+                            endTag(image, false);
+                        } else {
+                            startTag(image);
+                        }
+                        outsideAttributes();
+                    }
                     break;
                 }
-                tokenInSelectionRange = tokenSequence.offset() >= startOffset || tokenSequence.offset() + token.length() > endOffset;
-                switch (tokenId) {
-                    case TAG: { // Tag is encountered and the required level of indenting determined.
-                                // The tokens are only assessed if they are in the selection
-                                // range, which is the whole document if no text is selected.
-                        int len = image.length();
-                        firstAttributeIndent = -1;
-                        if (image.charAt(len - 1) == '>') {// '/>' // NOI18N
-                            if (len == 2) {
-                                endTag(image, true);
-                            } else {
-                                // end tag name marker
-                                tagClose(image);
-                            }
-                        } else {
-                            if (startsWith(image, "</")) { // NOI18N
-                                endTag(image, false);
-                            } else {
-                                startTag(image);
-                            }
-                            outsideAttributes();
-                        }
-                        break;
+                case PI_START: {
+                    updateIndent(true, -1, preserveWhitespace);
+                    //indentLevel += spacesPerTab;
+                    if (tokenInSelectionRange && !preserveWhitespace) {
+                        TokenElement tag = new TokenElement(TokenType.TOKEN_PI_START_TAG, 
+                                tokenId.name(), 
+                                tokenSequence.offset(), 
+                                tokenSequence.offset() + token.length(), indentLevel);
+                        TokenIndent ti = new TokenIndent(preserveWhitespace, tokenSequence.offset(), indentLevel);
+                        ti.markNoNewline();
+                        tags.add(ti);
                     }
-                    case PI_START: {
-                        updateIndent(true, -1, preserveWhitespace);
-                        //indentLevel += spacesPerTab;
-                        if (tokenInSelectionRange && !preserveWhitespace) {
-                            TokenElement tag = new TokenElement(TokenType.TOKEN_PI_START_TAG, 
-                                    tokenId.name(), 
-                                    tokenSequence.offset(), 
-                                    tokenSequence.offset() + token.length(), indentLevel);
-                            TokenIndent ti = new TokenIndent(preserveWhitespace, tokenSequence.offset(), indentLevel);
-                            ti.markNoNewline();
-                            tags.add(ti);
-                        }
-                        break;
-                    }
-                    case PI_END: {
-                        int l = updateIndent(false, -1, preserveWhitespace);
-                        if (wasNewline && tokenInSelectionRange) {
-                            // 1st item on a new line, will indent according to the opening tag
-                            tags.add(new TokenIndent(false, tokenSequence.offset(), l));
-                        }
-                        break;
-                    }
-                    case WS: {
-                            // we assume there is nothing except whitespace
-                            int lastNewline = lastIndexOf(image, '\n');
-                            if (lastNewline == -1) {
-                                // nothing special here
-                                break;
-                            }
-                            wasNewline = true;
-                            break;
-                    }
-                    case PI_CONTENT:
-                        indentLineStart = 0;
-                        // fall through
-                    case TEXT: {
-                        text(image, indentLineStart);
-                        break;
-                    }
-
-                    /**
-                     * Block comments are aligned as follows:
-                     * - if there is some preceeding non-whitespace, do not format anything. E.g. comments after element. Skip entire comment from formatting
-                     * - align 1st and last line at the appropriate indent level
-                     * - compute "shift" from the last line & indent level
-                     * - shift INTERIOR of the comment by the computed shift
-                     * 
-                     * This algorithm tries to preserve internal formatting of the comment
-                     */
-                    case BLOCK_COMMENT: {
-                        int currentOffset = tokenSequence.offset();
-
-                        splitLines(image);
-
-                        int lineStart = Utilities.getRowStart(basedoc, currentOffset);
-
-                        if (lineStart < currentOffset && 
-                             Utilities.getFirstNonWhiteBwd(basedoc, currentOffset, lineStart) > -1) {
-                            // we cannot indent comment start, will not touch even the rest of the comment.
-                            break;
-                        }
-                        
-                        int lastLineStart = Utilities.getRowStart(basedoc, currentOffset + token.length() - 1);
-                        int lastIndent = IndentUtils.lineIndent(basedoc, lastLineStart);
-
-                        // align 1st and last row here:
-                        int baseIndent = indentLevel + spacesPerTab;
-                        // shift the rest of lines by this offset
-                        int indentShift = baseIndent - lastIndent;
-
-                        // how much to shift the interior of the comment
-                        
-                        for (int lno = 0; lno < lineCount; lno++) {
-                            // indent 1st comment line, as if it was text:
-                            int lineEnd = Utilities.getRowEnd(basedoc, currentOffset);
-                            
-                            int desiredIndent;
-                            if (lno == 0 || lno == lineCount -1) {
-                                desiredIndent = baseIndent;
-                            } else {
-                                desiredIndent = IndentUtils.lineIndent(basedoc, currentOffset) + indentShift;
-                            }
-                            
-                            if ((currentOffset >= startOffset || currentOffset + lineSizes[lno] > endOffset) && currentOffset < endOffset) {
-                                tags.add(new TokenIndent(
-                                    false,
-                                    currentOffset, Math.max(0, desiredIndent)
-                                ));
-                            }
-                            currentOffset += lineSizes[lno] + 1;
-                        }
-                        break;
-                    }
-                        
-
-                    case CDATA_SECTION: {
-                        // always form a non-empty content
-                        contentPresent = true;
-                        onlyTags = false;
-                        wasNewline = false;
-                    }
-                    case CHARACTER:
-                    case OPERATOR:
-                    case PI_TARGET:
-                    case DECLARATION:
-                        break; //Do nothing for above case's
-                    case ARGUMENT: //attribute of an element
-                        attributeName();
-                        break;
-                    case VALUE:
-                        attributeValue();
-                        break;
-
-                    case ERROR:
-                    case EOL:
-                    default:
-                        throw new IOException("Invalid token found in document: "
-                                + "Please use the text editor to resolve the issues...");
+                    break;
                 }
-                currentTokensSize += image.length();
-                if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT && tokenId != XMLTokenId.PI_CONTENT) {
-                    // clear indicator of the newline
+                case PI_END: {
+                    int l = updateIndent(false, -1, preserveWhitespace);
+                    if (wasNewline && tokenInSelectionRange) {
+                        // 1st item on a new line, will indent according to the opening tag
+                        tags.add(new TokenIndent(false, tokenSequence.offset(), l));
+                    }
+                    break;
+                }
+                case WS: {
+                        // we assume there is nothing except whitespace
+                        int lastNewline = lastIndexOf(image, '\n');
+                        if (lastNewline == -1) {
+                            // nothing special here
+                            break;
+                        }
+                        wasNewline = true;
+                        break;
+                }
+                case PI_CONTENT:
+                    indentLineStart = 0;
+                    // fall through
+                case TEXT: {
+                    text(image, indentLineStart);
+                    break;
+                }
+
+                /**
+                 * Block comments are aligned as follows:
+                 * - if there is some preceeding non-whitespace, do not format anything. E.g. comments after element. Skip entire comment from formatting
+                 * - align 1st and last line at the appropriate indent level
+                 * - compute "shift" from the last line & indent level
+                 * - shift INTERIOR of the comment by the computed shift
+                 * 
+                 * This algorithm tries to preserve internal formatting of the comment
+                 */
+                case BLOCK_COMMENT: {
+                    int currentOffset = tokenSequence.offset();
+
+                    splitLines(image);
+
+                    int lineStart = LineDocumentUtils.getLineStart(basedoc, currentOffset);
+
+                    if (lineStart < currentOffset && 
+                         LineDocumentUtils.getPreviousNonWhitespace(basedoc, currentOffset, lineStart) > -1) {
+                        // we cannot indent comment start, will not touch even the rest of the comment.
+                        break;
+                    }
+
+                    int lastLineStart = LineDocumentUtils.getLineStart(basedoc, currentOffset + token.length() - 1);
+                    int lastIndent = IndentUtils.lineIndent(basedoc, lastLineStart);
+
+                    // align 1st and last row here:
+                    int baseIndent = indentLevel + spacesPerTab;
+                    // shift the rest of lines by this offset
+                    int indentShift = baseIndent - lastIndent;
+
+                    // how much to shift the interior of the comment
+
+                    for (int lno = 0; lno < lineCount; lno++) {
+                        // indent 1st comment line, as if it was text:
+                        int lineEnd = LineDocumentUtils.getLineEnd(basedoc, currentOffset);
+
+                        int desiredIndent;
+                        if (lno == 0 || lno == lineCount -1) {
+                            desiredIndent = baseIndent;
+                        } else {
+                            desiredIndent = IndentUtils.lineIndent(basedoc, currentOffset) + indentShift;
+                        }
+
+                        if ((currentOffset >= startOffset || currentOffset + lineSizes[lno] > endOffset) && currentOffset < endOffset) {
+                            tags.add(new TokenIndent(
+                                false,
+                                currentOffset, Math.max(0, desiredIndent)
+                            ));
+                        }
+                        currentOffset += lineSizes[lno] + 1;
+                    }
+                    break;
+                }
+
+
+                case CDATA_SECTION: {
+                    // always form a non-empty content
+                    contentPresent = true;
+                    onlyTags = false;
                     wasNewline = false;
                 }
+                case CHARACTER:
+                case OPERATOR:
+                case PI_TARGET:
+                case DECLARATION:
+                    break; //Do nothing for above case's
+                case ARGUMENT: //attribute of an element
+                    attributeName();
+                    break;
+                case VALUE:
+                    attributeValue();
+                    break;
+
+                case ERROR:
+                case EOL:
+                default:
+                    throw new IOException("Invalid token found in document: "
+                            + "Please use the text editor to resolve the issues...");
             }
-        } finally {
-            basedoc.readUnlock();
+            currentTokensSize += image.length();
+            if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT && tokenId != XMLTokenId.PI_CONTENT) {
+                // clear indicator of the newline
+                wasNewline = false;
+            }
         }
         return tags;
     }

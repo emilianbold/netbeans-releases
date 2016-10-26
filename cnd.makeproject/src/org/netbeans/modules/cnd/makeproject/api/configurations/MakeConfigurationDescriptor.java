@@ -972,21 +972,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (delta.isEmpty()) {
             return;
         }
-        List<Item> deleted = delta.getDeleted();
-        List<Item> excluded = delta.getExcluded();
+        List<NativeFileItem> deleted = delta.getDeleted();
+        List<NativeFileItem> excluded = delta.getExcluded();
         if (!(deleted.isEmpty() && excluded.isEmpty())) {
             List<NativeFileItem> list = new ArrayList<NativeFileItem>(deleted);
             list.addAll(excluded);
             getNativeProjectChangeSupport().fireFilesRemoved(list);
         }
-        List<Item> added = delta.getAdded();
-        List<Item> included = delta.getIncluded();
+        List<NativeFileItem> added = delta.getAdded();
+        List<NativeFileItem> included = delta.getIncluded();
         if (!(added.isEmpty() && included.isEmpty())) {
             List<NativeFileItem> list = new ArrayList<NativeFileItem>(added);
             list.addAll(included);
             getNativeProjectChangeSupport().fireFilesAdded(list);
         }
-        List<Item> changed = delta.getChanged();
+        List<NativeFileItem> changed = delta.getChanged();
         if (!changed.isEmpty()) {
             getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(changed));
         }

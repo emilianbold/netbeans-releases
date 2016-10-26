@@ -50,7 +50,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 
 /**
  * Provides hyperlinking functionality for Hibernate mapping files
@@ -112,12 +112,7 @@ public class HibernateMappingHyperlinkProvider implements HyperlinkProvider {
     }
     
     public boolean isHyperlinkPoint(Document document, int offset) {
-        if (!(document instanceof BaseDocument)) {
-            return false;
-        }
-
-        BaseDocument doc = (BaseDocument) document;
-        if (!(doc.getSyntaxSupport() instanceof XMLSyntaxSupport)) {
+        if (XMLSyntaxSupport.getSyntaxSupport(document) == null) {
             return false;
         }
 

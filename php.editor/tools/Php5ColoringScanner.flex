@@ -705,6 +705,10 @@ PHP_TYPE_BOOL=[b][o][o][l]
     return PHPTokenId.PHP_ARRAY;
 }
 
+<ST_PHP_IN_SCRIPTING>"callable" {
+    return PHPTokenId.PHP_CALLABLE;
+}
+
 <ST_PHP_IN_SCRIPTING>"parent" {
     return PHPTokenId.PHP_PARENT;
 }
@@ -781,6 +785,10 @@ PHP_TYPE_BOOL=[b][o][o][l]
 
 <ST_PHP_IN_SCRIPTING>"__CLASS__" {
     return PHPTokenId.PHP__CLASS__;
+}
+
+<ST_PHP_IN_SCRIPTING>"__TRAIT__" {
+    return PHPTokenId.PHP__TRAIT__;
 }
 
 <ST_PHP_IN_SCRIPTING>"__FUNCTION__" {

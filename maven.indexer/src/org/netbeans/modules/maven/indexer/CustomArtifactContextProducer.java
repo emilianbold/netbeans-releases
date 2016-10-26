@@ -38,21 +38,28 @@
 
 package org.netbeans.modules.maven.indexer;
 
+import com.google.inject.Inject;
 import java.io.File;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactInfo;
 import org.apache.maven.index.ArtifactInfoRecord;
 import org.apache.maven.index.DefaultArtifactContextProducer;
+import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.context.IndexingContext;
 
 /** Adapted from org.netbeans:nexus-for-netbeans. */
 public final class CustomArtifactContextProducer extends DefaultArtifactContextProducer {
 
+    @Inject
+    public CustomArtifactContextProducer(ArtifactPackagingMapper mapper) {
+        super(mapper);
+    }
+
     @Override public ArtifactContext getArtifactContext(IndexingContext context, File file) {
         ArtifactContext ac = super.getArtifactContext(context, file);
         if (ac != null) {
-            ArtifactInfo ai = ac.getArtifactInfo();
-            String fext = ai.fextension;
+            final ArtifactInfo ai = ac.getArtifactInfo();
+            String fext = ai.getFileExtension();
             if (fext != null) {
                 if (fext.endsWith(".lastUpdated")) {
                     // #197670: why is this even considered?
@@ -60,16 +67,16 @@ public final class CustomArtifactContextProducer extends DefaultArtifactContextP
                 }
                 // Workaround for anomalous classifier behavior of nbm-maven-plugin:
                 if (fext.equals("nbm")) {
-                    return new ArtifactContext(ac.getPom(), ac.getArtifact(), ac.getMetadata(), new ArtifactInfo(ai.repository, ai.groupId, ai.artifactId, ai.version, null) {
+                    return new ArtifactContext(ac.getPom(), ac.getArtifact(), ac.getMetadata(), new ArtifactInfo(ai.getRepository(), ai.getGroupId(), ai.getArtifactId(), ai.getVersion(), ai.getClassifier(), fext) {
                         private String uinfo = null;
                         @Override public String getUinfo() {
                             if (uinfo == null) {
                                 uinfo = new StringBuilder().
-                                        append(groupId).append(ArtifactInfoRecord.FS).
-                                        append(artifactId).append(ArtifactInfoRecord.FS).
-                                        append(version).append(ArtifactInfoRecord.FS).
+                                        append(ai.getGroupId()).append(ArtifactInfoRecord.FS).
+                                        append(ai.getArtifactId()).append(ArtifactInfoRecord.FS).
+                                        append(ai.getVersion()).append(ArtifactInfoRecord.FS).
                                         append(ArtifactInfoRecord.NA).append(ArtifactInfoRecord.FS).
-                                        append(packaging).toString();
+                                        append(ai.getPackaging()).toString();
                             }
                             return uinfo;
                         }

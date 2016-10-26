@@ -67,7 +67,7 @@ public class AttributeValueCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        return context.getCurrentToken().getOffset() + 1;
+        return context.getCurrentTokenOffset() + 1;
     }
     
     @Override

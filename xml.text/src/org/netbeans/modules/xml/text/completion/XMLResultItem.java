@@ -62,11 +62,13 @@ import org.netbeans.editor.*;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.DescriptionSource;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -240,23 +242,19 @@ class XMLResultItem implements CompletionItem {
         }
         return true;
     }
-
-    //+++ fix for issues #166462, #173122
-    //    (http://www.netbeans.org/issues/show_bug.cgi?id=166462)
-    //    (http://www.netbeans.org/issues/show_bug.cgi?id=173122)
-    private boolean isTextRemovingAllowable(JTextComponent component,
-        BaseDocument doc, String replaceToText, int offset) throws BadLocationException {
-        XMLSyntaxSupport support = (XMLSyntaxSupport)
-            org.netbeans.editor.Utilities.getSyntaxSupport(component);
-        TokenItem tokenItem = support.getTokenChain(offset, doc.getLength());
-        boolean isTextRemovingAllowable = (tokenItem == null);
-        if (! isTextRemovingAllowable) {
-            String tokenItemImage = tokenItem.getImage();
+    
+    private boolean isRemovingAvailableLocked(TokenSequence ts, Document doc, int offset, String replaceToText) {
+        ts.move(position);
+        boolean isTextRemovingAllowable = true;
+        
+        while (ts.moveNext() && isTextRemovingAllowable) {
+            Token<XMLTokenId> tokenItem = ts.token();
+            String tokenItemImage = tokenItem.text().toString();
             if ((tokenItemImage != null) && (tokenItemImage.length() > 0)) {
                 // See also issue #228865. In this case, the token also may include a prefix
                 // of the replacement value
                 String replaceInclPrefix;
-                int offs = Math.max(0, offset - tokenItem.getOffset());
+                int offs = Math.max(0, offset - ts.offset());
                 replaceInclPrefix = tokenItemImage.substring(0, offs) + replaceToText;
                 int diffPos = getFirstDiffPosition(tokenItemImage, replaceInclPrefix);
                 diffPos = diffPos == 0 ? 1 : diffPos;
@@ -268,16 +266,23 @@ class XMLResultItem implements CompletionItem {
                         strText = replaceInclPrefix.length() >= diffPos ?
                             replaceInclPrefix.substring(0, diffPos) : replaceInclPrefix;
 
-                    TokenID tokenID = tokenItem.getTokenID();
-                    int id = (tokenID != null ? tokenID.getNumericID() : -1);
-
-                    isTextRemovingAllowable = (id == XMLDefaultTokenContext.TAG_ID ?
+                    XMLTokenId id = tokenItem.id();
+                    isTextRemovingAllowable = (id == XMLTokenId.TAG ?
                         ! strImg.startsWith(strText) /* <= for tags */ :
                         strImg.startsWith(strText)   /* <= for attributes */);
                 }
             }
         }
         return isTextRemovingAllowable;
+    }
+
+    //+++ fix for issues #166462, #173122
+    //    (http://www.netbeans.org/issues/show_bug.cgi?id=166462)
+    //    (http://www.netbeans.org/issues/show_bug.cgi?id=173122)
+    private boolean isTextRemovingAllowable(JTextComponent component,
+        BaseDocument doc, String replaceToText, int offset) throws BadLocationException {
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(component.getDocument());
+        return support.runWithSequence(offset, (TokenSequence ts) -> isRemovingAvailableLocked(ts, doc, offset, replaceToText));
     }
 
     /**

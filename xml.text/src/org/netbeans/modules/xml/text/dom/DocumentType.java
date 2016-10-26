@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.*;
@@ -55,7 +56,7 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 public class DocumentType extends SyntaxNode implements org.w3c.dom.DocumentType {
 
-    DocumentType(XMLSyntaxSupport syntax, Token<XMLTokenId> first, int start, int end) {
+    public DocumentType(XMLSyntaxSupport syntax, Token<XMLTokenId> first, int start, int end) {
         super (syntax, first, start, end);
     }
 

@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -78,7 +79,7 @@ public enum XMLTokenId implements TokenId {
     VALUE("xml-value"),
     /** Block comment */
     BLOCK_COMMENT("xml-comment"),
-    /** SGML declaration in XML document - e.g. <!DOCTYPE> */
+    /** SGML declaration in XML document - e.g. &lt;!DOCTYPE&gt; */
     DECLARATION("xml-doctype"),
     /** Character reference, e.g. &amp;lt; = &lt; */
     CHARACTER("xml-ref"),
@@ -144,6 +145,7 @@ public enum XMLTokenId implements TokenId {
         }
     }.language();
     
+    @MimeRegistration(mimeType = "text/xml", service = Language.class)
     public static Language<XMLTokenId> language() {
         return language;
     }

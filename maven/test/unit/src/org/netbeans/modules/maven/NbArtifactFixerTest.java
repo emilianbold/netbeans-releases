@@ -43,7 +43,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 
 public class NbArtifactFixerTest extends NbTestCase {
 

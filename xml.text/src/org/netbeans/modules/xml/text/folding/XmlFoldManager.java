@@ -68,9 +68,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.xml.text.api.XMLTextUtils;
 import org.netbeans.modules.xml.text.folding.TokenElement.Token;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
@@ -93,7 +93,7 @@ public class XmlFoldManager implements FoldManager {
     private Preferences prefs;
 
     public XmlFoldManager() {
-        prefs = MimeLookup.getLookup(XMLKit.MIME_TYPE).lookup(Preferences.class);
+        prefs = MimeLookup.getLookup(XMLTextUtils.XML_MIME).lookup(Preferences.class);
     }
 
 

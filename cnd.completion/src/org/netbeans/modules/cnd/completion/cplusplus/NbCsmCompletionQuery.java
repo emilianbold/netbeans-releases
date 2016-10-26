@@ -157,7 +157,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                         }
                     }
                     CompletionSupport sup = CompletionSupport.get(bDoc);
-                    if (offsetInFile != null) {
+                    if (offsetInFile != null && sup != null) {
                         sup.setContextOffset(offsetInFile.intValue());
                     }
                 }

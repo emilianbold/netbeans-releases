@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.maven.embedder.impl;
 
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.spi.connector.RepositoryConnector;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.RepositoryConnector;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.transfer.NoRepositoryConnectorException;
 
 /**
  *
@@ -67,8 +67,8 @@ public final class OfflineConnector implements RepositoryConnectorFactory {
     }
 
     @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE;
+    public float getPriority() {
+        return Float.MAX_VALUE;
     }
     
 }

@@ -524,8 +524,8 @@ public class PrintASTVisitor implements Visitor {
         XMLPrintNode printNode = new XMLPrintNode(declaration, "LambdaFunctionDeclaration",
                 new String[] {"isReference", declaration.isReference() ? "true" : "false"});
         printNode.addChildren(declaration.getFormalParameters());
-        printNode.addChild(declaration.getReturnType());
         printNode.addChildren(declaration.getLexicalVariables());
+        printNode.addChild(declaration.getReturnType());
         printNode.addChild(declaration.getBody());
         printNode.print(this);
     }
@@ -693,6 +693,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(ReturnStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "ReturnStatement");
         printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
     @Override

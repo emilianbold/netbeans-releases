@@ -166,7 +166,7 @@ public final class ShellSession {
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
-                        return new ExitStatus(-1, null, Arrays.asList(ex.getMessage().split("\n"))); // NOI18N
+                        return new ExitStatus(-1, null, MiscUtils.getMessageAsList(ex));
                     }
                 }
             }

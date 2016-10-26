@@ -154,6 +154,21 @@
                     </FormalParameter>
                 </FormalParameters>
                 <Block start='31' end='59' isCurly='true'>
+                    <ReturnStatement start='37' end='57'>
+                        <InfixExpression start='44' end='56' operator='PLUS'>
+                            <InfixExpression start='44' end='51' operator='PLUS'>
+                                <Variable start='44' end='46' isDollared='true'>
+                                    <Identifier start='45' end='46' name='a'/>
+                                </Variable>
+                                <Variable start='49' end='51' isDollared='true'>
+                                    <Identifier start='50' end='51' name='b'/>
+                                </Variable>
+                            </InfixExpression>
+                            <Variable start='54' end='56' isDollared='true'>
+                                <Identifier start='55' end='56' name='c'/>
+                            </Variable>
+                        </InfixExpression>
+                    </ReturnStatement>
                 </Block>
             </FunctionDeclaration>
             <ExpressionStatement start='61' end='81'>

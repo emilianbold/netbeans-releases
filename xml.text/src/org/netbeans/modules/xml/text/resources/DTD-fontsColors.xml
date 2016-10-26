@@ -47,12 +47,18 @@ made subject to such option by the copyright holder.
 
 <fontscolors>
     <fontcolor name="dtd-comment" default="comment"/>
-    <fontcolor name="dtd-eol" default="whitespace"/>
+    <!--<fontcolor name="dtd-eol" default="whitespace"/>-->
     <fontcolor name="dtd-error" default="error"/>
     <fontcolor name="dtd-keyword" default="keyword"/>
+    <fontcolor name="dtd-declaration" default="keyword"/>
     <fontcolor name="dtd-plain" default="default"/>
+    <fontcolor name="dtd-ws" default="whitespace"/>
     <fontcolor name="dtd-ref" default="entity-reference"/>
+    <fontcolor name="dtd-character" default="entity-reference"/>
     <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="dtd-symbol" default="operator"/>    
+    <fontcolor name="dtd-operator" default="operator"/>    
+    <fontcolor name="dtd-target" foreColor="ffb20000" default="keyword"/>
+    <fontcolor name="dtd-name" default="identifier"/>
+    <fontcolor name="dtd-processing" default="plain"/>
 </fontscolors>

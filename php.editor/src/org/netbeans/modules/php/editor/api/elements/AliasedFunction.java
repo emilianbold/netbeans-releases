@@ -71,6 +71,11 @@ public class AliasedFunction extends AliasedElement implements FunctionElement {
     }
 
     @Override
+    public boolean isAnonymous() {
+        return getRealFunction().isAnonymous();
+    }
+
+    @Override
     public String asString(PrintAs as) {
         return asString(as, TypeNameResolverImpl.forNull());
     }

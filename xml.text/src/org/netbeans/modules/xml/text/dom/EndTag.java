@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
@@ -57,9 +58,11 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 public class EndTag extends Tag {
 
-    EndTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
-        super( support, from, start, end);
-        this.name = from.text().toString();
+    public EndTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super(support, from, start, end, from.text().toString().substring(2));
+        if (name.equals("")) { // NOI18N
+            // self-closing tag ? -- TODO
+        }
     }
 
     /**
@@ -75,7 +78,7 @@ public class EndTag extends Tag {
     }
     
     public boolean hasChildNodes() {
-        SyntaxElement prev = getPrevious();
+        BaseSyntaxElement prev = getPrevious();
         if (prev == null) return false;
         if (prev instanceof EndTag && ((EndTag)prev).getStartTag() == null) return false;
         if (prev instanceof StartTag) return false;
@@ -95,7 +98,7 @@ public class EndTag extends Tag {
         return new NodeListImpl(list);
     }
     
-    protected Tag getStartTag() {
+    public Tag getStartTag() {
         
         SyntaxNode prev = findPrevious();
         
@@ -121,9 +124,25 @@ public class EndTag extends Tag {
         return null;
     }
     
-    protected Tag getEndTag() {
+    public Tag getEndTag() {
         return this;
     }
+
+    @Override
+    public boolean isStart() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnd() {
+        return true;
+    }
+
+    @Override
+    public boolean isSelfClosing() {
+        return false;
+    }
+
     
     public String toString() {
         return "EndTag(\"" + name + "\") " + first();

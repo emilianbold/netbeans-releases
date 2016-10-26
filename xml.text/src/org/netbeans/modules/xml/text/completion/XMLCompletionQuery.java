@@ -52,7 +52,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -62,12 +61,13 @@ import org.w3c.dom.*;
 import org.netbeans.editor.*;
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.xml.text.syntax.*;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
 import org.netbeans.modules.xml.text.bracematch.XMLBraceMatcher;
-import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  * @version 1.01
  */
 
-public class XMLCompletionQuery implements XMLTokenIDs {
+public class XMLCompletionQuery {
     
     // the name of a property indentifing cached query
     public static final String DOCUMENT_GRAMMAR_BINDING_PROP = "doc-bind-query";
@@ -103,11 +103,9 @@ public class XMLCompletionQuery implements XMLTokenIDs {
      * @param support syntax-support that will be used during resolving of the query.
      * @return result of the query or null if there's no result.
      */
-    public List<CompletionItem> query(JTextComponent component, int offset, SyntaxSupport support) {        
+    public List<CompletionItem> query(JTextComponent component, int offset, XMLSyntaxSupport sup) {        
         BaseDocument doc = (BaseDocument)component.getDocument();
         if (doc == null) return null;
-        XMLSyntaxSupport sup = (XMLSyntaxSupport)support.get(XMLSyntaxSupport.class);
-        if( sup == null ) return null;// No SyntaxSupport for us, no hint for user        
         try {
             SyntaxQueryHelper helper = new SyntaxQueryHelper(sup, offset);
             
@@ -165,7 +163,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                 ***************************************************************/
                 
                 if (list.isEmpty() && helper.getPreText().startsWith("</")) { // NOI18N
-                    List stlist = findStartTag((SyntaxNode)helper.getSyntaxElement(), !helper.getPreText().endsWith("/") ? "/" : "");
+                    List stlist = findStartTag(helper.getSyntaxElement(), !helper.getPreText().endsWith("/") ? "/" : "");
                     if (stlist != null && !stlist.isEmpty()) {
                         ElementResultItem item = (ElementResultItem)stlist.get(0); //we always get just one item
                         if(!XMLBraceMatcher.hasEndTag(doc, offset, item.getItemText()) &&
@@ -225,7 +223,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
 //                            );                
             } else {
                 // prolog, internal DTD no completition yet
-                if (helper.getToken().getTokenID() == PI_CONTENT) {
+                if (helper.getToken().id() == XMLTokenId.PI_CONTENT) {
                     if (helper.getPreText().endsWith("encoding=")) {                        // NOI18N
 //                        List encodings = new ArrayList(2);
 //                        encodings.add(new XMLResultItem(0, "\"UTF-8\""));          // NOI18N
@@ -337,8 +335,8 @@ public class XMLCompletionQuery implements XMLTokenIDs {
             int delLen = 0;
             String suffix = null;
             if (helper.getToken() != null) {
-                if (helper.getToken().getTokenID() == XMLTokenIDs.TEXT) {
-                    String c = helper.getToken().getImage();
+                if (helper.getToken().id() == XMLTokenId.TEXT) {
+                    String c = helper.getToken().text().toString();
                     String p = helper.getPreText();
                     // special case: do not remove text after newline to
                     // preserve formatting / indentation
@@ -352,8 +350,8 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     if (tagName != null) {
                         suffix = "</" + tagName + ">";
                     }
-                } else if (helper.getToken().getTokenID() == XMLTokenIDs.VALUE) {
-                    String c = helper.getToken().getImage();
+                } else if (helper.getToken().id() == XMLTokenId.VALUE) {
+                    String c = helper.getToken().text().toString();
                     delLen = c.length();
                     if (c.charAt(0) == '"' ||
                         c.charAt(0) == '\'') {
@@ -363,7 +361,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     if (c.charAt(l) == '"' || c.charAt(l) == '\'') {
                         delLen--;
                     }
-                } else if (helper.getToken().getTokenID() == XMLTokenIDs.TAG) {
+                } else if (helper.getToken().id() == XMLTokenId.TAG) {
                     String tagName = shouldCloseTag(helper, doc, sup);
                     if (tagName != null) {
                         suffix = "</" + tagName + ">";
@@ -437,25 +435,31 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         return result;
     }
     
-    private String shouldCloseTag(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
-        TokenItem ti = helper.getToken();
-        TokenItem previous = ti.getPrevious();
-        if (previous == null || previous.getTokenID() != XMLTokenIDs.TAG) {
+    private String shouldCloseTagLocked(TokenSequence ts) {
+        if (!ts.movePrevious()) {
+            return null;
+        }
+        Token<XMLTokenId> previous = ts.token();
+        if (previous.id() != XMLTokenId.TAG) {
             // preceded by something else than tag name, i.e. argument, operator...
             return null;
         }
-        String tagName  = previous.getImage();
+        String tagName  = previous.text().toString();
         if (tagName.equals(">")) { // NOI18N
             // closing brace of a tag, iterate towards tag's begin, skip attributes and their values.
-             previous = previous.getPrevious();
-            while (previous != null && previous.getTokenID() != XMLTokenIDs.TAG) {
-                previous = previous.getPrevious();
+            boolean ok;
+            
+            while (ok = !ts.movePrevious()) {
+                previous = ts.token();
+                if (previous.id() == XMLTokenId.TAG) {
+                    break;
+                }
             }
-            if (previous == null) {
+            if (!ok) {
                 return null;
             }
             // got tagname.
-            tagName = previous.getImage();
+            tagName = previous.text().toString();
         }
         if (tagName.startsWith(END_TAG_PREFIX)) {
             // traversal through preceding tags, counting end-start pairs not implemented.
@@ -465,13 +469,22 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         } 
         // tag name does not include end sharp brace
         tagName = tagName.substring(1, tagName.length()).trim();
-        TokenSequence<XMLTokenId> s = (TokenSequence<XMLTokenId>)TokenHierarchy.get(doc).tokenSequence();
-        if (isClosingEndTagFoundAfter(ti.getOffset(), s, tagName)) {
+        if (isClosingEndTagFoundAfter(ts.offset(), ts, tagName)) {
             // I know, there may be multiple levels of the same tag name, and the innermost may
             // be missing...
             return null;
         }
         return tagName;
+    }
+    
+    private String shouldCloseTag(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
+        Token<XMLTokenId> ti = helper.getToken();
+        try {
+            return sup.runWithSequence(helper.getTokenOffset(), this::shouldCloseTagLocked);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
     public static final String
@@ -583,14 +596,17 @@ public class XMLCompletionQuery implements XMLTokenIDs {
      * @param prefix that is prepended to created ElementResult e.g. '</'
      * @return list with one ElementResult or empty.
      */
-    private static List<CompletionItem> findStartTag(SyntaxNode text, String prefix) {
+    private static List<CompletionItem> findStartTag(SyntaxElement text, String prefix) {
         //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("XMLCompletionQuery.findStartTag: text=" + text);
         
-        Node parent = text.getParentNode();
+        SyntaxElement parentEl = text.getParentElement();
+        if (parentEl == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Node parent = parentEl.getNode();
         if (parent == null) {
             return Collections.EMPTY_LIST;
         }
-        
         String name = parent.getNodeName();
         //if ( Util.THIS.isLoggable() ) Util.THIS.debug("    name=" + name);
         if ( name == null ) {
@@ -606,7 +622,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         return list;
     }
     
-    private static List<CompletionItem> findStartTag(SyntaxNode text) {
+    private static List<CompletionItem> findStartTag(SyntaxElement text) {
         return findStartTag(text, "");
     }
     

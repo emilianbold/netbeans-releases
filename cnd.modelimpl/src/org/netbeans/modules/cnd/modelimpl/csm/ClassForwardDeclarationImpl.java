@@ -217,7 +217,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public CharSequence getName() {
         return name;
     }
-
+    
     @Override
     public CharSequence getQualifiedName() {
         return name;

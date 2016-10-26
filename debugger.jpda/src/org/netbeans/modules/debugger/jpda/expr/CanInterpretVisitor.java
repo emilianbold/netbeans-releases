@@ -41,13 +41,19 @@
  */
 package org.netbeans.modules.debugger.jpda.expr;
 
+import com.sun.jdi.Mirror;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePathScanner;
 
@@ -112,4 +118,32 @@ public class CanInterpretVisitor extends TreePathScanner<Boolean, EvaluationCont
         return Boolean.FALSE;
     }
     
+
+    // Unsupported Jigsaw modules visitors:
+
+    @Override
+    public Boolean visitModule(ModuleTree node, EvaluationContext p) {
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean visitExports(ExportsTree node, EvaluationContext p) {
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean visitProvides(ProvidesTree node, EvaluationContext p) {
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean visitRequires(RequiresTree node, EvaluationContext p) {
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean visitUses(UsesTree node, EvaluationContext p) {
+        return Boolean.FALSE;
+    }
+
 }

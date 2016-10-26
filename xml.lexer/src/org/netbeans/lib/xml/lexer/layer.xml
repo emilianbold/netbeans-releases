@@ -45,10 +45,6 @@ Contributor(s):
     <folder name="Editors">
         <folder name="text">
             <folder name="xml">
-                <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.api.xml.lexer.XMLTokenId.language"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
-                </file>
             </folder>
         </folder>
     </folder>

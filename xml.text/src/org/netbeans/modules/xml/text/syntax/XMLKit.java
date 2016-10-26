@@ -54,6 +54,7 @@ import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.*;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.openide.awt.StatusDisplayer;
@@ -65,6 +66,8 @@ import org.netbeans.modules.editor.*;
 
 import org.netbeans.modules.xml.text.XmlCommentHandler;
 import org.netbeans.modules.xml.text.completion.NodeSelector;
+import static org.netbeans.modules.xml.text.syntax.DTDKit.MIME_TYPE;
+import org.netbeans.modules.xml.text.syntax.bridge.LegacySyntaxBridge;
 
 
 /**
@@ -106,7 +109,12 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     /** Create new instance of syntax coloring parser */
     @Override
     public Syntax createSyntax(Document doc) {
-        return new XMLDefaultSyntax();
+        Syntax syn = null;
+        LegacySyntaxBridge bridge = MimeLookup.getLookup(MIME_TYPE).lookup(LegacySyntaxBridge.class);
+        if (bridge != null) {
+            syn = bridge.createSyntax(this, doc, MIME_TYPE);
+        }
+        return syn != null ? syn : super.createSyntax(doc);
     }
 
     @Override
@@ -120,11 +128,15 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         }
     }
 
-
     /** Create syntax support */
     @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return new XMLSyntaxSupport(doc);
+        SyntaxSupport syn = null;
+        LegacySyntaxBridge bridge = MimeLookup.getLookup(MIME_TYPE).lookup(LegacySyntaxBridge.class);
+        if (bridge != null) {
+            syn = bridge.createSyntaxSupport(this, doc, MIME_TYPE);
+        }
+        return syn != null ? syn : super.createSyntaxSupport(doc);
     }
     
     @Override

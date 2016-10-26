@@ -1645,8 +1645,12 @@ public final class DocumentViewOp
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("ui".equals(evt.getPropertyName())) {
+            if ("ui".equals(evt.getPropertyName()) || "UI".equals(evt.getPropertyName())) {
                 updateListeners();
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Scrollpane changed with property name: {0}",
+                                new Object[]{evt.getPropertyName()});
             }
         }
 

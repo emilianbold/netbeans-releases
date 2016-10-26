@@ -63,6 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
@@ -85,7 +86,6 @@ import org.openide.util.WeakListeners;
 final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImplementation {
     private static final Logger LOG = Logger.getLogger(UnitTestsCompilerOptionsQueryImpl.class.getName());
     private static final String MODULE_INFO_JAVA = "module-info.java";  //NOI18N
-    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
 
     private final PropertyEvaluator eval;
     private final SourceRoots srcRoots;
@@ -179,7 +179,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         final FileObject testModuleInfo = findModuleInfo(testRoots, allRoots, slq);
                         final boolean isLegacy = Optional.ofNullable(slq[0])
                             .map((r) -> r.getSourceLevel())
-                            .map((sl) -> JDK9.compareTo(new SpecificationVersion(sl)) > 0)
+                            .map((sl) -> CommonModuleUtils.JDK9.compareTo(new SpecificationVersion(sl)) > 0)
                             .orElse(Boolean.TRUE);
                         mode = isLegacy ?
                             TestMode.LEGACY :

@@ -52,13 +52,13 @@ import junit.framework.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
 import org.netbeans.modules.xml.xdm.diff.DiffFinder;
 import org.netbeans.modules.xml.xdm.diff.Difference;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -67,7 +67,7 @@ import org.openide.util.lookup.Lookups;
  * Various tests include, sanity, regression, performance etc.
  * @author Samaresh (samaresh.panda@sun.com)
  */
-public class AbstractTestCase extends TestCase {
+public class AbstractTestCase extends NbTestCase {
     
     public AbstractTestCase(String testName) {
         super(testName);
@@ -131,7 +131,7 @@ public class AbstractTestCase extends TestCase {
         BaseDocument doc = getResourceAsDocument(path);
         //must set the language inside unit tests
         doc.putProperty(Language.class, XMLTokenId.language());
-        return ((XMLSyntaxSupport)doc.getSyntaxSupport());
+        return XMLSyntaxSupport.getSyntaxSupport(doc);
     }
 
     /**

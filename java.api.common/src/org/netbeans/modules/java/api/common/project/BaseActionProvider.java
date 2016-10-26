@@ -95,6 +95,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -111,6 +112,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
@@ -141,6 +143,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -1854,9 +1857,12 @@ public abstract class BaseActionProvider implements ActionProvider {
             final String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
 
             p.put(JavaRunner.PROP_CLASSNAME, mainClass);
-            p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(ClassPath.EXECUTE));
-            p.put(JavaRunner.PROP_EXECUTE_MODULEPATH,callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_PATH));
-            
+            if (modulesSupported()) {
+                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH));
+                p.put(JavaRunner.PROP_EXECUTE_MODULEPATH, callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_PATH));
+            } else {
+                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(ClassPath.EXECUTE));
+            }
             if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
                 p.put("stopclassname", mainClass);
             }
@@ -1897,6 +1903,13 @@ public abstract class BaseActionProvider implements ActionProvider {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private boolean modulesSupported() {
+        return Optional.ofNullable(SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel())
+                .map((s) -> new SpecificationVersion(s))
+                .map((sv) -> CommonModuleUtils.JDK9.compareTo(sv) <= 0)
+                .orElse(Boolean.FALSE);
     }
 
     private void prepareWorkDir(Map<String, Object> properties) {

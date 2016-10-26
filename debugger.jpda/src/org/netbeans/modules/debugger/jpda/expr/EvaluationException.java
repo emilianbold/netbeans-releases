@@ -220,6 +220,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { String.valueOf(params[0]), String.valueOf(params[1]), String.valueOf(params[2]) };
         } else if (reason.equals("noNewClassWithBody")) {
             msgParams = new String [] { };
+        } else if (reason.equals("noModules")) {
+            msgParams = new String [] { };
         }
         else {
             msgParams = new String [] { reason };

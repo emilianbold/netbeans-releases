@@ -12,23 +12,23 @@
         <token id='T_CLOSE_PARENTHESE' start='18' end='19'>
             <text>)</text>
         </token>
-        <token id='T_NEKUDOTAIM' start='19' end='20'>
-            <text>:</text>
-        </token>
-        <token id='T_STRING' start='21' end='29'>
-            <text>DateTime</text>
-        </token>
-        <token id='T_USE' start='30' end='33'>
+        <token id='T_USE' start='20' end='23'>
             <text>use</text>
         </token>
-        <token id='T_OPEN_PARENTHESE' start='33' end='34'>
+        <token id='T_OPEN_PARENTHESE' start='23' end='24'>
             <text>(</text>
         </token>
-        <token id='T_VARIABLE' start='34' end='36'>
+        <token id='T_VARIABLE' start='24' end='26'>
             <text>$b</text>
         </token>
-        <token id='T_CLOSE_PARENTHESE' start='36' end='37'>
+        <token id='T_CLOSE_PARENTHESE' start='26' end='27'>
             <text>)</text>
+        </token>
+        <token id='T_NEKUDOTAIM' start='27' end='28'>
+            <text>:</text>
+        </token>
+        <token id='T_STRING' start='29' end='37'>
+            <text>DateTime</text>
         </token>
         <token id='T_CURLY_OPEN' start='38' end='39'>
             <text>{</text>
@@ -60,12 +60,12 @@
                         <DefaultValue>
                         </DefaultValue>
                     </FormalParameter>
-                    <NamespaceName start='21' end='29' isCurrent='false' isGlobal='false'>
-                        <Identifier start='21' end='29' name='DateTime'/>
-                    </NamespaceName>
-                    <Variable start='34' end='36' isDollared='true'>
-                        <Identifier start='35' end='36' name='b'/>
+                    <Variable start='24' end='26' isDollared='true'>
+                        <Identifier start='25' end='26' name='b'/>
                     </Variable>
+                    <NamespaceName start='29' end='37' isCurrent='false' isGlobal='false'>
+                        <Identifier start='29' end='37' name='DateTime'/>
+                    </NamespaceName>
                     <Block start='38' end='41' isCurly='true'>
                     </Block>
                 </LambdaFunctionDeclaration>

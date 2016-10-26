@@ -44,11 +44,13 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -60,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -68,90 +71,39 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver.class)
 public final class IncludeResolverImpl extends CsmIncludeResolver {
-    private final Set<String> standardHeaders;
-
+    private final Map<String,String[]> standardCHeaders;
+    private final Map<String,String[]> standardCppHeaders;
+    private static final String[] EMPTY = new String[]{};
+    
     public IncludeResolverImpl() {
-        standardHeaders = new HashSet<>();
-        
-        // C++ headers
-        standardHeaders.add("algorithm"); // NOI18N
-        standardHeaders.add("bitset"); // NOI18N
-        standardHeaders.add("complex"); // NOI18N
-        standardHeaders.add("deque"); // NOI18N
-        standardHeaders.add("exception"); // NOI18N
-        standardHeaders.add("fstream"); // NOI18N
-        standardHeaders.add("functional"); // NOI18N
-        standardHeaders.add("iomanip"); // NOI18N
-        standardHeaders.add("ios"); // NOI18N
-        standardHeaders.add("iosfwd"); // NOI18N
-        standardHeaders.add("iostream"); // NOI18N
-      //standardHeaders.add("istream"); // NOI18N
-        standardHeaders.add("iterator"); // NOI18N
-        standardHeaders.add("limits"); // NOI18N
-        standardHeaders.add("list"); // NOI18N
-        standardHeaders.add("locale"); // NOI18N
-        standardHeaders.add("map"); // NOI18N
-        standardHeaders.add("memory"); // NOI18N
-        standardHeaders.add("new"); // NOI18N
-        standardHeaders.add("numeric"); // NOI18N
-      //standardHeaders.add("ostream"); // NOI18N
-        standardHeaders.add("queue"); // NOI18N
-        standardHeaders.add("set"); // NOI18N
-        standardHeaders.add("sstream"); // NOI18N
-        standardHeaders.add("stack"); // NOI18N
-        standardHeaders.add("stdexcept"); // NOI18N
-        standardHeaders.add("streambuf"); // NOI18N
-        standardHeaders.add("string"); // NOI18N
-        standardHeaders.add("typeinfo"); // NOI18N
-        standardHeaders.add("utility"); // NOI18N
-        standardHeaders.add("valarray"); // NOI18N
-        standardHeaders.add("vector"); // NOI18N
-
-        // C++ headers for C
-        standardHeaders.add("cassert"); // NOI18N
-        standardHeaders.add("cctype"); // NOI18N
-        standardHeaders.add("cerrno"); // NOI18N
-        standardHeaders.add("cfloat"); // NOI18N
-        standardHeaders.add("ciso646"); // NOI18N
-        standardHeaders.add("climits"); // NOI18N
-        standardHeaders.add("clocale"); // NOI18N
-        standardHeaders.add("cmath"); // NOI18N
-        standardHeaders.add("csetjmp"); // NOI18N
-        standardHeaders.add("csignal"); // NOI18N
-        standardHeaders.add("cstdarg"); // NOI18N
-        standardHeaders.add("cstddef"); // NOI18N
-        standardHeaders.add("cstdio"); // NOI18N
-        standardHeaders.add("cstdlib"); // NOI18N
-        standardHeaders.add("cstring"); // NOI18N
-        standardHeaders.add("ctime"); // NOI18N
-        standardHeaders.add("cwchar"); // NOI18N
-        standardHeaders.add("cwctype"); // NOI18N
-                       
-        // C headers
-        standardHeaders.add("assert.h"); // NOI18N
-        standardHeaders.add("ctype.h"); // NOI18N
-        standardHeaders.add("errno.h"); // NOI18N
-        standardHeaders.add("float.h"); // NOI18N
-        standardHeaders.add("iso646.h"); // NOI18N
-        standardHeaders.add("limits.h"); // NOI18N
-        standardHeaders.add("locale.h"); // NOI18N
-        standardHeaders.add("math.h"); // NOI18N
-        standardHeaders.add("setjmp.h"); // NOI18N
-        standardHeaders.add("signal.h"); // NOI18N
-        standardHeaders.add("stdarg.h"); // NOI18N
-        standardHeaders.add("stddef.h"); // NOI18N
-        standardHeaders.add("stdio.h"); // NOI18N
-        standardHeaders.add("stdlib.h"); // NOI18N
-        standardHeaders.add("string.h"); // NOI18N
-        standardHeaders.add("time.h"); // NOI18N
-        standardHeaders.add("wchar.h"); // NOI18N
-        standardHeaders.add("wctype.h"); // NOI18N
+        standardCppHeaders = loadHeadesInfo("CND/headers/CPP"); // NOI18N
+        standardCHeaders = loadHeadesInfo("CND/headers/C"); // NOI18N
+    }
+    
+    private Map<String,String[]> loadHeadesInfo(String root) {
+        Map<String,String[]>standardHeaders = new HashMap<>();
+        FileObject folder = FileUtil.getConfigFile(root);
+        if (folder != null && folder.isFolder()) {
+            for (FileObject file : folder.getChildren()) {
+                String key = file.getNameExt();
+                String define = (String) file.getAttribute("define"); // NOI18N
+                if (define != null) {
+                    standardHeaders.put(key, define.split(";")); // NOI18N
+                } else {
+                    standardHeaders.put(key, EMPTY);
+                }
+            }
+        }
+        return standardHeaders;
     }
 
     @Override
@@ -177,30 +129,68 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     }
 
     // Says is header standard or not
-    private boolean isStandardHeader(List<IncludePath> sysIncsPaths, CsmFile header) {
+    private String[] getStandardCHeader(List<IncludePath> sysIncsPaths, CsmFile header) {
         final String path = header.getAbsolutePath().toString();
         String bestSystemPath = getRelativePath(sysIncsPaths, path);
-        return standardHeaders.contains(path.substring(bestSystemPath.length() + 1));
+        return standardCHeaders.get(path.substring(bestSystemPath.length() + 1));
+    }
+
+    private String[] getStandardCppHeader(List<IncludePath> sysIncsPaths, CsmFile header) {
+        final String path = header.getAbsolutePath().toString();
+        String bestSystemPath = getRelativePath(sysIncsPaths, path);
+        return standardCppHeaders.get(path.substring(bestSystemPath.length() + 1));
     }
     
     // Returns standard header if it exists
-    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<IncludePath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
+    private void getStandardHeaderIfExists(CsmFile currentFile, List<IncludePath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles, String name, Result result) {
         if (!file.isValid() || scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
-            return null;
+            return;
         }
         scannedFiles.add(file);
-        if(isStandardHeader(sysIncsPaths, file)) {
-            return file;
-        }
-        CsmIncludeHierarchyResolver ihr = CsmIncludeHierarchyResolver.getDefault();
-        Collection<CsmFile> files = ihr.getFiles(file);
-        for (CsmFile f : files) {
-            CsmFile stdHeader = getStandardHeaderIfExists(currentFile, sysIncsPaths, f, scannedFiles);
-            if(stdHeader != null) {
-               return stdHeader; 
+        String[] keys = getStandardCppHeader(sysIncsPaths, file);
+        if (keys != null) {
+            if (name != null && keys.length > 0) {
+                for(String key : keys) {
+                    if (key.equals(name)) {
+                        result.bestCpp = file;
+                        if (result.bestC != null) {
+                            return;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (result.first == null) {
+                result.first = file;
             }
         }
-        return null;
+        String[] keysC = getStandardCHeader(sysIncsPaths, file);
+        if (keysC != null) {
+            if (name != null && keysC.length > 0) {
+                for(String key : keysC) {
+                    if (key.equals(name)) {
+                        result.bestC = file;
+                        if (result.bestCpp != null) {
+                            return;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (result.first == null) {
+                result.first = file;
+            }
+        }
+        CsmIncludeHierarchyResolver ihr = CsmIncludeHierarchyResolver.getDefault();
+        Collection<CsmFile> files = ihr.getAllFiles(file);
+        for (CsmFile f : files) {
+            getStandardHeaderIfExists(currentFile, sysIncsPaths, f, scannedFiles, name, result);
+            if (result.bestCpp != null && result.bestC != null) {
+                return;
+            }
+        }
     }
 
     // Generates "#include *" string for item
@@ -217,11 +207,49 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                     if (isSystemHeader(currentFile, ((CsmOffsetable) item).getContainingFile())) {
                         // check is this file included into standard header
                         HashSet<CsmFile> scannedFiles = new HashSet<>();
-                        CsmFile stdHeader = getStandardHeaderIfExists(currentFile, nativeFile.getSystemIncludePaths(), ((CsmOffsetable) item).getContainingFile(), scannedFiles);
-                        if(stdHeader != null) {
-                            incFilePath = stdHeader.getAbsolutePath().toString();
+                        String name = null;
+                        if (CsmKindUtilities.isNamedElement(item)) {
+                            name = ((CsmNamedElement)item).getName().toString();
                         }
-                        String bestSystemPath = getRelativePath(nativeFile.getSystemIncludePaths(), incFilePath);
+                        Result result = new Result();
+                        Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> fileLanguageFlavor = FileInfoQueryImpl.getDefault().getFileLanguageFlavor((FileImpl) currentFile);
+                        NativeFileItem.Language lang = fileLanguageFlavor.first();
+                        List<IncludePath> systemIncludePaths;
+                        if (nativeFile.getLanguage() == NativeFileItem.Language.C || nativeFile.getLanguage() == NativeFileItem.Language.CPP) {
+                            systemIncludePaths = nativeFile.getSystemIncludePaths();
+                        } else {
+                            NativeFileItem nativeIndexer = null;
+                            NativeProject nativeProject = nativeFile.getNativeProject();
+                            for(NativeFileItem std : nativeProject.getStandardHeadersIndexers()) {
+                                if (std.getLanguage() == lang) {
+                                    nativeIndexer = std;
+                                }
+                            }
+                            if (nativeIndexer != null) {
+                                systemIncludePaths = nativeIndexer.getSystemIncludePaths();
+                            } else {
+                                systemIncludePaths = nativeProject.getSystemIncludePaths();
+                            }
+                        }
+                        getStandardHeaderIfExists(currentFile, systemIncludePaths, ((CsmOffsetable) item).getContainingFile(), scannedFiles, name, result);
+                        if (lang == NativeFileItem.Language.CPP) {
+                            if (result.bestCpp != null) {
+                                incFilePath = result.bestCpp.getAbsolutePath().toString();
+                            } else if (result.bestC != null) {
+                                incFilePath = result.bestC.getAbsolutePath().toString();
+                            } else if (result.first != null) {
+                                incFilePath = result.first.getAbsolutePath().toString();
+                            }
+                        } else {
+                            if (result.bestC != null) {
+                                incFilePath = result.bestC.getAbsolutePath().toString();
+                            } else if (result.bestCpp != null) {
+                                incFilePath = result.bestCpp.getAbsolutePath().toString();
+                            } else if (result.first != null) {
+                                incFilePath = result.first.getAbsolutePath().toString();
+                            }
+                        }
+                        String bestSystemPath = getRelativePath(systemIncludePaths, incFilePath);
                         if (!bestSystemPath.equals("")) { // NOI18N
                             includeDirective.append("<"); // NOI18N
                             includeDirective.append(CndPathUtilities.toRelativePath(bestSystemPath, incFilePath));
@@ -448,5 +476,11 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
 
     private boolean isSystemHeader(CsmFile currentFile, CsmFile header) {
         return !(currentFile.getProject().equals(header.getProject()));
+    }
+    
+    private static final class Result {
+        private CsmFile first;
+        private CsmFile bestCpp;
+        private CsmFile bestC;
     }
 }

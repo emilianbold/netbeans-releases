@@ -627,7 +627,6 @@ public final class LibrariesNode extends AbstractNode {
          * Constant representing a prefix of ant property reference
          */
         private static final String REF_PREFIX = "${"; //NOI18N
-        private static final SpecificationVersion JDK9 = new SpecificationVersion("9");
         @StaticResource
         private static final String LIBRARIES_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/libraries.gif"; //NOI18N
         @StaticResource
@@ -830,7 +829,7 @@ public final class LibrariesNode extends AbstractNode {
                         rootsList));
             }
             final String sl = slResult.getSourceLevel();
-            if (sl != null && JDK9.compareTo(new SpecificationVersion(sl))<=0) {
+            if (sl != null && CommonModuleUtils.JDK9.compareTo(new SpecificationVersion(sl))<=0) {
                 final RemoveFromModuleInfo rfmi = new RemoveFromModuleInfo(
                         helper,
                         eval,

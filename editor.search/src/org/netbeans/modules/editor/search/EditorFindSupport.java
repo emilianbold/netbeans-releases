@@ -365,6 +365,7 @@ public final class EditorFindSupport {
                 Position endPos = (Position) props.get(FIND_BLOCK_SEARCH_END);
                 int blockSearchEndOffset = (endPos != null) ? endPos.getOffset() : -1;
                 int pos;
+                int len = 0;
                 try {
                     int start = (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : 0;
                     int end = (blockSearch && blockSearchEndOffset > 0) ? blockSearchEndOffset : -1;
@@ -381,6 +382,7 @@ public final class EditorFindSupport {
                         return false;
                     }
                     pos = findRet[0];
+                    len = findRet.length > 1 ? findRet[1] - pos : 0;
                 } catch (BadLocationException e) {
                     LOG.log(Level.WARNING, e.getMessage(), e);
                     return false;
@@ -390,8 +392,6 @@ public final class EditorFindSupport {
                     // Find the layer
                     BlockHighlighting layer = findLayer(comp, Factory.INC_SEARCH_LAYER);
 
-                    String s = (String)props.get(FIND_WHAT);
-                    int len = (s != null) ? s.length() : 0;
                     if (len > 0) {
                         if (comp.getSelectionEnd() > comp.getSelectionStart()){
                             comp.select(caretPos, caretPos);

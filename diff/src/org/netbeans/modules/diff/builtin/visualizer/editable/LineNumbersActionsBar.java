@@ -71,6 +71,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
@@ -340,7 +341,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         g.setColor(getBackground());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
-        g.setColor(Color.LIGHT_GRAY);
+        g.setColor(UIManager.getColor("controlShadow"));
         int x = master.isFirst() ? 0 : getBarWidth() - 1;
         g.drawLine(x, clip.y, x, clip.y + clip.height - 1);
 
