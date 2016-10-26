@@ -372,7 +372,7 @@ public class TreeEvaluator {
                     ex.getStackTrace();
                 }
             }
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw ieex;
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -446,7 +446,7 @@ public class TreeEvaluator {
                 ex.getLocalizedMessage();
                 ex.getStackTrace();
             }
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             Exceptions.printStackTrace(ieex);
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {

@@ -938,6 +938,24 @@ These are mainly class and thread filters and hit counts.
         <class package="org.netbeans.spi.debugger.jpda" name="SmartSteppingCallback" />
         <issue number="255918"/>
     </change>
+
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Differentiate application-level exceptions</summary>
+        <version major="3" minor="7"/>
+        <date day="26" month="10" year="2016"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <code>InvalidExpressionException</code> can be thrown as a result
+            of an application-level exception. We need to differentiate this case
+            from exceptions thrown from NetBeans code. A boolean argument in the
+            constructor and a method <code>hasApplicationTarget()</code> are
+            added to <code>InvalidExpressionException</code> for this purpose.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="InvalidExpressionException" />
+        <issue number="268011"/>
+    </change>
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
