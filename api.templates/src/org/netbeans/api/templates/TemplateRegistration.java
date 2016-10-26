@@ -156,6 +156,7 @@ public @interface TemplateRegistration {
      * <ul>
      *   <li>when coding <a href="@TOP@overview-summary.html#html-and-js">logic in JavaScript</a>
      *   <li>when coding <a href="@TOP@overview-summary.html#html-and-java">logic in Java</a>
+     *   <li>when providing UI for <a href="@TOP@overview-summary.html#html-and-maven">Maven Archetypes</a>
      * </ul>
      * Creating portable UI for wizards has never been easier!
      * 

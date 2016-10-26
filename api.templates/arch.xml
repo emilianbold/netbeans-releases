@@ -429,6 +429,72 @@ I feel ${wizard.msg}.
         module, otherwise the target chooser falls back to classical one. 
 </p>
     </usecase>    
+    <usecase id="maven-wizard" name="UI for Maven Archetypes">
+        <a name="html-and-maven"></a>
+        <p>
+            There is a way to create a portable wizard (with logic either
+            in <a href="#html-and-js">JavaScript</a> or in 
+            <a href="#html-and-java">Java</a>) to instantiate a <b>Maven</b>
+            archetype. This way one merges the <em>project templating</em>
+            functionality of <b>Maven</b> with flexible and tailored UI
+            provided by HTML and JS/Java.
+        </p>
+        <p>
+            The definition of the UI is the same as in 
+            <a href="#html-and-js">previous</a>
+            <a href="#html-and-java">cases</a>, just as a <a href="name">target chooser</a>
+            one can also use dedicated <b>Maven</b> one - just use
+            <code>'targetChooser:archetype'</code> to get a panel 
+            with options to select directory, <code>archetypeId</code>,
+            <code>groupId</code> and <code>version</code> of the project to
+            create.
+            This feature requires presence of <code>org.netbeans.api.maven</code>
+            module, otherwise the target chooser falls back to classical one. 
+        </p>
+        <p>
+            The archetype registration is then a classical one. Here is an
+            example of the UI being in <code>x.html</code> and the archetype
+            described in <code>x.archetype</code> one:
+        </p>
+        <pre>
+    {@code @TemplateRegistration}(
+        page = "x.html",
+        displayName = "HTML/Java Wizard",
+        folder = "Java",
+        content = "x.archetype"
+    )
+    <b>public static</b> MavenWizard mavenArchetype() {
+        <b>return new</b> MavenWizard(<em>/*...*/</em>);
+    }
+        </pre>
+        <p>
+            The <code>x.archetype</code> file describes the archetype to use
+            and has following properties-like syntax:
+        </p>
+        <pre>
+archetypeGroupId=org.codehaus.mojo.archetypes
+archetypeArtifactId=javafx
+archetypeVersion=0.6
+archetypeBuild=false # or true to build the project once created
+archetypeOpen=src/main/java/.*/Main.java,src/main/resources/default.config # regexp to 
+# find files that should be opened once the project is created
+        </pre>
+        <p>
+            The values <code>archetypeArtifactId</code>,
+            <code>archetypeGroupId</code> and <code>archetypeVersion</code>
+            are by default taken from the archetype definition file, but the
+            wizard model can define these properties as well and in such case
+            they would take precedence. These values define what Maven 
+            archetype will be used to initialized the project structure.
+        </p>
+        <p>
+            Any properties defined by the model (in the above example
+            the <code>MavenWizard</code>) are going to be passed into 
+            <b>Maven</b> archetype execution and can thus influence the 
+            the behavior of the archetype - this is the way to write an
+            HTML UI for <b>Maven</b> archetype.
+        </p>
+    </usecase>
  </answer>
  <answer id="arch-what">
   <p>
