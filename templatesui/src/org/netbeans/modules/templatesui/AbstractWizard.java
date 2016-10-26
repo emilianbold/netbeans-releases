@@ -113,7 +113,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     public Set<? extends Object> instantiate() throws IOException {
         try {
             final TemplateWizard tw = (TemplateWizard) wizard;
-            FutureTask<?> t = new FutureTask<>(new Callable<Map<String,Object>>() {
+            FutureTask<Map<String,Object>> t = new FutureTask<>(new Callable<Map<String,Object>>() {
                 @Override
                 public Map<String,Object> call() throws Exception {
                     Object[] namesAndValues = rawProps(data);
@@ -137,7 +137,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 params.put(key, value);
             }
             if (v != null) {
-                params.put("wizard", t.get());
+                params.put("wizard", t.get()); // NOI18N
             }
             
             List<FileObject> result = new FileBuilder(

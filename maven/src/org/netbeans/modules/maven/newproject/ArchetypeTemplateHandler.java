@@ -82,29 +82,34 @@ public final class ArchetypeTemplateHandler extends CreateFromTemplateHandler {
     })
     @Override
     protected List<FileObject> createFromTemplate(CreateDescriptor desc) throws IOException {
-        Properties p = new Properties();
+        Properties archetype = new Properties();
         try (InputStream is = desc.getTemplate().getInputStream()) {
-            p.load(is);
+            archetype.load(is);
         }
-        String version = (String)desc.getValue("version"); // NOI18N
+        putAllTo(desc.getParameters(), archetype);
+        Map<String,?> wizardParams = desc.getValue("wizard");
+        if (wizardParams != null) {
+            putAllTo(wizardParams, archetype);
+        }
+        
+        String version = archetype.getProperty("version"); // NOI18N
         if (version == null) {
             throw new IOException(Bundle.MSG_NoVersion());
         }
-        String artifactId = (String)desc.getValue("artifactId"); // NOI18N
+        String artifactId = archetype.getProperty("artifactId"); // NOI18N
         if (version == null) {
             throw new IOException(Bundle.MSG_NoArtifactId());
         }
-        String groupId = (String)desc.getValue("groupId"); // NOI18N
+        String groupId = archetype.getProperty("groupId"); // NOI18N
         if (version == null) {
             throw new IOException(Bundle.MSG_NoGroupId());
         }
-        String packageName = (String)desc.getValue("package"); // NOI18N
+        String packageName = archetype.getProperty("package"); // NOI18N
         ProjectInfo pi = new ProjectInfo(groupId, artifactId, version, packageName);
-        Map<?,?> additionalProperties = desc.getValue("wizard"); // NOI18N
         Archetype arch = new Archetype();
-        arch.setArtifactId(p.getProperty("artifactId")); // NOI18N
-        arch.setGroupId(p.getProperty("groupId")); // NOI18N
-        arch.setVersion(p.getProperty("version")); // NOI18N
+        arch.setArtifactId(archetype.getProperty("archetypeArtifactId")); // NOI18N
+        arch.setGroupId(archetype.getProperty("archetypeGroupId")); // NOI18N
+        arch.setVersion(archetype.getProperty("archetypeVersion")); // NOI18N
         File projDir = desc.getValue(CommonProjectActions.PROJECT_PARENT_FOLDER);
         if (projDir == null) {
             projDir = FileUtil.toFile(desc.getTarget()).getParentFile();
@@ -114,22 +119,19 @@ public final class ArchetypeTemplateHandler extends CreateFromTemplateHandler {
         }
         
         Map<String, String> filteredProperties = 
-                additionalProperties == null ?
-                Collections.emptyMap()
-                :
-                NbCollections.checkedMapByFilter(additionalProperties, String.class, String.class, false);
+                NbCollections.checkedMapByFilter(archetype, String.class, String.class, false);
         final File toCreate = new File(projDir, pi.artifactId);
         ArchetypeWizards.createFromArchetype(toCreate, pi, arch, filteredProperties, true);
         FileObject fo = FileUtil.toFileObject(toCreate);
 
         List<FileObject> fos = new ArrayList<>();
         collectPomDirs(fo, fos);
-        final String toOpen = p.getProperty("open"); // NOI18N
+        final String toOpen = archetype.getProperty("archetypeOpen"); // NOI18N
         if (toOpen != null) {
             collectFiles(fo, fos, toOpen.split(",")); // NOI18N
         }
 
-        if ("true".equals(p.getProperty("build"))) { // NOI18N
+        if ("true".equals(archetype.getProperty("archetypeBuild"))) { // NOI18N
             Project prj = ProjectManager.getDefault().findProject(fo);
             ActionProvider ap = prj == null ? null : prj.getLookup().lookup(ActionProvider.class);
             if (ap != null) {
@@ -170,6 +172,14 @@ public final class ArchetypeTemplateHandler extends CreateFromTemplateHandler {
                     found.add(fo);
                     break;
                 }
+            }
+        }
+    }
+
+    private static void putAllTo(Map<String, ?> parameters, Properties archetype) {
+        for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+            if (entry.getValue() != null) {
+                archetype.put(entry.getKey(), entry.getValue());
             }
         }
     }
