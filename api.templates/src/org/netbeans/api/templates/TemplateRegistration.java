@@ -152,8 +152,12 @@ public @interface TemplateRegistration {
      * <pre>
      * OpenIDE-Module-Needs: org.netbeans.api.templates.wizard
      * </pre>
-     * There is a tutorial describing usage of HTML UI in wizards
-     * in NetBeans <a href="http://wiki.netbeans.org/HtmlUIForTemplates">wiki</a>.
+     * There is a tutorial describing usage of HTML UI in NetBeans wizards:
+     * <ul>
+     *   <li>when coding <a href="@TOP@overview-summary.html#html-and-js">logic in JavaScript</a>
+     *   <li>when coding <a href="@TOP@overview-summary.html#html-and-java">logic in Java</a>
+     * </ul>
+     * Creating portable UI for wizards has never been easier!
      * 
      * @return location to a resource with HTML page
      * @since 1.2
