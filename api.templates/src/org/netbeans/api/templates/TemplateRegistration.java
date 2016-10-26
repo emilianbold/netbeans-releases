@@ -60,11 +60,13 @@ public @interface TemplateRegistration {
     
     /**
      * Subfolder in which to place the template, such as {@code Other} or {@code Project/Standard}.
+     * @return subfolder in which to place the template
      */
     String folder();
     
     /**
      * Optional position within {@link #folder}.
+     * @return integer to position the template among others
      */
     int position() default Integer.MAX_VALUE;
 
@@ -72,6 +74,7 @@ public @interface TemplateRegistration {
      * Special file basename to use rather than inferring one from the declaring element,
      * when {@link #content} is empty.
      * Useful for pure templates referenced from {@code PrivilegedTemplates}.
+     * @return filename to use
      */
     String id() default "";
 
@@ -90,6 +93,7 @@ public @interface TemplateRegistration {
      * <pre>content="resources/empty.php"</pre>
      * <p>For a form template:
      * <pre>content={"Login.java.template", "Login.form.template"}</pre>
+     * @return references to resources providing content for the template
      */
     String[] content() default {};
 
@@ -97,6 +101,7 @@ public @interface TemplateRegistration {
      * Localized label for the template.
      * Mandatory unless {@link #content} is specified, in which case it would be defaulted by the data node.
      * May use the usual {@code #key} syntax.
+     * @return textual description of the template
      */
     String displayName() default "";
 
@@ -104,33 +109,39 @@ public @interface TemplateRegistration {
      * Icon to use for the template.
      * Should be an absolute resource path (no initial slash).
      * Mandatory unless {@link #content} is specified, in which case it would be defaulted by the data node.
+     * @return absolute resource path without initial slash
      */
     String iconBase() default "";
 
     /**
      * Optional but recommended relative resource path to an HTML description of the template.
+     * @return releative resource path to an HTML document
      */
     String description() default "";
 
     /**
      * Optional name of a script engine to use when processing file content, such as {@code freemarker}.
+     * @return identification of a script engine to use
      * @see ScriptEngineFactory#getNames
      */
     String scriptEngine() default "";
 
     /**
      * Optional list of categories interpreted by the project system.
+     * @return names of categories 
      */
     String[] category() default {};
 
     /**
      * Set to false if the template can be instantiated without a project.
+     * @return <code>true</code> or <code>false</code>
      */
     boolean requireProject() default true;
 
     /**
      * Default (pre-filled) target name for the template, without extension. May
      * use the usual {@code #key} syntax for localization or branding.
+     * @return name of the object created from the template 
      */
     String targetName() default "";
     

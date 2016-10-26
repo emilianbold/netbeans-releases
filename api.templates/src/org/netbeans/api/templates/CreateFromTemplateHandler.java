@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
  * and handle them themselves. The NetBeans IDE provides default
  * implementation that allows use of Freemarker templating engine.
  * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
- * <p/>
+ * <p>
  * An implementation of CreateHandler should honor {@link CreateDescriptor#hasFreeExtension()} and
  * {@link CreateDescriptor#isPreformatted()}.
  * 
@@ -57,7 +57,7 @@ public abstract class CreateFromTemplateHandler {
      * reject a file, regular processing defined in {@link FileBuilder#createFromTemplate(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, java.lang.String, java.util.Map, org.netbeans.api.templates.FileBuilder.Mode)}
      * is going to take place.
      * 
-     * @param desc
+     * @param desc describes the request that is about to be performed
      * @return true if this handler wants to handle the createFromTemplate operation
      */
     protected abstract boolean accept(CreateDescriptor desc);
