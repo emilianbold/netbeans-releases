@@ -398,7 +398,7 @@ public abstract class PsProvider {
                         zone = "global";//NOI18N
                     }
                 } catch (Exception e) {
-                    ErrorManager.getDefault().annotate(e, "Failed to parse OutputStream of uid command"); // NOI18N
+                    ErrorManager.getDefault().annotate(e, "Failed to parse OutputStream of zonename command"); // NOI18N
                     ErrorManager.getDefault().notify(e);
                 }
             }
