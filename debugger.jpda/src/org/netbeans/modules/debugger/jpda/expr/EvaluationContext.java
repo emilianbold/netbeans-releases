@@ -95,14 +95,15 @@ public class EvaluationContext {
      * The runtime context of a JVM is represented by a stack frame.
      */
     private StackFrame frame;
-    private int frameDepth;
-    private JPDAThreadImpl thread;
-    private ObjectReference contextVariable;
-    private List<String> sourceImports;
-    private List<String> staticImports;
+    private final int frameDepth;
+    private final JPDAThreadImpl thread;
+    private final ObjectReference contextVariable;
+    private final List<String> sourceImports;
+    private final List<String> staticImports;
     private boolean canInvokeMethods;
-    private Runnable methodInvokePreproc;
-    private JPDADebuggerImpl debugger;
+    private final Runnable methodInvokePreproc;
+    private final JPDADebuggerImpl debugger;
+    private final VMCache vmCache;
 
     private Trees trees;
     private CompilationUnitTree compilationUnitTree;
@@ -125,7 +126,7 @@ public class EvaluationContext {
                              ObjectReference contextVariable,
                              List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
-                             JPDADebuggerImpl debugger) {
+                             JPDADebuggerImpl debugger, VMCache vmCache) {
         if (thread == null) throw new IllegalArgumentException("Thread argument must not be null");
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
@@ -139,6 +140,7 @@ public class EvaluationContext {
         this.canInvokeMethods = canInvokeMethods;
         this.methodInvokePreproc = methodInvokePreproc;
         this.debugger = debugger;
+        this.vmCache = vmCache;
 
         stack.push(new HashMap<String, ScriptVariable>());
     }
@@ -371,6 +373,10 @@ public class EvaluationContext {
                 threadPropertyChangeListener = null;
             }
         }
+    }
+
+    VMCache getVMCache() {
+        return vmCache;
     }
 
     // *************************************************************************
