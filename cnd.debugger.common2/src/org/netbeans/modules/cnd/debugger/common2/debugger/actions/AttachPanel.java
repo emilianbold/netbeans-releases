@@ -1023,13 +1023,17 @@ public final class AttachPanel extends TopComponent {
                                 }
                                 final DebugTarget target = tp.targetRef.get();
                                 if (target != null) {
-                                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(executableProjectPanel.getSelectedProject(), 
-                                            ProjectActionEvent.PredefinedType.ATTACH, 
-                                            target.getExecutable(), target.getConfig(), 
-                                            target.getRunProfile(), false, 
-                                            Lookups.fixed(target)
-                                    );
-                                    ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] {projectActionEvent});
+                                    if (executableProjectPanel.getSelectedProject() == null) {
+                                        NativeDebuggerManager.get().attach(target);                                    
+                                    } else {
+                                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(executableProjectPanel.getSelectedProject(), 
+                                                ProjectActionEvent.PredefinedType.ATTACH, 
+                                                target.getExecutable(), target.getConfig(), 
+                                                target.getRunProfile(), false, 
+                                                Lookups.fixed(target)
+                                        );
+                                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] {projectActionEvent});                                        
+                                    }
                                 }
                             }
                         };
