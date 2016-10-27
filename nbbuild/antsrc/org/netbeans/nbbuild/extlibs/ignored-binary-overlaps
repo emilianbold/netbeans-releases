@@ -41,4 +41,4 @@ enterprise/modules/ext/javaee7-endorsed/jaxws-api.jar java/modules/ext/jaxws22/a
 enterprise/modules/ext/javaee7-endorsed/jsr181-api.jar java/modules/ext/jaxws22/api/jsr181-api.jar
 
 # maven needs commons-lang internally
-java/maven/lib/commons-lang-2.6.jar
+ide/modules/org-apache-commons-lang.jar java/maven/lib/commons-lang-2.6.jar
