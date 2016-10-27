@@ -92,6 +92,9 @@ public final class RemoteSyncSupport {
     }
 
     public static PathMap getPathMap(Lookup.Provider project) {
+        if (project == null) {
+            return null;
+        }
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         if (remoteProject == null) {
             return null;
