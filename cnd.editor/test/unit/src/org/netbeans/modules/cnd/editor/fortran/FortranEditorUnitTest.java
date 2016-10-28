@@ -40,11 +40,12 @@ import org.netbeans.junit.NbTestSuite;
 public class FortranEditorUnitTest extends NbTestSuite {
 
     public FortranEditorUnitTest() {
-        super("C/C++ Formatter");
+        super("Fortran Formatter");
         addTestSuite(FortranIndentTestCase.class);
         addTestSuite(FortranFormatterTestCase.class);
         addTestSuite(FortranFormatterFixedTestCase.class);
         addTestSuite(LegecyFortranFormatterTestCase.class);
+        addTestSuite(FortranBracketCompletionTestCase.class);
     }
 
     public static NbTestSuite suite() {
