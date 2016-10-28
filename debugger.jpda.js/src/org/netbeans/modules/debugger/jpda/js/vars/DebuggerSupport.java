@@ -226,7 +226,7 @@ public final class DebuggerSupport {
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
                 name = targetException.getLocalizedMessage();
             }
-            throw new InvalidExpressionException(name, targetException);
+            throw new InvalidExpressionException(name, targetException, ieex.hasApplicationTarget());
         }
     }
     

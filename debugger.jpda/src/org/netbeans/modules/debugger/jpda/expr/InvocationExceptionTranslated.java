@@ -77,14 +77,13 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.omg.CORBA.portable.ApplicationException;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin
  */
-public class InvocationExceptionTranslated extends ApplicationException {
+public class InvocationExceptionTranslated extends Exception {
     
     private static final Logger logger = Logger.getLogger(InvocationExceptionTranslated.class.getName());
     
