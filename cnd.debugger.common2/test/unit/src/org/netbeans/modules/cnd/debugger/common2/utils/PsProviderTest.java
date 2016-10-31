@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.Proces
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.test.CndBaseTestCase;
 import static org.netbeans.modules.cnd.debugger.common2.utils.PsProvider.descriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -64,7 +65,7 @@ public class PsProviderTest extends CndBaseTestCase {
     }
     
     private PsProvider.PsData prepareWinData() {
-        PsProvider provider = new PsProvider.WindowsPsProvider(Host.getLocal());
+        PsProvider provider = new PsProvider.WindowsPsProvider(ExecutionEnvironmentFactory.getLocal());
         PsProvider.PsData data = provider.new PsData();
         //data.setHeader(provider.parseHeader("      PID    PPID    PGID     WINPID  TTY  UID    STIME COMMAND"));
         return data;
@@ -73,7 +74,7 @@ public class PsProviderTest extends CndBaseTestCase {
     @Test
     public void testWinPs1() {
         PsProvider.PsData data = prepareWinData();
-        data.addProcess("     5408       0       0       5408    ?    0 11:36:17 C:\\Program Files (x86)\\totalcmd\\TOTALCMD.EXE");
+        data.addProcess("     5408       0       0       5408    ?    0 Oct 13 C:\\Program Files (x86)\\totalcmd\\TOTALCMD.EXE");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("C:\\Program Files (x86)\\totalcmd\\TOTALCMD.EXE", res.get(0).get(data.commandColumnIdx()));
         assertEquals("5408", res.get(0).get(0));
@@ -121,7 +122,7 @@ public class PsProviderTest extends CndBaseTestCase {
                         descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "comm", "COMMAND") // NOI18N
                     );        
         
-        PsProvider provider = new PsProvider.SolarisPsProvider(Host.getLocal(), descriptors);
+        PsProvider provider = new PsProvider.SolarisPsProvider(ExecutionEnvironmentFactory.getLocal(), descriptors);
         PsProvider.PsData data = provider.new PsData();
 //        data.setDescriptors(descriptors);
         //provider.parseHeader("     USER   PID  PPID   C    STIME TT         TIME COMMAND");
@@ -181,7 +182,7 @@ public class PsProviderTest extends CndBaseTestCase {
                         descriptor(String.class, false, "time", "time", "TIME"), // NOI18N
                         descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "comm", "COMMAND") // NOI18N
                     );         
-        PsProvider provider = new PsProvider.LinuxPsProvider(Host.getLocal(), descriptors);
+        PsProvider provider = new PsProvider.LinuxPsProvider(ExecutionEnvironmentFactory.getLocal(), descriptors);
        // provider.parseHeader("USER       PID  PPID  C STIME TT           TIME COMMAND");
         PsProvider.PsData data = provider.new PsData();
 //        data.setDescriptors(descriptors);
@@ -224,7 +225,7 @@ public class PsProviderTest extends CndBaseTestCase {
                         descriptor(String.class, false, "time", "time", "TIME"), // NOI18N
                         descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "command", "COMMAND") // NOI18N
                     );            
-        PsProvider provider = new PsProvider.MacOSPsProvider(Host.getLocal(), descriptors);
+        PsProvider provider = new PsProvider.MacOSPsProvider(ExecutionEnvironmentFactory.getLocal(), descriptors);
         PsProvider.PsData data = provider.new PsData();
         //data.setDescriptors(descriptors);
 //        data.setHeader(provider.parseHeader(header));

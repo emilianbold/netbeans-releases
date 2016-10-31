@@ -41,13 +41,34 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.windows.TopComponent;
+import java.util.Collection;
+import javax.swing.JButton;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.spi.AttachPanelFactory;
+import org.netbeans.modules.cnd.debugger.common2.ui.AttachPanelImpl;
+import org.netbeans.modules.cnd.debugger.common2.ui.processlist.AttachToProcessTopComponent;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author masha
+ * Client can user AttachPanel provider or AttachPanelFactory directly
  */
-abstract public class AttachPanel extends TopComponent{
-    abstract public Controller getController();
+public class AttachPanelProvider {
+    
+    public static AttachPanel getAttachPanel(DialogManager dialogManager, JButton okButton, EngineType debuggerType) {
+        
+        //can defind a special command line arg to use an old attach dialog,
+        //if it is not defined: use service providers, if not registered use default        
+        boolean useOldAttachDialog = Boolean.getBoolean("cnd.debugger.common2.attach.old");//NOI18N
+        if (useOldAttachDialog) {
+            return AttachPanelImpl.getInstance(dialogManager, okButton, debuggerType);
+        }
+        Collection<? extends AttachPanelFactory> factories = Lookup.getDefault().lookupAll(AttachPanelFactory.class);
+        for (AttachPanelFactory factory : factories) {
+            if (factory.supports(debuggerType)) {
+                return factory.create(dialogManager, okButton, debuggerType);
+            }
+        }
+        return AttachToProcessTopComponent.getInstance(dialogManager, okButton, debuggerType);
+    }
 }

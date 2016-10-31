@@ -39,15 +39,42 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
+package org.netbeans.modules.cnd.debugger.common2;
 
-import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.windows.TopComponent;
+import java.util.Collection;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfo;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author masha
  */
-abstract public class AttachPanel extends TopComponent{
-    abstract public Controller getController();
+abstract public class ProcessListAccessor {
+  private static volatile ProcessListAccessor DEFAULT;
+
+    public static ProcessListAccessor getDefault() {
+        ProcessListAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(ProcessList.class.getName(), true,
+                    ProcessList.class.getClassLoader());
+        } catch (Exception e) {
+        }
+
+        return DEFAULT;
+    }
+
+    public static void setDefault(ProcessListAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
+    }
+
+    abstract public ProcessList create(final Collection<ProcessInfo> info, ExecutionEnvironment execEnv);    
 }

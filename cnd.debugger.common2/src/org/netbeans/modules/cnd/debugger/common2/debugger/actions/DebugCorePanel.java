@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
+import org.netbeans.modules.cnd.debugger.common2.ui.ExecutableProjectPanel;
+import org.netbeans.modules.cnd.debugger.common2.ui.AttachPanelImpl;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ResourceBundle;
@@ -89,7 +91,7 @@ import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
-import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
+import org.netbeans.modules.cnd.debugger.common2.ui.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -299,9 +301,9 @@ final class DebugCorePanel extends javax.swing.JPanel {
      * Refresh hostComboBox with new remote host list.
      */
     private void updateRemoteHostList() {
-        AttachPanel.fillHostsCombo(hostComboBox);
+        AttachPanelImpl.fillHostsCombo(hostComboBox);
         // current value
-        AttachPanel.setHostChoice(lastHostChoice, hostComboBox);
+        AttachPanelImpl.setHostChoice(lastHostChoice, hostComboBox);
     }
 
     public String getCorefilePath() {
@@ -966,7 +968,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         }
     }
 
-    private final class ValidationWorker extends AttachPanel.AnyChangeDocumentListener implements Runnable, ActionListener, ItemListener {
+    private final class ValidationWorker extends AttachPanelImpl.AnyChangeDocumentListener implements Runnable, ActionListener, ItemListener {
 
         private final Object validationExecutorLock = new Object();
         private final ScheduledExecutorService validationExecutor;
