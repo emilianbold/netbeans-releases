@@ -228,6 +228,8 @@ public final class J2SEModularProject implements Project {
 
         this.cpProvider = ClassPathProviderImpl.Builder.create(helper, evaluator(), getSourceRoots(), getTestSourceRoots())
                 .setProject(this)
+                .setModuleSourceRoots(getModuleRoots())
+                .setTestModuleSourceRoots(getTestModuleRoots())
                 .build();
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, null/*newProjectOperationsCallback(this, updateProject)*/);//TODO

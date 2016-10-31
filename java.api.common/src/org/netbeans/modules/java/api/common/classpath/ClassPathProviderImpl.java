@@ -114,6 +114,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final Union2<String,String[]> platform;
     private final String javacSource;
     private final Project project;
+    private final SourceRoots moduleSourceRoots;
+    private final SourceRoots testModuleSourceRoots;
     /**
      * ClassPaths cache.
      * Index -> CP mapping
@@ -139,13 +141,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 19  - module execute class path
      * 20  - test module execute class path
      * 21  - module execute class path for dist.jar
-     * 22  - JDK8 class path                        - internal only
-     * 23  - JDK8 test class path                   - internal only
-     * 24  - JDK8 execute class path                - internal only
-     * 25  - JDK8 test execute class path           - internal only
-     * 26  - JDK8 execute class path for dist.jar   - internal only
+     * 22  - module source path
+     * 23  - test module source path
+     * 24  - JDK8 class path                        - internal only
+     * 25  - JDK8 test class path                   - internal only
+     * 26  - JDK8 execute class path                - internal only
+     * 27  - JDK8 test execute class path           - internal only
+     * 28  - JDK8 execute class path for dist.jar   - internal only
      */
-    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[27];
+    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[29];
     private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
 
 
@@ -238,7 +242,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             Builder.DEFAULT_TEST_MODULE_EXECUTE_PATH,
             Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
             Builder.DEFAULT_JAVAC_SOURCE,
-            null);
+            null, null, null);
     }
 
     private ClassPathProviderImpl(
@@ -261,7 +265,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] testModuleExecutePath,
         @NonNull final Union2<String,String[]> platform,
         @NonNull final String javacSource,
-        @NullAllowed final Project project) {
+        @NullAllowed final Project project,
+        @NullAllowed final SourceRoots moduleSourceRoots,
+        @NullAllowed final SourceRoots testModuleSourceRoots) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
@@ -303,6 +309,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.platform = platform;
         this.javacSource = javacSource;
         this.project = project;
+        this.moduleSourceRoots = moduleSourceRoots;
+        this.testModuleSourceRoots = testModuleSourceRoots;
     }
 
     /**
@@ -348,6 +356,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] bootClasspathProperties;
         private String javacSource = DEFAULT_JAVAC_SOURCE;
         private Project project;
+        private SourceRoots moduleSourceRoots;
+        private SourceRoots testModuleSourceRoots;
 
         private Builder(
             @NonNull final AntProjectHelper helper,
@@ -574,6 +584,32 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
 
         /**
+         * Sets module sources for modular source path.
+         * @param moduleSourceRoots the module sources
+         * @return {@link Builder}
+         * @since 1.92
+         */
+        @NonNull
+        public Builder setModuleSourceRoots(@NonNull final SourceRoots moduleSourceRoots) {
+            Parameters.notNull("moduleSourceRoots", moduleSourceRoots); //NOI18N
+            this.moduleSourceRoots = moduleSourceRoots;
+            return this;
+        }
+
+        /**
+         * Sets module sources for test modular source path.
+         * @param testModuleSourceRoots the test module sources
+         * @return {@link Builder}
+         * @since 1.92
+         */
+        @NonNull
+        public Builder setTestModuleSourceRoots(@NonNull final SourceRoots testModuleSourceRoots) {
+            Parameters.notNull("testModuleSourceRoots", testModuleSourceRoots);
+            this.testModuleSourceRoots = testModuleSourceRoots;
+            return this;
+        }
+
+        /**
          * Creates a configured {@link ClassPathProviderImpl}.
          * @return the {@link ClassPathProviderImpl}
          */
@@ -603,7 +639,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 testModuleExecutePath,
                 platform,
                 javacSource,
-                project);
+                project,
+                moduleSourceRoots,
+                testModuleSourceRoots);
         }
 
         @NonNull
@@ -1043,15 +1081,41 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return cp;
     }
 
+    @CheckForNull
+    private ClassPath getModuleSourcePath(@NonNull final FileObject fo) {
+        final int type = getType(fo);
+        if (type < 0 || type > 1) {
+            return null;
+        }
+        return getModuleSourcePath(type);
+    }
+
+    @NonNull
+    private synchronized ClassPath getModuleSourcePath(final int type) {
+        assert type >=0 && type <=1;
+        ClassPath cp = cache[22+type];
+        if ( cp == null ) {
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(
+                            ()->ClassPath.EMPTY,
+                            ()->ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
+                                    type == 0 ? this.moduleSourceRoots : this.testModuleSourceRoots,
+                                    helper,
+                                    evaluator))));
+            cache[22+type] = cp;
+        }
+        return cp;
+    }
+
     @NonNull
     private synchronized ClassPath getJava8ClassPath(int type) {
         assert type >= 0 && type <=1;
-        ClassPath cp = cache[22+type];
+        ClassPath cp = cache[24+type];
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, type == 0 ? javacClasspath : javacTestClasspath));
-            cache[22+type] = cp;
+            cache[24+type] = cp;
         }
         return cp;
     }
@@ -1061,11 +1125,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert type >= 0 && type <= 4;
         int index;
         if (type == 0 || type == 2) {
-            index = 24;
-        } else if (type == 1 || type == 3) {
-            index = 25;
-        } else if (type == 4) {
             index = 26;
+        } else if (type == 1 || type == 3) {
+            index = 27;
+        } else if (type == 4) {
+            index = 28;
         } else {
             return null;
         }        
@@ -1117,6 +1181,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return getModuleExecutePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH)) {
             return getModuleLegacyExecuteClassPath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_SOURCE_PATH)) {
+            return getModuleSourcePath(file);
         } else {
             return null;
         }
