@@ -92,7 +92,7 @@ public final class AttachToProcessTopComponent extends AttachPanel{
     private static final Preferences prefs =
             NbPreferences.forModule(AttachToProcessTopComponent.class);
     private static final Preferences filterPrefs =
-            prefs.node("attach_filters");		
+            prefs.node("attach_filters");		//NOI18N
     
 // <From Process>
     private EngineDescriptor engine;
