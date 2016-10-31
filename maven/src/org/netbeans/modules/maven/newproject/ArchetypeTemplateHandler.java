@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -86,11 +85,7 @@ public final class ArchetypeTemplateHandler extends CreateFromTemplateHandler {
         try (InputStream is = desc.getTemplate().getInputStream()) {
             archetype.load(is);
         }
-        putAllTo(desc.getParameters(), archetype);
-        Map<String,?> wizardParams = desc.getValue("wizard");
-        if (wizardParams != null) {
-            putAllTo(wizardParams, archetype);
-        }
+        mergeProperties(desc, archetype);
         
         String version = archetype.getProperty("version"); // NOI18N
         if (version == null) {
@@ -139,6 +134,14 @@ public final class ArchetypeTemplateHandler extends CreateFromTemplateHandler {
             }
         }
         return fos;
+    }
+
+    static void mergeProperties(CreateDescriptor desc, Properties archetype) {
+        putAllTo(desc.getParameters(), archetype);
+        Map<String,?> wizardParams = desc.getValue("wizard"); // NOI18N
+        if (wizardParams != null) {
+            putAllTo(wizardParams, archetype);
+        }
     }
     
     private static void collectPomDirs(FileObject dir, Collection<? super FileObject> found) {
