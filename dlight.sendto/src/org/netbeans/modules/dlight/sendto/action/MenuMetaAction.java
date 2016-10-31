@@ -42,14 +42,20 @@
 package org.netbeans.modules.dlight.sendto.action;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -93,15 +99,17 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new MenuWrapperAction(MenuConstructor.constructMenu(actionContext));
+        return new MenuWrapperAction(actionContext, MenuConstructor.constructMenu(actionContext));
     }
 
     private static class MenuWrapperAction extends AbstractAction implements Presenter.Popup {
 
         private final JMenu menu;
+        private final Lookup actionContext;
 
-        public MenuWrapperAction(JMenu menu) {
+        public MenuWrapperAction(Lookup actionContext, JMenu menu) {
             this.menu = menu;
+            this.actionContext = actionContext;
         }
 
         @Override
@@ -112,5 +120,38 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
         public JMenuItem getPopupPresenter() {
             return menu;
         }
+
+        @Override
+        public boolean isEnabled() {
+            // fast check
+            return isFileObject() || isEditorSelection();
+        }
+        
+        private boolean isFileObject() {
+            final Collection<? extends FileObject> fos = actionContext.lookupAll(FileObject.class);
+
+            if (fos == null || fos.isEmpty()) {
+                return false;
+            }
+            return true;
+        }
+        
+        private boolean isEditorSelection() {
+            DataEditorSupport des = actionContext.lookup(DataEditorSupport.class);
+            if (des == null) {
+                return false;
+            }
+            JTextComponent focusedComponent = null;
+            try {
+                focusedComponent = EditorRegistry.findComponent(des.openDocument());
+            } catch (IOException ex) {
+            }
+
+            if (focusedComponent == null) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 }
