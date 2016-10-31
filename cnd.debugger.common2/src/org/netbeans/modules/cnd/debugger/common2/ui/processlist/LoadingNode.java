@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
+package org.netbeans.modules.cnd.debugger.common2.ui.processlist;
 
-import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.windows.TopComponent;
+import java.awt.Image;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author masha
+ * @author Alexander Simon
  */
-abstract public class AttachPanel extends TopComponent{
-    abstract public Controller getController();
+final class LoadingNode extends AbstractNode {
+
+    public LoadingNode() {
+        super(Children.LEAF);
+        setName("dummy"); // NOI18N
+        setDisplayName(NbBundle.getMessage(LoadingNode.class, "Tree_Loading")); // NOI18N
+    }
+
+    @Override
+    public Image getIcon(int param) {
+        //System.err.println("get icon asked");
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/debugger/common2/icons/waitNode.gif"); // NOI18N
+    }
 }

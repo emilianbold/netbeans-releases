@@ -39,15 +39,31 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
+package org.netbeans.modules.cnd.debugger.common2.ui;
 
-import org.netbeans.spi.debugger.ui.Controller;
-import org.openide.windows.TopComponent;
+import javax.swing.JButton;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.AttachPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.spi.AttachPanelFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author masha
  */
-abstract public class AttachPanel extends TopComponent{
-    abstract public Controller getController();
+@ServiceProvider(service = AttachPanelFactory.class, position = 500)
+public class AttachPanelImplFactory extends AttachPanelFactory{
+
+    @Override
+    public boolean supports(EngineType debuggerType) {
+        return true;
+    }
+
+    @Override
+    public AttachPanel create(DialogManager dialogManager, JButton okButton, EngineType debuggerType) {
+        return AttachPanelImpl.getInstance(dialogManager, okButton, debuggerType);
+    }
+
+    
 }
