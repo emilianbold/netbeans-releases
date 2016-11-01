@@ -55,6 +55,7 @@ import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.dlight.sendto.util.Utils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -87,15 +88,17 @@ public class SelectionScriptHandler extends Handler<SelectionConfigurationPanel>
 
     @Override
     public FutureAction createActionFor(final Lookup actionContext, final Configuration cfg) {
-        JTextComponent focusedComponent = null;
         DataEditorSupport des = actionContext.lookup(DataEditorSupport.class);
-        if (des != null) {
-            try {
-                focusedComponent = EditorRegistry.findComponent(des.openDocument());
-            } catch (IOException ex) {
-            }
+        if (des == null) {
+            return null;
         }
         
+        StyledDocument doc = des.getDocument();
+        if (doc == null) {
+            return null;
+        }
+        
+        JTextComponent focusedComponent = EditorRegistry.findComponent(doc);
         if (focusedComponent == null) {
             return null;
         }
