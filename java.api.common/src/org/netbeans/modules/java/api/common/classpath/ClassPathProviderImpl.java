@@ -1094,14 +1094,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private synchronized ClassPath getModuleSourcePath(final int type) {
         assert type >=0 && type <=1;
         ClassPath cp = cache[22+type];
-        if ( cp == null ) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
-                            ()->ClassPath.EMPTY,
-                            ()->ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
-                                    type == 0 ? this.moduleSourceRoots : this.testModuleSourceRoots,
-                                    helper,
-                                    evaluator))));
+        if (cp == null) {
+            final SourceRoots roots = type == 0 ?
+                    this.moduleSourceRoots :
+                    this.testModuleSourceRoots;
+            if (roots != null) {
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                        createSourceLevelSelector(
+                                ()->ClassPath.EMPTY,
+                                ()->ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
+                                        roots,
+                                        helper,
+                                        evaluator))));
+            }
             cache[22+type] = cp;
         }
         return cp;
