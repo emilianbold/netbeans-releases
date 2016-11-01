@@ -67,7 +67,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.AbstractAction;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -78,7 +77,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -151,32 +149,45 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
      * @since 2.113
      */
     public static ExecutorTask executeMaven(final RunConfig config, InputOutput io, TabContext tc) {
-        LifecycleManager.getDefault().saveAll();
-        MavenExecutor exec = new MavenCommandLineExecutor(config, io, tc);
-        ExecutorTask task =  ExecutionEngine.getDefault().execute(config.getTaskDisplayName(), exec, new ProxyNonSelectableInputOutput(exec.getInputOutput()));
-        exec.setTask(task);
-        task.addTaskListener(new TaskListener() {
-            @Override
-            public void taskFinished(Task t) {
-                MavenProject mp = config.getMavenProject();
-                if (mp == null) {
-                    return;
+        ExecuteMaven runner = Lookup.getDefault().lookup(ExecuteMaven.class);
+        if (runner == null) {
+            runner = new ExecuteMaven();
+        }
+        return runner.execute(config, io, tc);
     }
-                final List<Artifact> arts = new ArrayList<Artifact>();
-                Artifact main = mp.getArtifact();
-                if (main != null) {
-                    arts.add(main);
-                }
-                arts.addAll(mp.getArtifacts());
-                UPDATE_INDEX_RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
+    
+    /**
+     * Hooks for tests to mock the Maven execution.
+     */
+    public static class ExecuteMaven {
+        public ExecutorTask execute(RunConfig config, InputOutput io, TabContext tc) {
+            LifecycleManager.getDefault().saveAll();
+            MavenExecutor exec = new MavenCommandLineExecutor(config, io, tc);
+            ExecutorTask task = ExecutionEngine.getDefault().execute(config.getTaskDisplayName(), exec, new ProxyNonSelectableInputOutput(exec.getInputOutput()));
+            exec.setTask(task);
+            task.addTaskListener(new TaskListener() {
+                @Override
+                public void taskFinished(Task t) {
+                    MavenProject mp = config.getMavenProject();
+                    if (mp == null) {
+                        return;
                     }
-                });
-            }
-        });
-        return task;
+                    final List<Artifact> arts = new ArrayList<Artifact>();
+                    Artifact main = mp.getArtifact();
+                    if (main != null) {
+                        arts.add(main);
+                    }
+                    arts.addAll(mp.getArtifacts());
+                    UPDATE_INDEX_RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
+                        }
+                    });
+                }
+            });
+            return task;
+        }
     }
     
     public MavenCommandLineExecutor(RunConfig conf, InputOutput io, TabContext tc) {
