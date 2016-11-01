@@ -187,6 +187,26 @@ public class ScannerTestCase extends NbTestCase {
             }
         }
     }
+    
+    public void testGNUpatterns_05_1() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+        ArrayList<String> testPatterns = new ArrayList<String>();
+      	testPatterns.add("gmake[1]: Entering directory '/export/home/hudson/.netbeans/remote/enum/beta-SunOS-x86_64/var/tmp/alex-cnd-test-downloads/pkg-config-0.25'");
+      	testPatterns.add("gmake[1]: Entering directory `/export/home/hudson/.netbeans/remote/enum/beta-SunOS-x86_64/var/tmp/alex-cnd-test-downloads/pkg-config-0.25'");
+        String p = scanner.getEnterDirectoryPattern();
+        String p2 = ".*make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+[`|']([^']*)'";
+        assertEquals(p, p2);
+        Pattern pattern = Pattern.compile(p);
+        for (String s : testPatterns) {
+            Matcher m = pattern.matcher(s);
+            if (m.find()){
+                assertEquals(trimQuotes(m.group(2)), "/export/home/hudson/.netbeans/remote/enum/beta-SunOS-x86_64/var/tmp/alex-cnd-test-downloads/pkg-config-0.25");
+            } else {
+                assertTrue("String "+s+" does not match pattern "+p, false);
+            }
+        }
+    }
 
     public void testGNUpatterns_06() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
