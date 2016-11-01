@@ -44,10 +44,8 @@ package org.netbeans.modules.cnd.discovery.buildsupport;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +58,8 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
-import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -118,7 +116,9 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cName);
-                        fixScript(fo, cPath);
+                        if (fo != null) {
+                            fixScript(fo, cPath);
+                        }
                     }
                 }
             }
@@ -132,12 +132,25 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cppName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cppName);
-                        fixScript(fo, cppPath);
+                        if (fo != null) {
+                            fixScript(fo, cppPath);
+                        }
                     }
                 }
             }
             //writePropertiesFile(wrapperFolder, cPath, cppPath);
-            res = CompilerSetFactory.createCompilerSetWrapper(compilerSet, execEnv, wrapperFolder.getPath());
+            ExecutionEnvironment projectFSenv = FileSystemProvider.getExecutionEnvironment(wrapperFolder);
+            String path = wrapperFolder.getPath();
+            if (!projectFSenv.equals(execEnv)) {
+                RemotePathMap pathMap = RemotePathMap.getPathMap(execEnv);
+                if (pathMap != null) {
+                    String remotePath = pathMap.getRemotePath(path);
+                    if (remotePath != null) {
+                        path = remotePath;
+                    }
+                }
+            }
+            res = CompilerSetFactory.createCompilerSetWrapper(compilerSet, execEnv, path);
             cache.put(wrapperFolder, res);
             return res;
         } catch (MissingResourceException ex) {
@@ -239,16 +252,17 @@ public class ToolsWrapperUtility {
             ext = name.substring(i + 1);
             name = name.substring(0, i);
         }
-        if (execEnv.isLocal()) {
+        ExecutionEnvironment projectFSenv = FileSystemProvider.getExecutionEnvironment(folder);
+        if (projectFSenv.isLocal()) {
             FileObject copyFile = FileUtil.copyFile(FileUtil.toFileObject(new File(wrapperBinaryFile)), folder, name, ext);
-            Future<Integer> task = CommonTasksSupport.chmod(execEnv, copyFile.getPath(), 0755, null);
+            Future<Integer> task = CommonTasksSupport.chmod(projectFSenv, copyFile.getPath(), 0755, null);
             Integer retCode = task.get();
             return copyFile;
         } else {
-            Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(wrapperBinaryFile, execEnv, folder.getPath() + "/" + name, 0755, true); //NOI18N
+            Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(wrapperBinaryFile, projectFSenv, folder.getPath() + "/" + name, 0755, true); //NOI18N
             CommonTasksSupport.UploadStatus status = uploadTask.get();
             if (!status.isOK()) {
-                throw new IOException("Unable to upload " + wrapperBinaryFile + " to " + execEnv.getDisplayName() + ':' + folder.getPath() + "/" + name // NOI18N
+                throw new IOException("Unable to upload " + wrapperBinaryFile + " to " + projectFSenv.getDisplayName() + ':' + folder.getPath() + "/" + name // NOI18N
                         + " rc=" + status.getExitCode() + ' ' + status.getError()); // NOI18N
             }
             folder.refresh();
