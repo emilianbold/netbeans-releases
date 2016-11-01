@@ -55,6 +55,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -141,16 +142,16 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
             if (des == null) {
                 return false;
             }
-            JTextComponent focusedComponent = null;
-            try {
-                focusedComponent = EditorRegistry.findComponent(des.openDocument());
-            } catch (IOException ex) {
-            }
-
-            if (focusedComponent == null) {
+            DataObject dao = des.getDataObject();
+            if (dao == null) {
                 return false;
             }
-            return true;
+            final Collection<? extends FileObject> fos = actionContext.lookupAll(FileObject.class);
+
+            if (fos == null || fos.isEmpty()) {
+                return false;
+            }
+            return fos.contains(dao.getPrimaryFile());
         }
         
     }
