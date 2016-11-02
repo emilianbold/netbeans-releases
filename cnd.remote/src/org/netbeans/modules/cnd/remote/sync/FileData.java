@@ -131,7 +131,7 @@ public final class FileData {
         data = new Properties();
         this.privProjectStorageDir = privProjectStorageDir;
         this.dataFileTimeStamp = -1;
-        this.dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
+        this.dataFileName = "timestamps-" + RemoteUtil.hostNameToLocalFileName(executionEnvironment.getHost()) + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
                 '-' + executionEnvironment.getSSHPort(); //NOI18N
         if (!Boolean.getBoolean("cnd.remote.timestamps.clear")) {
