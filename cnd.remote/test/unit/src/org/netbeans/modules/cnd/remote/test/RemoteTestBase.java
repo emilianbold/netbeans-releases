@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -260,11 +261,12 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         final AtomicInteger build_rc = new AtomicInteger(-1);
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider;
-
+        final List<String> lines = Collections.synchronizedList(new ArrayList<String>());
         CndTestIOProvider.Listener listener = new CndTestIOProvider.Listener() {
 
             @Override
             public void linePrinted(String line) {
+                lines.add(line);
                 if (line != null) {
                     if (isSuccessLine(line)) {
                         build_rc.set(0);
@@ -316,7 +318,15 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
             //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
             RemoteSyncTestSupport.waitWorkerFinished(20);
-            assertTrue("build failed: on " + makeProject.getDevelopmentHost()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+            if (build_rc.get() != 0) {
+                StringBuilder sb = new StringBuilder("-------- Console output of failed test ").append(getName()).append(" --------\n\n");
+                for (String l : lines) {
+                    sb.append(l).append('\n');
+                }
+                sb.append("----------------\n");
+                System.err.println(sb);
+                assertTrue("Build failed: on " + makeProject.getDevelopmentHost()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+            }
         } finally {
             ((CndTestIOProvider) iop).removeListener(listener);
         }
