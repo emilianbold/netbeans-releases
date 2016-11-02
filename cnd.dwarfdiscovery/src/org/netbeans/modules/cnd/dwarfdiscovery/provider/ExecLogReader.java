@@ -238,7 +238,9 @@ public final class ExecLogReader {
                     String directory = null;
                     String command = null;
                     String cu = null;
+                    int count = 0;
                     while (true) {
+                        count++;
                         if (isStoped.cancelled()) {
                             break;
                         }
@@ -275,7 +277,11 @@ public final class ExecLogReader {
                             if (line.length() == 0) {
                                 // create new result entry
                                 try {
-                                    addSources(tool, params, storage);
+                                    if (tool == null) {
+                                        DwarfSource.LOG.log(Level.INFO, "Exec log file '"+logFileObject.getPath()+"' is corrupted near line "+count+".");
+                                    } else {
+                                        addSources(tool, params, storage);
+                                    }
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     DwarfSource.LOG.log(Level.INFO, "Tool:" + tool, ex);
