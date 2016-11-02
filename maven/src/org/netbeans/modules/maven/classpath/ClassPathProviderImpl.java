@@ -91,7 +91,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private final ClassPath[] cache = new ClassPath[17];    
     
     public ClassPathProviderImpl(@NonNull Project proj) {
-        this.proj = proj;        
+        this.proj = proj;
     }
     
     /**
@@ -294,7 +294,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         if (cp == null) {
             if (type == TYPE_SRC) {
                 cp = createMultiplexClassPath(
-                    // XXX has to be module-info based
+                    // XXX should be based on module-info or not?
                     new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
                         ClassPath.EMPTY,
                         getCompileClasspath(),
@@ -556,7 +556,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             if (ret == null) {
                 ret = noModuleInfoCP;
 
-                // see org.apache.maven.plugin.compiler.CompilerMojo
+                // see org.apache.maven.plugin.compiler.CompilerMojo.classpathElements
                 for (String sourceRoot : proj.getOriginalMavenProject().getCompileSourceRoots()) {
                     if(new File(sourceRoot, MODULE_INFO).exists()) {
                         ret = hasModuleInfoCP;  
