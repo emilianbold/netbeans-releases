@@ -57,7 +57,6 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -984,9 +983,6 @@ public final class ProxyFileManager implements JavaFileManager {
             }
 
             boolean hasLocation() {
-                if (filter == null) {
-                    return true;
-                }
                 return get().length > 0;
             }
 
