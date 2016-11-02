@@ -43,6 +43,7 @@ package org.netbeans.api.editor;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
@@ -77,14 +78,21 @@ public final class StickyWindowSupport {
                     double deltaY = evt.deltaY();
                     Component[] components = pane.getComponentsInLayer(JLayeredPane.PALETTE_LAYER);
                     Rectangle rv = null;
-                    for (Component component : components) {
+                    for (final Component component : components) {
                         rv = component.getBounds(rv);
                         if(rv.getY() > evt.startY() ||
                                 rv.contains(new Point(rv.x, (int) evt.startY())) ||
                                 rv.contains(new Point(rv.x, (int) evt.endY()))) {
-                            Point p = rv.getLocation();
+                            final Point p = rv.getLocation();
                             p.translate(0, (int) deltaY);
-                            component.setLocation(p);
+                            EventQueue.invokeLater(new Runnable() {
+
+                                @Override
+                                public void run() {      
+                                  component.setLocation(p);
+                                }
+                            });
+                            
                         }
                     }
                 }
