@@ -43,20 +43,22 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.stream.Collectors;
 import javax.tools.JavaFileManager.Location;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class ModuleLocation implements Location {
+class ModuleLocation implements Location {
 
     private final Location base;
     private final String moduleName;
     private final Collection<? extends URL> moduleRoots;
 
-    ModuleLocation(
+    private ModuleLocation(
             @NonNull final Location base,
             @NonNull final String moduleName,
             @NonNull final Collection<? extends URL> moduleRoots) {
@@ -109,5 +111,30 @@ final class ModuleLocation implements Location {
                 moduleName,
                 moduleRoots);
     }
+    
+    @NonNull
+    static SourceModuleLocation createSource(
+            @NonNull final Location base,
+            @NonNull final Collection<? extends ClassPath.Entry> moduleEntries,
+            @NonNull final String moduleName) {
+        return new SourceModuleLocation(
+                base,
+                moduleName,
+                moduleEntries);
+    }
+    
+    static final class SourceModuleLocation extends ModuleLocation {
 
+        private final Collection<? extends ClassPath.Entry> moduleEntries;
+        
+        private SourceModuleLocation(Location base, String moduleName, Collection<? extends ClassPath.Entry> moduleEntries) {
+            super(base, moduleName, moduleEntries.stream().map(entry -> entry.getURL()).collect(Collectors.toSet()));
+            this.moduleEntries = moduleEntries;
+        }
+        
+        @NonNull
+        Collection<? extends ClassPath.Entry> getModuleEntries() {
+            return moduleEntries;
+        }
+    }
 }

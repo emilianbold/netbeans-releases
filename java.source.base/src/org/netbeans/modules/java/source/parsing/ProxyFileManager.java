@@ -629,6 +629,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private static final int MEM = APT_SRC + 1;
         private static final int SYS_MODULES = MEM + 1;
         private static final int USER_MODULES = SYS_MODULES + 1;
+        private static final int SRC_MODULES = USER_MODULES + 1;
 
         private static final JavaFileManager[] EMPTY = new JavaFileManager[0];
 
@@ -638,6 +639,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private final ClassPath bootCached;
         private final ClassPath compiledCached;
         private final ClassPath srcCached;
+        private final ClassPath moduleSrcCached;
         private final ClassPath outputCached;
         private final ClassPath aptSrcCached;
         private final Map<Location,Entry> fileManagers;
@@ -659,6 +661,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
+                @NonNull final ClassPath moduleSrcCached,
                 @NonNull final ClassPath outputCached,
                 @NonNull final ClassPath aptSrcCached,
                 @NonNull final SiblingSource siblings,
@@ -680,13 +683,14 @@ public final class ProxyFileManager implements JavaFileManager {
             this.bootCached = bootCached;
             this.compiledCached = compiledCached;
             this.srcCached = srcCached;
+            this.moduleSrcCached = moduleSrcCached;
             this.outputCached = outputCached;
             this.aptSrcCached = aptSrcCached;
             this.siblings = siblings;
             this.fmTx = fmTx;
             this.processorGeneratedFiles = processorGeneratedFiles;
             this.fileManagers = createFactories();
-            this.emitted = new JavaFileManager[USER_MODULES+1];
+            this.emitted = new JavaFileManager[SRC_MODULES+1];
             this.peersMap = new IdentityHashMap<>();
         }
 
@@ -729,7 +733,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
         @NonNull
         JavaFileManager[] getFileManagers(@NonNull Location location, @NullAllowed String hint) {
-            if (location.getClass() == ModuleLocation.class) {
+            if (location instanceof ModuleLocation) {
                 location = ((ModuleLocation)location).getBaseLocation();
             }
             if (location == ALL) {
@@ -829,6 +833,12 @@ public final class ProxyFileManager implements JavaFileManager {
             }));
             m.put(StandardLocation.SYSTEM_MODULES, new Entry(() -> new JavaFileManager[] {createSystemModuleFileManager()}));
             m.put(StandardLocation.MODULE_PATH, new Entry(() -> new JavaFileManager[] {createModuleFileManager()}));
+            m.put(StandardLocation.MODULE_SOURCE_PATH, new Entry(() -> {
+                    final JavaFileManager moduleSrc = createModuleSrcFileManager();
+                    return moduleSrc == null ?
+                        EMPTY:
+                        new JavaFileManager[] {moduleSrc};
+            }));
             return m;
         }
 
@@ -851,12 +861,12 @@ public final class ProxyFileManager implements JavaFileManager {
         @CheckForNull
         private JavaFileManager createSrcFileManager() {
             if (emitted[SRC] == null) {
-                final boolean hasSources = this.srcCached != ClassPath.EMPTY;
+                final boolean hasSources = this.moduleSrcCached == ClassPath.EMPTY && this.srcCached != ClassPath.EMPTY;
                 emitted[SRC] = hasSources ?
-                    (!useModifiedFiles ?
-                        new CachingFileManager (cap, srcCached, filter, false, ignoreExcludes) :
-                        new SourceFileManager (srcCached, ignoreExcludes)) :
-                    null;
+                        (!useModifiedFiles ?
+                                new CachingFileManager (cap, srcCached, filter, false, ignoreExcludes) :
+                                new SourceFileManager (srcCached, ignoreExcludes)) :
+                        null;
             }
             return emitted[SRC];
         }
@@ -939,6 +949,20 @@ public final class ProxyFileManager implements JavaFileManager {
             return emitted[USER_MODULES];
         }
 
+        @CheckForNull
+        private JavaFileManager createModuleSrcFileManager() {
+            if (emitted[SRC_MODULES] == null) {
+                final boolean hasModules = this.moduleSrcCached != ClassPath.EMPTY;
+                emitted[SRC_MODULES] = hasModules ?
+                        new ModuleSourceFileManager(
+                                srcCached,
+                                moduleSrcCached,
+                                ignoreExcludes) :
+                        null;
+            }
+            return emitted[SRC_MODULES];
+        }
+
         @NonNull
         public static Configuration create (
                 @NonNull final ClassPath moduleBoot,
@@ -946,6 +970,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
+                @NonNull final ClassPath moduleSrcCached,
                 @NonNull final ClassPath outputCached,
                 @NonNull final ClassPath aptSrcCached,
                 @NonNull final SiblingSource siblings,
@@ -957,6 +982,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 bootCached,
                 compiledCached,
                 srcCached,
+                moduleSrcCached,
                 outputCached,
                 aptSrcCached,
                 siblings,

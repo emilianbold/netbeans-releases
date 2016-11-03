@@ -124,7 +124,7 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
             }
         }, LogContext.create(EventType.PATH, ""));
         
-        JavaParsingContext javaContext = new JavaParsingContext(ctx, ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[0]), ClassPath.EMPTY, ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[] {src}), virtualFiles);
+        JavaParsingContext javaContext = new JavaParsingContext(ctx, ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[0]), ClassPath.EMPTY, ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[] {src}), ClassPath.EMPTY, virtualFiles);
         List<CompileTuple> toIndex = new ArrayList<CompileTuple>();
         
         toIndex.addAll(files);

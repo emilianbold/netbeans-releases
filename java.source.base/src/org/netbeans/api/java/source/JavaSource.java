@@ -286,6 +286,10 @@ public final class JavaSource {
                 if (srcPath == null) {
                     srcPath = ClassPath.EMPTY;
                 }
+                ClassPath moduleSrcPath = ClassPath.getClassPath(fileObject, JavaClassPathConstants.MODULE_SOURCE_PATH);
+                if (moduleSrcPath == null) {
+                    moduleSrcPath = ClassPath.EMPTY;
+                }
                 ClassPath execPath = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
                 if (execPath != null) {
                     if (hasModulePath) {
@@ -305,6 +309,7 @@ public final class JavaSource {
                     moduleCompilePath,
                     moduleClassPath,
                     srcPath,
+                    moduleSrcPath,
                     null,
                     false, false, false, true, null);
                 FileObject root = ClassPathSupport.createProxyClassPath(
